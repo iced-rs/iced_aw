@@ -14,10 +14,11 @@ edition = "2018"
 [dev-dependencies]
 
 [dependencies]
-iced = { git = "https://github.com/hecrj/iced", branch = "master" }
-iced_native = { git = "https://github.com/hecrj/iced", branch = "master" }
-iced_graphics = { git = "https://github.com/hecrj/iced", branch = "master" }
+iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_native = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 
 [features]
+badge = []
 tab_bar = []
 tabs = ["tab_bar"]
