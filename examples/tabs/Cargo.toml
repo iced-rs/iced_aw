@@ -1,0 +1,12 @@
+[package]
+name = "tab_bar"
+version = "0.1.0"
+authors = ["Kaiden42 <gitlab@tinysn.com>"]
+edition = "2018"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+iced =  { git = "https://github.com/hecrj/iced", branch = "master", features = ["image"] }
+iced_aw = { path = "../..", features = ["tabs"] }

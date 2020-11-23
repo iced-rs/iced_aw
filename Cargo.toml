@@ -1,0 +1,23 @@
+[package]
+name = "iced_aw"
+version = "0.1.0"
+authors = ["Kaiden42 <gitlab@tinysn.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+#[dependencies]
+#iced = "0.1.1"
+#iced_native = "0.2.2"
+#iced_graphics = "0.0.0"
+
+[dev-dependencies]
+
+[dependencies]
+iced = { git = "https://github.com/hecrj/iced", branch = "master" }
+iced_native = { git = "https://github.com/hecrj/iced", branch = "master" }
+iced_graphics = { git = "https://github.com/hecrj/iced", branch = "master" }
+
+[features]
+tab_bar = []
+tabs = ["tab_bar"]
