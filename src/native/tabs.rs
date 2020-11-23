@@ -5,7 +5,7 @@
 //! the content of the tabs.
 use std::hash::Hash;
 
-use iced_native::{Clipboard, Element, Event, Font, Layout, Length, Point, Row, Size, Widget, column, row, text};
+use iced_native::{Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Row, Size, Widget, column, event, row, text};
 
 use crate::native::{TabBar, TabLabel};
 
@@ -284,7 +284,7 @@ where
         messages: &mut Vec<Message>,
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>
-    ) {
+    ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
             TabBarPosition::Top => {
@@ -299,7 +299,7 @@ where
             }
         };
 
-        self.tab_bar.on_event(
+        let status_tab_bar = self.tab_bar.on_event(
             event.clone(),
             tab_bar_layout,
             cursor_position,
@@ -308,7 +308,7 @@ where
             clipboard,
         );
 
-        if let Some(element) = self.tabs.get_mut(self.tab_bar.get_active_tab()) {
+        let status_element = if let Some(element) = self.tabs.get_mut(self.tab_bar.get_active_tab()) {
             element.on_event(
                 event,
                 tab_content_layout,
@@ -316,8 +316,12 @@ where
                 messages,
                 renderer,
                 clipboard
-            );
-        }
+            )
+        } else {
+            event::Status::Ignored
+        };
+
+        status_tab_bar.merge(status_element)
     }
 
     fn draw(
@@ -326,6 +330,7 @@ where
         defaults: &Renderer::Defaults,
         layout: iced_native::Layout<'_>,
         cursor_position: Point,
+        viewport: &Rectangle,
     ) -> Renderer::Output {
         let mut children = layout.children();
         let tab_bar_layout = match self.tab_bar_position {
@@ -337,7 +342,8 @@ where
             renderer,
             defaults,
             tab_bar_layout,
-            cursor_position
+            cursor_position,
+            viewport
         );
 
         self::Renderer::draw(
@@ -349,7 +355,8 @@ where
             &self.tabs,
             layout,
             cursor_position,
-            &self.tab_bar_position
+            &self.tab_bar_position,
+            viewport
         )
     }
 
@@ -381,6 +388,7 @@ pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
         layout: Layout<'_>,
         cursor_position: Point,
         tab_bar_position: &TabBarPosition,
+        viewport: &Rectangle,
     ) -> Self::Output;
 }
 
@@ -394,6 +402,7 @@ impl Renderer for iced_native::renderer::Null {
         _layout: Layout<'_>,
         _cursor_position: Point,
         _tab_bar_position: &TabBarPosition,
+        _viewport: &Rectangle,
     ) -> Self::Output {}
 }
 

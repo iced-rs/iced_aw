@@ -5,8 +5,8 @@
 use iced_native::Element;
 use std::hash::Hash;
 
-use iced_native::{Align, Clipboard, Column, Event, Hasher, Layout, Point, Row, Text, Widget, column, layout, mouse, row, text};
-use iced::{Font, Length};
+use iced_native::{Align, Clipboard, Column, Event, Hasher, Layout, Length, Point, Rectangle, Row, Text, Widget, column, event, layout, mouse, row, text};
+use iced::{Font};
 
 pub mod tab_label;
 pub use tab_label::TabLabel;
@@ -296,7 +296,7 @@ where
         messages: &mut Vec<Message>,
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>
-    ) {
+    ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if layout.bounds().contains(cursor_position) {
@@ -315,11 +315,14 @@ where
                             .map(|on_close| (on_close)(new_selected))
                             .unwrap_or((self.on_select)(new_selected))
                         );
+                        return event::Status::Captured;
                     }
                 }
             },
             _ => {}
-        }
+        };
+
+        event::Status::Ignored
     }
 
     fn draw(
@@ -328,6 +331,7 @@ where
         defaults: &Renderer::Defaults,
         layout: Layout<'_>,
         cursor_position: Point,
+        _viewport: &Rectangle,
     ) -> Renderer::Output {
         self::Renderer::draw(
             renderer,

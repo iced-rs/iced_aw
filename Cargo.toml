@@ -22,3 +22,9 @@ iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9
 badge = []
 tab_bar = []
 tabs = ["tab_bar"]
+
+default = [
+    "badge",
+    "tab_bar",
+    "tabs"
+]
