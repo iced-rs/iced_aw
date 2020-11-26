@@ -51,6 +51,12 @@ To enable predefined style, enable the feature `colors`.
 
 TODO
 
+<center>
+
+![Tabs showcase](./images/showcase/tabs_example.gif)
+
+</center>
+
 Please take a look into our examples on how to use TabBars and Tabs.
 
 Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
