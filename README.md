@@ -36,13 +36,16 @@ TODO
 
 <center>
 
-![Badge concept drawing](./images/badge.svg)
+![Badge concept drawing](./images/concept_drawings/badge.svg)
+
+![Badge showcase](./images/showcase/badge.png)
 
 </center>
 
 Please take a look into our examples on how to use badges.
 
 Enable this widget with the feature `badge`.
+To enable predefined style, enable the feature `colors`.
 
 ### TabBar and Tabs
 
@@ -58,7 +61,7 @@ TODO
 
 <center>
 
-![Floating Action button concept drawing](./images/floating_action_button.svg)
+![Floating Action button concept drawing](./images/concept_drawings/floating_action_button.svg)
 
 </center>
 
@@ -68,7 +71,7 @@ TODO
 
 <center>
 
-![Card concept drawing](./images/card.svg)
+![Card concept drawing](./images/concept_drawings/card.svg)
 
 </center>
 
@@ -78,7 +81,7 @@ TODO
 
 <center>
 
-![Modal concept drawing](./images/modal.svg)
+![Modal concept drawing](./images/concept_drawings/modal.svg)
 
 </center>
 
@@ -88,7 +91,7 @@ TODO
 
 <center>
 
-![Date Picker concept drawing](./images/date_picker.svg)
+![Date Picker concept drawing](./images/concept_drawings/date_picker.svg)
 
 </center>
 
@@ -98,7 +101,7 @@ TODO
 
 <center>
 
-![Time Picker concept drawing](./images/time_picker.svg)
+![Time Picker concept drawing](./images/concept_drawings/time_picker.svg)
 
 </center>
 
@@ -108,7 +111,7 @@ TODO
 
 <center>
 
-![Color Picker concept drawing](./images/color_picker.svg)
+![Color Picker concept drawing](./images/concept_drawings/color_picker.svg)
 
 </center>
 
