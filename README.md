@@ -111,3 +111,9 @@ TODO
 ![Color Picker concept drawing](./images/color_picker.svg)
 
 </center>
+
+## Color palette
+
+This crate add a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
+
+Enable colors with the feature `colors`.
