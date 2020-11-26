@@ -3,13 +3,13 @@ name = "iced_aw"
 version = "0.1.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-#[dependencies]
-#iced = "0.1.1"
-#iced_native = "0.2.2"
-#iced_graphics = "0.0.0"
+description = "Additional widgets for the Iced GUI library"
+license = "MIT"
+repository = "https://github.com/kaiden42/iced_aw"
+# TODO documentation
+readme = "README.md"
+keywords = ["gui", "ui", "graphics", "interface", "widgets", "iced"]
+categories = ["gui"]
 
 [features]
 badge = []
@@ -25,9 +25,6 @@ default = [
     "tabs"
 ]
 
-[dev-dependencies]
-
-
 #[dependencies]
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
@@ -37,6 +34,3 @@ iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 dodrio = "0.2.0"
-
-#[target.'cfg(wasm32)'.dependencies]
-#iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
