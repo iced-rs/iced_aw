@@ -2,6 +2,8 @@
 //! 
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
+//! 
+//! *This API requires the following crate features to be activated: tab_bar*
 use iced_native::Element;
 use std::hash::Hash;
 

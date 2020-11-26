@@ -3,6 +3,8 @@
 //! This is a wrapper around the [`TabBar`](super::tab_bar::TabBar) widget.
 //! Unlike the [`TabBar`](super::tab_bar::TabBar) widget it will also handle
 //! the content of the tabs.
+//! 
+//! *This API requires the following crate features to be activated: tabs*
 use iced_graphics::{Backend, Primitive, Renderer, backend};
 
 use iced_native::{Layout, Rectangle, mouse};

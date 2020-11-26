@@ -4,12 +4,27 @@
 #![deny(unused_results)]
 #![forbid(unsafe_code)]
 
+#[cfg(not(target_arch = "wasm32"))]
 pub mod graphics;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod native;
+
 pub mod style;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod platform {
+
+    #[doc(no_inline)]
+    #[cfg(feature = "badge")]
+    pub use crate::graphics::{
+        badge,
+    };
+    #[doc(no_inline)]
+    #[cfg(feature = "badge")]
+    pub use {
+        badge::Badge
+    };
+
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use crate::graphics::{
@@ -32,6 +47,15 @@ mod platform {
     #[cfg(feature = "tabs")]
     pub use {
         tabs::{Tabs, TabBarPosition},
+    };
+}
+#[cfg(target_arch = "wasm32")]
+pub mod web;
+
+#[cfg(target_arch = "wasm32")]
+mod platform {
+    pub use crate::web::{
+        badge, badge::Badge
     };
 }
 

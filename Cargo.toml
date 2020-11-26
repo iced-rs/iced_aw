@@ -11,20 +11,32 @@ edition = "2018"
 #iced_native = "0.2.2"
 #iced_graphics = "0.0.0"
 
-[dev-dependencies]
-
-[dependencies]
-iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-iced_native = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-
 [features]
 badge = []
+colors = []
+glow = ["iced/glow"]
 tab_bar = []
 tabs = ["tab_bar"]
 
 default = [
     "badge",
+    "colors",
     "tab_bar",
     "tabs"
 ]
+
+[dev-dependencies]
+
+
+#[dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_native = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+dodrio = "0.2.0"
+
+#[target.'cfg(wasm32)'.dependencies]
+#iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }

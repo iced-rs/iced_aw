@@ -3,6 +3,8 @@
 //! This is a wrapper around the [`TabBar`](super::tab_bar::TabBar) widget.
 //! Unlike the [`TabBar`](super::tab_bar::TabBar) widget it will also handle
 //! the content of the tabs.
+//! 
+//! *This API requires the following crate features to be activated: tabs*
 use std::hash::Hash;
 
 use iced_native::{Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Row, Size, Widget, column, event, row, text};

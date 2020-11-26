@@ -2,6 +2,8 @@
 //! 
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs) widget instead.
+//! 
+//! *This API requires the following crate features to be activated: tab_bar*
 use iced_graphics::{Backend, Color, Primitive, Rectangle, Renderer, backend};
 use iced_native::{Font, HorizontalAlignment, Layout, Point, VerticalAlignment, mouse};
 pub use tab_bar::tab_label::TabLabel;

@@ -1,5 +1,7 @@
 //! A [`TabBarPosition`](TabBarPosition) for defining the position of a
 //! [`TabBar`](crate::native::tab_bar::TabBar).
+//! 
+//! *This API requires the following crate features to be activated: tabs*
 
 /// A [`TabBarPosition`](TabBarPosition) for defining the position of a
 /// [`TabBar`](crate::native::tab_bar::TabBar).
