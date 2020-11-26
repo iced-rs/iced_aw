@@ -16,37 +16,27 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
-    pub use crate::graphics::{
-        badge,
-    };
-    #[doc(no_inline)]
-    #[cfg(feature = "badge")]
     pub use {
-        badge::Badge
+        badge::Badge,
+        crate::graphics::badge,
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
-    pub use crate::graphics::{
-        tab_bar,
-    };    
-
-    #[doc(no_inline)]
-    #[cfg(feature = "tab_bar")]
     pub use {
-        tab_bar::{TabBar, TabLabel},
-    };
-
-    #[doc(no_inline)]
-    #[cfg(feature = "tabs")]
-    pub use crate::graphics::{
-        tabs,
+        tab_bar::{
+            TabBar, TabLabel,
+        },
+        crate::graphics::tab_bar,
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "tabs")]
     pub use {
-        tabs::{Tabs, TabBarPosition},
+        tabs::{
+            Tabs, TabBarPosition,
+        },
+        crate::graphics::tabs,
     };
 }
 #[cfg(target_arch = "wasm32")]

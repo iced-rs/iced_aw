@@ -24,7 +24,6 @@ where
     fn draw<Message>(
         &mut self,
         defaults: &Self::Defaults,
-        bounds: iced_native::Rectangle,
         cursor_position: iced::Point,
         style_sheet: &Self::Style,
         content: &iced_native::Element<'_, Message, Self>,

@@ -151,7 +151,6 @@ where
     ) -> Renderer::Output {
         renderer.draw(
             defaults,
-            layout.bounds(),
             cursor_position,
             &self.style,
             &self.content,
@@ -185,7 +184,6 @@ pub trait Renderer: iced_native::Renderer {
     fn draw<Message>(
         &mut self,
         defaults: &Self::Defaults,
-        bounds: Rectangle,
         cursor_position: Point,
         style_sheet: &Self::Style,
         content: &Element<'_, Message, Self>,
@@ -200,7 +198,6 @@ impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
         _defaults: &Self::Defaults,
-        _bounds: Rectangle,
         _cursor_position: Point,
         _style_sheet: &Self::Style,
         _content: &Element<'_, Message, Self>,

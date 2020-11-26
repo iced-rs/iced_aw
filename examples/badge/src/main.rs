@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use iced::{Align, Column, Container, Element, Length, Row, Sandbox, Settings, Text};
 
 use iced_aw::{Badge, style::{self, badge::StyleSheet}};
