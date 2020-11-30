@@ -22,6 +22,13 @@ mod platform {
     };
 
     #[doc(no_inline)]
+    #[cfg(feature = "floating_button")]
+    pub use {
+        floating_button::FloatingButton,
+        crate::graphics::floating_button,
+    };
+
+    #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use {
         tab_bar::{
@@ -44,8 +51,16 @@ pub mod web;
 
 #[cfg(target_arch = "wasm32")]
 mod platform {
+    #[doc(no_inline)]
+    #[cfg(feature = "badge")]
     pub use crate::web::{
-        badge, badge::Badge
+        badge, badge::Badge,
+    };
+
+    #[doc(no_inline)]
+    #[cfg(feature = "floating_button")]
+    pub use crate::web::{
+        floating_button, floating_button::FloatingButton,
     };
 }
 

@@ -13,21 +13,26 @@ categories = ["gui"]
 
 [features]
 badge = []
+button = []
 colors = []
-glow = ["iced/glow"]
+floating_button = ["button"]
+glow = [] # TODO
 tab_bar = []
 tabs = ["tab_bar"]
 
 default = [
     "badge",
     "colors",
+    "floating_button",
     "tab_bar",
     "tabs"
 ]
 
-#[dependencies]
+[dependencies]
+iced_style = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+#iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 iced_native = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 
