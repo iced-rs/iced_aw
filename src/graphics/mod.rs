@@ -7,6 +7,11 @@ pub mod badge;
 #[cfg(feature = "badge")]
 pub use badge::Badge;
 
+#[cfg(feature = "floating_button")]
+pub mod floating_button;
+#[cfg(feature = "floating_button")]
+pub use floating_button::FloatingButton;
+
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
 #[cfg(feature = "tabs")]

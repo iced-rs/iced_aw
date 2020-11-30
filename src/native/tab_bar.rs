@@ -7,8 +7,10 @@
 use iced_native::Element;
 use std::hash::Hash;
 
-use iced_native::{Align, Clipboard, Column, Event, Hasher, Layout, Length, Point, Rectangle, Row, Text, Widget, column, event, layout, mouse, row, text};
-use iced::{Font};
+use iced_native::{
+    Align, Clipboard, Column, Event, Font, Hasher, Layout, Length, Point,
+    Rectangle, Row, Text, Widget, column, event, layout, mouse, row, text
+};
 
 pub mod tab_label;
 pub use tab_label::TabLabel;
@@ -402,6 +404,7 @@ pub trait Renderer: iced_native::Renderer {
     ) -> Self::Output;
 }
 
+#[cfg(debug_assertions)]
 impl Renderer for iced_native::renderer::Null {
     type Style = ();
 

@@ -5,9 +5,9 @@
 //! the content of the tabs.
 //! 
 //! *This API requires the following crate features to be activated: tabs*
-use iced_graphics::{Backend, Primitive, Renderer, backend};
+use iced_graphics::{Backend, Point, Primitive, Rectangle, Renderer, backend};
 
-use iced_native::{Layout, Rectangle, mouse};
+use iced_native::{Layout, mouse};
 pub use tabs::tab_bar_position::TabBarPosition;
 use crate::native::tabs;
 pub use crate::style::tab_bar::{Style, StyleSheet};
@@ -32,7 +32,7 @@ where
         tab_bar: Self::Output,
         tabs: &[iced_native::Element<'_, Message, Self>],
         layout: Layout<'_>,
-        cursor_position: iced::Point,
+        cursor_position: Point,
         tab_bar_position: &TabBarPosition,
         viewport: &Rectangle,
     ) -> Self::Output {

@@ -1,8 +1,8 @@
 //! The default icon font of the widgets of this library.
-use iced_native::{Font};
+use iced_graphics::Font;
 
 /// The default icon font.
-pub const ICON_FONT: Font = iced::Font::External{
+pub const ICON_FONT: Font = iced_native::Font::External{
     name: "Icons",
     bytes: include_bytes!("./fonts/icons.ttf"),
 };

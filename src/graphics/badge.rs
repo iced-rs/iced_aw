@@ -1,8 +1,7 @@
 //! Use a badge for color highlighting important information.
 //! 
 //! *This API requires the following crate features to be activated: badge*
-use iced::Color;
-use iced_graphics::{Backend, Primitive, Renderer};
+use iced_graphics::{Backend, Color, Point, Primitive, Renderer};
 
 use crate::native::badge;
 pub use crate::style::badge::{Style, StyleSheet};
@@ -24,7 +23,7 @@ where
     fn draw<Message>(
         &mut self,
         defaults: &Self::Defaults,
-        cursor_position: iced::Point,
+        cursor_position: Point,
         style_sheet: &Self::Style,
         content: &iced_native::Element<'_, Message, Self>,
         layout: iced_native::Layout<'_>,

@@ -394,6 +394,7 @@ pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
     ) -> Self::Output;
 }
 
+#[cfg(debug_assertions)]
 impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
