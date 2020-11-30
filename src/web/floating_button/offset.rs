@@ -2,7 +2,7 @@
 //! 
 //! *This API requires the following crate features to be activated: floating_button*
 
-use iced_native::Point;
+use iced_web::Point;
 
 /// The [`Offset`](Offset) for the [`FloatingButton`](super::FloatingButton).
 #[derive(Copy, Clone, Debug)]
