@@ -112,7 +112,7 @@ where
                 bumpalo::format!(
                     in bump,
                     "background: {}; border-radius: {}rem; width:{}; height: {} \
-                    border: {}px solid {}; display: inline-block;",
+                    border: {}px solid {}; display: inline-block; color: {}",
                     //css::color(style.background)
                     match style.background {
                         Background::Color(color) => css::color(color),
@@ -121,7 +121,8 @@ where
                     css::length(self.width),
                     css::length(self.height),
                     style.border_width,
-                    border_color
+                    border_color,
+                    css::color(style.text_color)
                 )
                 .into_bump_str(),
             )

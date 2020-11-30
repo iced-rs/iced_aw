@@ -12,11 +12,18 @@ pub struct Style {
     /// The background of the [`Badge`](crate::native::badge::Badge).
     pub background: Background,
 
+    /// The border radius of the [`Badge`](crate::native::badge::Badge).
+    /// If no radius is specified the default one will be used.
+    pub border_radius: Option<f32>,
+
+    /// The border with of the [`Badge`](crate::native::badge::Badge).
+    pub border_width: f32,
+
     /// The border color of the [`Badge`](crate::native::badge::Badge).
     pub border_color: Option<Color>,
 
-    /// The border with of the [`Badge`](crate::native::badge::Badge).
-    pub border_width: u16,
+    /// The default text color of the [`Badge`](crate::native::badge::Badge).
+    pub text_color: Color,
 }
 
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
@@ -36,8 +43,10 @@ impl StyleSheet for Default {
     fn active(&self) -> Style {
         Style {
             background: Background::Color([0.87, 0.87, 0.87].into()),
+            border_radius: None,
+            border_width: 1.0,
             border_color: Some([0.8, 0.8, 0.8].into()),
-            border_width: 1,
+            text_color: Color::BLACK,
         }
     }
 
@@ -77,8 +86,10 @@ mod predefined {
         fn active(&self) -> super::Style {
             Style {
                 background: colors::PRIMARY.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::PRIMARY.into(),
-                border_width: 1,
+                text_color: colors::WHITE,
             }
         }
 
@@ -96,8 +107,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::SECONDARY.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::SECONDARY.into(),
-                border_width: 1,
+                text_color: colors::WHITE,
             }
         }
 
@@ -115,8 +128,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::SUCCESS.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::SUCCESS.into(),
-                border_width: 1,
+                text_color: colors::WHITE,
             }
         }
 
@@ -134,8 +149,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::DANGER.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::DANGER.into(),
-                border_width: 1,
+                text_color: colors::WHITE,
             }
         }
 
@@ -153,8 +170,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::WARNING.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::WARNING.into(),
-                border_width: 1,
+                text_color: colors::BLACK,
             }
         }
 
@@ -172,8 +191,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::INFO.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::INFO.into(),
-                border_width: 1,
+                text_color: colors::BLACK,
             }
         }
 
@@ -191,8 +212,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::LIGHT.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::LIGHT.into(),
-                border_width: 1,
+                text_color: colors::BLACK,
             }
         }
 
@@ -210,8 +233,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::DARK.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::DARK.into(),
-                border_width: 1,
+                text_color: colors::WHITE,
             }
         }
 
@@ -229,8 +254,10 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::WHITE.into(),
+                border_radius: None,
+                border_width: 1.0,
                 border_color: colors::WHITE.into(),
-                border_width: 1,
+                text_color: colors::BLACK,
             }
         }
 

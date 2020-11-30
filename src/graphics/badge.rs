@@ -1,7 +1,7 @@
 //! Use a badge for color highlighting important information.
 //! 
 //! *This API requires the following crate features to be activated: badge*
-use iced_graphics::{Backend, Color, Point, Primitive, Renderer};
+use iced_graphics::{defaults, Backend, Color, Defaults, Point, Primitive, Renderer};
 
 use crate::native::badge;
 pub use crate::style::badge::{Style, StyleSheet};
@@ -41,17 +41,27 @@ where
         //println!("height: {}", bounds.height);
         // 34 15
         //  x
-        let border_radius = (bounds.height as f32 / BORDER_RADIUS_RATIO) as u16;
+        let border_radius = style.border_radius
+            .unwrap_or_else(|| (bounds.height as f32 / BORDER_RADIUS_RATIO));
         let background = Primitive::Quad {
             bounds,
             background: style.background,
-            border_radius: border_radius,//15, // TODO radius
-            border_width: style.border_width,
+            border_radius: border_radius as u16, // TODO: will be changed to f32
+            border_width: style.border_width as u16, // TODO: same
             border_color: style.border_color.unwrap_or(Color::BLACK),
         };
 
-        let (content, mouse_interaction) =
-            content.draw(self, &defaults, children.next().unwrap(), cursor_position, viewport);
+        let (content, mouse_interaction) = content.draw(
+            self,
+            &Defaults {
+                text: defaults::Text {
+                    color: style.text_color
+                }
+            },
+            children.next().unwrap(),
+            cursor_position,
+            viewport
+        );
 
         (
             Primitive::Group {
