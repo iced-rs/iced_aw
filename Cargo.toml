@@ -13,6 +13,7 @@ categories = ["gui"]
 
 [features]
 badge = []
+card = []
 button = []
 colors = []
 floating_button = ["button"]
@@ -22,6 +23,7 @@ tabs = ["tab_bar"]
 
 default = [
     "badge",
+    "card",
     "colors",
     "floating_button",
     "tab_bar",

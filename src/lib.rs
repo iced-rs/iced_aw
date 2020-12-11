@@ -22,6 +22,13 @@ mod platform {
     };
 
     #[doc(no_inline)]
+    #[cfg(feature = "card")]
+    pub use {
+        card::Card,
+        crate::graphics::card,
+    };
+
+    #[doc(no_inline)]
     #[cfg(feature = "floating_button")]
     pub use {
         floating_button::FloatingButton,
@@ -55,6 +62,12 @@ mod platform {
     #[cfg(feature = "badge")]
     pub use crate::web::{
         badge, badge::Badge,
+    };
+    
+    #[doc(no_inline)]
+    #[cfg(feature = "card")]
+    pub use crate::web::{
+        card, card::Card,
     };
 
     #[doc(no_inline)]

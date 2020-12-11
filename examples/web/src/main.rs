@@ -3,7 +3,7 @@ use iced::{
     Row, Sandbox, Scrollable, Settings, Text
 };
 
-use iced_aw::{floating_button::Anchor, Badge, FloatingButton};
+use iced_aw::{floating_button::Anchor, Badge, Card, FloatingButton};
 
 const TITLE_SIZE: u16 = 42;
 
@@ -16,11 +16,15 @@ struct Web {
     floating_button_lines: Vec<String>,
     floating_button_scroll: scrollable::State,
     floating_button_state: button::State,
+    primary_card: bool,
+    secondary_card: bool,
 }
 
 #[derive(Clone, Debug)]
 enum Message {
     FloatingButtonPressed,
+    PrimaryCardClosed,
+    SecondaryCardClosed,
 }
 
 impl Sandbox for Web {
@@ -34,6 +38,8 @@ impl Sandbox for Web {
             floating_button_lines: vec!("Hello!".into(), "World".into()),
             floating_button_scroll: scrollable::State::new(),
             floating_button_state: button::State::new(),
+            primary_card: true,
+            secondary_card: true,
         }
     }
 
@@ -44,8 +50,14 @@ impl Sandbox for Web {
     fn update(&mut self, message: Self::Message) {
         match message {
             Message::FloatingButtonPressed => {
-                self.floating_button_lines.push("This is a newly added line.".into())
+                self.floating_button_lines.push("This is a newly added line.".into());
             },
+            Message::PrimaryCardClosed => {
+                self.primary_card = false;
+            },
+            Message::SecondaryCardClosed => {
+                self.secondary_card = false;
+            }
         }
     }
 
@@ -68,6 +80,13 @@ impl Sandbox for Web {
                     &mut self.floating_button_scroll,
                     &mut self.floating_button_state,
                 )
+            )
+            .push(
+                Text::new("Card:")
+                    .size(TITLE_SIZE)
+            )
+            .push(
+                card(self.primary_card, self.secondary_card)
             )
             ;
 
@@ -166,7 +185,8 @@ fn floating_button<'a>(
     Container::new(
         FloatingButton::new(
             scrollable,
-            Button::new(button_state, Text::new("Press Me!")),
+            Button::new(button_state, Text::new("Press Me!"))
+                .style(iced_aw::style::button::Primary),
         )
         .on_press(Message::FloatingButtonPressed)
         .anchor(Anchor::SouthEast)
@@ -174,4 +194,32 @@ fn floating_button<'a>(
     )
     .width(Length::Fill)
     .into()
+}
+
+fn card<'a>(primary_card: bool, secondary_card: bool) -> Element<'a, Message> {
+    let mut row = Row::new().spacing(10);
+
+    if primary_card {
+        row = row.push(
+            Card::new(
+                Text::new("Primary"),
+                Text::new("Primary text"),
+            )
+            .on_close(Message::PrimaryCardClosed)
+            .style(iced_aw::style::card::Primary)
+        )
+    }
+
+    if secondary_card {
+        row = row.push(
+            Card::new(
+                Text::new("Secondary"),
+                Text::new("Secondary text"),
+            )
+            .on_close(Message::SecondaryCardClosed)
+            .style(iced_aw::style::card::Secondary)
+        )
+    }
+
+    row.into()
 }
