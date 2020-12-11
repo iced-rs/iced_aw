@@ -22,7 +22,7 @@ where
 
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
+        _defaults: &Self::Defaults,
         cursor_position: Point,
         style_sheet: &Self::Style,
         content: &iced_native::Element<'_, Message, Self>,
