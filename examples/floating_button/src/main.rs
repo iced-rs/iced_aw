@@ -1,7 +1,10 @@
 
-use iced::{button, Button, Element, Column, Container, Length, Text, Sandbox, Settings};
+use iced::{
+    button, scrollable, Button, Element, Container,
+    Length, Text, Sandbox, Scrollable, Settings
+};
 
-use iced_aw::{floating_button, FloatingButton};
+use iced_aw::{floating_button, FloatingButton, Icon, ICON_FONT};
 
 fn main() -> iced::Result {
     FloatingButtonExample::run(Settings::default())
@@ -13,7 +16,9 @@ enum Message {
 }
 
 struct FloatingButtonExample {
-    state: button::State,
+    button_state: button::State,
+    scrollable_state: scrollable::State,
+    lines: Vec<String>,
 }
 
 impl Sandbox for FloatingButtonExample {
@@ -21,7 +26,9 @@ impl Sandbox for FloatingButtonExample {
 
     fn new() -> Self {
         FloatingButtonExample {
-            state: button::State::new(),
+            button_state: button::State::new(),
+            scrollable_state: scrollable::State::new(),
+            lines: Vec::new(),
         }
     }
 
@@ -32,34 +39,78 @@ impl Sandbox for FloatingButtonExample {
     fn update(&mut self, message: Message) {
         match message {
             Message::ButtonPressed => {
-                println!("Hello World!");
+                self.lines.push("This is a newly added line.".into())
             }
         }
     }
 
     fn view(&mut self) -> Element<Message> {
-        FloatingButton::new(
-            Container::new(
-                Column::new()
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-                .push(Text::new("Line"))
-            )
-            .width(Length::Fill)
-            .height(Length::Fill),
-            Button::new(&mut self.state, Text::new("Press Me!"))
-                .style(iced_aw::style::button::Primary),
+        let scrollable_content = self.lines.iter().enumerate()
+            .fold(
+                Scrollable::new(&mut self.scrollable_state)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .padding(10),
+                |scroll, (i, line)| {
+                    scroll.push(Text::new(format!("{}. {}", i+1, line)))
+                }
+            );
+
+        let content = FloatingButton::new(
+            &mut self.button_state,
+            Container::new(scrollable_content)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .max_width(400)
+                .max_height(600)
+                .style(BorderedContainer),
+            |state| Button::new(
+                    state,
+                    Text::new(Icon::Plus)
+                        .width(Length::Shrink)
+                        .height(Length::Shrink)
+                        .font(ICON_FONT)
+                        .size(39)
+                )
+                //.style(iced_aw::style::button::Primary),
+                .on_press(Message::ButtonPressed)
+                .padding(5)
+                .style(RoundedButton),
         )
-        .on_press(Message::ButtonPressed)
         .anchor(floating_button::Anchor::SouthEast)
         .offset(20.0)
-        .hide(false)
-        .into()
+        .hide(false);
+
+        Container::new(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .padding(10)
+            .center_x()
+            .center_y()
+            .into()
+    }
+}
+
+struct RoundedButton;
+
+impl iced::button::StyleSheet for RoundedButton {
+    fn active(&self) -> iced::button::Style {
+        iced::button::Style {
+            border_radius: 25,
+            .. iced_aw::style::button::Primary.active()
+        }
+    }
+}
+
+struct BorderedContainer;
+
+impl iced::container::StyleSheet for BorderedContainer {
+    fn style(&self) -> iced::container::Style {
+        iced::container::Style {
+            border_width: 1,
+            border_color: iced::Color::BLACK,
+            border_radius: 10,
+            .. Default::default()
+        }
     }
 }

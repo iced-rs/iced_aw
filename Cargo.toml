@@ -18,6 +18,7 @@ button = []
 colors = []
 floating_button = ["button"]
 glow = [] # TODO
+icons = []
 tab_bar = []
 tabs = ["tab_bar"]
 

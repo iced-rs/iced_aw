@@ -13,6 +13,12 @@ pub mod style;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod platform {
+    #[doc(no_inline)]
+    #[cfg(feature = "icons")]
+    pub use {
+        crate::graphics::icons::ICON_FONT,
+        crate::graphics::icons::Icon,
+    };
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]

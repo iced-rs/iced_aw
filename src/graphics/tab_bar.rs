@@ -137,7 +137,7 @@ fn draw_tab(
             let is_mouse_over_cross = cross_bounds.contains(cursor_position);
 
             Primitive::Text {
-                content: format!("{}", super::icons::Icon::Cancel),
+                content: super::icons::Icon::X.into(),
                 font: super::icons::ICON_FONT,
                 size: cross_bounds.height
                         + if is_mouse_over_cross { 5.0 } else { 0.0 },

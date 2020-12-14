@@ -91,7 +91,7 @@ where
 
                 (
                     Primitive::Text {
-                        content: format!("{}", super::icons::Icon::Cancel),
+                        content:  super::icons::Icon::X.into(),
                         font: super::icons::ICON_FONT,
                         size: close_layout.bounds().height
                             + if is_mouse_over_close { 5.0 } else { 0.0 },
