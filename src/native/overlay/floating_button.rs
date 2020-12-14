@@ -5,8 +5,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    Button, Clipboard, Event, Layout, Point, Size,
-    Widget, event, layout::Limits, mouse, overlay
+    button, event, layout::Limits, overlay, Button, Clipboard, Event,
+    Layout, Point, Size, Widget, 
 };
 
 use crate::native::floating_button::{Anchor, Offset};
@@ -14,32 +14,36 @@ use crate::native::floating_button::{Anchor, Offset};
 /// The internal overlay of a [`FloatingButton`](crate::native::FloatingButton) for
 /// rendering a [`Button`](iced_native::button::Button) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingButtonOverlay<'a, Message: Clone, Renderer: iced_native::button::Renderer> {
-    button: &'a Button<'a, Message, Renderer>,
+pub struct FloatingButtonOverlay<'a, B, Message: Clone, Renderer: iced_native::button::Renderer>
+where
+    B: Fn(&'a mut button::State) -> Button<'a, Message, Renderer>,
+{
+    state: &'a mut button::State,
+    button: B,
     anchor: &'a Anchor,
     offset: &'a Offset,
-    on_press: Option<Message>,
 }
 
-impl<'a, Message, Renderer> FloatingButtonOverlay<'a, Message, Renderer>
+impl<'a, B, Message, Renderer> FloatingButtonOverlay<'a, B, Message, Renderer>
 where
+    B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: Clone + 'a,
-    Renderer: iced_native::button::Renderer + 'a
+    Renderer: iced_native::button::Renderer + 'a,
 {
     /// Creates a new [`FloatingButtonOverlay`] containing the given
     /// [`Button`](iced_native::button::Button).
     pub fn new(
-        button: &'a Button<'a, Message, Renderer>,
+        state: &'a mut button::State,
+        button: B,
         anchor: &'a Anchor,
         offset: &'a Offset,
-        on_press: Option<Message>,
     ) -> Self
     {
         FloatingButtonOverlay {
+            state,
             button,
             anchor,
             offset,
-            on_press,
         }
     }
 
@@ -53,13 +57,43 @@ where
     {
         overlay::Element::new(
             position,
-            Box::new(self)
+            Box::new(Overlay::new(self))
         )
     }
 }
 
+struct Overlay<'a, Message, Renderer: iced_native::button::Renderer> {
+    anchor: &'a Anchor,
+    offset: &'a Offset,
+    button: Button<'a, Message, Renderer>,
+}
+
+impl<'a, Message, Renderer: iced_native::button::Renderer> Overlay<'a, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a,
+{
+    pub fn new<B>(floating_button: FloatingButtonOverlay<'a, B, Message, Renderer>) -> Self
+    where
+        B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
+    {
+        let FloatingButtonOverlay {
+            state,
+            button,
+            anchor,
+            offset,
+        } = floating_button;
+
+        Self {
+            anchor,
+            offset,
+            button: button(state),
+        }
+    }
+}
+
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for FloatingButtonOverlay<'a, Message, Renderer>
+    for Overlay<'a, Message, Renderer>
 where
     Message: Clone + 'a,
     Renderer: iced_native::button::Renderer + 'a,
@@ -112,34 +146,19 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         messages: &mut Vec<Message>,
-        _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>
+        renderer: &Renderer,
+        clipboard: Option<&dyn Clipboard>
     ) -> event::Status {
-        // TODO: I'll burn in hell because of this...
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if self.on_press.is_some() {
-                    let bounds = layout.bounds();
-                    
-                    if bounds.contains(cursor_position) {
-                        return event::Status::Captured;
-                    }
-                }
-            },
-            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                if let Some(on_press) = self.on_press.clone() {
-                    let bounds = layout.bounds();
-                        
-                        if bounds.contains(cursor_position) {
-                            messages.push(on_press);
-                            return event::Status::Captured;
-                        }
-                }
-            },
-            _ => {}
-        }
+        let status = self.button.on_event(
+            event,
+            layout,
+            cursor_position,
+            messages,
+            renderer,
+            clipboard,
+        );
 
-        event::Status::Ignored
+        status
     }
 
     fn draw(

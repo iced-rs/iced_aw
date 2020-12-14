@@ -4,7 +4,7 @@
 use std::hash::Hash;
 
 use iced_native::{
-    Button, Clipboard, Element, Event, Layout, Length,
+    button, Button, Clipboard, Element, Event, Layout, Length,
     Point, Rectangle, Widget, event, overlay
 };
 
@@ -14,7 +14,7 @@ pub use anchor::Anchor;
 pub mod offset;
 pub use offset::Offset;
 
-use super::overlay::FloatingButtonOverlay;
+use super::overlay::floating_button::FloatingButtonOverlay;
 
 /// A floating button floating over some content.
 /// 
@@ -22,7 +22,7 @@ use super::overlay::FloatingButtonOverlay;
 /// ```
 /// # use iced_native::{button, Button, Column, renderer::Null, Text};
 /// #
-/// # pub type FloatingButton<'a, Message> = iced_aw::native::FloatingButton<'a, Message, Null>;
+/// # pub type FloatingButton<'a, B, Message> = iced_aw::native::FloatingButton<'a, B, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,
@@ -31,40 +31,46 @@ use super::overlay::FloatingButtonOverlay;
 /// 
 /// let content = Column::new();
 /// let floating_button = FloatingButton::new(
+///     &mut button_state,
 ///     content,
-///     Button::new(&mut button_state, Text::new("Press Me!"))
-/// )
-/// .on_press(Message::ButtonPressed);
+///     |state| Button::new(state, Text::new("Press Me!"))
+///         .on_press(Message::ButtonPressed)
+/// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingButton<'a, Message: Clone, Renderer: self::Renderer + iced_native::button::Renderer> {
+pub struct FloatingButton<'a, B, Message, Renderer>
+where
+    B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
+    Message: Clone,
+    Renderer: self::Renderer + iced_native::button::Renderer,
+{
+    state: &'a mut button::State,
     anchor: Anchor,
     offset: Offset,
     hidden: bool,
-    on_press: Option<Message>,
     underlay: Element<'a, Message, Renderer>,
-    button: Button<'a, Message, Renderer>,
+    button: B,
 }
 
-impl<'a, Message, Renderer> FloatingButton<'a, Message, Renderer>
+impl<'a, B, Message, Renderer> FloatingButton<'a, B, Message, Renderer>
 where
+    B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: Clone,
     Renderer: self::Renderer + iced_native::button::Renderer,
 {
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
     /// showing the given [`Button`](iced_native::button::Button).
-    pub fn new<U, B>(underlay: U, button: B) -> Self
+    pub fn new<U>(state: &'a mut button::State, underlay: U, button: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
-        B: Into<Button<'a, Message, Renderer>>,
     {
         FloatingButton {
+            state,
             anchor: Anchor::SouthEast,
             offset: 5.0.into(),
             hidden: false,
-            on_press: None,
             underlay: underlay.into(),
-            button: button.into(),
+            button: button,
         }
     }
 
@@ -90,21 +96,14 @@ where
         self
     }
 
-    /// Sets the `on_press` message for the [`Button`].
-    /// 
-    /// This is currently only a workaround.
-    pub fn on_press(mut self, msg: Message) -> Self {
-        self.on_press = Some(msg.clone());
-        self.button = self.button.on_press(msg);
-        self
-    }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer>
-    for FloatingButton<'_, Message, Renderer>
+impl<'a, B, Message, Renderer> Widget<Message, Renderer>
+    for FloatingButton<'a, B, Message, Renderer>
 where
-    Message: Clone,
-    Renderer: self::Renderer + iced_native::button::Renderer,
+    B: 'a + Fn(&mut button::State) -> Button<'_, Message, Renderer>,
+    Message: 'a + Clone,
+    Renderer: 'a + self::Renderer + iced_native::button::Renderer,
 {
     fn width(&self) -> Length {
         self.underlay.width()
@@ -168,7 +167,6 @@ where
         (self.offset.x as u32).hash(state);
         (self.offset.y as u32).hash(state);
         self.hidden.hash(state);
-        self.button.hash_layout(state);
         self.underlay.hash_layout(state);
     }
 
@@ -189,8 +187,13 @@ where
         );
 
         Some(
-            FloatingButtonOverlay::new(&self.button, &self.anchor, &self.offset, self.on_press.clone())
-                .overlay(position)
+            FloatingButtonOverlay::new(
+                &mut self.state,
+                &self.button,
+                &self.anchor,
+                &self.offset,
+            )
+            .overlay(position)
         )
     }
 }
@@ -224,13 +227,14 @@ impl Renderer for iced_native::renderer::Null {
     ) -> Self::Output {}
 }
 
-impl<'a, Message, Renderer> From<FloatingButton<'a, Message, Renderer>>
+impl<'a, B, Message, Renderer> From<FloatingButton<'a, B, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + iced_native::button::Renderer,
+    B: 'a + Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: 'a + Clone,
+    Renderer: 'a + self::Renderer + iced_native::button::Renderer,
 {
-    fn from(floating_button: FloatingButton<'a, Message, Renderer>) -> Self {
+    fn from(floating_button: FloatingButton<'a, B, Message, Renderer>) -> Self {
         Element::new(floating_button)
     }
 }

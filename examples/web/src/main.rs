@@ -184,11 +184,14 @@ fn floating_button<'a>(
 
     Container::new(
         FloatingButton::new(
+            button_state,
             scrollable,
-            Button::new(button_state, Text::new("Press Me!"))
-                .style(iced_aw::style::button::Primary),
+            /*Button::new(button_state, Text::new("Press Me!"))
+                .style(iced_aw::style::button::Primary),*/
+            |state| Button::new(state, Text::new("Press Me!"))
+                .on_press(Message::FloatingButtonPressed)
+                .style(iced_aw::style::button::Primary)
         )
-        .on_press(Message::FloatingButtonPressed)
         .anchor(Anchor::SouthEast)
         .offset([20.0, 5.0])
     )
