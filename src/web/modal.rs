@@ -4,7 +4,7 @@
 use iced_web::{css, Background, Bus, Css, Element, Widget};
 use dodrio::bumpalo;
 
-use crate::style::modal::{Style, StyleSheet};
+use crate::style::modal::StyleSheet;
 
 /// A modal content as an overlay.
 /// 

@@ -1,5 +1,5 @@
 use iced::{
-    button, Align, Button, Color, Container, Element, HorizontalAlignment, Length, Row, Sandbox, Settings, Text,
+    button, Align, Button, Container, Element, HorizontalAlignment, Length, Row, Sandbox, Settings, Text,
 };
 
 use iced_aw::{modal, Card, Modal};

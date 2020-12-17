@@ -3,9 +3,9 @@
 //! *This API requires the following crate features to be activated: badge*
 
 #[cfg(not(target_arch = "wasm32"))]
-use iced_native::{Background, Color};
+use iced_native::Background;
 #[cfg(target_arch = "wasm32")]
-use iced_web::{Background, Color};
+use iced_web::{Background};
 
 /// The appearance of a [`ModalOverlay`](crate::native::modal::ModalOverlay).
 #[allow(missing_debug_implementations)]
