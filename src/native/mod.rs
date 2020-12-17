@@ -17,6 +17,11 @@ pub mod floating_button;
 #[cfg(feature = "floating_button")]
 pub use floating_button::FloatingButton;
 
+#[cfg(feature = "modal")]
+pub mod modal;
+#[cfg(feature = "modal")]
+pub use modal::Modal;
+
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
 #[cfg(feature = "tabs")]

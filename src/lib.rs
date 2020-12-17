@@ -42,6 +42,13 @@ mod platform {
     };
 
     #[doc(no_inline)]
+    #[cfg(feature = "modal")]
+    pub use {
+        modal::Modal,
+        crate::graphics::modal,
+    };
+
+    #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use {
         tab_bar::{
@@ -80,6 +87,12 @@ mod platform {
     #[cfg(feature = "floating_button")]
     pub use crate::web::{
         floating_button, floating_button::FloatingButton,
+    };
+    
+    #[doc(no_inline)]
+    #[cfg(feature = "modal")]
+    pub use crate::web::{
+        modal, modal::Modal,
     };
 }
 

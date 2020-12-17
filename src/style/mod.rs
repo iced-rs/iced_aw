@@ -12,5 +12,8 @@ pub mod button;
 #[cfg(feature = "card")]
 pub mod card;
 
+#[cfg(feature = "modal")]
+pub mod modal;
+
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;

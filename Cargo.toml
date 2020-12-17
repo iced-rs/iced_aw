@@ -19,6 +19,7 @@ colors = []
 floating_button = ["button"]
 glow = [] # TODO
 icons = []
+modal = []
 tab_bar = []
 tabs = ["tab_bar"]
 
@@ -27,6 +28,7 @@ default = [
     "card",
     "colors",
     "floating_button",
+    "modal",
     "tab_bar",
     "tabs"
 ]

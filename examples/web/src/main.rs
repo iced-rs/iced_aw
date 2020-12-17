@@ -1,9 +1,9 @@
 use iced::{
-    button, scrollable, Align, Button, Column, Container, Element, Length,
-    Row, Sandbox, Scrollable, Settings, Text
+    button, scrollable, Align, Button, Column, Container, Element,
+    HorizontalAlignment, Length, Row, Sandbox, Scrollable, Settings, Text
 };
 
-use iced_aw::{floating_button::Anchor, Badge, Card, FloatingButton};
+use iced_aw::{floating_button::Anchor, modal, Badge, Card, FloatingButton, Modal};
 
 const TITLE_SIZE: u16 = 42;
 
@@ -18,6 +18,9 @@ struct Web {
     floating_button_state: button::State,
     primary_card: bool,
     secondary_card: bool,
+    open_modal_button: button::State,
+    primary_modal_state: modal::State<PrimaryModalState>,
+    //ferris_modal_state: modal::State<()>,
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +28,10 @@ enum Message {
     FloatingButtonPressed,
     PrimaryCardClosed,
     SecondaryCardClosed,
+    OpenPrimaryModal,
+    //OpenFerrisModal,
+    ClosePrimaryModal,
+    //CloseFerrisModal,
 }
 
 impl Sandbox for Web {
@@ -40,6 +47,9 @@ impl Sandbox for Web {
             floating_button_state: button::State::new(),
             primary_card: true,
             secondary_card: true,
+            open_modal_button: button::State::new(),
+            primary_modal_state: modal::State::new(PrimaryModalState::default()),
+            //ferris_modal_state: modal::State::new(()),
         }
     }
 
@@ -57,7 +67,11 @@ impl Sandbox for Web {
             },
             Message::SecondaryCardClosed => {
                 self.secondary_card = false;
-            }
+            },
+            Message::OpenPrimaryModal => self.primary_modal_state.show(true),
+            Message::ClosePrimaryModal => self.primary_modal_state.show(false),
+            //Message::OpenFerrisModal => self.ferris_modal_state.show(true),
+            //Message::CloseFerrisModal => self.ferris_modal_state.show(false)
         }
     }
 
@@ -88,9 +102,14 @@ impl Sandbox for Web {
             .push(
                 card(self.primary_card, self.secondary_card)
             )
+            .push(
+                Text::new("Modal:")
+                    .size(TITLE_SIZE)
+            )
+            .push(modal(&mut self.open_modal_button))
             ;
 
-        Container::new(
+        let container = Container::new(
             // Workaround: https://github.com/hecrj/iced/issues/643
             Column::new()
                 .push(content)
@@ -100,7 +119,32 @@ impl Sandbox for Web {
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x()
-        .center_y()
+        .center_y();
+        
+        
+        Modal::new(
+            &mut self.primary_modal_state,
+            container,
+            |state| Card::new(
+                Text::new("Modal"),
+                Text::new("This is a modal using the Card widget with its primary color style.")
+            )
+            .foot(
+                Button::new(
+                    &mut state.ok_button,
+                    Text::new("Ok")
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .width(Length::Fill)
+                )
+                .on_press(Message::ClosePrimaryModal)
+                //.style(iced_aw::style::button::Secondary)
+                .width(Length::Fill)
+            )
+            .max_width(300)
+            .style(iced_aw::style::card::Primary)
+            .into()
+        )
+        .backdrop(Message::ClosePrimaryModal)
         .into()
     }
 }
@@ -225,4 +269,18 @@ fn card<'a>(primary_card: bool, secondary_card: bool) -> Element<'a, Message> {
     }
 
     row.into()
+}
+
+#[derive(Default)]
+struct PrimaryModalState {
+    ok_button: button::State,
+}
+
+fn modal<'a>(button: &'a mut button::State) -> Element<'a, Message> {
+    Row::new()
+        .push(
+            Button::new(button, Text::new("Open modal!"))
+                .on_press(Message::OpenPrimaryModal)
+        )
+        .into()
 }
