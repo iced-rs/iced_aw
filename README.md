@@ -23,9 +23,9 @@ This crate is currently based on top of the master branch of Iced. Crates.io [re
 
 Currently planned widgets are:
 - [x] Badge
-- [ ] Floating Action Button
-- [ ] Card
-- [ ] Modal
+- [x] Floating Action Button
+- [x] Card
+- [x] Modal
 - [ ] Date Picker
 - [ ] Time Picker
 - [ ] Color Picker
@@ -45,7 +45,7 @@ TODO
 Please take a look into our examples on how to use badges.
 
 Enable this widget with the feature `badge`.
-To enable predefined style, enable the feature `colors`.
+To enable predefined styles, enable the feature `colors`.
 
 ### TabBar and Tabs
 
@@ -69,7 +69,14 @@ TODO
 
 ![Floating Action button concept drawing](./images/concept_drawings/floating_action_button.svg)
 
+![Floating Button showcase](./images/showcase/floating_button.png)
+
 </center>
+
+Please take a look into our examples on how to use floating buttons.
+
+Enable this widget with the feature `floating_button`.
+To enable predefined styles for buttons, enable the feature `colors`.
 
 ### Card
 
@@ -79,15 +86,30 @@ TODO
 
 ![Card concept drawing](./images/concept_drawings/card.svg)
 
+![Card showcase](./images/showcase/card.png)
+
+Please take a look into our examples on how to use cards.
+
+Enable this widget with the feature `card`.
+To enable predefined styles, enable the feature `colors`.
+
 </center>
 
 ### Modal
 
 TODO
+Modals are usefull for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
 
 <center>
 
 ![Modal concept drawing](./images/concept_drawings/modal.svg)
+
+![Modal showcase](./images/showcase/modal.png)
+
+Please take a look into our examples on how to use modals.
+
+Enable this widget with the feature `modal`.
+To enable predefined styles, enable the feature `colors`.
 
 </center>
 
@@ -121,8 +143,20 @@ TODO
 
 </center>
 
-## Color palette
+## Quickstart features
+
+Quickstart features are pretty handy to start and experiment having everything like colors or icons available. Nevertheless, it is recommended to disable these features once the GUI is ready for production and to only include the things you really need.
+
+### Color palette
 
 This crate add a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
 
 Enable colors with the feature `colors`.
+
+### Bootstrap icons
+
+Thanks to [Bootstrap](https://icons.getbootstrap.com), iced_aw now contains ~1,200 icons to be used in an Iced GUI.
+
+Enable icons with the feature `icons`.
+
+*Note: the icon font with ~1,200 weights around 0.5 MB. This features should only be used for experimenting with all the icons.*
