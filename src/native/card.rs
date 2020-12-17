@@ -30,8 +30,8 @@ use iced_native::{Clipboard, Element, Event, Layout, Length, Point, Size, Widget
 pub struct Card<'a, Message, Renderer: self::Renderer> {
     width: Length,
     height: Length,
-    max_width: u16,
-    max_height: u16,
+    max_width: u32,
+    max_height: u32,
     padding_head: f32,
     padding_body: f32,
     padding_foot: f32,
@@ -56,8 +56,8 @@ where
         Card {
             width: Length::Fill,
             height: Length::Shrink,
-            max_width: u16::MAX,
-            max_height: u16::MAX,
+            max_width: u32::MAX,
+            max_height: u32::MAX,
             padding_head: <Renderer as self::Renderer>::DEFAULT_PADDING,
             padding_body: <Renderer as self::Renderer>::DEFAULT_PADDING,
             padding_foot: <Renderer as self::Renderer>::DEFAULT_PADDING,
@@ -93,13 +93,13 @@ where
     }
 
     /// Sets the maximum width of the [`Card`](Card).
-    pub fn max_width(mut self, width: u16) -> Self {
+    pub fn max_width(mut self, width: u32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Sets the maximum height of the [`Card`](Card).
-    pub fn max_height(mut self, height: u16) -> Self {
+    pub fn max_height(mut self, height: u32) -> Self {
         self.max_height = height;
         self
     }
@@ -175,6 +175,9 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
+        let limits = limits.clone()
+            .max_width(self.max_width)
+            .max_height(self.max_height);
 
         let head_node = head_node(
             renderer,

@@ -1,4 +1,6 @@
-//! TODO
+//! Displays a [`Card`](Card).
+//! 
+//! *This API requires the following crate features to be activated: card*
 use iced_web::{css, Background, Bus, Color, Css, Element, Length, Widget};
 use dodrio::bumpalo;
 
@@ -6,7 +8,9 @@ pub use crate::style::card::{Style, StyleSheet};
 
 const DEFAULT_PADDING: f32 = 10.0;
 
-/// TODO
+/// A card consisting of a head, body and optional foot.
+/// 
+/// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct Card<'a, Message> {
     width: Length,
@@ -25,7 +29,8 @@ pub struct Card<'a, Message> {
 }
 
 impl<'a, Message> Card<'a, Message> {
-    /// TODO
+    
+    /// Creates a new [`Card`](Card) containing the given head and body.
     pub fn new<H, B>(head: H, body: B) -> Self
     where
         H: Into<Element<'a, Message>>,
@@ -201,13 +206,15 @@ where
                 bumpalo::format!(
                     in bump,
                     "background: {}; border-radius: {}px; width: {}; height: {}; \
-                    position: relative;",
+                    position: relative; max-width: {}px; max-height: {}px;",
                     match style.background {
                         Background::Color(color) => css::color(color),
                     },
                     style.border_radius,
                     css::length(self.width),
-                    css::length(self.height)
+                    css::length(self.height),
+                    self.max_width,
+                    self.max_height
                 )
                 .into_bump_str(),
             )
