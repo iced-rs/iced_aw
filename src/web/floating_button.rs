@@ -1,7 +1,7 @@
 //! Use a floating button to overlay a button over some content
 //! 
 //! *This API requires the following crate features to be activated: floating_button*
-use iced_web::{Bus, Button, Css, Element, Widget};
+use iced_web::{button, Bus, Button, Css, Element, Widget};
 use dodrio::bumpalo;
 
 pub use crate::style::button::*;
@@ -16,34 +16,36 @@ pub use offset::Offset;
 /// 
 /// TODO: Example
 #[allow(missing_debug_implementations)]
-pub struct FloatingButton<'a, Message> {
+pub struct FloatingButton<'a, Message>
+where
+    
+    Message: Clone,
+{
     anchor: Anchor,
     offset: Offset,
     hidden: bool,
-    on_press: Option<Message>,
     underlay: Element<'a, Message>,
     button: Button<'a, Message>,
 }
 
 impl<'a, Message> FloatingButton<'a, Message>
-where 
+where
     Message: Clone,
 {
 
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
     /// showing the given [`Button`](iced_native::button::Button).
-    pub fn new<U, B>(underlay: U, button: B) -> Self
+    pub fn new<U, B>(state: &'a mut button::State, underlay: U, button: B) -> Self
     where
         U: Into<Element<'a, Message>>,
-        B: Into<Button<'a, Message>>,
+        B: Fn(&mut button::State) -> Button<'_, Message>,
     {
         FloatingButton {
             anchor: Anchor::SouthEast,
             offset: 5.0.into(),
             hidden: false,
-            on_press: None,
             underlay: underlay.into(),
-            button: button.into(),
+            button: button(state),
         }
     }
 
@@ -66,15 +68,6 @@ where
     /// [`FloatingButton`](FloatingButton).
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;
-        self
-    }
-
-    /// Sets the `on_press` message for the [`Button`].
-    /// 
-    /// This is currently only a workaround.
-   pub fn on_press(mut self, msg: Message) -> Self {
-        self.on_press = Some(msg.clone());
-        self.button = self.button.on_press(msg);
         self
     }
 }
