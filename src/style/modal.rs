@@ -7,22 +7,22 @@ use iced_native::Background;
 #[cfg(target_arch = "wasm32")]
 use iced_web::{Background};
 
-/// The appearance of a [`ModalOverlay`](crate::native::modal::ModalOverlay).
+/// The appearance of a [`Modal`](crate::native::Modal).
 #[allow(missing_debug_implementations)]
 pub struct Style {
-    /// The backgronud of the [`ModalOverlay`](crate::native::modal::ModalOverlay).
+    /// The backgronud of the [`Modal`](crate::native::Modal).
     /// 
     /// This is used to color the backdrop of the modal.
     pub background: Background,
 }
 
-/// The appearance of a [`ModalOverlay`](crate::native::modal::ModalOverlay).
+/// The appearance of a [`Modal`](crate::native::Modal).
 pub trait StyleSheet {
-    /// The normal appearance of a [`ModalOverlay`](crate::native::modal::ModalOverlay).
+    /// The normal appearance of a [`Modal`](crate::native::Modal).
     fn active(&self) -> Style;
 }
 
-/// The default appearance of a [`ModalOverlay`](crate::native::modal::ModalOverlay).
+/// The default appearance of a [`Modal`](crate::native::Modal).
 #[derive(Debug)]
 pub struct Default;
 

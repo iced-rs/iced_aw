@@ -438,7 +438,7 @@ where
 /// The renderer of a [`Card`](Card).
 /// 
 /// Your renderer will need to implement this trait before being
-/// able to use a [`TabBar`](TabBar) in your user interface.
+/// able to use a [`Cary`](Card) in your user interface.
 pub trait Renderer: iced_native::Renderer {
     
     /// The style supported by this renderer.

@@ -46,7 +46,8 @@ where
         }
     }
 
-    /// Turn this [`ModalOverlay`] into an [`Overlay`](Overlay).
+    /// Turn this [`ModalOverlay`] into an overlay
+    /// [`Element`](iced_native::overlay::Element).
     pub fn overlay(
         self,
         position: Point,
@@ -209,7 +210,7 @@ where
 /// The renderer of a [`ModalOverlay`](ModalOverlay).
 /// 
 /// Your renderer will need to implement this trait before being
-/// able to use a [`Modal`](Modal) in your user interface.
+/// able to use a [`Modal`](crate::native::Modal) in your user interface.
 pub trait Renderer: iced_native::Renderer {
 
     /// The style supported by this renderer.
@@ -226,6 +227,7 @@ pub trait Renderer: iced_native::Renderer {
     ) -> Self::Output;
 }
 
+#[cfg(debug_assertions)]
 impl Renderer for iced_native::renderer::Null {
     type Style = ();
 

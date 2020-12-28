@@ -1,4 +1,4 @@
-//! Displays a [`Card`](Card).
+//! Displays a [`Card`](crate::native::Card).
 //! 
 //! *This API requires the following crate features to be activated: card*
 #[cfg(not(target_arch = "wasm32"))]
@@ -102,7 +102,7 @@ mod predefined {
     };
 
     /// The appearance with the [`primary`](colors::PRIMARY) head background of
-    /// a [`Card`](crate::native::badge::Bagde).
+    /// a [`Card`](crate::native::Card).
     #[derive(Clone, Copy, Debug)]
     pub struct Primary;
 
