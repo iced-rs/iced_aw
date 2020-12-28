@@ -1,11 +1,29 @@
 use iced::{
-    button, scrollable, Align, Button, Column, Container, Element,
-    HorizontalAlignment, Length, Row, Sandbox, Scrollable, Settings, Text
+    button, scrollable, Button, Column, Container, Element,
+    HorizontalAlignment, Length, Sandbox, Scrollable, Settings, Text
 };
 
-use iced_aw::{floating_button::Anchor, modal, Badge, Card, FloatingButton, Modal};
+use iced_aw::{modal, Card, Modal};
 
-const TITLE_SIZE: u16 = 42;
+mod badge_section;
+use badge_section::BadgeSection;
+
+mod floating_button_section;
+use floating_button_section::FloatingButtonSection;
+
+mod card_section;
+use card_section::CardSection;
+
+mod modal_section;
+use modal_section::ModalSection;
+
+mod date_picker_section;
+use date_picker_section::DatePickerSection;
+
+//mod picklist_section;
+//use picklist_section::PickListSection;
+
+const HEADER_SIZE: u16 = 42;
 
 fn main() -> iced::Result {
     Web::run(Settings::default())
@@ -13,25 +31,23 @@ fn main() -> iced::Result {
 
 struct Web {
     scrollable_state: scrollable::State,
-    floating_button_lines: Vec<String>,
-    floating_button_scroll: scrollable::State,
-    floating_button_state: button::State,
-    primary_card: bool,
-    secondary_card: bool,
-    open_modal_button: button::State,
     primary_modal_state: modal::State<PrimaryModalState>,
-    //ferris_modal_state: modal::State<()>,
+    badge_section: BadgeSection,
+    floating_button_section: FloatingButtonSection,
+    card_section: CardSection,
+    modal_section: ModalSection,
+    date_picker_section: DatePickerSection,
+    //picklist_section: PickListSection,
 }
 
 #[derive(Clone, Debug)]
 enum Message {
-    FloatingButtonPressed,
-    PrimaryCardClosed,
-    SecondaryCardClosed,
-    OpenPrimaryModal,
-    //OpenFerrisModal,
     ClosePrimaryModal,
-    //CloseFerrisModal,
+    OpenPrimaryModal,
+    FloatingButton(floating_button_section::Message),
+    Card(card_section::Message),
+    DatePicker(date_picker_section::Message),
+    //PickList(picklist_section::Message),
 }
 
 impl Sandbox for Web {
@@ -41,15 +57,13 @@ impl Sandbox for Web {
     fn new() -> Self {
         Self {
             scrollable_state: scrollable::State::new(),
-            //floating_button_lines: Vec::new(),
-            floating_button_lines: vec!("Hello!".into(), "World".into()),
-            floating_button_scroll: scrollable::State::new(),
-            floating_button_state: button::State::new(),
-            primary_card: true,
-            secondary_card: true,
-            open_modal_button: button::State::new(),
             primary_modal_state: modal::State::new(PrimaryModalState::default()),
-            //ferris_modal_state: modal::State::new(()),
+            badge_section: BadgeSection::new(),
+            floating_button_section: FloatingButtonSection::new(),
+            card_section: CardSection::new(),
+            modal_section: ModalSection::new(),
+            date_picker_section: DatePickerSection::new(),
+            //picklist_section: PickListSection::new(),
         }
     }
 
@@ -59,19 +73,12 @@ impl Sandbox for Web {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::FloatingButtonPressed => {
-                self.floating_button_lines.push("This is a newly added line.".into());
-            },
-            Message::PrimaryCardClosed => {
-                self.primary_card = false;
-            },
-            Message::SecondaryCardClosed => {
-                self.secondary_card = false;
-            },
-            Message::OpenPrimaryModal => self.primary_modal_state.show(true),
             Message::ClosePrimaryModal => self.primary_modal_state.show(false),
-            //Message::OpenFerrisModal => self.ferris_modal_state.show(true),
-            //Message::CloseFerrisModal => self.ferris_modal_state.show(false)
+            Message::OpenPrimaryModal => self.primary_modal_state.show(true),
+            Message::FloatingButton(msg) => self.floating_button_section.update(msg),
+            Message::Card(msg) => self.card_section.update(msg),
+            Message::DatePicker(msg) => self.date_picker_section.update(msg),
+            //Message::PickList(msg) => self.picklist_section.update(msg),
         }
     }
 
@@ -79,34 +86,12 @@ impl Sandbox for Web {
         let content = Scrollable::new(&mut self.scrollable_state)
             .spacing(20)
             .max_width(600)
-            .push(
-                Text::new("Badge:")
-                    .size(TITLE_SIZE)
-            )
-            .push(badge())
-            .push(
-                Text::new("Floating Button:")
-                    .size(TITLE_SIZE)
-            )
-            .push(
-                floating_button(
-                    &self.floating_button_lines,
-                    &mut self.floating_button_scroll,
-                    &mut self.floating_button_state,
-                )
-            )
-            .push(
-                Text::new("Card:")
-                    .size(TITLE_SIZE)
-            )
-            .push(
-                card(self.primary_card, self.secondary_card)
-            )
-            .push(
-                Text::new("Modal:")
-                    .size(TITLE_SIZE)
-            )
-            .push(modal(&mut self.open_modal_button))
+            .push(self.badge_section.view())
+            .push(self.floating_button_section.view())
+            .push(self.card_section.view())
+            .push(self.modal_section.view())
+            .push(self.date_picker_section.view())
+            //.push(self.picklist_section.view())
             ;
 
         let container = Container::new(
@@ -114,161 +99,41 @@ impl Sandbox for Web {
             Column::new()
                 .push(content)
                 .max_width(600)
-            
         )
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x()
         .center_y();
-        
-        
+
         Modal::new(
             &mut self.primary_modal_state,
             container,
-            |state| Card::new(
-                Text::new("Modal"),
-                Text::new("This is a modal using the Card widget with its primary color style.")
-            )
-            .foot(
-                Button::new(
-                    &mut state.ok_button,
-                    Text::new("Ok")
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .width(Length::Fill)
-                )
-                .on_press(Message::ClosePrimaryModal)
-                //.style(iced_aw::style::button::Secondary)
-                .width(Length::Fill)
-            )
-            .max_width(300)
-            .style(iced_aw::style::card::Primary)
-            .into()
+            primary_modal,
         )
         .backdrop(Message::ClosePrimaryModal)
         .into()
     }
 }
 
-fn badge<'a>() -> Element<'a, Message> {
-    Column::new()
-        .spacing(10)
-        .push(
-            Row::new()
-                .align_items(Align::Center)
-                .spacing(10)
-                .push(
-                    Badge::new(Text::new("Default"))
-                        .style(iced_aw::style::badge::Default)
-                )
-                .push(
-                    Badge::new(Text::new("Primary"))
-                        .style(iced_aw::style::badge::Primary)
-                )
-                .push(
-                    Badge::new(Text::new("Secondary"))
-                        .style(iced_aw::style::badge::Secondary)
-                )
-                .push(
-                    Badge::new(Text::new("Success"))
-                        .style(iced_aw::style::badge::Success)
-                )
-                .push(
-                    Badge::new(Text::new("Danger"))
-                        .style(iced_aw::style::badge::Danger)
-                )
-        )
-        .push(
-            Row::new()
-                .spacing(10)
-                .align_items(Align::Center)
-                .push(
-                    Badge::new(Text::new("Warning"))
-                        .style(iced_aw::style::badge::Warning)
-                )
-                .push(
-                    Badge::new(Text::new("Info"))
-                        .style(iced_aw::style::badge::Info)
-                )
-                .push(
-                    Badge::new(Text::new("Dark"))
-                        .style(iced_aw::style::badge::Dark)
-                )
-                .push(
-                    Badge::new(Text::new("Light"))
-                        .style(iced_aw::style::badge::Light)
-                )
-                .push(
-                    Badge::new(Text::new("White"))
-                        .style(iced_aw::style::badge::White)
-                )
-        )
-        .into()
-}
+trait Section {
+    type Message: 'static;
 
-fn floating_button<'a>(
-    lines: &[String],
-    scrollable_state: &'a mut scrollable::State,
-    button_state: &'a mut button::State,
-) -> Element<'a, Message> {
+    fn header(&self) -> String;
 
-    let column = lines.iter()
-        .fold(
-            Column::new(),
-            |col, line| {
-                col.push(Text::new(line.to_owned()))
-            }
-        )
-        .width(Length::Fill);
-
-    let scrollable = Scrollable::new(scrollable_state)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .max_height(100)
-        .push(column);
-
-    Container::new(
-        FloatingButton::new(
-            button_state,
-            scrollable,
-            /*Button::new(button_state, Text::new("Press Me!"))
-                .style(iced_aw::style::button::Primary),*/
-            |state| Button::new(state, Text::new("Press Me!"))
-                .on_press(Message::FloatingButtonPressed)
-                .style(iced_aw::style::button::Primary)
-        )
-        .anchor(Anchor::SouthEast)
-        .offset([20.0, 5.0])
-    )
-    .width(Length::Fill)
-    .into()
-}
-
-fn card<'a>(primary_card: bool, secondary_card: bool) -> Element<'a, Message> {
-    let mut row = Row::new().spacing(10);
-
-    if primary_card {
-        row = row.push(
-            Card::new(
-                Text::new("Primary"),
-                Text::new("Primary text"),
+    fn view(&mut self) -> Element<'_, Self::Message> {
+        Column::new()
+            .spacing(10)
+            .push(
+                Text::new(format!("{}:", self.header()))
+                    .size(HEADER_SIZE)
             )
-            .on_close(Message::PrimaryCardClosed)
-            .style(iced_aw::style::card::Primary)
-        )
+            .push(
+                self.content()
+            )
+            .into()
     }
 
-    if secondary_card {
-        row = row.push(
-            Card::new(
-                Text::new("Secondary"),
-                Text::new("Secondary text"),
-            )
-            .on_close(Message::SecondaryCardClosed)
-            .style(iced_aw::style::card::Secondary)
-        )
-    }
-
-    row.into()
+    fn content(&mut self) -> Element<'_, Self::Message>;
 }
 
 #[derive(Default)]
@@ -276,11 +141,23 @@ struct PrimaryModalState {
     ok_button: button::State,
 }
 
-fn modal<'a>(button: &'a mut button::State) -> Element<'a, Message> {
-    Row::new()
-        .push(
-            Button::new(button, Text::new("Open modal!"))
-                .on_press(Message::OpenPrimaryModal)
+fn primary_modal<'a>(state: &'a mut PrimaryModalState) -> Element<'a, Message> {
+    Card::new(
+        Text::new("Modal"),
+        Text::new("This is a modal using the Card widget with its primary color style.")
+    )
+    .foot(
+        Button::new(
+            &mut state.ok_button,
+            Text::new("Ok")
+                .horizontal_alignment(HorizontalAlignment::Center)
+                .width(Length::Fill)
         )
-        .into()
+        .on_press(Message::ClosePrimaryModal)
+        //.style(iced_aw::style::button::Secondary)
+        .width(Length::Fill)
+    )
+    .max_width(300)
+    .style(iced_aw::style::card::Primary)
+    .into()
 }

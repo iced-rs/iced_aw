@@ -10,6 +10,7 @@ pub mod graphics;
 pub mod native;
 
 pub mod style;
+pub mod core;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod platform {
@@ -33,6 +34,13 @@ mod platform {
         card::Card,
         crate::graphics::card,
     };
+    
+    #[doc(no_inline)]
+    #[cfg(feature = "date_picker")]
+    pub use {
+        date_picker::DatePicker,
+        crate::graphics::date_picker,
+    };
 
     #[doc(no_inline)]
     #[cfg(feature = "floating_button")]
@@ -40,6 +48,13 @@ mod platform {
         floating_button::FloatingButton,
         crate::graphics::floating_button,
     };
+    
+    /*#[doc(no_inline)]
+    #[cfg(feature = "icon_text")]
+    use {
+        icon_text::IconText,
+        crate::graphics::icon_text,
+    };*/
 
     #[doc(no_inline)]
     #[cfg(feature = "modal")]
@@ -81,6 +96,12 @@ mod platform {
     #[cfg(feature = "card")]
     pub use crate::web::{
         card, card::Card,
+    };
+    
+    #[doc(no_inline)]
+    #[cfg(feature = "date_picker")]
+    pub use crate::web::{
+        date_picker, date_picker::DatePicker,
     };
 
     #[doc(no_inline)]

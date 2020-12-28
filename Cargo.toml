@@ -13,11 +13,13 @@ categories = ["gui"]
 
 [features]
 badge = []
-card = []
 button = []
+card = []
 colors = []
+date_picker = ["chrono", "lazy_static", "icon_text"]
 floating_button = ["button"]
 glow = [] # TODO
+icon_text = []
 icons = []
 modal = []
 tab_bar = []
@@ -27,6 +29,7 @@ default = [
     "badge",
     "card",
     "colors",
+    "date_picker",
     "floating_button",
     "modal",
     "tab_bar",
@@ -35,6 +38,8 @@ default = [
 
 [dependencies]
 iced_style = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+chrono = { version = "0.4.19", optional = true }
+lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 #iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
@@ -44,3 +49,7 @@ iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
 dodrio = "0.2.0"
+wasm-bindgen = "0.2.69"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
+version = "0.3.46"

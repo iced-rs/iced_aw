@@ -10,6 +10,11 @@ pub mod card;
 #[cfg(feature = "card")]
 pub use card::Card;
 
+#[cfg(feature = "date_picker")]
+pub mod date_picker;
+#[cfg(feature = "date_picker")]
+pub use date_picker::DatePicker;
+
 #[cfg(feature = "floating_button")]
 pub mod floating_button;
 #[cfg(feature = "floating_button")]

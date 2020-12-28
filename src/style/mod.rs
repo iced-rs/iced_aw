@@ -12,6 +12,9 @@ pub mod button;
 #[cfg(feature = "card")]
 pub mod card;
 
+#[cfg(feature = "date_picker")]
+pub mod date_picker;
+
 #[cfg(feature = "modal")]
 pub mod modal;
 
