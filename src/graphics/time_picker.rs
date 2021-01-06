@@ -230,7 +230,7 @@ fn clock(
 
                     // TODO: 24/12 Hour
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), 10.0), style.clock_number_background_selected);
+                        frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.clock_number_background_selected);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                     }
 
@@ -268,7 +268,7 @@ fn clock(
                     let selected = time.minute() == i as u32;
 
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), 5.0), style.clock_number_background_selected);
+                        frame.fill(&Path::circle(p.clone(), number_size*0.5), style.clock_number_background_selected);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                     }
 
@@ -289,7 +289,7 @@ fn clock(
 
                         frame.fill_text(text);
                     } else {
-                        let circle = Path::circle(p.clone(), 1.0);
+                        let circle = Path::circle(p.clone(), number_size*0.1);
                         frame.fill(&circle, style.clock_dots_color);
                     }
                 });
@@ -301,7 +301,7 @@ fn clock(
                         let selected = time.second() == i as u32;
 
                         if selected {
-                            frame.fill(&Path::circle(p.clone(), 5.0), style.clock_number_background_selected);
+                            frame.fill(&Path::circle(p.clone(), number_size*0.5), style.clock_number_background_selected);
                             frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                         }
 
@@ -322,7 +322,7 @@ fn clock(
 
                             frame.fill_text(text);
                         } else {
-                            let circle = Path::circle(p.clone(), 1.0);
+                            let circle = Path::circle(p.clone(), number_size*0.1);
                             frame.fill(&circle, style.clock_dots_color);
                         }
                     })
