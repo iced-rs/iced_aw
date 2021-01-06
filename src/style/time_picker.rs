@@ -1,56 +1,65 @@
-//! TODO
+//! Use a time picker as an input element for picking times.
+//! 
+//! *This API requires the following crate features to be activated: time_picker*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
 #[cfg(target_arch = "wasm32")]
 use iced_web::{Background, Color};
 
-/// TODO
+/// The appearance of a [`TimePicker`](crate::native::TimePicker).
 #[allow(missing_debug_implementations)]
 pub struct Style {
-    /// TODO
+    /// The background of the [`TimePicker`](crate::native::TimePicker).
     pub background: Background,
 
-    /// TODO
+    /// The border radius of the [`TimePicker`](crate::native::TimePicker).
     pub border_radius: f32,
 
-    /// TODO
+    /// The border width of the [`TimePicker`](crate::native::TimePicker).
     pub border_width: f32,
 
-    /// TODO
+    /// The border color of the [`TimePicker`](crate::native::TimePicker).
     pub border_color: Color,
 
-    /// TODO
+    /// The text color of the [`TimePicker`](crate::native::TimePicker).
     pub text_color: Color,
 
-    /// TODO
+    /// The color of the clock numbers of the
+    /// [`TimePicker`](crate::native::TimePicker).
     pub clock_number_color: Color,
 
-    /// TODO
+    /// The background of the clock numbers of the
+    /// [`TimePicker`](crate::native::TimePicker).
     pub clock_number_background: Color,
 
-    /// TODO
+    /// The color of the dots on the clock of the
+    /// [`TimePicker`](crate::native::TimePicker).
     pub clock_dots_color: Color,
 
-    /// TODO
+    /// The color of the hands of the clock of the
+    /// [`TimePicker`](crate::native::TimePicker).
     pub clock_hand_color: Color,
 
-    /// TODO
+    /// The with of the hands of the clock of the
+    /// [`TimePicker](crate::native::TimePicker).
     pub clock_hand_width: f32,
 }
 
-/// The appearance of a [`DatePicker`](crate::native::DatePicker).
+/// The appearance of a [`TimePicker`](crate::native::TimePicker).
 pub trait StyleSheet {
-    /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
+    /// The normal appearance of a [`TimePicker`](crate::native::TimePicker).
     fn active(&self) -> Style;
 
-    /// TODO
+    /// The appearance when something is hovered of the
+    /// [`TimePicker`](crate::native::TimePicker).
     fn hovered(&self) -> Style;
 
-    /// TODO
+    /// The appearance when something is selected of the
+    /// [`TimePicker`](crate::native::TimePicker)
     fn selected(&self) -> Style;
 }
 
-/// TODO
+/// The default appearance of the [`TimePicker`](crate::native::TimePicker)
 #[derive(Clone, Debug)]
 pub struct Default;
 

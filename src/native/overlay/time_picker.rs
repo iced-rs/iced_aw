@@ -1,4 +1,6 @@
-//! TODO
+//! Use a time picker as an input element for picking times.
+//! 
+//! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
 use crate::{core::clock::{HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, graphics::icons::Icon, native::{IconText, icon_text, time_picker::{State, Time, time::Period}}};
@@ -10,7 +12,7 @@ const PADDING: u16 = 10;
 const SPACING: u16 = 15;
 const BUTTON_SPACING: u16 = 5;
 
-/// TODO
+/// The overlay of the [`TimePicker`](crate::native::TimePicker).
 #[allow(missing_debug_implementations)]
 pub struct TimePickerOverlay<'a, Message, Renderer>
 where
@@ -34,7 +36,8 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + button::Renderer + column::Renderer + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
 {
-    /// TODO
+    /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
+    /// position.
     pub fn new(
         state: &'a mut State,
         on_cancel: Message,
@@ -81,7 +84,7 @@ where
         }
     }
 
-    /// Turn this [`DatePickerOverlay`] into an overlay
+    /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(
@@ -90,6 +93,7 @@ where
         )
     }
 
+    /// The event handling for the clock.
     fn on_event_clock (
         &mut self,
         event: Event,
@@ -194,6 +198,7 @@ where
         clock_status
     }
 
+    /// The event handling for the digital clock.
     fn on_event_digital_clock (
         &mut self,
         event: Event,
@@ -642,12 +647,17 @@ where
     }
 }
 
-/// TODO
+/// The renderer of a [`TimePickerOverlay`](TimePickerOverlay).
+/// 
+/// Your renderer fill need to implement this trait before being
+/// able to use a [`TimePicker`](crate::native::TimePicker) in your user
+/// interface.
 pub trait Renderer: iced_native::Renderer {
-    /// TODO
+
+    /// The style supported by this renderer.
     type Style: Default;
 
-    /// TODO
+    /// Draws a [`TimePickerOverlay`](TimePickerOverlay).
     fn draw<Message>(
         &mut self,
         defaults: &Self::Defaults,
@@ -661,4 +671,23 @@ pub trait Renderer: iced_native::Renderer {
         show_seconds: bool,
         layout: Layout<'_>,
     ) -> Self::Output;
+}
+
+#[cfg(debug_assertions)]
+impl Renderer for iced_native::renderer::Null {
+    type Style = ();
+
+    fn draw<Message>(
+        &mut self,
+        _defaults: &Self::Defaults,
+        _cursor_position: Point,
+        _style_sheet: &Self::Style,
+        _time: &NaiveTime,
+        _clock_cache: &canvas::Cache,
+        _cancel_button: &Element<'_, Message, Self>,
+        _submit_button: &Element<'_, Message, Self>,
+        _use_24h: bool,
+        _show_seconds: bool,
+        _layout: Layout<'_>,
+    ) -> Self::Output {}
 }

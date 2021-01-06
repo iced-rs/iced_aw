@@ -1,5 +1,6 @@
-//! TODO
-
+//! Use a time picker as an input element for picking times.
+//! 
+//! *This API requires the following crate features to be activated: time_picker*
 use std::collections::HashMap;
 
 use crate::{core::clock::{self, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, style::time_picker::{Style, StyleSheet}};
@@ -16,7 +17,9 @@ use super::icons::{ICON_FONT, Icon};
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
 const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
-/// TODO
+/// An input element for picking times.
+/// 
+/// This is an alias of an `iced_native` TimePicker with an `iced_wgpu::Renderer`.
 pub type TimePicker<'a, Message, Backend> = 
     time_picker::TimePicker<'a, Message, Renderer<Backend>>;
 
@@ -128,6 +131,7 @@ where
     }
 }
 
+/// Draws the analog clock.
 fn clock(
     layout: iced_native::Layout<'_>,
     time: &NaiveTime,
@@ -366,6 +370,7 @@ fn clock(
     (clock, clock_mouse_interaction)
 }
 
+/// Draws the digital clock.
 fn digital_clock(
     layout: iced_native::Layout<'_>,
     time: &NaiveTime,

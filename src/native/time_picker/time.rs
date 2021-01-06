@@ -1,35 +1,36 @@
-//! TODO
-
+//! Use a time picker as an input element for picking times.
+//! 
+//! *This API requires the following crate features to be activated: time_picker*
 use std::fmt::Display;
 
-/// TODO
+/// The time value
 #[derive(Clone, Debug)]
 pub enum Time {
-    /// TODO
+    /// The time value containing hour, minute and period.
     Hm {
-        /// TODO
+        /// The hour value.
         hour: u32,
-        /// TODO
+        /// The minute value.
         minute: u32,
-        /// TODO
+        /// The current period of the time.
         period: Period,
     },
 
-    /// TODO
+    /// The time value containing hour, minute, second and period.
     Hms {
-        /// TODO
+        /// The hour value.
         hour: u32,
-        /// TODO
+        /// The minute value.
         minute: u32,
-        /// TODO
+        /// The second value.
         second: u32,
-        /// TODO
+        /// The current period of the time.
         period: Period,
     },
 }
 
 impl Time {
-    /// TODO
+    /// The default time `00:00` with the given period.
     pub fn default_hm(period: Period) -> Self {
         Time::Hm {
             hour: 0,
@@ -38,7 +39,7 @@ impl Time {
         }
     }
 
-    /// TODO
+    /// The default time `00:00:00` with the given period.
     pub fn default_hms(period: Period) -> Self {
         Time::Hms {
             hour: 0,
@@ -62,14 +63,14 @@ impl Display for Time {
     }
 }
 
-/// TODO
+/// The current period of the clock
 #[derive(Clone, Debug, PartialEq)]
 pub enum Period {
-    /// TODO
+    /// No period - using 24 hour format.
     H24,
-    /// TODO
+    /// Ante meridiem: Before noon.
     Am,
-    /// TODO
+    /// Post meridiem: After noon.
     Pm,
 }
 

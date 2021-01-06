@@ -1,5 +1,6 @@
-//! TODO
-
+//! Use a time picker as an input element for picking times.
+//! 
+//! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
 use chrono::{Local, NaiveTime};
@@ -11,7 +12,32 @@ pub use super::overlay::time_picker::Renderer;
 
 pub mod time;
 pub use time::{Time, Period};
-/// TODO
+/// An input element for picking times.
+///
+/// # Example
+/// ```
+/// # use iced_aw::time_picker;
+/// # use iced_native::{Button, Text, button, renderer::Null};
+/// # 
+/// # pub type TimePicker<'a, Message> = iced_aw::native::TimePicker<'a, Message, Null>;
+/// #[derive(Clone, Debug)]
+/// enum Message {
+///     Open,
+///     Cancel,
+///     Submit(time_picker::Time),
+/// }
+/// 
+/// let mut button_state = button::State::new();
+/// let mut state = time_picker::State::now();
+/// state.show(true);
+///
+/// let time_picker = TimePicker::new(
+///     &mut state,
+///     Button::new(&mut button_state, Text::new("Pick time"))
+///         .on_press(Message::Open),
+///     Message::Cancel,
+///     Message::Submit,
+/// );
 #[allow(missing_debug_implementations)]
 pub struct TimePicker<'a, Message, Renderer>
 where
@@ -32,7 +58,7 @@ where
     Message: Clone,
     Renderer: time_picker::Renderer + button::Renderer,
 {
-    /// TODO
+    /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
     pub fn new<U, F>(
         state: &'a mut State,
         underlay: U,
@@ -54,13 +80,13 @@ where
         }
     }
 
-    /// TODO
+    /// Use 24 hour format instead of AM/PM.
     pub fn use_24h(mut self) -> Self {
         self.use_24h = true;
         self
     }
 
-    /// TODO
+    /// Enables the picker to also pick seconds.
     pub fn show_seconds(mut self) -> Self {
         self.show_seconds = true;
         self
@@ -76,7 +102,7 @@ where
     }
 }
 
-/// TODO
+/// The state of the [`TimePicker`](TimePicker) / [`TimePickerOverlay`](TimePickerOverlay).
 #[derive(Debug)]
 pub struct State {
     pub(crate) show: bool,
@@ -88,7 +114,7 @@ pub struct State {
 }
 
 impl State {
-    /// TODO
+    /// Creates a new [`State`](State) with the current time.
     pub fn now() -> Self {
         State {
             show: false,
@@ -100,12 +126,12 @@ impl State {
         }
     }
 
-    /// TODO
+    /// Sets the visibility of the [`TimePickerOverlay`](TimePickerOverlay).
     pub fn show(&mut self, b: bool) {
         self.show = b;
     }
 
-    /// TODO
+    /// Resets the time of the state to the current time.
     pub fn reset(&mut self) {
         self.clock_cache.clear();
         self.time = Local::now().naive_local().time();

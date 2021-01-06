@@ -4,30 +4,32 @@ use std::fmt::Display;
 
 use iced_graphics::Point;
 
-/// TODO
+/// The size of the period on the clock based on the clock's size.
 pub const PERIOD_PERCENTAGE: f32 = 0.1;
 
-/// TODO
+/// The radius of the hour on the clock based on the clock's size.
 pub const HOUR_RADIUS_PERCENTAGE: f32 = 0.4;
 
-/// TODO
+/// The radius of the minute on the clock based on the clock's size.
 pub const MINUTE_RADIUS_PERCENTAGE: f32 = 0.65;
 
-/// TODO
+/// The radius of the second on the clock based on the clock's size.
 pub const SECOND_RADIUS_PERCENTAGE: f32 = 0.9;
 
-/// TODO
+/// The radius of the hour without the seconds on the clock based on the
+/// clock's size.
 pub const HOUR_RADIUS_PERCENTAGE_NO_SECONDS: f32 = 0.5;
 
-/// TODO
+/// The radius of the minute without the seconds on the clock based on the
+/// clock's size.
 pub const MINUTE_RADIUS_PERCENTAGE_NO_SECONDS: f32 = 0.9;
 
-/// TODO
+/// The current period of the clock.
 #[derive(Clone, Debug)]
 pub enum Period {
-    /// TODO
+    /// Ante meridiem: Before noon.
     AM,
-    /// TODO
+    /// Post meridiem: After noon.
     PM
 }
 
@@ -40,22 +42,23 @@ impl Display for Period {
     }
 }
 
-/// TODO
+/// The radius nearest to the cursor position.
 #[derive(Clone, Debug, PartialEq)]
 pub enum NearestRadius {
-    /// TODO
+    /// Nothing is near to the cursor position.
     None,
-    /// TODO
+    /// Period is the nearest radius to the cursor position.
     Period,
-    /// TODO
+    /// Hour is the nearest radius to the cursor position.
     Hour,
-    /// TODO
+    /// Minute is the nearest radius to the cursor position.
     Minute,
-    /// TODO
+    /// Second is the nearest radius to the cursor position.
     Second,
 }
 
-/// TODO
+/// Determining the nearest radius to the position of the cursor position based
+/// on the distance to the center.
 pub fn nearest_radius(radii: &[(f32, NearestRadius)], cursor_position: Point, center: Point) -> NearestRadius {
     let distance = cursor_position.distance(center);
 
@@ -68,7 +71,8 @@ pub fn nearest_radius(radii: &[(f32, NearestRadius)], cursor_position: Point, ce
     distance_vec[0].1.clone()
 }
 
-/// TODO
+/// Determines the nearest point with the smallest distance to the cursor
+/// position. The index of the point is returned.
 pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
 
     let mut distance_vec: Vec<(usize, f32)> = points.iter()
@@ -81,7 +85,8 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
     distance_vec[0].0
 }
 
-/// TODO
+/// Distributes the amount of points on a circle with the given radius around the
+/// center. 
 pub fn circle_points(distance_radius: f32, center: Point, amount: u32) -> Vec<Point> {
     let part = std::f32::consts::TAU / amount as f32;
 
