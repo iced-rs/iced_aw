@@ -26,13 +26,7 @@ pub struct Style {
     pub clock_number_color: Color,
 
     /// TODO
-    pub clock_number_color_selected: Color,
-
-    /// TODO
-    pub clock_number_background_selected: Color,
-
-    /// TODO
-    pub clock_number_background_hovered: Color,
+    pub clock_number_background: Color,
 
     /// TODO
     pub clock_dots_color: Color,
@@ -48,6 +42,12 @@ pub struct Style {
 pub trait StyleSheet {
     /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
     fn active(&self) -> Style;
+
+    /// TODO
+    fn hovered(&self) -> Style;
+
+    /// TODO
+    fn selected(&self) -> Style;
 }
 
 /// TODO
@@ -63,12 +63,24 @@ impl StyleSheet for Default {
             border_color: Color::BLACK,
             text_color: Color::BLACK,
             clock_number_color: Color::BLACK,
-            clock_number_color_selected: Color::BLACK,
-            clock_number_background_selected: [0.87, 0.87, 0.87].into(),
-            clock_number_background_hovered: [0.87, 0.87, 0.87].into(),
+            clock_number_background: Color::WHITE,
             clock_dots_color: [0.87, 0.87, 0.87].into(),
             clock_hand_color: [0.87, 0.87, 0.87].into(),
             clock_hand_width: 1.0,
+        }
+    }
+
+    fn hovered(&self) -> Style {
+        Style {
+            clock_number_background: [0.87, 0.87, 0.87].into(),
+            .. self.active()
+        }
+    }
+
+    fn selected(&self) -> Style {
+        Style {
+            clock_number_background: [0.87, 0.87, 0.87].into(),
+            .. self.active()
         }
     }
 }

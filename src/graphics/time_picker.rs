@@ -1,5 +1,7 @@
 //! TODO
 
+use std::collections::HashMap;
+
 use crate::{core::clock::{self, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, style::time_picker::{Style, StyleSheet}};
 use canvas::{Cache, LineCap, Path, Stroke, Text};
 use chrono::{NaiveTime, Timelike};
@@ -17,6 +19,13 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 /// TODO
 pub type TimePicker<'a, Message, Backend> = 
     time_picker::TimePicker<'a, Message, Renderer<Backend>>;
+
+#[derive(Eq, Hash, PartialEq)]
+enum StyleState {
+    Active,
+    Hovered,
+    Selected,
+}
 
 impl<B> time_picker::Renderer for Renderer<B>
 where
@@ -40,16 +49,26 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let style = style_sheet.active();
+        //let style = style_sheet.active();
+        let mut style: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style.insert(StyleState::Active, style_sheet.active());
+        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
+        let _ = style.insert(StyleState::Selected, style_sheet.selected());
 
         let mouse_interaction = mouse::Interaction::default();
         
+        let style_state = if bounds.contains(cursor_position) {
+            StyleState::Hovered
+        } else {
+            StyleState::Active
+        };
+
         let background = Primitive::Quad {
             bounds,
-            background: style.background,
-            border_radius: style.border_radius as u16, // TODO: will change in the future
-            border_width: style.border_width as u16, // TODO: same
-            border_color: style.border_color,
+            background: style.get(&style_state).unwrap().background,
+            border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
+            border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
+            border_color: style.get(&style_state).unwrap().border_color,
         };
 
         // ----------- Clock canvas --------------------
@@ -116,14 +135,15 @@ fn clock(
     cursor_position: Point,
     use_24h: bool,
     show_seconds: bool,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
-    let clock_mouse_interaction = if layout.bounds().contains(cursor_position) {
-        mouse::Interaction::Pointer
+    let (clock_style_state, clock_mouse_interaction) = if layout.bounds().contains(cursor_position) {
+        (StyleState::Hovered, mouse::Interaction::Pointer)
     } else {
-        mouse::Interaction::default()
+        (StyleState::Active, mouse::Interaction::default())
     };
-    
+
     let clock = clock_cache.draw(
         layout.bounds().size(),
         |frame| {
@@ -170,30 +190,30 @@ fn clock(
             let second_points = crate::core::clock::circle_points(second_radius, center, 60);
 
             let hand_stroke = Stroke {
-                width: style.clock_hand_width,
-                color: style.clock_hand_color,
+                width: style.get(&clock_style_state).unwrap().clock_hand_width,
+                color: style.get(&clock_style_state).unwrap().clock_hand_color,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
             };
 
             match nearest_radius {
                 NearestRadius::Period => {
-                    frame.fill(&Path::circle(center.clone(), period_size), style.clock_number_background_hovered);
+                    frame.fill(&Path::circle(center.clone(), period_size), style.get(&StyleState::Hovered).unwrap().clock_number_background);
                 },
                 NearestRadius::Hour => {
                     let nearest_point = hour_points[crate::core::clock::nearest_point(&hour_points, internal_cursor_position)];
 
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.clock_number_background_hovered);
+                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
                 },
                 NearestRadius::Minute => {
                     let nearest_point = minute_points[crate::core::clock::nearest_point(&minute_points, internal_cursor_position)];
                     
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.clock_number_background_hovered);
+                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
                 },
                 NearestRadius::Second => {
                     let nearest_point = second_points[crate::core::clock::nearest_point(&second_points, internal_cursor_position)];
                     
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.clock_number_background_hovered);
+                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
                 },
                 _ => {}
             }
@@ -201,7 +221,7 @@ fn clock(
             let period_text = Text {
                 content: format!("{}", period),
                 position: center.clone(),
-                color: style.clock_number_color,
+                color: style.get(&clock_style_state).unwrap().clock_number_color,
                 size: period_size,
                 font: Default::default(),
                 horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -219,7 +239,7 @@ fn clock(
                     };
 
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.clock_number_background_selected);
+                        frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.get(&StyleState::Selected).unwrap().clock_number_background);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                     }
 
@@ -235,11 +255,18 @@ fn clock(
                             }
                         ),
                         position: p.clone(),
-                        color: if selected {
+                        /*color: if selected {
                             style.clock_number_color_selected
                         } else {
                             style.clock_number_color
-                        },
+                        },*/
+                        color: style.get(
+                            &if selected {
+                                StyleState::Selected
+                            } else {
+                                StyleState::Active
+                            }
+                        ).unwrap().clock_number_color,
                         size: number_size,
                         font: Default::default(),
                         horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -256,7 +283,7 @@ fn clock(
                     let selected = time.minute() == i as u32;
 
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), number_size*0.5), style.clock_number_background_selected);
+                        frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                     }
 
@@ -264,11 +291,18 @@ fn clock(
                         let text = Text {
                             content: format!("{:02}", i),
                             position: p.clone(),
-                            color: if selected {
+                            /*color: if selected {
                                 style.clock_number_color_selected
                             } else {
                                 style.clock_number_color
-                            },
+                            },*/
+                            color: style.get(
+                                &if selected {
+                                    StyleState::Selected
+                                } else {
+                                    StyleState::Active
+                                }
+                            ).unwrap().clock_number_color,
                             size: number_size,
                             font: Default::default(),
                             horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -278,7 +312,7 @@ fn clock(
                         frame.fill_text(text);
                     } else {
                         let circle = Path::circle(p.clone(), number_size*0.1);
-                        frame.fill(&circle, style.clock_dots_color);
+                        frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
                     }
                 });
 
@@ -289,7 +323,7 @@ fn clock(
                         let selected = time.second() == i as u32;
 
                         if selected {
-                            frame.fill(&Path::circle(p.clone(), number_size*0.5), style.clock_number_background_selected);
+                            frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
                             frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                         }
 
@@ -297,11 +331,18 @@ fn clock(
                             let text = Text {
                                 content: format!("{:02}", i),
                                 position: p.clone(),
-                                color: if selected {
+                                /*color: if selected {
                                     style.clock_number_color_selected
                                 } else {
                                     style.clock_number_color
-                                },
+                                },*/
+                                color: style.get(
+                                    &if selected {
+                                        StyleState::Selected
+                                    } else {
+                                        StyleState::Active
+                                    }
+                                ).unwrap().clock_number_color,
                                 size: number_size,
                                 font: Default::default(),
                                 horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -311,7 +352,7 @@ fn clock(
                             frame.fill_text(text);
                         } else {
                             let circle = Path::circle(p.clone(), number_size*0.1);
-                            frame.fill(&circle, style.clock_dots_color);
+                            frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
                         }
                     })
             }
@@ -331,7 +372,8 @@ fn digital_clock(
     cursor_position: Point,
     use_24h: bool,
     show_seconds: bool,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children().next().unwrap().children();
 
@@ -360,7 +402,7 @@ fn digital_clock(
                         y: up_bounds.center_y(),
                         .. up_bounds
                     },
-                    color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -374,7 +416,7 @@ fn digital_clock(
                         y: center_bounds.center_y(),
                         .. center_bounds
                     },
-                    color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
                     font: Default::default(),
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -388,7 +430,7 @@ fn digital_clock(
                         y: down_bounds.center_y(),
                         .. down_bounds
                     },
-                    color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -424,7 +466,7 @@ fn digital_clock(
             y: hour_minute_seperator.bounds().center_y(),
             .. hour_minute_seperator.bounds()
         },
-        color: style.text_color,
+        color: style.get(&StyleState::Active).unwrap().text_color,
         size: hour_minute_seperator.bounds().height,
         font: Default::default(),
         horizontal_alignment: HorizontalAlignment::Center,
@@ -443,7 +485,7 @@ fn digital_clock(
                 y: minute_second_seperator.bounds().center_y(),
                 .. minute_second_seperator.bounds()
             },
-            color: style.text_color,
+            color: style.get(&StyleState::Active).unwrap().text_color,
             size: minute_second_seperator.bounds().height,
             font: Default::default(),
             horizontal_alignment: HorizontalAlignment::Center,
@@ -471,7 +513,7 @@ fn digital_clock(
                 y: period.bounds().center_y(),
                 .. period.bounds()
             },
-            color: style.text_color,
+            color: style.get(&StyleState::Active).unwrap().text_color,
             size: period.bounds().height,
             font: Default::default(),
             horizontal_alignment: HorizontalAlignment::Center,
