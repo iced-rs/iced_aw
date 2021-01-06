@@ -15,3 +15,8 @@ pub use floating_button::FloatingButtonOverlay;
 pub mod modal;
 #[cfg(feature = "modal")]
 pub use modal::ModalOverlay;
+
+#[cfg(feature = "time_picker")]
+pub mod time_picker;
+#[cfg(feature = "time_picker")]
+pub use time_picker::TimePickerOverlay;

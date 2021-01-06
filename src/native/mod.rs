@@ -34,13 +34,16 @@ pub use modal::Modal;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
-#[cfg(feature = "tabs")]
-pub mod tabs;
-
-#[doc(no_inline)]
 #[cfg(feature = "tab_bar")]
 pub use tab_bar::{TabBar, TabLabel};
 
-#[doc(no_inline)]
+
+#[cfg(feature = "tabs")]
+pub mod tabs;
 #[cfg(feature = "tabs")]
 pub use tabs::Tabs;
+
+#[cfg(feature = "time_picker")]
+pub mod time_picker;
+#[cfg(feature = "time_picker")]
+pub use time_picker::TimePicker;

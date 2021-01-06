@@ -24,6 +24,7 @@ icons = []
 modal = []
 tab_bar = []
 tabs = ["tab_bar"]
+time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
 
 default = [
     "badge",
@@ -33,7 +34,8 @@ default = [
     "floating_button",
     "modal",
     "tab_bar",
-    "tabs"
+    "tabs",
+    "time_picker"
 ]
 
 [dependencies]

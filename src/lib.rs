@@ -80,6 +80,13 @@ mod platform {
         },
         crate::graphics::tabs,
     };
+
+    #[doc(no_inline)]
+    #[cfg(feature = "time_picker")]
+    pub use {
+        time_picker::TimePicker,
+        crate::graphics::time_picker,
+    };
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;
