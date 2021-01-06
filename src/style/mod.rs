@@ -20,3 +20,6 @@ pub mod modal;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
+
+#[cfg(feature = "time_picker")]
+pub mod time_picker;
