@@ -122,6 +122,12 @@ mod platform {
     pub use crate::web::{
         modal, modal::Modal,
     };
+    
+    #[doc(no_inline)]
+    #[cfg(feature = "time_picker")]
+    pub use crate::web::{
+        time_picker, time_picker::TimePicker,
+    };
 }
 
 #[doc(no_inline)]

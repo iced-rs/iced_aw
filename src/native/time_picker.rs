@@ -10,8 +10,7 @@ use iced_graphics::canvas;
 use super::{icon_text, overlay::time_picker::{self, TimePickerOverlay}};
 pub use super::overlay::time_picker::Renderer;
 
-pub mod time;
-pub use time::{Time, Period};
+pub use crate::core::time::{Time, Period};
 /// An input element for picking times.
 ///
 /// # Example

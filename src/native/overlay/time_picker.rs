@@ -3,7 +3,17 @@
 //! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
-use crate::{core::clock::{HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, graphics::icons::Icon, native::{IconText, icon_text, time_picker::{State, Time, time::Period}}};
+use crate::{
+    core::clock::{
+        HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
+        NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE
+    },
+    core::time::Period,
+    graphics::icons::Icon, native::{
+        IconText, icon_text, time_picker::{State, Time}
+    }
+};
 use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
 use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, layout::{self, Limits}, mouse, overlay, row, text};

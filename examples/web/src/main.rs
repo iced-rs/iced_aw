@@ -20,6 +20,9 @@ use modal_section::ModalSection;
 mod date_picker_section;
 use date_picker_section::DatePickerSection;
 
+mod time_picker_section;
+use time_picker_section::TimePickerSection;
+
 //mod picklist_section;
 //use picklist_section::PickListSection;
 
@@ -38,6 +41,7 @@ struct Web {
     modal_section: ModalSection,
     date_picker_section: DatePickerSection,
     //picklist_section: PickListSection,
+    time_picker_section: TimePickerSection,
 }
 
 #[derive(Clone, Debug)]
@@ -48,6 +52,7 @@ enum Message {
     Card(card_section::Message),
     DatePicker(date_picker_section::Message),
     //PickList(picklist_section::Message),
+    TimePicker(time_picker_section::Message),
 }
 
 impl Sandbox for Web {
@@ -64,6 +69,7 @@ impl Sandbox for Web {
             modal_section: ModalSection::new(),
             date_picker_section: DatePickerSection::new(),
             //picklist_section: PickListSection::new(),
+            time_picker_section: TimePickerSection::new(),
         }
     }
 
@@ -79,6 +85,7 @@ impl Sandbox for Web {
             Message::Card(msg) => self.card_section.update(msg),
             Message::DatePicker(msg) => self.date_picker_section.update(msg),
             //Message::PickList(msg) => self.picklist_section.update(msg),
+            Message::TimePicker(msg) => self.time_picker_section.update(msg),
         }
     }
 
@@ -92,6 +99,7 @@ impl Sandbox for Web {
             .push(self.modal_section.view())
             .push(self.date_picker_section.view())
             //.push(self.picklist_section.view())
+            .push(self.time_picker_section.view())
             ;
 
         let container = Container::new(

@@ -24,3 +24,8 @@ pub use floating_button::FloatingButton;
 pub mod modal;
 #[cfg(feature = "modal")]
 pub use modal::Modal;
+
+#[cfg(feature = "time_picker")]
+pub mod time_picker;
+#[cfg(feature = "time_picker")]
+pub use time_picker::TimePicker;
