@@ -73,7 +73,6 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
 
     let mut distance_vec: Vec<(usize, f32)> = points.iter()
         .enumerate()
-        //.map(|(i, p)| (i, Point::new(p.0 + center.x, p.1 + center.y)))
         .map(|(i, p)| (i, p.distance(cursor_position)))
         .collect();
 
@@ -84,8 +83,6 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
 
 /// TODO
 pub fn circle_points(distance_radius: f32, center: Point, amount: u32) -> Vec<Point> {
-    //let distance = width.min(height) / 2.0 * distance_radius_percentage;
-
     let part = std::f32::consts::TAU / amount as f32;
 
     let rotation = |(x, y): (f32, f32), t: f32| {

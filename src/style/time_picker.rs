@@ -29,12 +29,6 @@ pub struct Style {
     pub clock_number_color_selected: Color,
 
     /// TODO
-    //pub clock_number_color_hovered: Color,
-
-    /// TODO
-    //pub clock_number_background: Color,
-
-    /// TODO
     pub clock_number_background_selected: Color,
 
     /// TODO
@@ -70,8 +64,6 @@ impl StyleSheet for Default {
             text_color: Color::BLACK,
             clock_number_color: Color::BLACK,
             clock_number_color_selected: Color::BLACK,
-            //clock_number_color_hovered: Color::BLACK,
-            //clock_number_background: Color::WHITE.into(),
             clock_number_background_selected: [0.87, 0.87, 0.87].into(),
             clock_number_background_hovered: [0.87, 0.87, 0.87].into(),
             clock_dots_color: [0.87, 0.87, 0.87].into(),

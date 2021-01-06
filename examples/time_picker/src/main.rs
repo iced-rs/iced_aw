@@ -42,7 +42,6 @@ impl Sandbox for TimePickerExample {
                 self.state.show(true);
             },
             Message::SubmitTime(time) => {
-                //println!("Submit date ({}-{}-{})", year, month, day);
                 self.time = time;
                 self.state.show(false);
             },
@@ -71,7 +70,6 @@ impl Sandbox for TimePickerExample {
             .spacing(10)
             .push(timepicker)
             .push(
-                //Text::new(format!("Time: {:02}:{:02}:{:02}", self.time.0, self.time.1, self.time.2))
                 Text::new(format!("Time: {}", self.time))
             );
 

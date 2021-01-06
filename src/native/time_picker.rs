@@ -21,7 +21,6 @@ where
     state: &'a mut State,
     underlay: Element<'a, Message, Renderer>,
     on_cancel: Message,
-    //on_submit: Box<dyn Fn(u32, u32, u32) -> Message>,
     on_submit: Box<dyn Fn(Time) -> Message>,
     use_24h: bool,
     show_seconds: bool,
@@ -42,7 +41,6 @@ where
     ) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
-        //F: 'static + Fn(u32, u32, u32) -> Message,
         F: 'static + Fn(Time) -> Message,
     {
         Self {
@@ -71,10 +69,9 @@ where
     /// Sets the style of the [`TimePicker`](TimePicker).
     pub fn style<S>(mut self, style: S) -> Self
     where
-        S: Into<<Renderer as time_picker::Renderer>::Style> // + Clone + Into<<Renderer as button::Renderer>::Style>,
+        S: Into<<Renderer as time_picker::Renderer>::Style>
     {
         self.style = style.into();
-        //self.button_style = style.into();
         self
     }
 }
@@ -177,7 +174,6 @@ where
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
-        //self.state.show.hash(state);
         self.underlay.hash_layout(state);
     }
 

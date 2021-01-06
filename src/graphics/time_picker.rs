@@ -46,7 +46,7 @@ where
         
         let background = Primitive::Quad {
             bounds,
-            background: style.background, // TODO
+            background: style.background,
             border_radius: style.border_radius as u16, // TODO: will change in the future
             border_width: style.border_width as u16, // TODO: same
             border_color: style.border_color,
@@ -135,9 +135,6 @@ fn clock(
             let period_size = radius * PERIOD_SIZE_PERCENTAGE;
 
             let period_radius = radius * PERIOD_PERCENTAGE;
-            /*let hour_radius = radius * HOUR_RADIUS_PERCENTAGE;
-            let minute_radius = radius * MINUTE_RADIUS_PERCENTAGE;
-            let second_radius = radius * SECOND_RADIUS_PERCENTAGE;*/
 
             let (hour_radius, minute_radius, second_radius) = if show_seconds {
                 (radius * HOUR_RADIUS_PERCENTAGE, radius * MINUTE_RADIUS_PERCENTAGE, radius * SECOND_RADIUS_PERCENTAGE)
@@ -167,12 +164,6 @@ fn clock(
                     center,
                 )
             } else { NearestRadius::None };
-
-            /*frame.fill_rectangle(
-                Point::ORIGIN,
-                Size::new(frame.width(), frame.height()),
-                Color::WHITE,
-            );*/
 
             let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
             let minute_points = crate::core::clock::circle_points(minute_radius, center, 60);
@@ -221,21 +212,18 @@ fn clock(
             hour_points.iter()
                 .enumerate()
                 .for_each(|(i, p)| {
-                    //let selected = time.hour() % 12 == i as u32;
                     let (pm, selected) = {
                         let (pm, _) = time.hour12();
                         let hour = time.hour();
                         (pm, hour % 12 == i as u32)
                     };
 
-                    // TODO: 24/12 Hour
                     if selected {
                         frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.clock_number_background_selected);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
                     }
 
                     let text = Text {
-                        //content: format!("{}", if i == 0 { 12 } else { i }),
                         content: format!(
                             "{}", 
                             if pm && use_24h {
@@ -417,9 +405,6 @@ fn digital_clock(
         let _ = children.next();
     }
 
-    // ---
-    // ---
-    
     let mouse_interaction = mouse::Interaction::default();
     
     let hour_layout = children.next().unwrap();
@@ -448,24 +433,6 @@ fn digital_clock(
     
     let minute_layout = children.next().unwrap();
     let (minute, minute_mouse_interaction) = f(minute_layout, format!("{:02}", time.minute()));
-    
-    /*let minute_second_seperator = children.next().unwrap();
-    let minute_second_seperator = Primitive::Text {
-        content: ":".to_owned(),
-        bounds: Rectangle {
-            x: minute_second_seperator.bounds().center_x(),
-            y: minute_second_seperator.bounds().center_y(),
-            .. minute_second_seperator.bounds()
-        },
-        color: style.text_color,
-        size: minute_second_seperator.bounds().height,
-        font: Default::default(),
-        horizontal_alignment: HorizontalAlignment::Center,
-        vertical_alignment: VerticalAlignment::Center,
-    };
-    
-    let second_layout = children.next().unwrap();
-    let (second, second_mouse_interaction) = f(second_layout, format!("{:02}", time.second()));*/
 
     let (minute_second_seperator, second, second_mouse_interaction) = if show_seconds {
         let minute_second_seperator = children.next().unwrap();

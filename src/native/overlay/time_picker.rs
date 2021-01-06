@@ -6,9 +6,6 @@ use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
 use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, layout::{self, Limits}, mouse, overlay, row, text};
 
-// Good reference:
-// https://github.com/hecrj/iced/blob/ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff/graphics/src/widget/qr_code.rs
-
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
 const BUTTON_SPACING: u16 = 5;
@@ -25,7 +22,6 @@ where
     clock_cache: &'a mut canvas::Cache,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
-    //on_submit: &'a Box<dyn Fn(u32, u32, u32) -> Message>,
     on_submit: &'a Box<dyn Fn(Time) -> Message>,
     use_24h: bool,
     show_seconds: bool,
@@ -42,7 +38,6 @@ where
     pub fn new(
         state: &'a mut State,
         on_cancel: Message,
-        //on_submit: &'a Box<dyn Fn(u32, u32, u32) -> Message>,
         on_submit: &'a Box<dyn Fn(Time) -> Message>,
         use_24h: bool,
         show_seconds: bool,
@@ -119,9 +114,6 @@ where
             let radius = clock_bounds.width.min(clock_bounds.height) * 0.5;
 
             let period_radius = radius * PERIOD_PERCENTAGE;
-            /*let hour_radius = radius * HOUR_RADIUS_PERCENTAGE;
-            let minute_radius = radius * MINUTE_RADIUS_PERCENTAGE;
-            let second_radius = radius * SECOND_RADIUS_PERCENTAGE;*/
 
             let (hour_radius, minute_radius, second_radius) = if self.show_seconds {
                 (radius * HOUR_RADIUS_PERCENTAGE, radius * MINUTE_RADIUS_PERCENTAGE, radius * SECOND_RADIUS_PERCENTAGE)
@@ -171,7 +163,6 @@ where
                             let nearest_point = crate::core::clock::nearest_point(&hour_points, cursor_position);
                             
                             let (pm, _) = self.time.hour12();
-                            //let nearest_point = if nearest_point == 0 { 12 } else { nearest_point };
 
                             *self.time = self.time.with_hour(
                                 (nearest_point as u32 + if pm { 12 } else { 0 }) % 24
@@ -213,82 +204,6 @@ where
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
-
-        /*// Placeholder
-        let _ = digital_clock_children.next();
-
-        let hour_layout = digital_clock_children.next().unwrap();
-        let mut hour_children = hour_layout.children();
-
-        let hour_up_arrow = hour_children.next().unwrap();
-        let _ = hour_children.next();
-        let hour_down_arrow = hour_children.next().unwrap();
-
-        let _ = digital_clock_children.next();
-
-        let minute_layout = digital_clock_children.next().unwrap();
-        let mut minute_children = minute_layout.children();
-
-        let minute_up_arrow = minute_children.next().unwrap();
-        let _ = minute_children.next();
-        let minute_down_arrow = minute_children.next().unwrap();
-
-        let _ = digital_clock_children.next();
-
-        let second_layout = digital_clock_children.next().unwrap();
-        let mut second_children = second_layout.children();
-
-        let second_up_arrow = second_children.next().unwrap();
-        let _ = second_children.next();
-        let second_down_arrow = second_children.next().unwrap();
-
-        let digital_clock_status = match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                let mut status = event::Status::Ignored;
-
-                if hour_up_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_add_signed(Duration::hours(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                if hour_down_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_sub_signed(Duration::hours(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                
-                if minute_up_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_add_signed(Duration::minutes(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                if minute_down_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_sub_signed(Duration::minutes(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                
-                if second_up_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_add_signed(Duration::seconds(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                if second_down_arrow.bounds().contains(cursor_position) {
-                    *self.time = self.time.overflowing_sub_signed(Duration::seconds(1)).0;
-
-                    status = event::Status::Captured;
-                }
-                
-                if status == event::Status::Captured {
-                    self.clock_cache.clear()
-                }
-
-                status
-            },
-            _ => event::Status::Ignored,
-        };
-
-        digital_clock_status*/
 
         if !self.use_24h {
             // Placeholder
@@ -402,8 +317,6 @@ where
         .pad(PADDING as f32)
         .width(Length::Fill)
         .height(Length::Fill)
-        //.min_width(100)
-        //.min_height(150)
         .max_width(300)
         .max_height(350);
 
@@ -412,96 +325,6 @@ where
 
         // Digital Clock
         let digital_clock_limits = limits.clone();
-        /*let digital_clock_row = Row::<(), Renderer>::new()
-            .align_items(Align::Center)
-            .height(Length::Shrink)
-            .width(Length::Shrink)
-            .spacing(1)
-            .push(
-                Column::new() // Just a placeholder
-                    .height(Length::Shrink)
-                    .push(
-                        Text::new("AM").size(font_size)
-                    )
-            )
-            .push( // Hour
-                Column::new()
-                    .align_items(Align::Center)
-                    .height(Length::Shrink)
-                    .push( // Up Hour arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-                    .push(
-                        Text::new(format!("{:02}", self.time.hour()))
-                            .size(font_size)
-                    )
-                    .push( // Down Hour arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-            )
-            .push(
-                Column::new()
-                    .height(Length::Shrink)
-                    .push(
-                        Text::new(":").size(font_size)
-                    )
-            )
-            .push(
-                Column::new()
-                    .align_items(Align::Center)
-                    .height(Length::Shrink)
-                    .push( // Up Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-                    .push(
-                        Text::new(format!("{:02}", self.time.hour()))
-                            .size(font_size)
-                    )
-                    .push( // Down Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-            )
-            .push(
-                Column::new()
-                    .height(Length::Shrink)
-                    .push(
-                        Text::new(":").size(font_size)
-                    )
-            )
-            .push(
-                Column::new()
-                    .align_items(Align::Center)
-                    .height(Length::Shrink)
-                    .push( // Up Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-                    .push(
-                        Text::new(format!("{:02}", self.time.hour()))
-                            .size(font_size)
-                    )
-                    .push( // Down Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
-            )
-            .push(
-                Column::new()
-                    .height(Length::Shrink)
-                    .push(
-                        Text::new("AM").size(font_size)
-                    )
-            );*/
 
         let mut digital_clock_row = Row::<(), Renderer>::new()
             .align_items(Align::Center)
@@ -655,7 +478,7 @@ where
             .layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING as f32, // TODO replace clock
+            x: cancel_button.bounds().x + PADDING as f32,
             y: cancel_button.bounds().y + clock.bounds().height + PADDING as f32
                 + digital_clock.bounds().height
                 + 2.0*SPACING as f32,
@@ -757,18 +580,6 @@ where
         );
 
         if fake_messages.len() > 0 {
-            /*messages.push(
-                (self.on_submit)(
-                    self.time.hour(),
-                    self.time.minute(),
-                    if self.show_seconds {
-                        self.time.second()
-                    } else {
-                        0
-                    },
-                )
-            );*/
-
             let (hour, period) = if self.use_24h {
                 (self.time.hour(), Period::H24)
             } else {
