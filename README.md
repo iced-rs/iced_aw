@@ -26,8 +26,8 @@ Currently planned widgets are:
 - [x] Floating Action Button
 - [x] Card
 - [x] Modal
-- [ ] Date Picker
-- [ ] Time Picker
+- [x] Date Picker
+- [x] Time Picker
 - [ ] Color Picker
 
 ### Badge
@@ -121,6 +121,12 @@ TODO
 
 ![Date Picker concept drawing](./images/concept_drawings/date_picker.svg)
 
+![Modal showcase](./images/showcase/date_picker.png)
+
+Please take a look into our examples on how to use date pickers.
+
+Enable this widget with the feature `date_picker`.
+
 </center>
 
 ### Time Picker
@@ -131,6 +137,11 @@ TODO
 
 ![Time Picker concept drawing](./images/concept_drawings/time_picker.svg)
 
+![Modal showcase](./images/showcase/date_picker.png)
+
+Please take a look into our examples on how to use time pickers.
+
+Enable this widget with the feature `time_picker`.
 </center>
 
 ### Color Picker
