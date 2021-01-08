@@ -15,43 +15,36 @@ pub struct Style {
     /// The border radius of the [`DatePicker`](crate::native::DatePicker).
     pub border_radius: f32,
 
-    /// The border width of the [`DatePicker`](crate::native::DatePicker).
+    /// The border with of the [`DatePicker`](crate::native::DatePicker).
     pub border_width: f32,
 
     /// The border color of the [`DatePicker`](crate::native::DatePicker).
     pub border_color: Color,
 
-    /// The text_color of the [`DatePicker`](crate::native::DatePicker).
+    /// The text color of the [`DatePicker`](crate::native::DatePicker).
     pub text_color: Color,
 
     /// The attenuated color of the days which are not in the selected month
     /// of the [`DatePicker`](crate::native::DatePicker).
     pub text_attenuated_color: Color,
 
-    /// TODO: Button support
-    //pub button: Box<dyn iced_style::button::StyleSheet>,
-
-    /// The background of the selected day of the
+    /// The background of the days in the calender of the
     /// [`DatePicker`](crate::native::DatePicker).
-    pub day_selected_background: Background,
-
-    /// The text color of the selected day of the
-    /// [`DatePicker`](crate::native::DatePicker).
-    pub day_selected_color: Color,
-
-    /// The background of the hovered day of the
-    /// [`DatePicker`](crate::native::DatePicker).
-    pub day_hover_background: Background,
-
-    /// The text color of the hovered day of the
-    /// [`DatePicker`](crate::native::DatePicker).
-    pub day_hover_color: Color,
+    pub day_background: Background,
 }
 
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
 pub trait StyleSheet {
     /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
     fn active(&self) -> Style;
+
+    /// The appearance when something is hovered of the
+    /// [`DatePicker`](crate::native::DatePicker)
+    fn hovered(&self) -> Style;
+
+    /// The appearance when something is selected of the
+    /// [`DatePicker`](crate::native::DatePicker)
+    fn selected(&self) -> Style;
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
@@ -67,10 +60,21 @@ impl StyleSheet for Default {
             border_color: Color::BLACK,
             text_color: Color::BLACK,
             text_attenuated_color: [0.87, 0.87, 0.87].into(),
-            day_selected_background: Background::Color([0.87, 0.87, 0.87].into()),
-            day_selected_color: Color::BLACK,
-            day_hover_background: Background::Color([0.87, 0.87, 0.87].into()),
-            day_hover_color: Color::BLACK,
+            day_background: Color::WHITE.into(),
+        }
+    }
+
+    fn hovered(&self) -> Style {
+        Style {
+            day_background: Background::Color([0.87, 0.87, 0.87].into()),
+            .. self.active()
+        }
+    }
+
+    fn selected(&self) -> Style {
+        Style {
+            day_background: Background::Color([0.87, 0.87, 0.87].into()),
+            .. self.active()
         }
     }
 }

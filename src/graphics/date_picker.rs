@@ -1,6 +1,8 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: date_picker*
+use std::collections::HashMap;
+
 use crate::style::date_picker::Style;
 use crate::style::date_picker::StyleSheet;
 
@@ -18,6 +20,14 @@ use super::icons::{ICON_FONT, Icon};
 /// This is an alias of an `iced_native` DatePicker with an `iced_wgpu::Renderer`.
 pub type DatePicker<'a, Message, Backend> =
     date_picker::DatePicker<'a, Message, Renderer<Backend>>;
+
+// TODO: Merge
+#[derive(Eq, Hash, PartialEq)]
+enum StyleState {
+    Active,
+    Hovered,
+    Selected,
+}
 
 impl<B> date_picker::Renderer for Renderer<B>
 where
@@ -41,16 +51,26 @@ where
         let mut children = layout.children();
         let mut date_children = children.next().unwrap().children();
 
-        let style = style_sheet.active();
+        //let style = style_sheet.active();
+        let mut style: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style.insert(StyleState::Active, style_sheet.active());
+        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
+        let _ = style.insert(StyleState::Selected, style_sheet.selected());
         
         let mouse_interaction = mouse::Interaction::default();
 
+        let style_state = if bounds.contains(cursor_position) {
+            StyleState::Hovered
+        } else {
+            StyleState::Active
+        };
+
         let background = Primitive::Quad {
             bounds: bounds,
-            background: Color::WHITE.into(), // TODO
-            border_radius: 15,
-            border_width: 1,
-            border_color: Color::BLACK.into(),
+            background: style.get(&style_state).unwrap().background, // TODO
+            border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
+            border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
+            border_color: style.get(&style_state).unwrap().border_color,
         };
 
         
@@ -115,7 +135,8 @@ fn month_year(
     month: &str,
     year: &str,
     cursor_position: iced_graphics::Point,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
@@ -147,7 +168,8 @@ fn month_year(
                         y: left_bounds.center_y(),
                         .. left_bounds
                     },
-                    color: style.text_color,
+                    //color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -161,7 +183,7 @@ fn month_year(
                         y: center_bounds.center_y(),
                         .. center_bounds
                     },
-                    color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
                     font: Default::default(),
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -175,7 +197,7 @@ fn month_year(
                         y: right_bounds.center_y(),
                         .. right_bounds
                     },
-                    color: style.text_color,
+                    color: style.get(&StyleState::Active).unwrap().text_color,
                     size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -208,7 +230,8 @@ fn days(
     layout: iced_native::Layout<'_>,
     date: &chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
@@ -233,7 +256,8 @@ fn days(
 /// Draws the day labels
 fn day_labels(
     layout: iced_native::Layout<'_>,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> Primitive {
     let mut labels: Vec<Primitive> = Vec::new();
 
@@ -248,7 +272,7 @@ fn day_labels(
                     y: bounds.center_y(),
                     .. bounds
                 },
-                color: style.text_color,
+                color: style.get(&StyleState::Active).unwrap().text_color,
                 size: bounds.height + 5.0,
                 font: Default::default(),
                 horizontal_alignment: HorizontalAlignment::Center,
@@ -267,7 +291,8 @@ fn day_table(
     children: &mut dyn Iterator<Item=iced_native::Layout<'_>>,
     date: &chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
-    style: &Style,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut primitives: Vec<Primitive> = Vec::new();
 
@@ -277,34 +302,31 @@ fn day_table(
         for (x, label) in row.children().enumerate() {
             let bounds = label.bounds();
             let (number, is_in_month) = crate::core::date::position_to_day(x, y, date.year(), date.month());
-
-            if date.day() == number as u32 && is_in_month == 0 {
-                primitives.push(
-                    Primitive::Quad {
-                        bounds: bounds,
-                        background: style.day_selected_background,
-                        border_radius: bounds.height as u16 / 2,
-                        border_width: 0,
-                        border_color: Color::TRANSPARENT,
-                    }
-                )
-            }
-
+            
             let mouse_over = bounds.contains(cursor_position);
-
             if mouse_over {
                 mouse_interaction = mouse_interaction.max(mouse::Interaction::Pointer);
-
-                primitives.push(
-                    Primitive::Quad {
-                        bounds: bounds,
-                        background: style.day_hover_background,
-                        border_radius: bounds.height as u16 / 2,
-                        border_width: 0,
-                        border_color: Color::TRANSPARENT,
-                    }
-                )
             }
+
+            let selected = date.day() == number as u32 && is_in_month == 0;
+
+            let style_state = if mouse_over {
+                StyleState::Hovered
+            } else if selected {
+                StyleState::Selected
+            } else {
+                StyleState::Active
+            };
+
+            primitives.push(
+                Primitive::Quad {
+                    bounds: bounds,
+                    background: style.get(&style_state).unwrap().day_background,
+                    border_radius: bounds.height as u16 / 2,
+                    border_width: 0,
+                    border_color: Color::TRANSPARENT,
+                }
+            );
 
             primitives.push(
                 Primitive::Text {
@@ -314,12 +336,10 @@ fn day_table(
                         y: bounds.center_y(),
                         .. bounds
                     },
-                    color: if mouse_over {
-                        style.day_hover_color
-                    }else if is_in_month == 0 {
-                        style.text_color
+                    color: if is_in_month == 0 {
+                        style.get(&style_state).unwrap().text_color
                     } else {
-                        style.text_attenuated_color
+                        style.get(&style_state).unwrap().text_attenuated_color
                     },
                     size: if bounds.width < bounds.height {
                         bounds.width
