@@ -1,5 +1,5 @@
 [package]
-name = "date_picker"
+name = "time_picker"
 version = "0.1.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2018"
