@@ -81,7 +81,7 @@ where
         }
     }
 
-    /// Turn this [`DatePickerOverlay`] into an overlay
+    /// Turn this [`DatePickerOverlay`](DatePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(
@@ -99,7 +99,7 @@ where
     }
 
 
-    // The event handling for the month / year bar.
+    /// The event handling for the month / year bar.
     fn on_event_month_year (
         &mut self,
         event: Event,
@@ -160,7 +160,7 @@ where
         status
     }
 
-    // The event handling for the calendar days.
+    /// The event handling for the calendar days.
     fn on_event_days (
         &mut self,
         event: Event,
@@ -238,7 +238,10 @@ where
         let cancel_button = self.cancel_button
             .layout(renderer, &cancel_limits);
 
-        let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height));
+        let limits = limits.shrink(Size::new(
+            0.0,
+            cancel_button.bounds().height + SPACING as f32
+        ));
         
         // Month/Year
         let font_size = text::Renderer::default_size(renderer) as u32;

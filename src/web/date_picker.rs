@@ -13,11 +13,11 @@ use std::rc::Rc;
 /// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct DatePicker<'a, Message> {
-    state: &'a mut State,
+    _state: &'a mut State,
     // https://stackoverflow.com/a/24980193
     // http://html5doctor.com/the-woes-of-date-input/
     _underlay: Element<'a, Message>,
-    on_cancel: Message,
+    _on_cancel: Message,
     on_submit: Rc<dyn Fn(i32, u32, u32) -> Message>,
     // You cannot currently style the appearance of the date picker.
     // https://developers.google.com/web/updates/2012/08/Quick-FAQs-on-input-type-date-in-Google-Chrome
@@ -30,9 +30,9 @@ impl<'a, Message> DatePicker<'a, Message> {
     /// The underlay element will be ignored on the web, since the date input can't be
     /// customized that way.
     pub fn new<U, F>(
-        state: &'a mut State,
+        _state: &'a mut State,
         _underlay: U,
-        on_cancel: Message,
+        _on_cancel: Message,
         on_submit: F,
     ) -> Self
     where
@@ -40,15 +40,15 @@ impl<'a, Message> DatePicker<'a, Message> {
         F: 'static + Fn(i32, u32, u32) -> Message,
     {
         Self {
-            state,
+            _state,
             _underlay: _underlay.into(),
-            on_cancel,
+            _on_cancel,
             on_submit: Rc::new(on_submit),
             _style: Default::default(),
         }
     }
 
-    /// Sets the style of the [`Badge`](Badge).
+    /// Sets the style of the [`DateBicker`](DatePicker).
     /// 
     /// The style will be ignored on the web, since the date input can't be styled.
     pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self {
@@ -64,7 +64,7 @@ pub struct State {
 }
 
 impl State {
-    /// Creates a new [`State`](State) with the current date.
+    /// Creates a new [`State`](State).
     pub fn now() -> Self {
         State {
             show: false,
@@ -72,6 +72,8 @@ impl State {
     }
 
     /// Sets the visibility of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// 
+    /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {
         self.show = b;
     }
@@ -92,7 +94,7 @@ where
         &self,
         bump: &'b bumpalo::Bump,
         bus: &Bus<Message>,
-        style_sheet: &mut Css<'b>,
+        _style_sheet: &mut Css<'b>,
     ) -> dodrio::Node<'b> {
         use dodrio::builder::*;
         use wasm_bindgen::JsCast;
@@ -113,7 +115,7 @@ where
                     Some(date_input) => date_input,
                 };
                 // ... but the parsed value is always formatted yyyy-mm-dd.
-                // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
+                // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date#value
                 let value = date_input.value();
                 let mut split = value.split("-");
                 let year: i32 = split.next().unwrap().parse().unwrap();
