@@ -17,7 +17,7 @@ use super::icons::{ICON_FONT, Icon};
 /// 
 /// This is an alias of an `iced_native` DatePicker with an `iced_wgpu::Renderer`.
 pub type DatePicker<'a, Message, Backend> =
-    date_picker::DatePicker<'a, Message, Backend>;
+    date_picker::DatePicker<'a, Message, Renderer<Backend>>;
 
 impl<B> date_picker::Renderer for Renderer<B>
 where
@@ -47,7 +47,7 @@ where
 
         let background = Primitive::Quad {
             bounds: bounds,
-            background: Color::WHITE.into(),
+            background: Color::WHITE.into(), // TODO
             border_radius: 15,
             border_width: 1,
             border_color: Color::BLACK.into(),
