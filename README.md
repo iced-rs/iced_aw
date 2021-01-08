@@ -137,7 +137,7 @@ TODO
 
 ![Time Picker concept drawing](./images/concept_drawings/time_picker.svg)
 
-![Modal showcase](./images/showcase/date_picker.png)
+![Modal showcase](./images/showcase/time_picker.png)
 
 Please take a look into our examples on how to use time pickers.
 
