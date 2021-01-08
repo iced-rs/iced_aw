@@ -1,6 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //! 
 //! *This API requires the following crate features to be activated: time_picker*
+use crate::style::style_state::StyleState;
 use std::collections::HashMap;
 
 use crate::{core::clock::{self, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, style::time_picker::{Style, StyleSheet}};
@@ -22,13 +23,6 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 /// This is an alias of an `iced_native` TimePicker with an `iced_wgpu::Renderer`.
 pub type TimePicker<'a, Message, Backend> = 
     time_picker::TimePicker<'a, Message, Renderer<Backend>>;
-
-#[derive(Eq, Hash, PartialEq)]
-enum StyleState {
-    Active,
-    Hovered,
-    Selected,
-}
 
 impl<B> time_picker::Renderer for Renderer<B>
 where
@@ -52,19 +46,22 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        //let style = style_sheet.active();
         let mut style: HashMap<StyleState, Style> = HashMap::new();
         let _ = style.insert(StyleState::Active, style_sheet.active());
-        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
         let _ = style.insert(StyleState::Selected, style_sheet.selected());
+        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
 
         let mouse_interaction = mouse::Interaction::default();
         
-        let style_state = if bounds.contains(cursor_position) {
+        /*let style_state = if bounds.contains(cursor_position) {
             StyleState::Hovered
         } else {
             StyleState::Active
-        };
+        };*/
+        let mut style_state = StyleState::Active;
+        if bounds.contains(cursor_position) {
+            style_state = style_state.max(StyleState::Hovered);
+        }
 
         let background = Primitive::Quad {
             bounds,
@@ -139,14 +136,19 @@ fn clock(
     cursor_position: Point,
     use_24h: bool,
     show_seconds: bool,
-    //style: &Style,
     style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
-    let (clock_style_state, clock_mouse_interaction) = if layout.bounds().contains(cursor_position) {
+    /*let (clock_style_state, clock_mouse_interaction) = if layout.bounds().contains(cursor_position) {
         (StyleState::Hovered, mouse::Interaction::Pointer)
     } else {
         (StyleState::Active, mouse::Interaction::default())
-    };
+    };*/
+    let mut clock_style_state = StyleState::Active;
+    let mut clock_mouse_interaction = mouse::Interaction::default();
+    if layout.bounds().contains(cursor_position) {
+        clock_style_state = clock_style_state.max(StyleState::Hovered);
+        clock_mouse_interaction = clock_mouse_interaction.max(mouse::Interaction::Pointer);
+    }
 
     let clock = clock_cache.draw(
         layout.bounds().size(),
@@ -242,9 +244,11 @@ fn clock(
                         (pm, hour % 12 == i as u32)
                     };
 
+                    let mut style_state = StyleState::Active;
                     if selected {
                         frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.get(&StyleState::Selected).unwrap().clock_number_background);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                        style_state = style_state.max(StyleState::Selected);
                     }
 
                     let text = Text {
@@ -259,18 +263,7 @@ fn clock(
                             }
                         ),
                         position: p.clone(),
-                        /*color: if selected {
-                            style.clock_number_color_selected
-                        } else {
-                            style.clock_number_color
-                        },*/
-                        color: style.get(
-                            &if selected {
-                                StyleState::Selected
-                            } else {
-                                StyleState::Active
-                            }
-                        ).unwrap().clock_number_color,
+                        color: style.get(&style_state).unwrap().clock_number_color,
                         size: number_size,
                         font: Default::default(),
                         horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -286,27 +279,18 @@ fn clock(
                 .for_each(|(i, p)| {
                     let selected = time.minute() == i as u32;
 
+                    let mut style_state = StyleState::Active;
                     if selected {
                         frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
                         frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                        style_state = style_state.max(StyleState::Selected)
                     }
 
                     if i % 5 == 0 {
                         let text = Text {
                             content: format!("{:02}", i),
                             position: p.clone(),
-                            /*color: if selected {
-                                style.clock_number_color_selected
-                            } else {
-                                style.clock_number_color
-                            },*/
-                            color: style.get(
-                                &if selected {
-                                    StyleState::Selected
-                                } else {
-                                    StyleState::Active
-                                }
-                            ).unwrap().clock_number_color,
+                            color: style.get(&style_state).unwrap().clock_number_color,
                             size: number_size,
                             font: Default::default(),
                             horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -326,27 +310,18 @@ fn clock(
                     .for_each(|(i, p)| {
                         let selected = time.second() == i as u32;
 
+                        let mut style_state = StyleState::Active;
                         if selected {
                             frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
                             frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                            style_state = style_state.max(StyleState::Selected);
                         }
 
                         if i % 10 == 0 {
                             let text = Text {
                                 content: format!("{:02}", i),
                                 position: p.clone(),
-                                /*color: if selected {
-                                    style.clock_number_color_selected
-                                } else {
-                                    style.clock_number_color
-                                },*/
-                                color: style.get(
-                                    &if selected {
-                                        StyleState::Selected
-                                    } else {
-                                        StyleState::Active
-                                    }
-                                ).unwrap().clock_number_color,
+                                color: style.get(&style_state).unwrap().clock_number_color,
                                 size: number_size,
                                 font: Default::default(),
                                 horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
@@ -377,7 +352,6 @@ fn digital_clock(
     cursor_position: Point,
     use_24h: bool,
     show_seconds: bool,
-    //style: &Style,
     style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children().next().unwrap().children();

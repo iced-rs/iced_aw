@@ -1,5 +1,7 @@
 //! The appearance of the widgets
 
+pub mod style_state;
+
 #[cfg(feature = "colors")]
 pub mod colors;
 

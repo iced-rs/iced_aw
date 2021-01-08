@@ -50,13 +50,13 @@ pub trait StyleSheet {
     /// The normal appearance of a [`TimePicker`](crate::native::TimePicker).
     fn active(&self) -> Style;
 
-    /// The appearance when something is hovered of the
-    /// [`TimePicker`](crate::native::TimePicker).
-    fn hovered(&self) -> Style;
-
     /// The appearance when something is selected of the
     /// [`TimePicker`](crate::native::TimePicker)
     fn selected(&self) -> Style;
+
+    /// The appearance when something is hovered of the
+    /// [`TimePicker`](crate::native::TimePicker).
+    fn hovered(&self) -> Style;
 }
 
 /// The default appearance of the [`TimePicker`](crate::native::TimePicker)
@@ -79,6 +79,13 @@ impl StyleSheet for Default {
         }
     }
 
+    fn selected(&self) -> Style {
+        Style {
+            clock_number_background: [0.87, 0.87, 0.87].into(),
+            .. self.active()
+        }
+    }
+    
     fn hovered(&self) -> Style {
         Style {
             clock_number_background: [0.87, 0.87, 0.87].into(),
@@ -86,12 +93,6 @@ impl StyleSheet for Default {
         }
     }
 
-    fn selected(&self) -> Style {
-        Style {
-            clock_number_background: [0.87, 0.87, 0.87].into(),
-            .. self.active()
-        }
-    }
 }
 
 impl std::default::Default for Box<dyn StyleSheet> {

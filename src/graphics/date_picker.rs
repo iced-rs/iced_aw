@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::collections::HashMap;
 
-use crate::style::date_picker::Style;
+use crate::style::{date_picker::Style, style_state::StyleState};
 use crate::style::date_picker::StyleSheet;
 
 use iced_graphics::{Backend, Color, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment, backend};
@@ -20,14 +20,6 @@ use super::icons::{ICON_FONT, Icon};
 /// This is an alias of an `iced_native` DatePicker with an `iced_wgpu::Renderer`.
 pub type DatePicker<'a, Message, Backend> =
     date_picker::DatePicker<'a, Message, Renderer<Backend>>;
-
-// TODO: Merge
-#[derive(Eq, Hash, PartialEq)]
-enum StyleState {
-    Active,
-    Hovered,
-    Selected,
-}
 
 impl<B> date_picker::Renderer for Renderer<B>
 where
@@ -51,19 +43,23 @@ where
         let mut children = layout.children();
         let mut date_children = children.next().unwrap().children();
 
-        //let style = style_sheet.active();
         let mut style: HashMap<StyleState, Style> = HashMap::new();
         let _ = style.insert(StyleState::Active, style_sheet.active());
-        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
         let _ = style.insert(StyleState::Selected, style_sheet.selected());
+        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
         
         let mouse_interaction = mouse::Interaction::default();
 
-        let style_state = if bounds.contains(cursor_position) {
+        /*let style_state = if bounds.contains(cursor_position) {
             StyleState::Hovered
         } else {
             StyleState::Active
-        };
+        };*/
+
+        let mut style_state = StyleState::Active;
+        if bounds.contains(cursor_position) {
+            style_state = style_state.max(StyleState::Hovered);
+        }
 
         let background = Primitive::Quad {
             bounds: bounds,
@@ -72,7 +68,6 @@ where
             border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
             border_color: style.get(&style_state).unwrap().border_color,
         };
-
         
         // ----------- Year/Month----------------------
         let month_year_layout = date_children.next().unwrap();
@@ -168,7 +163,6 @@ fn month_year(
                         y: left_bounds.center_y(),
                         .. left_bounds
                     },
-                    //color: style.text_color,
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
@@ -256,7 +250,6 @@ fn days(
 /// Draws the day labels
 fn day_labels(
     layout: iced_native::Layout<'_>,
-    //style: &Style,
     style: &HashMap<StyleState, Style>,
 ) -> Primitive {
     let mut labels: Vec<Primitive> = Vec::new();
@@ -291,7 +284,6 @@ fn day_table(
     children: &mut dyn Iterator<Item=iced_native::Layout<'_>>,
     date: &chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
-    //style: &Style,
     style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
     let mut primitives: Vec<Primitive> = Vec::new();
@@ -310,13 +302,20 @@ fn day_table(
 
             let selected = date.day() == number as u32 && is_in_month == 0;
 
-            let style_state = if mouse_over {
+            /*let style_state = if mouse_over {
                 StyleState::Hovered
             } else if selected {
                 StyleState::Selected
             } else {
                 StyleState::Active
-            };
+            };*/
+            let mut style_state = StyleState::Active;
+            if selected {
+                style_state = style_state.max(StyleState::Selected);
+            }
+            if mouse_over {
+                style_state = style_state.max(StyleState::Hovered);
+            }
 
             primitives.push(
                 Primitive::Quad {

@@ -38,13 +38,13 @@ pub trait StyleSheet {
     /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
     fn active(&self) -> Style;
 
-    /// The appearance when something is hovered of the
-    /// [`DatePicker`](crate::native::DatePicker)
-    fn hovered(&self) -> Style;
-
     /// The appearance when something is selected of the
     /// [`DatePicker`](crate::native::DatePicker)
     fn selected(&self) -> Style;
+
+    /// The appearance when something is hovered of the
+    /// [`DatePicker`](crate::native::DatePicker)
+    fn hovered(&self) -> Style;
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
@@ -64,6 +64,13 @@ impl StyleSheet for Default {
         }
     }
 
+    fn selected(&self) -> Style {
+        Style {
+            day_background: Background::Color([0.87, 0.87, 0.87].into()),
+            .. self.active()
+        }
+    }
+    
     fn hovered(&self) -> Style {
         Style {
             day_background: Background::Color([0.87, 0.87, 0.87].into()),
@@ -71,12 +78,6 @@ impl StyleSheet for Default {
         }
     }
 
-    fn selected(&self) -> Style {
-        Style {
-            day_background: Background::Color([0.87, 0.87, 0.87].into()),
-            .. self.active()
-        }
-    }
 }
 
 impl std::default::Default for Box<dyn StyleSheet> {
