@@ -51,6 +51,7 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, i8)
     let (x, y) = (x as isize, y as isize);
     let first_day = NaiveDate::from_ymd(year, month, 1);
     let day_of_week = first_day.weekday().num_days_from_monday() as isize;
+    let day_of_week = if day_of_week == 0 { 7 } else { day_of_week };
 
     let day = (x + 7*y) + 1 - day_of_week;
 
@@ -257,6 +258,23 @@ mod tests {
 
         let (day, is_in_month) = position_to_day(6, 5, 2020, 11);
         assert_eq!(day, 6);
+        assert_eq!(is_in_month, 1);
+
+        
+        let (day, is_in_month) = position_to_day(0, 0, 2021, 2);
+        assert_eq!(day, 25);
+        assert_eq!(is_in_month, -1);
+
+        let (day, is_in_month) = position_to_day(0, 1, 2021, 2);
+        assert_eq!(day, 1);
+        assert_eq!(is_in_month, 0);
+
+        let (day, is_in_month) = position_to_day(6, 4, 2021, 2);
+        assert_eq!(day, 28);
+        assert_eq!(is_in_month, 0);
+
+        let (day, is_in_month) = position_to_day(0, 5, 2021, 2);
+        assert_eq!(day, 1);
         assert_eq!(is_in_month, 1);
     }
 
