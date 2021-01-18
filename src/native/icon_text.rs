@@ -1,12 +1,14 @@
 //! Text widget for rendering icons.
-//! 
+//!
 //! Nearly a complete copy of the iced_native::Text widget, but with the
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: icon_text*
 use std::hash::Hash;
 
-use iced_native::{Color, Element, HorizontalAlignment, Length, Rectangle, Size, VerticalAlignment, Widget};
+use iced_native::{
+    Color, Element, HorizontalAlignment, Length, Rectangle, Size, VerticalAlignment, Widget,
+};
 
 /// Text widget with icon font.
 #[allow(missing_debug_implementations)]
@@ -68,10 +70,7 @@ impl<Renderer: self::Renderer> IconText<Renderer> {
 
     /// Sets the [`HorizontalAlignment`](iced_native::HorizontalAlignment)
     /// of the [`IconText`](IconText).
-    pub fn horizontal_alignment(
-        mut self,
-        alignment: HorizontalAlignment,
-    ) -> Self {
+    pub fn horizontal_alignment(mut self, alignment: HorizontalAlignment) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
@@ -111,7 +110,7 @@ where
             &self.content,
             size,
             self.font.unwrap_or_else(|| renderer.default_font()),
-            bounds
+            bounds,
         );
 
         let size = limits.resolve(Size::new(width, height));
@@ -155,27 +154,18 @@ where
 /// Your renderer will need to implement this trait before being
 /// able to use an [`IconText`](IconText) in your user interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The font type used for [`IconText`](IconText).
     type Font: Default + Copy;
 
     /// Returns the default size of [`IconText`](IconText).
     fn default_size(&self) -> u16;
-    
+
     /// Returns the default font of [`IconText`](IconText).
     fn default_font(&self) -> Self::Font;
-    
+
     /// Measures the [`IconText`](IconText) in the given bounds and returns the
     /// minimum boundaries that can fit the contents.
-    fn measure(
-        &self,
-        content: &str,
-        size: u16,
-        font: Self::Font,
-        bounds: Size,
-    ) -> (f32, f32);
-
-
+    fn measure(&self, content: &str, size: u16, font: Self::Font, bounds: Size) -> (f32, f32);
 
     /// Draws an [`IconText`](IconText).
     #[allow(clippy::too_many_arguments)]
@@ -192,8 +182,7 @@ pub trait Renderer: iced_native::Renderer {
     ) -> Self::Output;
 }
 
-impl<'a, Message, Renderer> From<IconText<Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<IconText<Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: self::Renderer + 'a,
 {

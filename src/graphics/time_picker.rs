@@ -1,28 +1,37 @@
 //! Use a time picker as an input element for picking times.
-//! 
+//!
 //! *This API requires the following crate features to be activated: time_picker*
 use crate::{core::renderer::DrawEnvironment, style::style_state::StyleState};
 use std::collections::HashMap;
 
-use crate::{core::clock::{self, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, style::time_picker::{Style, StyleSheet}};
+use crate::{
+    core::clock::{
+        self, NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
+        SECOND_RADIUS_PERCENTAGE,
+    },
+    style::time_picker::{Style, StyleSheet},
+};
 use canvas::{Cache, LineCap, Path, Stroke, Text};
 use chrono::{NaiveTime, Timelike};
-use iced_graphics::{Backend, HorizontalAlignment, Point, Primitive, Rectangle, Renderer, Vector, VerticalAlignment, backend, canvas};
+use iced_graphics::{
+    backend, canvas, Backend, HorizontalAlignment, Point, Primitive, Rectangle, Renderer, Vector,
+    VerticalAlignment,
+};
 use iced_native::mouse;
 
 use crate::native::time_picker;
-pub use crate::native::time_picker::{State, Time, Period};
+pub use crate::native::time_picker::{Period, State, Time};
 
-use super::icons::{ICON_FONT, Icon};
+use super::icons::{Icon, ICON_FONT};
 
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
 const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// An input element for picking times.
-/// 
+///
 /// This is an alias of an `iced_native` TimePicker with an `iced_wgpu::Renderer`.
-pub type TimePicker<'a, Message, Backend> = 
-    time_picker::TimePicker<'a, Message, Renderer<Backend>>;
+pub type TimePicker<'a, Message, Backend> = time_picker::TimePicker<'a, Message, Renderer<Backend>>;
 
 impl<B> time_picker::Renderer for Renderer<B>
 where
@@ -49,7 +58,7 @@ where
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
 
         let mouse_interaction = mouse::Interaction::default();
-        
+
         /*let style_state = if bounds.contains(cursor_position) {
             StyleState::Hovered
         } else {
@@ -64,7 +73,7 @@ where
             bounds,
             background: style.get(&style_state).unwrap().background,
             border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
-            border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
+            border_width: style.get(&style_state).unwrap().border_width as u16,   // TODO: same
             border_color: style.get(&style_state).unwrap().border_color,
         };
 
@@ -78,7 +87,7 @@ where
             use_24h,
             show_seconds,
             &style,
-        );       
+        );
 
         // ----------- Digital clock ------------------
         let digital_clock_layout = children.next().unwrap();
@@ -88,12 +97,12 @@ where
             env.cursor_position,
             use_24h,
             show_seconds,
-            &style
+            &style,
         );
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
-        
+
         let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
             env.defaults,
@@ -114,13 +123,19 @@ where
 
         (
             Primitive::Group {
-                primitives: vec![background, clock, digital_clock, cancel_button, submit_button],
+                primitives: vec![
+                    background,
+                    clock,
+                    digital_clock,
+                    cancel_button,
+                    submit_button,
+                ],
             },
             mouse_interaction
                 .max(clock_mouse_interaction)
                 .max(digital_clock_mouse_interaction)
                 .max(cancel_mouse_interaction)
-                .max(submit_mouse_interaction)
+                .max(submit_mouse_interaction),
         )
     }
 }
@@ -147,12 +162,15 @@ fn clock(
         clock_mouse_interaction = clock_mouse_interaction.max(mouse::Interaction::Pointer);
     }
 
-    let clock = clock_cache.draw(
-        layout.bounds().size(),
-        |frame| {
+    let clock = clock_cache
+        .draw(layout.bounds().size(), |frame| {
             let center = frame.center();
             let radius = frame.width().min(frame.height()) * 0.5;
-            let period = if time.hour12().0 { clock::Period::PM } else { clock::Period::AM };
+            let period = if time.hour12().0 {
+                clock::Period::PM
+            } else {
+                clock::Period::AM
+            };
 
             let number_size = radius * NUMBER_SIZE_PERCENTAGE;
             let period_size = radius * PERIOD_SIZE_PERCENTAGE;
@@ -160,12 +178,21 @@ fn clock(
             let period_radius = radius * PERIOD_PERCENTAGE;
 
             let (hour_radius, minute_radius, second_radius) = if show_seconds {
-                (radius * HOUR_RADIUS_PERCENTAGE, radius * MINUTE_RADIUS_PERCENTAGE, radius * SECOND_RADIUS_PERCENTAGE)
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE,
+                    radius * MINUTE_RADIUS_PERCENTAGE,
+                    radius * SECOND_RADIUS_PERCENTAGE,
+                )
             } else {
-                (radius * HOUR_RADIUS_PERCENTAGE_NO_SECONDS, radius * MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, f32::MAX)
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+                    radius * MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
+                    f32::MAX,
+                )
             };
 
-            let internal_cursor_position = cursor_position - Vector::new(layout.bounds().x, layout.bounds().y);
+            let internal_cursor_position =
+                cursor_position - Vector::new(layout.bounds().x, layout.bounds().y);
 
             let nearest_radius = if layout.bounds().contains(cursor_position) {
                 crate::core::clock::nearest_radius(
@@ -186,7 +213,9 @@ fn clock(
                     internal_cursor_position,
                     center,
                 )
-            } else { NearestRadius::None };
+            } else {
+                NearestRadius::None
+            };
 
             let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
             let minute_points = crate::core::clock::circle_points(minute_radius, center, 60);
@@ -201,23 +230,54 @@ fn clock(
 
             match nearest_radius {
                 NearestRadius::Period => {
-                    frame.fill(&Path::circle(center, period_size), style.get(&StyleState::Hovered).unwrap().clock_number_background);
-                },
+                    frame.fill(
+                        &Path::circle(center, period_size),
+                        style
+                            .get(&StyleState::Hovered)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                }
                 NearestRadius::Hour => {
-                    let nearest_point = hour_points[crate::core::clock::nearest_point(&hour_points, internal_cursor_position)];
+                    let nearest_point = hour_points
+                        [crate::core::clock::nearest_point(&hour_points, internal_cursor_position)];
 
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
-                },
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                }
                 NearestRadius::Minute => {
-                    let nearest_point = minute_points[crate::core::clock::nearest_point(&minute_points, internal_cursor_position)];
-                    
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
-                },
+                    let nearest_point = minute_points[crate::core::clock::nearest_point(
+                        &minute_points,
+                        internal_cursor_position,
+                    )];
+
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                }
                 NearestRadius::Second => {
-                    let nearest_point = second_points[crate::core::clock::nearest_point(&second_points, internal_cursor_position)];
-                    
-                    frame.fill(&Path::circle(nearest_point, 5.0), style.get(&StyleState::Hovered).unwrap().clock_number_background);
-                },
+                    let nearest_point = second_points[crate::core::clock::nearest_point(
+                        &second_points,
+                        internal_cursor_position,
+                    )];
+
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                }
                 _ => {}
             }
 
@@ -232,33 +292,67 @@ fn clock(
             };
             frame.fill_text(period_text);
 
-            hour_points.iter()
-                .enumerate()
-                .for_each(|(i, p)| {
-                    let (pm, selected) = {
-                        let (pm, _) = time.hour12();
-                        let hour = time.hour();
-                        (pm, hour % 12 == i as u32)
-                    };
+            hour_points.iter().enumerate().for_each(|(i, p)| {
+                let (pm, selected) = {
+                    let (pm, _) = time.hour12();
+                    let hour = time.hour();
+                    (pm, hour % 12 == i as u32)
+                };
 
-                    let mut style_state = StyleState::Active;
-                    if selected {
-                        frame.fill(&Path::circle(*p, number_size * 0.8), style.get(&StyleState::Selected).unwrap().clock_number_background);
-                        frame.stroke(&Path::line(center, *p), hand_stroke);
-                        style_state = style_state.max(StyleState::Selected);
-                    }
+                let mut style_state = StyleState::Active;
+                if selected {
+                    frame.fill(
+                        &Path::circle(*p, number_size * 0.8),
+                        style
+                            .get(&StyleState::Selected)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    style_state = style_state.max(StyleState::Selected);
+                }
 
+                let text = Text {
+                    content: format!(
+                        "{}",
+                        if pm && use_24h {
+                            i + 12
+                        } else if !use_24h && i == 0 {
+                            12
+                        } else {
+                            i
+                        }
+                    ),
+                    position: *p,
+                    color: style.get(&style_state).unwrap().clock_number_color,
+                    size: number_size,
+                    font: Default::default(),
+                    horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
+                    vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                };
+
+                frame.fill_text(text);
+            });
+
+            minute_points.iter().enumerate().for_each(|(i, p)| {
+                let selected = time.minute() == i as u32;
+
+                let mut style_state = StyleState::Active;
+                if selected {
+                    frame.fill(
+                        &Path::circle(*p, number_size * 0.5),
+                        style
+                            .get(&StyleState::Selected)
+                            .unwrap()
+                            .clock_number_background,
+                    );
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    style_state = style_state.max(StyleState::Selected)
+                }
+
+                if i % 5 == 0 {
                     let text = Text {
-                        content: format!(
-                            "{}", 
-                            if pm && use_24h {
-                                i + 12
-                            } else if !use_24h && i == 0 {
-                                12
-                            } else {
-                                i
-                            }
-                        ),
+                        content: format!("{:02}", i),
                         position: *p,
                         color: style.get(&style_state).unwrap().clock_number_color,
                         size: number_size,
@@ -268,22 +362,33 @@ fn clock(
                     };
 
                     frame.fill_text(text);
-                });
+                } else {
+                    let circle = Path::circle(*p, number_size * 0.1);
+                    frame.fill(
+                        &circle,
+                        style.get(&StyleState::Active).unwrap().clock_dots_color,
+                    );
+                }
+            });
 
-
-            minute_points.iter()
-                .enumerate()
-                .for_each(|(i, p)| {
-                    let selected = time.minute() == i as u32;
+            if show_seconds {
+                second_points.iter().enumerate().for_each(|(i, p)| {
+                    let selected = time.second() == i as u32;
 
                     let mut style_state = StyleState::Active;
                     if selected {
-                        frame.fill(&Path::circle(*p, number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
+                        frame.fill(
+                            &Path::circle(*p, number_size * 0.5),
+                            style
+                                .get(&StyleState::Selected)
+                                .unwrap()
+                                .clock_number_background,
+                        );
                         frame.stroke(&Path::line(center, *p), hand_stroke);
-                        style_state = style_state.max(StyleState::Selected)
+                        style_state = style_state.max(StyleState::Selected);
                     }
 
-                    if i % 5 == 0 {
+                    if i % 10 == 0 {
                         let text = Text {
                             content: format!("{:02}", i),
                             position: *p,
@@ -296,44 +401,16 @@ fn clock(
 
                         frame.fill_text(text);
                     } else {
-                        let circle = Path::circle(*p, number_size*0.1);
-                        frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
+                        let circle = Path::circle(*p, number_size * 0.1);
+                        frame.fill(
+                            &circle,
+                            style.get(&StyleState::Active).unwrap().clock_dots_color,
+                        );
                     }
-                });
-
-            if show_seconds {
-                second_points.iter()
-                    .enumerate()
-                    .for_each(|(i, p)| {
-                        let selected = time.second() == i as u32;
-
-                        let mut style_state = StyleState::Active;
-                        if selected {
-                            frame.fill(&Path::circle(*p, number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
-                            frame.stroke(&Path::line(center, *p), hand_stroke);
-                            style_state = style_state.max(StyleState::Selected);
-                        }
-
-                        if i % 10 == 0 {
-                            let text = Text {
-                                content: format!("{:02}", i),
-                                position: *p,
-                                color: style.get(&style_state).unwrap().clock_number_color,
-                                size: number_size,
-                                font: Default::default(),
-                                horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                                vertical_alignment: iced_graphics::VerticalAlignment::Center,
-                            };
-
-                            frame.fill_text(text);
-                        } else {
-                            let circle = Path::circle(*p, number_size*0.1);
-                            frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
-                        }
-                    })
+                })
             }
-        }
-    ).into_primitive();
+        })
+        .into_primitive();
     let clock = Primitive::Translate {
         translation: Vector::new(layout.bounds().x, layout.bounds().y),
         content: Box::new(clock),
@@ -376,7 +453,7 @@ fn digital_clock(
                     bounds: Rectangle {
                         x: up_bounds.center_x(),
                         y: up_bounds.center_y(),
-                        .. up_bounds
+                        ..up_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
@@ -384,13 +461,12 @@ fn digital_clock(
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
-
                 Primitive::Text {
                     content: text,
                     bounds: Rectangle {
                         x: center_bounds.center_x(),
                         y: center_bounds.center_y(),
-                        .. center_bounds
+                        ..center_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
@@ -398,21 +474,20 @@ fn digital_clock(
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
-
                 Primitive::Text {
                     content: Icon::CaretDownFill.into(),
                     bounds: Rectangle {
                         x: down_bounds.center_x(),
                         y: down_bounds.center_y(),
-                        .. down_bounds
+                        ..down_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
-                }
-            ]
+                },
+            ],
         };
 
         (primitive, mouse_interaction)
@@ -424,23 +499,27 @@ fn digital_clock(
     }
 
     let mouse_interaction = mouse::Interaction::default();
-    
+
     let hour_layout = children.next().unwrap();
     let (hour, hour_mouse_interaction) = f(
         hour_layout,
         format!(
             "{:02}",
-            if use_24h { time.hour() } else { time.hour12().1 }
-        )
+            if use_24h {
+                time.hour()
+            } else {
+                time.hour12().1
+            }
+        ),
     );
-    
+
     let hour_minute_seperator = children.next().unwrap();
     let hour_minute_seperator = Primitive::Text {
         content: ":".to_owned(),
         bounds: Rectangle {
             x: hour_minute_seperator.bounds().center_x(),
             y: hour_minute_seperator.bounds().center_y(),
-            .. hour_minute_seperator.bounds()
+            ..hour_minute_seperator.bounds()
         },
         color: style.get(&StyleState::Active).unwrap().text_color,
         size: hour_minute_seperator.bounds().height,
@@ -448,7 +527,7 @@ fn digital_clock(
         horizontal_alignment: HorizontalAlignment::Center,
         vertical_alignment: VerticalAlignment::Center,
     };
-    
+
     let minute_layout = children.next().unwrap();
     let (minute, minute_mouse_interaction) = f(minute_layout, format!("{:02}", time.minute()));
 
@@ -459,7 +538,7 @@ fn digital_clock(
             bounds: Rectangle {
                 x: minute_second_seperator.bounds().center_x(),
                 y: minute_second_seperator.bounds().center_y(),
-                .. minute_second_seperator.bounds()
+                ..minute_second_seperator.bounds()
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: minute_second_seperator.bounds().height,
@@ -473,21 +552,21 @@ fn digital_clock(
 
         (minute_second_seperator, second, second_mouse_interaction)
     } else {
-        (Primitive::None, Primitive::None, mouse::Interaction::default())
+        (
+            Primitive::None,
+            Primitive::None,
+            mouse::Interaction::default(),
+        )
     };
-    
+
     let period = if !use_24h {
         let period = children.next().unwrap();
         Primitive::Text {
-            content: if time.hour12().0 {
-                "PM"
-            } else {
-                "AM"
-            }.to_string(),
+            content: if time.hour12().0 { "PM" } else { "AM" }.to_string(),
             bounds: Rectangle {
                 x: period.bounds().center_x(),
                 y: period.bounds().center_y(),
-                .. period.bounds()
+                ..period.bounds()
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: period.bounds().height,
@@ -497,15 +576,22 @@ fn digital_clock(
         }
     } else {
         Primitive::None
-    };    
+    };
 
     (
         Primitive::Group {
-            primitives: vec![hour, hour_minute_seperator, minute, minute_second_seperator, second, period],
+            primitives: vec![
+                hour,
+                hour_minute_seperator,
+                minute,
+                minute_second_seperator,
+                second,
+                period,
+            ],
         },
         mouse_interaction
             .max(hour_mouse_interaction)
             .max(minute_mouse_interaction)
-            .max(second_mouse_interaction)
+            .max(second_mouse_interaction),
     )
 }

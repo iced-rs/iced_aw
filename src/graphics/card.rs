@@ -1,20 +1,22 @@
 //! Displays a [`Card`](Card).
-//! 
+//!
 //! *This API requires the following crate features to be activated: card*
-use iced_graphics::{Backend, Color, Defaults, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment, backend, defaults};
+use iced_graphics::{
+    backend, defaults, Backend, Color, Defaults, HorizontalAlignment, Primitive, Rectangle,
+    Renderer, VerticalAlignment,
+};
 use iced_native::mouse;
 
-use crate::{core::renderer::DrawEnvironment, native::card};
 pub use crate::style::card::{Style, StyleSheet};
+use crate::{core::renderer::DrawEnvironment, native::card};
 
 /// A card consisting of a head, body and optional foot.
-/// 
+///
 /// This is an alias of an `iced_native` Card with an `iced_wgpu::Renderer`.
-pub type Card<'a, Message, Backend> =
-    card::Card<'a, Message, Renderer<Backend>>;
+pub type Card<'a, Message, Backend> = card::Card<'a, Message, Renderer<Backend>>;
 
 impl<B> card::Renderer for Renderer<B>
-where 
+where
     B: Backend + backend::Text,
 {
     type Style = Box<dyn StyleSheet>;
@@ -42,7 +44,7 @@ where
             bounds,
             background: style.background,
             border_radius: style.border_radius as u16, // TODO: will change in the future
-            border_width: style.border_width as u16, // TODO: same
+            border_width: style.border_width as u16,   // TODO: same
             border_color: style.border_color,
         };
 
@@ -50,7 +52,7 @@ where
             bounds,
             background: Color::TRANSPARENT.into(),
             border_radius: style.border_radius as u16, // TODO: same
-            border_width: style.border_width as u16, // TODO: same
+            border_width: style.border_width as u16,   // TODO: same
             border_color: style.border_color,
         };
 
@@ -68,8 +70,8 @@ where
             self,
             &Defaults {
                 text: defaults::Text {
-                    color: style.head_text_color
-                }
+                    color: style.head_text_color,
+                },
             },
             head_children.next().unwrap(),
             env.cursor_position,
@@ -80,21 +82,20 @@ where
 
         let (close, new_mouse_interaction) = head_children.next().map_or(
             (Primitive::None, mouse::Interaction::default()),
-            
             |close_layout| {
                 let close_bounds = close_layout.bounds();
                 let is_mouse_over_close = close_bounds.contains(env.cursor_position);
 
                 (
                     Primitive::Text {
-                        content:  super::icons::Icon::X.into(),
+                        content: super::icons::Icon::X.into(),
                         font: super::icons::ICON_FONT,
                         size: close_layout.bounds().height
                             + if is_mouse_over_close { 5.0 } else { 0.0 },
                         bounds: Rectangle {
                             x: close_bounds.center_x(),
                             y: close_bounds.center_y(),
-                            .. close_bounds
+                            ..close_bounds
                         },
                         color: style.close_color,
                         horizontal_alignment: HorizontalAlignment::Center,
@@ -104,9 +105,9 @@ where
                         mouse::Interaction::Pointer
                     } else {
                         mouse::Interaction::default()
-                    }
+                    },
                 )
-            }
+            },
         );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
@@ -125,8 +126,8 @@ where
             self,
             &Defaults {
                 text: defaults::Text {
-                    color: style.body_text_color
-                }
+                    color: style.body_text_color,
+                },
             },
             body_children.next().unwrap(),
             env.cursor_position,
@@ -150,8 +151,8 @@ where
                 self,
                 &Defaults {
                     text: defaults::Text {
-                        color: style.foot_text_color
-                    }
+                        color: style.foot_text_color,
+                    },
                 },
                 foot_children.next().unwrap(),
                 env.cursor_position,
@@ -175,7 +176,7 @@ where
                     close,
                     body,
                     foot,
-                ]
+                ],
             },
             mouse_interaction,
         )

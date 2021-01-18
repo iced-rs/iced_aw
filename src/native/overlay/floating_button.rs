@@ -1,12 +1,11 @@
 //! Use a floating button to overlay a button over some content
-//! 
+//!
 //! *This API requires the following crate features to be activated: floating_button*
 
 use std::hash::Hash;
 
 use iced_native::{
-    button, event, layout::Limits, overlay, Button, Clipboard, Event,
-    Layout, Point, Size, Widget, 
+    button, event, layout::Limits, overlay, Button, Clipboard, Event, Layout, Point, Size, Widget,
 };
 
 use crate::native::floating_button::{Anchor, Offset};
@@ -37,8 +36,7 @@ where
         button: B,
         anchor: &'a Anchor,
         offset: &'a Offset,
-    ) -> Self
-    {
+    ) -> Self {
         FloatingButtonOverlay {
             state,
             button,
@@ -50,15 +48,8 @@ where
     /// Turns the [`FloatingButtonOverlay`](FloatingButtonOverlay) into an
     /// overlay [`Element`](iced_native::overlay::Element) at the given target
     /// position.
-    pub fn overlay(
-        self,
-        position: Point,
-    ) -> overlay::Element<'a, Message, Renderer>
-    {
-        overlay::Element::new(
-            position,
-            Box::new(Overlay::new(self))
-        )
+    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
+        overlay::Element::new(position, Box::new(Overlay::new(self)))
     }
 }
 
@@ -104,37 +95,26 @@ where
         bounds: Size,
         position: Point,
     ) -> iced_native::layout::Node {
-        let limits = Limits::new(
-            Size::ZERO,
-            bounds,
-        );
+        let limits = Limits::new(Size::ZERO, bounds);
         let mut button = self.button.layout(renderer, &limits);
 
         match self.anchor {
-            Anchor::NorthWest => button.move_to(
-                Point::new(
-                    position.x + self.offset.x,
-                    position.y + self.offset.y,
-                )
-            ),
-            Anchor::NorthEast => button.move_to(
-                Point::new(
-                    position.x - button.bounds().width - self.offset.x,
-                    position.y + self.offset.y,
-                )
-            ),
-            Anchor::SouthWest => button.move_to(
-                Point::new(
-                    position.x + self.offset.x,
-                    position.y - button.bounds().height - self.offset.y,
-                )
-            ),
-            Anchor::SouthEast => button.move_to(
-                Point::new(
-                    position.x - button.bounds().width - self.offset.x,
-                    position.y - button.bounds().height - self.offset.y,
-                )
-            )
+            Anchor::NorthWest => button.move_to(Point::new(
+                position.x + self.offset.x,
+                position.y + self.offset.y,
+            )),
+            Anchor::NorthEast => button.move_to(Point::new(
+                position.x - button.bounds().width - self.offset.x,
+                position.y + self.offset.y,
+            )),
+            Anchor::SouthWest => button.move_to(Point::new(
+                position.x + self.offset.x,
+                position.y - button.bounds().height - self.offset.y,
+            )),
+            Anchor::SouthEast => button.move_to(Point::new(
+                position.x - button.bounds().width - self.offset.x,
+                position.y - button.bounds().height - self.offset.y,
+            )),
         }
 
         button
@@ -147,7 +127,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.button.on_event(
             event,

@@ -5,12 +5,17 @@ use std::hash::Hash;
 
 use chrono::{Datelike, NaiveDate};
 use iced_native::{
-    Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Point, Row, Size, Text, Widget, button,
-    column, container, event, layout::{self, Limits}, mouse, overlay, row, text
+    button, column, container, event,
+    layout::{self, Limits},
+    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
+    Length, Point, Row, Size, Text, Widget,
 };
 
-use crate::{core::renderer::DrawEnvironment, graphics::icons::Icon, native::{IconText, date_picker::State, icon_text}};
+use crate::{
+    core::renderer::DrawEnvironment,
+    graphics::icons::Icon,
+    native::{date_picker::State, icon_text, IconText},
+};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -33,10 +38,16 @@ where
 }
 
 impl<'a, Message, Renderer> DatePickerOverlay<'a, Message, Renderer>
-where 
+where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer + column::Renderer
-        + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     /// Creates a new [`DatePickerOverlay`](DatePickerOverlay) on the given
     /// position.
@@ -57,24 +68,19 @@ where
 
         DatePickerOverlay {
             date,
-            cancel_button: Button::new(
-                    cancel_button,
-                    IconText::new(Icon::X)
-                        .width(Length::Fill)
-                )
+            cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
                 //.style(button_style.clone())
                 .into(),
             submit_button: Button::new(
-                    submit_button,
-                    IconText::new(Icon::Check)
-                        .width(Length::Fill)
-                )
-                .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
-                //.style(button_style)
-                .into(),
+                submit_button,
+                IconText::new(Icon::Check).width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel) // Sending a fake message
+            //.style(button_style)
+            .into(),
             on_submit,
             position,
             style,
@@ -84,10 +90,7 @@ where
     /// Turn this [`DatePickerOverlay`](DatePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(
-            self.position,
-            Box::new(self)
-        )
+        overlay::Element::new(self.position, Box::new(self))
     }
 
     fn year_as_string(&self) -> String {
@@ -98,16 +101,15 @@ where
         crate::core::date::month_as_string(&self.date)
     }
 
-
     /// The event handling for the month / year bar.
-    fn on_event_month_year (
+    fn on_event_month_year(
         &mut self,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>
+        _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -120,7 +122,7 @@ where
         let left_bounds = month_children.next().unwrap().bounds();
         let _center_bounds = month_children.next().unwrap().bounds();
         let right_bounds = month_children.next().unwrap().bounds();
-        
+
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if left_bounds.contains(cursor_position) {
                 *self.date = crate::core::date::pred_month(self.date);
@@ -138,7 +140,7 @@ where
         let left_bounds = year_children.next().unwrap().bounds();
         let _center_bounds = year_children.next().unwrap().bounds();
         let right_bounds = year_children.next().unwrap().bounds();
-        
+
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if left_bounds.contains(cursor_position) {
                 *self.date = crate::core::date::pred_year(self.date);
@@ -148,19 +150,19 @@ where
                 status = event::Status::Captured;
             }
         }
-        
+
         status
     }
 
     /// The event handling for the calendar days.
-    fn on_event_days (
+    fn on_event_days(
         &mut self,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>
+        _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -177,15 +179,19 @@ where
                             x,
                             y,
                             self.date.year(),
-                            self.date.month()
+                            self.date.month(),
                         );
 
                         // TODO: clean up
                         *self.date = match is_in_month {
-                            -1 => crate::core::date::pred_month(self.date).with_day(day as u32).unwrap(),
+                            -1 => crate::core::date::pred_month(self.date)
+                                .with_day(day as u32)
+                                .unwrap(),
                             0 => self.date.with_day(day as u32).unwrap(),
-                            1 => crate::core::date::succ_month(self.date).with_day(day as u32).unwrap(),
-                            _ => panic!("Should not happen")
+                            1 => crate::core::date::succ_month(self.date)
+                                .with_day(day as u32)
+                                .unwrap(),
+                            _ => panic!("Should not happen"),
                         };
 
                         status = event::Status::Captured;
@@ -201,10 +207,16 @@ where
 
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for DatePickerOverlay<'a, Message, Renderer>
-where 
+where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer + column::Renderer
-        + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     fn layout(
         &self,
@@ -212,26 +224,22 @@ where
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
-        let limits = Limits::new(
-            Size::ZERO,
-            bounds,
-        )
-        .pad(PADDING as f32)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .max_width(300)
-        .max_height(300);
-        
+        let limits = Limits::new(Size::ZERO, bounds)
+            .pad(PADDING as f32)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .max_width(300)
+            .max_height(300);
+
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
-        let cancel_button = self.cancel_button
-            .layout(renderer, &cancel_limits);
+        let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let limits = limits.shrink(Size::new(
             0.0,
-            cancel_button.bounds().height + SPACING as f32
+            cancel_button.bounds().height + SPACING as f32,
         ));
-        
+
         // Month/Year
         let font_size = text::Renderer::default_size(renderer) as u32;
 
@@ -245,19 +253,21 @@ where
                         Row::new() // Left Month arrow
                             .width(Length::Units(font_size as u16))
                             .height(Length::Fill)
-                            .max_height(font_size)
+                            .max_height(font_size),
                     )
-                    .push( // Month
+                    .push(
+                        // Month
                         Text::new("")
                             .width(Length::Fill)
-                            .height(Length::Units(font_size as u16))
+                            .height(Length::Units(font_size as u16)),
                     )
-                    .push( // Right Month arrow
+                    .push(
+                        // Right Month arrow
                         Row::new()
                             .width(Length::Units(font_size as u16))
                             .height(Length::Fill)
-                            .max_height(font_size)
-                    )
+                            .max_height(font_size),
+                    ),
             )
             .push(
                 Row::new()
@@ -266,40 +276,40 @@ where
                         Row::new() // Left Year arrow
                             .width(Length::Units(font_size as u16))
                             .height(Length::Fill)
-                            .max_height(font_size)
+                            .max_height(font_size),
                     )
-                    .push( // Year
+                    .push(
+                        // Year
                         Text::new("")
                             .width(Length::Fill)
-                            .height(Length::Units(font_size as u16))
+                            .height(Length::Units(font_size as u16)),
                     )
-                    .push( // Right Year arrow
+                    .push(
+                        // Right Year arrow
                         Row::new()
                             .width(Length::Units(font_size as u16))
                             .height(Length::Fill)
-                            .max_height(font_size)
-                    )
+                            .max_height(font_size),
+                    ),
             );
 
-        let days = Container::<(), Renderer>::new(
-            (0..7).into_iter().fold(
-                Column::new().height(Length::Fill),
-                |column, _y| {
-                    column.push((0..7).into_iter().fold(
-                        Row::new().height(Length::Fill).padding(DAY_CELL_PADDING),
-                        |row, _x| {
-                            row.push(
-                                Row::new()
-                                    .width(Length::Fill)
-                                    .height(Length::Fill)
-                                    .max_width(font_size)
-                                    .max_height(font_size)
-                            )
-                        }
-                    ))
-                }
-            )
-        )
+        let days = Container::<(), Renderer>::new((0..7).into_iter().fold(
+            Column::new().height(Length::Fill),
+            |column, _y| {
+                column.push((0..7).into_iter().fold(
+                    Row::new().height(Length::Fill).padding(DAY_CELL_PADDING),
+                    |row, _x| {
+                        row.push(
+                            Row::new()
+                                .width(Length::Fill)
+                                .height(Length::Fill)
+                                .max_width(font_size)
+                                .max_height(font_size),
+                        )
+                    },
+                ))
+            },
+        ))
         .height(Length::Fill)
         .center_y();
 
@@ -309,61 +319,66 @@ where
             .push(month_year)
             .push(days)
             .layout(renderer, &limits);
-        
+
         col.move_to(Point::new(
             col.bounds().x + PADDING as f32,
             col.bounds().y + PADDING as f32,
-        ));        
-        
+        ));
 
         // Buttons
-        let cancel_limits = limits.clone()
+        let cancel_limits = limits
+            .clone()
             .max_width(((col.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
 
-        let mut cancel_button = self.cancel_button
-            .layout(renderer, &cancel_limits);
-        
-        let submit_limits = limits.clone()
+        let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+
+        let submit_limits = limits
+            .clone()
             .max_width(((col.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
 
-        let mut submit_button = self.submit_button
-            .layout(renderer, &submit_limits);
+        let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
             x: cancel_button.bounds().x + PADDING as f32,
-            y: cancel_button.bounds().y + col.bounds().height + PADDING as f32
-                + SPACING as f32,
+            y: cancel_button.bounds().y + col.bounds().height + PADDING as f32 + SPACING as f32,
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + col.bounds().width - submit_button.bounds().width
                 + PADDING as f32,
-            y: submit_button.bounds().y + col.bounds().height + PADDING as f32
-                + SPACING as f32,
+            y: submit_button.bounds().y + col.bounds().height + PADDING as f32 + SPACING as f32,
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
                 col.bounds().width + (2.0 * PADDING as f32),
-                col.bounds().height + cancel_button.bounds().height + (2.0 * PADDING as f32)
+                col.bounds().height
+                    + cancel_button.bounds().height
+                    + (2.0 * PADDING as f32)
                     + SPACING as f32,
             ),
             vec![col, cancel_button, submit_button],
         );
 
         node.move_to(Point::new(
-            (position.x - node.size().width/2.0).max(0.0),
-            (position.y - node.size().height/2.0).max(0.0),
+            (position.x - node.size().width / 2.0).max(0.0),
+            (position.y - node.size().height / 2.0).max(0.0),
         ));
 
         node.move_to(Point::new(
             if node.bounds().x + node.bounds().width > bounds.width {
-                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x))).max(0.0)
-            } else { node.bounds().x },
+                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x)))
+                    .max(0.0)
+            } else {
+                node.bounds().x
+            },
             //node.bounds().x,
             if node.bounds().y + node.bounds().height > bounds.height {
-                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y))).max(0.0)
-            } else { node.bounds().y },
+                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y)))
+                    .max(0.0)
+            } else {
+                node.bounds().y
+            },
         ));
 
         node
@@ -376,7 +391,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -406,7 +421,7 @@ where
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
-        
+
         let cancel_status = self.cancel_button.on_event(
             event.clone(),
             cancel_button_layout,
@@ -430,15 +445,12 @@ where
             clipboard,
         );
 
-
         if !fake_messages.is_empty() {
-            messages.push(
-                (self.on_submit)(
-                    self.date.year(),
-                    self.date.month(),
-                    self.date.day()
-                )
-            );
+            messages.push((self.on_submit)(
+                self.date.year(),
+                self.date.month(),
+                self.date.day(),
+            ));
         }
 
         month_year_status
@@ -480,14 +492,12 @@ where
     }
 }
 
-
 /// The renderer of a [`DatePickerOverlay`](DatePickerOverlay).
 ///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`DatePicker`](crate::native::DatePicker) in your user
 /// interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -500,7 +510,7 @@ pub trait Renderer: iced_native::Renderer {
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-    )-> Self::Output;
+    ) -> Self::Output;
 }
 
 #[cfg(debug_assertions)]
@@ -515,5 +525,6 @@ impl Renderer for iced_native::renderer::Null {
         _month_str: &str,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
-    )-> Self::Output {}
+    ) -> Self::Output {
+    }
 }

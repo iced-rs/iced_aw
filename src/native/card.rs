@@ -1,15 +1,15 @@
 //! Displays a [`Card`](Card).
-//! 
+//!
 //! *This API requires the following crate features to be activated: card*
 use std::hash::Hash;
 
-use iced_native::{Align, mouse};
-use iced_native::{Clipboard, Element, Event, Layout, Length, Point, Size, Widget, event};
+use iced_native::{event, Clipboard, Element, Event, Layout, Length, Point, Size, Widget};
+use iced_native::{mouse, Align};
 
 use crate::core::renderer::DrawEnvironment;
 
 /// A card consisting of a head, body and optional foot.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_native::{renderer::Null, Text};
@@ -19,14 +19,14 @@ use crate::core::renderer::DrawEnvironment;
 /// enum Message {
 ///     ClosingCard,
 /// }
-/// 
+///
 /// let card = Card::new(
 ///     Text::new("Head"),
 ///     Text::new("Body")
 /// )
 /// .foot(Text::new("Foot"))
 /// .on_close(Message::ClosingCard);
-/// 
+///
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Card<'a, Message, Renderer: self::Renderer> {
@@ -46,7 +46,7 @@ pub struct Card<'a, Message, Renderer: self::Renderer> {
 }
 
 impl<'a, Message, Renderer> Card<'a, Message, Renderer>
-where 
+where
     Renderer: self::Renderer,
 {
     /// Creates a new [`Card`](Card) containing the given head and body.
@@ -76,7 +76,7 @@ where
     /// [`Card`](Card).
     pub fn foot<F>(mut self, foot: F) -> Self
     where
-        F: Into<Element<'a, Message, Renderer>>
+        F: Into<Element<'a, Message, Renderer>>,
     {
         self.foot = Some(foot.into());
         self
@@ -107,7 +107,7 @@ where
     }
 
     /// Sets the padding of the [`Card`](Card).
-    /// 
+    ///
     /// This will set the padding of the head, body and foot to the
     /// same value.
     pub fn padding(mut self, padding: f32) -> Self {
@@ -143,7 +143,7 @@ where
 
     /// Sets the message that will be produced when the close icon of the
     /// [`Card`](Card) is pressed.
-    /// 
+    ///
     /// Setting this enables the drawing of a close icon on the [`Card`](Card).
     pub fn on_close(mut self, msg: Message) -> Self {
         self.on_close = Some(msg);
@@ -151,16 +151,14 @@ where
     }
 
     /// Sets the style of the [`Card`](Card).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self
-    {
+    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
         self.style = style.into();
         self
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer>
-    for Card<'a, Message, Renderer>
-where 
+impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
+where
     Message: Clone,
     Renderer: self::Renderer,
 {
@@ -177,7 +175,8 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        let limits = limits.clone()
+        let limits = limits
+            .clone()
             .max_width(self.max_width)
             .max_height(self.max_height);
 
@@ -191,13 +190,7 @@ where
             self.close_size,
         );
 
-        let mut body_node = body_node(
-            renderer,
-            &limits,
-            &self.body,
-            self.padding_body,
-            self.width,
-        );
+        let mut body_node = body_node(renderer, &limits, &self.body, self.padding_body, self.width);
 
         body_node.move_to(Point::new(
             body_node.bounds().x,
@@ -212,19 +205,15 @@ where
 
         foot_node.move_to(Point::new(
             foot_node.bounds().x,
-            foot_node.bounds().y
-                + head_node.bounds().height
-                + body_node.bounds().height
+            foot_node.bounds().y + head_node.bounds().height + body_node.bounds().height,
         ));
 
         iced_native::layout::Node::with_children(
             Size::new(
                 body_node.size().width,
-                head_node.size().height
-                    + body_node.size().height
-                    + foot_node.size().height
+                head_node.size().height + body_node.size().height + foot_node.size().height,
             ),
-            vec!(head_node, body_node, foot_node),
+            vec![head_node, body_node, foot_node],
         )
     }
 
@@ -235,7 +224,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -250,24 +239,23 @@ where
             clipboard,
         );
 
-        let close_status = head_children.next().map_or(
-            event::Status::Ignored,
-            |close_layout| {
+        let close_status = head_children
+            .next()
+            .map_or(event::Status::Ignored, |close_layout| {
                 if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
                     if close_layout.bounds().contains(cursor_position) {
-                        return self.on_close.clone().map_or(
-                            event::Status::Ignored,
-                            |on_close| {
+                        return self
+                            .on_close
+                            .clone()
+                            .map_or(event::Status::Ignored, |on_close| {
                                 messages.push(on_close);
                                 event::Status::Captured
-                            }
-                        )
+                            });
                     }
                 }
 
                 event::Status::Ignored
-            }
-        );
+            });
 
         let body_layout = children.next().unwrap();
         let mut body_children = body_layout.children();
@@ -277,21 +265,25 @@ where
             cursor_position,
             messages,
             renderer,
-            clipboard
+            clipboard,
         );
 
         let foot_layout = children.next().unwrap();
         let mut foot_children = foot_layout.children();
-        let foot_status = self.foot.as_mut().map(
-            |foot| foot.on_event(
-                event,
-                foot_children.next().unwrap(),
-                cursor_position,
-                messages,
-                renderer,
-                clipboard
-            )
-        ).unwrap_or(event::Status::Ignored);
+        let foot_status = self
+            .foot
+            .as_mut()
+            .map(|foot| {
+                foot.on_event(
+                    event,
+                    foot_children.next().unwrap(),
+                    cursor_position,
+                    messages,
+                    renderer,
+                    clipboard,
+                )
+            })
+            .unwrap_or(event::Status::Ignored);
 
         head_status
             .merge(close_status)
@@ -317,7 +309,7 @@ where
             },
             &self.head,
             &self.body,
-            &self.foot
+            &self.foot,
         )
     }
 
@@ -331,7 +323,9 @@ where
         self.max_height.hash(state);
         self.head.hash_layout(state);
         self.body.hash_layout(state);
-        if let Some(foot) = self.foot.as_ref() { foot.hash_layout(state) };
+        if let Some(foot) = self.foot.as_ref() {
+            foot.hash_layout(state)
+        };
     }
 }
 
@@ -353,10 +347,12 @@ where
         .height(head.height())
         .pad(padding);
 
-    let close_size = close_size.unwrap_or_else(||renderer.default_size());
+    let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
-        Some(iced_native::layout::Node::new(Size::new(close_size, close_size)))
+        Some(iced_native::layout::Node::new(Size::new(
+            close_size, close_size,
+        )))
     } else {
         None
     };
@@ -368,10 +364,7 @@ where
     head.align(Align::Start, Align::Center, head.size());
 
     if let Some(node) = close.as_mut() {
-        size = Size::new(
-            size.width + close_size,
-            size.height
-        );
+        size = Size::new(size.width + close_size, size.height);
 
         node.move_to(Point::new(size.width - padding, padding));
         node.align(Align::End, Align::Center, node.size())
@@ -396,11 +389,12 @@ fn body_node<'a, Message, Renderer>(
 where
     Renderer: self::Renderer,
 {
-    let limits = limits.clone()
-            .loose()
-            .width(width)
-            .height(body.height())
-            .pad(padding);
+    let limits = limits
+        .clone()
+        .loose()
+        .width(width)
+        .height(body.height())
+        .pad(padding);
 
     let mut body = body.layout(renderer, &limits);
     let size = limits.resolve(body.size());
@@ -421,7 +415,8 @@ fn foot_node<'a, Message, Renderer>(
 where
     Renderer: self::Renderer,
 {
-    let limits = limits.clone()
+    let limits = limits
+        .clone()
         .loose()
         .width(width)
         .height(foot.height())
@@ -437,11 +432,10 @@ where
 }
 
 /// The renderer of a [`Card`](Card).
-/// 
+///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`Cary`](Card) in your user interface.
 pub trait Renderer: iced_native::Renderer {
-    
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -476,13 +470,13 @@ impl Renderer for iced_native::renderer::Null {
         _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         _head: &Element<'_, Message, Self>,
         _body: &Element<'_, Message, Self>,
-        _foot: &Option<Element<'_, Message, Self>>
-    ) -> Self::Output {}
+        _foot: &Option<Element<'_, Message, Self>>,
+    ) -> Self::Output {
+    }
 }
 
-impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
-where 
+impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+where
     Renderer: self::Renderer + 'a,
     Message: Clone + 'a,
 {

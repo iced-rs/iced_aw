@@ -1,5 +1,5 @@
 //! Use a badge for color highlighting important information.
-//! 
+//!
 //! *This API requires the following crate features to be activated: badge*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
@@ -74,8 +74,8 @@ where
 pub use predefined::*;
 #[cfg(feature = "colors")]
 mod predefined {
-    use crate::style::{badge::Style, colors};
     use crate::style::badge::StyleSheet;
+    use crate::style::{badge::Style, colors};
 
     /// The appearance with the [`primary`](colors::PRIMARY) color of a
     /// [`Badge`](crate::native::badge::Badge).

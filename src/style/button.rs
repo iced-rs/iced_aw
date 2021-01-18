@@ -1,5 +1,5 @@
 //! Predefined styles for a [`Button`](iced_native::button::Button).
-//! 
+//!
 //! *This API requires the following crate features to be activated: colors*
 
 #[cfg(feature = "colors")]
@@ -20,7 +20,7 @@ mod predefined {
             Style {
                 background: colors::PRIMARY.into(),
                 text_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -35,7 +35,7 @@ mod predefined {
             Style {
                 background: colors::SECONDARY.into(),
                 text_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -50,7 +50,7 @@ mod predefined {
             Style {
                 background: colors::SUCCESS.into(),
                 text_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -65,7 +65,7 @@ mod predefined {
             Style {
                 background: colors::DANGER.into(),
                 text_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -79,7 +79,7 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::WARNING.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -93,7 +93,7 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::INFO.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -107,7 +107,7 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::LIGHT.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -122,7 +122,7 @@ mod predefined {
             Style {
                 background: colors::DARK.into(),
                 text_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -136,7 +136,7 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::WHITE.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }

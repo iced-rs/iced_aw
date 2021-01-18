@@ -1,9 +1,9 @@
 //! TODO
-use iced_web::{Bus, Css, Element, Widget};
 use dodrio::bumpalo;
+use iced_web::{Bus, Css, Element, Widget};
 
+pub use crate::core::time::{Period, Time};
 pub use crate::style::time_picker::{Style, StyleSheet};
-pub use crate::core::time::{Time, Period};
 
 use std::rc::Rc;
 
@@ -25,12 +25,7 @@ pub struct TimePicker<'a, Message> {
 
 impl<'a, Message> TimePicker<'a, Message> {
     /// TODO
-    pub fn new<U, F>(
-        _state: &'a mut State,
-        _underlay: U,
-        _on_cancel: Message,
-        on_submit: F,
-    ) -> Self
+    pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
         F: 'static + Fn(Time) -> Message,
@@ -59,7 +54,7 @@ impl<'a, Message> TimePicker<'a, Message> {
     }
 
     /// Sets the style of the [`TimePicker`](TimePicker).
-    /// 
+    ///
     /// The style will be ignored on the web, since the time input can't be styled.
     pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self {
         self._style = style.into();
@@ -76,20 +71,18 @@ pub struct State {
 impl State {
     /// Creates a new [`State`](State).
     pub fn now() -> Self {
-        State {
-            show: false,
-        }
+        State { show: false }
     }
 
     /// Sets the visibility of the [`TimePickerOverlay`](TimePickerOverlay).
-    /// 
+    ///
     /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {
         self.show = b;
     }
 
     /// Resets the time of the state to the current time.
-    /// 
+    ///
     /// Currently ignored on the web.
     pub fn reset(&mut self) {
         //self.date = Local::today().naive_local();
@@ -121,12 +114,16 @@ where
 
         let time_picker = input(bump)
             .attr("type", "time")
-            .attr("step",  bumpalo::format!(in bump, "{}", step).into_bump_str())
+            .attr(
+                "step",
+                bumpalo::format!(in bump, "{}", step).into_bump_str(),
+            )
             // https://www.w3schools.com/jsref/event_onchange.asp
             .on("change", move |_root, _vdow, event| {
-                let time_input = match event.target().and_then(|t| {
-                    t.dyn_into::<web_sys::HtmlInputElement>().ok()
-                }) {
+                let time_input = match event
+                    .target()
+                    .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
+                {
                     None => return,
                     Some(time_input) => time_input,
                 };
@@ -150,11 +147,7 @@ where
                         (hour, Period::Am)
                     };
 
-                    let hour = if hour == 0 {
-                        12
-                    } else {
-                        hour
-                    };
+                    let hour = if hour == 0 { 12 } else { hour };
 
                     (hour, period)
                 } else {
@@ -180,10 +173,7 @@ where
             })
             .finish();
 
-        let node = label(bump)
-            .children(vec![
-                time_picker,
-            ]);
+        let node = label(bump).children(vec![time_picker]);
 
         node.finish()
     }

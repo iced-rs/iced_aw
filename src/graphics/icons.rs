@@ -13,14 +13,14 @@ pub use required::*;
 
 /// The default icon font.
 #[cfg(feature = "icons")]
-pub const ICON_FONT: Font = iced_native::Font::External{
+pub const ICON_FONT: Font = iced_native::Font::External {
     name: "Icons",
     bytes: include_bytes!("./fonts/bootstrap-icons.ttf"),
 };
 
 /// The default icon font.
 #[cfg(not(feature = "icons"))]
-pub const ICON_FONT: Font = iced_native::Font::External{
+pub const ICON_FONT: Font = iced_native::Font::External {
     name: "Icons",
     bytes: include_bytes!("./fonts/required-icons.ttf"),
 };

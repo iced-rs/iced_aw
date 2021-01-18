@@ -37,7 +37,6 @@ pub mod tab_bar;
 #[cfg(feature = "tab_bar")]
 pub use tab_bar::{TabBar, TabLabel};
 
-
 #[cfg(feature = "tabs")]
 pub mod tabs;
 #[cfg(feature = "tabs")]

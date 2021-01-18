@@ -1,11 +1,11 @@
 //! Use a floating button to overlay a button over some content
-//! 
+//!
 //! *This API requires the following crate features to be activated: floating_button*
 use std::hash::Hash;
 
 use iced_native::{
-    button, Button, Clipboard, Element, Event, Layout, Length,
-    Point, Rectangle, Widget, event, overlay
+    button, event, overlay, Button, Clipboard, Element, Event, Layout, Length, Point, Rectangle,
+    Widget,
 };
 
 pub mod anchor;
@@ -17,7 +17,7 @@ pub use offset::Offset;
 use super::overlay::floating_button::FloatingButtonOverlay;
 
 /// A floating button floating over some content.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_native::{button, Button, Column, renderer::Null, Text};
@@ -28,7 +28,7 @@ use super::overlay::floating_button::FloatingButtonOverlay;
 ///     ButtonPressed,
 /// }
 /// let mut button_state = button::State::default();
-/// 
+///
 /// let content = Column::new();
 /// let floating_button = FloatingButton::new(
 ///     &mut button_state,
@@ -95,7 +95,6 @@ where
         self.hidden = hide;
         self
     }
-
 }
 
 impl<'a, B, Message, Renderer> Widget<Message, Renderer>
@@ -128,7 +127,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.underlay.on_event(
             event,
@@ -148,13 +147,8 @@ where
         cursor_position: Point,
         viewport: &Rectangle,
     ) -> Renderer::Output {
-        self.underlay.draw(
-            renderer,
-            defaults,
-            layout,
-            cursor_position,
-            viewport,
-        )
+        self.underlay
+            .draw(renderer, defaults, layout, cursor_position, viewport)
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -169,7 +163,9 @@ where
     }
 
     fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
-        if self.hidden { return None; }
+        if self.hidden {
+            return None;
+        }
 
         let bounds = layout.bounds();
         let position = match self.anchor {
@@ -179,19 +175,11 @@ where
             Anchor::SouthEast => Point::new(bounds.width, bounds.height),
         };
 
-        let position = Point::new(
-            bounds.x + position.x,
-            bounds.y + position.y,
-        );
+        let position = Point::new(bounds.x + position.x, bounds.y + position.y);
 
         Some(
-            FloatingButtonOverlay::new(
-                &mut self.state,
-                &self.button,
-                &self.anchor,
-                &self.offset,
-            )
-            .overlay(position)
+            FloatingButtonOverlay::new(&mut self.state, &self.button, &self.anchor, &self.offset)
+                .overlay(position),
         )
     }
 }

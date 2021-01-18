@@ -1,6 +1,6 @@
 //! TODO
 
-use iced_graphics::{Renderer};
+use iced_graphics::Renderer;
 
 use crate::native::floating_button;
 pub use floating_button::{Anchor, Offset};

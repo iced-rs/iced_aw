@@ -1,18 +1,30 @@
 //! Use a time picker as an input element for picking times.
-//! 
+//!
 //! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
-use crate::{core::clock::{
-        HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
-        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
-        NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE
-    }, core::{renderer::DrawEnvironment, time::Period}, graphics::icons::Icon, native::{
-        IconText, icon_text, time_picker::{State, Time}
-    }};
+use crate::{
+    core::clock::{
+        NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
+        SECOND_RADIUS_PERCENTAGE,
+    },
+    core::{renderer::DrawEnvironment, time::Period},
+    graphics::icons::Icon,
+    native::{
+        icon_text,
+        time_picker::{State, Time},
+        IconText,
+    },
+};
 use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
-use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, layout::{self, Limits}, mouse, overlay, row, text};
+use iced_native::{
+    button, column, container, event,
+    layout::{self, Limits},
+    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
+    Length, Point, Row, Text, Widget,
+};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -38,9 +50,16 @@ where
 }
 
 impl<'a, Message, Renderer> TimePickerOverlay<'a, Message, Renderer>
-where 
+where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer + column::Renderer + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
     /// position.
@@ -66,22 +85,17 @@ where
             time,
             clock_cache_needs_clearance,
             clock_cache,
-            cancel_button: Button::new(
-                    cancel_button,
-                    IconText::new(Icon::X)
-                        .width(Length::Fill)
-                )
+            cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
                 .into(),
             submit_button: Button::new(
-                    submit_button,
-                    IconText::new(Icon::Check)
-                        .width(Length::Fill)
-                )
-                .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
-                .into(),
+                submit_button,
+                IconText::new(Icon::Check).width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel) // Sending a fake message
+            .into(),
             on_submit,
             use_24h,
             show_seconds,
@@ -93,14 +107,11 @@ where
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(
-            self.position,
-            Box::new(self)
-        )
+        overlay::Element::new(self.position, Box::new(self))
     }
 
     /// The event handling for the clock.
-    fn on_event_clock (
+    fn on_event_clock(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -126,9 +137,17 @@ where
             let period_radius = radius * PERIOD_PERCENTAGE;
 
             let (hour_radius, minute_radius, second_radius) = if self.show_seconds {
-                (radius * HOUR_RADIUS_PERCENTAGE, radius * MINUTE_RADIUS_PERCENTAGE, radius * SECOND_RADIUS_PERCENTAGE)
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE,
+                    radius * MINUTE_RADIUS_PERCENTAGE,
+                    radius * SECOND_RADIUS_PERCENTAGE,
+                )
             } else {
-                (radius * HOUR_RADIUS_PERCENTAGE_NO_SECONDS, radius * MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, f32::MAX)
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+                    radius * MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
+                    f32::MAX,
+                )
             };
 
             let nearest_radius = crate::core::clock::nearest_radius(
@@ -156,56 +175,65 @@ where
                         NearestRadius::Period => {
                             let (pm, hour) = self.time.hour12();
                             let hour = if hour == 12 {
-                                if pm { 12 } else { 0 }
-                            } else { hour };
-
-                            *self.time = self.time.with_hour(
-                                if pm && hour != 12 {
-                                    hour
+                                if pm {
+                                    12
                                 } else {
-                                    hour+12
-                                } % 24
-                            ).unwrap();
+                                    0
+                                }
+                            } else {
+                                hour
+                            };
+
+                            *self.time = self
+                                .time
+                                .with_hour(if pm && hour != 12 { hour } else { hour + 12 } % 24)
+                                .unwrap();
                             event::Status::Captured
-                        },
+                        }
                         NearestRadius::Hour => {
-                            let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
-                            let nearest_point = crate::core::clock::nearest_point(&hour_points, cursor_position);
-                            
+                            let hour_points =
+                                crate::core::clock::circle_points(hour_radius, center, 12);
+                            let nearest_point =
+                                crate::core::clock::nearest_point(&hour_points, cursor_position);
+
                             let (pm, _) = self.time.hour12();
 
-                            *self.time = self.time.with_hour(
-                                (nearest_point as u32 + if pm { 12 } else { 0 }) % 24
-                            ).unwrap();
+                            *self.time = self
+                                .time
+                                .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
+                                .unwrap();
                             event::Status::Captured
-                        },
+                        }
                         NearestRadius::Minute => {
-                            let minute_points = crate::core::clock::circle_points(minute_radius, center, 60);
-                            let nearest_point = crate::core::clock::nearest_point(&minute_points, cursor_position);
+                            let minute_points =
+                                crate::core::clock::circle_points(minute_radius, center, 60);
+                            let nearest_point =
+                                crate::core::clock::nearest_point(&minute_points, cursor_position);
 
                             *self.time = self.time.with_minute(nearest_point as u32).unwrap();
                             event::Status::Captured
-                        },
+                        }
                         NearestRadius::Second => {
-                            let second_points = crate::core::clock::circle_points(second_radius, center, 60);
-                            let nearest_point = crate::core::clock::nearest_point(&second_points, cursor_position);
+                            let second_points =
+                                crate::core::clock::circle_points(second_radius, center, 60);
+                            let nearest_point =
+                                crate::core::clock::nearest_point(&second_points, cursor_position);
 
                             *self.time = self.time.with_second(nearest_point as u32).unwrap();
                             event::Status::Captured
-                        },
+                        }
                         _ => event::Status::Ignored,
                     }
-                },
+                }
                 _ => event::Status::Ignored,
             };
-            
         }
 
         clock_status
     }
 
     /// The event handling for the digital clock.
-    fn on_event_digital_clock (
+    fn on_event_digital_clock(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -251,7 +279,7 @@ where
 
                     status = event::Status::Captured;
                 }
-                
+
                 if minute_up_arrow.bounds().contains(cursor_position) {
                     *self.time = self.time.overflowing_add_signed(Duration::minutes(1)).0;
 
@@ -264,8 +292,8 @@ where
                 }
 
                 status
-            },
-            _ => event::Status::Ignored
+            }
+            _ => event::Status::Ignored,
         };
 
         let second_status = if self.show_seconds {
@@ -281,23 +309,25 @@ where
             match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                     let mut status = event::Status::Ignored;
-                    
+
                     if second_up_arrow.bounds().contains(cursor_position) {
                         *self.time = self.time.overflowing_add_signed(Duration::seconds(1)).0;
-    
+
                         status = event::Status::Captured;
                     }
                     if second_down_arrow.bounds().contains(cursor_position) {
                         *self.time = self.time.overflowing_sub_signed(Duration::seconds(1)).0;
-    
+
                         status = event::Status::Captured;
                     }
 
                     status
-                },
+                }
                 _ => event::Status::Ignored,
             }
-        } else { event::Status::Ignored };
+        } else {
+            event::Status::Ignored
+        };
 
         let digital_clock_status = digital_clock_status.merge(second_status);
 
@@ -313,7 +343,14 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for TimePickerOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer + column::Renderer + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     fn layout(
         &self,
@@ -321,18 +358,15 @@ where
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
-        let limits = Limits::new(
-            Size::ZERO,
-            bounds,
-        )
-        .pad(PADDING as f32)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .max_width(300)
-        .max_height(350);
+        let limits = Limits::new(Size::ZERO, bounds)
+            .pad(PADDING as f32)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .max_width(300)
+            .max_height(350);
 
         let arrow_size = text::Renderer::default_size(renderer);
-        let font_size = (1.2*(text::Renderer::default_size(renderer) as f32)) as u16;
+        let font_size = (1.2 * (text::Renderer::default_size(renderer) as f32)) as u16;
 
         // Digital Clock
         let digital_clock_limits = limits;
@@ -342,63 +376,57 @@ where
             .height(Length::Shrink)
             .width(Length::Shrink)
             .spacing(1);
-        
+
         if !self.use_24h {
-            digital_clock_row = digital_clock_row
-                .push(
-                    Column::new() // Just a placeholder
-                        .height(Length::Shrink)
-                        .push(
-                            Text::new("AM").size(font_size)
-                        )
-                )
+            digital_clock_row = digital_clock_row.push(
+                Column::new() // Just a placeholder
+                    .height(Length::Shrink)
+                    .push(Text::new("AM").size(font_size)),
+            )
         }
 
         digital_clock_row = digital_clock_row
-            .push( // Hour
+            .push(
+                // Hour
                 Column::new()
                     .align_items(Align::Center)
                     .height(Length::Shrink)
-                    .push( // Up Hour arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
                     .push(
-                        Text::new(format!("{:02}", self.time.hour()))
-                            .size(font_size)
-                    )
-                    .push( // Down Hour arrow
+                        // Up Hour arrow
                         Row::new()
                             .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
                     )
+                    .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                    .push(
+                        // Down Hour arrow
+                        Row::new()
+                            .width(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
+                    ),
             )
             .push(
                 Column::new()
                     .height(Length::Shrink)
-                    .push(
-                        Text::new(":").size(font_size)
-                    )
+                    .push(Text::new(":").size(font_size)),
             )
             .push(
                 Column::new()
                     .align_items(Align::Center)
                     .height(Length::Shrink)
-                    .push( // Up Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
-                    )
                     .push(
-                        Text::new(format!("{:02}", self.time.hour()))
-                            .size(font_size)
-                    )
-                    .push( // Down Minute arrow
+                        // Up Minute arrow
                         Row::new()
                             .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
                     )
+                    .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                    .push(
+                        // Down Minute arrow
+                        Row::new()
+                            .width(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
+                    ),
             );
 
         if self.show_seconds {
@@ -406,40 +434,34 @@ where
                 .push(
                     Column::new()
                         .height(Length::Shrink)
-                        .push(
-                            Text::new(":").size(font_size)
-                        )
+                        .push(Text::new(":").size(font_size)),
                 )
                 .push(
                     Column::new()
                         .align_items(Align::Center)
                         .height(Length::Shrink)
-                        .push( // Up Minute arrow
-                            Row::new()
-                                .width(Length::Units(arrow_size))
-                                .height(Length::Units(arrow_size))
-                        )
                         .push(
-                            Text::new(format!("{:02}", self.time.hour()))
-                                .size(font_size)
-                        )
-                        .push( // Down Minute arrow
+                            // Up Minute arrow
                             Row::new()
                                 .width(Length::Units(arrow_size))
-                                .height(Length::Units(arrow_size))
+                                .height(Length::Units(arrow_size)),
                         )
+                        .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                        .push(
+                            // Down Minute arrow
+                            Row::new()
+                                .width(Length::Units(arrow_size))
+                                .height(Length::Units(arrow_size)),
+                        ),
                 )
         }
 
         if !self.use_24h {
-            digital_clock_row = digital_clock_row
-                .push(
-                    Column::new()
-                        .height(Length::Shrink)
-                        .push(
-                            Text::new("AM").size(font_size)
-                        )
-                );
+            digital_clock_row = digital_clock_row.push(
+                Column::new()
+                    .height(Length::Shrink)
+                    .push(Text::new("AM").size(font_size)),
+            );
         }
 
         let mut digital_clock = Container::new(digital_clock_row)
@@ -451,20 +473,19 @@ where
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
-        let cancel_button = self.cancel_button
-            .layout(renderer, &cancel_limits);
-        
+        let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+
         let limits = limits.shrink(Size::new(
             0.0,
-            digital_clock.bounds().height + cancel_button.bounds().height
-                + 2.0 * SPACING as f32
+            digital_clock.bounds().height + cancel_button.bounds().height + 2.0 * SPACING as f32,
         ));
-        
+
         // Clock-Canvas
         let mut clock = Row::<(), Renderer>::new()
-            .width(Length::Fill).height(Length::Fill)
+            .width(Length::Fill)
+            .height(Length::Fill)
             .layout(renderer, &limits);
-        
+
         clock.move_to(Point::new(
             clock.bounds().x + PADDING as f32,
             clock.bounds().y + PADDING as f32,
@@ -476,56 +497,68 @@ where
         ));
 
         // Buttons
-        let cancel_limits = limits.clone()
-            .max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
-        
-        let mut cancel_button = self.cancel_button
-            .layout(renderer, &cancel_limits);
-
-        let submit_limits = limits.clone()
+        let cancel_limits = limits
+            .clone()
             .max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
 
-        let mut submit_button = self.submit_button
-            .layout(renderer, &submit_limits);
+        let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+
+        let submit_limits = limits
+            .clone()
+            .max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+
+        let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
             x: cancel_button.bounds().x + PADDING as f32,
-            y: cancel_button.bounds().y + clock.bounds().height + PADDING as f32
+            y: cancel_button.bounds().y
+                + clock.bounds().height
+                + PADDING as f32
                 + digital_clock.bounds().height
-                + 2.0*SPACING as f32,
+                + 2.0 * SPACING as f32,
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + clock.bounds().width - submit_button.bounds().width
                 + PADDING as f32,
-            y: submit_button.bounds().y + clock.bounds().height + PADDING as f32
+            y: submit_button.bounds().y
+                + clock.bounds().height
+                + PADDING as f32
                 + digital_clock.bounds().height
-                + 2.0*SPACING as f32,
+                + 2.0 * SPACING as f32,
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
                 clock.bounds().width + (2.0 * PADDING as f32),
-                clock.bounds().height + digital_clock.bounds().height
-                    + cancel_button.bounds().height + (2.0 * PADDING as f32)
+                clock.bounds().height
+                    + digital_clock.bounds().height
+                    + cancel_button.bounds().height
+                    + (2.0 * PADDING as f32)
                     + 2.0 * SPACING as f32,
             ),
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
         node.move_to(Point::new(
-            (position.x - node.size().width/2.0).max(0.0),
-            (position.y - node.size().height/2.0).max(0.0),
+            (position.x - node.size().width / 2.0).max(0.0),
+            (position.y - node.size().height / 2.0).max(0.0),
         ));
 
         node.move_to(Point::new(
             if node.bounds().x + node.bounds().width > bounds.width {
-                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x))).max(0.0)
-            } else { node.bounds().x },
+                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x)))
+                    .max(0.0)
+            } else {
+                node.bounds().x
+            },
             //node.bounds().x,
             if node.bounds().y + node.bounds().height > bounds.height {
-                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y))).max(0.0)
-            } else { node.bounds().y },
+                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y)))
+                    .max(0.0)
+            } else {
+                node.bounds().y
+            },
         ));
 
         node
@@ -538,7 +571,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -566,7 +599,7 @@ where
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
-        
+
         let cancel_status = self.cancel_button.on_event(
             event.clone(),
             cancel_button_layout,
@@ -657,12 +690,11 @@ where
 }
 
 /// The renderer of a [`TimePickerOverlay`](TimePickerOverlay).
-/// 
+///
 /// Your renderer fill need to implement this trait before being
 /// able to use a [`TimePicker`](crate::native::TimePicker) in your user
 /// interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -693,5 +725,6 @@ impl Renderer for iced_native::renderer::Null {
         _submit_button: &Element<'_, Message, Self>,
         _use_24h: bool,
         _show_seconds: bool,
-    ) -> Self::Output {}
+    ) -> Self::Output {
+    }
 }

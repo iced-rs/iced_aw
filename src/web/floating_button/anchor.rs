@@ -1,5 +1,5 @@
 //! Use a floating button to overlay a button over some content
-//! 
+//!
 //! *This API requires the following crate features to be activated: floating_button*
 
 /// Positional [`Anchor`](Anchor) for the [`FloatingButton`](super::FloatingButton).

@@ -1,5 +1,5 @@
 //! Use a time picker as an input element for picking times.
-//! 
+//!
 //! *This API requires the following crate features to be activated: time_picker*
 use std::fmt::Display;
 
@@ -53,10 +53,19 @@ impl Time {
 impl Display for Time {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Time::Hm{hour, minute, period} => {
+            Time::Hm {
+                hour,
+                minute,
+                period,
+            } => {
                 write!(f, "{:02}:{:02}{}", hour, minute, period)
-            },
-            Time::Hms{hour, minute, second, period} => {
+            }
+            Time::Hms {
+                hour,
+                minute,
+                second,
+                period,
+            } => {
                 write!(f, "{:02}:{:02}:{:02}{}", hour, minute, second, period)
             }
         }
@@ -76,19 +85,32 @@ pub enum Period {
 
 impl Display for Period {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Period::H24 => "",
-            Period::Am => " AM",
-            Period::Pm => " PM",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Period::H24 => "",
+                Period::Am => " AM",
+                Period::Pm => " PM",
+            }
+        )
     }
 }
 
 impl From<Time> for chrono::NaiveTime {
     fn from(time: Time) -> Self {
         let (h, m, s, p) = match time {
-            Time::Hm { hour, minute, period } => (hour, minute, 0, period),
-            Time::Hms { hour, minute, second, period } => (hour, minute, second, period),
+            Time::Hm {
+                hour,
+                minute,
+                period,
+            } => (hour, minute, 0, period),
+            Time::Hms {
+                hour,
+                minute,
+                second,
+                period,
+            } => (hour, minute, second, period),
         };
 
         let h = if h == 12 && p != Period::H24 { 0 } else { h };

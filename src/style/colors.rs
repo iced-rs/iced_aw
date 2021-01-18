@@ -1,7 +1,7 @@
 //! Predefined color palette based on the CSS color palette
-//! 
+//!
 //! *This API requires the following crate features to be activated: colors*
-//! 
+//!
 //! Thanks to:
 //! * https://www.w3schools.com/cssref/css_colors.asp
 //! * https://corecoding.com/utilities/rgb-or-hex-to-float.php
@@ -34,9 +34,6 @@ pub const LIGHT: Color = GHOST_WHITE;
 
 /// Dark <span style="color:rgb(0.204, 0.227, 0.251)">Color</span>.
 pub const DARK: Color = Color::from_rgb(0.204, 0.227, 0.251);
-
-
-
 
 /// Alice Blue <span style="color:aliceBlue">Color</span>.
 pub const ALICE_BLUE: Color = Color::from_rgb(0.941, 0.973, 1.0);

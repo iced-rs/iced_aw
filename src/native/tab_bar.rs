@@ -1,15 +1,15 @@
 //! Displays a [`TabBar`](TabBar) to select the content to be displayed.
-//! 
+//!
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
-//! 
+//!
 //! *This API requires the following crate features to be activated: tab_bar*
 use iced_native::Element;
 use std::hash::Hash;
 
 use iced_native::{
-    Align, Clipboard, Column, Event, Font, Hasher, Layout, Length, Point,
-    Rectangle, Row, Text, Widget, column, event, layout, mouse, row, text
+    column, event, layout, mouse, row, text, Align, Clipboard, Column, Event, Font, Hasher, Layout,
+    Length, Point, Rectangle, Row, Text, Widget,
 };
 
 pub mod tab_label;
@@ -18,7 +18,7 @@ pub use tab_label::TabLabel;
 use crate::core::renderer::DrawEnvironment;
 
 /// A tab bar to show tabs.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_aw::{TabLabel};
@@ -29,9 +29,9 @@ use crate::core::renderer::DrawEnvironment;
 /// enum Message {
 ///     TabSelected(usize),
 /// }
-/// 
+///
 /// let active_tab = 0;
-/// 
+///
 /// let tab_bar = TabBar::new(
 ///     active_tab,
 ///     Message::TabSelected,
@@ -62,7 +62,7 @@ pub struct TabBar<Message, Renderer: self::Renderer> {
 
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
-    Renderer: self::Renderer
+    Renderer: self::Renderer,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -75,11 +75,7 @@ where
 
     /// Similar to `new` but with a given Vector of the
     /// [`TabLabel`](tab_label::TabLabel)s.Align
-    pub fn width_tab_labels<F>(
-        active_tab: usize,
-        tab_labels: Vec<TabLabel>,
-        on_select: F
-    ) -> Self
+    pub fn width_tab_labels<F>(active_tab: usize, tab_labels: Vec<TabLabel>, on_select: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
     {
@@ -110,7 +106,7 @@ where
 
     /// Sets the message that will be produced when the close icon of a tab
     /// on the [`TabBar`](TabBar) is pressed.
-    /// 
+    ///
     /// Setting this enables the drawing of a close icon on the tabs.
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
@@ -226,49 +222,30 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
-        self.tab_labels.iter()
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+        self.tab_labels
+            .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let label = match tab_label {
-                        TabLabel::Icon(_icon) => {
-                            Column::new()
-                                .align_items(Align::Center)
-                                .push(
-                                    Row::new()
-                                        .width(Length::Units(self.icon_size))
-                                        .height(Length::Units(self.icon_size))
-                                )
-                        },
-                        TabLabel::Text(text) => {
-                            Column::new()
-                                .align_items(Align::Center)
-                                .push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .width(self.tab_width)
-                                )
-                        },
-                        TabLabel::IconText(_icon, text) => {
-                            Column::new()
-                                .align_items(Align::Center)
-                                .push(
-                                    Row::new()
-                                        .width(Length::Units(self.icon_size))
-                                        .height(Length::Units(self.icon_size))
-                                )
-                                .push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .width(self.tab_width)
-                                )
-                        },
-                    }
-                    .width(self.tab_width)
-                    .height(self.height);
+                    TabLabel::Icon(_icon) => Column::new().align_items(Align::Center).push(
+                        Row::new()
+                            .width(Length::Units(self.icon_size))
+                            .height(Length::Units(self.icon_size)),
+                    ),
+                    TabLabel::Text(text) => Column::new()
+                        .align_items(Align::Center)
+                        .push(Text::new(text).size(self.text_size).width(self.tab_width)),
+                    TabLabel::IconText(_icon, text) => Column::new()
+                        .align_items(Align::Center)
+                        .push(
+                            Row::new()
+                                .width(Length::Units(self.icon_size))
+                                .height(Length::Units(self.icon_size)),
+                        )
+                        .push(Text::new(text).size(self.text_size).width(self.tab_width)),
+                }
+                .width(self.tab_width)
+                .height(self.height);
 
                 let mut label_row = Row::new()
                     .align_items(Align::Center)
@@ -277,13 +254,12 @@ where
                     .push(label);
 
                 if self.on_close.is_some() {
-                    label_row = label_row
-                        .push(
-                            Row::new()
-                                .width(Length::Units(self.close_size))
-                                .height(Length::Units(self.close_size))
-                                .align_items(Align::Center)
-                        );
+                    label_row = label_row.push(
+                        Row::new()
+                            .width(Length::Units(self.close_size))
+                            .height(Length::Units(self.close_size))
+                            .align_items(Align::Center),
+                    );
                 }
 
                 row.push(label_row)
@@ -301,24 +277,27 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>
+        _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if layout.bounds().contains(cursor_position) {
-                let tabs_map: Vec<bool> = layout.children()
+                let tabs_map: Vec<bool> = layout
+                    .children()
                     .map(|layout| layout.bounds().contains(cursor_position))
                     .collect();
 
                 if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
                     messages.push(
-                        self.on_close.as_ref().filter(|_on_close| {
-                            let tab_layout = layout.children().nth(new_selected).unwrap();
-                            let cross_layout = tab_layout.children().nth(1).unwrap();
+                        self.on_close
+                            .as_ref()
+                            .filter(|_on_close| {
+                                let tab_layout = layout.children().nth(new_selected).unwrap();
+                                let cross_layout = tab_layout.children().nth(1).unwrap();
 
-                            cross_layout.bounds().contains(cursor_position)
-                        })
-                        .map(|on_close| (on_close)(new_selected))
-                        .unwrap_or_else(|| (self.on_select)(new_selected))
+                                cross_layout.bounds().contains(cursor_position)
+                            })
+                            .map(|on_close| (on_close)(new_selected))
+                            .unwrap_or_else(|| (self.on_select)(new_selected)),
                     );
                     return event::Status::Captured;
                 }
@@ -367,13 +346,11 @@ where
     }
 }
 
-
 /// The renderer of a [`TabBar`](TabBar).
-/// 
+///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`TabBar`](TabBar) in your user interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -424,15 +401,13 @@ impl Renderer for iced_native::renderer::Null {
         _tab_labels: &[TabLabel],
         _icon_font: Option<Font>,
         _text_font: Option<Font>,
-    ) -> Self::Output {}
+    ) -> Self::Output {
+    }
 }
 
-
-impl<'a, Message, Renderer> From<TabBar<Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer
-        + row::Renderer,
+    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer + row::Renderer,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {

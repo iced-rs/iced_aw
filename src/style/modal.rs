@@ -1,17 +1,17 @@
 //! Use a badge for color highlighting important information.
-//! 
+//!
 //! *This API requires the following crate features to be activated: badge*
 
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::Background;
 #[cfg(target_arch = "wasm32")]
-use iced_web::{Background};
+use iced_web::Background;
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[allow(missing_debug_implementations)]
 pub struct Style {
     /// The backgronud of the [`Modal`](crate::native::Modal).
-    /// 
+    ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,
 }
@@ -41,7 +41,7 @@ impl std::default::Default for Box<dyn StyleSheet> {
 }
 
 impl<T> From<T> for Box<dyn StyleSheet>
-where 
+where
     T: 'static + StyleSheet,
 {
     fn from(style: T) -> Self {

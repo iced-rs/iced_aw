@@ -1,9 +1,9 @@
 //! Displays a [`TabBar`](crate::native::tab_bar::TabBar) to select the content
 //! to be displayed.
-//! 
+//!
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](crate::native::tabs::Tabs) widget instead.
-//! 
+//!
 //! *This API requires the following crate features to be activated: tab_bar*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
@@ -41,12 +41,12 @@ pub struct Style {
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 pub trait StyleSheet {
     /// The normal appearance0of a tab bar and its tab labels.
-    /// 
+    ///
     /// `is_active` is true if the tab is selected.
     fn active(&self, is_active: bool) -> Style;
 
     /// The appearance when the tab bar and/or a tab label is hovered.
-    /// 
+    ///
     /// `is_active` is true if the tab is selected.
     fn hovered(&self, is_active: bool) -> Style;
 }
@@ -68,14 +68,13 @@ impl StyleSheet for Default {
             tab_label_border_width: 1,
             icon_color: Color::BLACK,
             text_color: Color::BLACK,
-
         }
     }
 
     fn hovered(&self, is_active: bool) -> Style {
         Style {
             tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
-            .. self.active(is_active)
+            ..self.active(is_active)
         }
     }
 }

@@ -1,7 +1,7 @@
 //! Helper functions for calculating dates
 
-use lazy_static::lazy_static;
 use chrono::{Datelike, NaiveDate};
+use lazy_static::lazy_static;
 
 /// Creates a date with the previous month based on the given date.
 pub fn pred_month(date: &NaiveDate) -> NaiveDate {
@@ -33,7 +33,7 @@ pub fn succ_month(date: &NaiveDate) -> NaiveDate {
 pub fn pred_year(date: &NaiveDate) -> NaiveDate {
     let year = date.year() - 1;
     let day = date.day().min(num_days_of_month(year, date.month()));
-    
+
     NaiveDate::from_ymd(year, date.month(), day)
 }
 
@@ -53,11 +53,14 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, i8)
     let day_of_week = first_day.weekday().num_days_from_monday() as isize;
     let day_of_week = if day_of_week == 0 { 7 } else { day_of_week };
 
-    let day = (x + 7*y) + 1 - day_of_week;
+    let day = (x + 7 * y) + 1 - day_of_week;
 
     if day < 1 {
         let last_month = first_day.pred();
-        ((num_days_of_month(last_month.year(), last_month.month()) as isize + day) as usize, -1)
+        (
+            (num_days_of_month(last_month.year(), last_month.month()) as isize + day) as usize,
+            -1,
+        )
     } else if day > num_days_of_month(year, month) as isize {
         ((day - num_days_of_month(year, month) as isize) as usize, 1)
     } else {
@@ -78,7 +81,13 @@ fn is_leap_year(year: i32) -> bool {
 fn num_days_of_month(year: i32, month: u32) -> u32 {
     match month {
         4 | 6 | 9 | 11 => 30,
-        2 => if is_leap_year(year) { 29 } else { 28 },
+        2 => {
+            if is_leap_year(year) {
+                29
+            } else {
+                28
+            }
+        }
         _ => 31,
     }
 }
@@ -110,7 +119,7 @@ lazy_static! {
             NaiveDate::from_ymd(0, 11, 1),
             NaiveDate::from_ymd(0, 12, 1),
         ];
-    
+
         let max = months.iter()
             .map(|m| month_as_string(m))
             .map(|s| s.len())
@@ -137,7 +146,7 @@ lazy_static! {
             NaiveDate::from_ymd(2020, 6, 6),
             // Sunday
             NaiveDate::from_ymd(2020, 6, 7),
-            
+
         ];
 
         days.iter()
@@ -151,7 +160,10 @@ lazy_static! {
 mod tests {
     use chrono::NaiveDate;
 
-    use super::{is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month, succ_year};
+    use super::{
+        is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month,
+        succ_year,
+    };
 
     #[test]
     fn pred_month_test() {
@@ -242,8 +254,7 @@ mod tests {
         let (day, is_in_month) = position_to_day(6, 5, 2020, 12);
         assert_eq!(day, 10);
         assert_eq!(is_in_month, 1);
-        
-        
+
         let (day, is_in_month) = position_to_day(0, 0, 2020, 11);
         assert_eq!(day, 26);
         assert_eq!(is_in_month, -1);
@@ -260,7 +271,6 @@ mod tests {
         assert_eq!(day, 6);
         assert_eq!(is_in_month, 1);
 
-        
         let (day, is_in_month) = position_to_day(0, 0, 2021, 2);
         assert_eq!(day, 25);
         assert_eq!(is_in_month, -1);

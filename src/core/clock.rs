@@ -30,15 +30,19 @@ pub enum Period {
     /// Ante meridiem: Before noon.
     AM,
     /// Post meridiem: After noon.
-    PM
+    PM,
 }
 
 impl Display for Period {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Period::AM => "AM",
-            Period::PM => "PM",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Period::AM => "AM",
+                Period::PM => "PM",
+            }
+        )
     }
 }
 
@@ -59,11 +63,16 @@ pub enum NearestRadius {
 
 /// Determining the nearest radius to the position of the cursor position based
 /// on the distance to the center.
-pub fn nearest_radius(radii: &[(f32, NearestRadius)], cursor_position: Point, center: Point) -> NearestRadius {
+pub fn nearest_radius(
+    radii: &[(f32, NearestRadius)],
+    cursor_position: Point,
+    center: Point,
+) -> NearestRadius {
     let distance = cursor_position.distance(center);
 
-    let mut distance_vec: Vec<(f32, &NearestRadius)> = radii.iter()
-        .map(|(r, n)| ((r - distance).abs(), n) )
+    let mut distance_vec: Vec<(f32, &NearestRadius)> = radii
+        .iter()
+        .map(|(r, n)| ((r - distance).abs(), n))
         .collect();
 
     distance_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
@@ -74,8 +83,8 @@ pub fn nearest_radius(radii: &[(f32, NearestRadius)], cursor_position: Point, ce
 /// Determines the nearest point with the smallest distance to the cursor
 /// position. The index of the point is returned.
 pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
-
-    let mut distance_vec: Vec<(usize, f32)> = points.iter()
+    let mut distance_vec: Vec<(usize, f32)> = points
+        .iter()
         .enumerate()
         .map(|(i, p)| (i, p.distance(cursor_position)))
         .collect();
@@ -86,27 +95,20 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
 }
 
 /// Distributes the amount of points on a circle with the given radius around the
-/// center. 
+/// center.
 pub fn circle_points(distance_radius: f32, center: Point, amount: u32) -> Vec<Point> {
     let part = std::f32::consts::TAU / amount as f32;
 
-    let rotation = |(x, y): (f32, f32), t: f32| {
-        (
-            x * t.cos() - y * t.sin(),
-            x * t.sin() + y * t.cos()
-        )
-    };
+    let rotation =
+        |(x, y): (f32, f32), t: f32| (x * t.cos() - y * t.sin(), x * t.sin() + y * t.cos());
 
-    let points: Vec<(f32, f32)> = (0..amount).into_iter()
-        .fold(
-            Vec::new(),
-            |mut v, i| {
-                v.push(rotation((0.0, -distance_radius), part * i as f32));
-                v
-            }
-        );
+    let points: Vec<(f32, f32)> = (0..amount).into_iter().fold(Vec::new(), |mut v, i| {
+        v.push(rotation((0.0, -distance_radius), part * i as f32));
+        v
+    });
 
-    let points: Vec<Point> = points.iter()
+    let points: Vec<Point> = points
+        .iter()
         .map(|p| Point::new(p.0 + center.x, p.1 + center.y))
         .collect();
 
@@ -117,22 +119,49 @@ pub fn circle_points(distance_radius: f32, center: Point, amount: u32) -> Vec<Po
 mod tests {
     use iced_graphics::{Point, Vector};
 
-    use super::{NearestRadius, circle_points, nearest_point, nearest_radius};
+    use super::{circle_points, nearest_point, nearest_radius, NearestRadius};
 
     #[test]
     fn circle_points_test() {
         let points = circle_points(10.0, Point::new(0.0, 0.0), 10);
         let expected = vec![
             Point { x: 0.0, y: -10.0 },
-            Point { x: 5.8778524, y: -8.09017 },
-            Point { x: 9.510566, y: -3.0901697 },
-            Point { x: 9.510565, y: 3.0901704 },
-            Point { x: 5.877852, y: 8.090171 },
-            Point { x: -0.0000008742278, y: 10.0 },
-            Point { x: -5.8778534, y: 8.09017 },
-            Point { x: -9.510565, y: 3.0901709 },
-            Point { x: -9.510565, y: -3.0901713 },
-            Point { x: -5.8778496, y: -8.090173 }
+            Point {
+                x: 5.8778524,
+                y: -8.09017,
+            },
+            Point {
+                x: 9.510566,
+                y: -3.0901697,
+            },
+            Point {
+                x: 9.510565,
+                y: 3.0901704,
+            },
+            Point {
+                x: 5.877852,
+                y: 8.090171,
+            },
+            Point {
+                x: -0.0000008742278,
+                y: 10.0,
+            },
+            Point {
+                x: -5.8778534,
+                y: 8.09017,
+            },
+            Point {
+                x: -9.510565,
+                y: 3.0901709,
+            },
+            Point {
+                x: -9.510565,
+                y: -3.0901713,
+            },
+            Point {
+                x: -5.8778496,
+                y: -8.090173,
+            },
         ];
 
         assert_eq!(points, expected);
@@ -148,7 +177,7 @@ mod tests {
         ];
 
         let center = Point::new(0.0, 0.0);
-        
+
         let cursor_position = Point::new(5.0, 0.0);
         let result = nearest_radius(&radii, cursor_position, center);
         assert_eq!(result, NearestRadius::Period);

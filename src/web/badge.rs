@@ -1,13 +1,13 @@
 //! Use a badge for color highlighting important information.
-//! 
+//!
 //! *This API requires the following crate features to be activated: badge*
-use iced_web::{css, Align, Background, Bus, Css, Element, Length, Widget};
 use dodrio::bumpalo;
+use iced_web::{css, Align, Background, Bus, Css, Element, Length, Widget};
 
 pub use crate::style::badge::{Style, StyleSheet};
 
 /// A badge for color highlighting small information.
-/// 
+///
 /// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct Badge<'a, Message> {
@@ -21,7 +21,6 @@ pub struct Badge<'a, Message> {
 }
 
 impl<'a, Message> Badge<'a, Message> {
-
     /// Creates a new [`Badge`](Badge) with the given content.
     pub fn new<T>(content: T) -> Self
     where
@@ -91,8 +90,7 @@ where
         // (https://github.com/hecrj/iced/blob/master/web/src/widget/button.rs#L144)
         let style = self.style.active();
 
-        let padding_class =
-            style_sheet.insert(bump, css::Rule::Padding(self.padding));
+        let padding_class = style_sheet.insert(bump, css::Rule::Padding(self.padding));
 
         let border_color = match style.border_color {
             None => String::from("none"),

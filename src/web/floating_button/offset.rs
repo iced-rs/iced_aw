@@ -1,5 +1,5 @@
 //! Use a floating button to overlay a button over some content
-//! 
+//!
 //! *This API requires the following crate features to be activated: floating_button*
 
 use iced_web::Point;
@@ -15,10 +15,7 @@ pub struct Offset {
 
 impl From<f32> for Offset {
     fn from(float: f32) -> Self {
-        Offset {
-            x: float,
-            y: float,
-        }
+        Offset { x: float, y: float }
     }
 }
 

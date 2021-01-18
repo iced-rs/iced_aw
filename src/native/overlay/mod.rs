@@ -5,7 +5,6 @@ pub mod date_picker;
 #[cfg(feature = "date_picker")]
 pub use date_picker::DatePickerOverlay;
 
-
 #[cfg(feature = "floating_button")]
 pub mod floating_button;
 #[cfg(feature = "floating_button")]

@@ -1,22 +1,28 @@
 //! Displays a [`Tabs`](Tabs) widget to select the content to be displayed.
-//! 
+//!
 //! This is a wrapper around the [`TabBar`](super::tab_bar::TabBar) widget.
 //! Unlike the [`TabBar`](super::tab_bar::TabBar) widget it will also handle
 //! the content of the tabs.
-//! 
+//!
 //! *This API requires the following crate features to be activated: tabs*
 use std::hash::Hash;
 
-use iced_native::{Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Row, Size, Widget, column, event, row, text};
+use iced_native::{
+    column, event, row, text, Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle,
+    Row, Size, Widget,
+};
 
-use crate::{core::renderer::DrawEnvironment, native::{TabBar, TabLabel}};
+use crate::{
+    core::renderer::DrawEnvironment,
+    native::{TabBar, TabLabel},
+};
 
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
 
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
 /// along with the tab's content.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_aw::{TabLabel};
@@ -27,9 +33,9 @@ pub use tab_bar_position::TabBarPosition;
 /// enum Message {
 ///     TabSelected(usize),
 /// }
-/// 
+///
 /// let active_tab = 0;
-/// 
+///
 /// let tabs = Tabs::new(
 ///     active_tab,
 ///     Message::TabSelected,
@@ -38,7 +44,7 @@ pub use tab_bar_position::TabBarPosition;
 /// .push(TabLabel::Text(String::from("Two")), Text::new(String::from("Two")))
 /// .push(TabLabel::Text(String::from("Three")), Text::new(String::from("Three")));
 /// ```
-/// 
+///
 #[allow(missing_debug_implementations)]
 pub struct Tabs<'a, Message, Renderer: self::Renderer> {
     tab_bar: TabBar<Message, Renderer>,
@@ -91,7 +97,7 @@ where
 
     /// Sets the message that will be produced when the close icon of a tab
     /// on the [`TabBar`](TabBar) is pressed.
-    /// 
+    ///
     /// Setting this enables the drawing of a close icon on the tabs.
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
@@ -230,40 +236,45 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        let tab_bar_limits = limits.clone()
+        let tab_bar_limits = limits
+            .clone()
             .width(self.width)
             .height(self.tab_bar.get_height());
 
         let mut tab_bar_node = self.tab_bar.layout(renderer, &tab_bar_limits);
 
-        let tab_content_limits = limits.clone()
+        let tab_content_limits = limits
+            .clone()
             .shrink(Size::new(0.0, tab_bar_node.size().height))
             .width(self.width)
             .height(self.height);
 
-        let mut tab_content_node = if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
-            element.layout(renderer, &tab_content_limits)
-        } else {
-            Row::<Message, Renderer>::new()
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .layout(renderer, &tab_content_limits)       
-        };
+        let mut tab_content_node =
+            if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+                element.layout(renderer, &tab_content_limits)
+            } else {
+                Row::<Message, Renderer>::new()
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .layout(renderer, &tab_content_limits)
+            };
 
         tab_bar_node.move_to(Point::new(
             tab_bar_node.bounds().x,
-            tab_bar_node.bounds().y + match self.tab_bar_position {
-                TabBarPosition::Top => 0.0,
-                TabBarPosition::Bottom => tab_content_node.bounds().height,
-            }
+            tab_bar_node.bounds().y
+                + match self.tab_bar_position {
+                    TabBarPosition::Top => 0.0,
+                    TabBarPosition::Bottom => tab_content_node.bounds().height,
+                },
         ));
 
         tab_content_node.move_to(Point::new(
             tab_content_node.bounds().x,
-            tab_content_node.bounds().y + match self.tab_bar_position {
-                TabBarPosition::Top => tab_bar_node.bounds().height,
-                TabBarPosition::Bottom => 0.0,
-            }
+            tab_content_node.bounds().y
+                + match self.tab_bar_position {
+                    TabBarPosition::Top => tab_bar_node.bounds().height,
+                    TabBarPosition::Bottom => 0.0,
+                },
         ));
 
         iced_native::layout::Node::with_children(
@@ -272,8 +283,8 @@ where
                 tab_bar_node.size().height + tab_content_node.size().height,
             ),
             match self.tab_bar_position {
-                TabBarPosition::Top => vec!(tab_bar_node, tab_content_node),
-                TabBarPosition::Bottom => vec!(tab_content_node, tab_bar_node)
+                TabBarPosition::Top => vec![tab_bar_node, tab_content_node],
+                TabBarPosition::Bottom => vec![tab_content_node, tab_bar_node],
             },
         )
     }
@@ -285,7 +296,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -310,14 +321,15 @@ where
             clipboard,
         );
 
-        let status_element = if let Some(element) = self.tabs.get_mut(self.tab_bar.get_active_tab()) {
+        let status_element = if let Some(element) = self.tabs.get_mut(self.tab_bar.get_active_tab())
+        {
             element.on_event(
                 event,
                 tab_content_layout,
                 cursor_position,
                 messages,
                 renderer,
-                clipboard
+                clipboard,
             )
         } else {
             event::Status::Ignored
@@ -337,7 +349,7 @@ where
         let mut children = layout.children();
         let tab_bar_layout = match self.tab_bar_position {
             TabBarPosition::Top => children.next().unwrap(),
-            TabBarPosition::Bottom => children.last().unwrap()
+            TabBarPosition::Bottom => children.last().unwrap(),
         };
 
         let tab_bar = self.tab_bar.draw(
@@ -345,13 +357,13 @@ where
             defaults,
             tab_bar_layout,
             cursor_position,
-            viewport
+            viewport,
         );
 
         self::Renderer::draw(
             renderer,
             DrawEnvironment {
-                defaults, 
+                defaults,
                 layout,
                 cursor_position,
                 style_sheet: &(),
@@ -377,11 +389,10 @@ where
 }
 
 /// The renderer of a [`Tabs`](Tabs) widget.
-/// 
+///
 /// Your renderer will need to implement this trait before being able to
 /// use a [`Tabs`](Tabs) widget in your user interface.
 pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
-    
     /// Draws a [`Tabs`](Tabs) widget.
     fn draw<Message>(
         &mut self,
@@ -402,14 +413,13 @@ impl Renderer for iced_native::renderer::Null {
         _tab_bar: Self::Output,
         _tabs: &[Element<'_, Message, Self>],
         _tab_bar_position: &TabBarPosition,
-    ) -> Self::Output {}
+    ) -> Self::Output {
+    }
 }
 
-impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer
-        + row::Renderer,
+    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer + row::Renderer,
     Message: 'a,
 {
     fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {

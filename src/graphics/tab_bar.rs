@@ -1,21 +1,20 @@
 //! Displays a [`TabBar`](TabBar) to select the content to be displayed.
-//! 
+//!
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs) widget instead.
-//! 
+//!
 //! *This API requires the following crate features to be activated: tab_bar*
-use iced_graphics::{Backend, Color, Primitive, Rectangle, Renderer, backend};
-use iced_native::{Font, HorizontalAlignment, Layout, VerticalAlignment, mouse};
+use iced_graphics::{backend, Backend, Color, Primitive, Rectangle, Renderer};
+use iced_native::{mouse, Font, HorizontalAlignment, Layout, VerticalAlignment};
 pub use tab_bar::tab_label::TabLabel;
 
-use crate::{core::renderer::DrawEnvironment, native::tab_bar};
 pub use crate::style::tab_bar::{Style, StyleSheet};
+use crate::{core::renderer::DrawEnvironment, native::tab_bar};
 
 /// A tab bar to show tabs.
-/// 
+///
 /// This is an alias of an `iced_native` TabBar with an `iced_wgpu::Renderer`.
-pub type TabBar<Message, Backend> =
-    tab_bar::TabBar<Message, Renderer<Backend>>;
+pub type TabBar<Message, Backend> = tab_bar::TabBar<Message, Renderer<Backend>>;
 
 impl<B> tab_bar::Renderer for Renderer<B>
 where
@@ -53,47 +52,39 @@ where
 
         let mut mouse_interaction = mouse::Interaction::default();
 
-        let mut primitives = vec!(
-            Primitive::Quad {
-                bounds,
-                background: style.background.unwrap_or_else(|| Color::TRANSPARENT.into()),
-                border_radius: 0,
-                border_width: style.border_width,
-                border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
-            }
+        let mut primitives = vec![Primitive::Quad {
+            bounds,
+            background: style
+                .background
+                .unwrap_or_else(|| Color::TRANSPARENT.into()),
+            border_radius: 0,
+            border_width: style.border_width,
+            border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
+        }];
+
+        primitives = tab_labels.iter().enumerate().zip(children).fold(
+            primitives,
+            |mut primitives, ((i, tab), layout)| {
+                let (primitive, new_mouse_interaction) = draw_tab(
+                    tab,
+                    layout,
+                    env.style_sheet,
+                    i == active_tab,
+                    env.cursor_position,
+                    icon_font.unwrap_or(B::ICON_FONT),
+                    text_font.unwrap_or_default(),
+                );
+
+                if new_mouse_interaction > mouse_interaction {
+                    mouse_interaction = new_mouse_interaction;
+                }
+
+                primitives.push(primitive);
+                primitives
+            },
         );
 
-        primitives = tab_labels.iter()
-            .enumerate()
-            .zip(children)
-            .fold(
-                primitives,
-                |mut primitives, ((i, tab), layout)| {
-                    let (primitive, new_mouse_interaction) = draw_tab(
-                        tab,
-                        layout,
-                        env.style_sheet,
-                        i == active_tab,
-                        env.cursor_position,
-                        icon_font.unwrap_or(B::ICON_FONT),
-                        text_font.unwrap_or_default(),
-                    );
-
-                    if new_mouse_interaction > mouse_interaction {
-                        mouse_interaction = new_mouse_interaction;
-                    }
-
-                    primitives.push(primitive);
-                    primitives
-                }
-            );
-
-        (
-            Primitive::Group {
-                primitives,
-            },
-            mouse_interaction,
-        )
+        (Primitive::Group { primitives }, mouse_interaction)
     }
 }
 
@@ -128,28 +119,24 @@ fn draw_tab(
         border_color: style.tab_label_border_color,
     };
 
-    let cross = children.next().map_or(
-        Primitive::None,
-        |cross_layout| {
-            let cross_bounds = cross_layout.bounds();
-            let is_mouse_over_cross = cross_bounds.contains(cursor_position);
+    let cross = children.next().map_or(Primitive::None, |cross_layout| {
+        let cross_bounds = cross_layout.bounds();
+        let is_mouse_over_cross = cross_bounds.contains(cursor_position);
 
-            Primitive::Text {
-                content: super::icons::Icon::X.into(),
-                font: super::icons::ICON_FONT,
-                size: cross_bounds.height
-                        + if is_mouse_over_cross { 5.0 } else { 0.0 },
-                bounds: Rectangle {
-                    x: cross_bounds.center_x(),
-                    y: cross_bounds.center_y(),
-                    .. cross_bounds
-                },
-                color: style.icon_color,
-                horizontal_alignment: HorizontalAlignment::Center,
-                vertical_alignment: VerticalAlignment::Center,
-            }
+        Primitive::Text {
+            content: super::icons::Icon::X.into(),
+            font: super::icons::ICON_FONT,
+            size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
+            bounds: Rectangle {
+                x: cross_bounds.center_x(),
+                y: cross_bounds.center_y(),
+                ..cross_bounds
+            },
+            color: style.icon_color,
+            horizontal_alignment: HorizontalAlignment::Center,
+            vertical_alignment: VerticalAlignment::Center,
         }
-    );
+    });
 
     let primitive = match tab {
         TabLabel::Icon(icon) => {
@@ -158,7 +145,6 @@ fn draw_tab(
             Primitive::Group {
                 primitives: vec![
                     background,
-
                     Primitive::Text {
                         content: icon.to_string(),
                         font: icon_font,
@@ -166,24 +152,22 @@ fn draw_tab(
                         bounds: Rectangle {
                             x: icon_bounds.center_x(),
                             y: icon_bounds.center_y(),
-                            .. icon_bounds
+                            ..icon_bounds
                         },
                         color: style.icon_color,
                         horizontal_alignment: HorizontalAlignment::Center,
                         vertical_alignment: VerticalAlignment::Center,
                     },
-
                     cross,
-                ]
+                ],
             }
-        },
+        }
         TabLabel::Text(text) => {
             let text_bounds = label_layout_children.next().unwrap().bounds();
 
             Primitive::Group {
                 primitives: vec![
                     background,
-                    
                     Primitive::Text {
                         content: text.to_string(),
                         font: text_font,
@@ -191,17 +175,16 @@ fn draw_tab(
                         bounds: Rectangle {
                             x: text_bounds.center_x(),
                             y: text_bounds.center_y(),
-                            .. text_bounds   
+                            ..text_bounds
                         },
                         color: style.text_color,
                         horizontal_alignment: HorizontalAlignment::Center,
                         vertical_alignment: VerticalAlignment::Center,
                     },
-
                     cross,
-                ]
+                ],
             }
-        },
+        }
         TabLabel::IconText(icon, text) => {
             let icon_bounds = label_layout_children.next().unwrap().bounds();
             let text_bounds = label_layout_children.next().unwrap().bounds();
@@ -209,7 +192,6 @@ fn draw_tab(
             Primitive::Group {
                 primitives: vec![
                     background,
-
                     Primitive::Text {
                         content: icon.to_string(),
                         font: icon_font,
@@ -217,13 +199,12 @@ fn draw_tab(
                         bounds: Rectangle {
                             x: icon_bounds.center_x(),
                             y: icon_bounds.center_y(),
-                            .. icon_bounds
+                            ..icon_bounds
                         },
                         color: style.icon_color,
                         horizontal_alignment: HorizontalAlignment::Center,
                         vertical_alignment: VerticalAlignment::Center,
                     },
-
                     Primitive::Text {
                         content: text.to_string(),
                         font: text_font,
@@ -231,17 +212,16 @@ fn draw_tab(
                         bounds: Rectangle {
                             x: text_bounds.center_x(),
                             y: text_bounds.center_y(),
-                            .. text_bounds   
+                            ..text_bounds
                         },
                         color: style.text_color,
                         horizontal_alignment: HorizontalAlignment::Center,
                         vertical_alignment: VerticalAlignment::Center,
                     },
-
                     cross,
-                ]
+                ],
             }
-        },
+        }
     };
 
     (
@@ -250,6 +230,6 @@ fn draw_tab(
             mouse::Interaction::Pointer
         } else {
             mouse::Interaction::default()
-        }
+        },
     )
 }

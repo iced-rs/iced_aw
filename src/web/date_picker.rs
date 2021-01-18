@@ -1,8 +1,8 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: date_picker*
-use iced_web::{Bus, Css, Element, Widget};
 use dodrio::bumpalo;
+use iced_web::{Bus, Css, Element, Widget};
 
 pub use crate::style::date_picker::{Style, StyleSheet};
 
@@ -26,15 +26,10 @@ pub struct DatePicker<'a, Message> {
 
 impl<'a, Message> DatePicker<'a, Message> {
     /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
-    /// 
+    ///
     /// The underlay element will be ignored on the web, since the date input can't be
     /// customized that way.
-    pub fn new<U, F>(
-        _state: &'a mut State,
-        _underlay: U,
-        _on_cancel: Message,
-        on_submit: F,
-    ) -> Self
+    pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
         F: 'static + Fn(i32, u32, u32) -> Message,
@@ -49,7 +44,7 @@ impl<'a, Message> DatePicker<'a, Message> {
     }
 
     /// Sets the style of the [`DateBicker`](DatePicker).
-    /// 
+    ///
     /// The style will be ignored on the web, since the date input can't be styled.
     pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self {
         self._style = style.into();
@@ -66,20 +61,18 @@ pub struct State {
 impl State {
     /// Creates a new [`State`](State).
     pub fn now() -> Self {
-        State {
-            show: false,
-        }
+        State { show: false }
     }
 
     /// Sets the visibility of the [`DatePickerOverlay`](DatePickerOverlay).
-    /// 
+    ///
     /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {
         self.show = b;
     }
 
     /// Resets the date of the state to the current date.
-    /// 
+    ///
     /// Currently ignored on the web.
     pub fn reset(&mut self) {
         //self.date = Local::today().naive_local();
@@ -87,7 +80,7 @@ impl State {
 }
 
 impl<'a, Message> Widget<Message> for DatePicker<'a, Message>
-where 
+where
     Message: 'static + Clone,
 {
     fn node<'b>(
@@ -108,9 +101,10 @@ where
             .attr("type", "date")
             // https://www.w3schools.com/jsref/event_onchange.asp
             .on("change", move |_root, _vdom, event| {
-                let date_input = match event.target().and_then(|d| {
-                    d.dyn_into::<web_sys::HtmlInputElement>().ok()
-                }) {
+                let date_input = match event
+                    .target()
+                    .and_then(|d| d.dyn_into::<web_sys::HtmlInputElement>().ok())
+                {
                     None => return,
                     Some(date_input) => date_input,
                 };
@@ -126,10 +120,7 @@ where
             })
             .finish();
 
-        let node = label(bump)
-            .children(vec![
-                date_picker,
-            ]);
+        let node = label(bump).children(vec![date_picker]);
 
         node.finish()
     }

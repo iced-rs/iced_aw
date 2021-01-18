@@ -1,5 +1,5 @@
 //! Displays a [`Card`](crate::native::Card).
-//! 
+//!
 //! *This API requires the following crate features to be activated: card*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
@@ -98,7 +98,7 @@ pub use predefined::*;
 mod predefined {
     use crate::style::{
         card::{Style, StyleSheet},
-        colors
+        colors,
     };
 
     /// The appearance with the [`primary`](colors::PRIMARY) head background of
@@ -113,7 +113,7 @@ mod predefined {
                 head_background: colors::PRIMARY.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -130,7 +130,7 @@ mod predefined {
                 head_background: colors::SECONDARY.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -147,7 +147,7 @@ mod predefined {
                 head_background: colors::SUCCESS.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -164,7 +164,7 @@ mod predefined {
                 head_background: colors::DANGER.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -179,7 +179,7 @@ mod predefined {
             Style {
                 border_color: colors::WARNING,
                 head_background: colors::WARNING.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -194,7 +194,7 @@ mod predefined {
             Style {
                 border_color: colors::INFO,
                 head_background: colors::INFO.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -209,7 +209,7 @@ mod predefined {
             Style {
                 border_color: colors::LIGHT,
                 head_background: colors::LIGHT.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -226,7 +226,7 @@ mod predefined {
                 head_background: colors::DARK.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                .. Style::default()
+                ..Style::default()
             }
         }
     }
@@ -241,7 +241,7 @@ mod predefined {
             Style {
                 border_color: colors::WHITE,
                 head_background: colors::WHITE.into(),
-                .. Style::default()
+                ..Style::default()
             }
         }
     }

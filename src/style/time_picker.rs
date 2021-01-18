@@ -1,5 +1,5 @@
 //! Use a time picker as an input element for picking times.
-//! 
+//!
 //! *This API requires the following crate features to be activated: time_picker*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
@@ -82,17 +82,16 @@ impl StyleSheet for Default {
     fn selected(&self) -> Style {
         Style {
             clock_number_background: [0.87, 0.87, 0.87].into(),
-            .. self.active()
-        }
-    }
-    
-    fn hovered(&self) -> Style {
-        Style {
-            clock_number_background: [0.87, 0.87, 0.87].into(),
-            .. self.active()
+            ..self.active()
         }
     }
 
+    fn hovered(&self) -> Style {
+        Style {
+            clock_number_background: [0.87, 0.87, 0.87].into(),
+            ..self.active()
+        }
+    }
 }
 
 impl std::default::Default for Box<dyn StyleSheet> {

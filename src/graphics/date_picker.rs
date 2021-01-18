@@ -3,23 +3,27 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::collections::HashMap;
 
-use crate::{core::renderer::DrawEnvironment, style::{date_picker::Style, style_state::StyleState}};
 use crate::style::date_picker::StyleSheet;
+use crate::{
+    core::renderer::DrawEnvironment,
+    style::{date_picker::Style, style_state::StyleState},
+};
 
-use iced_graphics::{Backend, Color, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment, backend};
-use iced_native::{Element, mouse};
 use chrono::{self, Datelike};
+use iced_graphics::{
+    backend, Backend, Color, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment,
+};
+use iced_native::{mouse, Element};
 
 use crate::native::date_picker;
 pub use crate::native::date_picker::State;
 
-use super::icons::{ICON_FONT, Icon};
+use super::icons::{Icon, ICON_FONT};
 
 /// An input element for picking dates.
-/// 
+///
 /// This is an alias of an `iced_native` DatePicker with an `iced_wgpu::Renderer`.
-pub type DatePicker<'a, Message, Backend> =
-    date_picker::DatePicker<'a, Message, Renderer<Backend>>;
+pub type DatePicker<'a, Message, Backend> = date_picker::DatePicker<'a, Message, Renderer<Backend>>;
 
 impl<B> date_picker::Renderer for Renderer<B>
 where
@@ -35,7 +39,7 @@ where
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-    ) -> Self:: Output {
+    ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
         let mut date_children = children.next().unwrap().children();
@@ -44,7 +48,7 @@ where
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
-        
+
         let mouse_interaction = mouse::Interaction::default();
 
         /*let style_state = if bounds.contains(cursor_position) {
@@ -62,10 +66,10 @@ where
             bounds,
             background: style.get(&style_state).unwrap().background, // TODO
             border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
-            border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
+            border_width: style.get(&style_state).unwrap().border_width as u16,   // TODO: same
             border_color: style.get(&style_state).unwrap().border_color,
         };
-        
+
         // ----------- Year/Month----------------------
         let month_year_layout = date_children.next().unwrap();
 
@@ -79,17 +83,12 @@ where
 
         // ----------- Days ---------------------------
         let days_layout = date_children.next().unwrap().children().next().unwrap();
-        
-        let (days, days_mouse_interaction) = days(
-            days_layout,
-            date,
-            env.cursor_position,
-            &style,
-        );
-        
+
+        let (days, days_mouse_interaction) = days(days_layout, date, env.cursor_position, &style);
+
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
-        
+
         let (cancel_button, cancel_mouse_interaciton) = cancel_button.draw(
             self,
             env.defaults,
@@ -116,7 +115,7 @@ where
                 .max(month_year_mouse_interaction)
                 .max(days_mouse_interaction)
                 .max(cancel_mouse_interaciton)
-                .max(submit_mouse_interaction)
+                .max(submit_mouse_interaction),
         )
     }
 }
@@ -158,7 +157,7 @@ fn month_year(
                     bounds: Rectangle {
                         x: left_bounds.center_x(),
                         y: left_bounds.center_y(),
-                        .. left_bounds
+                        ..left_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
@@ -166,13 +165,12 @@ fn month_year(
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
-
                 Primitive::Text {
                     content: text.to_owned(),
                     bounds: Rectangle {
                         x: center_bounds.center_x(),
                         y: center_bounds.center_y(),
-                        .. center_bounds
+                        ..center_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
@@ -180,13 +178,12 @@ fn month_year(
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
-
                 Primitive::Text {
                     content: Icon::CaretRightFill.into(),
                     bounds: Rectangle {
                         x: right_bounds.center_x(),
                         y: right_bounds.center_y(),
-                        .. right_bounds
+                        ..right_bounds
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
@@ -194,7 +191,7 @@ fn month_year(
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
-            ]
+            ],
         };
 
         (primitive, mouse_interaction)
@@ -212,7 +209,7 @@ fn month_year(
         },
         mouse_interaction
             .max(month_mouse_interaction)
-            .max(year_mouse_interaction)
+            .max(year_mouse_interaction),
     )
 }
 
@@ -228,57 +225,45 @@ fn days(
 
     let day_labels_layout = children.next().unwrap();
     let labels = day_labels(day_labels_layout, style);
-    
-    let (table, table_mouse_interaction) = day_table(
-        &mut children,
-        date,
-        cursor_position,
-        style
-    );
+
+    let (table, table_mouse_interaction) = day_table(&mut children, date, cursor_position, style);
 
     (
         Primitive::Group {
-            primitives: vec![labels, table]
+            primitives: vec![labels, table],
         },
         table_mouse_interaction,
     )
 }
 
 /// Draws the day labels
-fn day_labels(
-    layout: iced_native::Layout<'_>,
-    style: &HashMap<StyleState, Style>,
-) -> Primitive {
+fn day_labels(layout: iced_native::Layout<'_>, style: &HashMap<StyleState, Style>) -> Primitive {
     let mut labels: Vec<Primitive> = Vec::new();
 
     for (i, label) in layout.children().enumerate() {
         let bounds = label.bounds();
 
-        labels.push(
-            Primitive::Text {
-                content: crate::core::date::WEEKDAY_LABELS[i].to_string(),
-                bounds: Rectangle {
-                    x: bounds.center_x(),
-                    y: bounds.center_y(),
-                    .. bounds
-                },
-                color: style.get(&StyleState::Active).unwrap().text_color,
-                size: bounds.height + 5.0,
-                font: Default::default(),
-                horizontal_alignment: HorizontalAlignment::Center,
-                vertical_alignment: VerticalAlignment::Center,
-            }
-        )
+        labels.push(Primitive::Text {
+            content: crate::core::date::WEEKDAY_LABELS[i].to_string(),
+            bounds: Rectangle {
+                x: bounds.center_x(),
+                y: bounds.center_y(),
+                ..bounds
+            },
+            color: style.get(&StyleState::Active).unwrap().text_color,
+            size: bounds.height + 5.0,
+            font: Default::default(),
+            horizontal_alignment: HorizontalAlignment::Center,
+            vertical_alignment: VerticalAlignment::Center,
+        })
     }
 
-    Primitive::Group {
-        primitives: labels,
-    }
+    Primitive::Group { primitives: labels }
 }
 
 /// Draws the day table
 fn day_table(
-    children: &mut dyn Iterator<Item=iced_native::Layout<'_>>,
+    children: &mut dyn Iterator<Item = iced_native::Layout<'_>>,
     date: &chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
     style: &HashMap<StyleState, Style>,
@@ -290,8 +275,9 @@ fn day_table(
     for (y, row) in children.enumerate() {
         for (x, label) in row.children().enumerate() {
             let bounds = label.bounds();
-            let (number, is_in_month) = crate::core::date::position_to_day(x, y, date.year(), date.month());
-            
+            let (number, is_in_month) =
+                crate::core::date::position_to_day(x, y, date.year(), date.month());
+
             let mouse_over = bounds.contains(cursor_position);
             if mouse_over {
                 mouse_interaction = mouse_interaction.max(mouse::Interaction::Pointer);
@@ -314,46 +300,37 @@ fn day_table(
                 style_state = style_state.max(StyleState::Hovered);
             }
 
-            primitives.push(
-                Primitive::Quad {
-                    bounds,
-                    background: style.get(&style_state).unwrap().day_background,
-                    border_radius: bounds.height as u16 / 2,
-                    border_width: 0,
-                    border_color: Color::TRANSPARENT,
-                }
-            );
+            primitives.push(Primitive::Quad {
+                bounds,
+                background: style.get(&style_state).unwrap().day_background,
+                border_radius: bounds.height as u16 / 2,
+                border_width: 0,
+                border_color: Color::TRANSPARENT,
+            });
 
-            primitives.push(
-                Primitive::Text {
-                    content: format!("{:02}", number),
-                    bounds: Rectangle {
-                        x: bounds.center_x(),
-                        y: bounds.center_y(),
-                        .. bounds
-                    },
-                    color: if is_in_month == 0 {
-                        style.get(&style_state).unwrap().text_color
-                    } else {
-                        style.get(&style_state).unwrap().text_attenuated_color
-                    },
-                    size: if bounds.width < bounds.height {
-                        bounds.width
-                    } else {
-                        bounds.height
-                    },
-                    font: Default::default(),
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
-                }
-            )
+            primitives.push(Primitive::Text {
+                content: format!("{:02}", number),
+                bounds: Rectangle {
+                    x: bounds.center_x(),
+                    y: bounds.center_y(),
+                    ..bounds
+                },
+                color: if is_in_month == 0 {
+                    style.get(&style_state).unwrap().text_color
+                } else {
+                    style.get(&style_state).unwrap().text_attenuated_color
+                },
+                size: if bounds.width < bounds.height {
+                    bounds.width
+                } else {
+                    bounds.height
+                },
+                font: Default::default(),
+                horizontal_alignment: HorizontalAlignment::Center,
+                vertical_alignment: VerticalAlignment::Center,
+            })
         }
     }
 
-    (
-        Primitive::Group {
-            primitives,
-        },
-        mouse_interaction
-    )
+    (Primitive::Group { primitives }, mouse_interaction)
 }

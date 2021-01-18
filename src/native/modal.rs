@@ -1,18 +1,18 @@
 //! A modal for showing elements as an overlay on top of another.
-//! 
+//!
 //! *This API requires the following crate features to be activated: modal*
 use std::hash::Hash;
 
-use iced_native::{Clipboard, Element, Event, Layout, Point, Widget, event, overlay};
+use iced_native::{event, overlay, Clipboard, Element, Event, Layout, Point, Widget};
 
-use super::overlay::modal::{self, ModalOverlay};
 pub use super::overlay::modal::Renderer;
+use super::overlay::modal::{self, ModalOverlay};
 
 /// A modal content as an overlay.
-/// 
+///
 /// Can be used in combination with the [`Card`](crate::native::card::Card)
 /// widget to form dialog elements.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_aw::native::modal;
@@ -24,9 +24,9 @@ pub use super::overlay::modal::Renderer;
 /// enum Message {
 ///     CloseModal,
 /// }
-/// 
+///
 /// let mut state = modal::State::new(());
-/// 
+///
 /// let modal = Modal::new(
 ///     &mut state,
 ///     Text::new("Underlay"),
@@ -51,7 +51,7 @@ where
 }
 
 impl<'a, S, Content, Message, Renderer> Modal<'a, S, Content, Message, Renderer>
-where 
+where
     S: 'a,
     Content: Fn(&mut S) -> Element<'_, Message, Renderer>,
     Message: Clone,
@@ -59,14 +59,10 @@ where
 {
     /// Creates a new [`Modal`](Modal) wrapping the underlying element to
     /// show some content as an overlay.
-    /// 
+    ///
     /// `state` is the content's state, assigned at the creation of the
     /// overlying content.
-    pub fn new<U>(
-        state: &'a mut State<S>,
-        underlay: U,
-        content: Content,
-    ) -> Self
+    pub fn new<U>(state: &'a mut State<S>, underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
     {
@@ -89,7 +85,7 @@ where
 
     /// Sets the message that will be produced when the Escape Key is
     /// pressed when the modal is open.
-    /// 
+    ///
     /// This can be used to close the modal on ESC.
     pub fn on_esc(mut self, message: Message) -> Self {
         self.esc = Some(message);
@@ -157,7 +153,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.underlay.on_event(
             event,
@@ -177,13 +173,8 @@ where
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
     ) -> Renderer::Output {
-        self.underlay.draw(
-            renderer,
-            defaults,
-            layout,
-            cursor_position,
-            viewport,
-        )
+        self.underlay
+            .draw(renderer, defaults, layout, cursor_position, viewport)
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -195,7 +186,9 @@ where
     }
 
     fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
-        if !self.state.show { return self.underlay.overlay(layout); }
+        if !self.state.show {
+            return self.underlay.overlay(layout);
+        }
 
         let bounds = layout.bounds();
         let position = Point::new(bounds.x, bounds.y);
@@ -208,7 +201,7 @@ where
                 self.esc.clone(),
                 &self.style,
             )
-            .overlay(position)
+            .overlay(position),
         )
     }
 }

@@ -67,17 +67,16 @@ impl StyleSheet for Default {
     fn selected(&self) -> Style {
         Style {
             day_background: Background::Color([0.87, 0.87, 0.87].into()),
-            .. self.active()
-        }
-    }
-    
-    fn hovered(&self) -> Style {
-        Style {
-            day_background: Background::Color([0.87, 0.87, 0.87].into()),
-            .. self.active()
+            ..self.active()
         }
     }
 
+    fn hovered(&self) -> Style {
+        Style {
+            day_background: Background::Color([0.87, 0.87, 0.87].into()),
+            ..self.active()
+        }
+    }
 }
 
 impl std::default::Default for Box<dyn StyleSheet> {

@@ -1,24 +1,26 @@
 //! Use a badge for color highlighting important information.
-//! 
+//!
 //! *This API requires the following crate features to be activated: badge*
 use std::hash::Hash;
 
-use iced_native::{Align, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget, event, layout};
+use iced_native::{
+    event, layout, Align, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget,
+};
 
 use crate::core::renderer::DrawEnvironment;
 
 /// A badge for color highlighting small information.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_aw::style::badge;
 /// # use iced_native::{Text, renderer::Null};
-/// # 
+/// #
 /// # pub type Badge<'a, Message> = iced_aw::native::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }
-/// 
+///
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
@@ -89,8 +91,7 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer>
-    for Badge<'a, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
     Renderer: self::Renderer,
 {
@@ -131,7 +132,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.content.on_event(
             event,
@@ -176,11 +177,10 @@ where
 }
 
 /// The renderer of a [`Badge`](Badge).
-/// 
+///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`Badge`](Badge) in your user interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -200,11 +200,11 @@ impl Renderer for iced_native::renderer::Null {
         &mut self,
         _env: DrawEnvironment<Self::Defaults, Self::Style>,
         _content: &Element<'_, Message, Self>,
-    ) -> Self::Output {}
+    ) -> Self::Output {
+    }
 }
 
-impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + self::Renderer,
     Message: 'a,

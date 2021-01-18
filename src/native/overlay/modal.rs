@@ -1,10 +1,13 @@
 //! A modal for showing elements as an overlay on top of another.
-//! 
+//!
 //! *This API requires the following crate features to be activated: modal*
 
 use std::hash::Hash;
 
-use iced_native::{Clipboard, Container, Element, Event, Layout, Length, Point, Size, event, keyboard, layout::Limits, mouse, overlay};
+use iced_native::{
+    event, keyboard, layout::Limits, mouse, overlay, Clipboard, Container, Element, Event, Layout,
+    Length, Point, Size,
+};
 
 use crate::core::renderer::DrawEnvironment;
 
@@ -50,19 +53,12 @@ where
 
     /// Turn this [`ModalOverlay`] into an overlay
     /// [`Element`](iced_native::overlay::Element).
-    pub fn overlay(
-        self,
-        position: Point,
-    ) -> overlay::Element<'a, Message, Renderer>
-    {
-        overlay::Element::new(
-            position,
-            Box::new(Overlay::new(self))
-        )
+    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
+        overlay::Element::new(position, Box::new(Overlay::new(self)))
     }
 }
 
-struct Overlay<'a, Message, Renderer: self::Renderer/* + iced_native::container::Renderer*/> {
+struct Overlay<'a, Message, Renderer: self::Renderer /* + iced_native::container::Renderer*/> {
     content: Element<'a, Message, Renderer>,
     backdrop: Option<Message>,
     esc: Option<Message>,
@@ -85,7 +81,7 @@ where
             esc,
             style,
         } = modal;
-        
+
         Self {
             content: Container::new(content(state))
                 .width(Length::Fill)
@@ -112,11 +108,8 @@ where
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
-        let limits = Limits::new(
-            Size::ZERO,
-            bounds,
-        );
-        
+        let limits = Limits::new(Size::ZERO, bounds);
+
         let mut content = self.content.layout(renderer, &limits);
 
         content.move_to(position);
@@ -131,39 +124,39 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         // TODO clean this up
-        let esc_status = self.esc.as_ref()
-            .map(|esc| {
-                match event {
-                    Event::Keyboard(keyboard::Event::KeyPressed {
-                        key_code, ..
-                    }) => if key_code == keyboard::KeyCode::Escape {
+        let esc_status = self
+            .esc
+            .as_ref()
+            .map(|esc| match event {
+                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
+                    if key_code == keyboard::KeyCode::Escape {
                         messages.push(esc.to_owned());
                         event::Status::Captured
                     } else {
                         event::Status::Ignored
-                    },
-                    _ => event::Status::Ignored
+                    }
                 }
+                _ => event::Status::Ignored,
             })
             .unwrap_or(event::Status::Ignored);
 
-        let backdrop_status = self.backdrop.as_ref()
+        let backdrop_status = self
+            .backdrop
+            .as_ref()
             .zip(layout.children().next())
-            .map(|(backdrop, layout)|{
-                match event {
-                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                        if !layout.bounds().contains(cursor_position) {
-                            messages.push(backdrop.to_owned());
-                            event::Status::Captured
-                        } else {
-                            event::Status::Ignored
-                        }
+            .map(|(backdrop, layout)| match event {
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                    if !layout.bounds().contains(cursor_position) {
+                        messages.push(backdrop.to_owned());
+                        event::Status::Captured
+                    } else {
+                        event::Status::Ignored
                     }
-                    _ => event::Status::Ignored
                 }
+                _ => event::Status::Ignored,
             })
             .unwrap_or(event::Status::Ignored);
 
@@ -176,9 +169,8 @@ where
                 renderer,
                 clipboard,
             ),
-            event::Status::Captured => event::Status::Captured
+            event::Status::Captured => event::Status::Captured,
         }
-        
     }
 
     fn draw(
@@ -211,11 +203,10 @@ where
 }
 
 /// The renderer of a [`ModalOverlay`](ModalOverlay).
-/// 
+///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`Modal`](crate::native::Modal) in your user interface.
 pub trait Renderer: iced_native::Renderer {
-
     /// The style supported by this renderer.
     type Style: Default;
 
@@ -235,5 +226,6 @@ impl Renderer for iced_native::renderer::Null {
         &mut self,
         _env: DrawEnvironment<Self::Defaults, Self::Style>,
         _modal: &Element<'_, Message, Self>,
-    ) -> Self::Output {}
+    ) -> Self::Output {
+    }
 }

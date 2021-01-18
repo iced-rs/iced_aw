@@ -1,15 +1,15 @@
 //! Displays a [`Card`](Card).
-//! 
+//!
 //! *This API requires the following crate features to be activated: card*
-use iced_web::{css, Background, Bus, Color, Css, Element, Length, Widget};
 use dodrio::bumpalo;
+use iced_web::{css, Background, Bus, Color, Css, Element, Length, Widget};
 
 pub use crate::style::card::{Style, StyleSheet};
 
 const DEFAULT_PADDING: f32 = 10.0;
 
 /// A card consisting of a head, body and optional foot.
-/// 
+///
 /// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct Card<'a, Message> {
@@ -29,7 +29,6 @@ pub struct Card<'a, Message> {
 }
 
 impl<'a, Message> Card<'a, Message> {
-    
     /// Creates a new [`Card`](Card) containing the given head and body.
     pub fn new<H, B>(head: H, body: B) -> Self
     where
@@ -57,7 +56,7 @@ impl<'a, Message> Card<'a, Message> {
     /// [`Card`](Card).
     pub fn foot<F>(mut self, foot: F) -> Self
     where
-        F: Into<Element<'a, Message>>
+        F: Into<Element<'a, Message>>,
     {
         self.foot = Some(foot.into());
         self
@@ -88,7 +87,7 @@ impl<'a, Message> Card<'a, Message> {
     }
 
     /// Sets the padding of the [`Card`](Card).
-    /// 
+    ///
     /// This will set the padding of the head, body and foot to the
     /// same value.
     pub fn padding(mut self, padding: f32) -> Self {
@@ -124,7 +123,7 @@ impl<'a, Message> Card<'a, Message> {
 
     /// Sets the message that will be produced when the close icon of the
     /// [`Card`](Card) is pressed.
-    /// 
+    ///
     /// Setting this enables the drawing of a close icon on the [`Card`](Card).
     pub fn on_close(mut self, msg: Message) -> Self {
         self.on_close = Some(msg);
@@ -132,8 +131,7 @@ impl<'a, Message> Card<'a, Message> {
     }
 
     /// Sets the style of the [`Card`](Card).
-    pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self
-    {
+    pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style = style.into();
         self
     }
@@ -175,15 +173,17 @@ where
             style_sheet,
         );
 
-        let foot_node = self.foot.as_ref().map(|foot| foot_node(
-            foot,
-            self.padding_foot,
-            self.width,
-            &style,
-            bump,
-            bus,
-            style_sheet,
-        ));
+        let foot_node = self.foot.as_ref().map(|foot| {
+            foot_node(
+                foot,
+                self.padding_foot,
+                self.width,
+                &style,
+                bump,
+                bus,
+                style_sheet,
+            )
+        });
 
         let border = div(bump)
             .attr(
@@ -196,7 +196,7 @@ where
                     style.border_width,
                     css::color(style.border_color)
                 )
-                .into_bump_str()
+                .into_bump_str(),
             )
             .finish();
 
@@ -218,12 +218,10 @@ where
                 )
                 .into_bump_str(),
             )
-            .children(
-                match foot_node {
-                    Some(foot_node) => vec![head_node, body_node, foot_node, border],
-                    None => vec![head_node, body_node, border]
-                }
-            );
+            .children(match foot_node {
+                Some(foot_node) => vec![head_node, body_node, foot_node, border],
+                None => vec![head_node, body_node, border],
+            });
 
         node.finish()
     }
@@ -242,8 +240,7 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let head_padding_class =
-    style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: will change in the future
+    let head_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: will change in the future
 
     let head_class = {
         use dodrio::bumpalo::collections::String;
@@ -252,10 +249,7 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
     };
 
     let head_content = div(bump)
-        .attr(
-            "style",
-            "width: 100%",
-        )
+        .attr("style", "width: 100%")
         .children(vec![my_head.node(bump, bus, style_sheet)])
         .finish();
 
@@ -273,7 +267,9 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
                 )
                 .into_bump_str(),
             )
-            .children(vec![text(close_icon(my_style.close_color, bump).into_bump_str())])
+            .children(vec![text(
+                close_icon(my_style.close_color, bump).into_bump_str(),
+            )])
             .on("click", move |_root, _vdom, _event| {
                 event_bus.publish(on_close.clone());
             })
@@ -296,12 +292,10 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
             )
             .into_bump_str(),
         )
-        .children(
-            match close {
-                Some(close) => vec![head_content, close],
-                None => vec![head_content]
-            }
-        )
+        .children(match close {
+            Some(close) => vec![head_content, close],
+            None => vec![head_content],
+        })
         .finish();
 
     my_head
@@ -318,8 +312,7 @@ fn body_node<'a, 'b, Message>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let body_padding_class =
-    style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
+    let body_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
 
     let body_class = {
         use dodrio::bumpalo::collections::String;
@@ -358,8 +351,7 @@ fn foot_node<'a, 'b, Message>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let foot_padding_class =
-            style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
+    let foot_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
 
     let foot_class = {
         use dodrio::bumpalo::collections::String;
@@ -381,16 +373,16 @@ fn foot_node<'a, 'b, Message>(
                 my_style.border_radius,
                 css::color(my_style.foot_text_color)
             )
-            .into_bump_str()
+            .into_bump_str(),
         )
         .children(vec![my_foot.node(bump, bus, style_sheet)])
         .finish();
-    
+
     foot_node
 }
 
 impl<'a, Message> From<Card<'a, Message>> for Element<'a, Message>
-where 
+where
     Message: 'static + Clone,
 {
     fn from(card: Card<'a, Message>) -> Element<'a, Message> {
@@ -413,7 +405,10 @@ where
     )
 }*/
 
-fn close_icon<'b>(_color: Color, bump: &'b bumpalo::Bump) -> dodrio::bumpalo::collections::String<'b> {
+fn close_icon<'b>(
+    _color: Color,
+    bump: &'b bumpalo::Bump,
+) -> dodrio::bumpalo::collections::String<'b> {
     use dodrio::bumpalo::collections::String;
 
     String::from_str_in(r#"×"#, bump)

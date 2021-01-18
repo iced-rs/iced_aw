@@ -1,10 +1,10 @@
 //! Text widget for rendering icons.
-//! 
+//!
 //! Nearly a complete copy of the iced_native::Text widget, but with the
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: icon_text*
-use iced_graphics::{Backend, Font, Primitive, Rectangle, Renderer, backend};
+use iced_graphics::{backend, Backend, Font, Primitive, Rectangle, Renderer};
 use iced_native::mouse;
 
 use crate::native::icon_text;
@@ -12,16 +12,16 @@ use crate::native::icon_text;
 use super::icons::ICON_FONT;
 
 /// Text widget with icon font.
-/// 
+///
 /// This is an alias of an `iced_native` IconText with an `iced_wgpu::Renderer`.
 pub type IconText<Backend> = crate::native::icon_text::IconText<Renderer<Backend>>;
 
 impl<B> icon_text::Renderer for Renderer<B>
-where 
+where
     B: Backend + backend::Text,
 {
     type Font = Font;
-    
+
     fn default_size(&self) -> u16 {
         self.backend().default_size()
     }
@@ -37,9 +37,9 @@ where
         font: Self::Font,
         bounds: iced_graphics::Size,
     ) -> (f32, f32) {
-        self.backend().measure(content, f32::from(size), font, bounds)
+        self.backend()
+            .measure(content, f32::from(size), font, bounds)
     }
-
 
     fn draw(
         &mut self,

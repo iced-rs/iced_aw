@@ -1,8 +1,8 @@
 //! Use a floating button to overlay a button over some content
-//! 
+//!
 //! *This API requires the following crate features to be activated: floating_button*
-use iced_web::{button, Bus, Button, Css, Element, Widget};
 use dodrio::bumpalo;
+use iced_web::{button, Bus, Button, Css, Element, Widget};
 
 pub use crate::style::button::*;
 
@@ -13,12 +13,11 @@ pub mod offset;
 pub use offset::Offset;
 
 /// A floating button floating over some content.
-/// 
+///
 /// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct FloatingButton<'a, Message>
 where
-    
     Message: Clone,
 {
     anchor: Anchor,
@@ -32,7 +31,6 @@ impl<'a, Message> FloatingButton<'a, Message>
 where
     Message: Clone,
 {
-
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
     /// showing the given [`Button`](iced_native::button::Button).
     pub fn new<U, B>(state: &'a mut button::State, underlay: U, button: B) -> Self
@@ -73,7 +71,7 @@ where
 }
 
 impl<'a, Message> Widget<Message> for FloatingButton<'a, Message>
-where 
+where
     Message: 'static + Clone,
 {
     fn node<'b>(
@@ -88,7 +86,9 @@ where
             Anchor::NorthWest => format!("top: {}px; left: {}px;", self.offset.y, self.offset.x),
             Anchor::NorthEast => format!("top: {}px; right: {}px;", self.offset.y, self.offset.x),
             Anchor::SouthWest => format!("bottom: {}px; left: {}px;", self.offset.y, self.offset.x),
-            Anchor::SouthEast => format!("bottom: {}px; right: {}px;", self.offset.y, self.offset.x),
+            Anchor::SouthEast => {
+                format!("bottom: {}px; right: {}px;", self.offset.y, self.offset.x)
+            }
         };
 
         let node = div(bump)
@@ -102,7 +102,8 @@ where
                             in bump,
                             "position: absolute; {}",
                             position
-                        ).into_bump_str(),
+                        )
+                        .into_bump_str(),
                     )
                     .children(vec![self.button.node(bump, bus, style_sheet)])
                     .finish(),

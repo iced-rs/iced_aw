@@ -1,23 +1,29 @@
 //! Use a time picker as an input element for picking times.
-//! 
+//!
 //! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
 use chrono::{Local, NaiveTime};
-use iced_native::{Clipboard, Element, Event, Layout, Point, Widget, button, column, container, event, overlay, row, text};
 use iced_graphics::canvas;
+use iced_native::{
+    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
+    Widget,
+};
 
-use super::{icon_text, overlay::time_picker::{self, TimePickerOverlay}};
 pub use super::overlay::time_picker::Renderer;
+use super::{
+    icon_text,
+    overlay::time_picker::{self, TimePickerOverlay},
+};
 
-pub use crate::core::time::{Time, Period};
+pub use crate::core::time::{Period, Time};
 /// An input element for picking times.
 ///
 /// # Example
 /// ```
 /// # use iced_aw::time_picker;
 /// # use iced_native::{Button, Text, button, renderer::Null};
-/// # 
+/// #
 /// # pub type TimePicker<'a, Message> = iced_aw::native::TimePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
@@ -25,7 +31,7 @@ pub use crate::core::time::{Time, Period};
 ///     Cancel,
 ///     Submit(time_picker::Time),
 /// }
-/// 
+///
 /// let mut button_state = button::State::new();
 /// let mut state = time_picker::State::now();
 /// state.show(true);
@@ -58,12 +64,7 @@ where
     Renderer: time_picker::Renderer + button::Renderer,
 {
     /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
-    pub fn new<U, F>(
-        state: &'a mut State,
-        underlay: U,
-        on_cancel: Message,
-        on_submit: F,
-    ) -> Self
+    pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
         F: 'static + Fn(Time) -> Message,
@@ -94,7 +95,7 @@ where
     /// Sets the style of the [`TimePicker`](TimePicker).
     pub fn style<S>(mut self, style: S) -> Self
     where
-        S: Into<<Renderer as time_picker::Renderer>::Style>
+        S: Into<<Renderer as time_picker::Renderer>::Style>,
     {
         self.style = style.into();
         self
@@ -137,11 +138,16 @@ impl State {
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer>
-    for TimePicker<'a, Message, Renderer>
-where 
+impl<'a, Message, Renderer> Widget<Message, Renderer> for TimePicker<'a, Message, Renderer>
+where
     Message: Clone,
-    Renderer: time_picker::Renderer + button::Renderer + column::Renderer + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: time_picker::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     fn width(&self) -> iced_native::Length {
         self.underlay.width()
@@ -166,7 +172,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.underlay.on_event(
             event,
@@ -186,13 +192,8 @@ where
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
     ) -> Renderer::Output {
-        self.underlay.draw(
-            renderer,
-            defaults,
-            layout,
-            cursor_position,
-            viewport,
-        )
+        self.underlay
+            .draw(renderer, defaults, layout, cursor_position, viewport)
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -203,12 +204,14 @@ where
     }
 
     fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
-        if !self.state.show { return self.underlay.overlay(layout); }
+        if !self.state.show {
+            return self.underlay.overlay(layout);
+        }
 
         let bounds = layout.bounds();
         let position = Point::new(bounds.center_x(), bounds.center_y());
 
-        Some (
+        Some(
             TimePickerOverlay::new(
                 &mut self.state,
                 self.on_cancel.clone(),
@@ -218,16 +221,23 @@ where
                 position,
                 &self.style,
             )
-            .overlay()
+            .overlay(),
         )
     }
 }
 
 impl<'a, Message, Renderer> From<TimePicker<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
-where 
+where
     Message: 'a + Clone,
-    Renderer: 'a + time_picker::Renderer + button::Renderer + column::Renderer + container::Renderer + icon_text::Renderer + row::Renderer + text::Renderer,
+    Renderer: 'a
+        + time_picker::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
 {
     fn from(time_picker: TimePicker<'a, Message, Renderer>) -> Self {
         Element::new(time_picker)
