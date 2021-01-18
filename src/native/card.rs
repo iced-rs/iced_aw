@@ -3,8 +3,10 @@
 //! *This API requires the following crate features to be activated: card*
 use std::hash::Hash;
 
-use iced_native::{Align, Rectangle, mouse};
+use iced_native::{Align, mouse};
 use iced_native::{Clipboard, Element, Event, Layout, Length, Point, Size, Widget, event};
+
+use crate::core::renderer::DrawEnvironment;
 
 /// A card consisting of a head, body and optional foot.
 /// 
@@ -251,19 +253,16 @@ where
         let close_status = head_children.next().map_or(
             event::Status::Ignored,
             |close_layout| {
-                match event {
-                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                        if close_layout.bounds().contains(cursor_position) {
-                            return self.on_close.clone().map_or(
-                                event::Status::Ignored,
-                                |on_close| {
-                                    messages.push(on_close);
-                                    event::Status::Captured
-                                }
-                            )
-                        }
+                if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+                    if close_layout.bounds().contains(cursor_position) {
+                        return self.on_close.clone().map_or(
+                            event::Status::Ignored,
+                            |on_close| {
+                                messages.push(on_close);
+                                event::Status::Captured
+                            }
+                        )
                     }
-                    _ => {}
                 }
 
                 event::Status::Ignored
@@ -309,14 +308,16 @@ where
         viewport: &iced_graphics::Rectangle,
     ) -> Renderer::Output {
         renderer.draw(
-            defaults,
-            layout,
-            cursor_position,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: Some(viewport),
+            },
             &self.head,
             &self.body,
-            &self.foot,
-            &self.style,
-            viewport
+            &self.foot
         )
     }
 
@@ -453,14 +454,10 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`Card`](Card).
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         head: &Element<'_, Message, Self>,
         body: &Element<'_, Message, Self>,
         foot: &Option<Element<'_, Message, Self>>,
-        style_sheet: &Self::Style,
-        viewport: &Rectangle,
     ) -> Self::Output;
 }
 
@@ -476,14 +473,10 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        _layout: Layout<'_>,
-        _cursor_position: Point,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         _head: &Element<'_, Message, Self>,
         _body: &Element<'_, Message, Self>,
-        _foot: &Option<Element<'_, Message, Self>>,
-        _style_sheet: &Self::Style,
-        _viewport: &Rectangle,
+        _foot: &Option<Element<'_, Message, Self>>
     ) -> Self::Output {}
 }
 

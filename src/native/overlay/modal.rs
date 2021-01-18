@@ -6,6 +6,8 @@ use std::hash::Hash;
 
 use iced_native::{Clipboard, Container, Element, Event, Layout, Length, Point, Size, event, keyboard, layout::Limits, mouse, overlay};
 
+use crate::core::renderer::DrawEnvironment;
+
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
 pub struct ModalOverlay<'a, State, Content, Message, Renderer>
@@ -151,7 +153,7 @@ where
         let backdrop_status = self.backdrop.as_ref()
             .zip(layout.children().next())
             .map(|(backdrop, layout)|{
-                let status = match event {
+                match event {
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                         if !layout.bounds().contains(cursor_position) {
                             messages.push(backdrop.to_owned());
@@ -161,9 +163,7 @@ where
                         }
                     }
                     _ => event::Status::Ignored
-                };
-
-                status
+                }
             })
             .unwrap_or(event::Status::Ignored);
 
@@ -189,11 +189,14 @@ where
         cursor_position: Point,
     ) -> Renderer::Output {
         renderer.draw(
-            defaults,
-            cursor_position,
-            &self.style,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: None,
+            },
             &self.content,
-            layout
         )
     }
 
@@ -219,11 +222,8 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`ModalOverlay`](ModalOverlay).
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
         modal: &Element<'_, Message, Self>,
-        layout: Layout<'_>,
     ) -> Self::Output;
 }
 
@@ -233,10 +233,7 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        _cursor_position: Point,
-        _style_sheet: &Self::Style,
+        _env: DrawEnvironment<Self::Defaults, Self::Style>,
         _modal: &Element<'_, Message, Self>,
-        _layout: Layout<'_>,
     ) -> Self::Output {}
 }

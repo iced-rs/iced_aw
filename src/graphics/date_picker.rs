@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::collections::HashMap;
 
-use crate::style::{date_picker::Style, style_state::StyleState};
+use crate::{core::renderer::DrawEnvironment, style::{date_picker::Style, style_state::StyleState}};
 use crate::style::date_picker::StyleSheet;
 
 use iced_graphics::{Backend, Color, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment, backend};
@@ -29,24 +29,21 @@ where
 
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: iced_graphics::Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         date: &chrono::NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        layout: iced_native::Layout<'_>,
-    ) -> Self::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
+    ) -> Self:: Output {
+        let bounds = env.layout.bounds();
+        let mut children = env.layout.children();
         let mut date_children = children.next().unwrap().children();
 
         let mut style: HashMap<StyleState, Style> = HashMap::new();
-        let _ = style.insert(StyleState::Active, style_sheet.active());
-        let _ = style.insert(StyleState::Selected, style_sheet.selected());
-        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
+        let _ = style.insert(StyleState::Active, env.style_sheet.active());
+        let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
+        let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
         
         let mouse_interaction = mouse::Interaction::default();
 
@@ -57,12 +54,12 @@ where
         };*/
 
         let mut style_state = StyleState::Active;
-        if bounds.contains(cursor_position) {
+        if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
         }
 
         let background = Primitive::Quad {
-            bounds: bounds,
+            bounds,
             background: style.get(&style_state).unwrap().background, // TODO
             border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
             border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
@@ -76,7 +73,7 @@ where
             month_year_layout,
             month_str,
             year_str,
-            cursor_position,
+            env.cursor_position,
             &style,
         );
 
@@ -86,7 +83,7 @@ where
         let (days, days_mouse_interaction) = days(
             days_layout,
             date,
-            cursor_position,
+            env.cursor_position,
             &style,
         );
         
@@ -95,9 +92,9 @@ where
         
         let (cancel_button, cancel_mouse_interaciton) = cancel_button.draw(
             self,
-            defaults,
+            env.defaults,
             cancel_button_layout,
-            cursor_position,
+            env.cursor_position,
             &bounds,
         );
 
@@ -105,9 +102,9 @@ where
 
         let (submit_button, submit_mouse_interaction) = submit_button.draw(
             self,
-            defaults,
+            env.defaults,
             submit_button_layout,
-            cursor_position,
+            env.cursor_position,
             &bounds,
         );
 
@@ -259,7 +256,7 @@ fn day_labels(
 
         labels.push(
             Primitive::Text {
-                content: format!("{}", crate::core::date::WEEKDAY_LABELS[i]),
+                content: crate::core::date::WEEKDAY_LABELS[i].to_string(),
                 bounds: Rectangle {
                     x: bounds.center_x(),
                     y: bounds.center_y(),
@@ -319,7 +316,7 @@ fn day_table(
 
             primitives.push(
                 Primitive::Quad {
-                    bounds: bounds,
+                    bounds,
                     background: style.get(&style_state).unwrap().day_background,
                     border_radius: bounds.height as u16 / 2,
                     border_width: 0,
@@ -355,7 +352,7 @@ fn day_table(
 
     (
         Primitive::Group {
-            primitives: primitives,
+            primitives,
         },
         mouse_interaction
     )

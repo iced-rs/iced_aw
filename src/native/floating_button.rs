@@ -42,7 +42,7 @@ pub struct FloatingButton<'a, B, Message, Renderer>
 where
     B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: Clone,
-    Renderer: self::Renderer + iced_native::button::Renderer,
+    Renderer: iced_native::button::Renderer,
 {
     state: &'a mut button::State,
     anchor: Anchor,
@@ -56,7 +56,7 @@ impl<'a, B, Message, Renderer> FloatingButton<'a, B, Message, Renderer>
 where
     B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: Clone,
-    Renderer: self::Renderer + iced_native::button::Renderer,
+    Renderer: iced_native::button::Renderer,
 {
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
     /// showing the given [`Button`](iced_native::button::Button).
@@ -70,7 +70,7 @@ where
             offset: 5.0.into(),
             hidden: false,
             underlay: underlay.into(),
-            button: button,
+            button,
         }
     }
 
@@ -103,7 +103,7 @@ impl<'a, B, Message, Renderer> Widget<Message, Renderer>
 where
     B: 'a + Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + iced_native::button::Renderer,
+    Renderer: 'a + iced_native::button::Renderer,
 {
     fn width(&self) -> Length {
         self.underlay.width()
@@ -130,16 +130,14 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>
     ) -> event::Status {
-        let status_floating = self.underlay.on_event(
-            event.clone(),
+        self.underlay.on_event(
+            event,
             layout,
             cursor_position,
             messages,
             renderer,
             clipboard,
-        );
-
-        status_floating
+        )
     }
 
     fn draw(
@@ -198,41 +196,12 @@ where
     }
 }
 
-/// The renderer of a [`FloatingButton`](FloatingButton).
-/// 
-/// Your renderer will need to implement this trait before being
-/// able to use a [`FloatingButton`](FloatingButton) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-
-    /// Draws a [`FloatingButton`](FloatingButton)
-    fn draw<Message>(
-        &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: Point,
-        layout: Layout<'_>,
-        floating: &Element<'_, Message, Self>,
-        viewport: &Rectangle,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    fn draw<Message>(
-        &mut self,
-        _defaults: &Self::Defaults,
-        _cursor_position: Point,
-        _layout: Layout<'_>,
-        _floating: &Element<'_, Message, Self>,
-        _viewport: &Rectangle,
-    ) -> Self::Output {}
-}
-
 impl<'a, B, Message, Renderer> From<FloatingButton<'a, B, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     B: 'a + Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + iced_native::button::Renderer,
+    Renderer: 'a + iced_native::button::Renderer,
 {
     fn from(floating_button: FloatingButton<'a, B, Message, Renderer>) -> Self {
         Element::new(floating_button)

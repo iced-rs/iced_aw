@@ -9,7 +9,7 @@ use std::hash::Hash;
 
 use iced_native::{Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Row, Size, Widget, column, event, row, text};
 
-use crate::native::{TabBar, TabLabel};
+use crate::{core::renderer::DrawEnvironment, native::{TabBar, TabLabel}};
 
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
@@ -350,15 +350,17 @@ where
 
         self::Renderer::draw(
             renderer,
-            defaults,
+            DrawEnvironment {
+                defaults, 
+                layout,
+                cursor_position,
+                style_sheet: &(),
+                viewport: Some(viewport),
+            },
             self.tab_bar.get_active_tab(),
-            //&self.tab_bar,
             tab_bar,
             &self.tabs,
-            layout,
-            cursor_position,
             &self.tab_bar_position,
-            viewport
         )
     }
 
@@ -379,18 +381,15 @@ where
 /// Your renderer will need to implement this trait before being able to
 /// use a [`Tabs`](Tabs) widget in your user interface.
 pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
+    
     /// Draws a [`Tabs`](Tabs) widget.
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
+        env: DrawEnvironment<'_, Self::Defaults, ()>,
         active_tab: usize,
-        //tab_bar: &TabBar<Message, Self>,
         tab_bar: Self::Output,
         tabs: &[Element<'_, Message, Self>],
-        layout: Layout<'_>,
-        cursor_position: Point,
         tab_bar_position: &TabBarPosition,
-        viewport: &Rectangle,
     ) -> Self::Output;
 }
 
@@ -398,14 +397,11 @@ pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
 impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         _active_tab: usize,
         _tab_bar: Self::Output,
         _tabs: &[Element<'_, Message, Self>],
-        _layout: Layout<'_>,
-        _cursor_position: Point,
         _tab_bar_position: &TabBarPosition,
-        _viewport: &Rectangle,
     ) -> Self::Output {}
 }
 

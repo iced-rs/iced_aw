@@ -149,16 +149,14 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>
     ) -> event::Status {
-        let status = self.button.on_event(
+        self.button.on_event(
             event,
             layout,
             cursor_position,
             messages,
             renderer,
             clipboard,
-        );
-
-        status
+        )
     }
 
     fn draw(

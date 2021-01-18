@@ -35,7 +35,7 @@ impl Time {
         Time::Hm {
             hour: 0,
             minute: 0,
-            period: period,
+            period,
         }
     }
 
@@ -45,7 +45,7 @@ impl Time {
             hour: 0,
             minute: 0,
             second: 0,
-            period: period,
+            period,
         }
     }
 }

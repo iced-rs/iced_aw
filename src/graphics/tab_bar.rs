@@ -5,10 +5,10 @@
 //! 
 //! *This API requires the following crate features to be activated: tab_bar*
 use iced_graphics::{Backend, Color, Primitive, Rectangle, Renderer, backend};
-use iced_native::{Font, HorizontalAlignment, Layout, Point, VerticalAlignment, mouse};
+use iced_native::{Font, HorizontalAlignment, Layout, VerticalAlignment, mouse};
 pub use tab_bar::tab_label::TabLabel;
 
-use crate::native::tab_bar;
+use crate::{core::renderer::DrawEnvironment, native::tab_bar};
 pub use crate::style::tab_bar::{Style, StyleSheet};
 
 /// A tab bar to show tabs.
@@ -35,23 +35,20 @@ where
 
     fn draw(
         &mut self,
-        _defaults: &Self::Defaults,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         active_tab: usize,
         tab_labels: &[TabLabel],
-        layout: Layout<'_>,
-        cursor_position: Point,
         icon_font: Option<Font>,
         text_font: Option<Font>,
-        style_sheet: &Self::Style,
     ) -> Self::Output {
         // TODO tab bar background
-        let bounds = layout.bounds();
-        let children = layout.children();
-        let is_mouse_over = bounds.contains(cursor_position);
+        let bounds = env.layout.bounds();
+        let children = env.layout.children();
+        let is_mouse_over = bounds.contains(env.cursor_position);
         let style = if is_mouse_over {
-            style_sheet.hovered(false)
+            env.style_sheet.hovered(false)
         } else {
-            style_sheet.active(false)
+            env.style_sheet.active(false)
         };
 
         let mut mouse_interaction = mouse::Interaction::default();
@@ -59,7 +56,7 @@ where
         let mut primitives = vec!(
             Primitive::Quad {
                 bounds,
-                background: style.background.unwrap_or(Color::TRANSPARENT.into()),
+                background: style.background.unwrap_or_else(|| Color::TRANSPARENT.into()),
                 border_radius: 0,
                 border_width: style.border_width,
                 border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
@@ -75,11 +72,11 @@ where
                     let (primitive, new_mouse_interaction) = draw_tab(
                         tab,
                         layout,
-                        style_sheet,
+                        env.style_sheet,
                         i == active_tab,
-                        cursor_position,
+                        env.cursor_position,
                         icon_font.unwrap_or(B::ICON_FONT),
-                        text_font.unwrap_or(Font::default()),
+                        text_font.unwrap_or_default(),
                     );
 
                     if new_mouse_interaction > mouse_interaction {
@@ -93,7 +90,7 @@ where
 
         (
             Primitive::Group {
-                primitives: primitives,
+                primitives,
             },
             mouse_interaction,
         )
@@ -101,6 +98,7 @@ where
 }
 
 /// Draws a tab.
+#[allow(clippy::borrowed_box)]
 fn draw_tab(
     tab: &TabLabel,
     layout: Layout<'_>,

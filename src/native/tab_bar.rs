@@ -15,6 +15,8 @@ use iced_native::{
 pub mod tab_label;
 pub use tab_label::TabLabel;
 
+use crate::core::renderer::DrawEnvironment;
+
 /// A tab bar to show tabs.
 /// 
 /// # Example
@@ -206,7 +208,7 @@ where
     }
 
     /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
-    pub fn push<'a>(mut self, tab_label: TabLabel) -> Self {
+    pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self
     }
@@ -301,29 +303,26 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>
     ) -> event::Status {
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if layout.bounds().contains(cursor_position) {
-                    let tabs_map: Vec<bool> = layout.children()
-                        .map(|layout| layout.bounds().contains(cursor_position))
-                        .collect();
+        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if layout.bounds().contains(cursor_position) {
+                let tabs_map: Vec<bool> = layout.children()
+                    .map(|layout| layout.bounds().contains(cursor_position))
+                    .collect();
 
-                    if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-                        messages.push(
-                            self.on_close.as_ref().filter(|_on_close| {
-                                let tab_layout = layout.children().nth(new_selected).unwrap();
-                                let cross_layout = tab_layout.children().nth(1).unwrap();
-    
-                                cross_layout.bounds().contains(cursor_position)
-                            })
-                            .map(|on_close| (on_close)(new_selected))
-                            .unwrap_or((self.on_select)(new_selected))
-                        );
-                        return event::Status::Captured;
-                    }
+                if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
+                    messages.push(
+                        self.on_close.as_ref().filter(|_on_close| {
+                            let tab_layout = layout.children().nth(new_selected).unwrap();
+                            let cross_layout = tab_layout.children().nth(1).unwrap();
+
+                            cross_layout.bounds().contains(cursor_position)
+                        })
+                        .map(|on_close| (on_close)(new_selected))
+                        .unwrap_or_else(|| (self.on_select)(new_selected))
+                    );
+                    return event::Status::Captured;
                 }
-            },
-            _ => {}
+            }
         };
 
         event::Status::Ignored
@@ -335,18 +334,21 @@ where
         defaults: &Renderer::Defaults,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) -> Renderer::Output {
         self::Renderer::draw(
             renderer,
-            defaults,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: Some(viewport),
+            },
             self.active_tab,
             &self.tab_labels,
-            layout,
-            cursor_position,
             self.icon_font,
             self.text_font,
-            &self.style,
         )
     }
 
@@ -393,14 +395,11 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`TabBar`](TabBar).
     fn draw(
         &mut self,
-        defaults: &Self::Defaults,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         active_tab: usize,
         tab_labels: &[TabLabel],
-        layout: Layout<'_>,
-        cursor_position: Point,
         icon_font: Option<Font>,
         text_font: Option<Font>,
-        style_sheet: &Self::Style,
     ) -> Self::Output;
 }
 
@@ -420,14 +419,11 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw(
         &mut self,
-        _defaults: &Self::Defaults,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         _active_tab: usize,
         _tab_labels: &[TabLabel],
-        _layout: Layout<'_>,
-        _cursor_position: Point,
         _icon_font: Option<Font>,
         _text_font: Option<Font>,
-        _style_sheet: &Self::Style,
     ) -> Self::Output {}
 }
 

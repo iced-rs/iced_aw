@@ -103,7 +103,7 @@ where
     ) -> iced_native::layout::Node {
         let limits = limits.width(self.width).height(self.height);
 
-        let size = self.size.unwrap_or(renderer.default_size());
+        let size = self.size.unwrap_or_else(|| renderer.default_size());
 
         let bounds = limits.max();
 
@@ -131,7 +131,7 @@ where
             defaults,
             layout.bounds(),
             &self.content,
-            self.size.unwrap_or(renderer.default_size()),
+            self.size.unwrap_or_else(|| renderer.default_size()),
             self.font,
             self.color,
             self.horizontal_alignment,
@@ -178,6 +178,7 @@ pub trait Renderer: iced_native::Renderer {
 
 
     /// Draws an [`IconText`](IconText).
+    #[allow(clippy::too_many_arguments)]
     fn draw(
         &mut self,
         defaults: &Self::Defaults,

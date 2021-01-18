@@ -121,7 +121,7 @@ mod predefined {
         fn active(&self) -> Style {
             Style {
                 background: colors::DARK.into(),
-                text_color: colors::WHITE.into(),
+                text_color: colors::WHITE,
                 .. Style::default()
             }
         }

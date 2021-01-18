@@ -5,6 +5,8 @@ use std::hash::Hash;
 
 use iced_native::{Align, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget, event, layout};
 
+use crate::core::renderer::DrawEnvironment;
+
 /// A badge for color highlighting small information.
 /// 
 /// # Example
@@ -150,12 +152,14 @@ where
         viewport: &Rectangle,
     ) -> Renderer::Output {
         renderer.draw(
-            defaults,
-            cursor_position,
-            &self.style,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: Some(viewport),
+            },
             &self.content,
-            layout,
-            viewport,
         )
     }
 
@@ -183,12 +187,8 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`Badge`](Badge).
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
         content: &Element<'_, Message, Self>,
-        layout: Layout<'_>,
-        viewport: &Rectangle,
     ) -> Self::Output;
 }
 
@@ -198,12 +198,8 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        _cursor_position: Point,
-        _style_sheet: &Self::Style,
+        _env: DrawEnvironment<Self::Defaults, Self::Style>,
         _content: &Element<'_, Message, Self>,
-        _layout: Layout<'_>,
-        _viewport: &Rectangle,
     ) -> Self::Output {}
 }
 

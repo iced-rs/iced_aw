@@ -4,7 +4,7 @@
 
 use iced_graphics::{Backend, Color, Primitive, Renderer};
 
-use crate::native::modal;
+use crate::{core::renderer::DrawEnvironment, native::modal};
 pub use crate::native::modal::State;
 pub use crate::style::modal::{Style, StyleSheet};
 
@@ -22,15 +22,12 @@ where
 
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: iced_graphics::Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
         modal: &iced_native::Element<'_, Message, Self>,
-        layout: iced_native::Layout<'_>,
     ) -> Self::Output {
-        let bounds = layout.bounds();
+        let bounds = env.layout.bounds();
 
-        let style = style_sheet.active();
+        let style = env.style_sheet.active();
 
         let background = Primitive::Quad {
             bounds,
@@ -42,9 +39,9 @@ where
 
         let (modal, mouse_interaction) = modal.draw(
             self,
-            defaults,
-            layout,
-            cursor_position,
+            env.defaults,
+            env.layout,
+            env.cursor_position,
             &bounds
         );
 

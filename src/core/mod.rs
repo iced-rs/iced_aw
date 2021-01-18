@@ -5,5 +5,7 @@ pub mod date;
 
 #[cfg(all(feature = "time_picker", not(target_arch = "wasm32")))]
 pub mod clock;
+
+pub mod renderer;
 #[cfg(feature = "time_picker")]
 pub mod time;

@@ -3,17 +3,13 @@
 //! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
-use crate::{
-    core::clock::{
+use crate::{core::clock::{
         HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
         NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE
-    },
-    core::time::Period,
-    graphics::icons::Icon, native::{
+    }, core::{renderer::DrawEnvironment, time::Period}, graphics::icons::Icon, native::{
         IconText, icon_text, time_picker::{State, Time}
-    }
-};
+    }};
 use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
 use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, layout::{self, Limits}, mouse, overlay, row, text};
@@ -34,7 +30,7 @@ where
     clock_cache: &'a mut canvas::Cache,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
-    on_submit: &'a Box<dyn Fn(Time) -> Message>,
+    on_submit: &'a dyn Fn(Time) -> Message,
     use_24h: bool,
     show_seconds: bool,
     position: Point,
@@ -51,7 +47,7 @@ where
     pub fn new(
         state: &'a mut State,
         on_cancel: Message,
-        on_submit: &'a Box<dyn Fn(Time) -> Message>,
+        on_submit: &'a dyn Fn(Time) -> Message,
         use_24h: bool,
         show_seconds: bool,
         position: Point,
@@ -90,7 +86,7 @@ where
             use_24h,
             show_seconds,
             position,
-            style: style.into(),
+            style,
         }
     }
 
@@ -98,7 +94,7 @@ where
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(
-            self.position.clone(),
+            self.position,
             Box::new(self)
         )
     }
@@ -339,7 +335,7 @@ where
         let font_size = (1.2*(text::Renderer::default_size(renderer) as f32)) as u16;
 
         // Digital Clock
-        let digital_clock_limits = limits.clone();
+        let digital_clock_limits = limits;
 
         let mut digital_clock_row = Row::<(), Renderer>::new()
             .align_items(Align::Center)
@@ -454,7 +450,7 @@ where
             .layout(renderer, &digital_clock_limits);
 
         // Pre-Buttons TODO: get rid of it
-        let cancel_limits = limits.clone();
+        let cancel_limits = limits;
         let cancel_button = self.cancel_button
             .layout(renderer, &cancel_limits);
         
@@ -594,7 +590,7 @@ where
             clipboard,
         );
 
-        if fake_messages.len() > 0 {
+        if !fake_messages.is_empty() {
             let (hour, period) = if self.use_24h {
                 (self.time.hour(), Period::H24)
             } else {
@@ -604,16 +600,16 @@ where
 
             let time = if self.show_seconds {
                 Time::Hms {
-                    hour: hour,
+                    hour,
                     minute: self.time.minute(),
                     second: self.time.second(),
-                    period: period,
+                    period,
                 }
             } else {
                 Time::Hm {
-                    hour: hour,
+                    hour,
                     minute: self.time.minute(),
-                    period: period,
+                    period,
                 }
             };
 
@@ -635,16 +631,19 @@ where
     ) -> Renderer::Output {
         <Renderer as self::Renderer>::draw(
             renderer,
-            defaults,
-            cursor_position,
-            &self.style,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: None,
+            },
             &self.time,
             &self.clock_cache,
             &self.cancel_button,
             &self.submit_button,
             self.use_24h,
             self.show_seconds,
-            layout,
         )
     }
 
@@ -668,18 +667,16 @@ pub trait Renderer: iced_native::Renderer {
     type Style: Default;
 
     /// Draws a [`TimePickerOverlay`](TimePickerOverlay).
+    #[allow(clippy::too_many_arguments)]
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
         time: &NaiveTime,
         clock_cache: &canvas::Cache,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
-        layout: Layout<'_>,
     ) -> Self::Output;
 }
 
@@ -689,15 +686,12 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        _cursor_position: Point,
-        _style_sheet: &Self::Style,
+        _env: DrawEnvironment<Self::Defaults, Self::Style>,
         _time: &NaiveTime,
         _clock_cache: &canvas::Cache,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
         _use_24h: bool,
         _show_seconds: bool,
-        _layout: Layout<'_>,
     ) -> Self::Output {}
 }

@@ -4,7 +4,7 @@
 use iced_graphics::{Backend, Color, Defaults, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment, backend, defaults};
 use iced_native::mouse;
 
-use crate::native::card;
+use crate::{core::renderer::DrawEnvironment, native::card};
 pub use crate::style::card::{Style, StyleSheet};
 
 /// A card consisting of a head, body and optional foot.
@@ -27,18 +27,14 @@ where
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         head: &iced_native::Element<'_, Message, Self>,
         body: &iced_native::Element<'_, Message, Self>,
         foot: &Option<iced_native::Element<'_, Message, Self>>,
-        style_sheet: &Self::Style,
-        viewport: &iced_graphics::Rectangle,
     ) -> Self::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
-        let style = style_sheet.active();
+        let bounds = env.layout.bounds();
+        let mut children = env.layout.children();
+        let style = env.style_sheet.active();
 
         let mouse_interaction = mouse::Interaction::default();
 
@@ -76,8 +72,8 @@ where
                 }
             },
             head_children.next().unwrap(),
-            cursor_position,
-            viewport
+            env.cursor_position,
+            env.viewport.unwrap(),
         );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
@@ -87,7 +83,7 @@ where
             
             |close_layout| {
                 let close_bounds = close_layout.bounds();
-                let is_mouse_over_close = close_bounds.contains(cursor_position);
+                let is_mouse_over_close = close_bounds.contains(env.cursor_position);
 
                 (
                     Primitive::Text {
@@ -133,8 +129,8 @@ where
                 }
             },
             body_children.next().unwrap(),
-            cursor_position,
-            viewport,
+            env.cursor_position,
+            env.viewport.unwrap(),
         );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
@@ -158,8 +154,8 @@ where
                     }
                 },
                 foot_children.next().unwrap(),
-                cursor_position,
-                viewport
+                env.cursor_position,
+                env.viewport.unwrap(),
             )
         } else {
             (Primitive::None, mouse::Interaction::default())

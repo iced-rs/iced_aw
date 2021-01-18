@@ -5,11 +5,11 @@
 //! the content of the tabs.
 //! 
 //! *This API requires the following crate features to be activated: tabs*
-use iced_graphics::{Backend, Point, Primitive, Rectangle, Renderer, backend};
+use iced_graphics::{Backend, Primitive, Renderer, backend};
 
-use iced_native::{Layout, mouse};
+use iced_native::mouse;
 pub use tabs::tab_bar_position::TabBarPosition;
-use crate::native::tabs;
+use crate::{core::renderer::DrawEnvironment, native::tabs};
 pub use crate::style::tab_bar::{Style, StyleSheet};
 
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
@@ -26,18 +26,14 @@ where
 {
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
+        env: DrawEnvironment<'_, Self::Defaults, ()>,
         active_tab: usize,
-        //tab_bar: &crate::native::TabBar<Message, Self>,
         tab_bar: Self::Output,
         tabs: &[iced_native::Element<'_, Message, Self>],
-        layout: Layout<'_>,
-        cursor_position: Point,
         tab_bar_position: &TabBarPosition,
-        viewport: &Rectangle,
-    ) -> Self::Output {
+    ) -> Self::Output {    
         //let bounds = layout.bounds();
-        let mut children = layout.children();
+        let mut children = env.layout.children();
         /*let (tab_bar_layout, tab_content_layout) = match tab_bar_position {
             TabBarPosition::Top => {
                 let tab_bar_layout = children.next().unwrap();
@@ -68,7 +64,7 @@ where
 
         if let Some(element) = tabs.get(active_tab) {
             let (tab_content_primitive, new_mouse_interaction) =
-                element.draw(self, defaults, tab_content_layout, cursor_position, viewport);
+                element.draw(self, env.defaults, tab_content_layout, env.cursor_position, env.viewport.unwrap());
 
             if new_mouse_interaction > mouse_interaction {
                 mouse_interaction = new_mouse_interaction;
@@ -79,7 +75,7 @@ where
 
         (
             Primitive::Group {
-                primitives: primitives,
+                primitives,
             },
             mouse_interaction,
         )

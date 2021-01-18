@@ -10,7 +10,7 @@ use iced_native::{
     column, container, event, layout::{self, Limits}, mouse, overlay, row, text
 };
 
-use crate::{graphics::icons::Icon, native::{IconText, date_picker::State, icon_text}};
+use crate::{core::renderer::DrawEnvironment, graphics::icons::Icon, native::{IconText, date_picker::State, icon_text}};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -27,7 +27,7 @@ where
     date: &'a mut NaiveDate,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
-    on_submit: &'a Box<dyn Fn(i32, u32, u32) -> Message>,
+    on_submit: &'a dyn Fn(i32, u32, u32) -> Message,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -43,7 +43,7 @@ where
     pub fn new(
         state: &'a mut State,
         on_cancel: Message,
-        on_submit: &'a Box<dyn Fn(i32, u32, u32) -> Message>,
+        on_submit: &'a dyn Fn(i32, u32, u32) -> Message,
         position: Point,
         style: &'a <Renderer as self::Renderer>::Style,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
@@ -77,7 +77,7 @@ where
                 .into(),
             on_submit,
             position,
-            style: style.into(),
+            style,
         }
     }
 
@@ -85,7 +85,7 @@ where
     /// [`Element`](overlay::Element).
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(
-            self.position.clone(),
+            self.position,
             Box::new(self)
         )
     }
@@ -121,18 +121,14 @@ where
         let _center_bounds = month_children.next().unwrap().bounds();
         let right_bounds = month_children.next().unwrap().bounds();
         
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if left_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::pred_month(self.date);
-                    status = event::Status::Captured;
-                } else if right_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::succ_month(self.date);
-                    status = event::Status::Captured;
-                }
-
-            },
-            _ => {},
+        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if left_bounds.contains(cursor_position) {
+                *self.date = crate::core::date::pred_month(self.date);
+                status = event::Status::Captured;
+            } else if right_bounds.contains(cursor_position) {
+                *self.date = crate::core::date::succ_month(self.date);
+                status = event::Status::Captured;
+            }
         }
 
         // ----------- Year -----------------------
@@ -143,18 +139,14 @@ where
         let _center_bounds = year_children.next().unwrap().bounds();
         let right_bounds = year_children.next().unwrap().bounds();
         
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if left_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::pred_year(self.date);
-                    status = event::Status::Captured;
-                } else if right_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::succ_year(self.date);
-                    status = event::Status::Captured;
-                }
-
-            },
-            _ => {},
+        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if left_bounds.contains(cursor_position) {
+                *self.date = crate::core::date::pred_year(self.date);
+                status = event::Status::Captured;
+            } else if right_bounds.contains(cursor_position) {
+                *self.date = crate::core::date::succ_year(self.date);
+                status = event::Status::Captured;
+            }
         }
         
         status
@@ -176,34 +168,31 @@ where
 
         let mut status = event::Status::Ignored;
 
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                'outer: for (y, row) in children.enumerate() {
-                    for (x, label) in row.children().enumerate() {
-                        let bounds = label.bounds();
-                        if bounds.contains(cursor_position) {
-                            let (day, is_in_month) = crate::core::date::position_to_day(
-                                x,
-                                y,
-                                self.date.year(),
-                                self.date.month()
-                            );
+        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            'outer: for (y, row) in children.enumerate() {
+                for (x, label) in row.children().enumerate() {
+                    let bounds = label.bounds();
+                    if bounds.contains(cursor_position) {
+                        let (day, is_in_month) = crate::core::date::position_to_day(
+                            x,
+                            y,
+                            self.date.year(),
+                            self.date.month()
+                        );
 
-                            // TODO: clean up
-                            *self.date = match is_in_month {
-                                -1 => crate::core::date::pred_month(self.date).with_day(day as u32).unwrap(),
-                                0 => self.date.with_day(day as u32).unwrap(),
-                                1 => crate::core::date::succ_month(self.date).with_day(day as u32).unwrap(),
-                                _ => panic!("Should not happen")
-                            };
+                        // TODO: clean up
+                        *self.date = match is_in_month {
+                            -1 => crate::core::date::pred_month(self.date).with_day(day as u32).unwrap(),
+                            0 => self.date.with_day(day as u32).unwrap(),
+                            1 => crate::core::date::succ_month(self.date).with_day(day as u32).unwrap(),
+                            _ => panic!("Should not happen")
+                        };
 
-                            status = event::Status::Captured;
-                            break 'outer;
-                        }
+                        status = event::Status::Captured;
+                        break 'outer;
                     }
                 }
-            },
-            _ => {}
+            }
         }
 
         status
@@ -234,7 +223,7 @@ where
         .max_height(300);
         
         // Pre-Buttons TODO: get rid of it
-        let cancel_limits = limits.clone();
+        let cancel_limits = limits;
         let cancel_button = self.cancel_button
             .layout(renderer, &cancel_limits);
 
@@ -442,7 +431,7 @@ where
         );
 
 
-        if fake_messages.len() > 0 {
+        if !fake_messages.is_empty() {
             messages.push(
                 (self.on_submit)(
                     self.date.year(),
@@ -467,15 +456,18 @@ where
     ) -> Renderer::Output {
         <Renderer as self::Renderer>::draw(
             renderer,
-            defaults,
-            cursor_position,
-            &self.style,
+            DrawEnvironment {
+                defaults,
+                layout,
+                cursor_position,
+                style_sheet: &self.style,
+                viewport: None,
+            },
             &self.date,
             &self.year_as_string(),
             &self.month_as_string(),
             &self.cancel_button,
             &self.submit_button,
-            layout,
         )
     }
 
@@ -502,16 +494,13 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`DatePickerOverlay`](DatePickerOverlay).
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         date: &NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        layout: Layout<'_>,
-    ) -> Self::Output;
+    )-> Self::Output;
 }
 
 #[cfg(debug_assertions)]
@@ -520,14 +509,11 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        _cursor_position: Point,
-        _style_sheet: &Self::Style,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
         _date: &NaiveDate,
         _year_str: &str,
         _month_str: &str,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
-        _layout: Layout<'_>,
-    ) -> Self::Output {}
+    )-> Self::Output {}
 }

@@ -1,9 +1,9 @@
 //! Use a badge for color highlighting important information.
 //! 
 //! *This API requires the following crate features to be activated: badge*
-use iced_graphics::{defaults, Backend, Color, Defaults, Point, Primitive, Renderer};
+use iced_graphics::{defaults, Backend, Color, Defaults, Primitive, Renderer};
 
-use crate::native::badge;
+use crate::{core::renderer::DrawEnvironment, native::badge};
 pub use crate::style::badge::{Style, StyleSheet};
 
 const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
@@ -22,20 +22,16 @@ where
 
     fn draw<Message>(
         &mut self,
-        _defaults: &Self::Defaults,
-        cursor_position: Point,
-        style_sheet: &Self::Style,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
         content: &iced_native::Element<'_, Message, Self>,
-        layout: iced_native::Layout<'_>,
-        viewport: &iced_native::Rectangle,
     ) -> Self::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
-        let is_mouse_over = bounds.contains(cursor_position);
+        let bounds = env.layout.bounds();
+        let mut children = env.layout.children();
+        let is_mouse_over = bounds.contains(env.cursor_position);
         let style = if is_mouse_over {
-            style_sheet.hovered()
+            env.style_sheet.hovered()
         } else {
-            style_sheet.active()
+            env.style_sheet.active()
         };
 
         //println!("height: {}", bounds.height);
@@ -59,8 +55,8 @@ where
                 }
             },
             children.next().unwrap(),
-            cursor_position,
-            viewport
+            env.cursor_position,
+            env.viewport.unwrap()
         );
 
         (

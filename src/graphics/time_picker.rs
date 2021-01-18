@@ -1,7 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //! 
 //! *This API requires the following crate features to be activated: time_picker*
-use crate::style::style_state::StyleState;
+use crate::{core::renderer::DrawEnvironment, style::style_state::StyleState};
 use std::collections::HashMap;
 
 use crate::{core::clock::{self, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE, SECOND_RADIUS_PERCENTAGE}, style::time_picker::{Style, StyleSheet}};
@@ -32,24 +32,21 @@ where
 
     fn draw<Message>(
         &mut self,
-        defaults: &Self::Defaults,
-        cursor_position: iced_graphics::Point,
-        style_sheet: &Self::Style,
-        time: &chrono::NaiveTime,
+        env: DrawEnvironment<Self::Defaults, Self::Style>,
+        time: &NaiveTime,
         clock_cache: &canvas::Cache,
         cancel_button: &iced_native::Element<'_, Message, Self>,
         submit_button: &iced_native::Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
-        layout: iced_native::Layout<'_>,
     ) -> Self::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
+        let bounds = env.layout.bounds();
+        let mut children = env.layout.children();
 
         let mut style: HashMap<StyleState, Style> = HashMap::new();
-        let _ = style.insert(StyleState::Active, style_sheet.active());
-        let _ = style.insert(StyleState::Selected, style_sheet.selected());
-        let _ = style.insert(StyleState::Hovered, style_sheet.hovered());
+        let _ = style.insert(StyleState::Active, env.style_sheet.active());
+        let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
+        let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
 
         let mouse_interaction = mouse::Interaction::default();
         
@@ -59,7 +56,7 @@ where
             StyleState::Active
         };*/
         let mut style_state = StyleState::Active;
-        if bounds.contains(cursor_position) {
+        if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
         }
 
@@ -77,7 +74,7 @@ where
             clock_layout,
             time,
             clock_cache,
-            cursor_position,
+            env.cursor_position,
             use_24h,
             show_seconds,
             &style,
@@ -88,7 +85,7 @@ where
         let (digital_clock, digital_clock_mouse_interaction) = digital_clock(
             digital_clock_layout,
             time,
-            cursor_position,
+            env.cursor_position,
             use_24h,
             show_seconds,
             &style
@@ -99,9 +96,9 @@ where
         
         let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
-            defaults,
+            env.defaults,
             cancel_button_layout,
-            cursor_position,
+            env.cursor_position,
             &bounds,
         );
 
@@ -109,9 +106,9 @@ where
 
         let (submit_button, submit_mouse_interaction) = submit_button.draw(
             self,
-            defaults,
+            env.defaults,
             submit_button_layout,
-            cursor_position,
+            env.cursor_position,
             &bounds,
         );
 
@@ -204,7 +201,7 @@ fn clock(
 
             match nearest_radius {
                 NearestRadius::Period => {
-                    frame.fill(&Path::circle(center.clone(), period_size), style.get(&StyleState::Hovered).unwrap().clock_number_background);
+                    frame.fill(&Path::circle(center, period_size), style.get(&StyleState::Hovered).unwrap().clock_number_background);
                 },
                 NearestRadius::Hour => {
                     let nearest_point = hour_points[crate::core::clock::nearest_point(&hour_points, internal_cursor_position)];
@@ -226,7 +223,7 @@ fn clock(
 
             let period_text = Text {
                 content: format!("{}", period),
-                position: center.clone(),
+                position: center,
                 color: style.get(&clock_style_state).unwrap().clock_number_color,
                 size: period_size,
                 font: Default::default(),
@@ -246,8 +243,8 @@ fn clock(
 
                     let mut style_state = StyleState::Active;
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), number_size * 0.8), style.get(&StyleState::Selected).unwrap().clock_number_background);
-                        frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                        frame.fill(&Path::circle(*p, number_size * 0.8), style.get(&StyleState::Selected).unwrap().clock_number_background);
+                        frame.stroke(&Path::line(center, *p), hand_stroke);
                         style_state = style_state.max(StyleState::Selected);
                     }
 
@@ -262,7 +259,7 @@ fn clock(
                                 i
                             }
                         ),
-                        position: p.clone(),
+                        position: *p,
                         color: style.get(&style_state).unwrap().clock_number_color,
                         size: number_size,
                         font: Default::default(),
@@ -281,15 +278,15 @@ fn clock(
 
                     let mut style_state = StyleState::Active;
                     if selected {
-                        frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
-                        frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                        frame.fill(&Path::circle(*p, number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
+                        frame.stroke(&Path::line(center, *p), hand_stroke);
                         style_state = style_state.max(StyleState::Selected)
                     }
 
                     if i % 5 == 0 {
                         let text = Text {
                             content: format!("{:02}", i),
-                            position: p.clone(),
+                            position: *p,
                             color: style.get(&style_state).unwrap().clock_number_color,
                             size: number_size,
                             font: Default::default(),
@@ -299,7 +296,7 @@ fn clock(
 
                         frame.fill_text(text);
                     } else {
-                        let circle = Path::circle(p.clone(), number_size*0.1);
+                        let circle = Path::circle(*p, number_size*0.1);
                         frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
                     }
                 });
@@ -312,15 +309,15 @@ fn clock(
 
                         let mut style_state = StyleState::Active;
                         if selected {
-                            frame.fill(&Path::circle(p.clone(), number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
-                            frame.stroke(&Path::line(center.clone(), p.clone()), hand_stroke);
+                            frame.fill(&Path::circle(*p, number_size*0.5), style.get(&StyleState::Selected).unwrap().clock_number_background);
+                            frame.stroke(&Path::line(center, *p), hand_stroke);
                             style_state = style_state.max(StyleState::Selected);
                         }
 
                         if i % 10 == 0 {
                             let text = Text {
                                 content: format!("{:02}", i),
-                                position: p.clone(),
+                                position: *p,
                                 color: style.get(&style_state).unwrap().clock_number_color,
                                 size: number_size,
                                 font: Default::default(),
@@ -330,7 +327,7 @@ fn clock(
 
                             frame.fill_text(text);
                         } else {
-                            let circle = Path::circle(p.clone(), number_size*0.1);
+                            let circle = Path::circle(*p, number_size*0.1);
                             frame.fill(&circle, style.get(&StyleState::Active).unwrap().clock_dots_color);
                         }
                     })
@@ -482,11 +479,11 @@ fn digital_clock(
     let period = if !use_24h {
         let period = children.next().unwrap();
         Primitive::Text {
-            content: format!("{}", if time.hour12().0 {
+            content: if time.hour12().0 {
                 "PM"
             } else {
                 "AM"
-            }),
+            }.to_string(),
             bounds: Rectangle {
                 x: period.bounds().center_x(),
                 y: period.bounds().center_y(),
