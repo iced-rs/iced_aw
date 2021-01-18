@@ -138,6 +138,6 @@ impl Tab for SettingsTab {
         )
         .into();
 
-        content.map(move |message| Message::SettingsMessage(message))
+        content.map(Message::Settings)
     }
 }

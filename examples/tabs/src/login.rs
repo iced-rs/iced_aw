@@ -118,6 +118,6 @@ impl Tab for LoginTab {
         .align_y(Align::Center)
         .into();
 
-        content.map(move |message| Message::LoginMessage(message))
+        content.map(Message::Login)
     }
 }

@@ -58,10 +58,10 @@ struct TabBarExample {
 #[derive(Clone, Debug)]
 enum Message {
     TabSelected(usize),
-    LoginMessage(LoginMessage),
-    FerrisMessage(FerrisMessage),
-    CounterMessage(CounterMessage),
-    SettingsMessage(SettingsMessage),
+    Login(LoginMessage),
+    Ferris(FerrisMessage),
+    Counter(CounterMessage),
+    Settings(SettingsMessage),
 }
 
 impl Sandbox for TabBarExample {
@@ -86,16 +86,16 @@ impl Sandbox for TabBarExample {
             Message::TabSelected(selected) => {
                 self.active_tab = selected
             },
-            Message::LoginMessage(message) => {
+            Message::Login(message) => {
                 self.login_tab.update(message)
             },
-            Message::FerrisMessage(message) => {
+            Message::Ferris(message) => {
                 self.ferris_tab.update(message)
             },
-            Message::CounterMessage(message) => {
+            Message::Counter(message) => {
                 self.counter_tab.update(message)
             },
-            Message::SettingsMessage(message) => {
+            Message::Settings(message) => {
                 self.settings_tab.update(message)
             },
         }

@@ -38,6 +38,7 @@ impl Sandbox for TabBarExample {
     
     fn view(&mut self) -> Element<Message> {
         Tabs::new(self.active_tab, Message::TabSelected)
+            // TODO: Fix error
             .push(
                 TabLabel::Text(String::from("One")),
                 Text::new("This is tab one")

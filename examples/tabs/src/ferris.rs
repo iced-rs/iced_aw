@@ -67,7 +67,7 @@ impl Tab for FerrisTab {
             )
             .into();
 
-        content.map(move |message| Message::FerrisMessage(message))
+        content.map(Message::Ferris)
     }
 }
 

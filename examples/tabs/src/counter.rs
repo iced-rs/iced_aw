@@ -25,10 +25,10 @@ impl CounterTab {
     pub fn update(&mut self, message: CounterMessage) {
         match message {
             CounterMessage::Increase => {
-                self.value = self.value + 1
+                self.value += 1
             },
             CounterMessage::Decrease => {
-                self.value = self.value - 1
+                self.value -= 1
             }
         }
     }
@@ -79,6 +79,6 @@ impl Tab for CounterTab {
                 )
         ).into();
 
-        content.map(move |message| Message::CounterMessage(message))
+        content.map(Message::Counter)
     }
 }

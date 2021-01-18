@@ -7,6 +7,7 @@ fn main() -> iced::Result {
 }
 
 #[derive(Clone, Debug)]
+#[allow(clippy::enum_variant_names)]
 enum Message {
     ChooseDate,
     SubmitDate(i32, u32, u32),

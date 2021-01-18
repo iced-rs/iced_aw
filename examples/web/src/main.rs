@@ -149,7 +149,7 @@ struct PrimaryModalState {
     ok_button: button::State,
 }
 
-fn primary_modal<'a>(state: &'a mut PrimaryModalState) -> Element<'a, Message> {
+fn primary_modal(state: &mut PrimaryModalState) -> Element<'_, Message> {
     Card::new(
         Text::new("Modal"),
         Text::new("This is a modal using the Card widget with its primary color style.")

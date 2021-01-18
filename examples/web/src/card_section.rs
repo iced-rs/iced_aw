@@ -65,6 +65,6 @@ impl Section for CardSection {
 
         let row: Element<'_, Message> = row.into();
 
-        row.map(|msg| crate::Message::Card(msg))
+        row.map(crate::Message::Card)
     }
 }

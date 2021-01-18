@@ -68,7 +68,7 @@ impl Section for DatePickerSection {
                     )
             ).into();
 
-        column.map(|msg| crate::Message::DatePicker(msg))
+        column.map(crate::Message::DatePicker)
     }
 
 }

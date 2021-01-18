@@ -83,7 +83,7 @@ impl Section for FloatingButtonSection {
                 container
             ).into();
 
-        column.map(|msg| crate::Message::FloatingButton(msg))
+        column.map(crate::Message::FloatingButton)
     }
 
 }

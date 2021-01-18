@@ -70,7 +70,7 @@ impl Section for TimePickerSection {
                     )
             ).into();
 
-        column.map(|msg| crate::Message::TimePicker(msg))
+        column.map(crate::Message::TimePicker)
     }
 
 }
