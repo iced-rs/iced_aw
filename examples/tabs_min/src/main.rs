@@ -28,7 +28,7 @@ impl Sandbox for TabBarExample {
         String::from("TabBar example")
     }
 
-    fn update(&mut self, message: Message) {
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::TabSelected(index) => {
                 self.active_tab = index
@@ -36,10 +36,10 @@ impl Sandbox for TabBarExample {
         }
     }
     
-    fn view(&mut self) -> Element<Message> {
-        Tabs::new(self.active_tab, Message::TabSelected)
+    fn view(&mut self) -> Element<'_, Self::Message> {
+        //Tabs::new(self.active_tab, Message::TabSelected)
             // TODO: Fix error
-            .push(
+            /*.push(
                 TabLabel::Text(String::from("One")),
                 Text::new("This is tab one")
             )
@@ -50,7 +50,8 @@ impl Sandbox for TabBarExample {
             .push(
                 TabLabel::Text(String::from("Three")),
                 Text::new("This is tab three")
-            )
-            .into()
+            )*/
+            //.into()
+        todo!()
     }
 }
