@@ -89,7 +89,7 @@ where
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
 
-        let (cancel_button, cancel_mouse_interaciton) = cancel_button.draw(
+        let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
             env.defaults,
             cancel_button_layout,
@@ -114,7 +114,7 @@ where
             mouse_interaction
                 .max(month_year_mouse_interaction)
                 .max(days_mouse_interaction)
-                .max(cancel_mouse_interaciton)
+                .max(cancel_mouse_interaction)
                 .max(submit_mouse_interaction),
         )
     }
