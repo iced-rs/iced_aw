@@ -38,13 +38,6 @@ mod platform {
     #[cfg(feature = "floating_button")]
     pub use {crate::graphics::floating_button, floating_button::FloatingButton};
 
-    /*#[doc(no_inline)]
-    #[cfg(feature = "icon_text")]
-    use {
-        icon_text::IconText,
-        crate::graphics::icon_text,
-    };*/
-
     #[doc(no_inline)]
     #[cfg(feature = "modal")]
     pub use {crate::graphics::modal, modal::Modal};

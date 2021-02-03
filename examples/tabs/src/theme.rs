@@ -57,30 +57,6 @@ mod red {
 
     impl tabs::StyleSheet for TabBar {
         fn active(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: if is_selected {
-                    Background::Color([1.0, 0.0, 0.0].into())
-                } else {
-                    Background::Color(Color::WHITE).into()
-                },
-                border_color: Color::TRANSPARENT,
-                border_width: 0,
-                icon_color: if is_selected {
-                    Color::WHITE
-                } else {
-                    Color::BLACK
-                },
-                text_color: if is_selected {
-                    Color::WHITE
-                } else {
-                    Color::BLACK
-                },
-                tab_bar_background: Color::TRANSPARENT.into(),
-                tab_bar_border_color: Color::TRANSPARENT,
-                tab_bar_border_width: 0,
-                tab_content_border_color: Color::TRANSPARENT,
-                tab_content_border_width: 0,
-            }*/
             let tab_label_background = if is_selected {
                 Background::Color([1.0, 0.0, 0.0].into())
             } else {
@@ -106,15 +82,6 @@ mod red {
         }
 
         fn hovered(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: Background::Color([1.0, 0.0, 0.0].into()),
-                border_color: Color::TRANSPARENT,
-                border_width: 0,
-                icon_color: Color::WHITE,
-                text_color: Color::WHITE,
-                .. self.active(is_selected)
-            }*/
-
             let tab_label_background = Background::Color([1.0, 0.0, 0.0].into());
             let text_color = Color::WHITE;
 
@@ -136,27 +103,6 @@ mod blue {
 
     impl tabs::StyleSheet for TabBar {
         fn active(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: if is_selected {
-                    Background::Color([0.0, 0.0, 1.0].into())
-                } else {
-                    Background::Color([0.5, 0.5, 1.0].into())
-                },
-                border_color: if is_selected {
-                    [0.0, 0.0, 1.0].into()
-                } else {
-                    [0.5, 0.5, 1.0].into()
-                },
-                border_width: 1,
-                icon_color: Color::WHITE,
-                text_color: Color::WHITE,
-                tab_bar_background: Color::TRANSPARENT.into(),
-                tab_bar_border_color: Color::TRANSPARENT,
-                tab_bar_border_width: 0,
-                tab_content_border_color: Color::TRANSPARENT,
-                tab_content_border_width: 0,
-            }*/
-
             let tab_label_background = if is_selected {
                 Background::Color([0.0, 0.0, 1.0].into())
             } else {
@@ -184,15 +130,6 @@ mod blue {
         }
 
         fn hovered(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: Background::Color([0.0, 0.0, 1.0].into()),
-                border_color: [0.0, 0.0, 1.0].into(),
-                border_width: 1,
-                icon_color: Color::WHITE,
-                text_color: Color::WHITE,
-                .. self.active(is_selected)
-            }*/
-
             let tab_label_background = Background::Color([0.0, 0.0, 1.0].into());
             let tab_label_border_color = [0.0, 0.0, 1.0].into();
 
@@ -213,25 +150,6 @@ mod green {
 
     impl tabs::StyleSheet for TabBar {
         fn active(&self, is_selected: bool) -> tabs::Style {
-            /*let color = if is_selected {
-                [0.0, 0.5, 0.0]
-            } else {
-                [0.7, 0.7, 0.7]
-            };
-
-            Style {
-                background: Color::WHITE.into(),
-                border_color: color.into(),
-                border_width: 1,
-                icon_color: color.into(),
-                text_color: color.into(),
-                tab_bar_background: Color::TRANSPARENT.into(),
-                tab_bar_border_color: Color::TRANSPARENT,
-                tab_bar_border_width: 0,
-                tab_content_border_color: Color::TRANSPARENT,
-                tab_content_border_width: 0,
-            }*/
-
             let color = if is_selected {
                 [0.0, 0.5, 0.0]
             } else {
@@ -251,17 +169,6 @@ mod green {
         }
 
         fn hovered(&self, is_selected: bool) -> tabs::Style {
-            /*let color = [0.0, 0.4, 0.0];
-
-            Style {
-                background: Color::WHITE.into(),
-                border_color: color.into(),
-                border_width: 1,
-                icon_color: color.into(),
-                text_color: color.into(),
-                .. self.active(is_selected)
-            }*/
-
             let color = [0.0, 0.4, 0.0].into();
 
             Style {
@@ -282,27 +189,6 @@ mod purple {
 
     impl tabs::StyleSheet for TabBar {
         fn active(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: Color::WHITE.into(),
-                border_color: Color::TRANSPARENT,
-                border_width: 0,
-                icon_color: if is_selected {
-                    [0.7, 0.0, 1.0].into()
-                } else {
-                    Color::BLACK
-                },
-                text_color: if is_selected {
-                    [0.7, 0.0, 1.0].into()
-                } else {
-                    Color::BLACK
-                },
-                tab_bar_background: Color::TRANSPARENT.into(),
-                tab_bar_border_color: Color::TRANSPARENT,
-                tab_bar_border_width: 0,
-                tab_content_border_color: Color::TRANSPARENT,
-                tab_content_border_width: 0,
-            }*/
-
             let text_color = if is_selected {
                 [0.7, 0.0, 1.0].into()
             } else {
@@ -322,15 +208,6 @@ mod purple {
         }
 
         fn hovered(&self, is_selected: bool) -> tabs::Style {
-            /*Style {
-                background: Color::WHITE.into(),
-                border_color: Color::TRANSPARENT,
-                border_width: 0,
-                icon_color: [0.7, 0.0, 1.0].into(),
-                text_color: [0.7, 0.0, 1.0].into(),
-                .. self.active(is_selected)
-            }*/
-
             let text_color = [0.7, 0.0, 1.0].into();
 
             Style {

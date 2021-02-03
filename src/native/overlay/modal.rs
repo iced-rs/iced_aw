@@ -58,7 +58,7 @@ where
     }
 }
 
-struct Overlay<'a, Message, Renderer: self::Renderer /* + iced_native::container::Renderer*/> {
+struct Overlay<'a, Message, Renderer: self::Renderer> {
     content: Element<'a, Message, Renderer>,
     backdrop: Option<Message>,
     esc: Option<Message>,

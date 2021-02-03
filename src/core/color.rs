@@ -45,11 +45,11 @@ impl From<Color> for Hsv {
         let max = color.r.max(color.g.max(color.b));
         let min = color.r.min(color.g.min(color.b));
 
-        let hue = if max == min {
+        let hue = if (max - min).abs() < f32::EPSILON {
             0.0
-        } else if max == color.r {
+        } else if (max - color.r).abs() < f32::EPSILON {
             60.0 * ( 0.0 + (color.g - color.b) / (max - min))
-        } else if max == color.g {
+        } else if (max - color.g).abs() < f32::EPSILON {
             60.0 * ( 2.0 + (color.b - color.r) / (max - min))
         } else {
             60.0 * ( 4.0 + (color.r - color.g) / (max - min))
@@ -88,7 +88,7 @@ impl From<Hsv> for Color {
         let t = hsv.value * ( 1.0 - hsv.saturation * ( 1.0 - f));
 
         let h_i = h_i as u8;
-        let (r, g, b) = match h_i {
+        let (red, green, blue) = match h_i {
             1 => (q, hsv.value, p),
             2 => (p, hsv.value, t),
             3 => (p, q, hsv.value),
@@ -97,7 +97,7 @@ impl From<Hsv> for Color {
             _ => (hsv.value, t, p),
         };
 
-        Color::from_rgb(r, g, b)
+        Color::from_rgb(red, green, blue)
     }
 }
 

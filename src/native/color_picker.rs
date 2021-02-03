@@ -81,7 +81,7 @@ where
 }
 
 /// The state of the [`ColorPicker`](ColorPicker) / [`ColorPickerOverlay`](ColorPickerOverlay).
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct State {
     pub(crate) show: bool,
     pub(crate) color: Color,

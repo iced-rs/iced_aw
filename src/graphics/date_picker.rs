@@ -51,12 +51,6 @@ where
 
         let mouse_interaction = mouse::Interaction::default();
 
-        /*let style_state = if bounds.contains(cursor_position) {
-            StyleState::Hovered
-        } else {
-            StyleState::Active
-        };*/
-
         let mut style_state = StyleState::Active;
         if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
@@ -285,13 +279,6 @@ fn day_table(
 
             let selected = date.day() == number as u32 && is_in_month == 0;
 
-            /*let style_state = if mouse_over {
-                StyleState::Hovered
-            } else if selected {
-                StyleState::Selected
-            } else {
-                StyleState::Active
-            };*/
             let mut style_state = StyleState::Active;
             if selected {
                 style_state = style_state.max(StyleState::Selected);

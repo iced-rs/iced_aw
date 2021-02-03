@@ -59,11 +59,6 @@ where
 
         let mouse_interaction = mouse::Interaction::default();
 
-        /*let style_state = if bounds.contains(cursor_position) {
-            StyleState::Hovered
-        } else {
-            StyleState::Active
-        };*/
         let mut style_state = StyleState::Active;
         if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
@@ -150,11 +145,6 @@ fn clock(
     show_seconds: bool,
     style: &HashMap<StyleState, Style>,
 ) -> (Primitive, mouse::Interaction) {
-    /*let (clock_style_state, clock_mouse_interaction) = if layout.bounds().contains(cursor_position) {
-        (StyleState::Hovered, mouse::Interaction::Pointer)
-    } else {
-        (StyleState::Active, mouse::Interaction::default())
-    };*/
     let mut clock_style_state = StyleState::Active;
     let mut clock_mouse_interaction = mouse::Interaction::default();
     if layout.bounds().contains(cursor_position) {

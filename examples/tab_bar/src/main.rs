@@ -116,11 +116,6 @@ impl Sandbox for TabBarExample {
                     .spacing(5)
             )
             .push(
-                /*TabBar::new(self.active_tab, Message::TabSelected)
-                    .push(TabLabel::Text(String::from("One")))
-                    .push(TabLabel::Text(String::from("Two")))
-                    .push(TabLabel::Text(String::from("Three")))*/
-
                 self.tabs.iter()
                     .fold(
                         TabBar::new(self.active_tab, Message::TabSelected),
@@ -135,12 +130,6 @@ impl Sandbox for TabBarExample {
                     .text_size(32)
             )
             .push(
-                /*match self.active_tab {
-                    0 => Text::new("This is tab one"),
-                    1 => Text::new("This is tab two"),
-                    2 => Text::new("This is tab three"),
-                    _ => panic!(),
-                }*/
                 if let Some((_, content)) = self.tabs.get(self.active_tab) {
                     Text::new(content)
                 } else {

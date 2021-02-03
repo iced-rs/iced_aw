@@ -3,10 +3,8 @@
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
-use button::State;
-use event::Status;
 use iced_graphics::canvas;
-use iced_native::{Align, Button, Clipboard, Color, Column, Element, Event, Layout, Length, Point, Rectangle, Row, Size, Text, TextInput, Widget, button, column, event, layout::{self, Limits}, mouse, overlay, row, text, text_input};
+use iced_native::{Align, Button, Clipboard, Color, Column, Element, Event, Layout, Length, Point, Rectangle, Row, Size, Text, Widget, button, column, event, layout::{self, Limits}, mouse, overlay, row, text, text_input};
 
 use crate::{core::{color::Hsv, renderer::DrawEnvironment}, graphics::icons::Icon, native::{IconText, color_picker, icon_text}};
 
@@ -55,28 +53,16 @@ where
             //color_hex,
             sat_value_canvas_cache,
             hue_canvas_cache,
-            text_input,
             cancel_button,
             submit_button,
             color_bar_focussed,
             ..
         } = state;
 
-        let fake = on_cancel.clone();
-        let foo = color.clone();
-
         ColorPickerOverlay {
             color,
             sat_value_canvas_cache,
             hue_canvas_cache,
-            /*text_input: TextInput::new(
-                text_input,
-                "HEX Color",
-                &color_picker::State::color_as_string(&foo),
-                move |_s| fake.clone()
-            )
-            .padding(PADDING as u16)
-            .into(),*/
             cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
@@ -134,7 +120,6 @@ where
                             }.into()
                         };
                         color_changed = true;
-                        color_changed = true;
                     }
                 }
             }
@@ -150,33 +135,15 @@ where
         }
 
         let calc_percentage_sat = |bounds: &Rectangle, cursor_position: &Point| {
-            let min_x = bounds.x;
-            let max = bounds.width;
-
-            let value = (cursor_position.x - min_x).max(0.0);
-            let value = (value / max).min(1.0);
-
-            value
+            ((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0)
         };
 
         let calc_percentage_value = |bounds: &Rectangle, cursor_position: &Point| {
-            let min_y = bounds.y;
-            let max = bounds.height;
-
-            let value = (cursor_position.y - min_y).max(0.0);
-            let value = (value / max).min(1.0);
-
-            value
+            ((cursor_position.y - bounds.y).max(0.0) / bounds.height).min(1.0)
         };
 
         let calc_hue = |bounds: &Rectangle, cursor_position: &Point| {
-            let min_x = bounds.x;
-            let max = bounds.width;
-
-            let value = (cursor_position.x - min_x).max(0.0);
-            let value = (value / max).min(1.0);
-
-            (value * 360.0) as u16
+            (((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0) * 360.0) as u16
         };
 
         match self.color_bar_focussed {
@@ -295,13 +262,7 @@ where
         }
 
         let calc_percantage = |bounds: &Rectangle, cursor_position: &Point| {
-            let min_x = bounds.x;
-            let max = bounds.width;
-
-            let value = (cursor_position.x - min_x).max(0.0);
-            let value = (value / max).min(1.0);
-
-            value
+            ((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0)
         };
 
         match self.color_bar_focussed {
@@ -390,16 +351,10 @@ where
 
         // ----------- Block 1 ----------------------
         let block1_limits = Limits::new(Size::ZERO, block1_bounds.size())
-            //.pad(PADDING as f32)
             .width(Length::Fill)
             .height(Length::Fill);
 
-        /*let mut block1_node = Row::<(), Renderer>::new().width(Length::Fill).height(Length::Fill)
-            .layout(renderer, &block1_limits);*/
-
         let mut block1_node = Column::<(), Renderer>::new()
-            //.padding(PADDING)
-            //.spacing(SPACING)
             .spacing(PADDING)
             .push(
                 Row::new()
@@ -574,7 +529,6 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>
     ) -> event::Status {
-        let bounds = layout.bounds();
         let mut children = layout.children();
         
         
@@ -611,17 +565,7 @@ where
         let mut fake_messages: Vec<Message> = Vec::new();
 
         // ----------- Text input ----------------------
-        let text_input_layout = block2_children.next().unwrap();
-        /*let text_input_status = self.text_input.on_event(
-            event.clone(),
-            text_input_layout,
-            cursor_position,
-            &mut fake_messages,
-            renderer,
-            clipboard,
-        );*/
-
-        fake_messages.clear();
+        let _text_input_layout = block2_children.next().unwrap();
 
         // ----------- Buttons -------------------------
         let cancel_button_layout = block2_children.next().unwrap();
@@ -646,15 +590,10 @@ where
 
         if !fake_messages.is_empty() {
             messages.push((self.on_submit)(
-                self.color.clone()
+                *self.color
             ));
         }
         // ----------- Block 2 end ------------------
-
-        /*if color_changed {
-            self.color_hex = self.color_as_string();
-        }*/
-
         if  hsv_color_status == event::Status::Captured
             || rgba_color_status == event::Status::Captured {
                 self.sat_value_canvas_cache.clear();
@@ -765,4 +704,10 @@ pub enum ColorBarFocussed {
 
     /// The alpha area is focussed.
     Alpha,
+}
+
+impl Default for ColorBarFocussed {
+    fn default() -> Self {
+        ColorBarFocussed::None
+    }
 }

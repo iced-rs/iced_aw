@@ -31,20 +31,8 @@ where
         tabs: &[iced_native::Element<'_, Message, Self>],
         tab_bar_position: &TabBarPosition,
     ) -> Self::Output {
-        //let bounds = layout.bounds();
         let mut children = env.layout.children();
-        /*let (tab_bar_layout, tab_content_layout) = match tab_bar_position {
-            TabBarPosition::Top => {
-                let tab_bar_layout = children.next().unwrap();
-                let tab_content_layout = children.next().unwrap();
-                (tab_bar_layout, tab_content_layout)
-            }
-            TabBarPosition::Bottom => {
-                let tab_content_layout = children.next().unwrap();
-                let tab_bar_layout = children.next().unwrap();
-                (tab_bar_layout, tab_content_layout)
-            }
-        };*/
+
         let tab_content_layout = match tab_bar_position {
             TabBarPosition::Top => children.last().unwrap(),
             TabBarPosition::Bottom => children.next().unwrap(),
