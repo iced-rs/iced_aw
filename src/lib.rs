@@ -27,6 +27,10 @@ mod platform {
     pub use {crate::graphics::card, card::Card};
 
     #[doc(no_inline)]
+    #[cfg(feature = "color_picker")]
+    pub use {crate::graphics::color_picker, color_picker::ColorPicker};
+
+    #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
     pub use {crate::graphics::date_picker, date_picker::DatePicker};
 
@@ -75,6 +79,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "card")]
     pub use crate::web::{card, card::Card};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "color_picker")]
+    pub use crate::web::{color_picker, color_picker::ColorPicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
