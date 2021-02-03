@@ -1,5 +1,5 @@
 [package]
-name = "web"
+name = "color_picker"
 version = "0.1.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2018"
@@ -8,5 +8,4 @@ edition = "2018"
 
 [dependencies]
 iced =  { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-#iced_web =  { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-iced_aw = { path = "../..", default-features = false, features = ["badge", "card", "color_picker", "colors", "date_picker", "floating_button", "modal", "time_picker"] }
+iced_aw = { path = "../..", default-features = false, features = ["color_picker", "colors"] }

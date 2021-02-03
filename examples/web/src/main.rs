@@ -23,6 +23,9 @@ use date_picker_section::DatePickerSection;
 mod time_picker_section;
 use time_picker_section::TimePickerSection;
 
+mod color_picker_section;
+use color_picker_section::ColorPickerSection;
+
 //mod picklist_section;
 //use picklist_section::PickListSection;
 
@@ -42,6 +45,7 @@ struct Web {
     date_picker_section: DatePickerSection,
     //picklist_section: PickListSection,
     time_picker_section: TimePickerSection,
+    color_picker_section: ColorPickerSection,
 }
 
 #[derive(Clone, Debug)]
@@ -53,6 +57,7 @@ enum Message {
     DatePicker(date_picker_section::Message),
     //PickList(picklist_section::Message),
     TimePicker(time_picker_section::Message),
+    ColorPicker(color_picker_section::Message),
 }
 
 impl Sandbox for Web {
@@ -70,6 +75,7 @@ impl Sandbox for Web {
             date_picker_section: DatePickerSection::new(),
             //picklist_section: PickListSection::new(),
             time_picker_section: TimePickerSection::new(),
+            color_picker_section: ColorPickerSection::new(),
         }
     }
 
@@ -86,6 +92,7 @@ impl Sandbox for Web {
             Message::DatePicker(msg) => self.date_picker_section.update(msg),
             //Message::PickList(msg) => self.picklist_section.update(msg),
             Message::TimePicker(msg) => self.time_picker_section.update(msg),
+            Message::ColorPicker(msg) => self.color_picker_section.update(msg),
         }
     }
 
@@ -100,6 +107,7 @@ impl Sandbox for Web {
             .push(self.date_picker_section.view())
             //.push(self.picklist_section.view())
             .push(self.time_picker_section.view())
+            .push(self.color_picker_section.view())
             ;
 
         let container = Container::new(

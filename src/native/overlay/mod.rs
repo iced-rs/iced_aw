@@ -1,5 +1,10 @@
 //! Display interactive elements on top of other widgets.
 
+#[cfg(feature = "color_picker")]
+pub mod color_picker;
+#[cfg(feature = "color_picker")]
+pub use color_picker::ColorPickerOverlay;
+
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
 #[cfg(feature = "date_picker")]

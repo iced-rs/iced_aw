@@ -6,6 +6,11 @@ pub mod date;
 #[cfg(all(feature = "time_picker", not(target_arch = "wasm32")))]
 pub mod clock;
 
+#[cfg(all(feature = "color_picker", not(target_arch = "wasm32")))]
+pub mod color;
+
+#[cfg(not(target_arch = "wasm32"))]
 pub mod renderer;
+
 #[cfg(feature = "time_picker")]
 pub mod time;

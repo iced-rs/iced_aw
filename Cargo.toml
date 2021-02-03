@@ -17,6 +17,7 @@ button = []
 card = []
 colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
+color_picker = ["icon_text", "iced_graphics/canvas"]
 floating_button = ["button"]
 glow = [] # TODO
 icon_text = []
@@ -31,6 +32,7 @@ default = [
     "card",
     "colors",
     "date_picker",
+    "color_picker",
     "floating_button",
     "modal",
     "tab_bar",
