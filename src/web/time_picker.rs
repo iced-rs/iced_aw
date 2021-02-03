@@ -1,4 +1,6 @@
-//! TODO
+//! Use a time picker as an input element for picking times.
+//!
+//! *This API requires the following crate features to be activated: time_picker*
 use dodrio::bumpalo;
 use iced_web::{Bus, Css, Element, Widget};
 
@@ -7,7 +9,7 @@ pub use crate::style::time_picker::{Style, StyleSheet};
 
 use std::rc::Rc;
 
-/// TODO
+/// An input element for picking times.
 #[allow(missing_debug_implementations)]
 pub struct TimePicker<'a, Message> {
     _state: &'a mut State,
@@ -24,7 +26,10 @@ pub struct TimePicker<'a, Message> {
 }
 
 impl<'a, Message> TimePicker<'a, Message> {
-    /// TODO
+    /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
+    ///
+    /// The underlay element will be ignored on the web, since the time input can't be
+    /// customized that way.
     pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,

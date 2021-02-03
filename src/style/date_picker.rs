@@ -39,11 +39,11 @@ pub trait StyleSheet {
     fn active(&self) -> Style;
 
     /// The appearance when something is selected of the
-    /// [`DatePicker`](crate::native::DatePicker)
+    /// [`DatePicker`](crate::native::DatePicker).
     fn selected(&self) -> Style;
 
     /// The appearance when something is hovered of the
-    /// [`DatePicker`](crate::native::DatePicker)
+    /// [`DatePicker`](crate::native::DatePicker).
     fn hovered(&self) -> Style;
 }
 
