@@ -1,6 +1,6 @@
+use crate::Section;
 use iced::{button, Align, Button, Color, Column, Element, Length, Row, Text};
 use iced_aw::{color_picker, ColorPicker};
-use crate::Section;
 
 pub struct ColorPickerSection {
     color_picker_state: color_picker::State,
@@ -37,7 +37,6 @@ impl ColorPickerSection {
 }
 
 impl Section for ColorPickerSection {
-
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -62,12 +61,10 @@ impl Section for ColorPickerSection {
                     .align_items(Align::Center)
                     .spacing(20)
                     .push(color_picker)
-                    .push(
-                        Text::new(format!("Picked color: {:?}", self.color))
-                    )
-            ).into();
+                    .push(Text::new(format!("Picked color: {:?}", self.color))),
+            )
+            .into();
 
         column.map(crate::Message::ColorPicker)
     }
-
 }

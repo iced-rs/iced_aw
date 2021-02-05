@@ -1,6 +1,6 @@
 use iced::{
-    button, scrollable, Button, Column, Container, Element,
-    HorizontalAlignment, Length, Sandbox, Scrollable, Settings, Text
+    button, scrollable, Button, Column, Container, Element, HorizontalAlignment, Length, Sandbox,
+    Scrollable, Settings, Text,
 };
 
 use iced_aw::{modal, Card, Modal};
@@ -61,9 +61,8 @@ enum Message {
 }
 
 impl Sandbox for Web {
-
     type Message = Message;
-    
+
     fn new() -> Self {
         Self {
             scrollable_state: scrollable::State::new(),
@@ -107,27 +106,20 @@ impl Sandbox for Web {
             .push(self.date_picker_section.view())
             //.push(self.picklist_section.view())
             .push(self.time_picker_section.view())
-            .push(self.color_picker_section.view())
-            ;
+            .push(self.color_picker_section.view());
 
         let container = Container::new(
             // Workaround: https://github.com/hecrj/iced/issues/643
-            Column::new()
-                .push(content)
-                .max_width(600)
+            Column::new().push(content).max_width(600),
         )
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x()
         .center_y();
 
-        Modal::new(
-            &mut self.primary_modal_state,
-            container,
-            primary_modal,
-        )
-        .backdrop(Message::ClosePrimaryModal)
-        .into()
+        Modal::new(&mut self.primary_modal_state, container, primary_modal)
+            .backdrop(Message::ClosePrimaryModal)
+            .into()
     }
 }
 
@@ -139,13 +131,8 @@ trait Section {
     fn view(&mut self) -> Element<'_, Self::Message> {
         Column::new()
             .spacing(10)
-            .push(
-                Text::new(format!("{}:", self.header()))
-                    .size(HEADER_SIZE)
-            )
-            .push(
-                self.content()
-            )
+            .push(Text::new(format!("{}:", self.header())).size(HEADER_SIZE))
+            .push(self.content())
             .into()
     }
 
@@ -160,18 +147,18 @@ struct PrimaryModalState {
 fn primary_modal(state: &mut PrimaryModalState) -> Element<'_, Message> {
     Card::new(
         Text::new("Modal"),
-        Text::new("This is a modal using the Card widget with its primary color style.")
+        Text::new("This is a modal using the Card widget with its primary color style."),
     )
     .foot(
         Button::new(
             &mut state.ok_button,
             Text::new("Ok")
                 .horizontal_alignment(HorizontalAlignment::Center)
-                .width(Length::Fill)
+                .width(Length::Fill),
         )
         .on_press(Message::ClosePrimaryModal)
         //.style(iced_aw::style::button::Secondary)
-        .width(Length::Fill)
+        .width(Length::Fill),
     )
     .max_width(300)
     .style(iced_aw::style::card::Primary)

@@ -1,6 +1,6 @@
 use iced::{
-    button, scrollable,
-    Button, Column, Container, Element, Length, Sandbox, Scrollable, Settings, Text
+    button, scrollable, Button, Column, Container, Element, Length, Sandbox, Scrollable, Settings,
+    Text,
 };
 
 use iced_aw::{style, Card};
@@ -22,7 +22,6 @@ struct CardExample {
 }
 
 impl Sandbox for CardExample {
-    
     type Message = Message;
 
     fn new() -> Self {
@@ -58,18 +57,15 @@ impl Sandbox for CardExample {
             .on_close(Message::CloseCard)
             .into()
         } else {
-            Button::new(
-                &mut self.button_state,
-                Text::new("Open card")
-            )
-            .on_press(Message::OpenCard)
-            .into()
+            Button::new(&mut self.button_state, Text::new("Open card"))
+                .on_press(Message::OpenCard)
+                .into()
         };
 
         let content = Scrollable::new(&mut self.scrollable_state)
             .max_width(600)
             .push(element);
-        
+
         Container::new(content)
             .width(Length::Fill)
             .height(Length::Fill)

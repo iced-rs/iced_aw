@@ -1,6 +1,6 @@
-use iced::{button, Align, Button, Container, Element, Length, Sandbox, Row, Settings, Text};
+use iced::{button, Align, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
 
-use iced_aw::time_picker::{self, Time, TimePicker, Period};
+use iced_aw::time_picker::{self, Period, Time, TimePicker};
 
 fn main() -> iced::Result {
     TimePickerExample::run(Settings::default())
@@ -21,7 +21,6 @@ struct TimePickerExample {
 }
 
 impl Sandbox for TimePickerExample {
-    
     type Message = Message;
 
     fn new() -> Self {
@@ -41,14 +40,14 @@ impl Sandbox for TimePickerExample {
             Message::ChooseTime => {
                 self.state.reset();
                 self.state.show(true);
-            },
+            }
             Message::SubmitTime(time) => {
                 self.time = time;
                 self.state.show(false);
-            },
+            }
             Message::CancelTime => {
                 self.state.show(false);
-            },
+            }
         }
     }
 
@@ -63,16 +62,13 @@ impl Sandbox for TimePickerExample {
             Message::SubmitTime,
         )
         //.show_seconds()
-        .use_24h()
-        ;
+        .use_24h();
 
         let row = Row::new()
             .align_items(Align::Center)
             .spacing(10)
             .push(timepicker)
-            .push(
-                Text::new(format!("Time: {}", self.time))
-            );
+            .push(Text::new(format!("Time: {}", self.time)));
 
         Container::new(row)
             .center_x()

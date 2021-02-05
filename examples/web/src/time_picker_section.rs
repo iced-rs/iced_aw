@@ -31,13 +31,12 @@ impl TimePickerSection {
             Message::SubmitTime(time) => {
                 self.time = time;
                 self.time_picker_state.show(false);
-            },
+            }
         }
     }
 }
 
 impl Section for TimePickerSection {
-    
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -65,12 +64,10 @@ impl Section for TimePickerSection {
                     .align_items(Align::Center)
                     .spacing(20)
                     .push(time_picker)
-                    .push(
-                        Text::new(format!("Picked time: {}", self.time))
-                    )
-            ).into();
+                    .push(Text::new(format!("Picked time: {}", self.time))),
+            )
+            .into();
 
         column.map(crate::Message::TimePicker)
     }
-
 }

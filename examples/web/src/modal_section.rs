@@ -1,6 +1,5 @@
-
-use iced::{button, Align, Button, Column, Element, Length, Text};
 use crate::Section;
+use iced::{button, Align, Button, Column, Element, Length, Text};
 
 pub struct ModalSection {
     open_button: button::State,
@@ -15,7 +14,6 @@ impl ModalSection {
 }
 
 impl Section for ModalSection {
-    
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -28,9 +26,8 @@ impl Section for ModalSection {
             .width(Length::Fill)
             .push(
                 Button::new(&mut self.open_button, Text::new("Open modal!"))
-                    .on_press(crate::Message::OpenPrimaryModal)
+                    .on_press(crate::Message::OpenPrimaryModal),
             )
             .into()
     }
-        
 }

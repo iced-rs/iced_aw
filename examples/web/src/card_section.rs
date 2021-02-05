@@ -1,7 +1,6 @@
-
-use iced::{Element, Row, Text};
-use iced_aw::{Card};
 use crate::Section;
+use iced::{Element, Row, Text};
+use iced_aw::Card;
 
 pub struct CardSection {
     primary_card: bool,
@@ -31,7 +30,6 @@ impl CardSection {
 }
 
 impl Section for CardSection {
-    
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -43,23 +41,17 @@ impl Section for CardSection {
 
         if self.primary_card {
             row = row.push(
-                Card::new(
-                    Text::new("Primary"),
-                    Text::new("Primary text"),
-                )
-                .on_close(Message::PrimaryCardClose)
-                .style(iced_aw::style::card::Primary)
+                Card::new(Text::new("Primary"), Text::new("Primary text"))
+                    .on_close(Message::PrimaryCardClose)
+                    .style(iced_aw::style::card::Primary),
             );
         }
 
         if self.secondary_card {
             row = row.push(
-                Card::new(
-                    Text::new("Secondary"),
-                    Text::new("Secondary text"),
-                )
-                .on_close(Message::SecondaryCardClose)
-                .style(iced_aw::style::card::Secondary)
+                Card::new(Text::new("Secondary"), Text::new("Secondary text"))
+                    .on_close(Message::SecondaryCardClose)
+                    .style(iced_aw::style::card::Secondary),
             );
         }
 

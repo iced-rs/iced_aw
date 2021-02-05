@@ -1,4 +1,4 @@
-use iced::{button, Align, Button, Container, Element, Length, Sandbox, Row, Settings, Text};
+use iced::{button, Align, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
 
 use iced_aw::date_picker::{self, DatePicker};
 
@@ -21,7 +21,6 @@ struct DatePickerExample {
 }
 
 impl Sandbox for DatePickerExample {
-    
     type Message = Message;
 
     fn new() -> Self {
@@ -41,15 +40,15 @@ impl Sandbox for DatePickerExample {
             Message::ChooseDate => {
                 self.state.reset();
                 self.state.show(true);
-            },
+            }
             Message::SubmitDate(year, month, day) => {
                 //println!("Submit date ({}-{}-{})", year, month, day);
                 self.date = (year, month, day);
                 self.state.show(false);
-            },
+            }
             Message::CancelDate => {
                 self.state.show(false);
-            },
+            }
         }
     }
 
@@ -68,9 +67,10 @@ impl Sandbox for DatePickerExample {
             .align_items(Align::Center)
             .spacing(10)
             .push(datepicker)
-            .push(
-                Text::new(format!("Date: {:04}-{:02}-{:02}", self.date.0, self.date.1, self.date.2))
-            );
+            .push(Text::new(format!(
+                "Date: {:04}-{:02}-{:02}",
+                self.date.0, self.date.1, self.date.2
+            )));
 
         Container::new(row)
             .center_x()

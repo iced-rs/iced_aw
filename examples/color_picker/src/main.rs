@@ -1,4 +1,6 @@
-use iced::{button, Align, Button, Color, Container, Element, Length, Row, Sandbox, Settings, Text};
+use iced::{
+    button, Align, Button, Color, Container, Element, Length, Row, Sandbox, Settings, Text,
+};
 
 use iced_aw::color_picker::{self, ColorPicker};
 
@@ -21,7 +23,6 @@ struct ColorPickerExample {
 }
 
 impl Sandbox for ColorPickerExample {
-    
     type Message = Message;
 
     fn new() -> Self {
@@ -41,14 +42,14 @@ impl Sandbox for ColorPickerExample {
             Message::ChooseColor => {
                 //self.state.reset();
                 self.state.show(true);
-            },
+            }
             Message::SubmitColor(color) => {
                 self.color = color;
                 self.state.show(false);
-            },
+            }
             Message::CancelColor => {
                 self.state.show(false);
-            },
+            }
         }
     }
 
@@ -67,9 +68,7 @@ impl Sandbox for ColorPickerExample {
             .align_items(Align::Center)
             .spacing(10)
             .push(datepicker)
-            .push(
-                Text::new(format!("Color: {:?}", self.color))
-            );
+            .push(Text::new(format!("Color: {:?}", self.color)));
 
         Container::new(row)
             .center_x()

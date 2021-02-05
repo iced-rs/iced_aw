@@ -1,5 +1,6 @@
 use iced::{
-    button, Align, Button, Container, Element, HorizontalAlignment, Length, Row, Sandbox, Settings, Text,
+    button, Align, Button, Container, Element, HorizontalAlignment, Length, Row, Sandbox, Settings,
+    Text,
 };
 
 use iced_aw::{modal, Card, Modal};
@@ -29,7 +30,6 @@ struct ModalState {
 }
 
 impl Sandbox for ModalExample {
-    
     type Message = Message;
 
     fn new() -> Self {
@@ -61,61 +61,54 @@ impl Sandbox for ModalExample {
                 .align_items(Align::Center)
                 .push(
                     Button::new(&mut self.open_state, Text::new("Open modal!"))
-                        .on_press(Message::OpenModal)
-                ).push(
-                    Text::new(format!("Last message: {}",
-                        match self.last_message.as_ref() {
-                            Some(message) => match message {
-                                Message::OpenModal => "Modal opened",
-                                Message::CloseModal => "Modal closed",
-                                Message::CancelButtonPressed => "Modal canceled",
-                                Message::OkButtonPressed => "Modal accepted",
-                            }
-                            None => "None"
-                        })
-                    )
+                        .on_press(Message::OpenModal),
                 )
+                .push(Text::new(format!(
+                    "Last message: {}",
+                    match self.last_message.as_ref() {
+                        Some(message) => match message {
+                            Message::OpenModal => "Modal opened",
+                            Message::CloseModal => "Modal closed",
+                            Message::CancelButtonPressed => "Modal canceled",
+                            Message::OkButtonPressed => "Modal accepted",
+                        },
+                        None => "None",
+                    }
+                ))),
         );
 
-        Modal::new(
-            &mut self.modal_state,
-            content,
-            |state| {
-                Card::new(
-                    Text::new("My modal"),
-                    Text::new("This is a modal!")
-                    //Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit​​, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead.")
-                )
-                .foot(
-                    Row::new()
-                        .spacing(10)
-                        .padding(5)
+        Modal::new(&mut self.modal_state, content, |state| {
+            Card::new(
+                Text::new("My modal"),
+                Text::new("This is a modal!"), //Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit​​, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead.")
+            )
+            .foot(
+                Row::new()
+                    .spacing(10)
+                    .padding(5)
+                    .width(Length::Fill)
+                    .push(
+                        Button::new(
+                            &mut state.cancel_state,
+                            Text::new("Cancel").horizontal_alignment(HorizontalAlignment::Center),
+                        )
                         .width(Length::Fill)
-                        .push(
-                            Button::new(
-                                &mut state.cancel_state,
-                                Text::new("Cancel")
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                            )
-                            .width(Length::Fill)
-                            .on_press(Message::CancelButtonPressed)
+                        .on_press(Message::CancelButtonPressed),
+                    )
+                    .push(
+                        Button::new(
+                            &mut state.ok_state,
+                            Text::new("Ok").horizontal_alignment(HorizontalAlignment::Center),
                         )
-                        .push(
-                            Button::new(
-                                &mut state.ok_state,
-                                Text::new("Ok")
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                            )
-                            .width(Length::Fill)
-                            .on_press(Message::OkButtonPressed)
-                        )
-                )
-                .max_width(300)
-                //.width(Length::Shrink)
-                .on_close(Message::CloseModal)
-                .into()
-            },
-        )
+                        .width(Length::Fill)
+                        .on_press(Message::OkButtonPressed),
+                    ),
+            )
+            .max_width(300)
+            //.width(Length::Shrink)
+            .on_close(Message::CloseModal)
+            .into()
+        })
         .backdrop(Message::CloseModal)
         .on_esc(Message::CloseModal)
         .into()

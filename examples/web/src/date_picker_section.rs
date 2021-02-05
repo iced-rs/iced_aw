@@ -1,7 +1,6 @@
-
+use crate::Section;
 use iced::{button, Align, Button, Column, Element, Length, Row, Text};
 use iced_aw::{date_picker, DatePicker};
-use crate::Section;
 
 pub struct DatePickerSection {
     date_picker_state: date_picker::State,
@@ -38,7 +37,6 @@ impl DatePickerSection {
 }
 
 impl Section for DatePickerSection {
-
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -63,12 +61,13 @@ impl Section for DatePickerSection {
                     .align_items(Align::Center)
                     .spacing(20)
                     .push(date_picker)
-                    .push(
-                        Text::new(format!("Picked date: {:04}-{:02}-{:02}", self.date.0, self.date.1, self.date.2))
-                    )
-            ).into();
+                    .push(Text::new(format!(
+                        "Picked date: {:04}-{:02}-{:02}",
+                        self.date.0, self.date.1, self.date.2
+                    ))),
+            )
+            .into();
 
         column.map(crate::Message::DatePicker)
     }
-
 }

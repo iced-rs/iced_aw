@@ -1,7 +1,8 @@
-
-use iced::{button, scrollable, Button, Checkbox, Column, Container, Element, Length, Scrollable, Text};
-use iced_aw::{floating_button::Anchor, FloatingButton};
 use crate::Section;
+use iced::{
+    button, scrollable, Button, Checkbox, Column, Container, Element, Length, Scrollable, Text,
+};
+use iced_aw::{floating_button::Anchor, FloatingButton};
 
 pub struct FloatingButtonSection {
     lines: Vec<String>,
@@ -28,16 +29,13 @@ impl FloatingButtonSection {
 
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::FloatingButtonPressed => {
-                self.lines.push("This is a newly added line.".into())
-            },
+            Message::FloatingButtonPressed => self.lines.push("This is a newly added line.".into()),
             Message::HideButton(hide) => self.hide = hide,
         }
     }
 }
 
 impl Section for FloatingButtonSection {
-    
     type Message = crate::Message;
 
     fn header(&self) -> String {
@@ -45,13 +43,12 @@ impl Section for FloatingButtonSection {
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
-        let column = self.lines.iter()
-            .fold(
-                Column::new(),
-                |col, line| {
-                    col.push(Text::new(line.to_owned()))
-                }
-            )
+        let column = self
+            .lines
+            .iter()
+            .fold(Column::new(), |col, line| {
+                col.push(Text::new(line.to_owned()))
+            })
             .width(Length::Fill);
 
         let scrollable = Scrollable::new(&mut self.scrollable_state)
@@ -61,29 +58,23 @@ impl Section for FloatingButtonSection {
             .push(column);
 
         let container = Container::new(
-            FloatingButton::new(
-                &mut self.button_state,
-                scrollable,
-                |state| Button::new(state, Text::new("Press Me!"))
+            FloatingButton::new(&mut self.button_state, scrollable, |state| {
+                Button::new(state, Text::new("Press Me!"))
                     .on_press(Message::FloatingButtonPressed)
                     .style(iced_aw::style::button::Primary)
-            )
+            })
             .anchor(Anchor::SouthEast)
             .offset([20.0, 5.0])
-            .hide(self.hide)
+            .hide(self.hide),
         )
         .width(Length::Fill);
 
         let column: Element<'_, Message> = Column::new()
             .spacing(10)
-            .push(
-                Checkbox::new(self.hide, "Hide button", Message::HideButton)
-            )
-            .push(
-                container
-            ).into();
+            .push(Checkbox::new(self.hide, "Hide button", Message::HideButton))
+            .push(container)
+            .into();
 
         column.map(crate::Message::FloatingButton)
     }
-
 }
