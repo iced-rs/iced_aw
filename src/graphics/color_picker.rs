@@ -1,21 +1,35 @@
 //! Use a color picker as an input element for picking colors.
-//! 
+//!
 //! *This API requires the following crate features to be activated: color_picker*
 use iced_native::Layout;
 use std::collections::HashMap;
 
-use iced_graphics::{Backend, Color, Defaults, Point, Primitive, Rectangle, Renderer, Size, Vector, backend, canvas::{self, LineCap, Path, Stroke}};
+use iced_graphics::{
+    backend,
+    canvas::{self, LineCap, Path, Stroke},
+    Backend, Color, Defaults, Point, Primitive, Rectangle, Renderer, Size, Vector,
+};
 use iced_native::mouse;
 
-use crate::{core::{color::{HexString, Hsv}, renderer::DrawEnvironment}, style::{color_picker::{Style, StyleSheet}, style_state::StyleState}};
+use crate::{
+    core::{
+        color::{HexString, Hsv},
+        renderer::DrawEnvironment,
+    },
+    style::{
+        color_picker::{Style, StyleSheet},
+        style_state::StyleState,
+    },
+};
 
 use crate::native::color_picker;
 pub use crate::native::color_picker::State;
 
 /// An input element for picking colors.
-/// 
+///
 /// This is an alias of an `iced_native` ColorPicker with an `iced_wgpu::Renderer`.
-pub type ColorPicker<'a, Message, Backend> = color_picker::ColorPicker<'a, Message, Renderer<Backend>>;
+pub type ColorPicker<'a, Message, Backend> =
+    color_picker::ColorPicker<'a, Message, Renderer<Backend>>;
 
 impl<B> color_picker::Renderer for Renderer<B>
 where
@@ -35,7 +49,7 @@ where
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
-        
+
         let mut style: HashMap<StyleState, Style> = HashMap::new();
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
@@ -58,7 +72,7 @@ where
 
         // ----------- Block 1 ----------------------
         let hsv_color_layout = children.next().unwrap();
-        
+
         // ----------- RGBA Color ----------------------
         //let hsv_color_layout = block1_children.next().unwrap();
         let (hsv_color, hsv_color_mouse_interaction) = hsv_color(
@@ -85,11 +99,11 @@ where
             env.defaults,
             &style,
         );
-        
+
         // ----------- Text input ----------------------
         let text_input_layout = block2_children.next().unwrap();
         let hsv: Hsv = color.clone().into();
-        
+
         let text_input_style_state = if text_input_layout.bounds().contains(env.cursor_position) {
             StyleState::Hovered
         } else {
@@ -101,7 +115,10 @@ where
                 Primitive::Quad {
                     bounds: text_input_layout.bounds(),
                     background: color.clone().into(),
-                    border_radius: style.get(&text_input_style_state).unwrap().bar_border_radius,
+                    border_radius: style
+                        .get(&text_input_style_state)
+                        .unwrap()
+                        .bar_border_radius,
                     border_width: style.get(&text_input_style_state).unwrap().bar_border_width,
                     border_color: style.get(&text_input_style_state).unwrap().bar_border_color,
                 },
@@ -114,11 +131,12 @@ where
                     },
                     color: Color {
                         a: 1.0,
-                        .. Hsv {
+                        ..Hsv {
                             hue: 0,
                             saturation: 0.0,
                             value: if hsv.value < 0.5 { 1.0 } else { 0.0 },
-                        }.into()
+                        }
+                        .into()
                     },
                     size: text_input_layout.bounds().height * 0.7,
                     font: Default::default(),
@@ -152,7 +170,14 @@ where
 
         (
             Primitive::Group {
-                primitives: vec![background, hsv_color, rgba_color, text_input, cancel_button, submit_button],
+                primitives: vec![
+                    background,
+                    hsv_color,
+                    rgba_color,
+                    text_input,
+                    cancel_button,
+                    submit_button,
+                ],
             },
             mouse_interaction
                 .max(hsv_color_mouse_interaction)
@@ -180,156 +205,154 @@ fn hsv_color(
     let mouse_interaction = mouse::Interaction::default();
 
     let sat_value_layout = hsv_color_children.next().unwrap();
-    let (sat_value_style_state, sat_value_mouse_interaction) = if sat_value_layout.bounds().contains(cursor_position) {
-        (StyleState::Hovered, mouse::Interaction::Pointer)
-    } else {
-        (StyleState::Active, mouse::Interaction::default())
-    };
+    let (sat_value_style_state, sat_value_mouse_interaction) =
+        if sat_value_layout.bounds().contains(cursor_position) {
+            (StyleState::Hovered, mouse::Interaction::Pointer)
+        } else {
+            (StyleState::Active, mouse::Interaction::default())
+        };
 
-    let sat_value = sat_value_canvas_cache.draw(sat_value_layout.bounds().size(), |frame| {
-        let column_count = frame.width() as u16;
-        let row_count = frame.height() as u16;
+    let sat_value = sat_value_canvas_cache
+        .draw(sat_value_layout.bounds().size(), |frame| {
+            let column_count = frame.width() as u16;
+            let row_count = frame.height() as u16;
 
-        for column in 0..column_count {
-            for row in 0..row_count {
-                let saturation = column as f32 / frame.width();
-                let value = row as f32 / frame.height();
+            for column in 0..column_count {
+                for row in 0..row_count {
+                    let saturation = column as f32 / frame.width();
+                    let value = row as f32 / frame.height();
 
-                frame.fill_rectangle(
-                    Point::new(column as f32, row as f32),
-                    Size::new(1.0, 1.0),
-                    Color::from(Hsv::from_hsv(hsv_color.hue, saturation, value))
-                );
+                    frame.fill_rectangle(
+                        Point::new(column as f32, row as f32),
+                        Size::new(1.0, 1.0),
+                        Color::from(Hsv::from_hsv(hsv_color.hue, saturation, value)),
+                    );
+                }
             }
-        }
 
-        let stroke = Stroke {
-            color: Hsv {
-                hue: 0,
-                saturation: 0.0,
-                value: 1.0 - hsv_color.value,
-            }.into(),
-            width: 3.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
+            let stroke = Stroke {
+                color: Hsv {
+                    hue: 0,
+                    saturation: 0.0,
+                    value: 1.0 - hsv_color.value,
+                }
+                .into(),
+                width: 3.0,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
 
-        let saturation = hsv_color.saturation * frame.width();
-        let value = hsv_color.value * frame.height();
+            let saturation = hsv_color.saturation * frame.width();
+            let value = hsv_color.value * frame.height();
 
-        frame.stroke(
-            &Path::line(
-                Point::new(saturation, 0.0),
-                Point::new(saturation, frame.height())
-            ),
-            stroke,
-        );
+            frame.stroke(
+                &Path::line(
+                    Point::new(saturation, 0.0),
+                    Point::new(saturation, frame.height()),
+                ),
+                stroke,
+            );
 
-        frame.stroke(
-            &Path::line(
-                Point::new(0.0, value),
-                Point::new(frame.width(), value),
-            ),
-            stroke,
-        );
+            frame.stroke(
+                &Path::line(Point::new(0.0, value), Point::new(frame.width(), value)),
+                stroke,
+            );
 
-        let stroke = Stroke {
-            color: style.get(&sat_value_style_state).unwrap().bar_border_color,
-            width: 2.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
+            let stroke = Stroke {
+                color: style.get(&sat_value_style_state).unwrap().bar_border_color,
+                width: 2.0,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
 
-        frame.stroke(
-            &Path::rectangle(
-                Point::new(0.0, 0.0),
-                Size::new(frame.size().width - 0.0, frame.size().height - 0.0),
-            ),
-            stroke
-        );
-    })
-    .into_primitive();
+            frame.stroke(
+                &Path::rectangle(
+                    Point::new(0.0, 0.0),
+                    Size::new(frame.size().width - 0.0, frame.size().height - 0.0),
+                ),
+                stroke,
+            );
+        })
+        .into_primitive();
     let sat_value = Primitive::Translate {
         translation: Vector::new(sat_value_layout.bounds().x, sat_value_layout.bounds().y),
         content: Box::new(sat_value),
     };
 
     let hue_layout = hsv_color_children.next().unwrap();
-    let (hue_style_state, hue_mouse_interaction) = if hue_layout.bounds().contains(cursor_position) {
+    let (hue_style_state, hue_mouse_interaction) = if hue_layout.bounds().contains(cursor_position)
+    {
         (StyleState::Hovered, mouse::Interaction::Pointer)
     } else {
         (StyleState::Active, mouse::Interaction::default())
     };
 
-    let hue = hue_canvas_cache.draw(hue_layout.bounds().size(), |frame| {
-        let column_count = frame.width() as u16;
-        
-        for column in 0..column_count {
-            let hue = (column as f32 * 360.0 / frame.width()) as u16;
+    let hue = hue_canvas_cache
+        .draw(hue_layout.bounds().size(), |frame| {
+            let column_count = frame.width() as u16;
 
-            let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
+            for column in 0..column_count {
+                let hue = (column as f32 * 360.0 / frame.width()) as u16;
+
+                let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
+                let stroke = Stroke {
+                    color: hsv_color.into(),
+                    width: 1.0,
+                    line_cap: LineCap::Round,
+                    ..Stroke::default()
+                };
+
+                frame.stroke(
+                    &Path::line(
+                        Point::new(column as f32, 0.0),
+                        Point::new(column as f32, frame.height()),
+                    ),
+                    stroke,
+                );
+            }
+
             let stroke = Stroke {
-                color: hsv_color.into(),
-                width: 1.0,
+                color: Color::BLACK,
+                width: 3.0,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
+
+            let column = hsv_color.hue as f32 * frame.width() / 360.0;
+
+            frame.stroke(
+                &Path::line(Point::new(column, 0.0), Point::new(column, frame.height())),
+                stroke,
+            );
+
+            let stroke = Stroke {
+                color: style.get(&hue_style_state).unwrap().bar_border_color,
+                width: 2.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
             };
 
             frame.stroke(
-                &Path::line(
-                    Point::new(column as f32, 0.0),
-                    Point::new(column as f32, frame.height()),
+                &Path::rectangle(
+                    Point::new(0.0, 0.0),
+                    Size::new(frame.size().width, frame.size().height),
                 ),
-                stroke
+                stroke,
             );
-        }
-
-        let stroke = Stroke {
-            color: Color::BLACK,
-            width: 3.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
-
-        let column = hsv_color.hue as f32 * frame.width() / 360.0;
-
-        frame.stroke(
-            &Path::line(
-                Point::new(column, 0.0),
-                Point::new(column, frame.height()),
-            ),
-            stroke
-        );
-
-        let stroke = Stroke {
-            color: style.get(&hue_style_state).unwrap().bar_border_color,
-            width: 2.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
-
-        frame.stroke(
-            &Path::rectangle(
-                Point::new(0.0, 0.0),
-                Size::new(frame.size().width, frame.size().height),
-            ),
-            stroke
-        );
-
-    })
-    .into_primitive();
+        })
+        .into_primitive();
     let hue = Primitive::Translate {
         translation: Vector::new(hue_layout.bounds().x, hue_layout.bounds().y),
         content: Box::new(hue),
     };
-    
+
     (
         Primitive::Group {
             primitives: vec![sat_value, hue],
         },
         mouse_interaction
             .max(sat_value_mouse_interaction)
-            .max(hue_mouse_interaction)
+            .max(hue_mouse_interaction),
     )
 }
 
@@ -345,7 +368,12 @@ fn rgba_color(
 
     let mouse_interaction = mouse::Interaction::default();
 
-    let f = |layout: Layout, label: &str, color: Color, value: f32, cursor_position: Point| -> (Primitive, mouse::Interaction) {
+    let f = |layout: Layout,
+             label: &str,
+             color: Color,
+             value: f32,
+             cursor_position: Point|
+     -> (Primitive, mouse::Interaction) {
         let mut children = layout.children();
 
         let mouse_interaction = mouse::Interaction::default();
@@ -359,7 +387,7 @@ fn rgba_color(
             bounds: Rectangle {
                 x: label_layout.bounds().center_x(),
                 y: label_layout.bounds().center_y(),
-                .. label_layout.bounds()
+                ..label_layout.bounds()
             },
             color: defaults.text.color,
             size: label_layout.bounds().height,
@@ -370,11 +398,15 @@ fn rgba_color(
 
         let bounds = bar_layout.bounds();
 
-        let (bar_style_state, bar_mouse_interaction) = if bar_layout.bounds().contains(cursor_position) {
-            (StyleState::Hovered, mouse::Interaction::ResizingHorizontally)
-        } else {
-            (StyleState::Active, mouse::Interaction::default())
-        };
+        let (bar_style_state, bar_mouse_interaction) =
+            if bar_layout.bounds().contains(cursor_position) {
+                (
+                    StyleState::Hovered,
+                    mouse::Interaction::ResizingHorizontally,
+                )
+            } else {
+                (StyleState::Active, mouse::Interaction::default())
+            };
 
         let bar_background = Primitive::Quad {
             bounds: Rectangle {
@@ -402,7 +434,7 @@ fn rgba_color(
             bounds: Rectangle {
                 x: value_layout.bounds().center_x(),
                 y: value_layout.bounds().center_y(),
-                .. value_layout.bounds()
+                ..value_layout.bounds()
             },
             color: defaults.text.color,
             size: value_layout.bounds().height,
@@ -415,31 +447,53 @@ fn rgba_color(
             Primitive::Group {
                 primitives: vec![label, bar_background, bar, value],
             },
-            mouse_interaction
-                .max(bar_mouse_interaction),
+            mouse_interaction.max(bar_mouse_interaction),
         )
     };
-
 
     // Red
     let red_row_layout = rgba_color_children.next().unwrap();
 
-    let (red, red_mouse_interaction) = f(red_row_layout, "R:", Color::from_rgb(color.r, 0.0, 0.0), color.r, cursor_position);
-    
+    let (red, red_mouse_interaction) = f(
+        red_row_layout,
+        "R:",
+        Color::from_rgb(color.r, 0.0, 0.0),
+        color.r,
+        cursor_position,
+    );
+
     // Green
     let green_row_layout = rgba_color_children.next().unwrap();
 
-    let (green, green_mouse_interaction) = f(green_row_layout, "G:", Color::from_rgb(0.0, color.g, 0.0), color.g, cursor_position);
+    let (green, green_mouse_interaction) = f(
+        green_row_layout,
+        "G:",
+        Color::from_rgb(0.0, color.g, 0.0),
+        color.g,
+        cursor_position,
+    );
 
     // Blue
     let blue_row_layout = rgba_color_children.next().unwrap();
 
-    let (blue, blue_mouse_interaction) = f(blue_row_layout, "B:", Color::from_rgb(0.0, 0.0, color.b), color.b, cursor_position);
+    let (blue, blue_mouse_interaction) = f(
+        blue_row_layout,
+        "B:",
+        Color::from_rgb(0.0, 0.0, color.b),
+        color.b,
+        cursor_position,
+    );
 
     // Alpha
     let alpha_row_layout = rgba_color_children.next().unwrap();
 
-    let (alpha, alpha_mouse_interaction) = f(alpha_row_layout, "A:", Color::from_rgba(0.0, 0.0, 0.0, color.a), color.a, cursor_position);
+    let (alpha, alpha_mouse_interaction) = f(
+        alpha_row_layout,
+        "A:",
+        Color::from_rgba(0.0, 0.0, 0.0, color.a),
+        color.a,
+        cursor_position,
+    );
 
     (
         Primitive::Group {
@@ -449,7 +503,6 @@ fn rgba_color(
             .max(red_mouse_interaction)
             .max(green_mouse_interaction)
             .max(blue_mouse_interaction)
-            .max(alpha_mouse_interaction)
+            .max(alpha_mouse_interaction),
     )
-
 }

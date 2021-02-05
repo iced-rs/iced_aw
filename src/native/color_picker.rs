@@ -1,22 +1,28 @@
 //! Use a color picker as an input element for picking colors.
-//! 
+//!
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
 use color_picker::ColorBarFocussed;
 use iced_graphics::canvas;
-use iced_native::{Clipboard, Color, Element, Event, Layout, Point, Widget, button, column, event, overlay, row, text_input};
+use iced_native::{
+    button, column, event, overlay, row, text_input, Clipboard, Color, Element, Event, Layout,
+    Point, Widget,
+};
 
 pub use super::overlay::color_picker::Renderer;
-use super::{icon_text, overlay::color_picker::{self, ColorPickerOverlay}};
+use super::{
+    icon_text,
+    overlay::color_picker::{self, ColorPickerOverlay},
+};
 
 /// An input element for picking colors.
-/// 
+///
 /// # Example
 /// ```
 /// # use iced_aw::color_picker;
 /// # use iced_native::{Button, Color, Text, button, renderer::Null};
-/// # 
+/// #
 /// # pub type ColorPicker<'a, Message> = iced_aw::native::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
@@ -24,11 +30,11 @@ use super::{icon_text, overlay::color_picker::{self, ColorPickerOverlay}};
 ///     Cancel,
 ///     Submit(Color),
 /// }
-/// 
+///
 /// let mut button_state = button::State::new();
 /// let mut state = color_picker::State::new();
 /// state.show(true);
-/// 
+///
 /// let color_picker = ColorPicker::new(
 ///     &mut state,
 ///     Button::new(&mut button_state, Text::new("Pick color"))
@@ -36,7 +42,7 @@ use super::{icon_text, overlay::color_picker::{self, ColorPickerOverlay}};
 ///     Message::Cancel,
 ///     Message::Submit,
 /// );
-/// ``` 
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct ColorPicker<'a, Message, Renderer>
 where
@@ -121,14 +127,17 @@ impl State {
         self.color = Color::from_rgb(0.5, 0.25, 0.25);
         self.color_bar_focussed = ColorBarFocussed::None;
     }
-
 }
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for ColorPicker<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: color_picker::Renderer + button::Renderer + column::Renderer + icon_text::Renderer
-        + row::Renderer + text_input::Renderer,
+    Renderer: color_picker::Renderer
+        + button::Renderer
+        + column::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text_input::Renderer,
 {
     fn width(&self) -> iced_native::Length {
         self.underlay.width()
@@ -153,7 +162,7 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         self.underlay.on_event(
             event,
@@ -173,7 +182,8 @@ where
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
     ) -> Renderer::Output {
-        self.underlay.draw(renderer, defaults, layout, cursor_position, viewport)
+        self.underlay
+            .draw(renderer, defaults, layout, cursor_position, viewport)
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -187,7 +197,7 @@ where
         if !self.state.show {
             return self.underlay.overlay(layout);
         }
-        
+
         let bounds = layout.bounds();
         let position = Point::new(bounds.center_x(), bounds.center_y());
 
@@ -208,8 +218,13 @@ impl<'a, Message, Renderer> From<ColorPicker<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: 'a + color_picker::Renderer + button::Renderer + column::Renderer + icon_text::Renderer
-        + row::Renderer + text_input::Renderer,
+    Renderer: 'a
+        + color_picker::Renderer
+        + button::Renderer
+        + column::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text_input::Renderer,
 {
     fn from(color_picker: ColorPicker<'a, Message, Renderer>) -> Self {
         Element::new(color_picker)

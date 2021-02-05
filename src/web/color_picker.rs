@@ -1,5 +1,5 @@
 //! Use a color picker as an input element for picking colors.
-//! 
+//!
 //! *This API requires the following crate features to be activated: color_picker*
 use dodrio::bumpalo;
 use iced_web::{Bus, Color, Css, Element, Widget};
@@ -9,7 +9,7 @@ pub use crate::style::color_picker::{Style, StyleSheet};
 use std::rc::Rc;
 
 /// An input element for picking colors.
-/// 
+///
 /// TODO: Example
 #[allow(missing_debug_implementations)]
 pub struct ColorPicker<'a, Message> {
@@ -91,7 +91,7 @@ where
     ) -> dodrio::Node<'b> {
         use dodrio::builder::*;
         use wasm_bindgen::JsCast;
-        
+
         let on_submit = self.on_submit.clone();
         let input_event_bus = bus.clone();
 
@@ -126,7 +126,7 @@ where
 }
 
 impl<'a, Message> From<ColorPicker<'a, Message>> for Element<'a, Message>
-where 
+where
     Message: 'static + Clone,
 {
     fn from(color_picker: ColorPicker<'a, Message>) -> Element<'a, Message> {
@@ -136,21 +136,18 @@ where
 
 /// Converts a hex representation of a color into a [`Color`](iced_web::Color).
 fn hex_to_color(hex: &str) -> Color {
-
     // #RRGGBB
-    let hex_char_to_value = |c: char| {
-        match c {
-            '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => c as u8 - '0' as u8,
-            'a' | 'b' | 'c' | 'd' | 'e' | 'f' => c as u8 - 'a' as u8 + 10,
-            _ => 0
-        }
+    let hex_char_to_value = |c: char| match c {
+        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => c as u8 - '0' as u8,
+        'a' | 'b' | 'c' | 'd' | 'e' | 'f' => c as u8 - 'a' as u8 + 10,
+        _ => 0,
     };
 
     let scan = |hex: &str| {
         let mut chars = hex.chars();
         hex_char_to_value(chars.next().unwrap()) * 16 + hex_char_to_value(chars.next().unwrap())
     };
-    
+
     let red = scan(&hex[1..=2]);
     let green = scan(&hex[3..=4]);
     let blue = scan(&hex[5..=6]);
@@ -159,7 +156,7 @@ fn hex_to_color(hex: &str) -> Color {
         r: red as f32 / 255.0,
         g: green as f32 / 255.0,
         b: blue as f32 / 255.0,
-        a: 1.0
+        a: 1.0,
     }
 }
 
@@ -174,11 +171,11 @@ mod tests {
         let result = hex_to_color("#FF0000");
         let expected = Color::from_rgb(1.0, 0.0, 0.0);
         assert_eq!(result, expected);
-        
+
         let result = hex_to_color("#00FF00");
         let expected = Color::from_rgb(0.0, 1.0, 0.0);
         assert_eq!(result, expected);
-        
+
         let result = hex_to_color("#0000FF");
         let expected = Color::from_rgb(0.0, 0.0, 1.0);
         assert_eq!(result, expected);

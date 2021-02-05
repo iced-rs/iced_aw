@@ -48,31 +48,23 @@ impl From<Color> for Hsv {
         let hue = if (max - min).abs() < f32::EPSILON {
             0.0
         } else if (max - color.r).abs() < f32::EPSILON {
-            60.0 * ( 0.0 + (color.g - color.b) / (max - min))
+            60.0 * (0.0 + (color.g - color.b) / (max - min))
         } else if (max - color.g).abs() < f32::EPSILON {
-            60.0 * ( 2.0 + (color.b - color.r) / (max - min))
+            60.0 * (2.0 + (color.b - color.r) / (max - min))
         } else {
-            60.0 * ( 4.0 + (color.r - color.g) / (max - min))
+            60.0 * (4.0 + (color.r - color.g) / (max - min))
         };
 
-        let hue = if hue < 0.0 {
-            hue + 360.0
-        } else {
-            hue
-        } as u16 % 360;
+        let hue = if hue < 0.0 { hue + 360.0 } else { hue } as u16 % 360;
 
-        let saturation = if max == 0.0 {
-            0.0
-        } else {
-            (max - min) / max
-        };
+        let saturation = if max == 0.0 { 0.0 } else { (max - min) / max };
 
         let value = max;
 
         Hsv {
             hue,
             saturation,
-            value
+            value,
         }
     }
 }
@@ -81,11 +73,11 @@ impl From<Hsv> for Color {
     fn from(hsv: Hsv) -> Self {
         // https://de.wikipedia.org/wiki/HSV-Farbraum#Umrechnung_HSV_in_RGB
         let h_i = (hsv.hue as f32 / 60.0).floor();
-        let f = (hsv.hue as f32 / 60.0) - h_i ;
+        let f = (hsv.hue as f32 / 60.0) - h_i;
 
-        let p = hsv.value * ( 1.0 - hsv.saturation );
-        let q = hsv.value * ( 1.0 - hsv.saturation * f);
-        let t = hsv.value * ( 1.0 - hsv.saturation * ( 1.0 - f));
+        let p = hsv.value * (1.0 - hsv.saturation);
+        let q = hsv.value * (1.0 - hsv.saturation * f);
+        let t = hsv.value * (1.0 - hsv.saturation * (1.0 - f));
 
         let h_i = h_i as u8;
         let (red, green, blue) = match h_i {

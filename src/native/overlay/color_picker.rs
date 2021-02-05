@@ -1,12 +1,21 @@
 //! Use a color picker as an input element for picking colors.
-//! 
+//!
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
 use iced_graphics::canvas;
-use iced_native::{Align, Button, Clipboard, Color, Column, Element, Event, Layout, Length, Point, Rectangle, Row, Size, Text, Widget, button, column, event, layout::{self, Limits}, mouse, overlay, row, text, text_input};
+use iced_native::{
+    button, column, event,
+    layout::{self, Limits},
+    mouse, overlay, row, text, text_input, Align, Button, Clipboard, Color, Column, Element, Event,
+    Layout, Length, Point, Rectangle, Row, Size, Text, Widget,
+};
 
-use crate::{core::{color::Hsv, renderer::DrawEnvironment}, graphics::icons::Icon, native::{IconText, color_picker, icon_text}};
+use crate::{
+    core::{color::Hsv, renderer::DrawEnvironment},
+    graphics::icons::Icon,
+    native::{color_picker, icon_text, IconText},
+};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -33,10 +42,16 @@ where
 }
 
 impl<'a, Message, Renderer> ColorPickerOverlay<'a, Message, Renderer>
-where 
+where
     Message: 'static + Clone,
-    Renderer: 'a + self::Renderer + column::Renderer + button::Renderer + icon_text::Renderer
-        + row::Renderer + text::Renderer + text_input::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + column::Renderer
+        + button::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer
+        + text_input::Renderer,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -67,10 +82,13 @@ where
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
                 .into(),
-            submit_button: Button::new(submit_button, IconText::new(Icon::Check).width(Length::Fill))
-                .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
-                .into(),
+            submit_button: Button::new(
+                submit_button,
+                IconText::new(Icon::Check).width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel) // Sending a fake message
+            .into(),
             color_bar_focussed,
             on_submit,
             position,
@@ -102,14 +120,17 @@ where
         let sat_value_bounds = hsv_color_children.next().unwrap().bounds();
         let hue_bounds = hsv_color_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::WheelScrolled {delta}) = event {
+        if let Event::Mouse(mouse::Event::WheelScrolled { delta }) = event {
             match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
-                    let move_value = |value: u16, y: f32| {
-                        ((value as i32 + y as i32).rem_euclid(360)) as u16
-                    };
+                    let move_value =
+                        |value: u16, y: f32| ((value as i32 + y as i32).rem_euclid(360)) as u16;
 
-                    println!("hue: {}, moved: {}", hsv_color.hue, move_value(hsv_color.hue, y));
+                    println!(
+                        "hue: {}, moved: {}",
+                        hsv_color.hue,
+                        move_value(hsv_color.hue, y)
+                    );
 
                     if hue_bounds.contains(cursor_position) {
                         *self.color = Color {
@@ -117,7 +138,8 @@ where
                             ..Hsv {
                                 hue: move_value(hsv_color.hue, y),
                                 ..hsv_color
-                            }.into()
+                            }
+                            .into()
                         };
                         color_changed = true;
                     }
@@ -154,20 +176,22 @@ where
                         saturation: calc_percentage_sat(&sat_value_bounds, &cursor_position),
                         value: calc_percentage_value(&sat_value_bounds, &cursor_position),
                         ..hsv_color
-                    }.into()
+                    }
+                    .into()
                 };
                 color_changed = true;
-            },
+            }
             ColorBarFocussed::Hue => {
                 *self.color = Color {
                     a: self.color.a,
                     ..Hsv {
                         hue: calc_hue(&hue_bounds, &cursor_position),
                         ..hsv_color
-                    }.into()
+                    }
+                    .into()
                 };
                 color_changed = true;
-            },
+            }
             _ => {}
         }
 
@@ -207,12 +231,11 @@ where
         let _ = alpha_row_children.next();
         let alpha_bar_bounds = alpha_row_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::WheelScrolled {delta}) = event {
+        if let Event::Mouse(mouse::Event::WheelScrolled { delta }) = event {
             match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
-                    let move_value = |value: f32, y: f32| {
-                        (value * 255.0 + y).min(255.0).max(0.0) / 255.0
-                    };
+                    let move_value =
+                        |value: f32, y: f32| (value * 255.0 + y).min(255.0).max(0.0) / 255.0;
 
                     if red_bar_bounds.contains(cursor_position) {
                         *self.color = Color {
@@ -269,31 +292,31 @@ where
             ColorBarFocussed::Red => {
                 *self.color = Color {
                     r: calc_percantage(&red_bar_bounds, &cursor_position),
-                    .. *self.color
+                    ..*self.color
                 };
                 color_changed = true;
-            },
+            }
             ColorBarFocussed::Green => {
                 *self.color = Color {
                     g: calc_percantage(&green_bar_bounds, &cursor_position),
-                    .. *self.color
+                    ..*self.color
                 };
                 color_changed = true;
-            },
+            }
             ColorBarFocussed::Blue => {
                 *self.color = Color {
                     b: calc_percantage(&blue_bar_bounds, &cursor_position),
-                    .. *self.color
+                    ..*self.color
                 };
                 color_changed = true;
-            },
+            }
             ColorBarFocussed::Alpha => {
                 *self.color = Color {
                     a: calc_percantage(&alpha_bar_bounds, &cursor_position),
-                    .. *self.color
+                    ..*self.color
                 };
                 color_changed = true;
-            },
+            }
             _ => {}
         }
 
@@ -309,7 +332,14 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: 'a + self::Renderer + column::Renderer + button::Renderer + icon_text::Renderer + row::Renderer + text::Renderer + text_input::Renderer,
+    Renderer: 'a
+        + self::Renderer
+        + column::Renderer
+        + button::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer
+        + text_input::Renderer,
 {
     fn layout(
         &self,
@@ -330,7 +360,7 @@ where
             .max_width(max_width)
             .max_height(max_height);
 
-        let divider = if bounds.width > bounds.height {        
+        let divider = if bounds.width > bounds.height {
             Row::<(), Renderer>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
@@ -359,16 +389,19 @@ where
             .push(
                 Row::new()
                     .width(Length::Fill)
-                    .height(Length::FillPortion(7))
+                    .height(Length::FillPortion(7)),
             )
             .push(
                 Row::new()
                     .width(Length::Fill)
-                    .height(Length::FillPortion(1))
+                    .height(Length::FillPortion(1)),
             )
             .layout(renderer, &block1_limits);
 
-        block1_node.move_to(Point::new(block1_bounds.x + PADDING as f32, block1_bounds.y + PADDING as f32));
+        block1_node.move_to(Point::new(
+            block1_bounds.x + PADDING as f32,
+            block1_bounds.y + PADDING as f32,
+        ));
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -388,7 +421,9 @@ where
         let text_input_limits = block2_limits;
         let mut text_input = Row::<(), Renderer>::new()
             .width(Length::Fill)
-            .height(Length::Units(text::Renderer::default_size(renderer) + 2 * PADDING))
+            .height(Length::Units(
+                text::Renderer::default_size(renderer) + 2 * PADDING,
+            ))
             .layout(renderer, &text_input_limits);
 
         let block2_limits = block2_limits.shrink(Size::new(
@@ -397,8 +432,8 @@ where
         ));
 
         // RGBA Colors
-        let mut rgba_colors = Column::<(), Renderer>::new();//.spacing(SPACING);
-            
+        let mut rgba_colors = Column::<(), Renderer>::new(); //.spacing(SPACING);
+
         for _ in 0..4 {
             rgba_colors = rgba_colors.push(
                 Row::new()
@@ -410,17 +445,19 @@ where
                         //Row::new().width(Length::FillPortion(1)).height(Length::Fill)
                         Text::new("X:")
                             .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                            .vertical_alignment(iced_graphics::VerticalAlignment::Center)
+                            .vertical_alignment(iced_graphics::VerticalAlignment::Center),
                     )
                     .push(
-                        Row::new().width(Length::FillPortion(5)).height(Length::Fill)
+                        Row::new()
+                            .width(Length::FillPortion(5))
+                            .height(Length::Fill),
                     )
                     .push(
                         //Row::new().width(Length::FillPortion(1)).height(Length::Fill)
                         Text::new("XXX")
                             .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                            .vertical_alignment(iced_graphics::VerticalAlignment::Center)
-                    )
+                            .vertical_alignment(iced_graphics::VerticalAlignment::Center),
+                    ),
             );
         }
 
@@ -438,35 +475,42 @@ where
         ));
 
         // Buttons
-        let cancel_limits = block2_limits
-            .clone()
-            .max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
-            
+        let cancel_limits = block2_limits.clone().max_width(
+            ((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32,
+        );
+
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
-            
-        let submit_limits = block2_limits
-            .clone()
-            .max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+
+        let submit_limits = block2_limits.clone().max_width(
+            ((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32,
+        );
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point::new(
             cancel_button.bounds().x + PADDING as f32,
-            cancel_button.bounds().y + rgba_colors.bounds().height + text_input.bounds().height
-                + PADDING as f32 + 2.0 * SPACING as f32,
+            cancel_button.bounds().y
+                + rgba_colors.bounds().height
+                + text_input.bounds().height
+                + PADDING as f32
+                + 2.0 * SPACING as f32,
         ));
 
         submit_button.move_to(Point::new(
             submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
                 + PADDING as f32,
-            submit_button.bounds().y + rgba_colors.bounds().height + text_input.bounds().height
-                + PADDING as f32 + 2.0 * SPACING as f32,  
+            submit_button.bounds().y
+                + rgba_colors.bounds().height
+                + text_input.bounds().height
+                + PADDING as f32
+                + 2.0 * SPACING as f32,
         ));
 
         let mut block2_node = layout::Node::with_children(
             Size::new(
                 rgba_colors.bounds().width + (2.0 * PADDING as f32),
-                rgba_colors.bounds().height + text_input.bounds().height
+                rgba_colors.bounds().height
+                    + text_input.bounds().height
                     + cancel_button.bounds().height
                     + (2.0 * PADDING as f32)
                     + (2.0 * SPACING as f32),
@@ -488,13 +532,8 @@ where
             )
         };
 
-        let mut node = layout::Node::with_children(
-            Size::new(
-                width,
-                height,
-            ),
-            vec![block1_node, block2_node],
-        );
+        let mut node =
+            layout::Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
         node.move_to(Point::new(
             (position.x - node.size().width / 2.0).max(0.0),
@@ -527,12 +566,10 @@ where
         cursor_position: Point,
         messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>
+        clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         let mut children = layout.children();
-        
-        
-        
+
         let status = event::Status::Ignored;
 
         // ----------- Block 1 ----------------------
@@ -547,7 +584,7 @@ where
         );
 
         // ----------- Block 1 end ------------------
-        
+
         // ----------- Block 2 ----------------------
         let mut block2_children = children.next().unwrap().children();
 
@@ -575,7 +612,7 @@ where
             cursor_position,
             messages,
             renderer,
-            clipboard
+            clipboard,
         );
 
         let submit_button_layout = block2_children.next().unwrap();
@@ -589,15 +626,14 @@ where
         );
 
         if !fake_messages.is_empty() {
-            messages.push((self.on_submit)(
-                *self.color
-            ));
+            messages.push((self.on_submit)(*self.color));
         }
         // ----------- Block 2 end ------------------
-        if  hsv_color_status == event::Status::Captured
-            || rgba_color_status == event::Status::Captured {
-                self.sat_value_canvas_cache.clear();
-                self.hue_canvas_cache.clear();
+        if hsv_color_status == event::Status::Captured
+            || rgba_color_status == event::Status::Captured
+        {
+            self.sat_value_canvas_cache.clear();
+            self.hue_canvas_cache.clear();
         }
 
         status
@@ -643,7 +679,7 @@ where
 }
 
 /// The renderer of a [`ColorPickerOverlay`](ColorPickerOverlay).
-/// 
+///
 /// Your renderer will need to implement this trait before being
 /// able to use a [`ColorPicker`](crate::native::ColorPicker) in your user
 /// interface.
