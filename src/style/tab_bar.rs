@@ -20,7 +20,7 @@ pub struct Style {
     pub border_color: Option<Color>,
 
     /// The border width of the tab bar.
-    pub border_width: u16,
+    pub border_width: f32,
 
     /// The background of the tab labels.
     pub tab_label_background: Background,
@@ -29,7 +29,7 @@ pub struct Style {
     pub tab_label_border_color: Color,
 
     /// The border with of the tab labels.
-    pub tab_label_border_width: u16,
+    pub tab_label_border_width: f32,
 
     /// The icon color of the tab labels.
     pub icon_color: Color,
@@ -58,14 +58,14 @@ impl StyleSheet for Default {
         Style {
             background: None,
             border_color: None,
-            border_width: 0,
+            border_width: 0.0,
             tab_label_background: if is_active {
                 Background::Color([0.9, 0.9, 0.9].into())
             } else {
                 Background::Color([0.87, 0.87, 0.87].into())
             },
             tab_label_border_color: [0.7, 0.7, 0.7].into(),
-            tab_label_border_width: 1,
+            tab_label_border_width: 1.0,
             icon_color: Color::BLACK,
             text_color: Color::BLACK,
         }

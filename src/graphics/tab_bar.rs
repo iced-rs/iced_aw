@@ -57,7 +57,7 @@ where
             background: style
                 .background
                 .unwrap_or_else(|| Color::TRANSPARENT.into()),
-            border_radius: 0,
+            border_radius: 0.0,
             border_width: style.border_width,
             border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
         }];
@@ -114,7 +114,7 @@ fn draw_tab(
     let background = Primitive::Quad {
         bounds,
         background: style.tab_label_background,
-        border_radius: 0,
+        border_radius: 0.0,
         border_width: style.tab_label_border_width,
         border_color: style.tab_label_border_color,
     };

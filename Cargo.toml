@@ -41,17 +41,17 @@ default = [
 ]
 
 [dependencies]
-iced_style = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_style = { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
 chrono = { version = "0.4.19", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 #iced = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-iced_native = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
-iced_graphics = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_native = { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-iced_web = { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced_web = { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
 dodrio = "0.2.0"
 wasm-bindgen = "0.2.69"
 

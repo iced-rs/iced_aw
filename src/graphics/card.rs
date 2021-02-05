@@ -43,16 +43,16 @@ where
         let background = Primitive::Quad {
             bounds,
             background: style.background,
-            border_radius: style.border_radius as u16, // TODO: will change in the future
-            border_width: style.border_width as u16,   // TODO: same
+            border_radius: style.border_radius,
+            border_width: style.border_width,
             border_color: style.border_color,
         };
 
         let border = Primitive::Quad {
             bounds,
             background: Color::TRANSPARENT.into(),
-            border_radius: style.border_radius as u16, // TODO: same
-            border_width: style.border_width as u16,   // TODO: same
+            border_radius: style.border_radius,
+            border_width: style.border_width,
             border_color: style.border_color,
         };
 
@@ -61,8 +61,8 @@ where
         let head_background = Primitive::Quad {
             bounds: head_layout.bounds(),
             background: style.head_background,
-            border_radius: style.border_radius as u16, // TODO: same,
-            border_width: 0,
+            border_radius: style.border_radius,
+            border_width: 0.0,
             border_color: Color::TRANSPARENT,
         };
 
@@ -117,8 +117,8 @@ where
         let body_background = Primitive::Quad {
             bounds: body_layout.bounds(),
             background: style.body_background,
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             border_color: Color::TRANSPARENT,
         };
 
@@ -141,8 +141,8 @@ where
         let foot_background = Primitive::Quad {
             bounds: foot_layout.bounds(),
             background: style.foot_background,
-            border_radius: style.border_radius as u16, // TODO: same
-            border_width: 0,
+            border_radius: style.border_radius,
+            border_width: 0.0,
             border_color: Color::TRANSPARENT,
         };
 

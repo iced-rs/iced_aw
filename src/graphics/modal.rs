@@ -32,8 +32,8 @@ where
         let background = Primitive::Quad {
             bounds,
             background: style.background,
-            border_radius: 0,
-            border_width: 0,
+            border_radius: 0.0,
+            border_width: 0.0,
             border_color: Color::TRANSPARENT,
         };
 

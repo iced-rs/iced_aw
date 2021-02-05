@@ -96,7 +96,7 @@ struct RoundedButton;
 impl iced::button::StyleSheet for RoundedButton {
     fn active(&self) -> iced::button::Style {
         iced::button::Style {
-            border_radius: 25,
+            border_radius: 25.0,
             .. iced_aw::style::button::Primary.active()
         }
     }
@@ -107,9 +107,9 @@ struct BorderedContainer;
 impl iced::container::StyleSheet for BorderedContainer {
     fn style(&self) -> iced::container::Style {
         iced::container::Style {
-            border_width: 1,
+            border_width: 1.0,
             border_color: iced::Color::BLACK,
-            border_radius: 10,
+            border_radius: 10.0,
             .. Default::default()
         }
     }

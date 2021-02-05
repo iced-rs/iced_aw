@@ -51,8 +51,8 @@ where
         let background = Primitive::Quad {
             bounds,
             background: style.get(&style_state).unwrap().background,
-            border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
-            border_width: style.get(&style_state).unwrap().border_width as u16, // TODO: same
+            border_radius: style.get(&style_state).unwrap().border_radius,
+            border_width: style.get(&style_state).unwrap().border_width,
             border_color: style.get(&style_state).unwrap().border_color,
         };
 
@@ -101,8 +101,8 @@ where
                 Primitive::Quad {
                     bounds: text_input_layout.bounds(),
                     background: color.clone().into(),
-                    border_radius: style.get(&text_input_style_state).unwrap().bar_border_radius as u16, // TODO: will change in the future
-                    border_width: style.get(&text_input_style_state).unwrap().bar_border_width as u16, // TODO: same
+                    border_radius: style.get(&text_input_style_state).unwrap().bar_border_radius,
+                    border_width: style.get(&text_input_style_state).unwrap().bar_border_width,
                     border_color: style.get(&text_input_style_state).unwrap().bar_border_color,
                 },
                 Primitive::Text {
@@ -384,16 +384,16 @@ fn rgba_color(
                 height: bounds.height,
             },
             background: color.into(),
-            border_radius: style.get(&bar_style_state).unwrap().bar_border_radius as u16, // TODO: will change in the future
-            border_width: style.get(&bar_style_state).unwrap().bar_border_width as u16, // TODO: same
+            border_radius: style.get(&bar_style_state).unwrap().bar_border_radius,
+            border_width: style.get(&bar_style_state).unwrap().bar_border_width,
             border_color: Color::TRANSPARENT,
         };
 
         let bar = Primitive::Quad {
             bounds,
             background: Color::TRANSPARENT.into(),
-            border_radius: style.get(&bar_style_state).unwrap().bar_border_radius as u16, // TODO: same
-            border_width: style.get(&bar_style_state).unwrap().bar_border_width as u16, // TODO: same
+            border_radius: style.get(&bar_style_state).unwrap().bar_border_radius,
+            border_width: style.get(&bar_style_state).unwrap().bar_border_width,
             border_color: style.get(&bar_style_state).unwrap().bar_border_color,
         };
 

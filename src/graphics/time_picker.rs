@@ -67,8 +67,8 @@ where
         let background = Primitive::Quad {
             bounds,
             background: style.get(&style_state).unwrap().background,
-            border_radius: style.get(&style_state).unwrap().border_radius as u16, // TODO: will change in the future
-            border_width: style.get(&style_state).unwrap().border_width as u16,   // TODO: same
+            border_radius: style.get(&style_state).unwrap().border_radius,
+            border_width: style.get(&style_state).unwrap().border_width,
             border_color: style.get(&style_state).unwrap().border_color,
         };
 

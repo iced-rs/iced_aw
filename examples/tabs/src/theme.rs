@@ -72,10 +72,10 @@ mod red {
             Style {
                 background: None,
                 border_color: None,
-                border_width: 0,
+                border_width: 0.0,
                 tab_label_background,
                 tab_label_border_color: Color::TRANSPARENT,
-                tab_label_border_width: 0,
+                tab_label_border_width: 0.0,
                 icon_color: text_color,
                 text_color,
             }
@@ -120,10 +120,10 @@ mod blue {
             Style {
                 background: None,
                 border_color: None,
-                border_width: 0,
+                border_width: 0.0,
                 tab_label_background,
                 tab_label_border_color,
-                tab_label_border_width: 1,
+                tab_label_border_width: 1.0,
                 icon_color: text_color,
                 text_color,
             }
@@ -159,10 +159,10 @@ mod green {
             Style {
                 background: None,
                 border_color: None,
-                border_width: 0,
+                border_width: 0.0,
                 tab_label_background: Color::WHITE.into(),
                 tab_label_border_color: color,
-                tab_label_border_width: 1,
+                tab_label_border_width: 1.0,
                 icon_color: color,
                 text_color: color,
             }            
@@ -198,10 +198,10 @@ mod purple {
             Style {
                 background: None,
                 border_color: None,
-                border_width: 0,
+                border_width: 0.0,
                 tab_label_background: Color::WHITE.into(),
                 tab_label_border_color: Color::TRANSPARENT,
-                tab_label_border_width: 0,
+                tab_label_border_width: 0.0,
                 icon_color: text_color,
                 text_color,
             }

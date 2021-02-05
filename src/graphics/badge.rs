@@ -42,8 +42,8 @@ where
         let background = Primitive::Quad {
             bounds,
             background: style.background,
-            border_radius: border_radius as u16, // TODO: will be changed to f32
-            border_width: style.border_width as u16, // TODO: same
+            border_radius: border_radius,
+            border_width: style.border_width,
             border_color: style.border_color.unwrap_or(Color::BLACK),
         };
 
