@@ -7,7 +7,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the [`TimePicker`](crate::native::TimePicker).
     pub background: Background,
@@ -60,7 +60,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of the [`TimePicker`](crate::native::TimePicker)
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

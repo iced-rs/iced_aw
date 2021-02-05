@@ -7,7 +7,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the [`ColorPicker`](crate::native::ColorPicker).
     pub background: Background,
@@ -46,7 +46,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

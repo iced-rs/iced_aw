@@ -8,7 +8,7 @@ use iced_native::Background;
 use iced_web::Background;
 
 /// The appearance of a [`Modal`](crate::native::Modal).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The backgronud of the [`Modal`](crate::native::Modal).
     ///
@@ -23,7 +23,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of a [`Modal`](crate::native::Modal).
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

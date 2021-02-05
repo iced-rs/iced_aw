@@ -7,7 +7,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`Card`](crate::native::card::Card).
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the [`Card`](crate::native::card::Card).
     pub background: Background,
@@ -50,7 +50,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of a [`Card`](crate::native::card::Card).
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

@@ -7,7 +7,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the [`DatePicker`](crate::native::DatePicker).
     pub background: Background,
@@ -48,7 +48,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

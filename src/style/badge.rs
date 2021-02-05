@@ -7,7 +7,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the [`Badge`](crate::native::badge::Badge).
     pub background: Background,
@@ -36,7 +36,7 @@ pub trait StyleSheet {
 }
 
 /// The default appearance of the [`Badge`](crate::native::badge::Badge).
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Default;
 
 impl StyleSheet for Default {

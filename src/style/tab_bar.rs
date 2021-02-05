@@ -11,7 +11,7 @@ use iced_native::{Background, Color};
 use iced_web::{Background, Color};
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
-#[allow(missing_debug_implementations)]
+#[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the tab bar.
     pub background: Option<Background>,
@@ -51,7 +51,9 @@ pub trait StyleSheet {
     fn hovered(&self, is_active: bool) -> Style;
 }
 
-struct Default;
+/// The default appearance of a [`TabBar`](crate::native::TabBar).
+#[derive(Clone, Copy, Debug)]
+pub struct Default;
 
 impl StyleSheet for Default {
     fn active(&self, is_active: bool) -> Style {
