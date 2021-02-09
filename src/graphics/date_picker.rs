@@ -292,7 +292,7 @@ fn days(
 fn day_labels(
     layout: iced_native::Layout<'_>,
     style: &HashMap<StyleState, Style>,
-    focus: Focus,
+    _focus: Focus,
 ) -> Primitive {
     let mut labels: Vec<Primitive> = Vec::new();
 

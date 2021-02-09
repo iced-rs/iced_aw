@@ -4,9 +4,7 @@
 use std::hash::Hash;
 
 use chrono::{Datelike, NaiveDate};
-use event::Status;
 use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Size, Text, Widget, button, column, container, event, keyboard, layout::{self, Limits}, mouse, overlay, row, text};
-use keyboard::KeyCode;
 
 use crate::{
     core::renderer::DrawEnvironment,
