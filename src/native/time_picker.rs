@@ -5,16 +5,11 @@ use std::hash::Hash;
 
 use chrono::{Local, NaiveTime};
 use iced_graphics::canvas;
-use iced_native::{
-    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
-    Widget,
-};
+use iced_native::{Clipboard, Element, Event, Layout, Point, Widget, button, column, container, event, keyboard, overlay, row, text};
+use keyboard::Modifiers;
 
 pub use super::overlay::time_picker::Renderer;
-use super::{
-    icon_text,
-    overlay::time_picker::{self, TimePickerOverlay},
-};
+use super::{icon_text, overlay::time_picker::{self, Focus, TimePickerOverlay}};
 
 pub use crate::core::time::{Period, Time};
 /// An input element for picking times.
@@ -111,6 +106,8 @@ pub struct State {
     pub(crate) submit_button: button::State,
     pub(crate) clock_cache_needs_clearance: bool,
     pub(crate) clock_cache: canvas::Cache,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
 impl State {
@@ -123,11 +120,18 @@ impl State {
             submit_button: button::State::new(),
             clock_cache_needs_clearance: false,
             clock_cache: canvas::Cache::new(),
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
         }
     }
 
     /// Sets the visibility of the [`TimePickerOverlay`](TimePickerOverlay).
     pub fn show(&mut self, b: bool) {
+        self.focus = if b {
+            Focus::Overlay
+        } else {
+            Focus::None
+        };
         self.show = b;
     }
 

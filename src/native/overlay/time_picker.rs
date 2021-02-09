@@ -19,12 +19,7 @@ use crate::{
 };
 use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
-use iced_native::{
-    button, column, container, event,
-    layout::{self, Limits},
-    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
-    Length, Point, Row, Text, Widget,
-};
+use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, keyboard, layout::{self, Limits}, mouse, overlay, row, text};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -45,6 +40,8 @@ where
     on_submit: &'a dyn Fn(Time) -> Message,
     use_24h: bool,
     show_seconds: bool,
+    focus: &'a mut Focus,
+    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -78,6 +75,8 @@ where
             submit_button,
             clock_cache_needs_clearance,
             clock_cache,
+            focus,
+            keyboard_modifiers,
             ..
         } = state;
 
@@ -99,6 +98,8 @@ where
             on_submit,
             use_24h,
             show_seconds,
+            focus,
+            keyboard_modifiers,
             position,
             style,
         }
@@ -337,6 +338,73 @@ where
 
         digital_clock_status
     }
+
+    fn on_event_keyboard(
+        &mut self,
+        event: Event,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _messages: &mut Vec<Message>,
+        _renderer: &Renderer,
+        _clipboard: Option<&dyn Clipboard>,
+    ) -> event::Status {
+        // TODO: clean this up a bit
+        if *self.focus == Focus::None {
+            return event::Status::Ignored;
+        }
+
+        if let Event::Keyboard(keyboard::Event::KeyPressed {
+            key_code, ..
+        }) = event {
+            let mut status = event::Status::Ignored;
+
+            match key_code {
+                keyboard::KeyCode::Tab => {
+                    if self.keyboard_modifiers.shift {
+                        *self.focus = self.focus.previous(self.show_seconds);
+                    } else {
+                        *self.focus = self.focus.next(self.show_seconds);
+                    }
+                }
+                _ => {
+                    let mut keyboard_handle = |key_code: keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
+                        match key_code {
+                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                                *time = *time - duration;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                                *time = *time + duration;
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+                    };
+
+                    match self.focus {
+                        Focus::Overlay => {}
+                        Focus::DigitalHour => keyboard_handle(key_code, &mut self.time, Duration::hours(1)),
+                        Focus::DigitalMinute => keyboard_handle(key_code, &mut self.time, Duration::minutes(1)),
+                        Focus::DigitalSecond => keyboard_handle(key_code, &mut self.time, Duration::seconds(1)),
+                        Focus::Cancel => {}
+                        Focus::Submit => {}
+                        _ => {}
+                    }
+                }
+            }
+
+            if status == event::Status::Captured {
+                self.clock_cache.clear()
+            }
+
+            status
+        } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
+            *self.keyboard_modifiers = modifiers;
+            event::Status::Ignored
+        } else {
+            event::Status::Ignored
+        }
+    }
 }
 
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
@@ -573,6 +641,17 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
+        if let event::Status::Captured = self.on_event_keyboard(
+            event.clone(),
+            layout,
+            cursor_position,
+            messages,
+            renderer,
+            clipboard,
+        ) {
+            return event::Status::Captured;
+        }
+
         let mut children = layout.children();
 
         // Clock canvas
@@ -677,6 +756,7 @@ where
             &self.submit_button,
             self.use_24h,
             self.show_seconds,
+            *self.focus,
         )
     }
 
@@ -709,6 +789,7 @@ pub trait Renderer: iced_native::Renderer {
         submit_button: &Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
+        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -725,6 +806,66 @@ impl Renderer for iced_native::renderer::Null {
         _submit_button: &Element<'_, Message, Self>,
         _use_24h: bool,
         _show_seconds: bool,
+        _focus: Focus,
     ) -> Self::Output {
+    }
+}
+
+/// An enumeration of all focusable elements of the [`TimePickerOverlay`](TimePickerOverlay).
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Focus {
+    /// Nothing is in focus.
+    None,
+
+    /// The overlay itself is in focus.
+    Overlay,
+
+    /// The digital hour is in focus.
+    DigitalHour,
+
+    /// The digital minute is in focus.
+    DigitalMinute,
+
+    /// The digital second is in focus.
+    DigitalSecond,
+
+    /// The cancel button is in focus.
+    Cancel,
+
+    /// The submit button is in focus.
+    Submit,
+}
+
+impl Focus {
+    /// Gets the next focusable element.
+    pub fn next(self, show_seconds: bool) -> Self {
+        match self {
+            Focus::None => Focus::Overlay,
+            Focus::Overlay => Focus::DigitalHour,
+            Focus::DigitalHour => Focus::DigitalMinute,
+            Focus::DigitalMinute => if show_seconds { Focus::DigitalSecond } else { Focus::Cancel },
+            Focus::DigitalSecond => Focus::Cancel,
+            Focus::Cancel => Focus::Submit,
+            Focus::Submit => Focus::Overlay,
+        }
+    }
+
+    /// Gets the previous focusable element.
+    pub fn previous(self, show_seconds: bool) -> Self {
+        match self {
+            Focus::None => Focus::None,
+            Focus::Overlay => Focus::Submit,
+            Focus::DigitalHour => Focus::Overlay,
+            Focus::DigitalMinute => Focus::DigitalHour,
+            Focus::DigitalSecond => Focus::DigitalMinute,
+            Focus::Cancel => if show_seconds { Focus::DigitalSecond } else { Focus::DigitalMinute },
+            Focus::Submit => Focus::Cancel,
+        }
+    }
+}
+
+impl Default for Focus {
+    fn default() -> Self {
+        Focus::None
     }
 }

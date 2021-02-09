@@ -1,7 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: time_picker*
-use crate::{core::renderer::DrawEnvironment, style::style_state::StyleState};
+use crate::{core::renderer::DrawEnvironment, native::overlay::time_picker::Focus, style::style_state::StyleState};
 use std::collections::HashMap;
 
 use crate::{
@@ -14,10 +14,7 @@ use crate::{
 };
 use canvas::{Cache, LineCap, Path, Stroke, Text};
 use chrono::{NaiveTime, Timelike};
-use iced_graphics::{
-    backend, canvas, Backend, HorizontalAlignment, Point, Primitive, Rectangle, Renderer, Vector,
-    VerticalAlignment,
-};
+use iced_graphics::{Backend, Color, HorizontalAlignment, Point, Primitive, Rectangle, Renderer, Vector, VerticalAlignment, backend, canvas};
 use iced_native::mouse;
 
 use crate::native::time_picker;
@@ -48,6 +45,7 @@ where
         submit_button: &iced_native::Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
+        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -56,10 +54,14 @@ where
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
+        let _ = style.insert(StyleState::Focused, env.style_sheet.focused());
 
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
+        if focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
         if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
         }
@@ -82,6 +84,7 @@ where
             use_24h,
             show_seconds,
             &style,
+            focus,
         );
 
         // ----------- Digital clock ------------------
@@ -93,6 +96,7 @@ where
             use_24h,
             show_seconds,
             &style,
+            focus,
         );
 
         // ----------- Buttons ------------------------
@@ -116,6 +120,31 @@ where
             &bounds,
         );
 
+        // Buttons are not focusable right now...
+        let cancel_button_focus = if focus == Focus::Cancel {
+            Primitive::Quad {
+                bounds: cancel_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
+        let submit_button_focus = if focus == Focus::Submit {
+            Primitive::Quad {
+                bounds: submit_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
         (
             Primitive::Group {
                 primitives: vec![
@@ -124,6 +153,8 @@ where
                     digital_clock,
                     cancel_button,
                     submit_button,
+                    cancel_button_focus,
+                    submit_button_focus,
                 ],
             },
             mouse_interaction
@@ -144,6 +175,7 @@ fn clock(
     use_24h: bool,
     show_seconds: bool,
     style: &HashMap<StyleState, Style>,
+    _focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut clock_style_state = StyleState::Active;
     let mut clock_mouse_interaction = mouse::Interaction::default();
@@ -417,10 +449,17 @@ fn digital_clock(
     use_24h: bool,
     show_seconds: bool,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children().next().unwrap().children();
 
-    let f = |layout: iced_native::Layout<'_>, text: String| {
+    let f = |layout: iced_native::Layout<'_>, text: String, target: Focus| {
+        let style_state = if focus == target {
+            StyleState::Focused
+        } else {
+            StyleState::Active
+        };
+
         let mut children = layout.children();
 
         let up_bounds = children.next().unwrap().bounds();
@@ -438,6 +477,17 @@ fn digital_clock(
 
         let primitive = Primitive::Group {
             primitives: vec![
+                if style_state == StyleState::Focused {
+                    Primitive::Quad {
+                        bounds: layout.bounds(),
+                        background: style.get(&style_state).unwrap().background,
+                        border_color: style.get(&style_state).unwrap().border_color,
+                        border_radius: style.get(&style_state).unwrap().border_radius,
+                        border_width: style.get(&style_state).unwrap().border_width,
+                    }
+                } else {
+                    Primitive::None
+                },
                 Primitive::Text {
                     content: Icon::CaretUpFill.into(),
                     bounds: Rectangle {
@@ -501,6 +551,7 @@ fn digital_clock(
                 time.hour12().1
             }
         ),
+        Focus::DigitalHour,
     );
 
     let hour_minute_seperator = children.next().unwrap();
@@ -519,7 +570,7 @@ fn digital_clock(
     };
 
     let minute_layout = children.next().unwrap();
-    let (minute, minute_mouse_interaction) = f(minute_layout, format!("{:02}", time.minute()));
+    let (minute, minute_mouse_interaction) = f(minute_layout, format!("{:02}", time.minute()), Focus::DigitalMinute);
 
     let (minute_second_seperator, second, second_mouse_interaction) = if show_seconds {
         let minute_second_seperator = children.next().unwrap();
@@ -538,7 +589,7 @@ fn digital_clock(
         };
 
         let second_layout = children.next().unwrap();
-        let (second, second_mouse_interaction) = f(second_layout, format!("{:02}", time.second()));
+        let (second, second_mouse_interaction) = f(second_layout, format!("{:02}", time.second()), Focus::DigitalSecond);
 
         (minute_second_seperator, second, second_mouse_interaction)
     } else {
