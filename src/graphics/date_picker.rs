@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::collections::HashMap;
 
-use crate::style::date_picker::StyleSheet;
+use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet};
 use crate::{
     core::renderer::DrawEnvironment,
     style::{date_picker::Style, style_state::StyleState},
@@ -39,6 +39,7 @@ where
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
+        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -48,10 +49,14 @@ where
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
+        let _ = style.insert(StyleState::Focused, env.style_sheet.focused());
 
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
+        if focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
         if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
         }
@@ -73,12 +78,13 @@ where
             year_str,
             env.cursor_position,
             &style,
+            focus,
         );
 
         // ----------- Days ---------------------------
         let days_layout = date_children.next().unwrap().children().next().unwrap();
 
-        let (days, days_mouse_interaction) = days(days_layout, date, env.cursor_position, &style);
+        let (days, days_mouse_interaction) = days(days_layout, date, env.cursor_position, &style, focus);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
@@ -101,9 +107,42 @@ where
             &bounds,
         );
 
+        // Buttons are not focusable right now...
+        let cancel_button_focus = if focus == Focus::Cancel {
+            Primitive::Quad {
+                bounds: cancel_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
+        let submit_button_focus = if focus == Focus::Submit {
+            Primitive::Quad {
+                bounds: submit_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
         (
             Primitive::Group {
-                primitives: vec![background, month_year, days, cancel_button, submit_button],
+                primitives: vec![
+                    background,
+                    month_year,
+                    days,
+                    cancel_button,
+                    submit_button,
+                    cancel_button_focus,
+                    submit_button_focus,
+                ],
             },
             mouse_interaction
                 .max(month_year_mouse_interaction)
@@ -122,13 +161,20 @@ fn month_year(
     cursor_position: iced_graphics::Point,
     //style: &Style,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
     let month_layout = children.next().unwrap();
     let year_layout = children.next().unwrap();
 
-    let f = |layout: iced_native::Layout<'_>, text: &str| {
+    let f = |layout: iced_native::Layout<'_>, text: &str, target: Focus| {
+        let style_state = if focus == target {
+            StyleState::Focused
+        } else {
+            StyleState::Active
+        };
+
         let mut children = layout.children();
 
         let left_bounds = children.next().unwrap().bounds();
@@ -146,6 +192,17 @@ fn month_year(
 
         let primitive = Primitive::Group {
             primitives: vec![
+                if style_state == StyleState::Focused {
+                    Primitive::Quad {
+                        bounds: layout.bounds(),
+                        background: style.get(&style_state).unwrap().background,
+                        border_color: style.get(&style_state).unwrap().border_color,
+                        border_radius: style.get(&style_state).unwrap().border_radius,
+                        border_width: style.get(&style_state).unwrap().border_width,
+                    }
+                } else {
+                    Primitive::None
+                },
                 Primitive::Text {
                     content: Icon::CaretLeftFill.into(),
                     bounds: Rectangle {
@@ -153,7 +210,7 @@ fn month_year(
                         y: left_bounds.center_y(),
                         ..left_bounds
                     },
-                    color: style.get(&StyleState::Active).unwrap().text_color,
+                    color: style.get(&style_state).unwrap().text_color,
                     size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -166,7 +223,7 @@ fn month_year(
                         y: center_bounds.center_y(),
                         ..center_bounds
                     },
-                    color: style.get(&StyleState::Active).unwrap().text_color,
+                    color: style.get(&style_state).unwrap().text_color,
                     size: center_bounds.height,
                     font: Default::default(),
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -179,7 +236,7 @@ fn month_year(
                         y: right_bounds.center_y(),
                         ..right_bounds
                     },
-                    color: style.get(&StyleState::Active).unwrap().text_color,
+                    color: style.get(&style_state).unwrap().text_color,
                     size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
                     horizontal_alignment: HorizontalAlignment::Center,
@@ -193,9 +250,9 @@ fn month_year(
 
     let mouse_interaction = mouse::Interaction::default();
 
-    let (month, month_mouse_interaction) = f(month_layout, month);
+    let (month, month_mouse_interaction) = f(month_layout, month, Focus::Month);
 
-    let (year, year_mouse_interaction) = f(year_layout, year);
+    let (year, year_mouse_interaction) = f(year_layout, year, Focus::Year);
 
     (
         Primitive::Group {
@@ -214,13 +271,14 @@ fn days(
     cursor_position: iced_graphics::Point,
     //style: &Style,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
     let day_labels_layout = children.next().unwrap();
-    let labels = day_labels(day_labels_layout, style);
+    let labels = day_labels(day_labels_layout, style, focus);
 
-    let (table, table_mouse_interaction) = day_table(&mut children, date, cursor_position, style);
+    let (table, table_mouse_interaction) = day_table(&mut children, date, cursor_position, style, focus);
 
     (
         Primitive::Group {
@@ -231,7 +289,11 @@ fn days(
 }
 
 /// Draws the day labels
-fn day_labels(layout: iced_native::Layout<'_>, style: &HashMap<StyleState, Style>) -> Primitive {
+fn day_labels(
+    layout: iced_native::Layout<'_>,
+    style: &HashMap<StyleState, Style>,
+    focus: Focus,
+) -> Primitive {
     let mut labels: Vec<Primitive> = Vec::new();
 
     for (i, label) in layout.children().enumerate() {
@@ -261,6 +323,7 @@ fn day_table(
     date: &chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut primitives: Vec<Primitive> = Vec::new();
 
@@ -294,6 +357,16 @@ fn day_table(
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             });
+
+            if focus == Focus::Day && selected {
+                primitives.push(Primitive::Quad {
+                    bounds,
+                    background: Color::TRANSPARENT.into(),
+                    border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                    border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                    border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                })
+            }
 
             primitives.push(Primitive::Text {
                 content: format!("{:02}", number),

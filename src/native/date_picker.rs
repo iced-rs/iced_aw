@@ -4,16 +4,10 @@
 use std::hash::Hash;
 
 use chrono::{Local, NaiveDate};
-use iced_native::{
-    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
-    Widget,
-};
+use iced_native::{Clipboard, Element, Event, Layout, Point, Widget, button, column, container, event, keyboard, overlay, row, text};
 
 pub use super::overlay::date_picker::Renderer;
-use super::{
-    icon_text,
-    overlay::date_picker::{self, DatePickerOverlay},
-};
+use super::{icon_text, overlay::date_picker::{self, DatePickerOverlay, Focus}};
 
 /// An input element for picking dates.
 ///
@@ -89,6 +83,8 @@ pub struct State {
     pub(crate) date: NaiveDate,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
 impl State {
@@ -99,11 +95,18 @@ impl State {
             date: Local::today().naive_local(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
         }
     }
 
     /// Sets the visibility of the [`DatePickerOverlay`](DatePickerOverlay).
     pub fn show(&mut self, b: bool) {
+        self.focus = if b {
+            Focus::Overlay
+        } else {
+            Focus::None
+        };
         self.show = b;
     }
 

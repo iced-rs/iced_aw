@@ -4,12 +4,9 @@
 use std::hash::Hash;
 
 use chrono::{Datelike, NaiveDate};
-use iced_native::{
-    button, column, container, event,
-    layout::{self, Limits},
-    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
-    Length, Point, Row, Size, Text, Widget,
-};
+use event::Status;
+use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Size, Text, Widget, button, column, container, event, keyboard, layout::{self, Limits}, mouse, overlay, row, text};
+use keyboard::KeyCode;
 
 use crate::{
     core::renderer::DrawEnvironment,
@@ -33,6 +30,8 @@ where
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
     on_submit: &'a dyn Fn(i32, u32, u32) -> Message,
+    focus: &'a mut Focus,
+    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -63,6 +62,8 @@ where
             date,
             cancel_button,
             submit_button,
+            focus,
+            keyboard_modifiers,
             ..
         } = state;
 
@@ -82,6 +83,8 @@ where
             //.style(button_style)
             .into(),
             on_submit,
+            focus,
+            keyboard_modifiers,
             position,
             style,
         }
@@ -124,6 +127,10 @@ where
         let right_bounds = month_children.next().unwrap().bounds();
 
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if month_layout.bounds().contains(cursor_position) {
+                *self.focus = Focus::Month;
+            }
+
             if left_bounds.contains(cursor_position) {
                 *self.date = crate::core::date::pred_month(self.date);
                 status = event::Status::Captured;
@@ -142,6 +149,10 @@ where
         let right_bounds = year_children.next().unwrap().bounds();
 
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if year_layout.bounds().contains(cursor_position) {
+                *self.focus = Focus::Year;
+            }
+
             if left_bounds.contains(cursor_position) {
                 *self.date = crate::core::date::pred_year(self.date);
                 status = event::Status::Captured;
@@ -171,6 +182,10 @@ where
         let mut status = event::Status::Ignored;
 
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
+            if layout.bounds().contains(cursor_position) {
+                *self.focus = Focus::Day;
+            }
+            
             'outer: for (y, row) in children.enumerate() {
                 for (x, label) in row.children().enumerate() {
                     let bounds = label.bounds();
@@ -202,6 +217,93 @@ where
         }
 
         status
+    }
+
+    fn on_event_keyboard(
+        &mut self,
+        event: Event,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _messages: &mut Vec<Message>,
+        _renderer: &Renderer,
+        _clipboard: Option<&dyn Clipboard>,
+    ) -> event::Status {
+        // TODO: clean this up a bit
+        if *self.focus == Focus::None {
+            return event::Status::Ignored;
+        }
+
+        if let Event::Keyboard(keyboard::Event::KeyPressed {
+            key_code, ..
+        }) = event {
+            let mut status = event::Status::Ignored;
+
+            match key_code {
+                keyboard::KeyCode::Tab => {
+                    if self.keyboard_modifiers.shift {
+                        *self.focus = self.focus.previous();
+                    } else {
+                        *self.focus = self.focus.next();
+                    }
+                },
+                _ => {
+                    match self.focus {
+                        Focus::Overlay => {}
+                        Focus::Month => match key_code {
+                            keyboard::KeyCode::Left => {
+                                *self.date = crate::core::date::pred_month(self.date);
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right => {
+                                *self.date = crate::core::date::succ_month(self.date);
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }                        
+                        Focus::Year => match key_code {
+                            keyboard::KeyCode::Left => {
+                                *self.date = crate::core::date::pred_year(self.date);
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right => {
+                                *self.date = crate::core::date::succ_year(self.date);
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }                        
+                        Focus::Day => match key_code {
+                            keyboard::KeyCode::Left => {
+                                *self.date = crate::core::date::pred_day(self.date);
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right => {
+                                *self.date = crate::core::date::succ_day(self.date);
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Up => {
+                                *self.date = crate::core::date::pred_week(self.date);
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Down => {
+                                *self.date = crate::core::date::succ_week(self.date);
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+                        Focus::Cancel => {}
+                        Focus::Submit => {}
+                        _ => {}
+                    }
+                },
+            }
+
+            status
+        } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
+            *self.keyboard_modifiers = modifiers;
+            event::Status::Ignored
+        } else {
+            event::Status::Ignored
+        }
     }
 }
 
@@ -393,6 +495,17 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
+        if let event::Status::Captured = self.on_event_keyboard(
+            event.clone(),
+            layout,
+            cursor_position,
+            messages,
+            renderer,
+            clipboard,
+        ) {
+            return event::Status::Captured;
+        }
+
         let mut children = layout.children();
 
         let mut date_children = children.next().unwrap().children();
@@ -480,6 +593,7 @@ where
             &self.month_as_string(),
             &self.cancel_button,
             &self.submit_button,
+            *self.focus,
         )
     }
 
@@ -510,6 +624,7 @@ pub trait Renderer: iced_native::Renderer {
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
+        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -525,6 +640,66 @@ impl Renderer for iced_native::renderer::Null {
         _month_str: &str,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
+        _focus: Focus,
     ) -> Self::Output {
+    }
+}
+
+/// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay)
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Focus {
+    /// Nothing is in focus.
+    None,
+
+    /// The overlay itself is in focus.
+    Overlay,
+
+    /// The month area is in focus.
+    Month,
+
+    /// The year area is in focus.
+    Year,
+
+    /// The day area is in focus.
+    Day,
+
+    /// The cancel button is in focus.
+    Cancel,
+
+    /// The submit button is in focus.
+    Submit,
+}
+
+impl Focus {
+    /// Gets the next focusable element.
+    pub fn next(self) -> Self {
+        match self {
+            Focus::None => Focus::Overlay,
+            Focus::Overlay => Focus::Month,
+            Focus::Month => Focus::Year,
+            Focus::Year => Focus::Day,
+            Focus::Day => Focus::Cancel,
+            Focus::Cancel => Focus::Submit,
+            Focus::Submit => Focus::Overlay,
+        }
+    }
+
+    /// Gets the previous focusable element.
+    pub fn previous(self) -> Self {
+        match self {
+            Focus::None => Focus::None,
+            Focus::Overlay => Focus::Submit,
+            Focus::Month => Focus::Overlay,
+            Focus::Year => Focus::Month,
+            Focus::Day => Focus::Year,
+            Focus::Cancel => Focus::Day,
+            Focus::Submit => Focus::Cancel,
+        }
+    }
+}
+
+impl Default for Focus {
+    fn default() -> Self {
+        Focus::None
     }
 }

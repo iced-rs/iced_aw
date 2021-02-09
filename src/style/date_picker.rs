@@ -45,6 +45,10 @@ pub trait StyleSheet {
     /// The appearance when something is hovered of the
     /// [`DatePicker`](crate::native::DatePicker).
     fn hovered(&self) -> Style;
+
+    /// The appearance when something is focused of the
+    /// [`DatePicker`](crate::native::DatePicker).
+    fn focused(&self) -> Style;
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
@@ -74,6 +78,13 @@ impl StyleSheet for Default {
     fn hovered(&self) -> Style {
         Style {
             day_background: Background::Color([0.87, 0.87, 0.87].into()),
+            ..self.active()
+        }
+    }
+
+    fn focused(&self) -> Style {
+        Style {
+            border_color: Color::from_rgb(0.5, 0.5, 0.5),
             ..self.active()
         }
     }

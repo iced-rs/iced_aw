@@ -9,4 +9,6 @@ pub enum StyleState {
     Selected,
     /// Use the hovered style
     Hovered,
+    /// Use the focused style
+    Focused,
 }

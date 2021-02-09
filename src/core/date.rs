@@ -1,6 +1,6 @@
 //! Helper functions for calculating dates
 
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, Duration, NaiveDate};
 use lazy_static::lazy_static;
 
 /// Creates a date with the previous month based on the given date.
@@ -43,6 +43,26 @@ pub fn succ_year(date: &NaiveDate) -> NaiveDate {
     let day = date.day().min(num_days_of_month(year, date.month()));
 
     NaiveDate::from_ymd(year, date.month(), day)
+}
+
+/// Calculates a date with the previous week based on the given date.
+pub fn pred_week(date: &NaiveDate) -> NaiveDate {
+    date.to_owned() - Duration::days(7)
+}
+
+/// Calculates a date with the next week based on the given date.
+pub fn succ_week(date: &NaiveDate) -> NaiveDate {
+    date.to_owned() + Duration::days(7)
+}
+
+/// Calculates a date with the previous day based on the given date.
+pub fn pred_day(date: &NaiveDate) -> NaiveDate {
+    date.to_owned() - Duration::days(1)
+}
+
+/// Calculates a date with the next day based on the given date.
+pub fn succ_day(date: &NaiveDate) -> NaiveDate {
+    date.to_owned() + Duration::days(1)
 }
 
 /// Calculates the day number at the given position in the calendar table based
