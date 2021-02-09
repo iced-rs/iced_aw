@@ -3,11 +3,11 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::collections::HashMap;
 
-use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet};
 use crate::{
     core::renderer::DrawEnvironment,
     style::{date_picker::Style, style_state::StyleState},
 };
+use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet};
 
 use chrono::{self, Datelike};
 use iced_graphics::{
@@ -84,7 +84,8 @@ where
         // ----------- Days ---------------------------
         let days_layout = date_children.next().unwrap().children().next().unwrap();
 
-        let (days, days_mouse_interaction) = days(days_layout, date, env.cursor_position, &style, focus);
+        let (days, days_mouse_interaction) =
+            days(days_layout, date, env.cursor_position, &style, focus);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
@@ -278,7 +279,8 @@ fn days(
     let day_labels_layout = children.next().unwrap();
     let labels = day_labels(day_labels_layout, style, focus);
 
-    let (table, table_mouse_interaction) = day_table(&mut children, date, cursor_position, style, focus);
+    let (table, table_mouse_interaction) =
+        day_table(&mut children, date, cursor_position, style, focus);
 
     (
         Primitive::Group {

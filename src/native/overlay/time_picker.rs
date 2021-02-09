@@ -19,7 +19,12 @@ use crate::{
 };
 use chrono::{Duration, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
-use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Text, Widget, button, column, container, event, keyboard, layout::{self, Limits}, mouse, overlay, row, text};
+use iced_native::{
+    button, column, container, event, keyboard,
+    layout::{self, Limits},
+    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
+    Length, Point, Row, Text, Widget,
+};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -353,9 +358,7 @@ where
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed {
-            key_code, ..
-        }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
             match key_code {
@@ -367,25 +370,32 @@ where
                     }
                 }
                 _ => {
-                    let mut keyboard_handle = |key_code: keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
-                        match key_code {
-                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
-                                *time = *time - duration;
-                                status = event::Status::Captured;
+                    let mut keyboard_handle =
+                        |key_code: keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
+                            match key_code {
+                                keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                                    *time -= duration;
+                                    status = event::Status::Captured;
+                                }
+                                keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                                    *time += duration;
+                                    status = event::Status::Captured;
+                                }
+                                _ => {}
                             }
-                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
-                                *time = *time + duration;
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
-                        }
-                    };
+                        };
 
                     match self.focus {
                         Focus::Overlay => {}
-                        Focus::DigitalHour => keyboard_handle(key_code, &mut self.time, Duration::hours(1)),
-                        Focus::DigitalMinute => keyboard_handle(key_code, &mut self.time, Duration::minutes(1)),
-                        Focus::DigitalSecond => keyboard_handle(key_code, &mut self.time, Duration::seconds(1)),
+                        Focus::DigitalHour => {
+                            keyboard_handle(key_code, &mut self.time, Duration::hours(1))
+                        }
+                        Focus::DigitalMinute => {
+                            keyboard_handle(key_code, &mut self.time, Duration::minutes(1))
+                        }
+                        Focus::DigitalSecond => {
+                            keyboard_handle(key_code, &mut self.time, Duration::seconds(1))
+                        }
                         Focus::Cancel => {}
                         Focus::Submit => {}
                         _ => {}
@@ -843,7 +853,13 @@ impl Focus {
             Focus::None => Focus::Overlay,
             Focus::Overlay => Focus::DigitalHour,
             Focus::DigitalHour => Focus::DigitalMinute,
-            Focus::DigitalMinute => if show_seconds { Focus::DigitalSecond } else { Focus::Cancel },
+            Focus::DigitalMinute => {
+                if show_seconds {
+                    Focus::DigitalSecond
+                } else {
+                    Focus::Cancel
+                }
+            }
             Focus::DigitalSecond => Focus::Cancel,
             Focus::Cancel => Focus::Submit,
             Focus::Submit => Focus::Overlay,
@@ -858,7 +874,13 @@ impl Focus {
             Focus::DigitalHour => Focus::Overlay,
             Focus::DigitalMinute => Focus::DigitalHour,
             Focus::DigitalSecond => Focus::DigitalMinute,
-            Focus::Cancel => if show_seconds { Focus::DigitalSecond } else { Focus::DigitalMinute },
+            Focus::Cancel => {
+                if show_seconds {
+                    Focus::DigitalSecond
+                } else {
+                    Focus::DigitalMinute
+                }
+            }
             Focus::Submit => Focus::Cancel,
         }
     }

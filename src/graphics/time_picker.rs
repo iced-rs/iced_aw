@@ -1,7 +1,10 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: time_picker*
-use crate::{core::renderer::DrawEnvironment, native::overlay::time_picker::Focus, style::style_state::StyleState};
+use crate::{
+    core::renderer::DrawEnvironment, native::overlay::time_picker::Focus,
+    style::style_state::StyleState,
+};
 use std::collections::HashMap;
 
 use crate::{
@@ -14,7 +17,10 @@ use crate::{
 };
 use canvas::{Cache, LineCap, Path, Stroke, Text};
 use chrono::{NaiveTime, Timelike};
-use iced_graphics::{Backend, Color, HorizontalAlignment, Point, Primitive, Rectangle, Renderer, Vector, VerticalAlignment, backend, canvas};
+use iced_graphics::{
+    backend, canvas, Backend, Color, HorizontalAlignment, Point, Primitive, Rectangle, Renderer,
+    Vector, VerticalAlignment,
+};
 use iced_native::mouse;
 
 use crate::native::time_picker;
@@ -84,7 +90,6 @@ where
             use_24h,
             show_seconds,
             &style,
-            focus,
         );
 
         // ----------- Digital clock ------------------
@@ -175,7 +180,6 @@ fn clock(
     use_24h: bool,
     show_seconds: bool,
     style: &HashMap<StyleState, Style>,
-    _focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut clock_style_state = StyleState::Active;
     let mut clock_mouse_interaction = mouse::Interaction::default();
@@ -570,7 +574,11 @@ fn digital_clock(
     };
 
     let minute_layout = children.next().unwrap();
-    let (minute, minute_mouse_interaction) = f(minute_layout, format!("{:02}", time.minute()), Focus::DigitalMinute);
+    let (minute, minute_mouse_interaction) = f(
+        minute_layout,
+        format!("{:02}", time.minute()),
+        Focus::DigitalMinute,
+    );
 
     let (minute_second_seperator, second, second_mouse_interaction) = if show_seconds {
         let minute_second_seperator = children.next().unwrap();
@@ -589,7 +597,11 @@ fn digital_clock(
         };
 
         let second_layout = children.next().unwrap();
-        let (second, second_mouse_interaction) = f(second_layout, format!("{:02}", time.second()), Focus::DigitalSecond);
+        let (second, second_mouse_interaction) = f(
+            second_layout,
+            format!("{:02}", time.second()),
+            Focus::DigitalSecond,
+        );
 
         (minute_second_seperator, second, second_mouse_interaction)
     } else {

@@ -4,7 +4,12 @@
 use std::hash::Hash;
 
 use chrono::{Datelike, NaiveDate};
-use iced_native::{Align, Button, Clipboard, Column, Container, Element, Event, Layout, Length, Point, Row, Size, Text, Widget, button, column, container, event, keyboard, layout::{self, Limits}, mouse, overlay, row, text};
+use iced_native::{
+    button, column, container, event, keyboard,
+    layout::{self, Limits},
+    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
+    Length, Point, Row, Size, Text, Widget,
+};
 
 use crate::{
     core::renderer::DrawEnvironment,
@@ -183,7 +188,7 @@ where
             if layout.bounds().contains(cursor_position) {
                 *self.focus = Focus::Day;
             }
-            
+
             'outer: for (y, row) in children.enumerate() {
                 for (x, label) in row.children().enumerate() {
                     let bounds = label.bounds();
@@ -231,9 +236,7 @@ where
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed {
-            key_code, ..
-        }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
             match key_code {
@@ -243,55 +246,53 @@ where
                     } else {
                         *self.focus = self.focus.next();
                     }
-                },
-                _ => {
-                    match self.focus {
-                        Focus::Overlay => {}
-                        Focus::Month => match key_code {
-                            keyboard::KeyCode::Left => {
-                                *self.date = crate::core::date::pred_month(self.date);
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right => {
-                                *self.date = crate::core::date::succ_month(self.date);
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
-                        }                        
-                        Focus::Year => match key_code {
-                            keyboard::KeyCode::Left => {
-                                *self.date = crate::core::date::pred_year(self.date);
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right => {
-                                *self.date = crate::core::date::succ_year(self.date);
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
-                        }                        
-                        Focus::Day => match key_code {
-                            keyboard::KeyCode::Left => {
-                                *self.date = crate::core::date::pred_day(self.date);
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right => {
-                                *self.date = crate::core::date::succ_day(self.date);
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Up => {
-                                *self.date = crate::core::date::pred_week(self.date);
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Down => {
-                                *self.date = crate::core::date::succ_week(self.date);
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
+                }
+                _ => match self.focus {
+                    Focus::Overlay => {}
+                    Focus::Month => match key_code {
+                        keyboard::KeyCode::Left => {
+                            *self.date = crate::core::date::pred_month(self.date);
+                            status = event::Status::Captured;
                         }
-                        Focus::Cancel => {}
-                        Focus::Submit => {}
+                        keyboard::KeyCode::Right => {
+                            *self.date = crate::core::date::succ_month(self.date);
+                            status = event::Status::Captured;
+                        }
                         _ => {}
-                    }
+                    },
+                    Focus::Year => match key_code {
+                        keyboard::KeyCode::Left => {
+                            *self.date = crate::core::date::pred_year(self.date);
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Right => {
+                            *self.date = crate::core::date::succ_year(self.date);
+                            status = event::Status::Captured;
+                        }
+                        _ => {}
+                    },
+                    Focus::Day => match key_code {
+                        keyboard::KeyCode::Left => {
+                            *self.date = crate::core::date::pred_day(self.date);
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Right => {
+                            *self.date = crate::core::date::succ_day(self.date);
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Up => {
+                            *self.date = crate::core::date::pred_week(self.date);
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Down => {
+                            *self.date = crate::core::date::succ_week(self.date);
+                            status = event::Status::Captured;
+                        }
+                        _ => {}
+                    },
+                    Focus::Cancel => {}
+                    Focus::Submit => {}
+                    _ => {}
                 },
             }
 
@@ -643,7 +644,7 @@ impl Renderer for iced_native::renderer::Null {
     }
 }
 
-/// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay)
+/// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay).
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Focus {
     /// Nothing is in focus.
