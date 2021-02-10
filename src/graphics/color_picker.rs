@@ -11,13 +11,17 @@ use iced_graphics::{
 };
 use iced_native::mouse;
 
-use crate::{core::{
+use crate::{
+    core::{
         color::{HexString, Hsv},
         renderer::DrawEnvironment,
-    }, native::overlay::color_picker::Focus, style::{
+    },
+    native::overlay::color_picker::Focus,
+    style::{
         color_picker::{Style, StyleSheet},
         style_state::StyleState,
-    }};
+    },
+};
 
 use crate::native::color_picker;
 pub use crate::native::color_picker::State;
@@ -234,15 +238,8 @@ fn hsv_color(
     let mouse_interaction = mouse::Interaction::default();
 
     let sat_value_layout = hsv_color_children.next().unwrap();
-    /*let (sat_value_style_state, sat_value_mouse_interaction) =
-        if focus == Focus::SatValue {
-            (StyleState::Focused, mouse::Interaction::Pointer)
-        } else if sat_value_layout.bounds().contains(cursor_position) {
-            (StyleState::Hovered, mouse::Interaction::Pointer)
-        } else {
-            (StyleState::Active, mouse::Interaction::default())
-        };*/
-    let (mut sat_value_style_state, mut sat_value_mouse_interaction) = (StyleState::Active, mouse::Interaction::default());
+    let (mut sat_value_style_state, mut sat_value_mouse_interaction) =
+        (StyleState::Active, mouse::Interaction::default());
     if focus == Focus::SatValue {
         sat_value_style_state = sat_value_style_state.max(StyleState::Focused)
     }
@@ -319,13 +316,8 @@ fn hsv_color(
     };
 
     let hue_layout = hsv_color_children.next().unwrap();
-    /*let (hue_style_state, hue_mouse_interaction) = if hue_layout.bounds().contains(cursor_position)
-    {
-        (StyleState::Hovered, mouse::Interaction::Pointer)
-    } else {
-        (StyleState::Active, mouse::Interaction::default())
-    };*/
-    let (mut hue_style_state, mut hue_mouse_interaction) = (StyleState::Active, mouse::Interaction::default());
+    let (mut hue_style_state, mut hue_mouse_interaction) =
+        (StyleState::Active, mouse::Interaction::default());
     if focus == Focus::Hue {
         hue_style_state = hue_style_state.max(StyleState::Focused);
     }
@@ -393,33 +385,9 @@ fn hsv_color(
         content: Box::new(hue),
     };
 
-    /*let sat_value_focus = if focus == Focus::SatValue {
-        Primitive::Quad {
-            bounds: sat_value_layout.bounds(),
-            background: Color::TRANSPARENT.into(),
-            border_radius: style.get(&StyleState::Focused).unwrap().bar_border_radius,
-            border_width: style.get(&StyleState::Focused).unwrap().bar_border_width,
-            border_color: style.get(&StyleState::Focused).unwrap().bar_border_color,
-        }
-    } else {
-        Primitive::None
-    };
-
-    let hue_focus = if focus == Focus::SatValue {
-        Primitive::Quad {
-            bounds: hue_layout.bounds(),
-            background: Color::TRANSPARENT.into(),
-            border_radius: style.get(&StyleState::Focused).unwrap().bar_border_radius,
-            border_width: style.get(&StyleState::Focused).unwrap().bar_border_width,
-            border_color: style.get(&StyleState::Focused).unwrap().bar_border_color,
-        }
-    } else {
-        Primitive::None
-    };*/
-
     (
         Primitive::Group {
-            primitives: vec![sat_value, /*sat_value_focus,*/ hue/*, hue_focus*/],
+            primitives: vec![sat_value, hue],
         },
         mouse_interaction
             .max(sat_value_mouse_interaction)
@@ -581,7 +549,7 @@ fn rgba_color(
         Color::from_rgba(0.0, 0.0, 0.0, color.a),
         color.a,
         cursor_position,
-        Focus::Alpha
+        Focus::Alpha,
     );
 
     (

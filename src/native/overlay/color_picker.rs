@@ -385,7 +385,7 @@ where
                                 hsv_color.saturation += SAT_VALUE_STEP;
                                 status = event::Status::Captured;
                             }
-                            keyboard::KeyCode:: Up => {
+                            keyboard::KeyCode::Up => {
                                 hsv_color.value -= SAT_VALUE_STEP;
                                 status = event::Status::Captured;
                             }
@@ -401,7 +401,7 @@ where
 
                         *color = Color {
                             a: color.a,
-                            .. hsv_color.into()
+                            ..hsv_color.into()
                         };
                         status
                     };
