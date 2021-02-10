@@ -197,6 +197,8 @@ where
                             event::Status::Captured
                         }
                         NearestRadius::Hour => {
+                            *self.focus = Focus::DigitalHour;
+
                             let hour_points =
                                 crate::core::clock::circle_points(hour_radius, center, 12);
                             let nearest_point =
@@ -211,6 +213,8 @@ where
                             event::Status::Captured
                         }
                         NearestRadius::Minute => {
+                            *self.focus = Focus::DigitalMinute;
+
                             let minute_points =
                                 crate::core::clock::circle_points(minute_radius, center, 60);
                             let nearest_point =
@@ -220,6 +224,8 @@ where
                             event::Status::Captured
                         }
                         NearestRadius::Second => {
+                            *self.focus = Focus::DigitalSecond;
+
                             let second_points =
                                 crate::core::clock::circle_points(second_radius, center, 60);
                             let nearest_point =
@@ -274,25 +280,29 @@ where
         let digital_clock_status = match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 let mut status = event::Status::Ignored;
-
+                // TODO: clean up
                 if hour_up_arrow.bounds().contains(cursor_position) {
                     *self.time = self.time.overflowing_add_signed(Duration::hours(1)).0;
+                    *self.focus = Focus::DigitalHour;
 
                     status = event::Status::Captured;
                 }
                 if hour_down_arrow.bounds().contains(cursor_position) {
                     *self.time = self.time.overflowing_sub_signed(Duration::hours(1)).0;
+                    *self.focus = Focus::DigitalHour;
 
                     status = event::Status::Captured;
                 }
 
                 if minute_up_arrow.bounds().contains(cursor_position) {
                     *self.time = self.time.overflowing_add_signed(Duration::minutes(1)).0;
+                    *self.focus = Focus::DigitalMinute;
 
                     status = event::Status::Captured;
                 }
                 if minute_down_arrow.bounds().contains(cursor_position) {
                     *self.time = self.time.overflowing_sub_signed(Duration::minutes(1)).0;
+                    *self.focus = Focus::DigitalMinute;
 
                     status = event::Status::Captured;
                 }
@@ -316,13 +326,16 @@ where
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                     let mut status = event::Status::Ignored;
 
+                    // TODO: clean up
                     if second_up_arrow.bounds().contains(cursor_position) {
                         *self.time = self.time.overflowing_add_signed(Duration::seconds(1)).0;
+                        *self.focus = Focus::DigitalSecond;
 
                         status = event::Status::Captured;
                     }
                     if second_down_arrow.bounds().contains(cursor_position) {
                         *self.time = self.time.overflowing_sub_signed(Duration::seconds(1)).0;
+                        *self.focus = Focus::DigitalSecond;
 
                         status = event::Status::Captured;
                     }
