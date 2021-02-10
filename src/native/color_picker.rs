@@ -3,17 +3,17 @@
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
-use color_picker::ColorBarFocussed;
+use color_picker::ColorBarDragged;
 use iced_graphics::canvas;
 use iced_native::{
-    button, column, event, overlay, row, text_input, Clipboard, Color, Element, Event, Layout,
-    Point, Widget,
+    button, column, event, keyboard, overlay, row, text_input, Clipboard, Color, Element, Event,
+    Layout, Point, Widget,
 };
 
 pub use super::overlay::color_picker::Renderer;
 use super::{
     icon_text,
-    overlay::color_picker::{self, ColorPickerOverlay},
+    overlay::color_picker::{self, ColorPickerOverlay, Focus},
 };
 
 /// An input element for picking colors.
@@ -97,7 +97,9 @@ pub struct State {
     pub(crate) text_input: text_input::State,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
-    pub(crate) color_bar_focussed: ColorBarFocussed,
+    pub(crate) color_bar_dragged: ColorBarDragged,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
 impl State {
@@ -113,19 +115,22 @@ impl State {
             text_input: text_input::State::new(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
-            color_bar_focussed: ColorBarFocussed::None,
+            color_bar_dragged: ColorBarDragged::None,
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
         }
     }
 
     /// Sets the visibility of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub fn show(&mut self, b: bool) {
+        self.focus = if b { Focus::Overlay } else { Focus::None };
         self.show = b;
     }
 
     /// Resets the color of the state.
     pub fn reset(&mut self) {
         self.color = Color::from_rgb(0.5, 0.25, 0.25);
-        self.color_bar_focussed = ColorBarFocussed::None;
+        self.color_bar_dragged = ColorBarDragged::None;
     }
 }
 

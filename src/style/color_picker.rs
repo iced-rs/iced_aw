@@ -43,6 +43,10 @@ pub trait StyleSheet {
     /// The appearance when something is hovered of the
     /// [`ColorPicker`](crate::native::ColorPicker).
     fn hovered(&self) -> Style;
+
+    /// The appearance when something is focused of the
+    /// [`ColorPicker`](crate::native::ColorPicker).
+    fn focused(&self) -> Style;
 }
 
 /// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
@@ -68,6 +72,14 @@ impl StyleSheet for Default {
 
     fn hovered(&self) -> Style {
         Style { ..self.active() }
+    }
+
+    fn focused(&self) -> Style {
+        Style {
+            border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            bar_border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            ..self.active()
+        }
     }
 }
 

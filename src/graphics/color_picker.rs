@@ -11,16 +11,13 @@ use iced_graphics::{
 };
 use iced_native::mouse;
 
-use crate::{
-    core::{
+use crate::{core::{
         color::{HexString, Hsv},
         renderer::DrawEnvironment,
-    },
-    style::{
+    }, native::overlay::color_picker::Focus, style::{
         color_picker::{Style, StyleSheet},
         style_state::StyleState,
-    },
-};
+    }};
 
 use crate::native::color_picker;
 pub use crate::native::color_picker::State;
@@ -46,6 +43,7 @@ where
         //text_input: &iced_native::Element<'_, Message, Self>,
         cancel_button: &iced_native::Element<'_, Message, Self>,
         submit_button: &iced_native::Element<'_, Message, Self>,
+        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -54,10 +52,14 @@ where
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
+        let _ = style.insert(StyleState::Focused, env.style_sheet.focused());
 
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
+        if focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
         if bounds.contains(env.cursor_position) {
             style_state = style_state.max(StyleState::Hovered);
         }
@@ -83,6 +85,7 @@ where
             env.cursor_position,
             env.defaults,
             &style,
+            focus,
         );
 
         // ----------- Block 1 end ------------------
@@ -98,6 +101,7 @@ where
             env.cursor_position,
             env.defaults,
             &style,
+            focus,
         );
 
         // ----------- Text input ----------------------
@@ -166,6 +170,31 @@ where
             env.cursor_position,
             &bounds,
         );
+
+        // Buttons are not focusable right now...
+        let cancel_button_focus = if focus == Focus::Cancel {
+            Primitive::Quad {
+                bounds: cancel_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
+        let submit_button_focus = if focus == Focus::Submit {
+            Primitive::Quad {
+                bounds: submit_button_layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
         // ----------- Block 2 end ------------------
 
         (
@@ -177,6 +206,8 @@ where
                     text_input,
                     cancel_button,
                     submit_button,
+                    cancel_button_focus,
+                    submit_button_focus,
                 ],
             },
             mouse_interaction
@@ -198,6 +229,7 @@ fn hsv_color(
     cursor_position: Point,
     _defaults: &Defaults,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut hsv_color_children = layout.children();
     let hsv_color: Hsv = color.clone().into();
@@ -205,12 +237,22 @@ fn hsv_color(
     let mouse_interaction = mouse::Interaction::default();
 
     let sat_value_layout = hsv_color_children.next().unwrap();
-    let (sat_value_style_state, sat_value_mouse_interaction) =
-        if sat_value_layout.bounds().contains(cursor_position) {
+    /*let (sat_value_style_state, sat_value_mouse_interaction) =
+        if focus == Focus::SatValue {
+            (StyleState::Focused, mouse::Interaction::Pointer)
+        } else if sat_value_layout.bounds().contains(cursor_position) {
             (StyleState::Hovered, mouse::Interaction::Pointer)
         } else {
             (StyleState::Active, mouse::Interaction::default())
-        };
+        };*/
+    let (mut sat_value_style_state, mut sat_value_mouse_interaction) = (StyleState::Active, mouse::Interaction::default());
+    if focus == Focus::SatValue {
+        sat_value_style_state = sat_value_style_state.max(StyleState::Focused)
+    }
+    if sat_value_layout.bounds().contains(cursor_position) {
+        sat_value_style_state = sat_value_style_state.max(StyleState::Hovered);
+        sat_value_mouse_interaction = sat_value_mouse_interaction.max(mouse::Interaction::Pointer);
+    }
 
     let sat_value = sat_value_canvas_cache
         .draw(sat_value_layout.bounds().size(), |frame| {
@@ -280,12 +322,20 @@ fn hsv_color(
     };
 
     let hue_layout = hsv_color_children.next().unwrap();
-    let (hue_style_state, hue_mouse_interaction) = if hue_layout.bounds().contains(cursor_position)
+    /*let (hue_style_state, hue_mouse_interaction) = if hue_layout.bounds().contains(cursor_position)
     {
         (StyleState::Hovered, mouse::Interaction::Pointer)
     } else {
         (StyleState::Active, mouse::Interaction::default())
-    };
+    };*/
+    let (mut hue_style_state, mut hue_mouse_interaction) = (StyleState::Active, mouse::Interaction::default());
+    if focus == Focus::Hue {
+        hue_style_state = hue_style_state.max(StyleState::Focused);
+    }
+    if hue_layout.bounds().contains(cursor_position) {
+        hue_style_state = hue_style_state.max(StyleState::Hovered);
+        hue_mouse_interaction = hue_mouse_interaction.max(mouse::Interaction::Pointer);
+    }
 
     let hue = hue_canvas_cache
         .draw(hue_layout.bounds().size(), |frame| {
@@ -346,9 +396,33 @@ fn hsv_color(
         content: Box::new(hue),
     };
 
+    /*let sat_value_focus = if focus == Focus::SatValue {
+        Primitive::Quad {
+            bounds: sat_value_layout.bounds(),
+            background: Color::TRANSPARENT.into(),
+            border_radius: style.get(&StyleState::Focused).unwrap().bar_border_radius,
+            border_width: style.get(&StyleState::Focused).unwrap().bar_border_width,
+            border_color: style.get(&StyleState::Focused).unwrap().bar_border_color,
+        }
+    } else {
+        Primitive::None
+    };
+
+    let hue_focus = if focus == Focus::SatValue {
+        Primitive::Quad {
+            bounds: hue_layout.bounds(),
+            background: Color::TRANSPARENT.into(),
+            border_radius: style.get(&StyleState::Focused).unwrap().bar_border_radius,
+            border_width: style.get(&StyleState::Focused).unwrap().bar_border_width,
+            border_color: style.get(&StyleState::Focused).unwrap().bar_border_color,
+        }
+    } else {
+        Primitive::None
+    };*/
+
     (
         Primitive::Group {
-            primitives: vec![sat_value, hue],
+            primitives: vec![sat_value, /*sat_value_focus,*/ hue/*, hue_focus*/],
         },
         mouse_interaction
             .max(sat_value_mouse_interaction)
@@ -363,6 +437,7 @@ fn rgba_color(
     cursor_position: Point,
     defaults: &Defaults,
     style: &HashMap<StyleState, Style>,
+    focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut rgba_color_children = layout.children();
 
@@ -372,7 +447,8 @@ fn rgba_color(
              label: &str,
              color: Color,
              value: f32,
-             cursor_position: Point|
+             cursor_position: Point,
+             target: Focus|
      -> (Primitive, mouse::Interaction) {
         let mut children = layout.children();
 
@@ -443,9 +519,21 @@ fn rgba_color(
             vertical_alignment: iced_graphics::VerticalAlignment::Center,
         };
 
+        let focus = if focus == target {
+            Primitive::Quad {
+                bounds: layout.bounds(),
+                background: Color::TRANSPARENT.into(),
+                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+            }
+        } else {
+            Primitive::None
+        };
+
         (
             Primitive::Group {
-                primitives: vec![label, bar_background, bar, value],
+                primitives: vec![label, bar_background, bar, focus, value],
             },
             mouse_interaction.max(bar_mouse_interaction),
         )
@@ -460,6 +548,7 @@ fn rgba_color(
         Color::from_rgb(color.r, 0.0, 0.0),
         color.r,
         cursor_position,
+        Focus::Red,
     );
 
     // Green
@@ -471,6 +560,7 @@ fn rgba_color(
         Color::from_rgb(0.0, color.g, 0.0),
         color.g,
         cursor_position,
+        Focus::Green,
     );
 
     // Blue
@@ -482,6 +572,7 @@ fn rgba_color(
         Color::from_rgb(0.0, 0.0, color.b),
         color.b,
         cursor_position,
+        Focus::Blue,
     );
 
     // Alpha
@@ -493,6 +584,7 @@ fn rgba_color(
         Color::from_rgba(0.0, 0.0, 0.0, color.a),
         color.a,
         cursor_position,
+        Focus::Alpha
     );
 
     (

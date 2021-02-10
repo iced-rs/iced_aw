@@ -3,9 +3,10 @@
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
+use event::Status;
 use iced_graphics::canvas;
 use iced_native::{
-    button, column, event,
+    button, column, event, keyboard,
     layout::{self, Limits},
     mouse, overlay, row, text, text_input, Align, Button, Clipboard, Color, Column, Element, Event,
     Layout, Length, Point, Rectangle, Row, Size, Text, Widget,
@@ -21,6 +22,10 @@ const PADDING: u16 = 10;
 const SPACING: u16 = 15;
 const BUTTON_SPACING: u16 = 5;
 
+const SAT_VALUE_STEP: f32 = 0.005;
+const HUE_STEP: i32 = 1;
+const RGBA_STEP: u16 = 1;
+
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
 #[allow(missing_debug_implementations)]
 pub struct ColorPickerOverlay<'a, Message, Renderer>
@@ -35,8 +40,10 @@ where
     //text_input: Element<'a, Message, Renderer>,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
-    color_bar_focussed: &'a mut ColorBarFocussed,
     on_submit: &'a dyn Fn(Color) -> Message,
+    color_bar_dragged: &'a mut ColorBarDragged,
+    focus: &'a mut Focus,
+    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -70,7 +77,9 @@ where
             hue_canvas_cache,
             cancel_button,
             submit_button,
-            color_bar_focussed,
+            color_bar_dragged,
+            focus,
+            keyboard_modifiers,
             ..
         } = state;
 
@@ -89,8 +98,10 @@ where
             .width(Length::Fill)
             .on_press(on_cancel) // Sending a fake message
             .into(),
-            color_bar_focussed,
             on_submit,
+            color_bar_dragged,
+            focus,
+            keyboard_modifiers,
             position,
             style,
         }
@@ -147,13 +158,15 @@ where
             }
         } else if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if sat_value_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::SatValue;
+                *self.color_bar_dragged = ColorBarDragged::SatValue;
+                *self.focus = Focus::SatValue;
             }
             if hue_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::Hue;
+                *self.color_bar_dragged = ColorBarDragged::Hue;
+                *self.focus = Focus::Hue;
             }
         } else if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
-            *self.color_bar_focussed = ColorBarFocussed::None;
+            *self.color_bar_dragged = ColorBarDragged::None;
         }
 
         let calc_percentage_sat = |bounds: &Rectangle, cursor_position: &Point| {
@@ -168,8 +181,8 @@ where
             (((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0) * 360.0) as u16
         };
 
-        match self.color_bar_focussed {
-            ColorBarFocussed::SatValue => {
+        match self.color_bar_dragged {
+            ColorBarDragged::SatValue => {
                 *self.color = Color {
                     a: self.color.a,
                     ..Hsv {
@@ -181,7 +194,7 @@ where
                 };
                 color_changed = true;
             }
-            ColorBarFocussed::Hue => {
+            ColorBarDragged::Hue => {
                 *self.color = Color {
                     a: self.color.a,
                     ..Hsv {
@@ -269,48 +282,52 @@ where
             }
         } else if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if red_bar_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::Red;
+                *self.color_bar_dragged = ColorBarDragged::Red;
+                *self.focus = Focus::Red;
             }
             if green_bar_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::Green;
+                *self.color_bar_dragged = ColorBarDragged::Green;
+                *self.focus = Focus::Green;
             }
             if blue_bar_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::Blue;
+                *self.color_bar_dragged = ColorBarDragged::Blue;
+                *self.focus = Focus::Blue;
             }
             if alpha_bar_bounds.contains(cursor_position) {
-                *self.color_bar_focussed = ColorBarFocussed::Alpha;
+                *self.color_bar_dragged = ColorBarDragged::Alpha;
+                *self.focus = Focus::Alpha;
             }
         } else if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
-            *self.color_bar_focussed = ColorBarFocussed::None;
+            *self.color_bar_dragged = ColorBarDragged::None;
         }
 
         let calc_percantage = |bounds: &Rectangle, cursor_position: &Point| {
             ((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0)
         };
 
-        match self.color_bar_focussed {
-            ColorBarFocussed::Red => {
+        match self.color_bar_dragged {
+            ColorBarDragged::Red => {
                 *self.color = Color {
                     r: calc_percantage(&red_bar_bounds, &cursor_position),
                     ..*self.color
                 };
                 color_changed = true;
             }
-            ColorBarFocussed::Green => {
+            ColorBarDragged::Green => {
                 *self.color = Color {
                     g: calc_percantage(&green_bar_bounds, &cursor_position),
                     ..*self.color
                 };
                 color_changed = true;
             }
-            ColorBarFocussed::Blue => {
+            ColorBarDragged::Blue => {
                 *self.color = Color {
                     b: calc_percantage(&blue_bar_bounds, &cursor_position),
                     ..*self.color
                 };
                 color_changed = true;
             }
-            ColorBarFocussed::Alpha => {
+            ColorBarDragged::Alpha => {
                 *self.color = Color {
                     a: calc_percantage(&alpha_bar_bounds, &cursor_position),
                     ..*self.color
@@ -322,6 +339,141 @@ where
 
         if color_changed {
             event::Status::Captured
+        } else {
+            event::Status::Ignored
+        }
+    }
+
+    fn on_event_keyboard(
+        &mut self,
+        event: Event,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _messages: &mut Vec<Message>,
+        _renderer: &Renderer,
+        _clipboard: Option<&dyn Clipboard>,
+    ) -> event::Status {
+        // TODO: clean this up a bit
+        if *self.focus == Focus::None {
+            return event::Status::Ignored;
+        }
+
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
+            let mut status = event::Status::Ignored;
+
+            match key_code {
+                keyboard::KeyCode::Tab => {
+                    if self.keyboard_modifiers.shift {
+                        *self.focus = self.focus.previous();
+                    } else {
+                        *self.focus = self.focus.next();
+                    }
+                    // TODO: maybe place this better
+                    self.sat_value_canvas_cache.clear();
+                    self.hue_canvas_cache.clear();
+                }
+                _ => {
+                    let sat_value_handle = |key_code: keyboard::KeyCode, color: &mut Color| {
+                        let mut hsv_color: Hsv = color.to_owned().into();
+                        let mut status = event::Status::Ignored;
+
+                        match key_code {
+                            keyboard::KeyCode::Left => {
+                                hsv_color.saturation -= SAT_VALUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right => {
+                                hsv_color.saturation += SAT_VALUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode:: Up => {
+                                hsv_color.value -= SAT_VALUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Down => {
+                                hsv_color.value += SAT_VALUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+
+                        hsv_color.saturation = hsv_color.saturation.min(1.0).max(0.0);
+                        hsv_color.value = hsv_color.value.min(1.0).max(0.0);
+
+                        *color = Color {
+                            a: color.a,
+                            .. hsv_color.into()
+                        };
+                        status
+                    };
+
+                    let hue_handle = |key_code: keyboard::KeyCode, color: &mut Color| {
+                        let mut hsv_color: Hsv = color.to_owned().into();
+                        let mut status = event::Status::Ignored;
+
+                        let mut value = hsv_color.hue as i32;
+
+                        match key_code {
+                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                                value -= HUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                                value += HUE_STEP;
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+
+                        hsv_color.hue = value.rem_euclid(360) as u16;
+
+                        *color = Color {
+                            a: color.a,
+                            ..hsv_color.into()
+                        };
+
+                        status
+                    };
+
+                    let rgba_bar_handle = |key_code: keyboard::KeyCode, value: &mut f32| {
+                        let mut byte_value = (*value * 255.0) as u16;
+                        let mut status = event::Status::Captured;
+
+                        match key_code {
+                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                                byte_value -= RGBA_STEP;
+                                status = event::Status::Captured;
+                            }
+                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                                byte_value += RGBA_STEP;
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+                        *value = byte_value.min(255).max(0) as f32 / 255.0;
+
+                        status
+                    };
+
+                    match self.focus {
+                        Focus::Overlay => {}
+                        Focus::SatValue => status = sat_value_handle(key_code, &mut self.color),
+                        Focus::Hue => status = hue_handle(key_code, &mut self.color),
+                        Focus::Red => status = rgba_bar_handle(key_code, &mut self.color.r),
+                        Focus::Green => status = rgba_bar_handle(key_code, &mut self.color.g),
+                        Focus::Blue => status = rgba_bar_handle(key_code, &mut self.color.b),
+                        Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.color.a),
+                        Focus::Cancel => {}
+                        Focus::Submit => {}
+                        _ => {}
+                    }
+                }
+            }
+
+            status
+        } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
+            *self.keyboard_modifiers = modifiers;
+            event::Status::Ignored
         } else {
             event::Status::Ignored
         }
@@ -568,6 +720,19 @@ where
         renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
+        if let event::Status::Captured = self.on_event_keyboard(
+            event.clone(),
+            layout,
+            cursor_position,
+            messages,
+            renderer,
+            clipboard,
+        ) {
+            self.sat_value_canvas_cache.clear();
+            self.hue_canvas_cache.clear();
+            return event::Status::Captured;
+        }
+
         let mut children = layout.children();
 
         let status = event::Status::Ignored;
@@ -666,6 +831,7 @@ where
             //&self.text_input,
             &self.cancel_button,
             &self.submit_button,
+            *self.focus,
         )
     }
 
@@ -697,6 +863,7 @@ pub trait Renderer: iced_native::Renderer {
         //text_input: &Element<'_, Message, Self>,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
+        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -713,13 +880,14 @@ impl Renderer for iced_native::renderer::Null {
         //_text_input: &Element<'_, Message, Self>,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
+        _focus: Focus,
     ) -> Self::Output {
     }
 }
 
-/// The state of the currently focussed area.
+/// The state of the currently dragged area.
 #[derive(Debug)]
-pub enum ColorBarFocussed {
+pub enum ColorBarDragged {
     /// No area is focussed.
     None,
 
@@ -742,8 +910,82 @@ pub enum ColorBarFocussed {
     Alpha,
 }
 
-impl Default for ColorBarFocussed {
+impl Default for ColorBarDragged {
     fn default() -> Self {
-        ColorBarFocussed::None
+        ColorBarDragged::None
+    }
+}
+
+/// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Focus {
+    /// Nothing is in focus.
+    None,
+
+    /// The overlay itself is in focus.
+    Overlay,
+
+    /// The saturation and value area is in focus.
+    SatValue,
+
+    /// The hue bar is in focus.
+    Hue,
+
+    /// The red bar is in focus.
+    Red,
+
+    /// The green bar is in focus.
+    Green,
+
+    /// The blue bar is in focus.
+    Blue,
+
+    /// The alpha bar is in focus.
+    Alpha,
+
+    /// The cancel button is in focus.
+    Cancel,
+
+    /// The submit button is in focus.
+    Submit,
+}
+
+impl Focus {
+    /// Gets the next focusable element.
+    pub fn next(self) -> Self {
+        match self {
+            Focus::None => Focus::Overlay,
+            Focus::Overlay => Focus::SatValue,
+            Focus::SatValue => Focus::Hue,
+            Focus::Hue => Focus::Red,
+            Focus::Red => Focus::Green,
+            Focus::Green => Focus::Blue,
+            Focus::Blue => Focus::Alpha,
+            Focus::Alpha => Focus::Cancel,
+            Focus::Cancel => Focus::Submit,
+            Focus::Submit => Focus::Overlay,
+        }
+    }
+
+    /// Gets the previous focusable element.
+    pub fn previous(self) -> Self {
+        match self {
+            Focus::None => Focus::None,
+            Focus::Overlay => Focus::Submit,
+            Focus::SatValue => Focus::Overlay,
+            Focus::Hue => Focus::SatValue,
+            Focus::Red => Focus::Hue,
+            Focus::Green => Focus::Red,
+            Focus::Blue => Focus::Green,
+            Focus::Alpha => Focus::Blue,
+            Focus::Cancel => Focus::Alpha,
+            Focus::Submit => Focus::Cancel,
+        }
+    }
+}
+
+impl Default for Focus {
+    fn default() -> Self {
+        Focus::None
     }
 }
