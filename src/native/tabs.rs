@@ -368,6 +368,7 @@ where
                 cursor_position,
                 style_sheet: &(),
                 viewport: Some(viewport),
+                focus: (),
             },
             self.tab_bar.get_active_tab(),
             tab_bar,
@@ -396,7 +397,7 @@ pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
     /// Draws a [`Tabs`](Tabs) widget.
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, ()>,
+        env: DrawEnvironment<'_, Self::Defaults, (), ()>,
         active_tab: usize,
         tab_bar: Self::Output,
         tabs: &[Element<'_, Message, Self>],
@@ -408,7 +409,7 @@ pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
 impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         _active_tab: usize,
         _tab_bar: Self::Output,
         _tabs: &[Element<'_, Message, Self>],

@@ -306,6 +306,7 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: Some(viewport),
+                focus: (),
             },
             &self.head,
             &self.body,
@@ -448,7 +449,7 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`Card`](Card).
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         head: &Element<'_, Message, Self>,
         body: &Element<'_, Message, Self>,
         foot: &Option<Element<'_, Message, Self>>,
@@ -467,7 +468,7 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         _head: &Element<'_, Message, Self>,
         _body: &Element<'_, Message, Self>,
         _foot: &Option<Element<'_, Message, Self>>,

@@ -759,6 +759,7 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
+                focus: *self.focus,
             },
             &self.time,
             &self.clock_cache,
@@ -766,7 +767,6 @@ where
             &self.submit_button,
             self.use_24h,
             self.show_seconds,
-            *self.focus,
         )
     }
 
@@ -792,14 +792,13 @@ pub trait Renderer: iced_native::Renderer {
     #[allow(clippy::too_many_arguments)]
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style>,
+        env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
         time: &NaiveTime,
         clock_cache: &canvas::Cache,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
-        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -809,14 +808,13 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
         _time: &NaiveTime,
         _clock_cache: &canvas::Cache,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
         _use_24h: bool,
         _show_seconds: bool,
-        _focus: Focus,
     ) -> Self::Output {
     }
 }

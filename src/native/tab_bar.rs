@@ -323,6 +323,7 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: Some(viewport),
+                focus: (),
             },
             self.active_tab,
             &self.tab_labels,
@@ -372,7 +373,7 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`TabBar`](TabBar).
     fn draw(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         active_tab: usize,
         tab_labels: &[TabLabel],
         icon_font: Option<Font>,
@@ -396,7 +397,7 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw(
         &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         _active_tab: usize,
         _tab_labels: &[TabLabel],
         _icon_font: Option<Font>,

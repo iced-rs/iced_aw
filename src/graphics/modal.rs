@@ -22,7 +22,7 @@ where
 
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style>,
+        env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
         modal: &iced_native::Element<'_, Message, Self>,
     ) -> Self::Output {
         let bounds = env.layout.bounds();

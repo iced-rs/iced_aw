@@ -3,7 +3,6 @@
 //! *This API requires the following crate features to be activated: color_picker*
 use std::hash::Hash;
 
-use event::Status;
 use iced_graphics::canvas;
 use iced_native::{
     button, column, event, keyboard,
@@ -824,6 +823,7 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
+                focus: *self.focus,
             },
             &self.color,
             &self.sat_value_canvas_cache,
@@ -831,7 +831,6 @@ where
             //&self.text_input,
             &self.cancel_button,
             &self.submit_button,
-            *self.focus,
         )
     }
 
@@ -856,14 +855,13 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`ColorPickerOverlay`](ColorPickerOverlay)
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         color: &Color,
         sat_value_canvas_cache: &canvas::Cache,
         hue_canvas_cache: &canvas::Cache,
         //text_input: &Element<'_, Message, Self>,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -873,14 +871,13 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         _color: &Color,
         _sat_value_canvas_cache: &canvas::Cache,
         _hue_canvas_cache: &canvas::Cache,
         //_text_input: &Element<'_, Message, Self>,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
-        _focus: Focus,
     ) -> Self::Output {
     }
 }

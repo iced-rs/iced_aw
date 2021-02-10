@@ -586,13 +586,13 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
+                focus: *self.focus,
             },
             &self.date,
             &self.year_as_string(),
             &self.month_as_string(),
             &self.cancel_button,
             &self.submit_button,
-            *self.focus,
         )
     }
 
@@ -617,13 +617,12 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`DatePickerOverlay`](DatePickerOverlay).
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         date: &NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        focus: Focus,
     ) -> Self::Output;
 }
 
@@ -633,13 +632,12 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         _date: &NaiveDate,
         _year_str: &str,
         _month_str: &str,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
-        _focus: Focus,
     ) -> Self::Output {
     }
 }

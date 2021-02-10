@@ -34,7 +34,7 @@ where
 
     fn draw(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         active_tab: usize,
         tab_labels: &[TabLabel],
         icon_font: Option<Font>,

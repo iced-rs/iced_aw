@@ -29,7 +29,7 @@ where
 
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
         head: &iced_native::Element<'_, Message, Self>,
         body: &iced_native::Element<'_, Message, Self>,
         foot: &Option<iced_native::Element<'_, Message, Self>>,

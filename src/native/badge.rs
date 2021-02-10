@@ -159,6 +159,7 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: Some(viewport),
+                focus: (),
             },
             &self.content,
         )
@@ -187,7 +188,7 @@ pub trait Renderer: iced_native::Renderer {
     /// Draws a [`Badge`](Badge).
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style>,
+        env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
         content: &Element<'_, Message, Self>,
     ) -> Self::Output;
 }
@@ -198,7 +199,7 @@ impl Renderer for iced_native::renderer::Null {
 
     fn draw<Message>(
         &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style>,
+        _env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
         _content: &Element<'_, Message, Self>,
     ) -> Self::Output {
     }

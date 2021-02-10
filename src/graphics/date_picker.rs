@@ -33,13 +33,12 @@ where
 
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         date: &chrono::NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -54,7 +53,7 @@ where
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
-        if focus == Focus::Overlay {
+        if env.focus == Focus::Overlay {
             style_state = style_state.max(StyleState::Focused);
         }
         if bounds.contains(env.cursor_position) {
@@ -78,14 +77,14 @@ where
             year_str,
             env.cursor_position,
             &style,
-            focus,
+            env.focus,
         );
 
         // ----------- Days ---------------------------
         let days_layout = date_children.next().unwrap().children().next().unwrap();
 
         let (days, days_mouse_interaction) =
-            days(days_layout, date, env.cursor_position, &style, focus);
+            days(days_layout, date, env.cursor_position, &style, env.focus);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children.next().unwrap();
@@ -109,7 +108,7 @@ where
         );
 
         // Buttons are not focusable right now...
-        let cancel_button_focus = if focus == Focus::Cancel {
+        let cancel_button_focus = if env.focus == Focus::Cancel {
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
@@ -121,7 +120,7 @@ where
             Primitive::None
         };
 
-        let submit_button_focus = if focus == Focus::Submit {
+        let submit_button_focus = if env.focus == Focus::Submit {
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),

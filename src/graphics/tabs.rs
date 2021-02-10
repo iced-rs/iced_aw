@@ -25,7 +25,7 @@ where
 {
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, ()>,
+        env: DrawEnvironment<'_, Self::Defaults, (), ()>,
         active_tab: usize,
         tab_bar: Self::Output,
         tabs: &[iced_native::Element<'_, Message, Self>],

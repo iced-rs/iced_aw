@@ -36,14 +36,13 @@ where
 
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style>,
+        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
         color: &iced_graphics::Color,
         sat_value_canvas_cache: &canvas::Cache,
         hue_canvas_cache: &canvas::Cache,
         //text_input: &iced_native::Element<'_, Message, Self>,
         cancel_button: &iced_native::Element<'_, Message, Self>,
         submit_button: &iced_native::Element<'_, Message, Self>,
-        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -57,7 +56,7 @@ where
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
-        if focus == Focus::Overlay {
+        if env.focus == Focus::Overlay {
             style_state = style_state.max(StyleState::Focused);
         }
         if bounds.contains(env.cursor_position) {
@@ -83,9 +82,8 @@ where
             sat_value_canvas_cache,
             hue_canvas_cache,
             env.cursor_position,
-            env.defaults,
             &style,
-            focus,
+            env.focus,
         );
 
         // ----------- Block 1 end ------------------
@@ -101,7 +99,7 @@ where
             env.cursor_position,
             env.defaults,
             &style,
-            focus,
+            env.focus,
         );
 
         // ----------- Text input ----------------------
@@ -172,7 +170,7 @@ where
         );
 
         // Buttons are not focusable right now...
-        let cancel_button_focus = if focus == Focus::Cancel {
+        let cancel_button_focus = if env.focus == Focus::Cancel {
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
@@ -184,7 +182,7 @@ where
             Primitive::None
         };
 
-        let submit_button_focus = if focus == Focus::Submit {
+        let submit_button_focus = if env.focus == Focus::Submit {
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
@@ -227,7 +225,6 @@ fn hsv_color(
     sat_value_canvas_cache: &canvas::Cache,
     hue_canvas_cache: &canvas::Cache,
     cursor_position: Point,
-    _defaults: &Defaults,
     style: &HashMap<StyleState, Style>,
     focus: Focus,
 ) -> (Primitive, mouse::Interaction) {

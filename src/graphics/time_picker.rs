@@ -44,14 +44,13 @@ where
 
     fn draw<Message>(
         &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style>,
+        env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
         time: &NaiveTime,
         clock_cache: &canvas::Cache,
         cancel_button: &iced_native::Element<'_, Message, Self>,
         submit_button: &iced_native::Element<'_, Message, Self>,
         use_24h: bool,
         show_seconds: bool,
-        focus: Focus,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -65,7 +64,7 @@ where
         let mouse_interaction = mouse::Interaction::default();
 
         let mut style_state = StyleState::Active;
-        if focus == Focus::Overlay {
+        if env.focus == Focus::Overlay {
             style_state = style_state.max(StyleState::Focused);
         }
         if bounds.contains(env.cursor_position) {
@@ -101,7 +100,7 @@ where
             use_24h,
             show_seconds,
             &style,
-            focus,
+            env.focus,
         );
 
         // ----------- Buttons ------------------------
@@ -126,7 +125,7 @@ where
         );
 
         // Buttons are not focusable right now...
-        let cancel_button_focus = if focus == Focus::Cancel {
+        let cancel_button_focus = if env.focus == Focus::Cancel {
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
@@ -138,7 +137,7 @@ where
             Primitive::None
         };
 
-        let submit_button_focus = if focus == Focus::Submit {
+        let submit_button_focus = if env.focus == Focus::Submit {
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
