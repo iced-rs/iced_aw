@@ -19,9 +19,7 @@ pub struct Date {
 impl Date {
     /// Creates a new date.
     pub fn from_ymd(year: i32, month: u32, day: u32) -> Self {
-        Self {
-            year, month, day
-        }
+        Self { year, month, day }
     }
 }
 

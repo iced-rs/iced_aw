@@ -11,7 +11,11 @@ use iced_native::{
     Length, Point, Row, Size, Text, Widget,
 };
 
-use crate::{core::{date::Date, renderer::DrawEnvironment}, graphics::icons::Icon, native::{date_picker::State, icon_text, IconText}};
+use crate::{
+    core::{date::Date, renderer::DrawEnvironment},
+    graphics::icons::Icon,
+    native::{date_picker::State, icon_text, IconText},
+};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -554,9 +558,7 @@ where
         );
 
         if !fake_messages.is_empty() {
-            messages.push((self.on_submit)(
-                self.date.to_owned().into()
-            ));
+            messages.push((self.on_submit)(self.date.to_owned().into()));
         }
 
         month_year_status

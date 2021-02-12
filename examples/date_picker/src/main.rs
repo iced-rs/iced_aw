@@ -66,9 +66,7 @@ impl Sandbox for DatePickerExample {
             .align_items(Align::Center)
             .spacing(10)
             .push(datepicker)
-            .push(Text::new(format!(
-                "Date: {}", self.date,
-            )));
+            .push(Text::new(format!("Date: {}", self.date,)));
 
         Container::new(row)
             .center_x()

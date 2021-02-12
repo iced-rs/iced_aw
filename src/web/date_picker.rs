@@ -4,7 +4,7 @@
 use dodrio::bumpalo;
 use iced_web::{Bus, Css, Element, Widget};
 
-pub use crate::core::date::{Date};
+pub use crate::core::date::Date;
 pub use crate::style::date_picker::{Style, StyleSheet};
 
 use std::rc::Rc;

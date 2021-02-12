@@ -277,17 +277,20 @@ where
         let _ = minute_children.next();
         let minute_down_arrow = minute_children.next().unwrap();
 
-        let calculate_time = |time: &mut NaiveTime, up_arrow: Layout<'_>, down_arrow: Layout<'_>, duration: Duration| {
+        let calculate_time = |time: &mut NaiveTime,
+                              up_arrow: Layout<'_>,
+                              down_arrow: Layout<'_>,
+                              duration: Duration| {
             let mut status = event::Status::Ignored;
 
             if up_arrow.bounds().contains(cursor_position) {
                 *time += duration;
-                        
+
                 status = event::Status::Captured;
             }
             if down_arrow.bounds().contains(cursor_position) {
                 *time -= duration;
-                       
+
                 status = event::Status::Captured;
             }
 
@@ -301,13 +304,23 @@ where
                 if hour_layout.bounds().contains(cursor_position) {
                     *self.focus = Focus::DigitalHour;
 
-                    status = calculate_time(&mut self.time, hour_up_arrow, hour_down_arrow, Duration::hours(1));
+                    status = calculate_time(
+                        &mut self.time,
+                        hour_up_arrow,
+                        hour_down_arrow,
+                        Duration::hours(1),
+                    );
                 }
 
                 if minute_layout.bounds().contains(cursor_position) {
                     *self.focus = Focus::DigitalMinute;
 
-                    status = calculate_time(&mut self.time, minute_up_arrow, minute_down_arrow, Duration::minutes(1));
+                    status = calculate_time(
+                        &mut self.time,
+                        minute_up_arrow,
+                        minute_down_arrow,
+                        Duration::minutes(1),
+                    );
                 }
 
                 status
@@ -332,7 +345,12 @@ where
                     if second_layout.bounds().contains(cursor_position) {
                         *self.focus = Focus::DigitalSecond;
 
-                        status = calculate_time(&mut self.time, second_up_arrow, second_down_arrow, Duration::seconds(1));
+                        status = calculate_time(
+                            &mut self.time,
+                            second_up_arrow,
+                            second_down_arrow,
+                            Duration::seconds(1),
+                        );
                     }
 
                     status

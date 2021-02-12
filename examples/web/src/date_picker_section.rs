@@ -1,6 +1,9 @@
 use crate::Section;
 use iced::{button, Align, Button, Column, Element, Length, Row, Text};
-use iced_aw::{date_picker::{self, Date}, DatePicker};
+use iced_aw::{
+    date_picker::{self, Date},
+    DatePicker,
+};
 
 pub struct DatePickerSection {
     date_picker_state: date_picker::State,
@@ -61,9 +64,7 @@ impl Section for DatePickerSection {
                     .align_items(Align::Center)
                     .spacing(20)
                     .push(date_picker)
-                    .push(Text::new(format!(
-                        "Picked date: {}", self.date
-                    ))),
+                    .push(Text::new(format!("Picked date: {}", self.date))),
             )
             .into();
 
