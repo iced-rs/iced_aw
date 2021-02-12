@@ -57,3 +57,18 @@ wasm-bindgen = "0.2.69"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "0.3.46"
+
+[workspace]
+members = [
+    "examples/badge",
+    "examples/card",
+    "examples/color_picker",
+    "examples/date_picker",
+    "examples/floating_button",
+    "examples/modal",
+    #"examples/tab_bar",
+    #"examples/tabs",
+    #"examples/tabs_min",
+    "examples/time_picker",
+    "examples/web"
+]

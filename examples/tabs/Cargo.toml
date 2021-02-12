@@ -1,5 +1,5 @@
 [package]
-name = "tab_bar"
+name = "tabs"
 version = "0.1.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2018"
