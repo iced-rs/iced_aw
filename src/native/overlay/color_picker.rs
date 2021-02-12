@@ -136,12 +136,6 @@ where
                     let move_value =
                         |value: u16, y: f32| ((value as i32 + y as i32).rem_euclid(360)) as u16;
 
-                    println!(
-                        "hue: {}, moved: {}",
-                        hsv_color.hue,
-                        move_value(hsv_color.hue, y)
-                    );
-
                     if hue_bounds.contains(cursor_position) {
                         *self.color = Color {
                             a: self.color.a,
