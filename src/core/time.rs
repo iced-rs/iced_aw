@@ -4,7 +4,7 @@
 use std::fmt::Display;
 
 /// The time value
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Time {
     /// The time value containing hour, minute and period.
     Hm {
@@ -73,7 +73,7 @@ impl Display for Time {
 }
 
 /// The current period of the clock
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Period {
     /// No period - using 24 hour format.
     H24,
