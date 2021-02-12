@@ -23,7 +23,7 @@ const BUTTON_SPACING: u16 = 5;
 
 const SAT_VALUE_STEP: f32 = 0.005;
 const HUE_STEP: i32 = 1;
-const RGBA_STEP: u16 = 1;
+const RGBA_STEP: i16 = 1;
 
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
 #[allow(missing_debug_implementations)]
@@ -241,7 +241,7 @@ where
             match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                     let move_value =
-                        |value: f32, y: f32| (value * 255.0 + y).min(255.0).max(0.0) / 255.0;
+                        |value: f32, y: f32| (value * 255.0 + y).clamp(0.0, 255.0) / 255.0;
 
                     if red_bar_bounds.contains(cursor_position) {
                         *self.color = Color {
@@ -390,8 +390,8 @@ where
                             _ => {}
                         }
 
-                        hsv_color.saturation = hsv_color.saturation.min(1.0).max(0.0);
-                        hsv_color.value = hsv_color.value.min(1.0).max(0.0);
+                        hsv_color.saturation = hsv_color.saturation.clamp(0.0, 1.0);
+                        hsv_color.value = hsv_color.value.clamp(0.0, 1.0);
 
                         *color = Color {
                             a: color.a,
@@ -429,7 +429,7 @@ where
                     };
 
                     let rgba_bar_handle = |key_code: keyboard::KeyCode, value: &mut f32| {
-                        let mut byte_value = (*value * 255.0) as u16;
+                        let mut byte_value = (*value * 255.0) as i16;
                         let mut status = event::Status::Captured;
 
                         match key_code {
@@ -443,7 +443,7 @@ where
                             }
                             _ => {}
                         }
-                        *value = byte_value.min(255).max(0) as f32 / 255.0;
+                        *value = byte_value.clamp(0, 255) as f32 / 255.0;
 
                         status
                     };

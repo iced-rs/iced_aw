@@ -24,11 +24,11 @@ impl Hsv {
 /// Creates a string of hexadecimal characters.
 pub trait HexString {
     /// Turns self into a string of hexadecimal characters.
-    fn as_hex_string(self) -> String;
+    fn as_hex_string(&self) -> String;
 }
 
 impl HexString for Color {
-    fn as_hex_string(self) -> String {
+    fn as_hex_string(&self) -> String {
         format!(
             "#{:02X?}{:02X?}{:02X?}{:02X?}",
             (self.r * 255.0) as u8,
