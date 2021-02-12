@@ -16,7 +16,7 @@ use iced_graphics::{
 use iced_native::{mouse, Element};
 
 use crate::native::date_picker;
-pub use crate::native::date_picker::State;
+pub use crate::native::date_picker::{State, Date};
 
 use super::icons::{Icon, ICON_FONT};
 

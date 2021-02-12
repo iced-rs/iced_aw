@@ -11,11 +11,7 @@ use iced_native::{
     Length, Point, Row, Size, Text, Widget,
 };
 
-use crate::{
-    core::renderer::DrawEnvironment,
-    graphics::icons::Icon,
-    native::{date_picker::State, icon_text, IconText},
-};
+use crate::{core::{date::Date, renderer::DrawEnvironment}, graphics::icons::Icon, native::{date_picker::State, icon_text, IconText}};
 
 const PADDING: u16 = 10;
 const SPACING: u16 = 15;
@@ -32,7 +28,7 @@ where
     date: &'a mut NaiveDate,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
-    on_submit: &'a dyn Fn(i32, u32, u32) -> Message,
+    on_submit: &'a dyn Fn(Date) -> Message,
     focus: &'a mut Focus,
     keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
@@ -56,7 +52,7 @@ where
     pub fn new(
         state: &'a mut State,
         on_cancel: Message,
-        on_submit: &'a dyn Fn(i32, u32, u32) -> Message,
+        on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
         style: &'a <Renderer as self::Renderer>::Style,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
@@ -559,9 +555,7 @@ where
 
         if !fake_messages.is_empty() {
             messages.push((self.on_submit)(
-                self.date.year(),
-                self.date.month(),
-                self.date.day(),
+                self.date.to_owned().into()
             ));
         }
 

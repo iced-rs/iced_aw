@@ -1,6 +1,6 @@
 use iced::{button, Align, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
 
-use iced_aw::date_picker::{self, DatePicker};
+use iced_aw::date_picker::{self, Date, DatePicker};
 
 fn main() -> iced::Result {
     DatePickerExample::run(Settings::default())
@@ -10,12 +10,12 @@ fn main() -> iced::Result {
 #[allow(clippy::enum_variant_names)]
 enum Message {
     ChooseDate,
-    SubmitDate(i32, u32, u32),
+    SubmitDate(Date),
     CancelDate,
 }
 
 struct DatePickerExample {
-    date: (i32, u32, u32),
+    date: Date,
     state: date_picker::State,
     button_state: button::State,
 }
@@ -25,7 +25,7 @@ impl Sandbox for DatePickerExample {
 
     fn new() -> Self {
         DatePickerExample {
-            date: (0, 0, 0),
+            date: Date::default(),
             state: date_picker::State::now(),
             button_state: button::State::new(),
         }
@@ -41,9 +41,8 @@ impl Sandbox for DatePickerExample {
                 self.state.reset();
                 self.state.show(true);
             }
-            Message::SubmitDate(year, month, day) => {
-                //println!("Submit date ({}-{}-{})", year, month, day);
-                self.date = (year, month, day);
+            Message::SubmitDate(date) => {
+                self.date = date;
                 self.state.show(false);
             }
             Message::CancelDate => {
@@ -68,8 +67,7 @@ impl Sandbox for DatePickerExample {
             .spacing(10)
             .push(datepicker)
             .push(Text::new(format!(
-                "Date: {:04}-{:02}-{:02}",
-                self.date.0, self.date.1, self.date.2
+                "Date: {}", self.date,
             )));
 
         Container::new(row)

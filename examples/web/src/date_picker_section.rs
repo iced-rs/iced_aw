@@ -1,18 +1,18 @@
 use crate::Section;
 use iced::{button, Align, Button, Column, Element, Length, Row, Text};
-use iced_aw::{date_picker, DatePicker};
+use iced_aw::{date_picker::{self, Date}, DatePicker};
 
 pub struct DatePickerSection {
     date_picker_state: date_picker::State,
     button_state: button::State,
-    date: (i32, u32, u32),
+    date: Date,
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     OpenDatePicker,
     CancelDate,
-    SubmitDate(i32, u32, u32),
+    SubmitDate(Date),
 }
 
 impl DatePickerSection {
@@ -20,7 +20,7 @@ impl DatePickerSection {
         Self {
             date_picker_state: date_picker::State::now(),
             button_state: button::State::new(),
-            date: (0, 0, 0),
+            date: Date::default(),
         }
     }
 
@@ -28,8 +28,8 @@ impl DatePickerSection {
         match message {
             Message::OpenDatePicker => self.date_picker_state.show(true),
             Message::CancelDate => self.date_picker_state.show(false),
-            Message::SubmitDate(year, month, day) => {
-                self.date = (year, month, day);
+            Message::SubmitDate(date) => {
+                self.date = date;
                 self.date_picker_state.show(false);
             }
         }
@@ -62,8 +62,7 @@ impl Section for DatePickerSection {
                     .spacing(20)
                     .push(date_picker)
                     .push(Text::new(format!(
-                        "Picked date: {:04}-{:02}-{:02}",
-                        self.date.0, self.date.1, self.date.2
+                        "Picked date: {}", self.date
                     ))),
             )
             .into();

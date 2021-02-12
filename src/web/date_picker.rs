@@ -4,6 +4,7 @@
 use dodrio::bumpalo;
 use iced_web::{Bus, Css, Element, Widget};
 
+pub use crate::core::date::{Date};
 pub use crate::style::date_picker::{Style, StyleSheet};
 
 use std::rc::Rc;
@@ -18,7 +19,7 @@ pub struct DatePicker<'a, Message> {
     // http://html5doctor.com/the-woes-of-date-input/
     _underlay: Element<'a, Message>,
     _on_cancel: Message,
-    on_submit: Rc<dyn Fn(i32, u32, u32) -> Message>,
+    on_submit: Rc<dyn Fn(Date) -> Message>,
     // You cannot currently style the appearance of the date picker.
     // https://developers.google.com/web/updates/2012/08/Quick-FAQs-on-input-type-date-in-Google-Chrome
     _style: Box<dyn StyleSheet>,
@@ -32,7 +33,7 @@ impl<'a, Message> DatePicker<'a, Message> {
     pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
-        F: 'static + Fn(i32, u32, u32) -> Message,
+        F: 'static + Fn(Date) -> Message,
     {
         Self {
             _state,
@@ -116,7 +117,7 @@ where
                 let month: u32 = split.next().unwrap().parse().unwrap();
                 let day: u32 = split.next().unwrap().parse().unwrap();
 
-                input_event_bus.publish(on_submit(year, month, day));
+                input_event_bus.publish(on_submit(Date::from_ymd(year, month, day)));
             })
             .finish();
 

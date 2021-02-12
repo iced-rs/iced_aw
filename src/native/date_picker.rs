@@ -15,6 +15,7 @@ use super::{
     overlay::date_picker::{self, DatePickerOverlay, Focus},
 };
 
+pub use crate::core::date::Date;
 /// An input element for picking dates.
 ///
 /// # Example
@@ -28,7 +29,7 @@ use super::{
 ///     Open,
 ///     Cancel,
 ///     // Year, Month, Day
-///     Submit(i32, u32, u32),
+///     Submit(date_picker::Date),
 /// }
 ///
 /// let mut button_state = button::State::new();
@@ -47,7 +48,7 @@ pub struct DatePicker<'a, Message: Clone, Renderer: date_picker::Renderer + butt
     state: &'a mut State,
     underlay: Element<'a, Message, Renderer>,
     on_cancel: Message,
-    on_submit: Box<dyn Fn(i32, u32, u32) -> Message>,
+    on_submit: Box<dyn Fn(Date) -> Message>,
     style: <Renderer as date_picker::Renderer>::Style,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
@@ -59,7 +60,7 @@ impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
     pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
-        F: 'static + Fn(i32, u32, u32) -> Message,
+        F: 'static + Fn(Date) -> Message,
     {
         Self {
             state,

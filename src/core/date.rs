@@ -1,7 +1,47 @@
 //! Helper functions for calculating dates
 
+use std::fmt::Display;
+
 use chrono::{Datelike, Duration, NaiveDate};
 use lazy_static::lazy_static;
+
+/// The date value
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Date {
+    /// The year value of the date.
+    pub year: i32,
+    /// The month value of the date (1 - 12).
+    pub month: u32,
+    /// The day value of the date (1 - 31).
+    pub day: u32,
+}
+
+impl Date {
+    /// Creates a new date.
+    pub fn from_ymd(year: i32, month: u32, day: u32) -> Self {
+        Self {
+            year, month, day
+        }
+    }
+}
+
+impl Display for Date {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:04}-{:02}-{:02}", self.year, self.month, self.day)
+    }
+}
+
+impl From<Date> for NaiveDate {
+    fn from(date: Date) -> Self {
+        NaiveDate::from_ymd(date.year, date.month, date.day)
+    }
+}
+
+impl From<NaiveDate> for Date {
+    fn from(date: NaiveDate) -> Self {
+        Date::from_ymd(date.year(), date.month(), date.day())
+    }
+}
 
 /// Creates a date with the previous month based on the given date.
 pub fn pred_month(date: &NaiveDate) -> NaiveDate {
