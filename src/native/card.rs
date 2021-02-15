@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: card*
 use std::hash::Hash;
 
-use iced_native::{event, Clipboard, Element, Event, Layout, Length, Point, Size, Widget};
+use iced_native::{event, touch, Clipboard, Element, Event, Layout, Length, Point, Size, Widget};
 use iced_native::{mouse, Align};
 
 use crate::core::renderer::DrawEnvironment;
@@ -242,19 +242,23 @@ where
         let close_status = head_children
             .next()
             .map_or(event::Status::Ignored, |close_layout| {
-                if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-                    if close_layout.bounds().contains(cursor_position) {
-                        return self
-                            .on_close
-                            .clone()
-                            .map_or(event::Status::Ignored, |on_close| {
-                                messages.push(on_close);
-                                event::Status::Captured
-                            });
+                // TODO: clean up
+                match event {
+                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                    | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                        if close_layout.bounds().contains(cursor_position) {
+                            return self.on_close.clone().map_or(
+                                event::Status::Ignored,
+                                |on_close| {
+                                    messages.push(on_close);
+                                    event::Status::Captured
+                                },
+                            );
+                        }
+                        event::Status::Ignored
                     }
+                    _ => event::Status::Ignored,
                 }
-
-                event::Status::Ignored
             });
 
         let body_layout = children.next().unwrap();

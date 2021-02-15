@@ -4,7 +4,7 @@
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: tab_bar*
-use iced_native::Element;
+use iced_native::{touch, Element};
 use std::hash::Hash;
 
 use iced_native::{
@@ -279,32 +279,35 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
-        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if layout.bounds().contains(cursor_position) {
-                let tabs_map: Vec<bool> = layout
-                    .children()
-                    .map(|layout| layout.bounds().contains(cursor_position))
-                    .collect();
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if layout.bounds().contains(cursor_position) {
+                    let tabs_map: Vec<bool> = layout
+                        .children()
+                        .map(|layout| layout.bounds().contains(cursor_position))
+                        .collect();
 
-                if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-                    messages.push(
-                        self.on_close
-                            .as_ref()
-                            .filter(|_on_close| {
-                                let tab_layout = layout.children().nth(new_selected).unwrap();
-                                let cross_layout = tab_layout.children().nth(1).unwrap();
+                    if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
+                        messages.push(
+                            self.on_close
+                                .as_ref()
+                                .filter(|_on_close| {
+                                    let tab_layout = layout.children().nth(new_selected).unwrap();
+                                    let cross_layout = tab_layout.children().nth(1).unwrap();
 
-                                cross_layout.bounds().contains(cursor_position)
-                            })
-                            .map(|on_close| (on_close)(new_selected))
-                            .unwrap_or_else(|| (self.on_select)(new_selected)),
-                    );
-                    return event::Status::Captured;
+                                    cross_layout.bounds().contains(cursor_position)
+                                })
+                                .map(|on_close| (on_close)(new_selected))
+                                .unwrap_or_else(|| (self.on_select)(new_selected)),
+                        );
+                        return event::Status::Captured;
+                    }
                 }
+                event::Status::Ignored
             }
-        };
-
-        event::Status::Ignored
+            _ => event::Status::Ignored,
+        }
     }
 
     fn draw(

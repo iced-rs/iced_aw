@@ -7,8 +7,8 @@ use chrono::{Datelike, NaiveDate};
 use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
-    Length, Point, Row, Size, Text, Widget,
+    mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
+    Layout, Length, Point, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -129,18 +129,22 @@ where
         let _center_bounds = month_children.next().unwrap().bounds();
         let right_bounds = month_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if month_layout.bounds().contains(cursor_position) {
-                *self.focus = Focus::Month;
-            }
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if month_layout.bounds().contains(cursor_position) {
+                    *self.focus = Focus::Month;
+                }
 
-            if left_bounds.contains(cursor_position) {
-                *self.date = crate::core::date::pred_month(self.date);
-                status = event::Status::Captured;
-            } else if right_bounds.contains(cursor_position) {
-                *self.date = crate::core::date::succ_month(self.date);
-                status = event::Status::Captured;
+                if left_bounds.contains(cursor_position) {
+                    *self.date = crate::core::date::pred_month(self.date);
+                    status = event::Status::Captured;
+                } else if right_bounds.contains(cursor_position) {
+                    *self.date = crate::core::date::succ_month(self.date);
+                    status = event::Status::Captured;
+                }
             }
+            _ => {}
         }
 
         // ----------- Year -----------------------
@@ -151,18 +155,22 @@ where
         let _center_bounds = year_children.next().unwrap().bounds();
         let right_bounds = year_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if year_layout.bounds().contains(cursor_position) {
-                *self.focus = Focus::Year;
-            }
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if year_layout.bounds().contains(cursor_position) {
+                    *self.focus = Focus::Year;
+                }
 
-            if left_bounds.contains(cursor_position) {
-                *self.date = crate::core::date::pred_year(self.date);
-                status = event::Status::Captured;
-            } else if right_bounds.contains(cursor_position) {
-                *self.date = crate::core::date::succ_year(self.date);
-                status = event::Status::Captured;
+                if left_bounds.contains(cursor_position) {
+                    *self.date = crate::core::date::pred_year(self.date);
+                    status = event::Status::Captured;
+                } else if right_bounds.contains(cursor_position) {
+                    *self.date = crate::core::date::succ_year(self.date);
+                    status = event::Status::Captured;
+                }
             }
+            _ => {}
         }
 
         status
@@ -184,39 +192,43 @@ where
 
         let mut status = event::Status::Ignored;
 
-        if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if layout.bounds().contains(cursor_position) {
-                *self.focus = Focus::Day;
-            }
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if layout.bounds().contains(cursor_position) {
+                    *self.focus = Focus::Day;
+                }
 
-            'outer: for (y, row) in children.enumerate() {
-                for (x, label) in row.children().enumerate() {
-                    let bounds = label.bounds();
-                    if bounds.contains(cursor_position) {
-                        let (day, is_in_month) = crate::core::date::position_to_day(
-                            x,
-                            y,
-                            self.date.year(),
-                            self.date.month(),
-                        );
+                'outer: for (y, row) in children.enumerate() {
+                    for (x, label) in row.children().enumerate() {
+                        let bounds = label.bounds();
+                        if bounds.contains(cursor_position) {
+                            let (day, is_in_month) = crate::core::date::position_to_day(
+                                x,
+                                y,
+                                self.date.year(),
+                                self.date.month(),
+                            );
 
-                        // TODO: clean up
-                        *self.date = match is_in_month {
-                            -1 => crate::core::date::pred_month(self.date)
-                                .with_day(day as u32)
-                                .unwrap(),
-                            0 => self.date.with_day(day as u32).unwrap(),
-                            1 => crate::core::date::succ_month(self.date)
-                                .with_day(day as u32)
-                                .unwrap(),
-                            _ => panic!("Should not happen"),
-                        };
+                            // TODO: clean up
+                            *self.date = match is_in_month {
+                                -1 => crate::core::date::pred_month(self.date)
+                                    .with_day(day as u32)
+                                    .unwrap(),
+                                0 => self.date.with_day(day as u32).unwrap(),
+                                1 => crate::core::date::succ_month(self.date)
+                                    .with_day(day as u32)
+                                    .unwrap(),
+                                _ => panic!("Should not happen"),
+                            };
 
-                        status = event::Status::Captured;
-                        break 'outer;
+                            status = event::Status::Captured;
+                            break 'outer;
+                        }
                     }
                 }
             }
+            _ => {}
         }
 
         status

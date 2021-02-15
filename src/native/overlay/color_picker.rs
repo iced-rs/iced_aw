@@ -7,8 +7,8 @@ use iced_graphics::canvas;
 use iced_native::{
     button, column, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, text_input, Align, Button, Clipboard, Color, Column, Element, Event,
-    Layout, Length, Point, Rectangle, Row, Size, Text, Widget,
+    mouse, overlay, row, text, text_input, touch, Align, Button, Clipboard, Color, Column, Element,
+    Event, Layout, Length, Point, Rectangle, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -130,8 +130,8 @@ where
         let sat_value_bounds = hsv_color_children.next().unwrap().bounds();
         let hue_bounds = hsv_color_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::WheelScrolled { delta }) = event {
-            match delta {
+        match event {
+            Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                     let move_value =
                         |value: u16, y: f32| ((value as i32 + y as i32).rem_euclid(360)) as u16;
@@ -148,18 +148,24 @@ where
                         color_changed = true;
                     }
                 }
+            },
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if sat_value_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::SatValue;
+                    *self.focus = Focus::SatValue;
+                }
+                if hue_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::Hue;
+                    *self.focus = Focus::Hue;
+                }
             }
-        } else if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if sat_value_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::SatValue;
-                *self.focus = Focus::SatValue;
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerLifted { .. })
+            | Event::Touch(touch::Event::FingerLost { .. }) => {
+                *self.color_bar_dragged = ColorBarDragged::None;
             }
-            if hue_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::Hue;
-                *self.focus = Focus::Hue;
-            }
-        } else if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
-            *self.color_bar_dragged = ColorBarDragged::None;
+            _ => {}
         }
 
         let calc_percentage_sat = |bounds: &Rectangle, cursor_position: &Point| {
@@ -237,8 +243,8 @@ where
         let _ = alpha_row_children.next();
         let alpha_bar_bounds = alpha_row_children.next().unwrap().bounds();
 
-        if let Event::Mouse(mouse::Event::WheelScrolled { delta }) = event {
-            match delta {
+        match event {
+            Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                     let move_value =
                         |value: f32, y: f32| (value * 255.0 + y).clamp(0.0, 255.0) / 255.0;
@@ -272,26 +278,32 @@ where
                         color_changed = true;
                     }
                 }
+            },
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                if red_bar_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::Red;
+                    *self.focus = Focus::Red;
+                }
+                if green_bar_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::Green;
+                    *self.focus = Focus::Green;
+                }
+                if blue_bar_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::Blue;
+                    *self.focus = Focus::Blue;
+                }
+                if alpha_bar_bounds.contains(cursor_position) {
+                    *self.color_bar_dragged = ColorBarDragged::Alpha;
+                    *self.focus = Focus::Alpha;
+                }
             }
-        } else if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
-            if red_bar_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::Red;
-                *self.focus = Focus::Red;
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerLifted { .. })
+            | Event::Touch(touch::Event::FingerLost { .. }) => {
+                *self.color_bar_dragged = ColorBarDragged::None;
             }
-            if green_bar_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::Green;
-                *self.focus = Focus::Green;
-            }
-            if blue_bar_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::Blue;
-                *self.focus = Focus::Blue;
-            }
-            if alpha_bar_bounds.contains(cursor_position) {
-                *self.color_bar_dragged = ColorBarDragged::Alpha;
-                *self.focus = Focus::Alpha;
-            }
-        } else if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
-            *self.color_bar_dragged = ColorBarDragged::None;
+            _ => {}
         }
 
         let calc_percantage = |bounds: &Rectangle, cursor_position: &Point| {

@@ -22,8 +22,8 @@ use iced_graphics::{canvas, Size};
 use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, Align, Button, Clipboard, Column, Container, Element, Event, Layout,
-    Length, Point, Row, Text, Widget,
+    mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
+    Layout, Length, Point, Row, Text, Widget,
 };
 
 const PADDING: u16 = 10;
@@ -176,67 +176,67 @@ where
             );
 
             clock_status = match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                    match nearest_radius {
-                        NearestRadius::Period => {
-                            let (pm, hour) = self.time.hour12();
-                            let hour = if hour == 12 {
-                                if pm {
-                                    12
-                                } else {
-                                    0
-                                }
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => match nearest_radius {
+                    NearestRadius::Period => {
+                        let (pm, hour) = self.time.hour12();
+                        let hour = if hour == 12 {
+                            if pm {
+                                12
                             } else {
-                                hour
-                            };
+                                0
+                            }
+                        } else {
+                            hour
+                        };
 
-                            *self.time = self
-                                .time
-                                .with_hour(if pm && hour != 12 { hour } else { hour + 12 } % 24)
-                                .unwrap();
-                            event::Status::Captured
-                        }
-                        NearestRadius::Hour => {
-                            *self.focus = Focus::DigitalHour;
-
-                            let hour_points =
-                                crate::core::clock::circle_points(hour_radius, center, 12);
-                            let nearest_point =
-                                crate::core::clock::nearest_point(&hour_points, cursor_position);
-
-                            let (pm, _) = self.time.hour12();
-
-                            *self.time = self
-                                .time
-                                .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
-                                .unwrap();
-                            event::Status::Captured
-                        }
-                        NearestRadius::Minute => {
-                            *self.focus = Focus::DigitalMinute;
-
-                            let minute_points =
-                                crate::core::clock::circle_points(minute_radius, center, 60);
-                            let nearest_point =
-                                crate::core::clock::nearest_point(&minute_points, cursor_position);
-
-                            *self.time = self.time.with_minute(nearest_point as u32).unwrap();
-                            event::Status::Captured
-                        }
-                        NearestRadius::Second => {
-                            *self.focus = Focus::DigitalSecond;
-
-                            let second_points =
-                                crate::core::clock::circle_points(second_radius, center, 60);
-                            let nearest_point =
-                                crate::core::clock::nearest_point(&second_points, cursor_position);
-
-                            *self.time = self.time.with_second(nearest_point as u32).unwrap();
-                            event::Status::Captured
-                        }
-                        _ => event::Status::Ignored,
+                        *self.time = self
+                            .time
+                            .with_hour(if pm && hour != 12 { hour } else { hour + 12 } % 24)
+                            .unwrap();
+                        event::Status::Captured
                     }
-                }
+                    NearestRadius::Hour => {
+                        *self.focus = Focus::DigitalHour;
+
+                        let hour_points =
+                            crate::core::clock::circle_points(hour_radius, center, 12);
+                        let nearest_point =
+                            crate::core::clock::nearest_point(&hour_points, cursor_position);
+
+                        let (pm, _) = self.time.hour12();
+
+                        *self.time = self
+                            .time
+                            .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
+                            .unwrap();
+                        event::Status::Captured
+                    }
+                    NearestRadius::Minute => {
+                        *self.focus = Focus::DigitalMinute;
+
+                        let minute_points =
+                            crate::core::clock::circle_points(minute_radius, center, 60);
+                        let nearest_point =
+                            crate::core::clock::nearest_point(&minute_points, cursor_position);
+
+                        *self.time = self.time.with_minute(nearest_point as u32).unwrap();
+                        event::Status::Captured
+                    }
+                    NearestRadius::Second => {
+                        *self.focus = Focus::DigitalSecond;
+
+                        let second_points =
+                            crate::core::clock::circle_points(second_radius, center, 60);
+                        let nearest_point =
+                            crate::core::clock::nearest_point(&second_points, cursor_position);
+
+                        *self.time = self.time.with_second(nearest_point as u32).unwrap();
+                        event::Status::Captured
+                    }
+                    _ => event::Status::Ignored,
+                },
+
                 _ => event::Status::Ignored,
             };
         }
@@ -298,7 +298,8 @@ where
         };
 
         let digital_clock_status = match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 let mut status = event::Status::Ignored;
 
                 if hour_layout.bounds().contains(cursor_position) {
@@ -339,7 +340,8 @@ where
             let second_down_arrow = second_children.next().unwrap();
 
             match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     let mut status = event::Status::Ignored;
 
                     if second_layout.bounds().contains(cursor_position) {

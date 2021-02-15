@@ -5,8 +5,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, Clipboard, Container, Element, Event, Layout,
-    Length, Point, Size,
+    event, keyboard, layout::Limits, mouse, overlay, touch, Clipboard, Container, Element, Event,
+    Layout, Length, Point, Size,
 };
 
 use crate::core::renderer::DrawEnvironment;
@@ -148,7 +148,8 @@ where
             .as_ref()
             .zip(layout.children().next())
             .map(|(backdrop, layout)| match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     if !layout.bounds().contains(cursor_position) {
                         messages.push(backdrop.to_owned());
                         event::Status::Captured
