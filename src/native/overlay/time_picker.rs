@@ -13,11 +13,11 @@ use crate::{
     graphics::icons::Icon,
     native::{
         icon_text,
-        time_picker::{State, Time},
+        time_picker::{self, Time},
         IconText,
     },
 };
-use chrono::{Duration, NaiveTime, Timelike};
+use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_graphics::{canvas, Size};
 use iced_native::{
     button, column, container, event, keyboard,
@@ -37,17 +37,10 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + button::Renderer,
 {
-    time: &'a mut NaiveTime,
-    clock_cache_needs_clearance: &'a mut bool,
-    clock_cache: &'a mut canvas::Cache,
+    state: &'a mut State,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
     on_submit: &'a dyn Fn(Time) -> Message,
-    use_24h: bool,
-    show_seconds: bool,
-    clock_dragged: &'a mut ClockDragged,
-    focus: &'a mut Focus,
-    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -67,30 +60,21 @@ where
     /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
     /// position.
     pub fn new(
-        state: &'a mut State,
+        state: &'a mut time_picker::State,
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
-        use_24h: bool,
-        show_seconds: bool,
         position: Point,
         style: &'a <Renderer as self::Renderer>::Style,
     ) -> Self {
-        let State {
-            time,
+        let time_picker::State {
+            overlay_state,
             cancel_button,
             submit_button,
-            clock_cache_needs_clearance,
-            clock_cache,
-            clock_dragged,
-            focus,
-            keyboard_modifiers,
             ..
         } = state;
 
         TimePickerOverlay {
-            time,
-            clock_cache_needs_clearance,
-            clock_cache,
+            state: overlay_state,
             cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
@@ -103,11 +87,6 @@ where
             .on_press(on_cancel) // Sending a fake message
             .into(),
             on_submit,
-            use_24h,
-            show_seconds,
-            clock_dragged,
-            focus,
-            keyboard_modifiers,
             position,
             style,
         }
@@ -133,11 +112,11 @@ where
         #[allow(unused_assignments)]
         let mut clock_status = event::Status::Ignored;
         if layout.bounds().contains(cursor_position) {
-            *self.clock_cache_needs_clearance = true;
-            self.clock_cache.clear();
-        } else if *self.clock_cache_needs_clearance {
-            self.clock_cache.clear();
-            *self.clock_cache_needs_clearance = false;
+            self.state.clock_cache_needs_clearance = true;
+            self.state.clock_cache.clear();
+        } else if self.state.clock_cache_needs_clearance {
+            self.state.clock_cache.clear();
+            self.state.clock_cache_needs_clearance = false;
         }
 
         // TODO: clean this up
@@ -148,7 +127,7 @@ where
 
             let period_radius = radius * PERIOD_PERCENTAGE;
 
-            let (hour_radius, minute_radius, second_radius) = if self.show_seconds {
+            let (hour_radius, minute_radius, second_radius) = if self.state.show_seconds {
                 (
                     radius * HOUR_RADIUS_PERCENTAGE,
                     radius * MINUTE_RADIUS_PERCENTAGE,
@@ -163,7 +142,7 @@ where
             };
 
             let nearest_radius = crate::core::clock::nearest_radius(
-                &if self.show_seconds {
+                &if self.state.show_seconds {
                     vec![
                         (period_radius, NearestRadius::Period),
                         (hour_radius, NearestRadius::Hour),
@@ -185,7 +164,7 @@ where
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => match nearest_radius {
                     NearestRadius::Period => {
-                        let (pm, hour) = self.time.hour12();
+                        let (pm, hour) = self.state.time.hour12();
                         let hour = if hour == 12 {
                             if pm {
                                 12
@@ -196,25 +175,26 @@ where
                             hour
                         };
 
-                        *self.time = self
+                        self.state.time = self
+                            .state
                             .time
                             .with_hour(if pm && hour != 12 { hour } else { hour + 12 } % 24)
                             .unwrap();
                         event::Status::Captured
                     }
                     NearestRadius::Hour => {
-                        *self.focus = Focus::DigitalHour;
-                        *self.clock_dragged = ClockDragged::Hour;
+                        self.state.focus = Focus::DigitalHour;
+                        self.state.clock_dragged = ClockDragged::Hour;
                         event::Status::Captured
                     }
                     NearestRadius::Minute => {
-                        *self.focus = Focus::DigitalMinute;
-                        *self.clock_dragged = ClockDragged::Minute;
+                        self.state.focus = Focus::DigitalMinute;
+                        self.state.clock_dragged = ClockDragged::Minute;
                         event::Status::Captured
                     }
                     NearestRadius::Second => {
-                        *self.focus = Focus::DigitalSecond;
-                        *self.clock_dragged = ClockDragged::Second;
+                        self.state.focus = Focus::DigitalSecond;
+                        self.state.clock_dragged = ClockDragged::Second;
                         event::Status::Captured
                     }
                     _ => event::Status::Ignored,
@@ -222,21 +202,22 @@ where
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerLifted { .. })
                 | Event::Touch(touch::Event::FingerLost { .. }) => {
-                    *self.clock_dragged = ClockDragged::None;
+                    self.state.clock_dragged = ClockDragged::None;
                     event::Status::Captured
                 }
                 _ => event::Status::Ignored,
             };
 
-            let clock_dragged_status = match self.clock_dragged {
+            let clock_dragged_status = match self.state.clock_dragged {
                 ClockDragged::Hour => {
                     let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
                     let nearest_point =
                         crate::core::clock::nearest_point(&hour_points, cursor_position);
 
-                    let (pm, _) = self.time.hour12();
+                    let (pm, _) = self.state.time.hour12();
 
-                    *self.time = self
+                    self.state.time = self
+                        .state
                         .time
                         .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
                         .unwrap();
@@ -248,7 +229,7 @@ where
                     let nearest_point =
                         crate::core::clock::nearest_point(&minute_points, cursor_position);
 
-                    *self.time = self.time.with_minute(nearest_point as u32).unwrap();
+                    self.state.time = self.state.time.with_minute(nearest_point as u32).unwrap();
                     event::Status::Captured
                 }
                 ClockDragged::Second => {
@@ -257,7 +238,7 @@ where
                     let nearest_point =
                         crate::core::clock::nearest_point(&second_points, cursor_position);
 
-                    *self.time = self.time.with_second(nearest_point as u32).unwrap();
+                    self.state.time = self.state.time.with_second(nearest_point as u32).unwrap();
                     event::Status::Captured
                 }
                 ClockDragged::None => event::Status::Ignored,
@@ -269,7 +250,7 @@ where
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerLifted { .. })
                 | Event::Touch(touch::Event::FingerLost { .. }) => {
-                    *self.clock_dragged = ClockDragged::None;
+                    self.state.clock_dragged = ClockDragged::None;
                     clock_status = event::Status::Captured
                 }
                 _ => clock_status = event::Status::Ignored,
@@ -291,7 +272,7 @@ where
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
 
-        if !self.use_24h {
+        if !self.state.use_24h {
             // Placeholder
             let _ = digital_clock_children.next();
         }
@@ -338,10 +319,10 @@ where
                 let mut status = event::Status::Ignored;
 
                 if hour_layout.bounds().contains(cursor_position) {
-                    *self.focus = Focus::DigitalHour;
+                    self.state.focus = Focus::DigitalHour;
 
                     status = calculate_time(
-                        &mut self.time,
+                        &mut self.state.time,
                         hour_up_arrow,
                         hour_down_arrow,
                         Duration::hours(1),
@@ -349,10 +330,10 @@ where
                 }
 
                 if minute_layout.bounds().contains(cursor_position) {
-                    *self.focus = Focus::DigitalMinute;
+                    self.state.focus = Focus::DigitalMinute;
 
                     status = calculate_time(
-                        &mut self.time,
+                        &mut self.state.time,
                         minute_up_arrow,
                         minute_down_arrow,
                         Duration::minutes(1),
@@ -364,7 +345,7 @@ where
             _ => event::Status::Ignored,
         };
 
-        let second_status = if self.show_seconds {
+        let second_status = if self.state.show_seconds {
             let _ = digital_clock_children.next();
 
             let second_layout = digital_clock_children.next().unwrap();
@@ -380,10 +361,10 @@ where
                     let mut status = event::Status::Ignored;
 
                     if second_layout.bounds().contains(cursor_position) {
-                        *self.focus = Focus::DigitalSecond;
+                        self.state.focus = Focus::DigitalSecond;
 
                         status = calculate_time(
-                            &mut self.time,
+                            &mut self.state.time,
                             second_up_arrow,
                             second_down_arrow,
                             Duration::seconds(1),
@@ -401,7 +382,7 @@ where
         let digital_clock_status = digital_clock_status.merge(second_status);
 
         if digital_clock_status == event::Status::Captured {
-            self.clock_cache.clear()
+            self.state.clock_cache.clear()
         }
 
         digital_clock_status
@@ -417,7 +398,7 @@ where
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         // TODO: clean this up a bit
-        if *self.focus == Focus::None {
+        if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
 
@@ -426,10 +407,10 @@ where
 
             match key_code {
                 keyboard::KeyCode::Tab => {
-                    if self.keyboard_modifiers.shift {
-                        *self.focus = self.focus.previous(self.show_seconds);
+                    if self.state.keyboard_modifiers.shift {
+                        self.state.focus = self.state.focus.previous(self.state.show_seconds);
                     } else {
-                        *self.focus = self.focus.next(self.show_seconds);
+                        self.state.focus = self.state.focus.next(self.state.show_seconds);
                     }
                 }
                 _ => {
@@ -448,16 +429,16 @@ where
                             }
                         };
 
-                    match self.focus {
+                    match self.state.focus {
                         Focus::Overlay => {}
                         Focus::DigitalHour => {
-                            keyboard_handle(key_code, &mut self.time, Duration::hours(1))
+                            keyboard_handle(key_code, &mut self.state.time, Duration::hours(1))
                         }
                         Focus::DigitalMinute => {
-                            keyboard_handle(key_code, &mut self.time, Duration::minutes(1))
+                            keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1))
                         }
                         Focus::DigitalSecond => {
-                            keyboard_handle(key_code, &mut self.time, Duration::seconds(1))
+                            keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1))
                         }
                         Focus::Cancel => {}
                         Focus::Submit => {}
@@ -467,12 +448,12 @@ where
             }
 
             if status == event::Status::Captured {
-                self.clock_cache.clear()
+                self.state.clock_cache.clear()
             }
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            *self.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -518,7 +499,7 @@ where
             .width(Length::Shrink)
             .spacing(1);
 
-        if !self.use_24h {
+        if !self.state.use_24h {
             digital_clock_row = digital_clock_row.push(
                 Column::new() // Just a placeholder
                     .height(Length::Shrink)
@@ -538,7 +519,7 @@ where
                             .width(Length::Units(arrow_size))
                             .height(Length::Units(arrow_size)),
                     )
-                    .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                    .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
                     .push(
                         // Down Hour arrow
                         Row::new()
@@ -561,7 +542,7 @@ where
                             .width(Length::Units(arrow_size))
                             .height(Length::Units(arrow_size)),
                     )
-                    .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                    .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
                     .push(
                         // Down Minute arrow
                         Row::new()
@@ -570,7 +551,7 @@ where
                     ),
             );
 
-        if self.show_seconds {
+        if self.state.show_seconds {
             digital_clock_row = digital_clock_row
                 .push(
                     Column::new()
@@ -587,7 +568,7 @@ where
                                 .width(Length::Units(arrow_size))
                                 .height(Length::Units(arrow_size)),
                         )
-                        .push(Text::new(format!("{:02}", self.time.hour())).size(font_size))
+                        .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
                         .push(
                             // Down Minute arrow
                             Row::new()
@@ -597,7 +578,7 @@ where
                 )
         }
 
-        if !self.use_24h {
+        if !self.state.use_24h {
             digital_clock_row = digital_clock_row.push(
                 Column::new()
                     .height(Length::Shrink)
@@ -776,24 +757,24 @@ where
         );
 
         if !fake_messages.is_empty() {
-            let (hour, period) = if self.use_24h {
-                (self.time.hour(), Period::H24)
+            let (hour, period) = if self.state.use_24h {
+                (self.state.time.hour(), Period::H24)
             } else {
-                let (period, hour) = self.time.hour12();
+                let (period, hour) = self.state.time.hour12();
                 (hour, if period { Period::Pm } else { Period::Am })
             };
 
-            let time = if self.show_seconds {
+            let time = if self.state.show_seconds {
                 Time::Hms {
                     hour,
-                    minute: self.time.minute(),
-                    second: self.time.second(),
+                    minute: self.state.time.minute(),
+                    second: self.state.time.second(),
                     period,
                 }
             } else {
                 Time::Hm {
                     hour,
-                    minute: self.time.minute(),
+                    minute: self.state.time.minute(),
                     period,
                 }
             };
@@ -822,14 +803,11 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
-                focus: *self.focus,
+                focus: self.state.focus,
             },
-            &self.time,
-            &self.clock_cache,
+            &self.state,
             &self.cancel_button,
             &self.submit_button,
-            self.use_24h,
-            self.show_seconds,
         )
     }
 
@@ -852,16 +830,12 @@ pub trait Renderer: iced_native::Renderer {
     type Style: Default;
 
     /// Draws a [`TimePickerOverlay`](TimePickerOverlay).
-    #[allow(clippy::too_many_arguments)]
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
-        time: &NaiveTime,
-        clock_cache: &canvas::Cache,
+        state: &State,
         cancel_button: &Element<'_, Message, Self>,
         submit_button: &Element<'_, Message, Self>,
-        use_24h: bool,
-        show_seconds: bool,
     ) -> Self::Output;
 }
 
@@ -872,13 +846,38 @@ impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
         _env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
-        _time: &NaiveTime,
-        _clock_cache: &canvas::Cache,
+        _state: &State,
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
-        _use_24h: bool,
-        _show_seconds: bool,
     ) -> Self::Output {
+    }
+}
+
+/// The state of the [`TimePickerOverlay`](TimePickerOverlay).
+#[derive(Debug)]
+pub struct State {
+    pub(crate) time: NaiveTime,
+    pub(crate) clock_cache_needs_clearance: bool,
+    pub(crate) clock_cache: canvas::Cache,
+    pub(crate) use_24h: bool,
+    pub(crate) show_seconds: bool,
+    pub(crate) clock_dragged: ClockDragged,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            time: Local::now().naive_local().time(),
+            clock_cache_needs_clearance: false,
+            clock_cache: canvas::Cache::new(),
+            use_24h: false,
+            show_seconds: false,
+            clock_dragged: ClockDragged::None,
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
+        }
     }
 }
 

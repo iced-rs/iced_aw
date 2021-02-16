@@ -4,10 +4,9 @@
 use std::hash::Hash;
 
 use color_picker::ColorBarDragged;
-use iced_graphics::canvas;
 use iced_native::{
-    button, column, event, keyboard, overlay, row, text_input, Clipboard, Color, Element, Event,
-    Layout, Point, Widget,
+    button, column, event, overlay, row, text_input, Clipboard, Color, Element, Event, Layout,
+    Point, Widget,
 };
 
 pub use super::overlay::color_picker::Renderer;
@@ -86,20 +85,13 @@ where
     }
 }
 
-/// The state of the [`ColorPicker`](ColorPicker) / [`ColorPickerOverlay`](ColorPickerOverlay).
+/// The state of the [`ColorPicker`](ColorPicker).
 #[derive(Debug, Default)]
 pub struct State {
     pub(crate) show: bool,
-    pub(crate) color: Color,
-    pub(crate) sat_value_canvas_cache: canvas::Cache,
-    pub(crate) hue_canvas_cache: canvas::Cache,
-    //pub(crate) color_hex: String,
-    pub(crate) text_input: text_input::State,
+    pub(crate) overlay_state: color_picker::State,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
-    pub(crate) color_bar_dragged: ColorBarDragged,
-    pub(crate) focus: Focus,
-    pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
 impl State {
@@ -107,30 +99,22 @@ impl State {
     pub fn new() -> Self {
         State {
             show: false,
-            //color: Color::default(),
-            color: Color::from_rgb(0.5, 0.25, 0.25),
-            sat_value_canvas_cache: canvas::Cache::new(),
-            hue_canvas_cache: canvas::Cache::new(),
-            //color_hex: State::color_as_string(&Color::default()),
-            text_input: text_input::State::new(),
+            overlay_state: color_picker::State::default(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
-            color_bar_dragged: ColorBarDragged::None,
-            focus: Focus::default(),
-            keyboard_modifiers: keyboard::Modifiers::default(),
         }
     }
 
     /// Sets the visibility of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub fn show(&mut self, b: bool) {
-        self.focus = if b { Focus::Overlay } else { Focus::None };
+        self.overlay_state.focus = if b { Focus::Overlay } else { Focus::None };
         self.show = b;
     }
 
     /// Resets the color of the state.
     pub fn reset(&mut self) {
-        self.color = Color::from_rgb(0.5, 0.25, 0.25);
-        self.color_bar_dragged = ColorBarDragged::None;
+        self.overlay_state.color = Color::from_rgb(0.5, 0.25, 0.25);
+        self.overlay_state.color_bar_dragged = ColorBarDragged::None;
     }
 }
 

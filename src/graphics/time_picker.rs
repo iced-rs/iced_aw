@@ -45,12 +45,9 @@ where
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
-        time: &NaiveTime,
-        clock_cache: &canvas::Cache,
+        state: &crate::native::overlay::time_picker::State,
         cancel_button: &iced_native::Element<'_, Message, Self>,
         submit_button: &iced_native::Element<'_, Message, Self>,
-        use_24h: bool,
-        show_seconds: bool,
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
@@ -83,11 +80,11 @@ where
         let clock_layout = children.next().unwrap();
         let (clock, clock_mouse_interaction) = clock(
             clock_layout,
-            time,
-            clock_cache,
+            &state.time,
+            &state.clock_cache,
             env.cursor_position,
-            use_24h,
-            show_seconds,
+            state.use_24h,
+            state.show_seconds,
             &style,
         );
 
@@ -95,10 +92,10 @@ where
         let digital_clock_layout = children.next().unwrap();
         let (digital_clock, digital_clock_mouse_interaction) = digital_clock(
             digital_clock_layout,
-            time,
+            &state.time,
             env.cursor_position,
-            use_24h,
-            show_seconds,
+            state.use_24h,
+            state.show_seconds,
             &style,
             env.focus,
         );

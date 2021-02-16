@@ -3,13 +3,11 @@
 //! *This API requires the following crate features to be activated: time_picker*
 use std::hash::Hash;
 
-use chrono::{Local, NaiveTime};
-use iced_graphics::canvas;
+use chrono::Local;
 use iced_native::{
-    button, column, container, event, keyboard, overlay, row, text, Clipboard, Element, Event,
-    Layout, Point, Widget,
+    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
+    Widget,
 };
-use time_picker::ClockDragged;
 
 pub use super::overlay::time_picker::Renderer;
 use super::{
@@ -54,8 +52,8 @@ where
     underlay: Element<'a, Message, Renderer>,
     on_cancel: Message,
     on_submit: Box<dyn Fn(Time) -> Message>,
-    use_24h: bool,
-    show_seconds: bool,
+    //use_24h: bool,
+    //show_seconds: bool,
     style: <Renderer as time_picker::Renderer>::Style,
 }
 
@@ -75,21 +73,21 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            use_24h: false,
-            show_seconds: false,
+            //use_24h: false,
+            //show_seconds: false,
             style: <Renderer as time_picker::Renderer>::Style::default(),
         }
     }
 
     /// Use 24 hour format instead of AM/PM.
     pub fn use_24h(mut self) -> Self {
-        self.use_24h = true;
+        self.state.overlay_state.use_24h = true;
         self
     }
 
     /// Enables the picker to also pick seconds.
     pub fn show_seconds(mut self) -> Self {
-        self.show_seconds = true;
+        self.state.overlay_state.show_seconds = true;
         self
     }
 
@@ -107,14 +105,15 @@ where
 #[derive(Debug)]
 pub struct State {
     pub(crate) show: bool,
-    pub(crate) time: NaiveTime,
+    //pub(crate) time: NaiveTime,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
-    pub(crate) clock_cache_needs_clearance: bool,
-    pub(crate) clock_cache: canvas::Cache,
-    pub(crate) clock_dragged: ClockDragged,
-    pub(crate) focus: Focus,
-    pub(crate) keyboard_modifiers: keyboard::Modifiers,
+    //pub(crate) clock_cache_needs_clearance: bool,
+    //pub(crate) clock_cache: canvas::Cache,
+    //pub(crate) clock_dragged: ClockDragged,
+    //pub(crate) focus: Focus,
+    //pub(crate) keyboard_modifiers: keyboard::Modifiers,
+    pub(crate) overlay_state: time_picker::State,
 }
 
 impl State {
@@ -122,27 +121,28 @@ impl State {
     pub fn now() -> Self {
         State {
             show: false,
-            time: Local::now().naive_local().time(),
+            //time: Local::now().naive_local().time(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
-            clock_cache_needs_clearance: false,
-            clock_cache: canvas::Cache::new(),
-            clock_dragged: ClockDragged::None,
-            focus: Focus::default(),
-            keyboard_modifiers: keyboard::Modifiers::default(),
+            //clock_cache_needs_clearance: false,
+            //clock_cache: canvas::Cache::new(),
+            //clock_dragged: ClockDragged::None,
+            //focus: Focus::default(),
+            //keyboard_modifiers: keyboard::Modifiers::default(),
+            overlay_state: time_picker::State::default(),
         }
     }
 
     /// Sets the visibility of the [`TimePickerOverlay`](TimePickerOverlay).
     pub fn show(&mut self, b: bool) {
-        self.focus = if b { Focus::Overlay } else { Focus::None };
+        self.overlay_state.focus = if b { Focus::Overlay } else { Focus::None };
         self.show = b;
     }
 
     /// Resets the time of the state to the current time.
     pub fn reset(&mut self) {
-        self.clock_cache.clear();
-        self.time = Local::now().naive_local().time();
+        self.overlay_state.clock_cache.clear();
+        self.overlay_state.time = Local::now().naive_local().time();
     }
 }
 
@@ -224,8 +224,8 @@ where
                 &mut self.state,
                 self.on_cancel.clone(),
                 &self.on_submit,
-                self.use_24h,
-                self.show_seconds,
+                //self.use_24h,
+                //self.show_seconds,
                 position,
                 &self.style,
             )

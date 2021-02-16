@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::hash::Hash;
 
-use chrono::{Datelike, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate};
 use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
@@ -14,7 +14,7 @@ use iced_native::{
 use crate::{
     core::{date::Date, renderer::DrawEnvironment},
     graphics::icons::Icon,
-    native::{date_picker::State, icon_text, IconText},
+    native::{date_picker, icon_text, IconText},
 };
 
 const PADDING: u16 = 10;
@@ -29,12 +29,10 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + button::Renderer,
 {
-    date: &'a mut NaiveDate,
+    state: &'a mut State,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
     on_submit: &'a dyn Fn(Date) -> Message,
-    focus: &'a mut Focus,
-    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -54,24 +52,22 @@ where
     /// Creates a new [`DatePickerOverlay`](DatePickerOverlay) on the given
     /// position.
     pub fn new(
-        state: &'a mut State,
+        state: &'a mut date_picker::State,
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
         style: &'a <Renderer as self::Renderer>::Style,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
     ) -> Self {
-        let State {
-            date,
+        let date_picker::State {
+            overlay_state,
             cancel_button,
             submit_button,
-            focus,
-            keyboard_modifiers,
             ..
         } = state;
 
         DatePickerOverlay {
-            date,
+            state: overlay_state,
             cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
@@ -86,8 +82,6 @@ where
             //.style(button_style)
             .into(),
             on_submit,
-            focus,
-            keyboard_modifiers,
             position,
             style,
         }
@@ -100,11 +94,11 @@ where
     }
 
     fn year_as_string(&self) -> String {
-        crate::core::date::year_as_string(self.date)
+        crate::core::date::year_as_string(&self.state.date)
     }
 
     fn month_as_string(&self) -> String {
-        crate::core::date::month_as_string(&self.date)
+        crate::core::date::month_as_string(&self.state.date)
     }
 
     /// The event handling for the month / year bar.
@@ -133,14 +127,14 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if month_layout.bounds().contains(cursor_position) {
-                    *self.focus = Focus::Month;
+                    self.state.focus = Focus::Month;
                 }
 
                 if left_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::pred_month(self.date);
+                    self.state.date = crate::core::date::pred_month(&self.state.date);
                     status = event::Status::Captured;
                 } else if right_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::succ_month(self.date);
+                    self.state.date = crate::core::date::succ_month(&self.state.date);
                     status = event::Status::Captured;
                 }
             }
@@ -159,14 +153,14 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if year_layout.bounds().contains(cursor_position) {
-                    *self.focus = Focus::Year;
+                    self.state.focus = Focus::Year;
                 }
 
                 if left_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::pred_year(self.date);
+                    self.state.date = crate::core::date::pred_year(&self.state.date);
                     status = event::Status::Captured;
                 } else if right_bounds.contains(cursor_position) {
-                    *self.date = crate::core::date::succ_year(self.date);
+                    self.state.date = crate::core::date::succ_year(&self.state.date);
                     status = event::Status::Captured;
                 }
             }
@@ -196,7 +190,7 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if layout.bounds().contains(cursor_position) {
-                    *self.focus = Focus::Day;
+                    self.state.focus = Focus::Day;
                 }
 
                 'outer: for (y, row) in children.enumerate() {
@@ -206,17 +200,17 @@ where
                             let (day, is_in_month) = crate::core::date::position_to_day(
                                 x,
                                 y,
-                                self.date.year(),
-                                self.date.month(),
+                                self.state.date.year(),
+                                self.state.date.month(),
                             );
 
                             // TODO: clean up
-                            *self.date = match is_in_month {
-                                -1 => crate::core::date::pred_month(self.date)
+                            self.state.date = match is_in_month {
+                                -1 => crate::core::date::pred_month(&self.state.date)
                                     .with_day(day as u32)
                                     .unwrap(),
-                                0 => self.date.with_day(day as u32).unwrap(),
-                                1 => crate::core::date::succ_month(self.date)
+                                0 => self.state.date.with_day(day as u32).unwrap(),
+                                1 => crate::core::date::succ_month(&self.state.date)
                                     .with_day(day as u32)
                                     .unwrap(),
                                 _ => panic!("Should not happen"),
@@ -244,7 +238,7 @@ where
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         // TODO: clean this up a bit
-        if *self.focus == Focus::None {
+        if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
 
@@ -253,51 +247,51 @@ where
 
             match key_code {
                 keyboard::KeyCode::Tab => {
-                    if self.keyboard_modifiers.shift {
-                        *self.focus = self.focus.previous();
+                    if self.state.keyboard_modifiers.shift {
+                        self.state.focus = self.state.focus.previous();
                     } else {
-                        *self.focus = self.focus.next();
+                        self.state.focus = self.state.focus.next();
                     }
                 }
-                _ => match self.focus {
+                _ => match self.state.focus {
                     Focus::Overlay => {}
                     Focus::Month => match key_code {
                         keyboard::KeyCode::Left => {
-                            *self.date = crate::core::date::pred_month(self.date);
+                            self.state.date = crate::core::date::pred_month(&self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            *self.date = crate::core::date::succ_month(self.date);
+                            self.state.date = crate::core::date::succ_month(&self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
                     Focus::Year => match key_code {
                         keyboard::KeyCode::Left => {
-                            *self.date = crate::core::date::pred_year(self.date);
+                            self.state.date = crate::core::date::pred_year(&self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            *self.date = crate::core::date::succ_year(self.date);
+                            self.state.date = crate::core::date::succ_year(&self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
                     Focus::Day => match key_code {
                         keyboard::KeyCode::Left => {
-                            *self.date = crate::core::date::pred_day(self.date);
+                            self.state.date = crate::core::date::pred_day(&self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            *self.date = crate::core::date::succ_day(self.date);
+                            self.state.date = crate::core::date::succ_day(&self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Up => {
-                            *self.date = crate::core::date::pred_week(self.date);
+                            self.state.date = crate::core::date::pred_week(&self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Down => {
-                            *self.date = crate::core::date::succ_week(self.date);
+                            self.state.date = crate::core::date::succ_week(&self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
@@ -310,7 +304,7 @@ where
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            *self.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -570,7 +564,7 @@ where
         );
 
         if !fake_messages.is_empty() {
-            messages.push((self.on_submit)(self.date.to_owned().into()));
+            messages.push((self.on_submit)(self.state.date.into()));
         }
 
         month_year_status
@@ -594,9 +588,9 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
-                focus: *self.focus,
+                focus: self.state.focus,
             },
-            &self.date,
+            &self.state.date,
             &self.year_as_string(),
             &self.month_as_string(),
             &self.cancel_button,
@@ -647,6 +641,24 @@ impl Renderer for iced_native::renderer::Null {
         _cancel_button: &Element<'_, Message, Self>,
         _submit_button: &Element<'_, Message, Self>,
     ) -> Self::Output {
+    }
+}
+
+/// The state of the [`DatePickerOverlay`](DatePickerOverlay).
+#[derive(Debug)]
+pub struct State {
+    pub(crate) date: NaiveDate,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            date: Local::today().naive_local(),
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
+        }
     }
 }
 

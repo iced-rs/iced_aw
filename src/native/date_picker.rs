@@ -3,10 +3,10 @@
 //! *This API requires the following crate features to be activated: date_picker*
 use std::hash::Hash;
 
-use chrono::{Local, NaiveDate};
+use chrono::Local;
 use iced_native::{
-    button, column, container, event, keyboard, overlay, row, text, Clipboard, Element, Event,
-    Layout, Point, Widget,
+    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
+    Widget,
 };
 
 pub use super::overlay::date_picker::Renderer;
@@ -87,11 +87,9 @@ impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
 #[derive(Debug)]
 pub struct State {
     pub(crate) show: bool,
-    pub(crate) date: NaiveDate,
+    pub(crate) overlay_state: date_picker::State,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
-    pub(crate) focus: Focus,
-    pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
 impl State {
@@ -99,23 +97,21 @@ impl State {
     pub fn now() -> Self {
         State {
             show: false,
-            date: Local::today().naive_local(),
+            overlay_state: date_picker::State::default(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
-            focus: Focus::default(),
-            keyboard_modifiers: keyboard::Modifiers::default(),
         }
     }
 
     /// Sets the visibility of the [`DatePickerOverlay`](DatePickerOverlay).
     pub fn show(&mut self, b: bool) {
-        self.focus = if b { Focus::Overlay } else { Focus::None };
+        self.overlay_state.focus = if b { Focus::Overlay } else { Focus::None };
         self.show = b;
     }
 
     /// Resets the date of the state to the current date.
     pub fn reset(&mut self) {
-        self.date = Local::today().naive_local();
+        self.overlay_state.date = Local::today().naive_local();
     }
 }
 

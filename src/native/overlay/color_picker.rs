@@ -32,17 +32,10 @@ where
     Message: Clone,
     Renderer: self::Renderer,
 {
-    color: &'a mut Color,
-    //color_hex: &'a mut String,
-    sat_value_canvas_cache: &'a mut canvas::Cache,
-    hue_canvas_cache: &'a mut canvas::Cache,
-    //text_input: Element<'a, Message, Renderer>,
+    state: &'a mut State,
     cancel_button: Element<'a, Message, Renderer>,
     submit_button: Element<'a, Message, Renderer>,
     on_submit: &'a dyn Fn(Color) -> Message,
-    color_bar_dragged: &'a mut ColorBarDragged,
-    focus: &'a mut Focus,
-    keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
     style: &'a <Renderer as self::Renderer>::Style,
 }
@@ -70,22 +63,14 @@ where
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
         let color_picker::State {
-            color,
-            //color_hex,
-            sat_value_canvas_cache,
-            hue_canvas_cache,
+            overlay_state,
             cancel_button,
             submit_button,
-            color_bar_dragged,
-            focus,
-            keyboard_modifiers,
             ..
         } = state;
 
         ColorPickerOverlay {
-            color,
-            sat_value_canvas_cache,
-            hue_canvas_cache,
+            state: overlay_state,
             cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
                 .on_press(on_cancel.clone())
@@ -98,9 +83,6 @@ where
             .on_press(on_cancel) // Sending a fake message
             .into(),
             on_submit,
-            color_bar_dragged,
-            focus,
-            keyboard_modifiers,
             position,
             style,
         }
@@ -124,7 +106,7 @@ where
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
-        let hsv_color: Hsv = self.color.to_owned().into();
+        let hsv_color: Hsv = self.state.color.to_owned().into();
         let mut color_changed = false;
 
         let sat_value_bounds = hsv_color_children.next().unwrap().bounds();
@@ -137,8 +119,8 @@ where
                         |value: u16, y: f32| ((value as i32 + y as i32).rem_euclid(360)) as u16;
 
                     if hue_bounds.contains(cursor_position) {
-                        *self.color = Color {
-                            a: self.color.a,
+                        self.state.color = Color {
+                            a: self.state.color.a,
                             ..Hsv {
                                 hue: move_value(hsv_color.hue, y),
                                 ..hsv_color
@@ -152,18 +134,18 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if sat_value_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::SatValue;
-                    *self.focus = Focus::SatValue;
+                    self.state.color_bar_dragged = ColorBarDragged::SatValue;
+                    self.state.focus = Focus::SatValue;
                 }
                 if hue_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::Hue;
-                    *self.focus = Focus::Hue;
+                    self.state.color_bar_dragged = ColorBarDragged::Hue;
+                    self.state.focus = Focus::Hue;
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerLifted { .. })
             | Event::Touch(touch::Event::FingerLost { .. }) => {
-                *self.color_bar_dragged = ColorBarDragged::None;
+                self.state.color_bar_dragged = ColorBarDragged::None;
             }
             _ => {}
         }
@@ -180,10 +162,10 @@ where
             (((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0) * 360.0) as u16
         };
 
-        match self.color_bar_dragged {
+        match self.state.color_bar_dragged {
             ColorBarDragged::SatValue => {
-                *self.color = Color {
-                    a: self.color.a,
+                self.state.color = Color {
+                    a: self.state.color.a,
                     ..Hsv {
                         saturation: calc_percentage_sat(&sat_value_bounds, &cursor_position),
                         value: calc_percentage_value(&sat_value_bounds, &cursor_position),
@@ -194,8 +176,8 @@ where
                 color_changed = true;
             }
             ColorBarDragged::Hue => {
-                *self.color = Color {
-                    a: self.color.a,
+                self.state.color = Color {
+                    a: self.state.color.a,
                     ..Hsv {
                         hue: calc_hue(&hue_bounds, &cursor_position),
                         ..hsv_color
@@ -250,30 +232,30 @@ where
                         |value: f32, y: f32| (value * 255.0 + y).clamp(0.0, 255.0) / 255.0;
 
                     if red_bar_bounds.contains(cursor_position) {
-                        *self.color = Color {
-                            r: move_value(self.color.r, y),
-                            ..*self.color
+                        self.state.color = Color {
+                            r: move_value(self.state.color.r, y),
+                            ..self.state.color
                         };
                         color_changed = true;
                     }
                     if green_bar_bounds.contains(cursor_position) {
-                        *self.color = Color {
-                            g: move_value(self.color.g, y),
-                            ..*self.color
+                        self.state.color = Color {
+                            g: move_value(self.state.color.g, y),
+                            ..self.state.color
                         };
                         color_changed = true;
                     }
                     if blue_bar_bounds.contains(cursor_position) {
-                        *self.color = Color {
-                            b: move_value(self.color.b, y),
-                            ..*self.color
+                        self.state.color = Color {
+                            b: move_value(self.state.color.b, y),
+                            ..self.state.color
                         };
                         color_changed = true;
                     }
                     if alpha_bar_bounds.contains(cursor_position) {
-                        *self.color = Color {
-                            a: move_value(self.color.a, y),
-                            ..*self.color
+                        self.state.color = Color {
+                            a: move_value(self.state.color.a, y),
+                            ..self.state.color
                         };
                         color_changed = true;
                     }
@@ -282,26 +264,26 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if red_bar_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::Red;
-                    *self.focus = Focus::Red;
+                    self.state.color_bar_dragged = ColorBarDragged::Red;
+                    self.state.focus = Focus::Red;
                 }
                 if green_bar_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::Green;
-                    *self.focus = Focus::Green;
+                    self.state.color_bar_dragged = ColorBarDragged::Green;
+                    self.state.focus = Focus::Green;
                 }
                 if blue_bar_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::Blue;
-                    *self.focus = Focus::Blue;
+                    self.state.color_bar_dragged = ColorBarDragged::Blue;
+                    self.state.focus = Focus::Blue;
                 }
                 if alpha_bar_bounds.contains(cursor_position) {
-                    *self.color_bar_dragged = ColorBarDragged::Alpha;
-                    *self.focus = Focus::Alpha;
+                    self.state.color_bar_dragged = ColorBarDragged::Alpha;
+                    self.state.focus = Focus::Alpha;
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerLifted { .. })
             | Event::Touch(touch::Event::FingerLost { .. }) => {
-                *self.color_bar_dragged = ColorBarDragged::None;
+                self.state.color_bar_dragged = ColorBarDragged::None;
             }
             _ => {}
         }
@@ -310,32 +292,32 @@ where
             ((cursor_position.x - bounds.x).max(0.0) / bounds.width).min(1.0)
         };
 
-        match self.color_bar_dragged {
+        match self.state.color_bar_dragged {
             ColorBarDragged::Red => {
-                *self.color = Color {
+                self.state.color = Color {
                     r: calc_percantage(&red_bar_bounds, &cursor_position),
-                    ..*self.color
+                    ..self.state.color
                 };
                 color_changed = true;
             }
             ColorBarDragged::Green => {
-                *self.color = Color {
+                self.state.color = Color {
                     g: calc_percantage(&green_bar_bounds, &cursor_position),
-                    ..*self.color
+                    ..self.state.color
                 };
                 color_changed = true;
             }
             ColorBarDragged::Blue => {
-                *self.color = Color {
+                self.state.color = Color {
                     b: calc_percantage(&blue_bar_bounds, &cursor_position),
-                    ..*self.color
+                    ..self.state.color
                 };
                 color_changed = true;
             }
             ColorBarDragged::Alpha => {
-                *self.color = Color {
+                self.state.color = Color {
                     a: calc_percantage(&alpha_bar_bounds, &cursor_position),
-                    ..*self.color
+                    ..self.state.color
                 };
                 color_changed = true;
             }
@@ -359,7 +341,7 @@ where
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         // TODO: clean this up a bit
-        if *self.focus == Focus::None {
+        if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
 
@@ -368,14 +350,14 @@ where
 
             match key_code {
                 keyboard::KeyCode::Tab => {
-                    if self.keyboard_modifiers.shift {
-                        *self.focus = self.focus.previous();
+                    if self.state.keyboard_modifiers.shift {
+                        self.state.focus = self.state.focus.previous();
                     } else {
-                        *self.focus = self.focus.next();
+                        self.state.focus = self.state.focus.next();
                     }
                     // TODO: maybe place this better
-                    self.sat_value_canvas_cache.clear();
-                    self.hue_canvas_cache.clear();
+                    self.state.sat_value_canvas_cache.clear();
+                    self.state.hue_canvas_cache.clear();
                 }
                 _ => {
                     let sat_value_handle = |key_code: keyboard::KeyCode, color: &mut Color| {
@@ -460,14 +442,16 @@ where
                         status
                     };
 
-                    match self.focus {
+                    match self.state.focus {
                         Focus::Overlay => {}
-                        Focus::SatValue => status = sat_value_handle(key_code, &mut self.color),
-                        Focus::Hue => status = hue_handle(key_code, &mut self.color),
-                        Focus::Red => status = rgba_bar_handle(key_code, &mut self.color.r),
-                        Focus::Green => status = rgba_bar_handle(key_code, &mut self.color.g),
-                        Focus::Blue => status = rgba_bar_handle(key_code, &mut self.color.b),
-                        Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.color.a),
+                        Focus::SatValue => {
+                            status = sat_value_handle(key_code, &mut self.state.color)
+                        }
+                        Focus::Hue => status = hue_handle(key_code, &mut self.state.color),
+                        Focus::Red => status = rgba_bar_handle(key_code, &mut self.state.color.r),
+                        Focus::Green => status = rgba_bar_handle(key_code, &mut self.state.color.g),
+                        Focus::Blue => status = rgba_bar_handle(key_code, &mut self.state.color.b),
+                        Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.state.color.a),
                         Focus::Cancel => {}
                         Focus::Submit => {}
                         _ => {}
@@ -477,7 +461,7 @@ where
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            *self.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -733,8 +717,8 @@ where
             renderer,
             clipboard,
         ) {
-            self.sat_value_canvas_cache.clear();
-            self.hue_canvas_cache.clear();
+            self.state.sat_value_canvas_cache.clear();
+            self.state.hue_canvas_cache.clear();
             return event::Status::Captured;
         }
 
@@ -796,14 +780,14 @@ where
         );
 
         if !fake_messages.is_empty() {
-            messages.push((self.on_submit)(*self.color));
+            messages.push((self.on_submit)(self.state.color));
         }
         // ----------- Block 2 end ------------------
         if hsv_color_status == event::Status::Captured
             || rgba_color_status == event::Status::Captured
         {
-            self.sat_value_canvas_cache.clear();
-            self.hue_canvas_cache.clear();
+            self.state.sat_value_canvas_cache.clear();
+            self.state.hue_canvas_cache.clear();
         }
 
         status
@@ -829,11 +813,11 @@ where
                 cursor_position,
                 style_sheet: &self.style,
                 viewport: None,
-                focus: *self.focus,
+                focus: self.state.focus,
             },
-            &self.color,
-            &self.sat_value_canvas_cache,
-            &self.hue_canvas_cache,
+            &self.state.color,
+            &self.state.sat_value_canvas_cache,
+            &self.state.hue_canvas_cache,
             //&self.text_input,
             &self.cancel_button,
             &self.submit_button,
@@ -888,8 +872,32 @@ impl Renderer for iced_native::renderer::Null {
     }
 }
 
-/// The state of the currently dragged area.
+/// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
 #[derive(Debug)]
+pub struct State {
+    pub(crate) color: Color,
+    pub(crate) sat_value_canvas_cache: canvas::Cache,
+    pub(crate) hue_canvas_cache: canvas::Cache,
+    pub(crate) color_bar_dragged: ColorBarDragged,
+    pub(crate) focus: Focus,
+    pub(crate) keyboard_modifiers: keyboard::Modifiers,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            color: Color::from_rgb(0.5, 0.25, 0.25),
+            sat_value_canvas_cache: canvas::Cache::default(),
+            hue_canvas_cache: canvas::Cache::default(),
+            color_bar_dragged: ColorBarDragged::None,
+            focus: Focus::default(),
+            keyboard_modifiers: keyboard::Modifiers::default(),
+        }
+    }
+}
+
+/// The state of the currently dragged area.
+#[derive(Copy, Clone, Debug)]
 pub enum ColorBarDragged {
     /// No area is focussed.
     None,
