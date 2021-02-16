@@ -45,6 +45,7 @@ where
     on_submit: &'a dyn Fn(Time) -> Message,
     use_24h: bool,
     show_seconds: bool,
+    clock_dragged: &'a mut ClockDragged,
     focus: &'a mut Focus,
     keyboard_modifiers: &'a mut keyboard::Modifiers,
     position: Point,
@@ -80,6 +81,7 @@ where
             submit_button,
             clock_cache_needs_clearance,
             clock_cache,
+            clock_dragged,
             focus,
             keyboard_modifiers,
             ..
@@ -103,6 +105,7 @@ where
             on_submit,
             use_24h,
             show_seconds,
+            clock_dragged,
             focus,
             keyboard_modifiers,
             position,
@@ -126,6 +129,8 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
+        // TODO: Don't know why clock_status is never read?!
+        #[allow(unused_assignments)]
         let mut clock_status = event::Status::Ignored;
         if layout.bounds().contains(cursor_position) {
             *self.clock_cache_needs_clearance = true;
@@ -135,6 +140,7 @@ where
             *self.clock_cache_needs_clearance = false;
         }
 
+        // TODO: clean this up
         let clock_bounds = layout.bounds();
         if clock_bounds.contains(cursor_position) {
             let center = clock_bounds.center();
@@ -175,7 +181,7 @@ where
                 center,
             );
 
-            clock_status = match event {
+            let clock_clicked_status = match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => match nearest_radius {
                     NearestRadius::Period => {
@@ -198,47 +204,76 @@ where
                     }
                     NearestRadius::Hour => {
                         *self.focus = Focus::DigitalHour;
-
-                        let hour_points =
-                            crate::core::clock::circle_points(hour_radius, center, 12);
-                        let nearest_point =
-                            crate::core::clock::nearest_point(&hour_points, cursor_position);
-
-                        let (pm, _) = self.time.hour12();
-
-                        *self.time = self
-                            .time
-                            .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
-                            .unwrap();
+                        *self.clock_dragged = ClockDragged::Hour;
                         event::Status::Captured
                     }
                     NearestRadius::Minute => {
                         *self.focus = Focus::DigitalMinute;
-
-                        let minute_points =
-                            crate::core::clock::circle_points(minute_radius, center, 60);
-                        let nearest_point =
-                            crate::core::clock::nearest_point(&minute_points, cursor_position);
-
-                        *self.time = self.time.with_minute(nearest_point as u32).unwrap();
+                        *self.clock_dragged = ClockDragged::Minute;
                         event::Status::Captured
                     }
                     NearestRadius::Second => {
                         *self.focus = Focus::DigitalSecond;
-
-                        let second_points =
-                            crate::core::clock::circle_points(second_radius, center, 60);
-                        let nearest_point =
-                            crate::core::clock::nearest_point(&second_points, cursor_position);
-
-                        *self.time = self.time.with_second(nearest_point as u32).unwrap();
+                        *self.clock_dragged = ClockDragged::Second;
                         event::Status::Captured
                     }
                     _ => event::Status::Ignored,
                 },
-
+                Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerLifted { .. })
+                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                    *self.clock_dragged = ClockDragged::None;
+                    event::Status::Captured
+                }
                 _ => event::Status::Ignored,
             };
+
+            let clock_dragged_status = match self.clock_dragged {
+                ClockDragged::Hour => {
+                    let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
+                    let nearest_point =
+                        crate::core::clock::nearest_point(&hour_points, cursor_position);
+
+                    let (pm, _) = self.time.hour12();
+
+                    *self.time = self
+                        .time
+                        .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
+                        .unwrap();
+                    event::Status::Captured
+                }
+                ClockDragged::Minute => {
+                    let minute_points =
+                        crate::core::clock::circle_points(minute_radius, center, 60);
+                    let nearest_point =
+                        crate::core::clock::nearest_point(&minute_points, cursor_position);
+
+                    *self.time = self.time.with_minute(nearest_point as u32).unwrap();
+                    event::Status::Captured
+                }
+                ClockDragged::Second => {
+                    let second_points =
+                        crate::core::clock::circle_points(second_radius, center, 60);
+                    let nearest_point =
+                        crate::core::clock::nearest_point(&second_points, cursor_position);
+
+                    *self.time = self.time.with_second(nearest_point as u32).unwrap();
+                    event::Status::Captured
+                }
+                ClockDragged::None => event::Status::Ignored,
+            };
+
+            clock_status = clock_clicked_status.merge(clock_dragged_status);
+        } else {
+            match event {
+                Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerLifted { .. })
+                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                    *self.clock_dragged = ClockDragged::None;
+                    clock_status = event::Status::Captured
+                }
+                _ => clock_status = event::Status::Ignored,
+            }
         }
 
         clock_status
@@ -845,6 +880,22 @@ impl Renderer for iced_native::renderer::Null {
         _show_seconds: bool,
     ) -> Self::Output {
     }
+}
+
+/// TODO
+#[derive(Copy, Clone, Debug)]
+pub enum ClockDragged {
+    /// TODO
+    None,
+
+    /// TODO
+    Hour,
+
+    /// TODO
+    Minute,
+
+    /// TODO
+    Second,
 }
 
 /// An enumeration of all focusable elements of the [`TimePickerOverlay`](TimePickerOverlay).

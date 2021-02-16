@@ -9,6 +9,7 @@ use iced_native::{
     button, column, container, event, keyboard, overlay, row, text, Clipboard, Element, Event,
     Layout, Point, Widget,
 };
+use time_picker::ClockDragged;
 
 pub use super::overlay::time_picker::Renderer;
 use super::{
@@ -111,6 +112,7 @@ pub struct State {
     pub(crate) submit_button: button::State,
     pub(crate) clock_cache_needs_clearance: bool,
     pub(crate) clock_cache: canvas::Cache,
+    pub(crate) clock_dragged: ClockDragged,
     pub(crate) focus: Focus,
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
@@ -125,6 +127,7 @@ impl State {
             submit_button: button::State::new(),
             clock_cache_needs_clearance: false,
             clock_cache: canvas::Cache::new(),
+            clock_dragged: ClockDragged::None,
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
