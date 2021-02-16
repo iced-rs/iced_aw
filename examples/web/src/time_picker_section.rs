@@ -1,11 +1,13 @@
 use crate::Section;
-use iced::{button, Align, Button, Column, Element, Length, Row, Text};
+use iced::{Align, Button, Checkbox, Column, Element, Length, Row, Text, button};
 use iced_aw::{time_picker, TimePicker};
 
 pub struct TimePickerSection {
     time_picker_state: time_picker::State,
     button_state: button::State,
     time: time_picker::Time,
+    show_seconds: bool,
+    use_24h: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -13,6 +15,8 @@ pub enum Message {
     OpenTimePicker,
     CancelTime,
     SubmitTime(time_picker::Time),
+    ToggleSeconds(bool),
+    Toggle24h(bool),
 }
 
 impl Section for TimePickerSection {
@@ -23,6 +27,8 @@ impl Section for TimePickerSection {
             time_picker_state: time_picker::State::now(),
             button_state: button::State::new(),
             time: time_picker::Time::default_hm(time_picker::Period::H24),
+            show_seconds: false,
+            use_24h: false,
         }
     }
 
@@ -38,11 +44,19 @@ impl Section for TimePickerSection {
                 self.time = time;
                 self.time_picker_state.show(false);
             }
+            Message::ToggleSeconds(b) => {
+                self.show_seconds = b;
+                self.time_picker_state.reset();
+            }
+            Message::Toggle24h(b) => {
+                self.use_24h = b;
+                self.time_picker_state.reset();
+            }
         }
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
-        let time_picker = TimePicker::new(
+        let mut time_picker = TimePicker::new(
             &mut self.time_picker_state,
             Button::new(&mut self.button_state, Text::new("Pick Time"))
                 .on_press(Message::OpenTimePicker),
@@ -53,9 +67,28 @@ impl Section for TimePickerSection {
         //.show_seconds()
         ;
 
+        if self.show_seconds {
+            time_picker = time_picker.show_seconds();
+        }
+        if self.use_24h {
+            time_picker = time_picker.use_24h();
+        }
+
         let column = Column::new()
             .align_items(Align::Center)
             .width(Length::Fill)
+            .spacing(20)
+            .push(
+                Row::new()
+                    .width(Length::Fill)
+                    .spacing(40)
+                    .push(
+                        Checkbox::new(self.show_seconds, "Show seconds", Message::ToggleSeconds)
+                    )
+                    .push(
+                        Checkbox::new(self.use_24h, "Use 24h format", Message::Toggle24h)
+                    )
+            )
             .push(
                 Row::new()
                     .width(Length::Shrink)
