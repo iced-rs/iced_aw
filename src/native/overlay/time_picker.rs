@@ -817,6 +817,8 @@ where
 
         (position.x as u32).hash(state);
         (position.y as u32).hash(state);
+        self.state.show_seconds.hash(state);
+        self.state.use_24h.hash(state);
     }
 }
 

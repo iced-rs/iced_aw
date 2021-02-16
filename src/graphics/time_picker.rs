@@ -451,6 +451,7 @@ fn digital_clock(
     style: &HashMap<StyleState, Style>,
     focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
+    //println!("layout: {:#?}", layout);
     let mut children = layout.children().next().unwrap().children();
 
     let f = |layout: iced_native::Layout<'_>, text: String, target: Focus| {

@@ -105,14 +105,8 @@ where
 #[derive(Debug)]
 pub struct State {
     pub(crate) show: bool,
-    //pub(crate) time: NaiveTime,
     pub(crate) cancel_button: button::State,
     pub(crate) submit_button: button::State,
-    //pub(crate) clock_cache_needs_clearance: bool,
-    //pub(crate) clock_cache: canvas::Cache,
-    //pub(crate) clock_dragged: ClockDragged,
-    //pub(crate) focus: Focus,
-    //pub(crate) keyboard_modifiers: keyboard::Modifiers,
     pub(crate) overlay_state: time_picker::State,
 }
 
@@ -121,14 +115,8 @@ impl State {
     pub fn now() -> Self {
         State {
             show: false,
-            //time: Local::now().naive_local().time(),
             cancel_button: button::State::new(),
             submit_button: button::State::new(),
-            //clock_cache_needs_clearance: false,
-            //clock_cache: canvas::Cache::new(),
-            //clock_dragged: ClockDragged::None,
-            //focus: Focus::default(),
-            //keyboard_modifiers: keyboard::Modifiers::default(),
             overlay_state: time_picker::State::default(),
         }
     }
@@ -143,6 +131,8 @@ impl State {
     pub fn reset(&mut self) {
         self.overlay_state.clock_cache.clear();
         self.overlay_state.time = Local::now().naive_local().time();
+        self.overlay_state.use_24h = false;
+        self.overlay_state.show_seconds = false;
     }
 }
 
