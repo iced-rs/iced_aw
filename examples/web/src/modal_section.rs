@@ -5,16 +5,14 @@ pub struct ModalSection {
     open_button: button::State,
 }
 
-impl ModalSection {
-    pub fn new() -> Self {
+impl Section for ModalSection {
+    type Message = crate::Message;
+
+    fn new() -> Self {
         Self {
             open_button: button::State::new(),
         }
     }
-}
-
-impl Section for ModalSection {
-    type Message = crate::Message;
 
     fn header(&self) -> String {
         String::from("Modal")

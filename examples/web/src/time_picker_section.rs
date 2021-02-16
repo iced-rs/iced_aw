@@ -15,8 +15,10 @@ pub enum Message {
     SubmitTime(time_picker::Time),
 }
 
-impl TimePickerSection {
-    pub fn new() -> Self {
+impl Section for TimePickerSection {
+    type Message = Message;
+
+    fn new() -> Self {
         Self {
             time_picker_state: time_picker::State::now(),
             button_state: button::State::new(),
@@ -24,7 +26,11 @@ impl TimePickerSection {
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    fn header(&self) -> String {
+        String::from("Time Picker")
+    }
+
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::OpenTimePicker => self.time_picker_state.show(true),
             Message::CancelTime => self.time_picker_state.show(false),
@@ -33,14 +39,6 @@ impl TimePickerSection {
                 self.time_picker_state.show(false);
             }
         }
-    }
-}
-
-impl Section for TimePickerSection {
-    type Message = crate::Message;
-
-    fn header(&self) -> String {
-        String::from("Time Picker")
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
@@ -55,7 +53,7 @@ impl Section for TimePickerSection {
         //.show_seconds()
         ;
 
-        let column: Element<'_, Message> = Column::new()
+        let column = Column::new()
             .align_items(Align::Center)
             .width(Length::Fill)
             .push(
@@ -65,9 +63,8 @@ impl Section for TimePickerSection {
                     .spacing(20)
                     .push(time_picker)
                     .push(Text::new(format!("Picked time: {}", self.time))),
-            )
-            .into();
+            );
 
-        column.map(crate::Message::TimePicker)
+        column.into()
     }
 }

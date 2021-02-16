@@ -4,14 +4,12 @@ use iced_aw::Badge;
 
 pub struct BadgeSection;
 
-impl BadgeSection {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
 impl Section for BadgeSection {
     type Message = crate::Message;
+
+    fn new() -> Self {
+        Self {}
+    }
 
     fn header(&self) -> String {
         String::from("Badge")

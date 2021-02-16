@@ -100,13 +100,17 @@ impl Sandbox for Web {
             .spacing(20)
             .max_width(600)
             .push(self.badge_section.view())
-            .push(self.floating_button_section.view())
-            .push(self.card_section.view())
+            .push(
+                self.floating_button_section
+                    .view()
+                    .map(Message::FloatingButton),
+            )
+            .push(self.card_section.view().map(Message::Card))
             .push(self.modal_section.view())
-            .push(self.date_picker_section.view())
+            .push(self.date_picker_section.view().map(Message::DatePicker))
             //.push(self.picklist_section.view())
-            .push(self.time_picker_section.view())
-            .push(self.color_picker_section.view());
+            .push(self.time_picker_section.view().map(Message::TimePicker))
+            .push(self.color_picker_section.view().map(Message::ColorPicker));
 
         let container = Container::new(
             // Workaround: https://github.com/hecrj/iced/issues/643
@@ -126,7 +130,11 @@ impl Sandbox for Web {
 trait Section {
     type Message: 'static;
 
+    fn new() -> Self;
+
     fn header(&self) -> String;
+
+    fn update(&mut self, _message: Self::Message) {}
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         Column::new()

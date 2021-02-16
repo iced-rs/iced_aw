@@ -15,8 +15,10 @@ pub enum Message {
     SubmitColor(Color),
 }
 
-impl ColorPickerSection {
-    pub fn new() -> Self {
+impl Section for ColorPickerSection {
+    type Message = Message;
+
+    fn new() -> Self {
         Self {
             color_picker_state: color_picker::State::new(),
             button_state: button::State::new(),
@@ -24,7 +26,11 @@ impl ColorPickerSection {
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    fn header(&self) -> String {
+        String::from("Color Picker")
+    }
+
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::OpenColorPicker => self.color_picker_state.show(true),
             Message::CancelColor => self.color_picker_state.show(false),
@@ -33,14 +39,6 @@ impl ColorPickerSection {
                 self.color_picker_state.show(false);
             }
         }
-    }
-}
-
-impl Section for ColorPickerSection {
-    type Message = crate::Message;
-
-    fn header(&self) -> String {
-        String::from("Color Picker")
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
@@ -52,7 +50,7 @@ impl Section for ColorPickerSection {
             Message::SubmitColor,
         );
 
-        let column: Element<'_, Message> = Column::new()
+        let column = Column::new()
             .align_items(Align::Center)
             .width(Length::Fill)
             .push(
@@ -62,9 +60,8 @@ impl Section for ColorPickerSection {
                     .spacing(20)
                     .push(color_picker)
                     .push(Text::new(format!("Picked color: {:?}", self.color))),
-            )
-            .into();
+            );
 
-        column.map(crate::Message::ColorPicker)
+        column.into()
     }
 }

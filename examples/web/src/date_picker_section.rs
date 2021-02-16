@@ -18,8 +18,10 @@ pub enum Message {
     SubmitDate(Date),
 }
 
-impl DatePickerSection {
-    pub fn new() -> Self {
+impl Section for DatePickerSection {
+    type Message = Message;
+
+    fn new() -> Self {
         Self {
             date_picker_state: date_picker::State::now(),
             button_state: button::State::new(),
@@ -27,7 +29,11 @@ impl DatePickerSection {
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    fn header(&self) -> String {
+        String::from("Date Picker")
+    }
+
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::OpenDatePicker => self.date_picker_state.show(true),
             Message::CancelDate => self.date_picker_state.show(false),
@@ -36,14 +42,6 @@ impl DatePickerSection {
                 self.date_picker_state.show(false);
             }
         }
-    }
-}
-
-impl Section for DatePickerSection {
-    type Message = crate::Message;
-
-    fn header(&self) -> String {
-        String::from("Date Picker")
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
@@ -55,7 +53,7 @@ impl Section for DatePickerSection {
             Message::SubmitDate,
         );
 
-        let column: Element<'_, Message> = Column::new()
+        let column = Column::new()
             .align_items(Align::Center)
             .width(Length::Fill)
             .push(
@@ -65,9 +63,8 @@ impl Section for DatePickerSection {
                     .spacing(20)
                     .push(date_picker)
                     .push(Text::new(format!("Picked date: {}", self.date))),
-            )
-            .into();
+            );
 
-        column.map(crate::Message::DatePicker)
+        column.into()
     }
 }

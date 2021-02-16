@@ -17,8 +17,10 @@ pub enum Message {
     HideButton(bool),
 }
 
-impl FloatingButtonSection {
-    pub fn new() -> Self {
+impl Section for FloatingButtonSection {
+    type Message = Message;
+
+    fn new() -> Self {
         Self {
             lines: vec!["Hello".into(), "World".into()],
             scrollable_state: scrollable::State::new(),
@@ -27,19 +29,15 @@ impl FloatingButtonSection {
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    fn header(&self) -> String {
+        String::from("Floating Button")
+    }
+
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::FloatingButtonPressed => self.lines.push("This is a newly added line.".into()),
             Message::HideButton(hide) => self.hide = hide,
         }
-    }
-}
-
-impl Section for FloatingButtonSection {
-    type Message = crate::Message;
-
-    fn header(&self) -> String {
-        String::from("Floating Button")
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
@@ -69,12 +67,11 @@ impl Section for FloatingButtonSection {
         )
         .width(Length::Fill);
 
-        let column: Element<'_, Message> = Column::new()
+        let column = Column::new()
             .spacing(10)
             .push(Checkbox::new(self.hide, "Hide button", Message::HideButton))
-            .push(container)
-            .into();
+            .push(container);
 
-        column.map(crate::Message::FloatingButton)
+        column.into()
     }
 }

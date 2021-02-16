@@ -13,27 +13,25 @@ pub enum Message {
     SecondaryCardClose,
 }
 
-impl CardSection {
-    pub fn new() -> Self {
+impl Section for CardSection {
+    type Message = Message;
+
+    fn new() -> Self {
         Self {
             primary_card: true,
             secondary_card: true,
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    fn header(&self) -> String {
+        String::from("Card")
+    }
+
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::PrimaryCardClose => self.primary_card = false,
             Message::SecondaryCardClose => self.secondary_card = false,
         }
-    }
-}
-
-impl Section for CardSection {
-    type Message = crate::Message;
-
-    fn header(&self) -> String {
-        String::from("Card")
     }
 
     fn content(&mut self) -> Element<'_, Self::Message> {
@@ -55,8 +53,6 @@ impl Section for CardSection {
             );
         }
 
-        let row: Element<'_, Message> = row.into();
-
-        row.map(crate::Message::Card)
+        row.into()
     }
 }
