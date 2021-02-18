@@ -12,7 +12,7 @@ use iced_native::{
 };
 
 use crate::{
-    core::{color::Hsv, renderer::DrawEnvironment},
+    core::{color::Hsv, overlay::Position, renderer::DrawEnvironment},
     graphics::icons::Icon,
     native::{color_picker, icon_text, IconText},
 };
@@ -676,26 +676,7 @@ where
         let mut node =
             layout::Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
-        node.move_to(Point::new(
-            (position.x - node.size().width / 2.0).max(0.0),
-            (position.y - node.size().height / 2.0).max(0.0),
-        ));
-
-        node.move_to(Point::new(
-            if node.bounds().x + node.bounds().width > bounds.width {
-                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x)))
-                    .max(0.0)
-            } else {
-                node.bounds().x
-            },
-            //node.bounds().x,
-            if node.bounds().y + node.bounds().height > bounds.height {
-                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y)))
-                    .max(0.0)
-            } else {
-                node.bounds().y
-            },
-        ));
+        node.center_and_bounce(position, bounds);
 
         node
     }

@@ -12,7 +12,7 @@ use iced_native::{
 };
 
 use crate::{
-    core::{date::Date, renderer::DrawEnvironment},
+    core::{date::Date, overlay::Position, renderer::DrawEnvironment},
     graphics::icons::Icon,
     native::{date_picker, icon_text, IconText},
 };
@@ -467,26 +467,7 @@ where
             vec![col, cancel_button, submit_button],
         );
 
-        node.move_to(Point::new(
-            (position.x - node.size().width / 2.0).max(0.0),
-            (position.y - node.size().height / 2.0).max(0.0),
-        ));
-
-        node.move_to(Point::new(
-            if node.bounds().x + node.bounds().width > bounds.width {
-                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x)))
-                    .max(0.0)
-            } else {
-                node.bounds().x
-            },
-            //node.bounds().x,
-            if node.bounds().y + node.bounds().height > bounds.height {
-                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y)))
-                    .max(0.0)
-            } else {
-                node.bounds().y
-            },
-        ));
+        node.center_and_bounce(position, bounds);
 
         node
     }

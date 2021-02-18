@@ -1,5 +1,5 @@
 use crate::Section;
-use iced::{Align, Button, Checkbox, Column, Element, Length, Row, Text, button};
+use iced::{button, Align, Button, Checkbox, Column, Element, Length, Row, Text};
 use iced_aw::{time_picker, TimePicker};
 
 pub struct TimePickerSection {
@@ -82,12 +82,16 @@ impl Section for TimePickerSection {
                 Row::new()
                     .width(Length::Fill)
                     .spacing(40)
-                    .push(
-                        Checkbox::new(self.show_seconds, "Show seconds", Message::ToggleSeconds)
-                    )
-                    .push(
-                        Checkbox::new(self.use_24h, "Use 24h format", Message::Toggle24h)
-                    )
+                    .push(Checkbox::new(
+                        self.show_seconds,
+                        "Show seconds",
+                        Message::ToggleSeconds,
+                    ))
+                    .push(Checkbox::new(
+                        self.use_24h,
+                        "Use 24h format",
+                        Message::Toggle24h,
+                    )),
             )
             .push(
                 Row::new()

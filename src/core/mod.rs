@@ -10,6 +10,9 @@ pub mod clock;
 pub mod color;
 
 #[cfg(not(target_arch = "wasm32"))]
+pub mod overlay;
+
+#[cfg(not(target_arch = "wasm32"))]
 pub mod renderer;
 
 #[cfg(feature = "time_picker")]

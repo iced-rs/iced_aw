@@ -9,7 +9,7 @@ use crate::{
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
-    core::{renderer::DrawEnvironment, time::Period},
+    core::{overlay::Position, renderer::DrawEnvironment, time::Period},
     graphics::icons::Icon,
     native::{
         icon_text,
@@ -662,26 +662,7 @@ where
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
-        node.move_to(Point::new(
-            (position.x - node.size().width / 2.0).max(0.0),
-            (position.y - node.size().height / 2.0).max(0.0),
-        ));
-
-        node.move_to(Point::new(
-            if node.bounds().x + node.bounds().width > bounds.width {
-                (node.bounds().x - (node.bounds().width - (bounds.width - node.bounds().x)))
-                    .max(0.0)
-            } else {
-                node.bounds().x
-            },
-            //node.bounds().x,
-            if node.bounds().y + node.bounds().height > bounds.height {
-                (node.bounds().y - (node.bounds().height - (bounds.height - node.bounds().y)))
-                    .max(0.0)
-            } else {
-                node.bounds().y
-            },
-        ));
+        node.center_and_bounce(position, bounds);
 
         node
     }
