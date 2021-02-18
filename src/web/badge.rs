@@ -115,7 +115,7 @@ where
                     match style.background {
                         Background::Color(color) => css::color(color),
                     },
-                    10, // TODO
+                    10, // TODO: user specified border radius
                     css::length(self.width),
                     css::length(self.height),
                     style.border_width,

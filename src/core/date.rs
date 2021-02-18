@@ -103,9 +103,23 @@ pub fn succ_day(date: &NaiveDate) -> NaiveDate {
     date.to_owned() + Duration::days(1)
 }
 
+/// Specifies if the calculated day lays in the previous, same or next month of
+/// the date.
+#[derive(Debug, PartialEq)]
+pub enum IsInMonth {
+    /// The day lays in the previous month.
+    Previous,
+
+    /// The day lays in the same month.
+    Same,
+
+    /// The day lays in the next month.
+    Next,
+}
+
 /// Calculates the day number at the given position in the calendar table based
 /// on the given year and month.
-pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, i8) {
+pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsInMonth) {
     let (x, y) = (x as isize, y as isize);
     let first_day = NaiveDate::from_ymd(year, month, 1);
     let day_of_week = first_day.weekday().num_days_from_monday() as isize;
@@ -117,12 +131,15 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, i8)
         let last_month = first_day.pred();
         (
             (num_days_of_month(last_month.year(), last_month.month()) as isize + day) as usize,
-            -1,
+            IsInMonth::Previous,
         )
     } else if day > num_days_of_month(year, month) as isize {
-        ((day - num_days_of_month(year, month) as isize) as usize, 1)
+        (
+            (day - num_days_of_month(year, month) as isize) as usize,
+            IsInMonth::Next,
+        )
     } else {
-        (day as usize, 0)
+        (day as usize, IsInMonth::Same)
     }
 }
 
@@ -220,7 +237,7 @@ mod tests {
 
     use super::{
         is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month,
-        succ_year,
+        succ_year, IsInMonth,
     };
 
     #[test]
@@ -299,51 +316,51 @@ mod tests {
     fn position_to_day_test() {
         let (day, is_in_month) = position_to_day(0, 0, 2020, 12);
         assert_eq!(day, 30);
-        assert_eq!(is_in_month, -1);
+        assert_eq!(is_in_month, IsInMonth::Previous);
 
         let (day, is_in_month) = position_to_day(1, 0, 2020, 12);
         assert_eq!(day, 1);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(3, 4, 2020, 12);
         assert_eq!(day, 31);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(6, 5, 2020, 12);
         assert_eq!(day, 10);
-        assert_eq!(is_in_month, 1);
+        assert_eq!(is_in_month, IsInMonth::Next);
 
         let (day, is_in_month) = position_to_day(0, 0, 2020, 11);
         assert_eq!(day, 26);
-        assert_eq!(is_in_month, -1);
+        assert_eq!(is_in_month, IsInMonth::Previous);
 
         let (day, is_in_month) = position_to_day(6, 0, 2020, 11);
         assert_eq!(day, 1);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(0, 5, 2020, 11);
         assert_eq!(day, 30);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(6, 5, 2020, 11);
         assert_eq!(day, 6);
-        assert_eq!(is_in_month, 1);
+        assert_eq!(is_in_month, IsInMonth::Next);
 
         let (day, is_in_month) = position_to_day(0, 0, 2021, 2);
         assert_eq!(day, 25);
-        assert_eq!(is_in_month, -1);
+        assert_eq!(is_in_month, IsInMonth::Previous);
 
         let (day, is_in_month) = position_to_day(0, 1, 2021, 2);
         assert_eq!(day, 1);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(6, 4, 2021, 2);
         assert_eq!(day, 28);
-        assert_eq!(is_in_month, 0);
+        assert_eq!(is_in_month, IsInMonth::Same);
 
         let (day, is_in_month) = position_to_day(0, 5, 2021, 2);
         assert_eq!(day, 1);
-        assert_eq!(is_in_month, 1);
+        assert_eq!(is_in_month, IsInMonth::Next);
     }
 
     #[test]

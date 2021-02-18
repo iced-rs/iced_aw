@@ -12,7 +12,11 @@ use iced_native::{
 };
 
 use crate::{
-    core::{date::Date, overlay::Position, renderer::DrawEnvironment},
+    core::{
+        date::{Date, IsInMonth},
+        overlay::Position,
+        renderer::DrawEnvironment,
+    },
     graphics::icons::Icon,
     native::{date_picker, icon_text, IconText},
 };
@@ -204,16 +208,16 @@ where
                                 self.state.date.month(),
                             );
 
-                            // TODO: clean up
                             self.state.date = match is_in_month {
-                                -1 => crate::core::date::pred_month(&self.state.date)
+                                IsInMonth::Previous => {
+                                    crate::core::date::pred_month(&self.state.date)
+                                        .with_day(day as u32)
+                                        .unwrap()
+                                }
+                                IsInMonth::Same => self.state.date.with_day(day as u32).unwrap(),
+                                IsInMonth::Next => crate::core::date::succ_month(&self.state.date)
                                     .with_day(day as u32)
                                     .unwrap(),
-                                0 => self.state.date.with_day(day as u32).unwrap(),
-                                1 => crate::core::date::succ_month(&self.state.date)
-                                    .with_day(day as u32)
-                                    .unwrap(),
-                                _ => panic!("Should not happen"),
                             };
 
                             status = event::Status::Captured;
@@ -237,7 +241,6 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
-        // TODO: clean this up a bit
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }

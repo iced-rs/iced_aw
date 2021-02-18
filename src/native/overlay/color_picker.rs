@@ -340,7 +340,6 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
-        // TODO: clean this up a bit
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }

@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    core::renderer::DrawEnvironment,
+    core::{date::IsInMonth, renderer::DrawEnvironment},
     style::{date_picker::Style, style_state::StyleState},
 };
 use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet};
@@ -341,7 +341,7 @@ fn day_table(
                 mouse_interaction = mouse_interaction.max(mouse::Interaction::Pointer);
             }
 
-            let selected = date.day() == number as u32 && is_in_month == 0;
+            let selected = date.day() == number as u32 && is_in_month == IsInMonth::Same;
 
             let mut style_state = StyleState::Active;
             if selected {
@@ -376,7 +376,7 @@ fn day_table(
                     y: bounds.center_y(),
                     ..bounds
                 },
-                color: if is_in_month == 0 {
+                color: if is_in_month == IsInMonth::Same {
                     style.get(&style_state).unwrap().text_color
                 } else {
                     style.get(&style_state).unwrap().text_attenuated_color

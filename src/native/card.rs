@@ -242,21 +242,18 @@ where
         let close_status = head_children
             .next()
             .map_or(event::Status::Ignored, |close_layout| {
-                // TODO: clean up
                 match event {
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                    | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                        if close_layout.bounds().contains(cursor_position) {
-                            return self.on_close.clone().map_or(
-                                event::Status::Ignored,
-                                |on_close| {
-                                    messages.push(on_close);
-                                    event::Status::Captured
-                                },
-                            );
-                        }
-                        event::Status::Ignored
-                    }
+                    | Event::Touch(touch::Event::FingerPressed { .. }) => self
+                        .on_close
+                        .to_owned()
+                        // TODO: `let` expressions in this position are experimental
+                        // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
+                        .filter(|_| close_layout.bounds().contains(cursor_position))
+                        .map_or(event::Status::Ignored, |on_close| {
+                            messages.push(on_close);
+                            event::Status::Captured
+                        }),
                     _ => event::Status::Ignored,
                 }
             });

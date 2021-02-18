@@ -108,9 +108,6 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
-        // TODO: Don't know why clock_status is never read?!
-        #[allow(unused_assignments)]
-        let mut clock_status = event::Status::Ignored;
         if layout.bounds().contains(cursor_position) {
             self.state.clock_cache_needs_clearance = true;
             self.state.clock_cache.clear();
@@ -119,7 +116,6 @@ where
             self.state.clock_cache_needs_clearance = false;
         }
 
-        // TODO: clean this up
         let clock_bounds = layout.bounds();
         if clock_bounds.contains(cursor_position) {
             let center = clock_bounds.center();
@@ -244,20 +240,18 @@ where
                 ClockDragged::None => event::Status::Ignored,
             };
 
-            clock_status = clock_clicked_status.merge(clock_dragged_status);
+            clock_clicked_status.merge(clock_dragged_status)
         } else {
             match event {
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerLifted { .. })
                 | Event::Touch(touch::Event::FingerLost { .. }) => {
                     self.state.clock_dragged = ClockDragged::None;
-                    clock_status = event::Status::Captured
+                    event::Status::Captured
                 }
-                _ => clock_status = event::Status::Ignored,
+                _ => event::Status::Ignored,
             }
         }
-
-        clock_status
     }
 
     /// The event handling for the digital clock.
@@ -397,7 +391,6 @@ where
         _renderer: &Renderer,
         _clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
-        // TODO: clean this up a bit
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -864,19 +857,19 @@ impl Default for State {
     }
 }
 
-/// TODO
+/// The state of the currently dragged watch hand.
 #[derive(Copy, Clone, Debug)]
 pub enum ClockDragged {
-    /// TODO
+    /// Nothing is dragged.
     None,
 
-    /// TODO
+    /// The hour hand is dragged.
     Hour,
 
-    /// TODO
+    /// The minute hand is dragged.
     Minute,
 
-    /// TODO
+    /// The second hand is dragged.
     Second,
 }
 
