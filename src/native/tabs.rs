@@ -61,7 +61,7 @@ where
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
     /// and a specified message which will be send when a tab is selected by
     /// the user.
-    /// 
+    ///
     /// It expects:
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.

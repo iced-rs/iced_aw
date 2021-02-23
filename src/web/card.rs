@@ -45,7 +45,7 @@ pub struct Card<'a, Message> {
 
 impl<'a, Message> Card<'a, Message> {
     /// Creates a new [`Card`](Card) containing the given head and body.
-    /// 
+    ///
     /// It expects:
     ///     * the head [`Element`](iced_web::Element) to display at the top of
     ///         the [`Card`](Card).
