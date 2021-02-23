@@ -10,7 +10,22 @@ const DEFAULT_PADDING: f32 = 10.0;
 
 /// A card consisting of a head, body and optional foot.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::Card;
+/// # use iced_web::Text;
+/// #[derive(Clone, Debug)]
+/// enum Message {
+///    ClosingCard,
+/// }
+///
+/// let card = Card::new(
+///     Text::new("Head"),
+///     Text::new("Body")
+/// )
+/// .foot(Text::new("Foot"))
+/// .on_close(Message::ClosingCard);
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct Card<'a, Message> {
     width: Length,

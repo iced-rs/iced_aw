@@ -11,7 +11,29 @@ use std::rc::Rc;
 
 /// An input element for picking dates.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::{DatePicker, date_picker};
+/// # use iced_web::{Button, Text, button};
+/// #[derive(Clone, Debug)]
+/// enum Message {
+///     Open, 
+///     Cancel,
+///     Submit(date_picker::Date),
+/// }
+///
+/// let mut button_state = button::State::new();
+/// let mut state = date_picker::State::new();
+/// state.show(true);
+///
+/// let date_picker = DatePicker::new(
+///     &mut state,
+///     Button::new(&mut button_state, Text::new("Pick date"))
+///         .on_press(Message::Open),
+///     Message::Cancel,
+///     Message::Submit,
+/// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct DatePicker<'a, Message> {
     _state: &'a mut State,

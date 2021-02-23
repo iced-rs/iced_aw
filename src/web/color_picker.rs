@@ -10,7 +10,29 @@ use std::rc::Rc;
 
 /// An input element for picking colors.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::{ColorPicker, color_picker};
+/// # use iced_web::{Button, Color, Text, button};
+/// #[derive(Clone, Debug)]
+/// enum Message {
+///    Open,
+///    Cancel,
+///    Submit(Color),
+/// }
+/// 
+/// let mut button_state = button::State::new();
+/// let mut state = color_picker::State::new();
+/// state.show(true);
+///
+/// let color_picker = ColorPicker::new(
+///     &mut state,
+///     Button::new(&mut button_state, Text::new("Pick color"))
+///         .on_press(Message::Open),
+///     Message::Cancel,
+///     Message::Submit,
+/// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct ColorPicker<'a, Message> {
     _state: &'a mut State,

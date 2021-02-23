@@ -11,7 +11,24 @@ use crate::style::modal::StyleSheet;
 /// Can be used in combination with the [`Card`](crate::native::card::Card)
 /// widget to form dialog elements.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::{Modal, modal};
+/// # use iced_web::{Text};
+/// #[derive(Debug, Clone)]
+/// enum Message {
+///     CloseModal,
+/// }
+///
+/// let mut state = modal::State::new(());
+///
+/// let modal = Modal::new(
+///     &mut state,
+///     Text::new("Underlay"),
+///     |_state| Text::new("Overlay").into()
+/// )
+/// .backdrop(Message::CloseModal);
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct Modal<'a, Message>
 where

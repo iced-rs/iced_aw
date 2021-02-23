@@ -14,7 +14,25 @@ pub use offset::Offset;
 
 /// A floating button floating over some content.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::FloatingButton;
+/// # use iced_web::{Button, Column, Text, button};
+/// #[derive(Debug, Clone)]
+/// enum Message {
+///     ButtonPressed,
+/// }
+///
+/// let mut button_state = button::State::default();
+///
+/// let content = Column::new();
+/// let floating_button = FloatingButton::new(
+///     &mut button_state,
+///     content,
+///     |state| Button::new(state, Text::new("Press Me!"))
+///         .on_press(Message::ButtonPressed)
+/// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct FloatingButton<'a, Message>
 where

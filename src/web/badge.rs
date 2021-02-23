@@ -8,7 +8,16 @@ pub use crate::style::badge::{Style, StyleSheet};
 
 /// A badge for color highlighting small information.
 ///
-/// TODO: Example
+/// # Example
+/// ```
+/// # use iced_aw::Badge;
+/// # use iced_web::Text;
+/// #[derive(Clone, Debug)]
+/// pub enum Message {
+/// }
+/// 
+/// let badge = Badge::<Message>::new(Text::new("Text"));
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct Badge<'a, Message> {
     padding: u16,

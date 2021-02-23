@@ -10,6 +10,30 @@ pub use crate::style::time_picker::{Style, StyleSheet};
 use std::rc::Rc;
 
 /// An input element for picking times.
+///
+/// # Example
+/// ```
+/// # use iced_aw::{TimePicker, time_picker};
+/// # use iced_web::{Button, Text, button};
+/// #[derive(Debug, Clone)]
+/// enum Message {
+///    Open,
+///    Cancel,
+///    Submit(time_picker::Time),
+/// }
+///
+/// let mut button_state = button::State::new();
+/// let mut state = time_picker::State::now();
+/// state.show(true)
+///
+/// let time_picker = TimePicker::new(
+///     &mut state,
+///     Button::new(&mut button_state, Text::new("Pick time"))
+///         .on_press(Message::Open),
+///     Message::Cancel,
+///     Message::Submit,
+/// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct TimePicker<'a, Message> {
     _state: &'a mut State,
