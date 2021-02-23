@@ -9,7 +9,7 @@ Every widget is hidden by a feature gate. This allows you to cherry pick the wid
 Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
-iced =  { git = "https://github.com/hecrj/iced", rev = "ea1a7248d257c7c9e4a1f3989e68b58a6bc0c4ff" }
+iced =  { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
 iced_aw = { git = "https://github.com/kaiden42/iced_aw", default-features = false, features = [...] }
 ```
 
