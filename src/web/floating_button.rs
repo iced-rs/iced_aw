@@ -95,18 +95,22 @@ where
             .attr("style", "position: relative; width: 100%; height: 100%;")
             .children(vec![
                 self.underlay.node(bump, bus, style_sheet),
-                div(bump)
-                    .attr(
-                        "style",
-                        bumpalo::format!(
-                            in bump,
-                            "position: absolute; {}",
-                            position
+                if self.hidden {
+                    div(bump).finish()
+                } else {
+                    div(bump)
+                        .attr(
+                            "style",
+                            bumpalo::format!(
+                                in bump,
+                                "position: absolute; {}",
+                                position
+                            )
+                            .into_bump_str(),
                         )
-                        .into_bump_str(),
-                    )
-                    .children(vec![self.button.node(bump, bus, style_sheet)])
-                    .finish(),
+                        .children(vec![self.button.node(bump, bus, style_sheet)])
+                        .finish()
+                },
             ]);
 
         node.finish()
