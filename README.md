@@ -1,7 +1,5 @@
 # Iced - Additional Widgets
 
-**Disclaimer: This crate is part of a study project of mine. Please wait for your contributions until March 2021. Thank you very much!**
-
 This crate contains additional widgets for the GUI library [Iced](https://github.com/hecrj/iced).
 
 Every widget is hidden by a feature gate. This allows you to cherry pick the widgets you actually need.
@@ -28,15 +26,11 @@ Currently planned widgets are:
 - [x] Modal
 - [x] Date Picker
 - [x] Time Picker
-- [ ] Color Picker
+- [x] Color Picker
 
 ### Badge
 
-TODO
-
 <center>
-
-![Badge concept drawing](./images/concept_drawings/badge.svg)
 
 ![Badge showcase](./images/showcase/badge.png)
 
@@ -47,9 +41,74 @@ Please take a look into our examples on how to use badges.
 Enable this widget with the feature `badge`.
 To enable predefined styles, enable the feature `colors`.
 
-### TabBar and Tabs
+### Card
 
-TODO
+<center>
+
+![Card showcase](./images/showcase/card.png)
+
+</center>
+
+
+Please take a look into our examples on how to use cards.
+
+Enable this widget with the feature `card`.
+To enable predefined styles, enable the feature `colors`.
+
+### Color Picker
+
+<center>
+
+![Color Picker showcase](./images/showcase/color_picker.png)
+
+</center>
+
+Please take a look into our examples on how to use color pickers.
+
+Enable this widget with the feature `color_picker`.
+
+### Date Picker
+
+<center>
+
+![Modal showcase](./images/showcase/date_picker.png)
+
+</center>
+
+Please take a look into our examples on how to use date pickers.
+
+Enable this widget with the feature `date_picker`.
+
+### Floating Action Button
+
+<center>
+
+![Floating Button showcase](./images/showcase/floating_button.png)
+
+</center>
+
+Please take a look into our examples on how to use floating buttons.
+
+Enable this widget with the feature `floating_button`.
+To enable predefined styles for buttons, enable the feature `colors`.
+
+### Modal
+
+Modals are usefull for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
+
+<center>
+
+![Modal showcase](./images/showcase/modal.png)
+
+</center>
+
+
+Please take a look into our examples on how to use modals.
+
+Enable this widget with the feature `modal`.
+To enable predefined styles, enable the feature `colors`.
+
+### TabBar and Tabs
 
 <center>
 
@@ -61,98 +120,19 @@ Please take a look into our examples on how to use TabBars and Tabs.
 
 Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
 
-### Floating Action Button
-
-TODO
-
-<center>
-
-![Floating Action button concept drawing](./images/concept_drawings/floating_action_button.svg)
-
-![Floating Button showcase](./images/showcase/floating_button.png)
-
-</center>
-
-Please take a look into our examples on how to use floating buttons.
-
-Enable this widget with the feature `floating_button`.
-To enable predefined styles for buttons, enable the feature `colors`.
-
-### Card
-
-TODO
-
-<center>
-
-![Card concept drawing](./images/concept_drawings/card.svg)
-
-![Card showcase](./images/showcase/card.png)
-
-Please take a look into our examples on how to use cards.
-
-Enable this widget with the feature `card`.
-To enable predefined styles, enable the feature `colors`.
-
-</center>
-
-### Modal
-
-TODO
-Modals are usefull for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
-
-<center>
-
-![Modal concept drawing](./images/concept_drawings/modal.svg)
-
-![Modal showcase](./images/showcase/modal.png)
-
-Please take a look into our examples on how to use modals.
-
-Enable this widget with the feature `modal`.
-To enable predefined styles, enable the feature `colors`.
-
-</center>
-
-### Date Picker
-
-TODO
-
-<center>
-
-![Date Picker concept drawing](./images/concept_drawings/date_picker.svg)
-
-![Modal showcase](./images/showcase/date_picker.png)
-
-Please take a look into our examples on how to use date pickers.
-
-Enable this widget with the feature `date_picker`.
-
-</center>
-
 ### Time Picker
 
-TODO
-
 <center>
 
-![Time Picker concept drawing](./images/concept_drawings/time_picker.svg)
-
 ![Modal showcase](./images/showcase/time_picker.png)
+
+</center>
 
 Please take a look into our examples on how to use time pickers.
 
 Enable this widget with the feature `time_picker`.
-</center>
 
-### Color Picker
 
-TODO
-
-<center>
-
-![Color Picker concept drawing](./images/concept_drawings/color_picker.svg)
-
-</center>
 
 ## Quickstart features
 
