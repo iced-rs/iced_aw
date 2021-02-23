@@ -50,6 +50,12 @@ where
     Renderer: self::Renderer,
 {
     /// Creates a new [`Card`](Card) containing the given head and body.
+    ///
+    /// It expects:
+    ///     * the head [`Element`](iced_native::Element) to display at the top of
+    ///         the [`Card`](Card).
+    ///     * the body [`Element`](iced_native::Element) to display at the middle
+    ///         of the [`Card`](Card).
     pub fn new<H, B>(head: H, body: B) -> Self
     where
         H: Into<Element<'a, Message, Renderer>>,

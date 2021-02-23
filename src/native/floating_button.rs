@@ -27,6 +27,7 @@ use super::overlay::floating_button::FloatingButtonOverlay;
 /// enum Message {
 ///     ButtonPressed,
 /// }
+///
 /// let mut button_state = button::State::default();
 ///
 /// let content = Column::new();
@@ -60,6 +61,13 @@ where
 {
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
     /// showing the given [`Button`](iced_native::button::Button).
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`FloatingButton`](FloatingButton)'s
+    ///         [`State`](iced_native::button::State).
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingButton`](FloatingButton)
+    ///         will be wrapped around.
+    ///     * a function that will lazy create the [`Button`](iced_native::Button) for the overlay.
     pub fn new<U>(state: &'a mut button::State, underlay: U, button: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

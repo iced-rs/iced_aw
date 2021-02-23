@@ -62,6 +62,12 @@ where
     ///
     /// `state` is the content's state, assigned at the creation of the
     /// overlying content.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the content's [`State`](State) of the [`Modal`](Modal).
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
+    ///         will be wrapped around.
+    ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
     pub fn new<U>(state: &'a mut State<S>, underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

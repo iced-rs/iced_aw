@@ -54,6 +54,15 @@ impl<'a, Message> TimePicker<'a, Message> {
     ///
     /// The underlay element will be ignored on the web, since the time input can't be
     /// customized that way.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`TimePicker`](TimePicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_web::Element) on which this [`TimePicker`](TimePicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`TimePicker`](TimePicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`TimePicker`](TimePicker)
+    ///         is pressed, which takes the picked [`Time`](crate::time_picker::Time) value.
     pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
@@ -103,7 +112,7 @@ impl State {
         State { show: false }
     }
 
-    /// Sets the visibility of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// Sets the visibility of the [`TimePicker`](TimePicker).
     ///
     /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {

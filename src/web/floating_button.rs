@@ -50,7 +50,14 @@ where
     Message: Clone,
 {
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
-    /// showing the given [`Button`](iced_native::button::Button).
+    /// showing the given [`Button`](iced_web::button::Button).
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`FloatingButton`](FloatingButton)'s
+    ///         [`State`](iced_web::button::State).
+    ///     * the underlay [`Element`](iced_web::Element) on which this [`FloatingButton`](FloatingButton)
+    ///         will be wrapped around.
+    ///     * a function that will lazy create the [`Button`](iced_web::Button) for the overlay.
     pub fn new<U, B>(state: &'a mut button::State, underlay: U, button: B) -> Self
     where
         U: Into<Element<'a, Message>>,
@@ -80,7 +87,7 @@ where
         self
     }
 
-    /// Hide or unhide the [`Button`](iced_native::button::Button) on the
+    /// Hide or unhide the [`Button`](iced_web::button::Button) on the
     /// [`FloatingButton`](FloatingButton).
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;

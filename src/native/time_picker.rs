@@ -42,6 +42,7 @@ pub use crate::core::time::{Period, Time};
 ///     Message::Cancel,
 ///     Message::Submit,
 /// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct TimePicker<'a, Message, Renderer>
 where
@@ -63,6 +64,15 @@ where
     Renderer: time_picker::Renderer + button::Renderer,
 {
     /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`TimePicker`](TimePicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`TimePicker`](TimePicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`TimePicker`](TimePicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`TimePicker`](TimePicker)
+    ///         is pressed, which takes the picked [`Time`](crate::time_picker::Time) value.
     pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

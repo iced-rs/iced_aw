@@ -25,6 +25,9 @@ pub struct IconText<Renderer: self::Renderer> {
 
 impl<Renderer: self::Renderer> IconText<Renderer> {
     /// Creates a new [`IconText`](IconText) with the given icon label.
+    ///
+    /// It expects:
+    ///     * the label to be displayed as an icon on the [`IconText`](IconText).
     pub fn new<T: Into<String>>(label: T) -> Self {
         IconText {
             content: label.into(),

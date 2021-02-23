@@ -61,6 +61,15 @@ where
     Renderer: color_picker::Renderer,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`ColorPicker`](ColorPicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`ColorPicker`](ColorPicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
+    ///         is pressed, which takes the picked [`Color`](iced_native::Color) value.
     pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

@@ -15,7 +15,7 @@ pub use crate::style::badge::{Style, StyleSheet};
 /// #[derive(Clone, Debug)]
 /// pub enum Message {
 /// }
-/// 
+///
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
@@ -31,6 +31,8 @@ pub struct Badge<'a, Message> {
 
 impl<'a, Message> Badge<'a, Message> {
     /// Creates a new [`Badge`](Badge) with the given content.
+    /// It expects:
+    ///     * the content [`Element`](iced_web::Element) to display in the [`Badge`](Badge).
     pub fn new<T>(content: T) -> Self
     where
         T: Into<Element<'a, Message>>,

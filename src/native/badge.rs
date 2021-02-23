@@ -39,6 +39,9 @@ where
     Renderer: self::Renderer,
 {
     /// Creates a new [`Badge`](Badge) with the given content.
+    ///
+    /// It expects:
+    ///     * the content [`Element`](iced_native::Element) to display in the [`Badge`](Badge).
     pub fn new<T>(content: T) -> Self
     where
         T: Into<Element<'a, Message, Renderer>>,

@@ -8,7 +8,7 @@ use crate::style::modal::StyleSheet;
 
 /// A modal content as an overlay.
 ///
-/// Can be used in combination with the [`Card`](crate::native::card::Card)
+/// Can be used in combination with the [`Card`](crate::web::card::Card)
 /// widget to form dialog elements.
 ///
 /// # Example
@@ -51,6 +51,12 @@ where
     ///
     /// `state` is the content's state, assigned at the creation of the
     /// overlying content.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the content's [`State`](State) of the [`Modal`](Modal).
+    ///     * the underlay [`Element`](iced_web::Element) on which this [`Modal`](Modal)
+    ///         will be wrapped around.
+    ///     * the content [`Element`](iced_web::Element) of the [`Modal`](Modal).
     pub fn new<S, U, Content>(state: &'a mut State<S>, underlay: U, content: Content) -> Self
     where
         S: 'a,

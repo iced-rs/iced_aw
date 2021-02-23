@@ -20,7 +20,7 @@ use std::rc::Rc;
 ///    Cancel,
 ///    Submit(Color),
 /// }
-/// 
+///
 /// let mut button_state = button::State::new();
 /// let mut state = color_picker::State::new();
 /// state.show(true);
@@ -51,6 +51,15 @@ impl<'a, Message> ColorPicker<'a, Message> {
     ///
     /// The underlay element will be ignored on the web, since the color input can't be
     /// customized that way.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`ColorPicker`](ColorPicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_web::Element) on which this [`ColorPicker`](ColorPicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
+    ///         is pressed, which takes the picked [`Color`](iced_web::Color) value.
     pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
@@ -86,7 +95,7 @@ impl State {
         State { show: false }
     }
 
-    /// Sets the visibility of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// Sets the visibility of the [`ColorPicker`](ColorPicker).
     ///
     /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {

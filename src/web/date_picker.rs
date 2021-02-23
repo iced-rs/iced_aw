@@ -17,7 +17,7 @@ use std::rc::Rc;
 /// # use iced_web::{Button, Text, button};
 /// #[derive(Clone, Debug)]
 /// enum Message {
-///     Open, 
+///     Open,
 ///     Cancel,
 ///     Submit(date_picker::Date),
 /// }
@@ -52,6 +52,15 @@ impl<'a, Message> DatePicker<'a, Message> {
     ///
     /// The underlay element will be ignored on the web, since the date input can't be
     /// customized that way.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`DatePicker`](DatePicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_web::Element) on which this [`DatePicker`](DatePicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`DatePicker`](DatePicker)
+    ///         is pressed, which takes the picked [`Date`](crate::date_picker::Date) value.
     pub fn new<U, F>(_state: &'a mut State, _underlay: U, _on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message>>,
@@ -87,7 +96,7 @@ impl State {
         State { show: false }
     }
 
-    /// Sets the visibility of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// Sets the visibility of the [`DatePicker`](DatePicker).
     ///
     /// Currently ignored on the web.
     pub fn show(&mut self, b: bool) {

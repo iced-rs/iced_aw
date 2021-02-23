@@ -66,6 +66,11 @@ where
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
+    ///
+    /// It expects:
+    ///     * the index of the currently active tab.
+    ///     * the function that will be called if a tab is selected by the user.
+    ///         It takes the index of the selected tab.
     pub fn new<F>(active_tab: usize, on_select: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
@@ -75,6 +80,12 @@ where
 
     /// Similar to `new` but with a given Vector of the
     /// [`TabLabel`](tab_label::TabLabel)s.Align
+    ///
+    /// It expects:
+    ///     * the index of the currently active tab.
+    ///     * a vector containing the [`TabLabel`](TabLabel)s of the [`TabBar`](TabBar).
+    ///     * the function that will be called if a tab is selected by the user.
+    ///         It takes the index of the selected tab.
     pub fn width_tab_labels<F>(active_tab: usize, tab_labels: Vec<TabLabel>, on_select: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,

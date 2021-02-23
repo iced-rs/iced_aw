@@ -28,7 +28,6 @@ pub use crate::core::date::Date;
 /// enum Message {
 ///     Open,
 ///     Cancel,
-///     // Year, Month, Day
 ///     Submit(date_picker::Date),
 /// }
 ///
@@ -43,6 +42,7 @@ pub use crate::core::date::Date;
 ///     Message::Cancel,
 ///     Message::Submit,
 /// );
+/// ```
 #[allow(missing_debug_implementations)]
 pub struct DatePicker<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer> {
     state: &'a mut State,
@@ -57,6 +57,15 @@ impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
     DatePicker<'a, Message, Renderer>
 {
     /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
+    ///
+    /// It expects:
+    ///     * a mutable reference to the [`DatePicker`](DatePicker)'s [`State`](State).
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`DatePicker`](DatePicker)
+    ///         will be wrapped around.
+    ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
+    ///         is pressed.
+    ///     * a function that will be called when the submit button of the [`DatePicker`](DatePicker)
+    ///         is pressed, which takes the picked [`Date`](crate::date_picker::Date) value.
     pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

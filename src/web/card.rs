@@ -45,6 +45,12 @@ pub struct Card<'a, Message> {
 
 impl<'a, Message> Card<'a, Message> {
     /// Creates a new [`Card`](Card) containing the given head and body.
+    /// 
+    /// It expects:
+    ///     * the head [`Element`](iced_web::Element) to display at the top of
+    ///         the [`Card`](Card).
+    ///     * the body [`Element`](iced_web::Element) to display at the middle
+    ///         of the [`Card`](Card).
     pub fn new<H, B>(head: H, body: B) -> Self
     where
         H: Into<Element<'a, Message>>,
@@ -67,7 +73,7 @@ impl<'a, Message> Card<'a, Message> {
         }
     }
 
-    /// Sets the [`Element`](iced_native::Element) of the foot of the
+    /// Sets the [`Element`](iced_web::Element) of the foot of the
     /// [`Card`](Card).
     pub fn foot<F>(mut self, foot: F) -> Self
     where
