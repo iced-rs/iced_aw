@@ -114,7 +114,6 @@ impl Sandbox for BadgeExample {
     }
 }
 
-/// TODO: maybe there is a smarter way
 fn predefined_style(index: usize) -> Box<dyn StyleSheet> {
     match index {
         0 => style::badge::Primary.into(),
