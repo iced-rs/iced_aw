@@ -63,6 +63,7 @@ pub enum NearestRadius {
 
 /// Determining the nearest radius to the position of the cursor position based
 /// on the distance to the center.
+#[must_use]
 pub fn nearest_radius(
     radii: &[(f32, NearestRadius)],
     cursor_position: Point,
@@ -82,6 +83,7 @@ pub fn nearest_radius(
 
 /// Determines the nearest point with the smallest distance to the cursor
 /// position. The index of the point is returned.
+#[must_use]
 pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
     let mut distance_vec: Vec<(usize, f32)> = points
         .iter()
@@ -96,14 +98,15 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
 
 /// Distributes the amount of points on a circle with the given radius around the
 /// center.
-pub fn circle_points(distance_radius: f32, center: Point, amount: u32) -> Vec<Point> {
-    let part = std::f32::consts::TAU / amount as f32;
+#[must_use]
+pub fn circle_points(distance_radius: f32, center: Point, amount: u16) -> Vec<Point> {
+    let part = std::f32::consts::TAU / f32::from(amount);
 
     let rotation =
         |(x, y): (f32, f32), t: f32| (x * t.cos() - y * t.sin(), x * t.sin() + y * t.cos());
 
     let points: Vec<(f32, f32)> = (0..amount).into_iter().fold(Vec::new(), |mut v, i| {
-        v.push(rotation((0.0, -distance_radius), part * i as f32));
+        v.push(rotation((0.0, -distance_radius), part * f32::from(i)));
         v
     });
 

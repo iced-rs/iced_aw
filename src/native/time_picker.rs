@@ -1,6 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
-//! *This API requires the following crate features to be activated: time_picker*
+//! *This API requires the following crate features to be activated: `time_picker`*
 use std::hash::Hash;
 
 use chrono::Local;
@@ -122,6 +122,7 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`](State) with the current time.
+    #[must_use]
     pub fn now() -> Self {
         Self {
             show: false,

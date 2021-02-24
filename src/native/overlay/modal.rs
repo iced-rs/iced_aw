@@ -130,7 +130,7 @@ where
         let esc_status = self
             .esc
             .as_ref()
-            .map(|esc| match event {
+            .map_or(event::Status::Ignored, |esc| match event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
                     if key_code == keyboard::KeyCode::Escape {
                         messages.push(esc.to_owned());
@@ -140,26 +140,23 @@ where
                     }
                 }
                 _ => event::Status::Ignored,
-            })
-            .unwrap_or(event::Status::Ignored);
+            });
 
-        let backdrop_status = self
-            .backdrop
-            .as_ref()
-            .zip(layout.children().next())
-            .map(|(backdrop, layout)| match event {
+        let backdrop_status = self.backdrop.as_ref().zip(layout.children().next()).map_or(
+            event::Status::Ignored,
+            |(backdrop, layout)| match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if !layout.bounds().contains(cursor_position) {
+                    if layout.bounds().contains(cursor_position) {
+                        event::Status::Ignored
+                    } else {
                         messages.push(backdrop.to_owned());
                         event::Status::Captured
-                    } else {
-                        event::Status::Ignored
                     }
                 }
                 _ => event::Status::Ignored,
-            })
-            .unwrap_or(event::Status::Ignored);
+            },
+        );
 
         match esc_status.merge(backdrop_status) {
             event::Status::Ignored => self.content.on_event(

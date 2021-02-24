@@ -1,6 +1,6 @@
 //! Use a date picker as an input element for picking dates.
 //!
-//! *This API requires the following crate features to be activated: date_picker*
+//! *This API requires the following crate features to be activated: `date_picker`*
 use std::collections::HashMap;
 
 use crate::{
@@ -22,7 +22,7 @@ use super::icons::{Icon, ICON_FONT};
 
 /// An input element for picking dates.
 ///
-/// This is an alias of an `iced_native` DatePicker with an `iced_wgpu::Renderer`.
+/// This is an alias of an `iced_native` `DatePicker` with an `iced_wgpu::Renderer`.
 pub type DatePicker<'a, Message, Backend> = date_picker::DatePicker<'a, Message, Renderer<Backend>>;
 
 impl<B> date_picker::Renderer for Renderer<B>
@@ -34,7 +34,7 @@ where
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        date: &chrono::NaiveDate,
+        date: chrono::NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
@@ -225,7 +225,7 @@ fn month_year(
                     },
                     color: style.get(&style_state).unwrap().text_color,
                     size: center_bounds.height,
-                    font: Default::default(),
+                    font: iced_graphics::Font::default(),
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
@@ -267,7 +267,7 @@ fn month_year(
 /// Draws the days
 fn days(
     layout: iced_native::Layout<'_>,
-    date: &chrono::NaiveDate,
+    date: chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
     //style: &Style,
     style: &HashMap<StyleState, Style>,
@@ -309,7 +309,7 @@ fn day_labels(
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: bounds.height + 5.0,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: HorizontalAlignment::Center,
             vertical_alignment: VerticalAlignment::Center,
         })
@@ -321,7 +321,7 @@ fn day_labels(
 /// Draws the day table
 fn day_table(
     children: &mut dyn Iterator<Item = iced_native::Layout<'_>>,
-    date: &chrono::NaiveDate,
+    date: chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
     style: &HashMap<StyleState, Style>,
     focus: Focus,
@@ -386,7 +386,7 @@ fn day_table(
                 } else {
                     bounds.height
                 },
-                font: Default::default(),
+                font: iced_graphics::Font::default(),
                 horizontal_alignment: HorizontalAlignment::Center,
                 vertical_alignment: VerticalAlignment::Center,
             })

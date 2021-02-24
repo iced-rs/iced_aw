@@ -1,6 +1,6 @@
 //! Use a date picker as an input element for picking dates.
 //!
-//! *This API requires the following crate features to be activated: date_picker*
+//! *This API requires the following crate features to be activated: `date_picker`*
 use std::hash::Hash;
 
 use chrono::Local;
@@ -103,6 +103,7 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`](State) with the current date.
+    #[must_use]
     pub fn now() -> Self {
         Self {
             show: false,

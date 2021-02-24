@@ -1,6 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
-//! *This API requires the following crate features to be activated: time_picker*
+//! *This API requires the following crate features to be activated: `time_picker`*
 use std::fmt::Display;
 
 /// The time value
@@ -31,6 +31,7 @@ pub enum Time {
 
 impl Time {
     /// The default time `00:00` with the given period.
+    #[must_use]
     pub const fn default_hm(period: Period) -> Self {
         Self::Hm {
             hour: 0,
@@ -40,6 +41,7 @@ impl Time {
     }
 
     /// The default time `00:00:00` with the given period.
+    #[must_use]
     pub const fn default_hms(period: Period) -> Self {
         Self::Hms {
             hour: 0,

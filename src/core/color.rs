@@ -12,6 +12,7 @@ pub struct Hsv {
 
 impl Hsv {
     /// Creates a [`Hsv`](Hsv) from its HSV components.
+    #[must_use]
     pub const fn from_hsv(hue: u16, saturation: f32, value: f32) -> Self {
         Self {
             hue,
@@ -72,8 +73,8 @@ impl From<Color> for Hsv {
 impl From<Hsv> for Color {
     fn from(hsv: Hsv) -> Self {
         // https://de.wikipedia.org/wiki/HSV-Farbraum#Umrechnung_HSV_in_RGB
-        let h_i = (hsv.hue as f32 / 60.0).floor();
-        let f = (hsv.hue as f32 / 60.0) - h_i;
+        let h_i = (f32::from(hsv.hue) / 60.0).floor();
+        let f = (f32::from(hsv.hue) / 60.0) - h_i;
 
         let p = hsv.value * (1.0 - hsv.saturation);
         let q = hsv.value * (1.0 - hsv.saturation * f);

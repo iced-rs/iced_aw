@@ -261,15 +261,15 @@ where
             .width(self.width)
             .height(self.height);
 
-        let mut tab_content_node =
-            if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
-                element.layout(renderer, &tab_content_limits)
-            } else {
+        let mut tab_content_node = self.tabs.get(self.tab_bar.get_active_tab()).map_or_else(
+            || {
                 Row::<Message, Renderer>::new()
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .layout(renderer, &tab_content_limits)
-            };
+            },
+            |element| element.layout(renderer, &tab_content_limits),
+        );
 
         tab_bar_node.move_to(Point::new(
             tab_bar_node.bounds().x,
@@ -333,19 +333,19 @@ where
             clipboard,
         );
 
-        let status_element = if let Some(element) = self.tabs.get_mut(self.tab_bar.get_active_tab())
-        {
-            element.on_event(
-                event,
-                tab_content_layout,
-                cursor_position,
-                messages,
-                renderer,
-                clipboard,
-            )
-        } else {
-            event::Status::Ignored
-        };
+        let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
+            event::Status::Ignored,
+            |element| {
+                element.on_event(
+                    event,
+                    tab_content_layout,
+                    cursor_position,
+                    messages,
+                    renderer,
+                    clipboard,
+                )
+            },
+        );
 
         status_tab_bar.merge(status_element)
     }

@@ -1,9 +1,9 @@
 //! Text widget for rendering icons.
 //!
-//! Nearly a complete copy of the iced_native::Text widget, but with the
+//! Nearly a complete copy of the `iced_native::Text` widget, but with the
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
-//! //! *This API requires the following crate features to be activated: icon_text*
+//! //! *This API requires the following crate features to be activated: `icon_text`*
 use std::hash::Hash;
 
 use iced_native::{

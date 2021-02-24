@@ -1,6 +1,6 @@
 //! Use a date picker as an input element for picking dates.
 //!
-//! *This API requires the following crate features to be activated: date_picker*
+//! *This API requires the following crate features to be activated: `date_picker`*
 use std::hash::Hash;
 
 use chrono::{Datelike, Local, NaiveDate};
@@ -93,22 +93,23 @@ where
 
     /// Turn this [`DatePickerOverlay`](DatePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
+    #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
     fn year_as_string(&self) -> String {
-        crate::core::date::year_as_string(&self.state.date)
+        crate::core::date::year_as_string(self.state.date)
     }
 
     fn month_as_string(&self) -> String {
-        crate::core::date::month_as_string(&self.state.date)
+        crate::core::date::month_as_string(self.state.date)
     }
 
     /// The event handling for the month / year bar.
     fn on_event_month_year(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -135,10 +136,10 @@ where
                 }
 
                 if left_bounds.contains(cursor_position) {
-                    self.state.date = crate::core::date::pred_month(&self.state.date);
+                    self.state.date = crate::core::date::pred_month(self.state.date);
                     status = event::Status::Captured;
                 } else if right_bounds.contains(cursor_position) {
-                    self.state.date = crate::core::date::succ_month(&self.state.date);
+                    self.state.date = crate::core::date::succ_month(self.state.date);
                     status = event::Status::Captured;
                 }
             }
@@ -161,10 +162,10 @@ where
                 }
 
                 if left_bounds.contains(cursor_position) {
-                    self.state.date = crate::core::date::pred_year(&self.state.date);
+                    self.state.date = crate::core::date::pred_year(self.state.date);
                     status = event::Status::Captured;
                 } else if right_bounds.contains(cursor_position) {
-                    self.state.date = crate::core::date::succ_year(&self.state.date);
+                    self.state.date = crate::core::date::succ_year(self.state.date);
                     status = event::Status::Captured;
                 }
             }
@@ -177,7 +178,7 @@ where
     /// The event handling for the calendar days.
     fn on_event_days(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -210,12 +211,12 @@ where
 
                             self.state.date = match is_in_month {
                                 IsInMonth::Previous => {
-                                    crate::core::date::pred_month(&self.state.date)
+                                    crate::core::date::pred_month(self.state.date)
                                         .with_day(day as u32)
                                         .unwrap()
                                 }
                                 IsInMonth::Same => self.state.date.with_day(day as u32).unwrap(),
-                                IsInMonth::Next => crate::core::date::succ_month(&self.state.date)
+                                IsInMonth::Next => crate::core::date::succ_month(self.state.date)
                                     .with_day(day as u32)
                                     .unwrap(),
                             };
@@ -234,7 +235,7 @@ where
 
     fn on_event_keyboard(
         &mut self,
-        event: Event,
+        event: &Event,
         _layout: Layout<'_>,
         _cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -257,57 +258,54 @@ where
                     }
                 }
                 _ => match self.state.focus {
-                    Focus::Overlay => {}
                     Focus::Month => match key_code {
                         keyboard::KeyCode::Left => {
-                            self.state.date = crate::core::date::pred_month(&self.state.date);
+                            self.state.date = crate::core::date::pred_month(self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            self.state.date = crate::core::date::succ_month(&self.state.date);
+                            self.state.date = crate::core::date::succ_month(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
                     Focus::Year => match key_code {
                         keyboard::KeyCode::Left => {
-                            self.state.date = crate::core::date::pred_year(&self.state.date);
+                            self.state.date = crate::core::date::pred_year(self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            self.state.date = crate::core::date::succ_year(&self.state.date);
+                            self.state.date = crate::core::date::succ_year(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
                     Focus::Day => match key_code {
                         keyboard::KeyCode::Left => {
-                            self.state.date = crate::core::date::pred_day(&self.state.date);
+                            self.state.date = crate::core::date::pred_day(self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Right => {
-                            self.state.date = crate::core::date::succ_day(&self.state.date);
+                            self.state.date = crate::core::date::succ_day(self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Up => {
-                            self.state.date = crate::core::date::pred_week(&self.state.date);
+                            self.state.date = crate::core::date::pred_week(self.state.date);
                             status = event::Status::Captured;
                         }
                         keyboard::KeyCode::Down => {
-                            self.state.date = crate::core::date::succ_week(&self.state.date);
+                            self.state.date = crate::core::date::succ_week(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
-                    Focus::Cancel => {}
-                    Focus::Submit => {}
                     _ => {}
                 },
             }
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            self.state.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = *modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -335,7 +333,7 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(PADDING as f32)
+            .pad(f32::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300)
@@ -347,11 +345,11 @@ where
 
         let limits = limits.shrink(Size::new(
             0.0,
-            cancel_button.bounds().height + SPACING as f32,
+            cancel_button.bounds().height + f32::from(SPACING),
         ));
 
         // Month/Year
-        let font_size = text::Renderer::default_size(renderer) as u32;
+        let font_size = u32::from(text::Renderer::default_size(renderer));
 
         let month_year = Row::<(), Renderer>::new()
             .width(Length::Fill)
@@ -431,41 +429,47 @@ where
             .layout(renderer, &limits);
 
         col.move_to(Point::new(
-            col.bounds().x + PADDING as f32,
-            col.bounds().y + PADDING as f32,
+            col.bounds().x + f32::from(PADDING),
+            col.bounds().y + f32::from(PADDING),
         ));
 
         // Buttons
         let cancel_limits = limits
             .clone()
-            .max_width(((col.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+            .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = limits
             .clone()
-            .max_width(((col.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+            .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING as f32,
-            y: cancel_button.bounds().y + col.bounds().height + PADDING as f32 + SPACING as f32,
+            x: cancel_button.bounds().x + f32::from(PADDING),
+            y: cancel_button.bounds().y
+                + col.bounds().height
+                + f32::from(PADDING)
+                + f32::from(SPACING),
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + col.bounds().width - submit_button.bounds().width
-                + PADDING as f32,
-            y: submit_button.bounds().y + col.bounds().height + PADDING as f32 + SPACING as f32,
+                + f32::from(PADDING),
+            y: submit_button.bounds().y
+                + col.bounds().height
+                + f32::from(PADDING)
+                + f32::from(SPACING),
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
-                col.bounds().width + (2.0 * PADDING as f32),
+                col.bounds().width + (2.0 * f32::from(PADDING)),
                 col.bounds().height
                     + cancel_button.bounds().height
-                    + (2.0 * PADDING as f32)
-                    + SPACING as f32,
+                    + (2.0 * f32::from(PADDING))
+                    + f32::from(SPACING),
             ),
             vec![col, cancel_button, submit_button],
         );
@@ -485,7 +489,7 @@ where
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         if let event::Status::Captured = self.on_event_keyboard(
-            event.clone(),
+            &event,
             layout,
             cursor_position,
             messages,
@@ -502,7 +506,7 @@ where
         // ----------- Year/Month----------------------
         let month_year_layout = date_children.next().unwrap();
         let month_year_status = self.on_event_month_year(
-            event.clone(),
+            &event,
             month_year_layout,
             cursor_position,
             messages,
@@ -513,7 +517,7 @@ where
         // ----------- Days ----------------------
         let days_layout = date_children.next().unwrap().children().next().unwrap();
         let days_status = self.on_event_days(
-            event.clone(),
+            &event,
             days_layout,
             cursor_position,
             messages,
@@ -574,7 +578,7 @@ where
                 viewport: None,
                 focus: self.state.focus,
             },
-            &self.state.date,
+            self.state.date,
             &self.year_as_string(),
             &self.month_as_string(),
             &self.cancel_button,
@@ -604,7 +608,7 @@ pub trait Renderer: iced_native::Renderer {
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        date: &NaiveDate,
+        date: NaiveDate,
         year_str: &str,
         month_str: &str,
         cancel_button: &Element<'_, Message, Self>,
@@ -619,7 +623,7 @@ impl Renderer for iced_native::renderer::Null {
     fn draw<Message>(
         &mut self,
         _env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        _date: &NaiveDate,
+        _date: NaiveDate,
         _year_str: &str,
         _month_str: &str,
         _cancel_button: &Element<'_, Message, Self>,
@@ -673,19 +677,20 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
+    #[must_use]
     pub const fn next(self) -> Self {
         match self {
-            Self::None => Self::Overlay,
             Self::Overlay => Self::Month,
             Self::Month => Self::Year,
             Self::Year => Self::Day,
             Self::Day => Self::Cancel,
             Self::Cancel => Self::Submit,
-            Self::Submit => Self::Overlay,
+            Self::Submit | Self::None => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
+    #[must_use]
     pub const fn previous(self) -> Self {
         match self {
             Self::None => Self::None,

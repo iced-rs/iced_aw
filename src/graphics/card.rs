@@ -24,7 +24,7 @@ where
     const DEFAULT_PADDING: f32 = 10.0;
 
     fn default_size(&self) -> f32 {
-        self.backend().default_size() as f32
+        f32::from(self.backend().default_size())
     }
 
     fn draw<Message>(
@@ -146,21 +146,22 @@ where
             border_color: Color::TRANSPARENT,
         };
 
-        let (foot, new_mouse_interaction) = if let Some(foot) = foot.as_ref() {
-            foot.draw(
-                self,
-                &Defaults {
-                    text: defaults::Text {
-                        color: style.foot_text_color,
+        let (foot, new_mouse_interaction) = foot.as_ref().map_or_else(
+            || (Primitive::None, mouse::Interaction::default()),
+            |foot| {
+                foot.draw(
+                    self,
+                    &Defaults {
+                        text: defaults::Text {
+                            color: style.foot_text_color,
+                        },
                     },
-                },
-                foot_children.next().unwrap(),
-                env.cursor_position,
-                env.viewport.unwrap(),
-            )
-        } else {
-            (Primitive::None, mouse::Interaction::default())
-        };
+                    foot_children.next().unwrap(),
+                    env.cursor_position,
+                    env.viewport.unwrap(),
+                )
+            },
+        );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
 

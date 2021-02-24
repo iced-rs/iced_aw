@@ -1,6 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
-//! *This API requires the following crate features to be activated: time_picker*
+//! *This API requires the following crate features to be activated: `time_picker`*
 use std::hash::Hash;
 
 use crate::{
@@ -94,6 +94,7 @@ where
 
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
+    #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
@@ -101,7 +102,7 @@ where
     /// The event handling for the clock.
     fn on_event_clock(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -193,7 +194,7 @@ where
                         self.state.clock_dragged = ClockDragged::Second;
                         event::Status::Captured
                     }
-                    _ => event::Status::Ignored,
+                    NearestRadius::None => event::Status::Ignored,
                 },
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerLifted { .. })
@@ -257,7 +258,7 @@ where
     /// The event handling for the digital clock.
     fn on_event_digital_clock(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -298,7 +299,7 @@ where
                 *time -= duration;
                 event::Status::Captured
             } else {
-                event ::Status::Ignored
+                event::Status::Ignored
             }
         };
 
@@ -373,7 +374,7 @@ where
 
     fn on_event_keyboard(
         &mut self,
-        event: Event,
+        event: &Event,
         _layout: Layout<'_>,
         _cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -387,45 +388,39 @@ where
         if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            match key_code {
-                keyboard::KeyCode::Tab => {
-                    if self.state.keyboard_modifiers.shift {
-                        self.state.focus = self.state.focus.previous(self.state.show_seconds);
-                    } else {
-                        self.state.focus = self.state.focus.next(self.state.show_seconds);
-                    }
+            if let keyboard::KeyCode::Tab = key_code {
+                if self.state.keyboard_modifiers.shift {
+                    self.state.focus = self.state.focus.previous(self.state.show_seconds);
+                } else {
+                    self.state.focus = self.state.focus.next(self.state.show_seconds);
                 }
-                _ => {
-                    let mut keyboard_handle =
-                        |key_code: keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
-                            match key_code {
-                                keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
-                                    *time -= duration;
-                                    status = event::Status::Captured;
-                                }
-                                keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
-                                    *time += duration;
-                                    status = event::Status::Captured;
-                                }
-                                _ => {}
+            } else {
+                let mut keyboard_handle =
+                    |key_code: &keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
+                        match key_code {
+                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                                *time -= duration;
+                                status = event::Status::Captured;
                             }
-                        };
+                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                                *time += duration;
+                                status = event::Status::Captured;
+                            }
+                            _ => {}
+                        }
+                    };
 
-                    match self.state.focus {
-                        Focus::Overlay => {}
-                        Focus::DigitalHour => {
-                            keyboard_handle(key_code, &mut self.state.time, Duration::hours(1))
-                        }
-                        Focus::DigitalMinute => {
-                            keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1))
-                        }
-                        Focus::DigitalSecond => {
-                            keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1))
-                        }
-                        Focus::Cancel => {}
-                        Focus::Submit => {}
-                        _ => {}
+                match self.state.focus {
+                    Focus::DigitalHour => {
+                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1))
                     }
+                    Focus::DigitalMinute => {
+                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1))
+                    }
+                    Focus::DigitalSecond => {
+                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1))
+                    }
+                    _ => {}
                 }
             }
 
@@ -435,7 +430,7 @@ where
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            self.state.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = *modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -463,14 +458,14 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(PADDING as f32)
+            .pad(f32::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300)
             .max_height(350);
 
         let arrow_size = text::Renderer::default_size(renderer);
-        let font_size = (1.2 * (text::Renderer::default_size(renderer) as f32)) as u16;
+        let font_size = (1.2 * f32::from(text::Renderer::default_size(renderer))) as u16;
 
         // Digital Clock
         let digital_clock_limits = limits;
@@ -581,7 +576,9 @@ where
 
         let limits = limits.shrink(Size::new(
             0.0,
-            digital_clock.bounds().height + cancel_button.bounds().height + 2.0 * SPACING as f32,
+            digital_clock.bounds().height
+                + cancel_button.bounds().height
+                + 2.0 * f32::from(SPACING),
         ));
 
         // Clock-Canvas
@@ -591,55 +588,58 @@ where
             .layout(renderer, &limits);
 
         clock.move_to(Point::new(
-            clock.bounds().x + PADDING as f32,
-            clock.bounds().y + PADDING as f32,
+            clock.bounds().x + f32::from(PADDING),
+            clock.bounds().y + f32::from(PADDING),
         ));
 
         digital_clock.move_to(Point::new(
-            digital_clock.bounds().x + PADDING as f32,
-            digital_clock.bounds().y + PADDING as f32 + SPACING as f32 + clock.bounds().height,
+            digital_clock.bounds().x + f32::from(PADDING),
+            digital_clock.bounds().y
+                + f32::from(PADDING)
+                + f32::from(SPACING)
+                + clock.bounds().height,
         ));
 
         // Buttons
         let cancel_limits = limits
             .clone()
-            .max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+            .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = limits
             .clone()
-            .max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32);
+            .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING as f32,
+            x: cancel_button.bounds().x + f32::from(PADDING),
             y: cancel_button.bounds().y
                 + clock.bounds().height
-                + PADDING as f32
+                + f32::from(PADDING)
                 + digital_clock.bounds().height
-                + 2.0 * SPACING as f32,
+                + 2.0 * f32::from(SPACING),
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + clock.bounds().width - submit_button.bounds().width
-                + PADDING as f32,
+                + f32::from(PADDING),
             y: submit_button.bounds().y
                 + clock.bounds().height
-                + PADDING as f32
+                + f32::from(PADDING)
                 + digital_clock.bounds().height
-                + 2.0 * SPACING as f32,
+                + 2.0 * f32::from(SPACING),
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
-                clock.bounds().width + (2.0 * PADDING as f32),
+                clock.bounds().width + (2.0 * f32::from(PADDING)),
                 clock.bounds().height
                     + digital_clock.bounds().height
                     + cancel_button.bounds().height
-                    + (2.0 * PADDING as f32)
-                    + 2.0 * SPACING as f32,
+                    + (2.0 * f32::from(PADDING))
+                    + 2.0 * f32::from(SPACING),
             ),
             vec![clock, digital_clock, cancel_button, submit_button],
         );
@@ -659,7 +659,7 @@ where
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         if let event::Status::Captured = self.on_event_keyboard(
-            event.clone(),
+            &event,
             layout,
             cursor_position,
             messages,
@@ -674,7 +674,7 @@ where
         // Clock canvas
         let clock_layout = children.next().unwrap();
         let clock_status = self.on_event_clock(
-            event.clone(),
+            &event,
             clock_layout,
             cursor_position,
             messages,
@@ -685,7 +685,7 @@ where
         // ----------- Digital clock ------------------
         let digital_clock_layout = children.next().unwrap().children().next().unwrap();
         let digital_clock_status = self.on_event_digital_clock(
-            event.clone(),
+            &event,
             digital_clock_layout,
             cursor_position,
             messages,
@@ -889,9 +889,9 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
+    #[must_use]
     pub const fn next(self, show_seconds: bool) -> Self {
         match self {
-            Self::None => Self::Overlay,
             Self::Overlay => Self::DigitalHour,
             Self::DigitalHour => Self::DigitalMinute,
             Self::DigitalMinute => {
@@ -903,11 +903,12 @@ impl Focus {
             }
             Self::DigitalSecond => Self::Cancel,
             Self::Cancel => Self::Submit,
-            Self::Submit => Self::Overlay,
+            Self::Submit | Self::None => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
+    #[must_use]
     pub const fn previous(self, show_seconds: bool) -> Self {
         match self {
             Self::None => Self::None,

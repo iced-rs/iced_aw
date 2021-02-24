@@ -1,6 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
-//! *This API requires the following crate features to be activated: time_picker*
+//! *This API requires the following crate features to be activated: `time_picker`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
 #[cfg(target_arch = "wasm32")]

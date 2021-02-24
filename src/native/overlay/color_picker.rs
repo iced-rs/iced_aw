@@ -1,6 +1,6 @@
 //! Use a color picker as an input element for picking colors.
 //!
-//! *This API requires the following crate features to be activated: color_picker*
+//! *This API requires the following crate features to be activated: `color_picker`*
 use std::hash::Hash;
 
 use iced_graphics::canvas;
@@ -90,6 +90,7 @@ where
 
     /// Turn this [`ColorPickerOverlay`](ColorPickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
+    #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
@@ -97,7 +98,7 @@ where
     /// The event handling for the HSV color area.
     fn on_event_hsv_color(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -116,13 +117,13 @@ where
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                     let move_value =
-                        |value: u16, y: f32| ((value as i32 + y as i32).rem_euclid(360)) as u16;
+                        |value: u16, y: f32| ((i32::from(value) + y as i32).rem_euclid(360)) as u16;
 
                     if hue_bounds.contains(cursor_position) {
                         self.state.color = Color {
                             a: self.state.color.a,
                             ..Hsv {
-                                hue: move_value(hsv_color.hue, y),
+                                hue: move_value(hsv_color.hue, *y),
                                 ..hsv_color
                             }
                             .into()
@@ -199,7 +200,7 @@ where
     /// The event handling for the RGBA color area.
     fn on_event_rgba_color(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -234,28 +235,28 @@ where
 
                     if red_bar_bounds.contains(cursor_position) {
                         self.state.color = Color {
-                            r: move_value(self.state.color.r, y),
+                            r: move_value(self.state.color.r, *y),
                             ..self.state.color
                         };
                         color_changed = true;
                     }
                     if green_bar_bounds.contains(cursor_position) {
                         self.state.color = Color {
-                            g: move_value(self.state.color.g, y),
+                            g: move_value(self.state.color.g, *y),
                             ..self.state.color
                         };
                         color_changed = true;
                     }
                     if blue_bar_bounds.contains(cursor_position) {
                         self.state.color = Color {
-                            b: move_value(self.state.color.b, y),
+                            b: move_value(self.state.color.b, *y),
                             ..self.state.color
                         };
                         color_changed = true;
                     }
                     if alpha_bar_bounds.contains(cursor_position) {
                         self.state.color = Color {
-                            a: move_value(self.state.color.a, y),
+                            a: move_value(self.state.color.a, *y),
                             ..self.state.color
                         };
                         color_changed = true;
@@ -334,7 +335,7 @@ where
 
     fn on_event_keyboard(
         &mut self,
-        event: Event,
+        event: &Event,
         _layout: Layout<'_>,
         _cursor_position: Point,
         _messages: &mut Vec<Message>,
@@ -348,120 +349,112 @@ where
         if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            match key_code {
-                keyboard::KeyCode::Tab => {
-                    if self.state.keyboard_modifiers.shift {
-                        self.state.focus = self.state.focus.previous();
-                    } else {
-                        self.state.focus = self.state.focus.next();
-                    }
-                    // TODO: maybe place this better
-                    self.state.sat_value_canvas_cache.clear();
-                    self.state.hue_canvas_cache.clear();
+            if let keyboard::KeyCode::Tab = key_code {
+                if self.state.keyboard_modifiers.shift {
+                    self.state.focus = self.state.focus.previous();
+                } else {
+                    self.state.focus = self.state.focus.next();
                 }
-                _ => {
-                    let sat_value_handle = |key_code: keyboard::KeyCode, color: &mut Color| {
-                        let mut hsv_color: Hsv = color.to_owned().into();
-                        let mut status = event::Status::Ignored;
+                // TODO: maybe place this better
+                self.state.sat_value_canvas_cache.clear();
+                self.state.hue_canvas_cache.clear();
+            } else {
+                let sat_value_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
+                    let mut hsv_color: Hsv = color.to_owned().into();
+                    let mut status = event::Status::Ignored;
 
-                        match key_code {
-                            keyboard::KeyCode::Left => {
-                                hsv_color.saturation -= SAT_VALUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right => {
-                                hsv_color.saturation += SAT_VALUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Up => {
-                                hsv_color.value -= SAT_VALUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Down => {
-                                hsv_color.value += SAT_VALUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
+                    match key_code {
+                        keyboard::KeyCode::Left => {
+                            hsv_color.saturation -= SAT_VALUE_STEP;
+                            status = event::Status::Captured;
                         }
-
-                        hsv_color.saturation = hsv_color.saturation.clamp(0.0, 1.0);
-                        hsv_color.value = hsv_color.value.clamp(0.0, 1.0);
-
-                        *color = Color {
-                            a: color.a,
-                            ..hsv_color.into()
-                        };
-                        status
-                    };
-
-                    let hue_handle = |key_code: keyboard::KeyCode, color: &mut Color| {
-                        let mut hsv_color: Hsv = color.to_owned().into();
-                        let mut status = event::Status::Ignored;
-
-                        let mut value = hsv_color.hue as i32;
-
-                        match key_code {
-                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
-                                value -= HUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
-                                value += HUE_STEP;
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
+                        keyboard::KeyCode::Right => {
+                            hsv_color.saturation += SAT_VALUE_STEP;
+                            status = event::Status::Captured;
                         }
-
-                        hsv_color.hue = value.rem_euclid(360) as u16;
-
-                        *color = Color {
-                            a: color.a,
-                            ..hsv_color.into()
-                        };
-
-                        status
-                    };
-
-                    let rgba_bar_handle = |key_code: keyboard::KeyCode, value: &mut f32| {
-                        let mut byte_value = (*value * 255.0) as i16;
-                        let mut status = event::Status::Captured;
-
-                        match key_code {
-                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
-                                byte_value -= RGBA_STEP;
-                                status = event::Status::Captured;
-                            }
-                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
-                                byte_value += RGBA_STEP;
-                                status = event::Status::Captured;
-                            }
-                            _ => {}
+                        keyboard::KeyCode::Up => {
+                            hsv_color.value -= SAT_VALUE_STEP;
+                            status = event::Status::Captured;
                         }
-                        *value = byte_value.clamp(0, 255) as f32 / 255.0;
-
-                        status
-                    };
-
-                    match self.state.focus {
-                        Focus::Overlay => {}
-                        Focus::SatValue => {
-                            status = sat_value_handle(key_code, &mut self.state.color)
+                        keyboard::KeyCode::Down => {
+                            hsv_color.value += SAT_VALUE_STEP;
+                            status = event::Status::Captured;
                         }
-                        Focus::Hue => status = hue_handle(key_code, &mut self.state.color),
-                        Focus::Red => status = rgba_bar_handle(key_code, &mut self.state.color.r),
-                        Focus::Green => status = rgba_bar_handle(key_code, &mut self.state.color.g),
-                        Focus::Blue => status = rgba_bar_handle(key_code, &mut self.state.color.b),
-                        Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.state.color.a),
-                        Focus::Cancel => {}
-                        Focus::Submit => {}
                         _ => {}
                     }
+
+                    hsv_color.saturation = hsv_color.saturation.clamp(0.0, 1.0);
+                    hsv_color.value = hsv_color.value.clamp(0.0, 1.0);
+
+                    *color = Color {
+                        a: color.a,
+                        ..hsv_color.into()
+                    };
+                    status
+                };
+
+                let hue_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
+                    let mut hsv_color: Hsv = color.to_owned().into();
+                    let mut status = event::Status::Ignored;
+
+                    let mut value = i32::from(hsv_color.hue);
+
+                    match key_code {
+                        keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                            value -= HUE_STEP;
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                            value += HUE_STEP;
+                            status = event::Status::Captured;
+                        }
+                        _ => {}
+                    }
+
+                    hsv_color.hue = value.rem_euclid(360) as u16;
+
+                    *color = Color {
+                        a: color.a,
+                        ..hsv_color.into()
+                    };
+
+                    status
+                };
+
+                let rgba_bar_handle = |key_code: &keyboard::KeyCode, value: &mut f32| {
+                    let mut byte_value = (*value * 255.0) as i16;
+                    let mut status = event::Status::Captured;
+
+                    match key_code {
+                        keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                            byte_value -= RGBA_STEP;
+                            status = event::Status::Captured;
+                        }
+                        keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                            byte_value += RGBA_STEP;
+                            status = event::Status::Captured;
+                        }
+                        _ => {}
+                    }
+                    *value = f32::from(byte_value.clamp(0, 255)) / 255.0;
+
+                    status
+                };
+
+                match self.state.focus {
+                    Focus::SatValue => status = sat_value_handle(key_code, &mut self.state.color),
+                    Focus::Hue => status = hue_handle(key_code, &mut self.state.color),
+                    Focus::Red => status = rgba_bar_handle(key_code, &mut self.state.color.r),
+                    Focus::Green => status = rgba_bar_handle(key_code, &mut self.state.color.g),
+                    Focus::Blue => status = rgba_bar_handle(key_code, &mut self.state.color.b),
+                    Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.state.color.a),
+                    _ => {}
                 }
             }
 
             status
         } else if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
-            self.state.keyboard_modifiers = modifiers;
+            self.state.keyboard_modifiers = *modifiers;
             event::Status::Ignored
         } else {
             event::Status::Ignored
@@ -495,7 +488,7 @@ where
         };
 
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(PADDING as f32)
+            .pad(f32::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(max_width)
@@ -540,8 +533,8 @@ where
             .layout(renderer, &block1_limits);
 
         block1_node.move_to(Point::new(
-            block1_bounds.x + PADDING as f32,
-            block1_bounds.y + PADDING as f32,
+            block1_bounds.x + f32::from(PADDING),
+            block1_bounds.y + f32::from(PADDING),
         ));
         // ----------- Block 1 end ------------------
 
@@ -569,7 +562,7 @@ where
 
         let block2_limits = block2_limits.shrink(Size::new(
             0.0,
-            cancel_button.bounds().height + text_input.bounds().height + 2.0 * SPACING as f32,
+            cancel_button.bounds().height + text_input.bounds().height + 2.0 * f32::from(SPACING),
         ));
 
         // RGBA Colors
@@ -605,56 +598,59 @@ where
         let mut rgba_colors = rgba_colors.layout(renderer, &block2_limits);
 
         rgba_colors.move_to(Point::new(
-            rgba_colors.bounds().x + PADDING as f32,
-            rgba_colors.bounds().y + PADDING as f32,
+            rgba_colors.bounds().x + f32::from(PADDING),
+            rgba_colors.bounds().y + f32::from(PADDING),
         ));
 
         // Text input
         text_input.move_to(Point::new(
-            text_input.bounds().x + PADDING as f32,
-            text_input.bounds().y + rgba_colors.bounds().height + PADDING as f32 + SPACING as f32,
+            text_input.bounds().x + f32::from(PADDING),
+            text_input.bounds().y
+                + rgba_colors.bounds().height
+                + f32::from(PADDING)
+                + f32::from(SPACING),
         ));
 
         // Buttons
         let cancel_limits = block2_limits.clone().max_width(
-            ((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32,
+            ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
         );
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = block2_limits.clone().max_width(
-            ((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING as f32).max(0.0) as u32,
+            ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
         );
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point::new(
-            cancel_button.bounds().x + PADDING as f32,
+            cancel_button.bounds().x + f32::from(PADDING),
             cancel_button.bounds().y
                 + rgba_colors.bounds().height
                 + text_input.bounds().height
-                + PADDING as f32
-                + 2.0 * SPACING as f32,
+                + f32::from(PADDING)
+                + 2.0 * f32::from(SPACING),
         ));
 
         submit_button.move_to(Point::new(
             submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
-                + PADDING as f32,
+                + f32::from(PADDING),
             submit_button.bounds().y
                 + rgba_colors.bounds().height
                 + text_input.bounds().height
-                + PADDING as f32
-                + 2.0 * SPACING as f32,
+                + f32::from(PADDING)
+                + 2.0 * f32::from(SPACING),
         ));
 
         let mut block2_node = layout::Node::with_children(
             Size::new(
-                rgba_colors.bounds().width + (2.0 * PADDING as f32),
+                rgba_colors.bounds().width + (2.0 * f32::from(PADDING)),
                 rgba_colors.bounds().height
                     + text_input.bounds().height
                     + cancel_button.bounds().height
-                    + (2.0 * PADDING as f32)
-                    + (2.0 * SPACING as f32),
+                    + (2.0 * f32::from(PADDING))
+                    + (2.0 * f32::from(SPACING)),
             ),
             vec![rgba_colors, text_input, cancel_button, submit_button],
         );
@@ -663,13 +659,13 @@ where
 
         let (width, height) = if bounds.width > bounds.height {
             (
-                block1_node.size().width + block2_node.size().width + SPACING as f32, // + (2.0 * PADDING as f32),
+                block1_node.size().width + block2_node.size().width + f32::from(SPACING), // + (2.0 * PADDING as f32),
                 block2_node.size().height,
             )
         } else {
             (
                 block2_node.size().width,
-                block1_node.size().height + block2_node.size().height + SPACING as f32,
+                block1_node.size().height + block2_node.size().height + f32::from(SPACING),
             )
         };
 
@@ -691,7 +687,7 @@ where
         clipboard: Option<&dyn Clipboard>,
     ) -> event::Status {
         if let event::Status::Captured = self.on_event_keyboard(
-            event.clone(),
+            &event,
             layout,
             cursor_position,
             messages,
@@ -710,7 +706,7 @@ where
         // ----------- Block 1 ----------------------
         let block1_layout = children.next().unwrap();
         let hsv_color_status = self.on_event_hsv_color(
-            event.clone(),
+            &event,
             block1_layout,
             cursor_position,
             messages,
@@ -726,7 +722,7 @@ where
         // ----------- RGB Color -----------------------
         let rgba_color_layout = block2_children.next().unwrap();
         let rgba_color_status = self.on_event_rgba_color(
-            event.clone(),
+            &event,
             rgba_color_layout,
             cursor_position,
             messages,
@@ -944,9 +940,9 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
+    #[must_use]
     pub const fn next(self) -> Self {
         match self {
-            Self::None => Self::Overlay,
             Self::Overlay => Self::SatValue,
             Self::SatValue => Self::Hue,
             Self::Hue => Self::Red,
@@ -955,11 +951,12 @@ impl Focus {
             Self::Blue => Self::Alpha,
             Self::Alpha => Self::Cancel,
             Self::Cancel => Self::Submit,
-            Self::Submit => Self::Overlay,
+            Self::Submit | Self::None => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
+    #[must_use]
     pub const fn previous(self) -> Self {
         match self {
             Self::None => Self::None,

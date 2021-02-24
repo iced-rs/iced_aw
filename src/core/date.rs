@@ -20,6 +20,7 @@ pub struct Date {
 
 impl Date {
     /// Creates a new date.
+    #[must_use]
     pub const fn from_ymd(year: i32, month: u32, day: u32) -> Self {
         Self { year, month, day }
     }
@@ -47,7 +48,8 @@ impl From<NaiveDate> for Date {
 
 /// Creates a date with the previous month based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn pred_month(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn pred_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 1 {
         (date.year() - 1, 12)
     } else {
@@ -61,7 +63,8 @@ pub fn pred_month(date: &NaiveDate) -> NaiveDate {
 
 /// Creates a date with the next month based on given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn succ_month(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn succ_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 12 {
         (date.year() + 1, 1)
     } else {
@@ -75,7 +78,8 @@ pub fn succ_month(date: &NaiveDate) -> NaiveDate {
 
 /// Creates a date with the previous year based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn pred_year(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn pred_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() - 1;
     let day = date.day().min(num_days_of_month(year, date.month()));
 
@@ -84,7 +88,8 @@ pub fn pred_year(date: &NaiveDate) -> NaiveDate {
 
 /// Creates a date with the next year based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn succ_year(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn succ_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() + 1;
     let day = date.day().min(num_days_of_month(year, date.month()));
 
@@ -93,25 +98,29 @@ pub fn succ_year(date: &NaiveDate) -> NaiveDate {
 
 /// Calculates a date with the previous week based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn pred_week(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn pred_week(date: NaiveDate) -> NaiveDate {
     date.to_owned() - Duration::days(7)
 }
 
 /// Calculates a date with the next week based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn succ_week(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn succ_week(date: NaiveDate) -> NaiveDate {
     date.to_owned() + Duration::days(7)
 }
 
 /// Calculates a date with the previous day based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn pred_day(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn pred_day(date: NaiveDate) -> NaiveDate {
     date.to_owned() - Duration::days(1)
 }
 
 /// Calculates a date with the next day based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn succ_day(date: &NaiveDate) -> NaiveDate {
+#[must_use]
+pub fn succ_day(date: NaiveDate) -> NaiveDate {
     date.to_owned() + Duration::days(1)
 }
 
@@ -133,6 +142,7 @@ pub enum IsInMonth {
 /// Calculates the day number at the given position in the calendar table based
 /// on the given year and month.
 #[cfg(not(target_arch = "wasm32"))]
+#[must_use]
 pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsInMonth) {
     let (x, y) = (x as isize, y as isize);
     let first_day = NaiveDate::from_ymd(year, month, 1);
@@ -185,13 +195,15 @@ const fn num_days_of_month(year: i32, month: u32) -> u32 {
 
 /// Gets the string representation of the year of the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn year_as_string(date: &NaiveDate) -> String {
+#[must_use]
+pub fn year_as_string(date: NaiveDate) -> String {
     date.format("%Y").to_string()
 }
 
 /// Gets the string representation of the month of the given date.
 #[cfg(not(target_arch = "wasm32"))]
-pub fn month_as_string(date: &NaiveDate) -> String {
+#[must_use]
+pub fn month_as_string(date: NaiveDate) -> String {
     date.format("%B").to_string()
 }
 
@@ -215,7 +227,7 @@ lazy_static! {
         ];
 
         let max = months.iter()
-            .map(|m| month_as_string(m))
+            .map(|m| month_as_string(*m))
             .map(|s| s.len())
             .max().unwrap();
 
@@ -263,17 +275,17 @@ mod tests {
     #[test]
     fn pred_month_test() {
         let date = NaiveDate::from_ymd(2020, 5, 6);
-        let result = pred_month(&date);
+        let result = pred_month(date);
         let expected = NaiveDate::from_ymd(2020, 4, 6);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2020, 1, 24);
-        let result = pred_month(&date);
+        let result = pred_month(date);
         let expected = NaiveDate::from_ymd(2019, 12, 24);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2020, 3, 31);
-        let result = pred_month(&date);
+        let result = pred_month(date);
         let expected = NaiveDate::from_ymd(2020, 2, 29);
         assert_eq!(result, expected);
     }
@@ -281,17 +293,17 @@ mod tests {
     #[test]
     fn succ_month_test() {
         let date = NaiveDate::from_ymd(2020, 5, 6);
-        let result = succ_month(&date);
+        let result = succ_month(date);
         let expected = NaiveDate::from_ymd(2020, 6, 6);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2019, 12, 24);
-        let result = succ_month(&date);
+        let result = succ_month(date);
         let expected = NaiveDate::from_ymd(2020, 1, 24);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2020, 1, 31);
-        let result = succ_month(&date);
+        let result = succ_month(date);
         let expected = NaiveDate::from_ymd(2020, 2, 29);
         assert_eq!(result, expected);
     }
@@ -299,17 +311,17 @@ mod tests {
     #[test]
     fn pred_year_test() {
         let date = NaiveDate::from_ymd(2020, 5, 6);
-        let result = pred_year(&date);
+        let result = pred_year(date);
         let expected = NaiveDate::from_ymd(2019, 5, 6);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2020, 2, 29);
-        let result = pred_year(&date);
+        let result = pred_year(date);
         let expected = NaiveDate::from_ymd(2019, 2, 28);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2021, 2, 28);
-        let result = pred_year(&date);
+        let result = pred_year(date);
         let expected = NaiveDate::from_ymd(2020, 2, 28);
         assert_eq!(result, expected);
     }
@@ -317,17 +329,17 @@ mod tests {
     #[test]
     fn succ_year_test() {
         let date = NaiveDate::from_ymd(2020, 5, 6);
-        let result = succ_year(&date);
+        let result = succ_year(date);
         let expected = NaiveDate::from_ymd(2021, 5, 6);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2020, 2, 29);
-        let result = succ_year(&date);
+        let result = succ_year(date);
         let expected = NaiveDate::from_ymd(2021, 2, 28);
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd(2019, 2, 28);
-        let result = succ_year(&date);
+        let result = succ_year(date);
         let expected = NaiveDate::from_ymd(2020, 2, 28);
         assert_eq!(result, expected);
     }

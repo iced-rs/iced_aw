@@ -1,6 +1,6 @@
 //! A [`TabLabel`](TabLabel) showing an icon and/or a text on a tab.
 //!
-//! *This API requires the following crate features to be activated: tab_bar*
+//! *This API requires the following crate features to be activated: `tab_bar`*
 
 /// A [`TabLabel`](TabLabel) showing an icon and/or a text on a tab
 /// on a [`TabBar`](super::TabBar).

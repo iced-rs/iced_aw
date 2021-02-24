@@ -203,11 +203,12 @@ where
             body_node.bounds().y + head_node.bounds().height,
         ));
 
-        let mut foot_node = if let Some(foot) = self.foot.as_ref() {
-            foot_node(renderer, &limits, foot, self.padding_foot, self.width)
-        } else {
-            iced_native::layout::Node::default()
-        };
+        let mut foot_node = self
+            .foot
+            .as_ref()
+            .map_or_else(iced_native::layout::Node::default, |foot| {
+                foot_node(renderer, &limits, foot, self.padding_foot, self.width)
+            });
 
         foot_node.move_to(Point::new(
             foot_node.bounds().x,
@@ -277,20 +278,16 @@ where
 
         let foot_layout = children.next().unwrap();
         let mut foot_children = foot_layout.children();
-        let foot_status = self
-            .foot
-            .as_mut()
-            .map(|foot| {
-                foot.on_event(
-                    event,
-                    foot_children.next().unwrap(),
-                    cursor_position,
-                    messages,
-                    renderer,
-                    clipboard,
-                )
-            })
-            .unwrap_or(event::Status::Ignored);
+        let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
+            foot.on_event(
+                event,
+                foot_children.next().unwrap(),
+                cursor_position,
+                messages,
+                renderer,
+                clipboard,
+            )
+        });
 
         head_status
             .merge(close_status)

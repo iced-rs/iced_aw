@@ -3,7 +3,7 @@
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
-//! *This API requires the following crate features to be activated: tab_bar*
+//! *This API requires the following crate features to be activated: `tab_bar`*
 use iced_native::{touch, Element};
 use std::hash::Hash;
 
@@ -309,8 +309,10 @@ where
 
                                     cross_layout.bounds().contains(cursor_position)
                                 })
-                                .map(|on_close| (on_close)(new_selected))
-                                .unwrap_or_else(|| (self.on_select)(new_selected)),
+                                .map_or_else(
+                                    || (self.on_select)(new_selected),
+                                    |on_close| (on_close)(new_selected),
+                                ),
                         );
                         return event::Status::Captured;
                     }

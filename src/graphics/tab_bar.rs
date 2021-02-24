@@ -3,7 +3,7 @@
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](super::tabs) widget instead.
 //!
-//! *This API requires the following crate features to be activated: tab_bar*
+//! *This API requires the following crate features to be activated: `tab_bar`*
 use iced_graphics::{backend, Backend, Color, Primitive, Rectangle, Renderer};
 use iced_native::{mouse, Font, HorizontalAlignment, Layout, VerticalAlignment};
 pub use tab_bar::tab_label::TabLabel;
@@ -13,7 +13,7 @@ use crate::{core::renderer::DrawEnvironment, native::tab_bar};
 
 /// A tab bar to show tabs.
 ///
-/// This is an alias of an `iced_native` TabBar with an `iced_wgpu::Renderer`.
+/// This is an alias of an `iced_native` `TabBar` with an `iced_wgpu::Renderer`.
 pub type TabBar<Message, Backend> = tab_bar::TabBar<Message, Renderer<Backend>>;
 
 impl<B> tab_bar::Renderer for Renderer<B>

@@ -1,6 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
-//! *This API requires the following crate features to be activated: time_picker*
+//! *This API requires the following crate features to be activated: `time_picker`*
 use crate::{
     core::renderer::DrawEnvironment, native::overlay::time_picker::Focus,
     style::style_state::StyleState,
@@ -33,7 +33,7 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// An input element for picking times.
 ///
-/// This is an alias of an `iced_native` TimePicker with an `iced_wgpu::Renderer`.
+/// This is an alias of an `iced_native` `TimePicker` with an `iced_wgpu::Renderer`.
 pub type TimePicker<'a, Message, Backend> = time_picker::TimePicker<'a, Message, Renderer<Backend>>;
 
 impl<B> time_picker::Renderer for Renderer<B>
@@ -80,7 +80,7 @@ where
         let clock_layout = children.next().unwrap();
         let (clock, clock_mouse_interaction) = clock(
             clock_layout,
-            &state.time,
+            state.time,
             &state.clock_cache,
             env.cursor_position,
             state.use_24h,
@@ -92,7 +92,7 @@ where
         let digital_clock_layout = children.next().unwrap();
         let (digital_clock, digital_clock_mouse_interaction) = digital_clock(
             digital_clock_layout,
-            &state.time,
+            state.time,
             env.cursor_position,
             state.use_24h,
             state.show_seconds,
@@ -170,7 +170,7 @@ where
 /// Draws the analog clock.
 fn clock(
     layout: iced_native::Layout<'_>,
-    time: &NaiveTime,
+    time: NaiveTime,
     clock_cache: &Cache,
     cursor_position: Point,
     use_24h: bool,
@@ -300,7 +300,7 @@ fn clock(
                             .clock_number_background,
                     );
                 }
-                _ => {}
+                NearestRadius::None => {}
             }
 
             let period_text = Text {
@@ -308,7 +308,7 @@ fn clock(
                 position: center,
                 color: style.get(&clock_style_state).unwrap().clock_number_color,
                 size: period_size,
-                font: Default::default(),
+                font: iced_graphics::Font::default(),
                 horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                 vertical_alignment: iced_graphics::VerticalAlignment::Center,
             };
@@ -348,7 +348,7 @@ fn clock(
                     position: *p,
                     color: style.get(&style_state).unwrap().clock_number_color,
                     size: number_size,
-                    font: Default::default(),
+                    font: iced_graphics::Font::default(),
                     horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                     vertical_alignment: iced_graphics::VerticalAlignment::Center,
                 };
@@ -378,7 +378,7 @@ fn clock(
                         position: *p,
                         color: style.get(&style_state).unwrap().clock_number_color,
                         size: number_size,
-                        font: Default::default(),
+                        font: iced_graphics::Font::default(),
                         horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                         vertical_alignment: iced_graphics::VerticalAlignment::Center,
                     };
@@ -416,7 +416,7 @@ fn clock(
                             position: *p,
                             color: style.get(&style_state).unwrap().clock_number_color,
                             size: number_size,
-                            font: Default::default(),
+                            font: iced_graphics::Font::default(),
                             horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                             vertical_alignment: iced_graphics::VerticalAlignment::Center,
                         };
@@ -444,7 +444,7 @@ fn clock(
 /// Draws the digital clock.
 fn digital_clock(
     layout: iced_native::Layout<'_>,
-    time: &NaiveTime,
+    time: NaiveTime,
     cursor_position: Point,
     use_24h: bool,
     show_seconds: bool,
@@ -511,7 +511,7 @@ fn digital_clock(
                     },
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
-                    font: Default::default(),
+                    font: iced_graphics::Font::default(),
                     horizontal_alignment: HorizontalAlignment::Center,
                     vertical_alignment: VerticalAlignment::Center,
                 },
@@ -565,7 +565,7 @@ fn digital_clock(
         },
         color: style.get(&StyleState::Active).unwrap().text_color,
         size: hour_minute_seperator.bounds().height,
-        font: Default::default(),
+        font: iced_graphics::Font::default(),
         horizontal_alignment: HorizontalAlignment::Center,
         vertical_alignment: VerticalAlignment::Center,
     };
@@ -588,7 +588,7 @@ fn digital_clock(
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: minute_second_seperator.bounds().height,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: HorizontalAlignment::Center,
             vertical_alignment: VerticalAlignment::Center,
         };
@@ -609,7 +609,9 @@ fn digital_clock(
         )
     };
 
-    let period = if !use_24h {
+    let period = if use_24h {
+        Primitive::None
+    } else {
         let period = children.next().unwrap();
         Primitive::Text {
             content: if time.hour12().0 { "PM" } else { "AM" }.to_string(),
@@ -620,12 +622,10 @@ fn digital_clock(
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: period.bounds().height,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: HorizontalAlignment::Center,
             vertical_alignment: VerticalAlignment::Center,
         }
-    } else {
-        Primitive::None
     };
 
     (

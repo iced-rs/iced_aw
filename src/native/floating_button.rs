@@ -1,6 +1,6 @@
 //! Use a floating button to overlay a button over some content
 //!
-//! *This API requires the following crate features to be activated: floating_button*
+//! *This API requires the following crate features to be activated: `floating_button`*
 use std::hash::Hash;
 
 use iced_native::{

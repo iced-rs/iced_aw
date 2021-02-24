@@ -1,6 +1,6 @@
 //! Use a color picker as an input element for picking colors.
 //!
-//! *This API requires the following crate features to be activated: color_picker*
+//! *This API requires the following crate features to be activated: `color_picker`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
 #[cfg(target_arch = "wasm32")]

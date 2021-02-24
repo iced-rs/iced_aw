@@ -3,8 +3,8 @@
 //! *This API requires the following crate features to be activated: colors*
 //!
 //! Thanks to:
-//! * https://www.w3schools.com/cssref/css_colors.asp
-//! * https://corecoding.com/utilities/rgb-or-hex-to-float.php
+//! * [W3 Schools](https://www.w3schools.com/cssref/css_colors.asp)
+//! * [Corecoding](https://corecoding.com/utilities/rgb-or-hex-to-float.php)
 
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::Color;

@@ -4,7 +4,7 @@
 //! You have to manage the logic to show the contend by yourself or you may want
 //! to use the [`Tabs`](crate::native::tabs::Tabs) widget instead.
 //!
-//! *This API requires the following crate features to be activated: tab_bar*
+//! *This API requires the following crate features to be activated: `tab_bar`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
 #[cfg(target_arch = "wasm32")]

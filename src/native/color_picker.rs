@@ -1,6 +1,6 @@
 //! Use a color picker as an input element for picking colors.
 //!
-//! *This API requires the following crate features to be activated: color_picker*
+//! *This API requires the following crate features to be activated: `color_picker`*
 use std::hash::Hash;
 
 use color_picker::ColorBarDragged;
@@ -105,6 +105,7 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`](State).
+    #[must_use]
     pub fn new() -> Self {
         Self {
             show: false,

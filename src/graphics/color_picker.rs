@@ -1,6 +1,6 @@
 //! Use a color picker as an input element for picking colors.
 //!
-//! *This API requires the following crate features to be activated: color_picker*
+//! *This API requires the following crate features to be activated: `color_picker`*
 use iced_native::Layout;
 use std::collections::HashMap;
 
@@ -28,7 +28,7 @@ pub use crate::native::color_picker::State;
 
 /// An input element for picking colors.
 ///
-/// This is an alias of an `iced_native` ColorPicker with an `iced_wgpu::Renderer`.
+/// This is an alias of an `iced_native` `ColorPicker` with an `iced_wgpu::Renderer`.
 pub type ColorPicker<'a, Message, Backend> =
     color_picker::ColorPicker<'a, Message, Renderer<Backend>>;
 
@@ -145,7 +145,7 @@ where
                         .into()
                     },
                     size: text_input_layout.bounds().height * 0.7,
-                    font: Default::default(),
+                    font: iced_graphics::Font::default(),
                     horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                     vertical_alignment: iced_graphics::VerticalAlignment::Center,
                 },
@@ -255,11 +255,11 @@ fn hsv_color(
 
             for column in 0..column_count {
                 for row in 0..row_count {
-                    let saturation = column as f32 / frame.width();
-                    let value = row as f32 / frame.height();
+                    let saturation = f32::from(column) / frame.width();
+                    let value = f32::from(row) / frame.height();
 
                     frame.fill_rectangle(
-                        Point::new(column as f32, row as f32),
+                        Point::new(f32::from(column), f32::from(row)),
                         Size::new(1.0, 1.0),
                         Color::from(Hsv::from_hsv(hsv_color.hue, saturation, value)),
                     );
@@ -331,7 +331,7 @@ fn hsv_color(
             let column_count = frame.width() as u16;
 
             for column in 0..column_count {
-                let hue = (column as f32 * 360.0 / frame.width()) as u16;
+                let hue = (f32::from(column) * 360.0 / frame.width()) as u16;
 
                 let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
                 let stroke = Stroke {
@@ -343,8 +343,8 @@ fn hsv_color(
 
                 frame.stroke(
                     &Path::line(
-                        Point::new(column as f32, 0.0),
-                        Point::new(column as f32, frame.height()),
+                        Point::new(f32::from(column), 0.0),
+                        Point::new(f32::from(column), frame.height()),
                     ),
                     stroke,
                 );
@@ -357,7 +357,7 @@ fn hsv_color(
                 ..Stroke::default()
             };
 
-            let column = hsv_color.hue as f32 * frame.width() / 360.0;
+            let column = f32::from(hsv_color.hue) * frame.width() / 360.0;
 
             frame.stroke(
                 &Path::line(Point::new(column, 0.0), Point::new(column, frame.height())),
@@ -432,7 +432,7 @@ fn rgba_color(
             },
             color: defaults.text.color,
             size: label_layout.bounds().height,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
             vertical_alignment: iced_graphics::VerticalAlignment::Center,
         };
@@ -479,7 +479,7 @@ fn rgba_color(
             },
             color: defaults.text.color,
             size: value_layout.bounds().height,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
             vertical_alignment: iced_graphics::VerticalAlignment::Center,
         };
