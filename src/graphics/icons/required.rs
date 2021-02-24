@@ -19,7 +19,7 @@ pub enum Icon {
 }
 
 /// Converts an icon into a char.
-pub fn icon_to_char(icon: Icon) -> char {
+pub const fn icon_to_char(icon: Icon) -> char {
     match icon {
         Icon::CaretDownFill => '\u{f217}',
         Icon::CaretLeftFill => '\u{f21b}',

@@ -291,50 +291,41 @@ where
                               up_arrow: Layout<'_>,
                               down_arrow: Layout<'_>,
                               duration: Duration| {
-            let mut status = event::Status::Ignored;
-
             if up_arrow.bounds().contains(cursor_position) {
                 *time += duration;
-
-                status = event::Status::Captured;
-            }
-            if down_arrow.bounds().contains(cursor_position) {
+                event::Status::Captured
+            } else if down_arrow.bounds().contains(cursor_position) {
                 *time -= duration;
-
-                status = event::Status::Captured;
+                event::Status::Captured
+            } else {
+                event ::Status::Ignored
             }
-
-            status
         };
 
         let digital_clock_status = match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                let mut status = event::Status::Ignored;
-
                 if hour_layout.bounds().contains(cursor_position) {
                     self.state.focus = Focus::DigitalHour;
 
-                    status = calculate_time(
+                    calculate_time(
                         &mut self.state.time,
                         hour_up_arrow,
                         hour_down_arrow,
                         Duration::hours(1),
-                    );
-                }
-
-                if minute_layout.bounds().contains(cursor_position) {
+                    )
+                } else if minute_layout.bounds().contains(cursor_position) {
                     self.state.focus = Focus::DigitalMinute;
 
-                    status = calculate_time(
+                    calculate_time(
                         &mut self.state.time,
                         minute_up_arrow,
                         minute_down_arrow,
                         Duration::minutes(1),
-                    );
+                    )
+                } else {
+                    event::Status::Ignored
                 }
-
-                status
             }
             _ => event::Status::Ignored,
         };
@@ -352,20 +343,18 @@ where
             match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    let mut status = event::Status::Ignored;
-
                     if second_layout.bounds().contains(cursor_position) {
                         self.state.focus = Focus::DigitalSecond;
 
-                        status = calculate_time(
+                        calculate_time(
                             &mut self.state.time,
                             second_up_arrow,
                             second_down_arrow,
                             Duration::seconds(1),
-                        );
+                        )
+                    } else {
+                        event::Status::Ignored
                     }
-
-                    status
                 }
                 _ => event::Status::Ignored,
             }
@@ -775,11 +764,11 @@ where
                 defaults,
                 layout,
                 cursor_position,
-                style_sheet: &self.style,
+                style_sheet: self.style,
                 viewport: None,
                 focus: self.state.focus,
             },
-            &self.state,
+            self.state,
             &self.cancel_button,
             &self.submit_button,
         )
@@ -900,46 +889,46 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
-    pub fn next(self, show_seconds: bool) -> Self {
+    pub const fn next(self, show_seconds: bool) -> Self {
         match self {
-            Focus::None => Focus::Overlay,
-            Focus::Overlay => Focus::DigitalHour,
-            Focus::DigitalHour => Focus::DigitalMinute,
-            Focus::DigitalMinute => {
+            Self::None => Self::Overlay,
+            Self::Overlay => Self::DigitalHour,
+            Self::DigitalHour => Self::DigitalMinute,
+            Self::DigitalMinute => {
                 if show_seconds {
-                    Focus::DigitalSecond
+                    Self::DigitalSecond
                 } else {
-                    Focus::Cancel
+                    Self::Cancel
                 }
             }
-            Focus::DigitalSecond => Focus::Cancel,
-            Focus::Cancel => Focus::Submit,
-            Focus::Submit => Focus::Overlay,
+            Self::DigitalSecond => Self::Cancel,
+            Self::Cancel => Self::Submit,
+            Self::Submit => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
-    pub fn previous(self, show_seconds: bool) -> Self {
+    pub const fn previous(self, show_seconds: bool) -> Self {
         match self {
-            Focus::None => Focus::None,
-            Focus::Overlay => Focus::Submit,
-            Focus::DigitalHour => Focus::Overlay,
-            Focus::DigitalMinute => Focus::DigitalHour,
-            Focus::DigitalSecond => Focus::DigitalMinute,
-            Focus::Cancel => {
+            Self::None => Self::None,
+            Self::Overlay => Self::Submit,
+            Self::DigitalHour => Self::Overlay,
+            Self::DigitalMinute => Self::DigitalHour,
+            Self::DigitalSecond => Self::DigitalMinute,
+            Self::Cancel => {
                 if show_seconds {
-                    Focus::DigitalSecond
+                    Self::DigitalSecond
                 } else {
-                    Focus::DigitalMinute
+                    Self::DigitalMinute
                 }
             }
-            Focus::Submit => Focus::Cancel,
+            Self::Submit => Self::Cancel,
         }
     }
 }
 
 impl Default for Focus {
     fn default() -> Self {
-        Focus::None
+        Self::None
     }
 }

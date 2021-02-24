@@ -229,7 +229,8 @@ where
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
                 mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                     let move_value =
-                        |value: f32, y: f32| (value * 255.0 + y).clamp(0.0, 255.0) / 255.0;
+                        //|value: f32, y: f32| (value * 255.0 + y).clamp(0.0, 255.0) / 255.0;
+                        |value: f32, y: f32| value.mul_add(255.0, y).clamp(0.0, 255.0) / 255.0;
 
                     if red_bar_bounds.contains(cursor_position) {
                         self.state.color = Color {
@@ -791,7 +792,7 @@ where
                 defaults,
                 layout,
                 cursor_position,
-                style_sheet: &self.style,
+                style_sheet: self.style,
                 viewport: None,
                 focus: self.state.focus,
             },
@@ -903,7 +904,7 @@ pub enum ColorBarDragged {
 
 impl Default for ColorBarDragged {
     fn default() -> Self {
-        ColorBarDragged::None
+        Self::None
     }
 }
 
@@ -943,40 +944,40 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
-    pub fn next(self) -> Self {
+    pub const fn next(self) -> Self {
         match self {
-            Focus::None => Focus::Overlay,
-            Focus::Overlay => Focus::SatValue,
-            Focus::SatValue => Focus::Hue,
-            Focus::Hue => Focus::Red,
-            Focus::Red => Focus::Green,
-            Focus::Green => Focus::Blue,
-            Focus::Blue => Focus::Alpha,
-            Focus::Alpha => Focus::Cancel,
-            Focus::Cancel => Focus::Submit,
-            Focus::Submit => Focus::Overlay,
+            Self::None => Self::Overlay,
+            Self::Overlay => Self::SatValue,
+            Self::SatValue => Self::Hue,
+            Self::Hue => Self::Red,
+            Self::Red => Self::Green,
+            Self::Green => Self::Blue,
+            Self::Blue => Self::Alpha,
+            Self::Alpha => Self::Cancel,
+            Self::Cancel => Self::Submit,
+            Self::Submit => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
-    pub fn previous(self) -> Self {
+    pub const fn previous(self) -> Self {
         match self {
-            Focus::None => Focus::None,
-            Focus::Overlay => Focus::Submit,
-            Focus::SatValue => Focus::Overlay,
-            Focus::Hue => Focus::SatValue,
-            Focus::Red => Focus::Hue,
-            Focus::Green => Focus::Red,
-            Focus::Blue => Focus::Green,
-            Focus::Alpha => Focus::Blue,
-            Focus::Cancel => Focus::Alpha,
-            Focus::Submit => Focus::Cancel,
+            Self::None => Self::None,
+            Self::Overlay => Self::Submit,
+            Self::SatValue => Self::Overlay,
+            Self::Hue => Self::SatValue,
+            Self::Red => Self::Hue,
+            Self::Green => Self::Red,
+            Self::Blue => Self::Green,
+            Self::Alpha => Self::Blue,
+            Self::Cancel => Self::Alpha,
+            Self::Submit => Self::Cancel,
         }
     }
 }
 
 impl Default for Focus {
     fn default() -> Self {
-        Focus::None
+        Self::None
     }
 }

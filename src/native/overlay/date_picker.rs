@@ -570,7 +570,7 @@ where
                 defaults,
                 layout,
                 cursor_position,
-                style_sheet: &self.style,
+                style_sheet: self.style,
                 viewport: None,
                 focus: self.state.focus,
             },
@@ -673,34 +673,34 @@ pub enum Focus {
 
 impl Focus {
     /// Gets the next focusable element.
-    pub fn next(self) -> Self {
+    pub const fn next(self) -> Self {
         match self {
-            Focus::None => Focus::Overlay,
-            Focus::Overlay => Focus::Month,
-            Focus::Month => Focus::Year,
-            Focus::Year => Focus::Day,
-            Focus::Day => Focus::Cancel,
-            Focus::Cancel => Focus::Submit,
-            Focus::Submit => Focus::Overlay,
+            Self::None => Self::Overlay,
+            Self::Overlay => Self::Month,
+            Self::Month => Self::Year,
+            Self::Year => Self::Day,
+            Self::Day => Self::Cancel,
+            Self::Cancel => Self::Submit,
+            Self::Submit => Self::Overlay,
         }
     }
 
     /// Gets the previous focusable element.
-    pub fn previous(self) -> Self {
+    pub const fn previous(self) -> Self {
         match self {
-            Focus::None => Focus::None,
-            Focus::Overlay => Focus::Submit,
-            Focus::Month => Focus::Overlay,
-            Focus::Year => Focus::Month,
-            Focus::Day => Focus::Year,
-            Focus::Cancel => Focus::Day,
-            Focus::Submit => Focus::Cancel,
+            Self::None => Self::None,
+            Self::Overlay => Self::Submit,
+            Self::Month => Self::Overlay,
+            Self::Year => Self::Month,
+            Self::Day => Self::Year,
+            Self::Cancel => Self::Day,
+            Self::Submit => Self::Cancel,
         }
     }
 }
 
 impl Default for Focus {
     fn default() -> Self {
-        Focus::None
+        Self::None
     }
 }

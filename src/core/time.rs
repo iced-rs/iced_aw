@@ -31,8 +31,8 @@ pub enum Time {
 
 impl Time {
     /// The default time `00:00` with the given period.
-    pub fn default_hm(period: Period) -> Self {
-        Time::Hm {
+    pub const fn default_hm(period: Period) -> Self {
+        Self::Hm {
             hour: 0,
             minute: 0,
             period,
@@ -40,8 +40,8 @@ impl Time {
     }
 
     /// The default time `00:00:00` with the given period.
-    pub fn default_hms(period: Period) -> Self {
-        Time::Hms {
+    pub const fn default_hms(period: Period) -> Self {
+        Self::Hms {
             hour: 0,
             minute: 0,
             second: 0,
@@ -53,14 +53,14 @@ impl Time {
 impl Display for Time {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Time::Hm {
+            Self::Hm {
                 hour,
                 minute,
                 period,
             } => {
                 write!(f, "{:02}:{:02}{}", hour, minute, period)
             }
-            Time::Hms {
+            Self::Hms {
                 hour,
                 minute,
                 second,
@@ -89,9 +89,9 @@ impl Display for Period {
             f,
             "{}",
             match self {
-                Period::H24 => "",
-                Period::Am => " AM",
-                Period::Pm => " PM",
+                Self::H24 => "",
+                Self::Am => " AM",
+                Self::Pm => " PM",
             }
         )
     }
@@ -121,7 +121,7 @@ impl From<Time> for chrono::NaiveTime {
             Period::Pm => (h + 12) % 24,
         };
 
-        chrono::NaiveTime::from_hms(h, m, s)
+        Self::from_hms(h, m, s)
     }
 }
 

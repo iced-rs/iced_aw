@@ -114,8 +114,8 @@ pub struct State<S> {
 
 impl<S> State<S> {
     /// Creates a new [`State`](State) containing the given state data.
-    pub fn new(s: S) -> Self {
-        State {
+    pub const fn new(s: S) -> Self {
+        Self {
             show: false,
             state: s,
         }

@@ -20,7 +20,7 @@ pub struct Date {
 
 impl Date {
     /// Creates a new date.
-    pub fn from_ymd(year: i32, month: u32, day: u32) -> Self {
+    pub const fn from_ymd(year: i32, month: u32, day: u32) -> Self {
         Self { year, month, day }
     }
 }
@@ -34,14 +34,14 @@ impl Display for Date {
 #[cfg(not(target_arch = "wasm32"))]
 impl From<Date> for NaiveDate {
     fn from(date: Date) -> Self {
-        NaiveDate::from_ymd(date.year, date.month, date.day)
+        Self::from_ymd(date.year, date.month, date.day)
     }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 impl From<NaiveDate> for Date {
     fn from(date: NaiveDate) -> Self {
-        Date::from_ymd(date.year(), date.month(), date.day())
+        Self::from_ymd(date.year(), date.month(), date.day())
     }
 }
 
@@ -159,7 +159,7 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsI
 
 /// Checks if the given year is a leap year.
 #[cfg(not(target_arch = "wasm32"))]
-fn is_leap_year(year: i32) -> bool {
+const fn is_leap_year(year: i32) -> bool {
     let mod4 = year % 4 == 0;
     let mod100 = year % 100 == 0;
     let mod400 = year % 400 == 0;
@@ -169,7 +169,7 @@ fn is_leap_year(year: i32) -> bool {
 
 /// Gets the number of days the given month in the year has.
 #[cfg(not(target_arch = "wasm32"))]
-fn num_days_of_month(year: i32, month: u32) -> u32 {
+const fn num_days_of_month(year: i32, month: u32) -> u32 {
     match month {
         4 | 6 | 9 | 11 => 30,
         2 => {

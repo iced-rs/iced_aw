@@ -104,7 +104,7 @@ pub struct State {
 impl State {
     /// Creates a new [`State`](State) with the current date.
     pub fn now() -> Self {
-        State {
+        Self {
             show: false,
             overlay_state: date_picker::State::default(),
             cancel_button: button::State::new(),

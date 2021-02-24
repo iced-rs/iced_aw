@@ -83,12 +83,14 @@ impl StyleSheet for Default {
     }
 }
 
+#[allow(clippy::use_self)]
 impl std::default::Default for Box<dyn StyleSheet> {
     fn default() -> Self {
         Box::new(Default)
     }
 }
 
+#[allow(clippy::use_self)]
 impl<T> From<T> for Box<dyn StyleSheet>
 where
     T: 'static + StyleSheet,

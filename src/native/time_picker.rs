@@ -123,7 +123,7 @@ pub struct State {
 impl State {
     /// Creates a new [`State`](State) with the current time.
     pub fn now() -> Self {
-        State {
+        Self {
             show: false,
             cancel_button: button::State::new(),
             submit_button: button::State::new(),

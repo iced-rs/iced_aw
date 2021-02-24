@@ -90,7 +90,7 @@ where
     where
         F: 'static + Fn(usize) -> Message,
     {
-        TabBar {
+        Self {
             active_tab,
             tab_labels,
             on_select: Box::new(on_select),

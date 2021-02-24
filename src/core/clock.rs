@@ -39,8 +39,8 @@ impl Display for Period {
             f,
             "{}",
             match self {
-                Period::AM => "AM",
-                Period::PM => "PM",
+                Self::AM => "AM",
+                Self::PM => "PM",
             }
         )
     }

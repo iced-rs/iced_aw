@@ -125,7 +125,7 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        self.underlay.layout(renderer, &limits)
+        self.underlay.layout(renderer, limits)
     }
 
     fn on_event(

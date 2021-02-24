@@ -106,7 +106,7 @@ pub struct State {
 impl State {
     /// Creates a new [`State`](State).
     pub fn new() -> Self {
-        State {
+        Self {
             show: false,
             overlay_state: color_picker::State::default(),
             cancel_button: button::State::new(),

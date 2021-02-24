@@ -12,7 +12,7 @@ pub struct Hsv {
 
 impl Hsv {
     /// Creates a [`Hsv`](Hsv) from its HSV components.
-    pub fn from_hsv(hue: u16, saturation: f32, value: f32) -> Self {
+    pub const fn from_hsv(hue: u16, saturation: f32, value: f32) -> Self {
         Self {
             hue,
             saturation,
@@ -61,7 +61,7 @@ impl From<Color> for Hsv {
 
         let value = max;
 
-        Hsv {
+        Self {
             hue,
             saturation,
             value,
@@ -89,7 +89,7 @@ impl From<Hsv> for Color {
             _ => (hsv.value, t, p),
         };
 
-        Color::from_rgb(red, green, blue)
+        Self::from_rgb(red, green, blue)
     }
 }
 

@@ -29,7 +29,7 @@ impl<Renderer: self::Renderer> IconText<Renderer> {
     /// It expects:
     ///     * the label to be displayed as an icon on the [`IconText`](IconText).
     pub fn new<T: Into<String>>(label: T) -> Self {
-        IconText {
+        Self {
             content: label.into(),
             size: None,
             color: None,
@@ -196,7 +196,7 @@ where
 
 impl<Renderer: self::Renderer> Clone for IconText<Renderer> {
     fn clone(&self) -> Self {
-        IconText {
+        Self {
             content: self.content.clone(),
             size: self.size,
             color: self.color,

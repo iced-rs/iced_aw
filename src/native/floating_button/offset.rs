@@ -15,13 +15,13 @@ pub struct Offset {
 
 impl From<f32> for Offset {
     fn from(float: f32) -> Self {
-        Offset { x: float, y: float }
+        Self { x: float, y: float }
     }
 }
 
 impl From<[f32; 2]> for Offset {
     fn from(array: [f32; 2]) -> Self {
-        Offset {
+        Self {
             x: array[0],
             y: array[1],
         }
@@ -30,12 +30,12 @@ impl From<[f32; 2]> for Offset {
 
 impl From<Offset> for Point {
     fn from(offset: Offset) -> Self {
-        Point::new(offset.x, offset.y)
+        Self::new(offset.x, offset.y)
     }
 }
 
 impl From<&Offset> for Point {
     fn from(offset: &Offset) -> Self {
-        Point::new(offset.x, offset.y)
+        Self::new(offset.x, offset.y)
     }
 }

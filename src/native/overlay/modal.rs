@@ -186,7 +186,7 @@ where
                 defaults,
                 layout,
                 cursor_position,
-                style_sheet: &self.style,
+                style_sheet: self.style,
                 viewport: None,
                 focus: (),
             },
