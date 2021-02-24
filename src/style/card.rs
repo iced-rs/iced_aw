@@ -97,6 +97,7 @@ impl std::default::Default for Style {
 #[cfg(feature = "colors")]
 pub use predefined::*;
 #[cfg(feature = "colors")]
+/// Predefined styles for the [`Card`](crate::native::Card) widget.
 mod predefined {
     use crate::style::{
         card::{Style, StyleSheet},

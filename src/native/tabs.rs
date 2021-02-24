@@ -47,10 +47,15 @@ pub use tab_bar_position::TabBarPosition;
 ///
 #[allow(missing_debug_implementations)]
 pub struct Tabs<'a, Message, Renderer: self::Renderer> {
+    /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, Renderer>,
+    /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Renderer>>,
+    /// The position of the [`TabBar`](crate::native::TabBar).
     tab_bar_position: TabBarPosition,
+    /// the width of the [`Tabs`](Tabs).
     width: Length,
+    /// The height of the [`Tabs`](Tabs).
     height: Length,
 }
 
@@ -402,6 +407,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

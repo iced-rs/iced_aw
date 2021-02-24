@@ -26,8 +26,11 @@ use iced_native::{
     Layout, Length, Point, Row, Text, Widget,
 };
 
+/// The padding around the elements.
 const PADDING: u16 = 10;
+/// The spacing between the elements.
 const SPACING: u16 = 15;
+/// The spacing between the buttons.
 const BUTTON_SPACING: u16 = 5;
 
 /// The overlay of the [`TimePicker`](crate::native::TimePicker).
@@ -37,11 +40,17 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + button::Renderer,
 {
+    /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
     state: &'a mut State,
+    /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
     cancel_button: Element<'a, Message, Renderer>,
+    /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
     submit_button: Element<'a, Message, Renderer>,
+    /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
+    /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
     position: Point,
+    /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
     style: &'a <Renderer as self::Renderer>::Style,
 }
 
@@ -398,6 +407,7 @@ where
         digital_clock_status
     }
 
+    /// The event handling for the keyboard input.
     fn on_event_keyboard(
         &mut self,
         event: &Event,
@@ -812,6 +822,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -858,13 +869,21 @@ impl Renderer for iced_native::renderer::Null {
 /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
 #[derive(Debug)]
 pub struct State {
+    /// The selected time of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) time: NaiveTime,
+    /// Toggle if the cache needs to be cleared.
     pub(crate) clock_cache_needs_clearance: bool,
+    /// The cache of the clock of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) clock_cache: canvas::Cache,
+    /// Toggle the use of the 24h clock of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) use_24h: bool,
+    /// Toggle the use of the seconds of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) show_seconds: bool,
+    /// The dragged clock element of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) clock_dragged: ClockDragged,
+    /// The focus of the [`TimePickerOverlay`](TimePickerOverlay).
     pub(crate) focus: Focus,
+    /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 

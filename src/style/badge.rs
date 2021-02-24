@@ -75,6 +75,7 @@ where
 #[cfg(feature = "colors")]
 pub use predefined::*;
 #[cfg(feature = "colors")]
+/// Predefined styles for the [`Badge`](crate::native::Badge) widget.
 mod predefined {
     use crate::style::badge::StyleSheet;
     use crate::style::{badge::Style, colors};

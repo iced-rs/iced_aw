@@ -17,12 +17,18 @@ use crate::{
     native::{color_picker, icon_text, IconText},
 };
 
+/// The padding around the elements.
 const PADDING: u16 = 10;
+/// The spacing between the element.
 const SPACING: u16 = 15;
+/// The spacing between the buttons.
 const BUTTON_SPACING: u16 = 5;
 
+/// The step value of the keyboard change of the sat/value color values.
 const SAT_VALUE_STEP: f32 = 0.005;
+/// The step value of the keyboard change of the hue color value.
 const HUE_STEP: i32 = 1;
+/// The step value of the keyboard change of the RGBA color values.
 const RGBA_STEP: i16 = 1;
 
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
@@ -32,11 +38,17 @@ where
     Message: Clone,
     Renderer: self::Renderer,
 {
+    /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
     state: &'a mut State,
+    /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     cancel_button: Element<'a, Message, Renderer>,
+    /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     submit_button: Element<'a, Message, Renderer>,
+    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     on_submit: &'a dyn Fn(Color) -> Message,
+    /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
     position: Point,
+    /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: &'a <Renderer as self::Renderer>::Style,
 }
 
@@ -363,6 +375,7 @@ where
         }
     }
 
+    /// The even handling for the keyboard input.
     fn on_event_keyboard(
         &mut self,
         event: &Event,
@@ -851,6 +864,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -901,11 +915,17 @@ impl Renderer for iced_native::renderer::Null {
 /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
 #[derive(Debug)]
 pub struct State {
+    /// The selected color of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub(crate) color: Color,
+    /// The cache of the sat/value canvas of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub(crate) sat_value_canvas_cache: canvas::Cache,
+    /// The cache of the hue canvas of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub(crate) hue_canvas_cache: canvas::Cache,
+    /// The dragged color bar of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub(crate) color_bar_dragged: ColorBarDragged,
+    /// the focus of the [`ColorPickerOverlay`](ColorPickerOverlay).
     pub(crate) focus: Focus,
+    /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 

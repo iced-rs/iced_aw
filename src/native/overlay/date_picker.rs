@@ -21,9 +21,13 @@ use crate::{
     native::{date_picker, icon_text, IconText},
 };
 
+/// The padding around the elements.
 const PADDING: u16 = 10;
+/// The spacing between the elements.
 const SPACING: u16 = 15;
+/// The padding of the day cells.
 const DAY_CELL_PADDING: u16 = 7;
+/// The spacing between the buttons.
 const BUTTON_SPACING: u16 = 5;
 
 /// The overlay of the [`DatePicker`](crate::native::DatePicker).
@@ -33,11 +37,17 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + button::Renderer,
 {
+    /// The state of the [`DatePickerOverlay`](DatePickerOverlay).
     state: &'a mut State,
+    /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
     cancel_button: Element<'a, Message, Renderer>,
+    /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
     submit_button: Element<'a, Message, Renderer>,
+    /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: &'a dyn Fn(Date) -> Message,
+    /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
+    /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
     style: &'a <Renderer as self::Renderer>::Style,
 }
 
@@ -98,10 +108,12 @@ where
         overlay::Element::new(self.position, Box::new(self))
     }
 
+    /// String representation of the current year.
     fn year_as_string(&self) -> String {
         crate::core::date::year_as_string(self.state.date)
     }
 
+    /// String representation of the current month.
     fn month_as_string(&self) -> String {
         crate::core::date::month_as_string(self.state.date)
     }
@@ -261,6 +273,7 @@ where
         status
     }
 
+    /// The event handling for the keyboard input.
     fn on_event_keyboard(
         &mut self,
         event: &Event,
@@ -629,6 +642,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -677,8 +691,11 @@ impl Renderer for iced_native::renderer::Null {
 /// The state of the [`DatePickerOverlay`](DatePickerOverlay).
 #[derive(Debug)]
 pub struct State {
+    /// The selected date of the [`DatePickerOverlay`](DatePickerOverlay).
     pub(crate) date: NaiveDate,
+    /// The focus of the [`DatePickerOverlay`](DatePickerOverlay).
     pub(crate) focus: Focus,
+    /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 

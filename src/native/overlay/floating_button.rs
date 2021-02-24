@@ -17,9 +17,13 @@ pub struct FloatingButtonOverlay<'a, B, Message: Clone, Renderer: iced_native::b
 where
     B: Fn(&'a mut button::State) -> Button<'a, Message, Renderer>,
 {
+    /// The state of the button.
     state: &'a mut button::State,
+    /// The floating button
     button: B,
+    /// The anchor of the button.
     anchor: &'a Anchor,
+    /// The offset of the button.
     offset: &'a Offset,
 }
 
@@ -53,9 +57,13 @@ where
     }
 }
 
+/// The [`Overlay`](Overlay) of the [`FloatingButton`](crate::native::FloatingButton).
 struct Overlay<'a, Message, Renderer: iced_native::button::Renderer> {
+    /// The anchor of the button.
     anchor: &'a Anchor,
+    /// The offset of the button.
     offset: &'a Offset,
+    /// The floating button.
     button: Button<'a, Message, Renderer>,
 }
 
@@ -64,6 +72,7 @@ where
     Message: 'a + Clone,
     Renderer: 'a,
 {
+    /// Creates a new [`Overlay`] from the given [`FloatingButtonOverlay`](FloatingButtonOverlay).
     pub fn new<B>(floating_button: FloatingButtonOverlay<'a, B, Message, Renderer>) -> Self
     where
         B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
@@ -156,6 +165,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

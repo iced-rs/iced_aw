@@ -5,8 +5,11 @@ use iced_graphics::Color;
 /// A color in the HSV color space.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Hsv {
+    /// HSV hue.
     pub(crate) hue: u16,
+    /// HSV Saturation.
     pub(crate) saturation: f32,
+    /// HSV value.
     pub(crate) value: f32,
 }
 

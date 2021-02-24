@@ -5,6 +5,7 @@
 #[cfg(feature = "colors")]
 pub use predefined::*;
 #[cfg(feature = "colors")]
+/// Predefined styles for the [`Button`](crate::native::Button) widget.
 mod predefined {
     use iced_style::button::{Style, StyleSheet};
 

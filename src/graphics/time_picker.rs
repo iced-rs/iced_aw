@@ -28,7 +28,9 @@ pub use crate::native::time_picker::{Period, State, Time};
 
 use super::icons::{Icon, ICON_FONT};
 
+/// The percentage size of the numbers.
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
+/// The percentage size of the period.
 const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// An input element for picking times.

@@ -42,11 +42,17 @@ where
     Message: Clone,
     Renderer: modal::Renderer,
 {
+    /// The state of the [`Modal`](Modal).
     state: &'a mut State<S>,
+    /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
+    /// The content of teh [`ModalOverlay`](ModalOverlay).
     content: Content,
+    /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
+    /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
+    /// The style of the [`ModalOverlay`](ModalOverlay).
     style: Renderer::Style,
 }
 
@@ -108,7 +114,9 @@ where
 /// The state of the modal.
 #[derive(Debug)]
 pub struct State<S> {
+    /// The visibility of the [`Modal`](Modal) overlay.
     show: bool,
+    /// The state of the content of the [`Modal`](Modal) overlay.
     state: S,
 }
 
@@ -184,6 +192,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

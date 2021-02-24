@@ -13,13 +13,21 @@ use iced_native::{
 /// Text widget with icon font.
 #[allow(missing_debug_implementations)]
 pub struct IconText<Renderer: self::Renderer> {
+    /// The content of the [`IconText`](IconText).
     content: String,
+    /// The optional size of the [`IconText`](IconText).
     size: Option<u16>,
+    /// The optional color of the [`IconText`](IconText).
     color: Option<Color>,
+    /// The optional font of the [`IconText`](IconText).
     font: Option<Renderer::Font>,
+    /// The width of the [`IconText`](IconText).
     width: Length,
+    /// The height of the [`IconText`](IconText).
     height: Length,
+    /// The horizontal alignment of the [`IconText`](IconText).
     horizontal_alignment: HorizontalAlignment,
+    /// The vertical alignment of the [`IconText`](IconText).
     vertical_alignment: VerticalAlignment,
 }
 
@@ -142,6 +150,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

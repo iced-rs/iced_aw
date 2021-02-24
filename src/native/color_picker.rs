@@ -48,10 +48,15 @@ where
     Message: Clone,
     Renderer: color_picker::Renderer,
 {
+    /// The state of the [`ColorPicker`](ColorPicker).
     state: &'a mut State,
+    /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
+    /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_cancel: Message,
+    /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
+    /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Renderer as color_picker::Renderer>::Style,
 }
 
@@ -97,9 +102,13 @@ where
 /// The state of the [`ColorPicker`](ColorPicker).
 #[derive(Debug, Default)]
 pub struct State {
+    /// The visibility of the overlay.
     pub(crate) show: bool,
+    /// The state of the overlay.
     pub(crate) overlay_state: color_picker::State,
+    /// The state of the cancel button.
     pub(crate) cancel_button: button::State,
+    /// The state of the submit button.
     pub(crate) submit_button: button::State,
 }
 
@@ -186,6 +195,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

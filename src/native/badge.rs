@@ -25,12 +25,19 @@ use crate::core::renderer::DrawEnvironment;
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Badge<'a, Message, Renderer: self::Renderer> {
+    /// The padding of the [`Badge`].
     padding: u16,
+    /// The width of the [`Badge`].
     width: Length,
+    /// The height of the [`Badge`].
     height: Length,
+    /// The horizontal alignment of the [`Badge`](Badge).
     horizontal_alignment: Align,
+    /// The vertical alignment of the [`Badge`](Badge).
     vertical_alignment: Align,
+    /// The style of the [`Badge`](Badge).
     style: Renderer::Style,
+    /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
     content: Element<'a, Message, Renderer>,
 }
 
@@ -172,6 +179,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

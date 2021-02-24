@@ -30,18 +30,31 @@ use crate::core::renderer::DrawEnvironment;
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Card<'a, Message, Renderer: self::Renderer> {
+    /// The width of the [`Card`](Card).
     width: Length,
+    /// The height of the [`Card`](Card).
     height: Length,
+    /// The maximum width of the [`Card`](Card).
     max_width: u32,
+    /// The maximum height of the [`Card`](Card).
     max_height: u32,
+    /// The padding of teh head fo the [`Card`](Card).
     padding_head: f32,
+    /// The padding of the body of the [`Card`](Card).
     padding_body: f32,
+    /// The padding of the foot of the [`Card`](Card).
     padding_foot: f32,
+    /// The optional size of the close icon of the [`Card`](Card).
     close_size: Option<f32>,
+    /// The optional message that is send if the close icon of the [`Card`](Card) is pressed.
     on_close: Option<Message>,
+    /// The head [`Element`](iced_native:Element) of the [`Card`](Card).
     head: Element<'a, Message, Renderer>,
+    /// The body [`Element`](iced_native::Element) of the [`Card`](Card).
     body: Element<'a, Message, Renderer>,
+    /// The optional foot [`Element`](iced_native::Element) of the [`Card`](Card).
     foot: Option<Element<'a, Message, Renderer>>,
+    /// The style of the [`Card`](Card).
     style: <Renderer as self::Renderer>::Style,
 }
 
@@ -331,6 +344,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -346,6 +360,7 @@ where
     }
 }
 
+/// Calculates the layout of the head.
 fn head_node<'a, Message, Renderer>(
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
@@ -396,6 +411,7 @@ where
     )
 }
 
+/// Calculates the layout of the body.
 fn body_node<'a, Message, Renderer>(
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
@@ -422,6 +438,7 @@ where
     iced_native::layout::Node::with_children(size.pad(padding), vec![body])
 }
 
+/// Calculates the layout of the foot.
 fn foot_node<'a, Message, Renderer>(
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,

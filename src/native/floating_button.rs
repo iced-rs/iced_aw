@@ -45,11 +45,17 @@ where
     Message: Clone,
     Renderer: iced_native::button::Renderer,
 {
+    /// The state of the button.
     state: &'a mut button::State,
+    /// The anchor of the button.
     anchor: Anchor,
+    /// The offset of the button.
     offset: Offset,
+    /// The visibility of the button.
     hidden: bool,
+    /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
+    /// The floating button of the [`FloatingButtonOverlay`](FloatingButtonOverlay).
     button: B,
 }
 
@@ -160,6 +166,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

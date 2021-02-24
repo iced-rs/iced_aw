@@ -45,10 +45,15 @@ pub use crate::core::date::Date;
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct DatePicker<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer> {
+    /// The state of the [`DatePicker`](DatePicker).
     state: &'a mut State,
+    /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
+    /// The message that is send if the cancel button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_cancel: Message,
+    /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
+    /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
     style: <Renderer as date_picker::Renderer>::Style,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
@@ -95,9 +100,13 @@ impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
 /// The state of the [`DatePicker`](DatePicker) / [`DatePickerOverlay`](DatePickerOverlay).
 #[derive(Debug)]
 pub struct State {
+    /// The visibility of the overlay.
     pub(crate) show: bool,
+    /// The state of the overlay.
     pub(crate) overlay_state: date_picker::State,
+    /// The state of the cancel button.
     pub(crate) cancel_button: button::State,
+    /// The state of the submit button.
     pub(crate) submit_button: button::State,
 }
 
@@ -184,6 +193,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

@@ -20,10 +20,15 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer,
 {
+    /// The state of the [`ModalOverlay`](ModalOverlay).
     state: &'a mut State,
+    /// The content of the [`Overlay`](Overlay).
     content: Content,
+    /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
+    /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
+    /// The style of the [`Overlay`](Overlay).
     style: &'a <Renderer as self::Renderer>::Style,
 }
 
@@ -58,10 +63,15 @@ where
     }
 }
 
+/// The [`Overlay`](Overlay) of the [`Modal`](crate::native::Modal).
 struct Overlay<'a, Message, Renderer: self::Renderer> {
+    /// The content of the [`Overlay`](Overlay).
     content: Element<'a, Message, Renderer>,
+    /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
+    /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
+    /// The style of the [`Overlay`](Overlay).
     style: &'a <Renderer as self::Renderer>::Style,
 }
 
@@ -70,6 +80,7 @@ where
     Message: 'a + Clone,
     Renderer: 'a + self::Renderer + iced_native::container::Renderer,
 {
+    /// Creates a new [`Overlay`](Overlay) from the given [`ModalOverlay`](ModalOverlay).
     pub fn new<State, Content>(modal: ModalOverlay<'a, State, Content, Message, Renderer>) -> Self
     where
         Content: Fn(&mut State) -> Element<'_, Message, Renderer>,
@@ -192,6 +203,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 

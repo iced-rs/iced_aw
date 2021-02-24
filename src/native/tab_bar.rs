@@ -42,21 +42,37 @@ use crate::core::renderer::DrawEnvironment;
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct TabBar<Message, Renderer: self::Renderer> {
+    /// The currently active tab.
     active_tab: usize,
+    /// The vector containing the labels of the tabs.
     tab_labels: Vec<TabLabel>,
+    /// The function that produces the message when a tab is selected.
     on_select: Box<dyn Fn(usize) -> Message>,
+    /// The function that produces the message when the close icon was pressed.
     on_close: Option<Box<dyn Fn(usize) -> Message>>,
+    /// The width of the [`TabBar`](TabBar).
     width: Length,
+    /// The width of the tabs of the [`TabBar`](TabBar).
     tab_width: Length,
+    /// The width of the [`TabBar`](TabBar).
     height: Length,
+    /// The maximum height of the [`TabBar`](TabBar).
     max_height: u32,
+    /// The icon size.
     icon_size: u16,
+    /// The text size.
     text_size: u16,
+    /// The size of the close icon.
     close_size: u16,
+    /// The padding of the tabs of the [`TabBar`](TabBar).
     padding: u16,
+    /// The spacing of the tabs of the [`TabBar`](TabBar).
     spacing: u16,
+    /// The optional icon font of the [`TabBar`](TabBar).
     icon_font: Option<Font>,
+    /// The optional text font of the [`TabBar`](TabBar).
     text_font: Option<Font>,
+    /// The style of the [`TabBar`](TabBar).
     style: Renderer::Style,
 }
 
@@ -349,6 +365,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut Hasher) {
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
