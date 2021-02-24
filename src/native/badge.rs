@@ -139,7 +139,10 @@ where
     ) -> event::Status {
         self.content.on_event(
             event,
-            layout.children().next().unwrap(),
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a children layout for a badge."),
             cursor_position,
             messages,
             renderer,

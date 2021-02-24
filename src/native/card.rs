@@ -235,11 +235,15 @@ where
     ) -> event::Status {
         let mut children = layout.children();
 
-        let head_layout = children.next().unwrap();
+        let head_layout = children
+            .next()
+            .expect("Native: Layout should have a head layout");
         let mut head_children = head_layout.children();
         let head_status = self.head.on_event(
             event.clone(),
-            head_children.next().unwrap(),
+            head_children
+                .next()
+                .expect("Native: Layout should have a head content layout"),
             cursor_position,
             messages,
             renderer,
@@ -265,23 +269,31 @@ where
                 }
             });
 
-        let body_layout = children.next().unwrap();
+        let body_layout = children
+            .next()
+            .expect("Native: Layout should have a body layout");
         let mut body_children = body_layout.children();
         let body_status = self.body.on_event(
             event.clone(),
-            body_children.next().unwrap(),
+            body_children
+                .next()
+                .expect("Native: Layout should have a body content layout"),
             cursor_position,
             messages,
             renderer,
             clipboard,
         );
 
-        let foot_layout = children.next().unwrap();
+        let foot_layout = children
+            .next()
+            .expect("Native: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
             foot.on_event(
                 event,
-                foot_children.next().unwrap(),
+                foot_children
+                    .next()
+                    .expect("Native: Layout should have a foot content layout"),
                 cursor_position,
                 messages,
                 renderer,

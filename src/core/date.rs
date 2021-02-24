@@ -229,7 +229,7 @@ lazy_static! {
         let max = months.iter()
             .map(|m| month_as_string(*m))
             .map(|s| s.len())
-            .max().unwrap();
+            .max().expect("There should be a maximum element");
 
         max
     };

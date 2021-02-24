@@ -121,12 +121,23 @@ where
         let mut status = event::Status::Ignored;
 
         // ----------- Month ----------------------
-        let month_layout = children.next().unwrap();
+        let month_layout = children
+            .next()
+            .expect("Native: Layout should have a month layout");
         let mut month_children = month_layout.children();
 
-        let left_bounds = month_children.next().unwrap().bounds();
-        let _center_bounds = month_children.next().unwrap().bounds();
-        let right_bounds = month_children.next().unwrap().bounds();
+        let left_bounds = month_children
+            .next()
+            .expect("Native: Layout should have a left month arrow layout")
+            .bounds();
+        let _center_bounds = month_children
+            .next()
+            .expect("Native: Layout should have a center month layout")
+            .bounds();
+        let right_bounds = month_children
+            .next()
+            .expect("Native: Layout should have a right month arrow layout")
+            .bounds();
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -147,12 +158,23 @@ where
         }
 
         // ----------- Year -----------------------
-        let year_layout = children.next().unwrap();
+        let year_layout = children
+            .next()
+            .expect("Native: Layout should have a year layout");
         let mut year_children = year_layout.children();
 
-        let left_bounds = year_children.next().unwrap().bounds();
-        let _center_bounds = year_children.next().unwrap().bounds();
-        let right_bounds = year_children.next().unwrap().bounds();
+        let left_bounds = year_children
+            .next()
+            .expect("Native: Layout should have a left year arrow layout")
+            .bounds();
+        let _center_bounds = year_children
+            .next()
+            .expect("Native: Layout should have a center year layout")
+            .bounds();
+        let right_bounds = year_children
+            .next()
+            .expect("Native: Layout should have a right year arrow layout")
+            .bounds();
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -187,7 +209,9 @@ where
     ) -> event::Status {
         let mut children = layout.children();
 
-        let _day_labels_layout = children.next().unwrap();
+        let _day_labels_layout = children
+            .next()
+            .expect("Native: Layout should have a day label layout");
 
         let mut status = event::Status::Ignored;
 
@@ -213,12 +237,16 @@ where
                                 IsInMonth::Previous => {
                                     crate::core::date::pred_month(self.state.date)
                                         .with_day(day as u32)
-                                        .unwrap()
+                                        .expect("Previous month with day should be valid")
                                 }
-                                IsInMonth::Same => self.state.date.with_day(day as u32).unwrap(),
+                                IsInMonth::Same => self
+                                    .state
+                                    .date
+                                    .with_day(day as u32)
+                                    .expect("Same month with day should be valid"),
                                 IsInMonth::Next => crate::core::date::succ_month(self.state.date)
                                     .with_day(day as u32)
-                                    .unwrap(),
+                                    .expect("Succeeding month with day should be valid"),
                             };
 
                             status = event::Status::Captured;
@@ -501,10 +529,15 @@ where
 
         let mut children = layout.children();
 
-        let mut date_children = children.next().unwrap().children();
+        let mut date_children = children
+            .next()
+            .expect("Native: Layout should have date children")
+            .children();
 
         // ----------- Year/Month----------------------
-        let month_year_layout = date_children.next().unwrap();
+        let month_year_layout = date_children
+            .next()
+            .expect("Native: Layout should have a month/year layout");
         let month_year_status = self.on_event_month_year(
             &event,
             month_year_layout,
@@ -515,7 +548,12 @@ where
         );
 
         // ----------- Days ----------------------
-        let days_layout = date_children.next().unwrap().children().next().unwrap();
+        let days_layout = date_children
+            .next()
+            .expect("Native: Layout should have a days table parent")
+            .children()
+            .next()
+            .expect("Native: Layout should have a days table layout");
         let days_status = self.on_event_days(
             &event,
             days_layout,
@@ -526,7 +564,9 @@ where
         );
 
         // ----------- Buttons ------------------------
-        let cancel_button_layout = children.next().unwrap();
+        let cancel_button_layout = children
+            .next()
+            .expect("Native: Layout should have a cancel button layout for a DatePicker");
 
         let cancel_status = self.cancel_button.on_event(
             event.clone(),
@@ -537,7 +577,9 @@ where
             clipboard,
         );
 
-        let submit_button_layout = children.next().unwrap();
+        let submit_button_layout = children
+            .next()
+            .expect("Native: Layout should have a submit button layout for a DatePicker");
 
         let mut fake_messages: Vec<Message> = Vec::new();
 

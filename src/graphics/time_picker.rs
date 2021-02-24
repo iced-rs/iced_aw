@@ -70,14 +70,16 @@ where
 
         let background = Primitive::Quad {
             bounds,
-            background: style.get(&style_state).unwrap().background,
-            border_radius: style.get(&style_state).unwrap().border_radius,
-            border_width: style.get(&style_state).unwrap().border_width,
-            border_color: style.get(&style_state).unwrap().border_color,
+            background: style[&style_state].background,
+            border_radius: style[&style_state].border_radius,
+            border_width: style[&style_state].border_width,
+            border_color: style[&style_state].border_color,
         };
 
         // ----------- Clock canvas --------------------
-        let clock_layout = children.next().unwrap();
+        let clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a clock canvas layout");
         let (clock, clock_mouse_interaction) = clock(
             clock_layout,
             state.time,
@@ -89,7 +91,9 @@ where
         );
 
         // ----------- Digital clock ------------------
-        let digital_clock_layout = children.next().unwrap();
+        let digital_clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a digital clock layout");
         let (digital_clock, digital_clock_mouse_interaction) = digital_clock(
             digital_clock_layout,
             state.time,
@@ -101,7 +105,9 @@ where
         );
 
         // ----------- Buttons ------------------------
-        let cancel_button_layout = children.next().unwrap();
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
 
         let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
@@ -111,7 +117,9 @@ where
             &bounds,
         );
 
-        let submit_button_layout = children.next().unwrap();
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a TimePicker");
 
         let (submit_button, submit_mouse_interaction) = submit_button.draw(
             self,
@@ -126,9 +134,9 @@ where
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -138,9 +146,9 @@ where
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -452,7 +460,11 @@ fn digital_clock(
     focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     //println!("layout: {:#?}", layout);
-    let mut children = layout.children().next().unwrap().children();
+    let mut children = layout
+        .children()
+        .next()
+        .expect("Graphics: Layout should have digital clock children")
+        .children();
 
     let f = |layout: iced_native::Layout<'_>, text: String, target: Focus| {
         let style_state = if focus == target {
@@ -463,9 +475,18 @@ fn digital_clock(
 
         let mut children = layout.children();
 
-        let up_bounds = children.next().unwrap().bounds();
-        let center_bounds = children.next().unwrap().bounds();
-        let down_bounds = children.next().unwrap().bounds();
+        let up_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a up arrow bounds")
+            .bounds();
+        let center_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a center bounds")
+            .bounds();
+        let down_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a down arrow bounds")
+            .bounds();
 
         let mut mouse_interaction = mouse::Interaction::default();
 
@@ -541,7 +562,9 @@ fn digital_clock(
 
     let mouse_interaction = mouse::Interaction::default();
 
-    let hour_layout = children.next().unwrap();
+    let hour_layout = children
+        .next()
+        .expect("Graphics: Layout should have a hour layout");
     let (hour, hour_mouse_interaction) = f(
         hour_layout,
         format!(
@@ -555,52 +578,60 @@ fn digital_clock(
         Focus::DigitalHour,
     );
 
-    let hour_minute_seperator = children.next().unwrap();
-    let hour_minute_seperator = Primitive::Text {
+    let hour_minute_separator = children
+        .next()
+        .expect("Graphics: Layout should have a hour/minute separator layout");
+    let hour_minute_separator = Primitive::Text {
         content: ":".to_owned(),
         bounds: Rectangle {
-            x: hour_minute_seperator.bounds().center_x(),
-            y: hour_minute_seperator.bounds().center_y(),
-            ..hour_minute_seperator.bounds()
+            x: hour_minute_separator.bounds().center_x(),
+            y: hour_minute_separator.bounds().center_y(),
+            ..hour_minute_separator.bounds()
         },
-        color: style.get(&StyleState::Active).unwrap().text_color,
-        size: hour_minute_seperator.bounds().height,
+        color: style[&StyleState::Active].text_color,
+        size: hour_minute_separator.bounds().height,
         font: iced_graphics::Font::default(),
         horizontal_alignment: HorizontalAlignment::Center,
         vertical_alignment: VerticalAlignment::Center,
     };
 
-    let minute_layout = children.next().unwrap();
+    let minute_layout = children
+        .next()
+        .expect("Graphics: Layout should have a minute layout");
     let (minute, minute_mouse_interaction) = f(
         minute_layout,
         format!("{:02}", time.minute()),
         Focus::DigitalMinute,
     );
 
-    let (minute_second_seperator, second, second_mouse_interaction) = if show_seconds {
-        let minute_second_seperator = children.next().unwrap();
-        let minute_second_seperator = Primitive::Text {
+    let (minute_second_separator, second, second_mouse_interaction) = if show_seconds {
+        let minute_second_separator = children
+            .next()
+            .expect("Graphics: Layout should have a minute/second separator layout");
+        let minute_second_separator = Primitive::Text {
             content: ":".to_owned(),
             bounds: Rectangle {
-                x: minute_second_seperator.bounds().center_x(),
-                y: minute_second_seperator.bounds().center_y(),
-                ..minute_second_seperator.bounds()
+                x: minute_second_separator.bounds().center_x(),
+                y: minute_second_separator.bounds().center_y(),
+                ..minute_second_separator.bounds()
             },
             color: style.get(&StyleState::Active).unwrap().text_color,
-            size: minute_second_seperator.bounds().height,
+            size: minute_second_separator.bounds().height,
             font: iced_graphics::Font::default(),
             horizontal_alignment: HorizontalAlignment::Center,
             vertical_alignment: VerticalAlignment::Center,
         };
 
-        let second_layout = children.next().unwrap();
+        let second_layout = children
+            .next()
+            .expect("Graphics: Layout should have a second layout");
         let (second, second_mouse_interaction) = f(
             second_layout,
             format!("{:02}", time.second()),
             Focus::DigitalSecond,
         );
 
-        (minute_second_seperator, second, second_mouse_interaction)
+        (minute_second_separator, second, second_mouse_interaction)
     } else {
         (
             Primitive::None,
@@ -612,9 +643,11 @@ fn digital_clock(
     let period = if use_24h {
         Primitive::None
     } else {
-        let period = children.next().unwrap();
+        let period = children
+            .next()
+            .expect("Graphics: Layout should have a period layout");
         Primitive::Text {
-            content: if time.hour12().0 { "PM" } else { "AM" }.to_string(),
+            content: if time.hour12().0 { "PM" } else { "AM" }.to_owned(),
             bounds: Rectangle {
                 x: period.bounds().center_x(),
                 y: period.bounds().center_y(),
@@ -632,9 +665,9 @@ fn digital_clock(
         Primitive::Group {
             primitives: vec![
                 hour,
-                hour_minute_seperator,
+                hour_minute_separator,
                 minute,
-                minute_second_seperator,
+                minute_second_separator,
                 second,
                 period,
             ],

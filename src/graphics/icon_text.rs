@@ -66,7 +66,7 @@ where
 
         (
             Primitive::Text {
-                content: content.to_string(),
+                content: content.to_owned(),
                 size: f32::from(size),
                 bounds: Rectangle { x, y, ..bounds },
                 color: color.unwrap_or(defaults.text.color),

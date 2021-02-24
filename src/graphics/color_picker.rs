@@ -69,14 +69,16 @@ where
 
         let background = Primitive::Quad {
             bounds,
-            background: style.get(&style_state).unwrap().background,
-            border_radius: style.get(&style_state).unwrap().border_radius,
-            border_width: style.get(&style_state).unwrap().border_width,
-            border_color: style.get(&style_state).unwrap().border_color,
+            background: style[&style_state].background,
+            border_radius: style[&style_state].border_radius,
+            border_width: style[&style_state].border_width,
+            border_color: style[&style_state].border_color,
         };
 
         // ----------- Block 1 ----------------------
-        let hsv_color_layout = children.next().unwrap();
+        let hsv_color_layout = children
+            .next()
+            .expect("Graphics: Layout should have a HSV color layout");
 
         // ----------- RGBA Color ----------------------
         //let hsv_color_layout = block1_children.next().unwrap();
@@ -93,10 +95,15 @@ where
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
-        let mut block2_children = children.next().unwrap().children();
+        let mut block2_children = children
+            .next()
+            .expect("Graphics: Layout should have a 2. block layout")
+            .children();
 
         // ----------- RGBA Color ----------------------
-        let rgba_color_layout = block2_children.next().unwrap();
+        let rgba_color_layout = block2_children
+            .next()
+            .expect("Graphics: Layout should have a RGBA color layout");
         let (rgba_color, rgba_color_mouse_interaction) = rgba_color(
             rgba_color_layout,
             color,
@@ -107,7 +114,9 @@ where
         );
 
         // ----------- Text input ----------------------
-        let text_input_layout = block2_children.next().unwrap();
+        let text_input_layout = block2_children
+            .next()
+            .expect("Graphics: Layout should have a hex text layout");
         let hsv: Hsv = color.clone().into();
 
         let text_input_style_state = if text_input_layout.bounds().contains(env.cursor_position) {
@@ -121,12 +130,9 @@ where
                 Primitive::Quad {
                     bounds: text_input_layout.bounds(),
                     background: color.clone().into(),
-                    border_radius: style
-                        .get(&text_input_style_state)
-                        .unwrap()
-                        .bar_border_radius,
-                    border_width: style.get(&text_input_style_state).unwrap().bar_border_width,
-                    border_color: style.get(&text_input_style_state).unwrap().bar_border_color,
+                    border_radius: style[&text_input_style_state].bar_border_radius,
+                    border_width: style[&text_input_style_state].bar_border_width,
+                    border_color: style[&text_input_style_state].bar_border_color,
                 },
                 Primitive::Text {
                     content: color.to_owned().as_hex_string(),
@@ -153,7 +159,9 @@ where
         };
 
         // ----------- Buttons -------------------------
-        let cancel_button_layout = block2_children.next().unwrap();
+        let cancel_button_layout = block2_children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
 
         let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
@@ -163,7 +171,9 @@ where
             &bounds,
         );
 
-        let submit_button_layout = block2_children.next().unwrap();
+        let submit_button_layout = block2_children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
 
         let (submit_button, submit_mouse_interaction) = submit_button.draw(
             self,
@@ -178,9 +188,9 @@ where
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -190,9 +200,9 @@ where
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -237,7 +247,9 @@ fn hsv_color(
 
     let mouse_interaction = mouse::Interaction::default();
 
-    let sat_value_layout = hsv_color_children.next().unwrap();
+    let sat_value_layout = hsv_color_children
+        .next()
+        .expect("Graphics: Layout should have a sat/value layout");
     let (mut sat_value_style_state, mut sat_value_mouse_interaction) =
         (StyleState::Active, mouse::Interaction::default());
     if focus == Focus::SatValue {
@@ -315,7 +327,9 @@ fn hsv_color(
         content: Box::new(sat_value),
     };
 
-    let hue_layout = hsv_color_children.next().unwrap();
+    let hue_layout = hsv_color_children
+        .next()
+        .expect("Graphics: Layout should have a hue layout");
     let (mut hue_style_state, mut hue_mouse_interaction) =
         (StyleState::Active, mouse::Interaction::default());
     if focus == Focus::Hue {
@@ -419,9 +433,15 @@ fn rgba_color(
 
         let mouse_interaction = mouse::Interaction::default();
 
-        let label_layout = children.next().unwrap();
-        let bar_layout = children.next().unwrap();
-        let value_layout = children.next().unwrap();
+        let label_layout = children
+            .next()
+            .expect("Graphics: Layout should have a label layout");
+        let bar_layout = children
+            .next()
+            .expect("Graphics: Layout should have a bar layout");
+        let value_layout = children
+            .next()
+            .expect("Graphics: Layout should have a value layout");
 
         let label = Primitive::Text {
             content: label.to_owned(),
@@ -505,7 +525,9 @@ fn rgba_color(
     };
 
     // Red
-    let red_row_layout = rgba_color_children.next().unwrap();
+    let red_row_layout = rgba_color_children
+        .next()
+        .expect("Graphics: Layout should have a red row layout");
 
     let (red, red_mouse_interaction) = f(
         red_row_layout,
@@ -517,7 +539,9 @@ fn rgba_color(
     );
 
     // Green
-    let green_row_layout = rgba_color_children.next().unwrap();
+    let green_row_layout = rgba_color_children
+        .next()
+        .expect("Graphics: Layout should have a green row layout");
 
     let (green, green_mouse_interaction) = f(
         green_row_layout,
@@ -529,7 +553,9 @@ fn rgba_color(
     );
 
     // Blue
-    let blue_row_layout = rgba_color_children.next().unwrap();
+    let blue_row_layout = rgba_color_children
+        .next()
+        .expect("Graphics: Layout should have a blue row layout");
 
     let (blue, blue_mouse_interaction) = f(
         blue_row_layout,
@@ -541,7 +567,9 @@ fn rgba_color(
     );
 
     // Alpha
-    let alpha_row_layout = rgba_color_children.next().unwrap();
+    let alpha_row_layout = rgba_color_children
+        .next()
+        .expect("Graphics: Layout should have an alpha row layout");
 
     let (alpha, alpha_mouse_interaction) = f(
         alpha_row_layout,

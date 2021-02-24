@@ -42,7 +42,10 @@ where
     ) -> Self::Output {
         let bounds = env.layout.bounds();
         let mut children = env.layout.children();
-        let mut date_children = children.next().unwrap().children();
+        let mut date_children = children
+            .next()
+            .expect("Graphics: Layout should have a date layout")
+            .children();
 
         let mut style: HashMap<StyleState, Style> = HashMap::new();
         let _ = style.insert(StyleState::Active, env.style_sheet.active());
@@ -62,14 +65,16 @@ where
 
         let background = Primitive::Quad {
             bounds,
-            background: style.get(&style_state).unwrap().background,
-            border_radius: style.get(&style_state).unwrap().border_radius,
-            border_width: style.get(&style_state).unwrap().border_width,
-            border_color: style.get(&style_state).unwrap().border_color,
+            background: style[&style_state].background,
+            border_radius: style[&style_state].border_radius,
+            border_width: style[&style_state].border_width,
+            border_color: style[&style_state].border_color,
         };
 
         // ----------- Year/Month----------------------
-        let month_year_layout = date_children.next().unwrap();
+        let month_year_layout = date_children
+            .next()
+            .expect("Graphics: Layout should have a month/year layout");
 
         let (month_year, month_year_mouse_interaction) = month_year(
             month_year_layout,
@@ -81,13 +86,20 @@ where
         );
 
         // ----------- Days ---------------------------
-        let days_layout = date_children.next().unwrap().children().next().unwrap();
+        let days_layout = date_children
+            .next()
+            .expect("Graphics: Layout should have a days layout parent")
+            .children()
+            .next()
+            .expect("Graphics: Layout should have a days layout");
 
         let (days, days_mouse_interaction) =
             days(days_layout, date, env.cursor_position, &style, env.focus);
 
         // ----------- Buttons ------------------------
-        let cancel_button_layout = children.next().unwrap();
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
         let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
             self,
@@ -97,7 +109,9 @@ where
             &bounds,
         );
 
-        let submit_button_layout = children.next().unwrap();
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a DatePicker");
 
         let (submit_button, submit_mouse_interaction) = submit_button.draw(
             self,
@@ -112,9 +126,9 @@ where
             Primitive::Quad {
                 bounds: cancel_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -124,9 +138,9 @@ where
             Primitive::Quad {
                 bounds: submit_button_layout.bounds(),
                 background: Color::TRANSPARENT.into(),
-                border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style[&StyleState::Focused].border_radius,
+                border_width: style[&StyleState::Focused].border_width,
+                border_color: style[&StyleState::Focused].border_color,
             }
         } else {
             Primitive::None
@@ -165,8 +179,12 @@ fn month_year(
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
-    let month_layout = children.next().unwrap();
-    let year_layout = children.next().unwrap();
+    let month_layout = children
+        .next()
+        .expect("Graphics: Layout should have a month layout");
+    let year_layout = children
+        .next()
+        .expect("Graphics: Layout should have a year layout");
 
     let f = |layout: iced_native::Layout<'_>, text: &str, target: Focus| {
         let style_state = if focus == target {
@@ -177,9 +195,18 @@ fn month_year(
 
         let mut children = layout.children();
 
-        let left_bounds = children.next().unwrap().bounds();
-        let center_bounds = children.next().unwrap().bounds();
-        let right_bounds = children.next().unwrap().bounds();
+        let left_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a left arrow layout")
+            .bounds();
+        let center_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a center layout")
+            .bounds();
+        let right_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a right arrow layout")
+            .bounds();
 
         let mut mouse_interaction = mouse::Interaction::default();
 
@@ -275,7 +302,9 @@ fn days(
 ) -> (Primitive, mouse::Interaction) {
     let mut children = layout.children();
 
-    let day_labels_layout = children.next().unwrap();
+    let day_labels_layout = children
+        .next()
+        .expect("Graphics: Layout should have a day labels layout");
     let labels = day_labels(day_labels_layout, style, focus);
 
     let (table, table_mouse_interaction) =
@@ -301,7 +330,7 @@ fn day_labels(
         let bounds = label.bounds();
 
         labels.push(Primitive::Text {
-            content: crate::core::date::WEEKDAY_LABELS[i].to_string(),
+            content: crate::core::date::WEEKDAY_LABELS[i].clone(),
             bounds: Rectangle {
                 x: bounds.center_x(),
                 y: bounds.center_y(),

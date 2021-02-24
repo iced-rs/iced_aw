@@ -313,13 +313,21 @@ where
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
             TabBarPosition::Top => {
-                let tab_bar_layout = children.next().unwrap();
-                let tab_content_layout = children.next().unwrap();
+                let tab_bar_layout = children
+                    .next()
+                    .expect("Native: Layout should have a TabBar layout at top position");
+                let tab_content_layout = children
+                    .next()
+                    .expect("Native: Layout should have a tab content layout at top position");
                 (tab_bar_layout, tab_content_layout)
             }
             TabBarPosition::Bottom => {
-                let tab_content_layout = children.next().unwrap();
-                let tab_bar_layout = children.next().unwrap();
+                let tab_content_layout = children
+                    .next()
+                    .expect("Native: Layout should have a tab content layout at bottom position");
+                let tab_bar_layout = children
+                    .next()
+                    .expect("Native: Layout should have a TabBar layout at bottom position");
                 (tab_bar_layout, tab_content_layout)
             }
         };
@@ -360,8 +368,12 @@ where
     ) -> Renderer::Output {
         let mut children = layout.children();
         let tab_bar_layout = match self.tab_bar_position {
-            TabBarPosition::Top => children.next().unwrap(),
-            TabBarPosition::Bottom => children.last().unwrap(),
+            TabBarPosition::Top => children
+                .next()
+                .expect("Native: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .last()
+                .expect("Native: There should be a TabBar at the bottom position"),
         };
 
         let tab_bar = self.tab_bar.draw(

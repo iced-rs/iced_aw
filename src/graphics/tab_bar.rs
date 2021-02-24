@@ -108,7 +108,9 @@ fn draw_tab(
 
     let bounds = layout.bounds();
     let mut children = layout.children();
-    let label_layout = children.next().unwrap();
+    let label_layout = children
+        .next()
+        .expect("Graphics: Layout should have a label layout");
     let mut label_layout_children = label_layout.children();
 
     let background = Primitive::Quad {
@@ -140,7 +142,10 @@ fn draw_tab(
 
     let primitive = match tab {
         TabLabel::Icon(icon) => {
-            let icon_bounds = label_layout_children.next().unwrap().bounds();
+            let icon_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have an icon layout for an Icon")
+                .bounds();
 
             Primitive::Group {
                 primitives: vec![
@@ -163,7 +168,10 @@ fn draw_tab(
             }
         }
         TabLabel::Text(text) => {
-            let text_bounds = label_layout_children.next().unwrap().bounds();
+            let text_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have a text layout for a Text")
+                .bounds();
 
             Primitive::Group {
                 primitives: vec![
@@ -186,8 +194,14 @@ fn draw_tab(
             }
         }
         TabLabel::IconText(icon, text) => {
-            let icon_bounds = label_layout_children.next().unwrap().bounds();
-            let text_bounds = label_layout_children.next().unwrap().bounds();
+            let icon_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have an icons layout for an IconText")
+                .bounds();
+            let text_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have a text layout for an IconText")
+                .bounds();
 
             Primitive::Group {
                 primitives: vec![

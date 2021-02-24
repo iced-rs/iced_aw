@@ -110,8 +110,14 @@ where
         let hsv_color: Hsv = self.state.color.to_owned().into();
         let mut color_changed = false;
 
-        let sat_value_bounds = hsv_color_children.next().unwrap().bounds();
-        let hue_bounds = hsv_color_children.next().unwrap().bounds();
+        let sat_value_bounds = hsv_color_children
+            .next()
+            .expect("Native: Layout should have a sat/value layout")
+            .bounds();
+        let hue_bounds = hsv_color_children
+            .next()
+            .expect("Native: Layout should have a hue layout")
+            .bounds();
 
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
@@ -210,21 +216,45 @@ where
         let mut rgba_color_children = layout.children();
         let mut color_changed = false;
 
-        let mut red_row_children = rgba_color_children.next().unwrap().children();
+        let mut red_row_children = rgba_color_children
+            .next()
+            .expect("Native: Layout should have a red row layout")
+            .children();
         let _ = red_row_children.next();
-        let red_bar_bounds = red_row_children.next().unwrap().bounds();
+        let red_bar_bounds = red_row_children
+            .next()
+            .expect("Native: Layout should have a red bar layout")
+            .bounds();
 
-        let mut green_row_children = rgba_color_children.next().unwrap().children();
+        let mut green_row_children = rgba_color_children
+            .next()
+            .expect("Native: Layout should have a green row layout")
+            .children();
         let _ = green_row_children.next();
-        let green_bar_bounds = green_row_children.next().unwrap().bounds();
+        let green_bar_bounds = green_row_children
+            .next()
+            .expect("Native: Layout should have a green bar layout")
+            .bounds();
 
-        let mut blue_row_children = rgba_color_children.next().unwrap().children();
+        let mut blue_row_children = rgba_color_children
+            .next()
+            .expect("Native: Layout should have a blue row layout")
+            .children();
         let _ = blue_row_children.next();
-        let blue_bar_bounds = blue_row_children.next().unwrap().bounds();
+        let blue_bar_bounds = blue_row_children
+            .next()
+            .expect("Native: Layout should have a blue bar layout")
+            .bounds();
 
-        let mut alpha_row_children = rgba_color_children.next().unwrap().children();
+        let mut alpha_row_children = rgba_color_children
+            .next()
+            .expect("Native: Layout should have an alpha row layout")
+            .children();
         let _ = alpha_row_children.next();
-        let alpha_bar_bounds = alpha_row_children.next().unwrap().bounds();
+        let alpha_bar_bounds = alpha_row_children
+            .next()
+            .expect("Native: Layout should have an alpha bar layout")
+            .bounds();
 
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => match delta {
@@ -510,8 +540,14 @@ where
 
         let mut divider_children = divider.children().iter();
 
-        let block1_bounds = divider_children.next().unwrap().bounds();
-        let block2_bounds = divider_children.next().unwrap().bounds();
+        let block1_bounds = divider_children
+            .next()
+            .expect("Divider should have a first child")
+            .bounds();
+        let block2_bounds = divider_children
+            .next()
+            .expect("Divider should have a second child")
+            .bounds();
 
         // ----------- Block 1 ----------------------
         let block1_limits = Limits::new(Size::ZERO, block1_bounds.size())
@@ -704,7 +740,9 @@ where
         let status = event::Status::Ignored;
 
         // ----------- Block 1 ----------------------
-        let block1_layout = children.next().unwrap();
+        let block1_layout = children
+            .next()
+            .expect("Native: Layout should have a 1. block layout");
         let hsv_color_status = self.on_event_hsv_color(
             &event,
             block1_layout,
@@ -717,10 +755,15 @@ where
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
-        let mut block2_children = children.next().unwrap().children();
+        let mut block2_children = children
+            .next()
+            .expect("Native: Layout should have a 2. block layout")
+            .children();
 
         // ----------- RGB Color -----------------------
-        let rgba_color_layout = block2_children.next().unwrap();
+        let rgba_color_layout = block2_children
+            .next()
+            .expect("Native: Layout should have a RGBA color layout");
         let rgba_color_status = self.on_event_rgba_color(
             &event,
             rgba_color_layout,
@@ -733,10 +776,14 @@ where
         let mut fake_messages: Vec<Message> = Vec::new();
 
         // ----------- Text input ----------------------
-        let _text_input_layout = block2_children.next().unwrap();
+        let _text_input_layout = block2_children
+            .next()
+            .expect("Native: Layout should have a hex text layout");
 
         // ----------- Buttons -------------------------
-        let cancel_button_layout = block2_children.next().unwrap();
+        let cancel_button_layout = block2_children
+            .next()
+            .expect("Native: Layout should have a cancel button layout for a ColorPicker");
         let cancel_button_status = self.cancel_button.on_event(
             event.clone(),
             cancel_button_layout,
@@ -746,7 +793,9 @@ where
             clipboard,
         );
 
-        let submit_button_layout = block2_children.next().unwrap();
+        let submit_button_layout = block2_children
+            .next()
+            .expect("Native: Layout should have a submit button layout for a ColorPicker");
         let submit_button_status = self.submit_button.on_event(
             event,
             submit_button_layout,

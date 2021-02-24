@@ -176,7 +176,7 @@ where
                             .state
                             .time
                             .with_hour(if pm && hour != 12 { hour } else { hour + 12 } % 24)
-                            .unwrap();
+                            .expect("New time with hour should be valid");
                         event::Status::Captured
                     }
                     NearestRadius::Hour => {
@@ -217,7 +217,7 @@ where
                         .state
                         .time
                         .with_hour((nearest_point as u32 + if pm { 12 } else { 0 }) % 24)
-                        .unwrap();
+                        .expect("New time with hour should be valid");
                     event::Status::Captured
                 }
                 ClockDragged::Minute => {
@@ -226,7 +226,11 @@ where
                     let nearest_point =
                         crate::core::clock::nearest_point(&minute_points, cursor_position);
 
-                    self.state.time = self.state.time.with_minute(nearest_point as u32).unwrap();
+                    self.state.time = self
+                        .state
+                        .time
+                        .with_minute(nearest_point as u32)
+                        .expect("New time with minute should be valid");
                     event::Status::Captured
                 }
                 ClockDragged::Second => {
@@ -235,7 +239,11 @@ where
                     let nearest_point =
                         crate::core::clock::nearest_point(&second_points, cursor_position);
 
-                    self.state.time = self.state.time.with_second(nearest_point as u32).unwrap();
+                    self.state.time = self
+                        .state
+                        .time
+                        .with_second(nearest_point as u32)
+                        .expect("New time with second should be valid");
                     event::Status::Captured
                 }
                 ClockDragged::None => event::Status::Ignored,
@@ -272,21 +280,33 @@ where
             let _ = digital_clock_children.next();
         }
 
-        let hour_layout = digital_clock_children.next().unwrap();
+        let hour_layout = digital_clock_children
+            .next()
+            .expect("Native: Layout should have a hour layout");
         let mut hour_children = hour_layout.children();
 
-        let hour_up_arrow = hour_children.next().unwrap();
+        let hour_up_arrow = hour_children
+            .next()
+            .expect("Native: Layout should have an up arrow for hours");
         let _ = hour_children.next();
-        let hour_down_arrow = hour_children.next().unwrap();
+        let hour_down_arrow = hour_children
+            .next()
+            .expect("Native: Layout should have a down arrow for hours");
 
         let _ = digital_clock_children.next();
 
-        let minute_layout = digital_clock_children.next().unwrap();
+        let minute_layout = digital_clock_children
+            .next()
+            .expect("Native: Layout should have a minute layout");
         let mut minute_children = minute_layout.children();
 
-        let minute_up_arrow = minute_children.next().unwrap();
+        let minute_up_arrow = minute_children
+            .next()
+            .expect("Native: Layout should have an up arrow for minutes");
         let _ = minute_children.next();
-        let minute_down_arrow = minute_children.next().unwrap();
+        let minute_down_arrow = minute_children
+            .next()
+            .expect("Native: Layout should have a down arrow for minutes");
 
         let calculate_time = |time: &mut NaiveTime,
                               up_arrow: Layout<'_>,
@@ -334,12 +354,18 @@ where
         let second_status = if self.state.show_seconds {
             let _ = digital_clock_children.next();
 
-            let second_layout = digital_clock_children.next().unwrap();
+            let second_layout = digital_clock_children
+                .next()
+                .expect("Native: Layout should have a second layout");
             let mut second_children = second_layout.children();
 
-            let second_up_arrow = second_children.next().unwrap();
+            let second_up_arrow = second_children
+                .next()
+                .expect("Native: Layout should have an up arrow for seconds");
             let _ = second_children.next();
-            let second_down_arrow = second_children.next().unwrap();
+            let second_down_arrow = second_children
+                .next()
+                .expect("Native: Layout should have a down arrow for seconds");
 
             match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -672,7 +698,9 @@ where
         let mut children = layout.children();
 
         // Clock canvas
-        let clock_layout = children.next().unwrap();
+        let clock_layout = children
+            .next()
+            .expect("Native: Layout should have a clock canvas layout");
         let clock_status = self.on_event_clock(
             &event,
             clock_layout,
@@ -683,7 +711,12 @@ where
         );
 
         // ----------- Digital clock ------------------
-        let digital_clock_layout = children.next().unwrap().children().next().unwrap();
+        let digital_clock_layout = children
+            .next()
+            .expect("Native: Layout should have a digital clock parent")
+            .children()
+            .next()
+            .expect("Native: Layout should have a digital clock layout");
         let digital_clock_status = self.on_event_digital_clock(
             &event,
             digital_clock_layout,
@@ -694,7 +727,9 @@ where
         );
 
         // ----------- Buttons ------------------------
-        let cancel_button_layout = children.next().unwrap();
+        let cancel_button_layout = children
+            .next()
+            .expect("Native: Layout should have a cancel button layout for a TimePicker");
 
         let cancel_status = self.cancel_button.on_event(
             event.clone(),
@@ -705,7 +740,9 @@ where
             clipboard,
         );
 
-        let submit_button_layout = children.next().unwrap();
+        let submit_button_layout = children
+            .next()
+            .expect("Native: Layout should have a submit button layout for a TimePicker");
 
         let mut fake_messages: Vec<Message> = Vec::new();
 

@@ -56,7 +56,9 @@ where
             border_color: style.border_color,
         };
 
-        let head_layout = children.next().unwrap();
+        let head_layout = children
+            .next()
+            .expect("Graphics: Layout should have a head layout");
         let mut head_children = head_layout.children();
         let head_background = Primitive::Quad {
             bounds: head_layout.bounds(),
@@ -73,9 +75,11 @@ where
                     color: style.head_text_color,
                 },
             },
-            head_children.next().unwrap(),
+            head_children
+                .next()
+                .expect("Graphics: Layout should have a head content layout"),
             env.cursor_position,
-            env.viewport.unwrap(),
+            env.viewport.expect("A viewport should exist for Card"),
         );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
@@ -112,7 +116,9 @@ where
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
 
-        let body_layout = children.next().unwrap();
+        let body_layout = children
+            .next()
+            .expect("Graphics: Layout should have a body layout");
         let mut body_children = body_layout.children();
         let body_background = Primitive::Quad {
             bounds: body_layout.bounds(),
@@ -129,14 +135,18 @@ where
                     color: style.body_text_color,
                 },
             },
-            body_children.next().unwrap(),
+            body_children
+                .next()
+                .expect("Graphics: Layout should have a body content layout"),
             env.cursor_position,
-            env.viewport.unwrap(),
+            env.viewport.expect("A viewport should exist for Card"),
         );
 
         let mouse_interaction = mouse_interaction.max(new_mouse_interaction);
 
-        let foot_layout = children.next().unwrap();
+        let foot_layout = children
+            .next()
+            .expect("Graphics: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_background = Primitive::Quad {
             bounds: foot_layout.bounds(),
@@ -156,9 +166,11 @@ where
                             color: style.foot_text_color,
                         },
                     },
-                    foot_children.next().unwrap(),
+                    foot_children
+                        .next()
+                        .expect("Graphics: Layout should have a foot content layout"),
                     env.cursor_position,
-                    env.viewport.unwrap(),
+                    env.viewport.expect("A viewport should exist for Card"),
                 )
             },
         );

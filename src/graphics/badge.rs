@@ -54,9 +54,11 @@ where
                     color: style.text_color,
                 },
             },
-            children.next().unwrap(),
+            children
+                .next()
+                .expect("Graphics: Layout should have a children layout for Badge"),
             env.cursor_position,
-            env.viewport.unwrap(),
+            env.viewport.expect("A viewport should exist for Badge"),
         );
 
         (

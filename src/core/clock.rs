@@ -76,7 +76,7 @@ pub fn nearest_radius(
         .map(|(r, n)| ((r - distance).abs(), n))
         .collect();
 
-    distance_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    distance_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Should be comparable"));
 
     distance_vec[0].1.clone()
 }
@@ -91,7 +91,7 @@ pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
         .map(|(i, p)| (i, p.distance(cursor_position)))
         .collect();
 
-    distance_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    distance_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).expect("Should be comparable"));
 
     distance_vec[0].0
 }

@@ -34,8 +34,12 @@ where
         let mut children = env.layout.children();
 
         let tab_content_layout = match tab_bar_position {
-            TabBarPosition::Top => children.last().unwrap(),
-            TabBarPosition::Bottom => children.next().unwrap(),
+            TabBarPosition::Top => children
+                .last()
+                .expect("Graphics: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .next()
+                .expect("Graphics: There should be a TabBar at the bottom position"),
         };
 
         let mut primitives = Vec::new();
@@ -55,7 +59,7 @@ where
                 env.defaults,
                 tab_content_layout,
                 env.cursor_position,
-                env.viewport.unwrap(),
+                env.viewport.expect("A viewport should exist for Tabs"),
             );
 
             if new_mouse_interaction > mouse_interaction {
