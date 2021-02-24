@@ -140,7 +140,7 @@ Quickstart features are pretty handy to start and experiment having everything l
 
 ### Color palette
 
-This crate add a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
+This crate adds a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
 
 Enable colors with the feature `colors`.
 
