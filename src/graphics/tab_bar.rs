@@ -89,7 +89,7 @@ where
 }
 
 /// Draws a tab.
-#[allow(clippy::borrowed_box)]
+#[allow(clippy::borrowed_box, clippy::too_many_lines)]
 fn draw_tab(
     tab: &TabLabel,
     layout: Layout<'_>,

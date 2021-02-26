@@ -44,6 +44,7 @@ where
 {
     type Style = Box<dyn StyleSheet>;
 
+    #[allow(clippy::too_many_lines)]
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
@@ -178,6 +179,7 @@ where
 }
 
 /// Draws the analog clock.
+#[allow(clippy::too_many_lines)]
 fn clock(
     layout: iced_native::Layout<'_>,
     time: NaiveTime,
@@ -452,6 +454,7 @@ fn clock(
 }
 
 /// Draws the digital clock.
+#[allow(clippy::too_many_lines)]
 fn digital_clock(
     layout: iced_native::Layout<'_>,
     time: NaiveTime,

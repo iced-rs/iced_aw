@@ -31,6 +31,7 @@ where
 {
     type Style = Box<dyn StyleSheet>;
 
+    #[allow(clippy::too_many_lines)]
     fn draw<Message>(
         &mut self,
         env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,

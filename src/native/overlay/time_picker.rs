@@ -109,6 +109,7 @@ where
     }
 
     /// The event handling for the clock.
+    #[allow(clippy::too_many_lines)]
     fn on_event_clock(
         &mut self,
         event: &Event,
@@ -273,6 +274,7 @@ where
     }
 
     /// The event handling for the digital clock.
+    #[allow(clippy::too_many_lines)]
     fn on_event_digital_clock(
         &mut self,
         event: &Event,
@@ -500,111 +502,9 @@ where
             .max_width(300)
             .max_height(350);
 
-        let arrow_size = text::Renderer::default_size(renderer);
-        let font_size = (1.2 * f32::from(text::Renderer::default_size(renderer))) as u16;
-
         // Digital Clock
         let digital_clock_limits = limits;
-
-        let mut digital_clock_row = Row::<(), Renderer>::new()
-            .align_items(Align::Center)
-            .height(Length::Shrink)
-            .width(Length::Shrink)
-            .spacing(1);
-
-        if !self.state.use_24h {
-            digital_clock_row = digital_clock_row.push(
-                Column::new() // Just a placeholder
-                    .height(Length::Shrink)
-                    .push(Text::new("AM").size(font_size)),
-            )
-        }
-
-        digital_clock_row = digital_clock_row
-            .push(
-                // Hour
-                Column::new()
-                    .align_items(Align::Center)
-                    .height(Length::Shrink)
-                    .push(
-                        // Up Hour arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
-                    )
-                    .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
-                    .push(
-                        // Down Hour arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
-                    ),
-            )
-            .push(
-                Column::new()
-                    .height(Length::Shrink)
-                    .push(Text::new(":").size(font_size)),
-            )
-            .push(
-                Column::new()
-                    .align_items(Align::Center)
-                    .height(Length::Shrink)
-                    .push(
-                        // Up Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
-                    )
-                    .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
-                    .push(
-                        // Down Minute arrow
-                        Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
-                    ),
-            );
-
-        if self.state.show_seconds {
-            digital_clock_row = digital_clock_row
-                .push(
-                    Column::new()
-                        .height(Length::Shrink)
-                        .push(Text::new(":").size(font_size)),
-                )
-                .push(
-                    Column::new()
-                        .align_items(Align::Center)
-                        .height(Length::Shrink)
-                        .push(
-                            // Up Minute arrow
-                            Row::new()
-                                .width(Length::Units(arrow_size))
-                                .height(Length::Units(arrow_size)),
-                        )
-                        .push(Text::new(format!("{:02}", self.state.time.hour())).size(font_size))
-                        .push(
-                            // Down Minute arrow
-                            Row::new()
-                                .width(Length::Units(arrow_size))
-                                .height(Length::Units(arrow_size)),
-                        ),
-                )
-        }
-
-        if !self.state.use_24h {
-            digital_clock_row = digital_clock_row.push(
-                Column::new()
-                    .height(Length::Shrink)
-                    .push(Text::new("AM").size(font_size)),
-            );
-        }
-
-        let mut digital_clock = Container::new(digital_clock_row)
-            .width(Length::Fill)
-            .height(Length::Shrink)
-            .center_x()
-            .center_y()
-            .layout(renderer, &digital_clock_limits);
+        let mut digital_clock = digital_clock(self, renderer, digital_clock_limits);
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
@@ -831,6 +731,129 @@ where
         self.state.show_seconds.hash(state);
         self.state.use_24h.hash(state);
     }
+}
+
+/// Defines the layout of the digital clock of the time picker.
+fn digital_clock<'a, Message, Renderer>(
+    time_picker: &TimePickerOverlay<'a, Message, Renderer>,
+    renderer: &Renderer,
+    limits: Limits,
+) -> iced_native::layout::Node
+where
+    Message: 'a + Clone,
+    Renderer: 'a
+        + self::Renderer
+        + button::Renderer
+        + column::Renderer
+        + container::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer,
+{
+    let arrow_size = text::Renderer::default_size(renderer);
+    let font_size = (1.2 * f32::from(text::Renderer::default_size(renderer))) as u16;
+
+    let mut digital_clock_row = Row::<(), Renderer>::new()
+        .align_items(Align::Center)
+        .height(Length::Shrink)
+        .width(Length::Shrink)
+        .spacing(1);
+
+    if !time_picker.state.use_24h {
+        digital_clock_row = digital_clock_row.push(
+            Column::new() // Just a placeholder
+                .height(Length::Shrink)
+                .push(Text::new("AM").size(font_size)),
+        )
+    }
+
+    digital_clock_row = digital_clock_row
+        .push(
+            // Hour
+            Column::new()
+                .align_items(Align::Center)
+                .height(Length::Shrink)
+                .push(
+                    // Up Hour arrow
+                    Row::new()
+                        .width(Length::Units(arrow_size))
+                        .height(Length::Units(arrow_size)),
+                )
+                .push(Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size))
+                .push(
+                    // Down Hour arrow
+                    Row::new()
+                        .width(Length::Units(arrow_size))
+                        .height(Length::Units(arrow_size)),
+                ),
+        )
+        .push(
+            Column::new()
+                .height(Length::Shrink)
+                .push(Text::new(":").size(font_size)),
+        )
+        .push(
+            Column::new()
+                .align_items(Align::Center)
+                .height(Length::Shrink)
+                .push(
+                    // Up Minute arrow
+                    Row::new()
+                        .width(Length::Units(arrow_size))
+                        .height(Length::Units(arrow_size)),
+                )
+                .push(Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size))
+                .push(
+                    // Down Minute arrow
+                    Row::new()
+                        .width(Length::Units(arrow_size))
+                        .height(Length::Units(arrow_size)),
+                ),
+        );
+
+    if time_picker.state.show_seconds {
+        digital_clock_row = digital_clock_row
+            .push(
+                Column::new()
+                    .height(Length::Shrink)
+                    .push(Text::new(":").size(font_size)),
+            )
+            .push(
+                Column::new()
+                    .align_items(Align::Center)
+                    .height(Length::Shrink)
+                    .push(
+                        // Up Minute arrow
+                        Row::new()
+                            .width(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
+                    )
+                    .push(
+                        Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size),
+                    )
+                    .push(
+                        // Down Minute arrow
+                        Row::new()
+                            .width(Length::Units(arrow_size))
+                            .height(Length::Units(arrow_size)),
+                    ),
+            )
+    }
+
+    if !time_picker.state.use_24h {
+        digital_clock_row = digital_clock_row.push(
+            Column::new()
+                .height(Length::Shrink)
+                .push(Text::new("AM").size(font_size)),
+        );
+    }
+
+    Container::new(digital_clock_row)
+        .width(Length::Fill)
+        .height(Length::Shrink)
+        .center_x()
+        .center_y()
+        .layout(renderer, &limits)
 }
 
 /// The renderer of a [`TimePickerOverlay`](TimePickerOverlay).

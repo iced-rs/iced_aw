@@ -76,163 +76,193 @@ where
         };
 
         // ----------- Block 1 ----------------------
-        let hsv_color_layout = children
+        let block1_layout = children
             .next()
-            .expect("Graphics: Layout should have a HSV color layout");
-
-        // ----------- RGBA Color ----------------------
-        //let hsv_color_layout = block1_children.next().unwrap();
-        let (hsv_color, hsv_color_mouse_interaction) = hsv_color(
-            hsv_color_layout,
+            .expect("Graphics: Layout should have a 1. block layout");
+        let (block1, block1_mouse_interaction) = block1(
             color,
             sat_value_canvas_cache,
             hue_canvas_cache,
+            block1_layout,
             env.cursor_position,
-            &style,
             env.focus,
+            &style,
         );
-
-        // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
-        let mut block2_children = children
+        let block2_layout = children
             .next()
-            .expect("Graphics: Layout should have a 2. block layout")
-            .children();
-
-        // ----------- RGBA Color ----------------------
-        let rgba_color_layout = block2_children
-            .next()
-            .expect("Graphics: Layout should have a RGBA color layout");
-        let (rgba_color, rgba_color_mouse_interaction) = rgba_color(
-            rgba_color_layout,
+            .expect("Graphics: Layout should have a 2. block layout");
+        let (block2, block2_mouse_interaction) = block2(
+            self,
             color,
-            env.cursor_position,
-            env.defaults,
+            cancel_button,
+            submit_button,
+            &DrawEnvironment {
+                defaults: env.defaults,
+                layout: block2_layout,
+                cursor_position: env.cursor_position,
+                style_sheet: &(),
+                viewport: Some(&bounds),
+                focus: env.focus,
+            },
             &style,
-            env.focus,
         );
-
-        // ----------- Text input ----------------------
-        let text_input_layout = block2_children
-            .next()
-            .expect("Graphics: Layout should have a hex text layout");
-        let hsv: Hsv = color.clone().into();
-
-        let text_input_style_state = if text_input_layout.bounds().contains(env.cursor_position) {
-            StyleState::Hovered
-        } else {
-            StyleState::Active
-        };
-
-        let text_input = Primitive::Group {
-            primitives: vec![
-                Primitive::Quad {
-                    bounds: text_input_layout.bounds(),
-                    background: color.clone().into(),
-                    border_radius: style[&text_input_style_state].bar_border_radius,
-                    border_width: style[&text_input_style_state].bar_border_width,
-                    border_color: style[&text_input_style_state].bar_border_color,
-                },
-                Primitive::Text {
-                    content: color.to_owned().as_hex_string(),
-                    bounds: Rectangle {
-                        x: text_input_layout.bounds().center_x(),
-                        y: text_input_layout.bounds().center_y(),
-                        ..text_input_layout.bounds()
-                    },
-                    color: Color {
-                        a: 1.0,
-                        ..Hsv {
-                            hue: 0,
-                            saturation: 0.0,
-                            value: if hsv.value < 0.5 { 1.0 } else { 0.0 },
-                        }
-                        .into()
-                    },
-                    size: text_input_layout.bounds().height * 0.7,
-                    font: iced_graphics::Font::default(),
-                    horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                    vertical_alignment: iced_graphics::VerticalAlignment::Center,
-                },
-            ],
-        };
-
-        // ----------- Buttons -------------------------
-        let cancel_button_layout = block2_children
-            .next()
-            .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
-
-        let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
-            self,
-            env.defaults,
-            cancel_button_layout,
-            env.cursor_position,
-            &bounds,
-        );
-
-        let submit_button_layout = block2_children
-            .next()
-            .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
-
-        let (submit_button, submit_mouse_interaction) = submit_button.draw(
-            self,
-            env.defaults,
-            submit_button_layout,
-            env.cursor_position,
-            &bounds,
-        );
-
-        // Buttons are not focusable right now...
-        let cancel_button_focus = if env.focus == Focus::Cancel {
-            Primitive::Quad {
-                bounds: cancel_button_layout.bounds(),
-                background: Color::TRANSPARENT.into(),
-                border_radius: style[&StyleState::Focused].border_radius,
-                border_width: style[&StyleState::Focused].border_width,
-                border_color: style[&StyleState::Focused].border_color,
-            }
-        } else {
-            Primitive::None
-        };
-
-        let submit_button_focus = if env.focus == Focus::Submit {
-            Primitive::Quad {
-                bounds: submit_button_layout.bounds(),
-                background: Color::TRANSPARENT.into(),
-                border_radius: style[&StyleState::Focused].border_radius,
-                border_width: style[&StyleState::Focused].border_width,
-                border_color: style[&StyleState::Focused].border_color,
-            }
-        } else {
-            Primitive::None
-        };
-        // ----------- Block 2 end ------------------
 
         (
             Primitive::Group {
-                primitives: vec![
-                    background,
-                    hsv_color,
-                    rgba_color,
-                    text_input,
-                    cancel_button,
-                    submit_button,
-                    cancel_button_focus,
-                    submit_button_focus,
-                ],
+                primitives: vec![background, block1, block2],
             },
             mouse_interaction
-                .max(hsv_color_mouse_interaction)
-                .max(rgba_color_mouse_interaction)
-                //.max(text_input_mouse_interaction)
-                .max(cancel_mouse_interaction)
-                .max(submit_mouse_interaction),
+                .max(block1_mouse_interaction)
+                .max(block2_mouse_interaction),
         )
     }
 }
 
+/// Draws the 1. block of the color picker containing the HSV part.
+fn block1(
+    color: &Color,
+    sat_value_canvas_cache: &canvas::Cache,
+    hue_canvas_cache: &canvas::Cache,
+    layout: Layout<'_>,
+    cursor_position: Point,
+    focus: Focus,
+    style: &HashMap<StyleState, Style>,
+) -> (Primitive, mouse::Interaction) {
+    // ----------- Block 1 ----------------------
+    let hsv_color_layout = layout;
+
+    // ----------- HSV Color ----------------------
+    //let hsv_color_layout = block1_children.next().unwrap();
+    let (hsv_color, hsv_color_mouse_interaction) = hsv_color(
+        hsv_color_layout,
+        color,
+        sat_value_canvas_cache,
+        hue_canvas_cache,
+        cursor_position,
+        style,
+        focus,
+    );
+
+    // ----------- Block 1 end ------------------
+
+    (hsv_color, hsv_color_mouse_interaction)
+}
+
+/// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
+fn block2<Message, B>(
+    renderer: &mut Renderer<B>,
+    color: &Color,
+    cancel_button: &iced_native::Element<'_, Message, Renderer<B>>,
+    submit_button: &iced_native::Element<'_, Message, Renderer<B>>,
+    env: &DrawEnvironment<'_, Defaults, (), Focus>,
+    style: &HashMap<StyleState, Style>,
+) -> (Primitive, mouse::Interaction)
+where
+    B: Backend + backend::Text,
+{
+    // ----------- Block 2 ----------------------
+    let mut block2_children = env.layout.children();
+
+    // ----------- RGBA Color ----------------------
+    let rgba_color_layout = block2_children
+        .next()
+        .expect("Graphics: Layout should have a RGBA color layout");
+    let (rgba_color, rgba_color_mouse_interaction) = rgba_color(
+        rgba_color_layout,
+        color,
+        env.cursor_position,
+        env.defaults,
+        style,
+        env.focus,
+    );
+
+    // ----------- Hex text ----------------------
+    let hex_text_layout = block2_children
+        .next()
+        .expect("Graphics: Layout should have a hex text layout");
+    let hex_text = hex_text(
+        hex_text_layout,
+        color,
+        env.cursor_position,
+        env.defaults,
+        style,
+        env.focus,
+    );
+
+    // ----------- Buttons -------------------------
+    let cancel_button_layout = block2_children
+        .next()
+        .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
+
+    let (cancel_button, cancel_mouse_interaction) = cancel_button.draw(
+        renderer,
+        env.defaults,
+        cancel_button_layout,
+        env.cursor_position,
+        env.viewport
+            .expect("Should have a viewport for ColorPicker"),
+    );
+
+    let submit_button_layout = block2_children
+        .next()
+        .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
+
+    let (submit_button, submit_mouse_interaction) = submit_button.draw(
+        renderer,
+        env.defaults,
+        submit_button_layout,
+        env.cursor_position,
+        env.viewport
+            .expect("Should have a viewport for ColorPicker"),
+    );
+
+    // Buttons are not focusable right now...
+    let cancel_button_focus = if env.focus == Focus::Cancel {
+        Primitive::Quad {
+            bounds: cancel_button_layout.bounds(),
+            background: Color::TRANSPARENT.into(),
+            border_radius: style[&StyleState::Focused].border_radius,
+            border_width: style[&StyleState::Focused].border_width,
+            border_color: style[&StyleState::Focused].border_color,
+        }
+    } else {
+        Primitive::None
+    };
+
+    let submit_button_focus = if env.focus == Focus::Submit {
+        Primitive::Quad {
+            bounds: submit_button_layout.bounds(),
+            background: Color::TRANSPARENT.into(),
+            border_radius: style[&StyleState::Focused].border_radius,
+            border_width: style[&StyleState::Focused].border_width,
+            border_color: style[&StyleState::Focused].border_color,
+        }
+    } else {
+        Primitive::None
+    };
+    // ----------- Block 2 end ------------------
+
+    (
+        Primitive::Group {
+            primitives: vec![
+                rgba_color,
+                hex_text,
+                cancel_button,
+                submit_button,
+                cancel_button_focus,
+                submit_button_focus,
+            ],
+        },
+        rgba_color_mouse_interaction
+            .max(cancel_mouse_interaction)
+            .max(submit_mouse_interaction),
+    )
+}
+
 /// Draws the HSV color area.
+#[allow(clippy::too_many_lines)]
 fn hsv_color(
     layout: Layout<'_>,
     color: &Color,
@@ -410,6 +440,7 @@ fn hsv_color(
 }
 
 /// Draws the RGBA color area.
+#[allow(clippy::too_many_lines)]
 fn rgba_color(
     layout: Layout<'_>,
     color: &Color,
@@ -590,4 +621,55 @@ fn rgba_color(
             .max(blue_mouse_interaction)
             .max(alpha_mouse_interaction),
     )
+}
+
+/// Draws the hex text representation of the color.
+fn hex_text(
+    layout: Layout<'_>,
+    color: &Color,
+    cursor_position: Point,
+    _defaults: &Defaults,
+    style: &HashMap<StyleState, Style>,
+    _focus: Focus,
+) -> Primitive {
+    let hsv: Hsv = color.clone().into();
+
+    let hex_text_style_state = if layout.bounds().contains(cursor_position) {
+        StyleState::Hovered
+    } else {
+        StyleState::Active
+    };
+
+    Primitive::Group {
+        primitives: vec![
+            Primitive::Quad {
+                bounds: layout.bounds(),
+                background: color.clone().into(),
+                border_radius: style[&hex_text_style_state].bar_border_radius,
+                border_width: style[&hex_text_style_state].bar_border_width,
+                border_color: style[&hex_text_style_state].bar_border_color,
+            },
+            Primitive::Text {
+                content: color.to_owned().as_hex_string(),
+                bounds: Rectangle {
+                    x: layout.bounds().center_x(),
+                    y: layout.bounds().center_y(),
+                    ..layout.bounds()
+                },
+                color: Color {
+                    a: 1.0,
+                    ..Hsv {
+                        hue: 0,
+                        saturation: 0.0,
+                        value: if hsv.value < 0.5 { 1.0 } else { 0.0 },
+                    }
+                    .into()
+                },
+                size: layout.bounds().height * 0.7,
+                font: iced_graphics::Font::default(),
+                horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
+                vertical_alignment: iced_graphics::VerticalAlignment::Center,
+            },
+        ],
+    }
 }

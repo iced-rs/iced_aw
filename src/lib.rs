@@ -3,6 +3,44 @@
 #![deny(missing_debug_implementations)]
 #![deny(unused_results)]
 #![forbid(unsafe_code)]
+#![warn(
+    clippy::pedantic,
+    clippy::nursery,
+
+    // Restriction lints
+    clippy::clone_on_ref_ptr,
+    clippy::create_dir,
+    clippy::dbg_macro,
+    clippy::decimal_literal_representation,
+    clippy::exit,
+    clippy::float_cmp_const,
+    clippy::get_unwrap,
+    clippy::let_underscore_must_use,
+    clippy::map_err_ignore,
+    clippy::mem_forget,
+    clippy::missing_docs_in_private_items,
+    clippy::multiple_inherent_impl,
+    clippy::panic,
+    clippy::panic_in_result_fn,
+    clippy::print_stderr,
+    clippy::print_stdout,
+    clippy::rest_pat_in_fully_bound_structs,
+    clippy::str_to_string,
+    clippy::string_to_string,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unneeded_field_pattern,
+    clippy::unwrap_in_result,
+    clippy::unwrap_used,
+    clippy::use_debug,
+)]
+#![allow(
+    clippy::suboptimal_flops,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::module_name_repetitions,
+)]
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod graphics;
@@ -13,6 +51,7 @@ pub mod core;
 pub mod style;
 
 #[cfg(not(target_arch = "wasm32"))]
+/// Exports for all platforms that are not WASM32.
 mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "icons")]
@@ -64,6 +103,7 @@ mod platform {
 pub mod web;
 
 #[cfg(target_arch = "wasm32")]
+/// Exports for the WASM32 platform.
 mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "badge")]

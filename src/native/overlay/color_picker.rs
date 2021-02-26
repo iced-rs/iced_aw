@@ -216,6 +216,7 @@ where
     }
 
     /// The event handling for the RGBA color area.
+    #[allow(clippy::too_many_lines)]
     fn on_event_rgba_color(
         &mut self,
         event: &Event,
@@ -563,148 +564,10 @@ where
             .bounds();
 
         // ----------- Block 1 ----------------------
-        let block1_limits = Limits::new(Size::ZERO, block1_bounds.size())
-            .width(Length::Fill)
-            .height(Length::Fill);
-
-        let mut block1_node = Column::<(), Renderer>::new()
-            .spacing(PADDING)
-            .push(
-                Row::new()
-                    .width(Length::Fill)
-                    .height(Length::FillPortion(7)),
-            )
-            .push(
-                Row::new()
-                    .width(Length::Fill)
-                    .height(Length::FillPortion(1)),
-            )
-            .layout(renderer, &block1_limits);
-
-        block1_node.move_to(Point::new(
-            block1_bounds.x + f32::from(PADDING),
-            block1_bounds.y + f32::from(PADDING),
-        ));
-        // ----------- Block 1 end ------------------
+        let block1_node = block1_layout(self, renderer, block1_bounds, position);
 
         // ----------- Block 2 ----------------------
-        let block2_limits = Limits::new(Size::ZERO, block2_bounds.size())
-            //.pad(PADDING as f32)
-            .width(Length::Fill)
-            .height(Length::Fill);
-
-        // Pre-Buttons TODO: get rid of it
-        let cancel_limits = block2_limits;
-        let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
-
-        // Text input
-        //let text_input_limits = block2_limits;
-        //let mut text_input = self.text_input.layout(renderer, &text_input_limits);
-
-        let text_input_limits = block2_limits;
-        let mut text_input = Row::<(), Renderer>::new()
-            .width(Length::Fill)
-            .height(Length::Units(
-                text::Renderer::default_size(renderer) + 2 * PADDING,
-            ))
-            .layout(renderer, &text_input_limits);
-
-        let block2_limits = block2_limits.shrink(Size::new(
-            0.0,
-            cancel_button.bounds().height + text_input.bounds().height + 2.0 * f32::from(SPACING),
-        ));
-
-        // RGBA Colors
-        let mut rgba_colors = Column::<(), Renderer>::new(); //.spacing(SPACING);
-
-        for _ in 0..4 {
-            rgba_colors = rgba_colors.push(
-                Row::new()
-                    .align_items(Align::Center)
-                    .spacing(SPACING)
-                    .padding(PADDING)
-                    .height(Length::Fill)
-                    .push(
-                        //Row::new().width(Length::FillPortion(1)).height(Length::Fill)
-                        Text::new("X:")
-                            .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                            .vertical_alignment(iced_graphics::VerticalAlignment::Center),
-                    )
-                    .push(
-                        Row::new()
-                            .width(Length::FillPortion(5))
-                            .height(Length::Fill),
-                    )
-                    .push(
-                        //Row::new().width(Length::FillPortion(1)).height(Length::Fill)
-                        Text::new("XXX")
-                            .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                            .vertical_alignment(iced_graphics::VerticalAlignment::Center),
-                    ),
-            );
-        }
-
-        let mut rgba_colors = rgba_colors.layout(renderer, &block2_limits);
-
-        rgba_colors.move_to(Point::new(
-            rgba_colors.bounds().x + f32::from(PADDING),
-            rgba_colors.bounds().y + f32::from(PADDING),
-        ));
-
-        // Text input
-        text_input.move_to(Point::new(
-            text_input.bounds().x + f32::from(PADDING),
-            text_input.bounds().y
-                + rgba_colors.bounds().height
-                + f32::from(PADDING)
-                + f32::from(SPACING),
-        ));
-
-        // Buttons
-        let cancel_limits = block2_limits.clone().max_width(
-            ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
-        );
-
-        let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
-
-        let submit_limits = block2_limits.clone().max_width(
-            ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
-        );
-
-        let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
-
-        cancel_button.move_to(Point::new(
-            cancel_button.bounds().x + f32::from(PADDING),
-            cancel_button.bounds().y
-                + rgba_colors.bounds().height
-                + text_input.bounds().height
-                + f32::from(PADDING)
-                + 2.0 * f32::from(SPACING),
-        ));
-
-        submit_button.move_to(Point::new(
-            submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
-                + f32::from(PADDING),
-            submit_button.bounds().y
-                + rgba_colors.bounds().height
-                + text_input.bounds().height
-                + f32::from(PADDING)
-                + 2.0 * f32::from(SPACING),
-        ));
-
-        let mut block2_node = layout::Node::with_children(
-            Size::new(
-                rgba_colors.bounds().width + (2.0 * f32::from(PADDING)),
-                rgba_colors.bounds().height
-                    + text_input.bounds().height
-                    + cancel_button.bounds().height
-                    + (2.0 * f32::from(PADDING))
-                    + (2.0 * f32::from(SPACING)),
-            ),
-            vec![rgba_colors, text_input, cancel_button, submit_button],
-        );
-        block2_node.move_to(Point::new(block2_bounds.x, block2_bounds.y));
-        // ----------- Block 2 end ------------------
+        let block2_node = block2_layout(self, renderer, block2_bounds, position);
 
         let (width, height) = if bounds.width > bounds.height {
             (
@@ -764,7 +627,6 @@ where
             renderer,
             clipboard,
         );
-
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -822,6 +684,7 @@ where
             messages.push((self.on_submit)(self.state.color));
         }
         // ----------- Block 2 end ------------------
+
         if hsv_color_status == event::Status::Captured
             || rgba_color_status == event::Status::Captured
         {
@@ -832,7 +695,6 @@ where
         status
             .merge(hsv_color_status)
             .merge(rgba_color_status)
-            //.merge(text_input_status)
             .merge(cancel_button_status)
             .merge(submit_button_status)
     }
@@ -871,6 +733,178 @@ where
         (position.x as u32).hash(state);
         (position.y as u32).hash(state);
     }
+}
+
+/// Defines the layout of the 1. block of the color picker containing the HSV part.
+fn block1_layout<'a, Message, Renderer>(
+    _color_picker: &ColorPickerOverlay<'a, Message, Renderer>,
+    renderer: &Renderer,
+    bounds: iced_graphics::Rectangle,
+    _position: Point,
+) -> iced_native::layout::Node
+where
+    Message: 'static + Clone,
+    Renderer: 'a
+        + self::Renderer
+        + column::Renderer
+        + button::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer
+        + text_input::Renderer,
+{
+    let block1_limits = Limits::new(Size::ZERO, bounds.size())
+        .width(Length::Fill)
+        .height(Length::Fill);
+
+    let mut block1_node = Column::<(), Renderer>::new()
+        .spacing(PADDING)
+        .push(
+            Row::new()
+                .width(Length::Fill)
+                .height(Length::FillPortion(7)),
+        )
+        .push(
+            Row::new()
+                .width(Length::Fill)
+                .height(Length::FillPortion(1)),
+        )
+        .layout(renderer, &block1_limits);
+
+    block1_node.move_to(Point::new(
+        bounds.x + f32::from(PADDING),
+        bounds.y + f32::from(PADDING),
+    ));
+
+    block1_node
+}
+
+/// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
+fn block2_layout<'a, Message, Renderer>(
+    color_picker: &ColorPickerOverlay<'a, Message, Renderer>,
+    renderer: &Renderer,
+    bounds: iced_graphics::Rectangle,
+    _position: Point,
+) -> iced_native::layout::Node
+where
+    Message: 'static + Clone,
+    Renderer: 'a
+        + self::Renderer
+        + column::Renderer
+        + button::Renderer
+        + icon_text::Renderer
+        + row::Renderer
+        + text::Renderer
+        + text_input::Renderer,
+{
+    let block2_limits = Limits::new(Size::ZERO, bounds.size())
+        .width(Length::Fill)
+        .height(Length::Fill);
+
+    // Pre-Buttons TODO: get rid of it
+    let cancel_limits = block2_limits;
+    let cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
+
+    let hex_text_limits = block2_limits;
+    let mut hex_text = Row::<(), Renderer>::new()
+        .width(Length::Fill)
+        .height(Length::Units(
+            text::Renderer::default_size(renderer) + 2 * PADDING,
+        ))
+        .layout(renderer, &hex_text_limits);
+
+    let block2_limits = block2_limits.shrink(Size::new(
+        0.0,
+        cancel_button.bounds().height + hex_text.bounds().height + 2.0 * f32::from(SPACING),
+    ));
+
+    // RGBA Colors
+    let mut rgba_colors = Column::<(), Renderer>::new();
+
+    for _ in 0..4 {
+        rgba_colors = rgba_colors.push(
+            Row::new()
+                .align_items(Align::Center)
+                .spacing(SPACING)
+                .padding(PADDING)
+                .height(Length::Fill)
+                .push(
+                    Text::new("X:")
+                        .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
+                        .vertical_alignment(iced_graphics::VerticalAlignment::Center),
+                )
+                .push(
+                    Row::new()
+                        .width(Length::FillPortion(5))
+                        .height(Length::Fill),
+                )
+                .push(
+                    Text::new("XXX")
+                        .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
+                        .vertical_alignment(iced_graphics::VerticalAlignment::Center),
+                ),
+        );
+    }
+
+    let mut rgba_colors = rgba_colors.layout(renderer, &block2_limits);
+
+    rgba_colors.move_to(Point::new(
+        rgba_colors.bounds().x + f32::from(PADDING),
+        rgba_colors.bounds().y + f32::from(PADDING),
+    ));
+
+    // Hex text
+    hex_text.move_to(Point::new(
+        hex_text.bounds().x + f32::from(PADDING),
+        hex_text.bounds().y + rgba_colors.bounds().height + f32::from(PADDING) + f32::from(SPACING),
+    ));
+
+    // Buttons
+    let cancel_limits = block2_limits.clone().max_width(
+        ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
+    );
+
+    let mut cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
+
+    let submit_limits = block2_limits.clone().max_width(
+        ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
+    );
+
+    let mut submit_button = color_picker.submit_button.layout(renderer, &submit_limits);
+
+    cancel_button.move_to(Point::new(
+        cancel_button.bounds().x + f32::from(PADDING),
+        cancel_button.bounds().y
+            + rgba_colors.bounds().height
+            + hex_text.bounds().height
+            + f32::from(PADDING)
+            + 2.0 * f32::from(SPACING),
+    ));
+
+    submit_button.move_to(Point::new(
+        submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
+            + f32::from(PADDING),
+        submit_button.bounds().y
+            + rgba_colors.bounds().height
+            + hex_text.bounds().height
+            + f32::from(PADDING)
+            + 2.0 * f32::from(SPACING),
+    ));
+
+    let mut block2_node = layout::Node::with_children(
+        Size::new(
+            rgba_colors.bounds().width + (2.0 * f32::from(PADDING)),
+            rgba_colors.bounds().height
+                + hex_text.bounds().height
+                + cancel_button.bounds().height
+                + (2.0 * f32::from(PADDING))
+                + (2.0 * f32::from(SPACING)),
+        ),
+        vec![rgba_colors, hex_text, cancel_button, submit_button],
+    );
+    block2_node.move_to(Point::new(bounds.x, bounds.y));
+
+    block2_node
 }
 
 /// The renderer of a [`ColorPickerOverlay`](ColorPickerOverlay).

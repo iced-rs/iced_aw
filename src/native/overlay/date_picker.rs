@@ -367,6 +367,7 @@ where
         + row::Renderer
         + text::Renderer,
 {
+    #[allow(clippy::too_many_lines)]
     fn layout(
         &self,
         renderer: &Renderer,
