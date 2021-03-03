@@ -112,7 +112,7 @@ where
 }
 
 /// The state of the modal.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct State<S> {
     /// The visibility of the [`Modal`](Modal) overlay.
     show: bool,
