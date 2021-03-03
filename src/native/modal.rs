@@ -112,7 +112,7 @@ where
 }
 
 /// The state of the modal.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct State<S> {
     /// The visibility of the [`Modal`](Modal) overlay.
     show: bool,
@@ -133,6 +133,16 @@ impl<S> State<S> {
     /// the modal is hidden (closed).
     pub fn show(&mut self, b: bool) {
         self.show = b;
+    }
+
+    /// Get a mutable reference to the inner state data.
+    pub fn inner_mut(&mut self) -> &mut S {
+        &mut self.state
+    }
+
+    /// Get a reference to the inner state data.
+    pub const fn inner(&self) -> &S {
+        &self.state
     }
 }
 
