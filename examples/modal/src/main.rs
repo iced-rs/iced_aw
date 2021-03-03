@@ -17,6 +17,7 @@ enum Message {
     OkButtonPressed,
 }
 
+#[derive(Default)]
 struct ModalExample {
     open_state: button::State,
     modal_state: modal::State<ModalState>,
@@ -33,11 +34,7 @@ impl Sandbox for ModalExample {
     type Message = Message;
 
     fn new() -> Self {
-        ModalExample {
-            open_state: button::State::new(),
-            modal_state: modal::State::new(ModalState::default()),
-            last_message: None,
-        }
+        Self::default()
     }
 
     fn title(&self) -> String {
