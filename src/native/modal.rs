@@ -134,6 +134,16 @@ impl<S> State<S> {
     pub fn show(&mut self, b: bool) {
         self.show = b;
     }
+
+    /// Get a mutable reference to the inner state data.
+    pub fn inner_mut(&mut self) -> &mut S {
+        &mut self.state
+    }
+
+    /// Get a reference to the inner state data.
+    pub const fn inner(&self) -> &S {
+        &self.state
+    }
 }
 
 impl<'a, S, Content, Message, Renderer> Widget<Message, Renderer>
