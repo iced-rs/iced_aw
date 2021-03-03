@@ -1,0 +1,12 @@
+name: Clippy
+on: [push, pull_request]
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          components: clippy
+      - uses: actions/checkout@master
+      - name: Lint with clippy
+        run: cargo clippy --all
