@@ -28,3 +28,6 @@ pub mod tab_bar;
 
 #[cfg(feature = "time_picker")]
 pub mod time_picker;
+
+#[cfg(feature = "input_style")]
+pub mod input_style;
