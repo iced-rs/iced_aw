@@ -39,7 +39,7 @@
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap,
-    clippy::module_name_repetitions,
+    clippy::module_name_repetitions
 )]
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -76,6 +76,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "floating_button")]
     pub use {crate::graphics::floating_button, floating_button::FloatingButton};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "menu")]
+    pub use {crate::graphics::menu, menu::Menu};
 
     #[doc(no_inline)]
     #[cfg(feature = "modal")]

@@ -10,6 +10,9 @@ pub mod clock;
 #[cfg(all(feature = "color_picker", not(target_arch = "wasm32")))]
 pub mod color;
 
+#[cfg(all(feature = "menu", not(target_arch = "wasm32")))]
+pub mod menu;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub mod overlay;
 

@@ -22,6 +22,7 @@ floating_button = ["button"]
 glow = [] # TODO
 icon_text = []
 icons = []
+menu = ["icon_text"]
 modal = []
 tab_bar = []
 tabs = ["tab_bar"]
@@ -34,6 +35,7 @@ default = [
     "date_picker",
     "color_picker",
     "floating_button",
+    "menu",
     "modal",
     "tab_bar",
     "tabs",
@@ -65,6 +67,7 @@ members = [
     "examples/color_picker",
     "examples/date_picker",
     "examples/floating_button",
+    "examples/menu",
     "examples/modal",
     #"examples/tab_bar",
     #"examples/tabs",
