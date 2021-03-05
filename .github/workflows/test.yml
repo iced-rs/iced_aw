@@ -1,0 +1,31 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  native:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        rust: [stable, beta]
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Run tests
+      run: |
+        cargo test --verbose --all
+        cargo test --verbose --all --all-features
+  
+  web:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+        targets: wasm32-unknown-unknown
+    - uses: actions/checkout@master
+    - name: Run checks
+      run: cargo check --package iced_aw --target wasm32-unknown-unknown
+    - name: Check compilation of `web` example
+      run: cargo build --package web --target wasm32-unknown-unknown
