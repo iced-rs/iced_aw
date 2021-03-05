@@ -135,6 +135,11 @@ impl<S> State<S> {
         self.show = b;
     }
 
+    /// See if this modal will be shown or not.
+    pub const fn is_shown(&self) -> bool {
+        self.show
+    }
+
     /// Get a mutable reference to the inner state data.
     pub fn inner_mut(&mut self) -> &mut S {
         &mut self.state
