@@ -56,6 +56,10 @@ pub trait StyleSheet {
     /// The appearance when something is focused of the
     /// [`Menu`](crate::native::Menu).
     fn focused(&self) -> Style;
+
+    /// The appearance when something is disabled of the
+    /// [`Menu`](crate::native::Menu).
+    fn disabled(&self) -> Style;
 }
 
 /// The default appearance of the [`Menu`](crate::native::Menu).
@@ -100,6 +104,14 @@ impl StyleSheet for Default {
 
     fn focused(&self) -> Style {
         Style { ..self.active() }
+    }
+
+    fn disabled(&self) -> Style {
+        Style {
+            text_color: [0.0, 0.0, 0.0, 0.75].into(),
+            overlay_text_color: [0.0, 0.0, 0.0, 0.75].into(),
+            ..self.active()
+        }
     }
 }
 

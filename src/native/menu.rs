@@ -175,12 +175,14 @@ where
                 .iter_mut()
                 .zip(children)
                 .enumerate()
-                .map(|(i, (_entry, layout))| {
+                .map(|(i, (section, layout))| {
                     let mut status = (event::Status::Ignored, 0);
                     match event {
                         Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                         | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                            if layout.bounds().contains(cursor_position) {
+                            if layout.bounds().contains(cursor_position)
+                                && !section.entries.is_empty()
+                            {
                                 status = (event::Status::Captured, i);
                             }
                         }
@@ -198,12 +200,11 @@ where
             status
         } else {
             if bounds.contains(cursor_position) {
-                let element = self
-                    .sections
-                    .iter()
-                    .zip(children)
-                    .enumerate()
-                    .find(|(_, (_, layout))| layout.bounds().contains(cursor_position));
+                let element = self.sections.iter().zip(children).enumerate().find(
+                    |(_, (section, layout))| {
+                        layout.bounds().contains(cursor_position) && !section.entries.is_empty()
+                    },
+                );
 
                 if let Some((i, _)) = element {
                     self.state.stack.clear();
@@ -311,6 +312,7 @@ pub struct Section<'a, Message, Renderer> {
     /// The label of the [`Section`](Section).
     pub(crate) label: Element<'a, Message, Renderer>,
     /// A vector containing the [entries](Entry) of the [`Section`](Section).
+    /// If this vector is empty the section will be disabled.
     pub(crate) entries: Vec<Entry<'a, Message, Renderer>>,
 }
 
@@ -353,9 +355,11 @@ impl<'a, Message, Renderer> Section<'a, Message, Renderer> {
 pub enum Entry<'a, Message, Renderer> {
     /// An [`Entry`] item holding an [`Element`](iced_native::Element) for it's label
     /// and a message that is send when the item is pressed.
-    Item(Element<'a, Message, Renderer>, Message),
+    /// If the message is none the item will be disabled.
+    Item(Element<'a, Message, Renderer>, Option<Message>),
     /// A group of [`Entry`](Entry)s holding an [`Element`](iced_native::Element) for
     /// it's label.
+    /// If the vector is empty the group will be disabled.
     Group(
         Element<'a, Message, Renderer>,
         Vec<Entry<'a, Message, Renderer>>,
@@ -377,7 +381,7 @@ impl<'a, Message, Renderer: iced_native::Renderer> Entry<'a, Message, Renderer> 
         F: 'static + Copy + Fn(Message) -> B,
     {
         match self {
-            Entry::Item(label, message) => Entry::Item(label.map(f), f(message)),
+            Entry::Item(label, message) => Entry::Item(label.map(f), message.map(f)),
             Entry::Group(label, entries) => Entry::Group(
                 label.map(f),
                 entries.into_iter().map(|entry| entry.map(f)).collect(),

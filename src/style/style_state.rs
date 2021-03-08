@@ -11,4 +11,6 @@ pub enum StyleState {
     Hovered,
     /// Use the focused style
     Focused,
+    /// Use the disabled style
+    Disabled,
 }

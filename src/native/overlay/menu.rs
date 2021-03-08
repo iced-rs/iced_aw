@@ -148,13 +148,17 @@ where
                         Entry::Item(_, message) => match event {
                             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                                messages.push(message.to_owned());
-                                path = Vec::new();
+                                if let Some(message) = message {
+                                    messages.push(message.to_owned());
+                                    path = Vec::new();
+                                }
                             }
                             _ => {}
                         },
-                        Entry::Group(_, _) => {
-                            path = entry_path;
+                        Entry::Group(_, entries) => {
+                            if !entries.is_empty() {
+                                path = entry_path;
+                            }
                         }
                         Entry::Separator => {}
                     }

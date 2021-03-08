@@ -15,6 +15,47 @@ enum Message {
 struct MenuExample {
     menu: menu::State,
     last_message: Message,
+    config: MenuConfig,
+}
+#[derive(Default)]
+struct MenuConfig {
+    enable_reopen_closed_editor: bool,
+
+    enable_save_all: bool,
+
+    enable_forward: bool,
+
+    enable_group_3: bool,
+    enable_group_4: bool,
+    enable_group_5: bool,
+
+    enable_next_group: bool,
+    enable_previous_group: bool,
+
+    enable_group_left: bool,
+    enable_group_right: bool,
+    enable_group_above: bool,
+    enable_group_below: bool,
+
+    enable_go_to_definition: bool,
+    enable_go_to_declaration: bool,
+    enable_go_to_type_definition: bool,
+    enable_go_to_implementations: bool,
+    enable_go_to_references: bool,
+
+    enable_stop_debugging: bool,
+    enable_restart_debugging: bool,
+
+    enable_open_configuration: bool,
+
+    enable_step_over: bool,
+    enable_step_into: bool,
+    enable_step_out: bool,
+    enable_continue: bool,
+
+    enable_show_running_tasks: bool,
+    enable_restart_running_tasks: bool,
+    enable_terminate_tasks: bool,
 }
 
 impl Sandbox for MenuExample {
@@ -24,6 +65,7 @@ impl Sandbox for MenuExample {
         MenuExample {
             menu: menu::State::new(),
             last_message: Message::None,
+            config: MenuConfig::default(),
         }
     }
 
@@ -41,44 +83,63 @@ impl Sandbox for MenuExample {
                 Section::new(
                     Text::new("File"),
                     vec![
-                        Entry::Item(Text::new("New File").into(), FileMessage::NewFile),
-                        Entry::Item(Text::new("New Window").into(), FileMessage::NewWindow),
+                        Entry::Item(Text::new("New File").into(), Some(FileMessage::NewFile)),
+                        Entry::Item(Text::new("New Window").into(), Some(FileMessage::NewWindow)),
                         Entry::Separator,
-                        Entry::Item(Text::new("Open File...").into(), FileMessage::OpenFile),
-                        Entry::Item(Text::new("Open Folder...").into(), FileMessage::OpenFolder),
+                        Entry::Item(
+                            Text::new("Open File...").into(),
+                            Some(FileMessage::OpenFile),
+                        ),
+                        Entry::Item(
+                            Text::new("Open Folder...").into(),
+                            Some(FileMessage::OpenFolder),
+                        ),
                         Entry::Item(
                             Text::new("Open Workspace...").into(),
-                            FileMessage::OpenWorkspace,
+                            Some(FileMessage::OpenWorkspace),
                         ),
                         Entry::Group(
                             Text::new("Open Recent...").into(),
                             vec![
                                 Entry::Item(
                                     Text::new("Reopen Closed Editor").into(),
-                                    OpenRecentMessage::ReopenClosedEditor,
+                                    if self.config.enable_reopen_closed_editor {
+                                        Some(OpenRecentMessage::ReopenClosedEditor)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Separator,
-                                Entry::Item(Text::new("Foo").into(), OpenRecentMessage::Foo),
-                                Entry::Item(Text::new("Bar").into(), OpenRecentMessage::Bar),
-                                Entry::Item(Text::new("Baz").into(), OpenRecentMessage::Baz),
+                                Entry::Item(Text::new("Foo").into(), Some(OpenRecentMessage::Foo)),
+                                Entry::Item(Text::new("Bar").into(), Some(OpenRecentMessage::Bar)),
+                                Entry::Item(Text::new("Baz").into(), Some(OpenRecentMessage::Baz)),
                                 Entry::Separator,
-                                Entry::Item(Text::new("Foo").into(), OpenRecentMessage::Foo),
-                                Entry::Item(Text::new("Bar").into(), OpenRecentMessage::Bar),
-                                Entry::Item(Text::new("Baz").into(), OpenRecentMessage::Baz),
+                                Entry::Item(Text::new("Foo").into(), Some(OpenRecentMessage::Foo)),
+                                Entry::Item(Text::new("Bar").into(), Some(OpenRecentMessage::Bar)),
+                                Entry::Item(Text::new("Baz").into(), Some(OpenRecentMessage::Baz)),
                                 Entry::Separator,
                                 Entry::Group(
                                     Text::new("More...").into(),
                                     vec![
-                                        Entry::Item(Text::new("Foo").into(), MoreMessage::Foo),
-                                        Entry::Item(Text::new("Bar").into(), MoreMessage::Bar),
-                                        Entry::Item(Text::new("Baz").into(), MoreMessage::Baz),
+                                        Entry::Item(
+                                            Text::new("Foo").into(),
+                                            Some(MoreMessage::Foo),
+                                        ),
+                                        Entry::Item(
+                                            Text::new("Bar").into(),
+                                            Some(MoreMessage::Bar),
+                                        ),
+                                        Entry::Item(
+                                            Text::new("Baz").into(),
+                                            Some(MoreMessage::Baz),
+                                        ),
                                     ],
                                 )
                                 .map(OpenRecentMessage::More),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Clear Recently Opened").into(),
-                                    OpenRecentMessage::ClearRecentlyOpened,
+                                    Some(OpenRecentMessage::ClearRecentlyOpened),
                                 ),
                             ],
                         )
@@ -86,75 +147,94 @@ impl Sandbox for MenuExample {
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Add folder to Workspace...").into(),
-                            FileMessage::AddFolderToWorkspace,
+                            Some(FileMessage::AddFolderToWorkspace),
                         ),
                         Entry::Item(
                             Text::new("Save Workspace As...").into(),
-                            FileMessage::SaveWorkspaceAs,
+                            Some(FileMessage::SaveWorkspaceAs),
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Save").into(), FileMessage::Save),
-                        Entry::Item(Text::new("Save As...").into(), FileMessage::SaveAs),
-                        Entry::Item(Text::new("Save All").into(), FileMessage::SaveAll),
+                        Entry::Item(Text::new("Save").into(), Some(FileMessage::Save)),
+                        Entry::Item(Text::new("Save As...").into(), Some(FileMessage::SaveAs)),
+                        Entry::Item(
+                            Text::new("Save All").into(),
+                            if self.config.enable_save_all {
+                                Some(FileMessage::SaveAll)
+                            } else {
+                                None
+                            },
+                        ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Auto Save").into(), FileMessage::AutoSave),
+                        Entry::Item(Text::new("Auto Save").into(), Some(FileMessage::AutoSave)),
                         Entry::Group(
                             Text::new("Preferences").into(),
                             vec![
                                 Entry::Item(
                                     Text::new("Settings").into(),
-                                    PreferencesMessage::Settings,
+                                    Some(PreferencesMessage::Settings),
                                 ),
                                 Entry::Item(
                                     Text::new("Online Services Settings").into(),
-                                    PreferencesMessage::OnlineServiceSettings,
+                                    Some(PreferencesMessage::OnlineServiceSettings),
                                 ),
                                 Entry::Item(
                                     Text::new("Extensions").into(),
-                                    PreferencesMessage::Extensions,
+                                    Some(PreferencesMessage::Extensions),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Keyboard Shortcuts [Ctrl+K Ctrl+S]").into(),
-                                    PreferencesMessage::KeyboardShortcuts,
+                                    Some(PreferencesMessage::KeyboardShortcuts),
                                 ),
                                 Entry::Item(
                                     Text::new("Keymaps [Ctrl+K Ctrl+M]").into(),
-                                    PreferencesMessage::Keymaps,
+                                    Some(PreferencesMessage::Keymaps),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("User Snippets").into(),
-                                    PreferencesMessage::UserSnippets,
+                                    Some(PreferencesMessage::UserSnippets),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Color Theme [Ctrl+K Ctrl+T]").into(),
-                                    PreferencesMessage::ColorTheme,
+                                    Some(PreferencesMessage::ColorTheme),
                                 ),
                                 Entry::Item(
                                     Text::new("File Icon Theme").into(),
-                                    PreferencesMessage::FileIconTheme,
+                                    Some(PreferencesMessage::FileIconTheme),
                                 ),
                                 Entry::Item(
                                     Text::new("Product Icon Theme").into(),
-                                    PreferencesMessage::ProductIconTheme,
+                                    Some(PreferencesMessage::ProductIconTheme),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Turn on Settings Sync...").into(),
-                                    PreferencesMessage::TurnOnSettingsSync,
+                                    Some(PreferencesMessage::TurnOnSettingsSync),
                                 ),
                             ],
                         )
                         .map(FileMessage::Preferences),
                         Entry::Separator,
-                        Entry::Item(Text::new("Revert File").into(), FileMessage::RevertFile),
-                        Entry::Item(Text::new("Close Editor").into(), FileMessage::CloseEditor),
-                        Entry::Item(Text::new("Close Folder").into(), FileMessage::CloseFolder),
-                        Entry::Item(Text::new("Close Window").into(), FileMessage::CloseWindow),
+                        Entry::Item(
+                            Text::new("Revert File").into(),
+                            Some(FileMessage::RevertFile),
+                        ),
+                        Entry::Item(
+                            Text::new("Close Editor").into(),
+                            Some(FileMessage::CloseEditor),
+                        ),
+                        Entry::Item(
+                            Text::new("Close Folder").into(),
+                            Some(FileMessage::CloseFolder),
+                        ),
+                        Entry::Item(
+                            Text::new("Close Window").into(),
+                            Some(FileMessage::CloseWindow),
+                        ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Exit").into(), FileMessage::Exit),
+                        Entry::Item(Text::new("Exit").into(), Some(FileMessage::Exit)),
                     ],
                 )
                 .map(MenuMessage::File),
@@ -163,33 +243,36 @@ impl Sandbox for MenuExample {
                 Section::new(
                     Text::new("Edit"),
                     vec![
-                        Entry::Item(Text::new("Undo").into(), EditMessage::Undo),
-                        Entry::Item(Text::new("Redo").into(), EditMessage::Redo),
+                        Entry::Item(Text::new("Undo").into(), Some(EditMessage::Undo)),
+                        Entry::Item(Text::new("Redo").into(), Some(EditMessage::Redo)),
                         Entry::Separator,
-                        Entry::Item(Text::new("Cut").into(), EditMessage::Cut),
-                        Entry::Item(Text::new("Copy").into(), EditMessage::Copy),
-                        Entry::Item(Text::new("Paste").into(), EditMessage::Paste),
+                        Entry::Item(Text::new("Cut").into(), Some(EditMessage::Cut)),
+                        Entry::Item(Text::new("Copy").into(), Some(EditMessage::Copy)),
+                        Entry::Item(Text::new("Paste").into(), Some(EditMessage::Paste)),
                         Entry::Separator,
-                        Entry::Item(Text::new("Find").into(), EditMessage::Find),
-                        Entry::Item(Text::new("Replace").into(), EditMessage::Replace),
+                        Entry::Item(Text::new("Find").into(), Some(EditMessage::Find)),
+                        Entry::Item(Text::new("Replace").into(), Some(EditMessage::Replace)),
                         Entry::Separator,
-                        Entry::Item(Text::new("Find in Files").into(), EditMessage::FindInFiles),
+                        Entry::Item(
+                            Text::new("Find in Files").into(),
+                            Some(EditMessage::FindInFiles),
+                        ),
                         Entry::Item(
                             Text::new("Replace in Files").into(),
-                            EditMessage::ReplaceInFiles,
+                            Some(EditMessage::ReplaceInFiles),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Toggle Line Comment").into(),
-                            EditMessage::ToggleLineComment,
+                            Some(EditMessage::ToggleLineComment),
                         ),
                         Entry::Item(
                             Text::new("Toggle Block Comment").into(),
-                            EditMessage::ToggleBlockComment,
+                            Some(EditMessage::ToggleBlockComment),
                         ),
                         Entry::Item(
                             Text::new("Emmet: Expand Abbreviation").into(),
-                            EditMessage::EmmetExpandAbbreviation,
+                            Some(EditMessage::EmmetExpandAbbreviation),
                         ),
                     ],
                 )
@@ -199,69 +282,72 @@ impl Sandbox for MenuExample {
                 Section::new(
                     Text::new("Selection"),
                     vec![
-                        Entry::Item(Text::new("Select All").into(), SelectionMessage::SelectAll),
+                        Entry::Item(
+                            Text::new("Select All").into(),
+                            Some(SelectionMessage::SelectAll),
+                        ),
                         Entry::Item(
                             Text::new("Expand Selection").into(),
-                            SelectionMessage::ExpandSelection,
+                            Some(SelectionMessage::ExpandSelection),
                         ),
                         Entry::Item(
                             Text::new("Shrink Selection").into(),
-                            SelectionMessage::ShrinkSelection,
+                            Some(SelectionMessage::ShrinkSelection),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Copy Line Up").into(),
-                            SelectionMessage::CopyLineUp,
+                            Some(SelectionMessage::CopyLineUp),
                         ),
                         Entry::Item(
                             Text::new("Copy Line Down").into(),
-                            SelectionMessage::CopyLineDown,
+                            Some(SelectionMessage::CopyLineDown),
                         ),
                         Entry::Item(
                             Text::new("Move Line Up").into(),
-                            SelectionMessage::MoveLineUp,
+                            Some(SelectionMessage::MoveLineUp),
                         ),
                         Entry::Item(
                             Text::new("Move Line Down").into(),
-                            SelectionMessage::MoveLineDown,
+                            Some(SelectionMessage::MoveLineDown),
                         ),
                         Entry::Item(
                             Text::new("Duplicate Selection").into(),
-                            SelectionMessage::DuplicateSelection,
+                            Some(SelectionMessage::DuplicateSelection),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Add Cursor Above").into(),
-                            SelectionMessage::AddCursorAbove,
+                            Some(SelectionMessage::AddCursorAbove),
                         ),
                         Entry::Item(
                             Text::new("Add Cursor Below").into(),
-                            SelectionMessage::AddCursorBelow,
+                            Some(SelectionMessage::AddCursorBelow),
                         ),
                         Entry::Item(
                             Text::new("Add Cursors to Line Ends").into(),
-                            SelectionMessage::AddCursorsToLineEnds,
+                            Some(SelectionMessage::AddCursorsToLineEnds),
                         ),
                         Entry::Item(
                             Text::new("Add Next Occurrence").into(),
-                            SelectionMessage::AddNextOccurrence,
+                            Some(SelectionMessage::AddNextOccurrence),
                         ),
                         Entry::Item(
                             Text::new("Add Previous Occurrence").into(),
-                            SelectionMessage::AddPreviousOccurrence,
+                            Some(SelectionMessage::AddPreviousOccurrence),
                         ),
                         Entry::Item(
                             Text::new("Select All Occurrences").into(),
-                            SelectionMessage::SelectAllOccurrences,
+                            Some(SelectionMessage::SelectAllOccurrences),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Switch to Ctrl+Click for Multi-Cursor").into(),
-                            SelectionMessage::SwitchToCtrlClickForMultiCursor,
+                            Some(SelectionMessage::SwitchToCtrlClickForMultiCursor),
                         ),
                         Entry::Item(
                             Text::new("Column Selection Mode").into(),
-                            SelectionMessage::ColumnSelectionMode,
+                            Some(SelectionMessage::ColumnSelectionMode),
                         ),
                     ],
                 )
@@ -273,72 +359,78 @@ impl Sandbox for MenuExample {
                     vec![
                         Entry::Item(
                             Text::new("Command Palette...").into(),
-                            ViewMessage::CommandPalette,
+                            Some(ViewMessage::CommandPalette),
                         ),
-                        Entry::Item(Text::new("Open View...").into(), ViewMessage::OpenView),
+                        Entry::Item(
+                            Text::new("Open View...").into(),
+                            Some(ViewMessage::OpenView),
+                        ),
                         Entry::Separator,
                         Entry::Group(
                             Text::new("Appearance").into(),
                             vec![
                                 Entry::Item(
                                     Text::new("Full Screen").into(),
-                                    AppearanceMessage::FullScreen,
+                                    Some(AppearanceMessage::FullScreen),
                                 ),
                                 Entry::Item(
                                     Text::new("Zen Mode [Ctrl+K Z]").into(),
-                                    AppearanceMessage::ZenMode,
+                                    Some(AppearanceMessage::ZenMode),
                                 ),
                                 Entry::Item(
                                     Text::new("Centered Layout").into(),
-                                    AppearanceMessage::CenteredLayout,
+                                    Some(AppearanceMessage::CenteredLayout),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Show Menu Bar").into(),
-                                    AppearanceMessage::ShowMenuBar,
+                                    Some(AppearanceMessage::ShowMenuBar),
                                 ),
                                 Entry::Item(
                                     Text::new("Show Side Bar").into(),
-                                    AppearanceMessage::ShowSideBar,
+                                    Some(AppearanceMessage::ShowSideBar),
                                 ),
                                 Entry::Item(
                                     Text::new("Show Status Bar").into(),
-                                    AppearanceMessage::ShowStatusBar,
+                                    Some(AppearanceMessage::ShowStatusBar),
                                 ),
                                 Entry::Item(
                                     Text::new("Show Activity Bar").into(),
-                                    AppearanceMessage::ShowActivityBar,
+                                    Some(AppearanceMessage::ShowActivityBar),
                                 ),
                                 Entry::Item(
                                     Text::new("Show Editor Bar").into(),
-                                    AppearanceMessage::ShowEditorBar,
+                                    Some(AppearanceMessage::ShowEditorBar),
                                 ),
                                 Entry::Item(
                                     Text::new("Show Panel Bar").into(),
-                                    AppearanceMessage::ShowPanelBar,
+                                    Some(AppearanceMessage::ShowPanelBar),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Move Side Bar Right").into(),
-                                    AppearanceMessage::MoveSideBarRight,
+                                    Some(AppearanceMessage::MoveSideBarRight),
                                 ),
                                 Entry::Item(
                                     Text::new("Move Panel Left").into(),
-                                    AppearanceMessage::MovePanelLeft,
+                                    Some(AppearanceMessage::MovePanelLeft),
                                 ),
                                 Entry::Item(
                                     Text::new("Move Panel Right").into(),
-                                    AppearanceMessage::MovePanelRight,
+                                    Some(AppearanceMessage::MovePanelRight),
                                 ),
                                 Entry::Separator,
-                                Entry::Item(Text::new("Zoom In").into(), AppearanceMessage::ZoomIn),
+                                Entry::Item(
+                                    Text::new("Zoom In").into(),
+                                    Some(AppearanceMessage::ZoomIn),
+                                ),
                                 Entry::Item(
                                     Text::new("Zoom Out").into(),
-                                    AppearanceMessage::ZoomOut,
+                                    Some(AppearanceMessage::ZoomOut),
                                 ),
                                 Entry::Item(
                                     Text::new("Reset Zoom [Ctrl+NumPad0").into(),
-                                    AppearanceMessage::ResetZoom,
+                                    Some(AppearanceMessage::ResetZoom),
                                 ),
                             ],
                         )
@@ -348,92 +440,104 @@ impl Sandbox for MenuExample {
                             vec![
                                 Entry::Item(
                                     Text::new("Split Up").into(),
-                                    EditorLayoutMessage::SplitUp,
+                                    Some(EditorLayoutMessage::SplitUp),
                                 ),
                                 Entry::Item(
                                     Text::new("Split Down").into(),
-                                    EditorLayoutMessage::SplitDown,
+                                    Some(EditorLayoutMessage::SplitDown),
                                 ),
                                 Entry::Item(
                                     Text::new("Split Left").into(),
-                                    EditorLayoutMessage::SplitLeft,
+                                    Some(EditorLayoutMessage::SplitLeft),
                                 ),
                                 Entry::Item(
                                     Text::new("Split Right").into(),
-                                    EditorLayoutMessage::SplitRight,
+                                    Some(EditorLayoutMessage::SplitRight),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Single").into(),
-                                    EditorLayoutMessage::Single,
+                                    Some(EditorLayoutMessage::Single),
                                 ),
                                 Entry::Item(
                                     Text::new("Two Columns").into(),
-                                    EditorLayoutMessage::TwoColumns,
+                                    Some(EditorLayoutMessage::TwoColumns),
                                 ),
                                 Entry::Item(
                                     Text::new("Three Columns").into(),
-                                    EditorLayoutMessage::ThreeColumns,
+                                    Some(EditorLayoutMessage::ThreeColumns),
                                 ),
                                 Entry::Item(
                                     Text::new("Two Rows").into(),
-                                    EditorLayoutMessage::TwoRows,
+                                    Some(EditorLayoutMessage::TwoRows),
                                 ),
                                 Entry::Item(
                                     Text::new("Three Rows").into(),
-                                    EditorLayoutMessage::ThreeRows,
+                                    Some(EditorLayoutMessage::ThreeRows),
                                 ),
                                 Entry::Item(
                                     Text::new("Grid (2x2)").into(),
-                                    EditorLayoutMessage::Grid,
+                                    Some(EditorLayoutMessage::Grid),
                                 ),
                                 Entry::Item(
                                     Text::new("Two Rows Right").into(),
-                                    EditorLayoutMessage::TwoRowsRight,
+                                    Some(EditorLayoutMessage::TwoRowsRight),
                                 ),
                                 Entry::Item(
                                     Text::new("Two Columns Bottom").into(),
-                                    EditorLayoutMessage::TwoColumnsBottom,
+                                    Some(EditorLayoutMessage::TwoColumnsBottom),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Flip Layout").into(),
-                                    EditorLayoutMessage::FlipLayout,
+                                    Some(EditorLayoutMessage::FlipLayout),
                                 ),
                             ],
                         )
                         .map(ViewMessage::EditorLayout),
                         Entry::Separator,
-                        Entry::Item(Text::new("Explorer").into(), ViewMessage::Explorer),
-                        Entry::Item(Text::new("Search").into(), ViewMessage::Search),
-                        Entry::Item(Text::new("SCM [Ctrl+Shift+G G]").into(), ViewMessage::Scm),
-                        Entry::Item(Text::new("Run").into(), ViewMessage::Run),
-                        Entry::Item(Text::new("Extensions").into(), ViewMessage::Extensions),
+                        Entry::Item(Text::new("Explorer").into(), Some(ViewMessage::Explorer)),
+                        Entry::Item(Text::new("Search").into(), Some(ViewMessage::Search)),
+                        Entry::Item(
+                            Text::new("SCM [Ctrl+Shift+G G]").into(),
+                            Some(ViewMessage::Scm),
+                        ),
+                        Entry::Item(Text::new("Run").into(), Some(ViewMessage::Run)),
+                        Entry::Item(
+                            Text::new("Extensions").into(),
+                            Some(ViewMessage::Extensions),
+                        ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Output [Ctrl+K Ctrl+H]").into(),
-                            ViewMessage::Output,
+                            Some(ViewMessage::Output),
                         ),
-                        Entry::Item(Text::new("Debug Console").into(), ViewMessage::DebugConsole),
-                        Entry::Item(Text::new("Terminal").into(), ViewMessage::Terminal),
-                        Entry::Item(Text::new("Problems").into(), ViewMessage::Problems),
+                        Entry::Item(
+                            Text::new("Debug Console").into(),
+                            Some(ViewMessage::DebugConsole),
+                        ),
+                        Entry::Item(Text::new("Terminal").into(), Some(ViewMessage::Terminal)),
+                        Entry::Item(Text::new("Problems").into(), Some(ViewMessage::Problems)),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Toggle Word Wrap").into(),
-                            ViewMessage::ToggleWordWrap,
+                            Some(ViewMessage::ToggleWordWrap),
                         ),
-                        Entry::Item(Text::new("Show Minimap").into(), ViewMessage::ShowMinimap),
+                        Entry::Item(
+                            Text::new("Show Minimap").into(),
+                            Some(ViewMessage::ShowMinimap),
+                        ),
                         Entry::Item(
                             Text::new("Show Breadcrumbs").into(),
-                            ViewMessage::ShowBreadcrumbs,
+                            Some(ViewMessage::ShowBreadcrumbs),
                         ),
                         Entry::Item(
                             Text::new("Render Whitespace").into(),
-                            ViewMessage::RenderWhitespace,
+                            Some(ViewMessage::RenderWhitespace),
                         ),
                         Entry::Item(
                             Text::new("Render Control Characters").into(),
-                            ViewMessage::RenderControlCharacters,
+                            Some(ViewMessage::RenderControlCharacters),
                         ),
                     ],
                 )
@@ -443,11 +547,18 @@ impl Sandbox for MenuExample {
                 Section::new(
                     Text::new("Go"),
                     vec![
-                        Entry::Item(Text::new("Back").into(), GoMessage::Back),
-                        Entry::Item(Text::new("Forward").into(), GoMessage::Forward),
+                        Entry::Item(Text::new("Back").into(), Some(GoMessage::Back)),
+                        Entry::Item(
+                            Text::new("Forward").into(),
+                            if self.config.enable_forward {
+                                Some(GoMessage::Forward)
+                            } else {
+                                None
+                            },
+                        ),
                         Entry::Item(
                             Text::new("Last Edit Location [Ctrl+K Ctrl+Q]").into(),
-                            GoMessage::LastEditLocation,
+                            Some(GoMessage::LastEditLocation),
                         ),
                         Entry::Separator,
                         Entry::Group(
@@ -455,39 +566,39 @@ impl Sandbox for MenuExample {
                             vec![
                                 Entry::Item(
                                     Text::new("Next Editor").into(),
-                                    SwitchEditorMessage::NextEditor,
+                                    Some(SwitchEditorMessage::NextEditor),
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Editor").into(),
-                                    SwitchEditorMessage::PreviousEditor,
+                                    Some(SwitchEditorMessage::PreviousEditor),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Next Used Editor").into(),
-                                    SwitchEditorMessage::NextUsedEditor,
+                                    Some(SwitchEditorMessage::NextUsedEditor),
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Used Editor").into(),
-                                    SwitchEditorMessage::PreviousUsedEditor,
+                                    Some(SwitchEditorMessage::PreviousUsedEditor),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Next Editor in Group [Ctrl+K Ctrl+PageDown]").into(),
-                                    SwitchEditorMessage::NextEditorInGroup,
+                                    Some(SwitchEditorMessage::NextEditorInGroup),
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Editor in Group [Ctrl+K Ctrl+PageUp]")
                                         .into(),
-                                    SwitchEditorMessage::PreviousEditorInGroup,
+                                    Some(SwitchEditorMessage::PreviousEditorInGroup),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Next Used Editor in Group").into(),
-                                    SwitchEditorMessage::NextUsedEditorInGroup,
+                                    Some(SwitchEditorMessage::NextUsedEditorInGroup),
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Used Editor in Group").into(),
-                                    SwitchEditorMessage::PreviousUsedEditorInGroup,
+                                    Some(SwitchEditorMessage::PreviousUsedEditorInGroup),
                                 ),
                             ],
                         )
@@ -497,101 +608,163 @@ impl Sandbox for MenuExample {
                             vec![
                                 Entry::Item(
                                     Text::new("Group 1").into(),
-                                    SwitchGroupMessage::Group1,
+                                    Some(SwitchGroupMessage::Group1),
                                 ),
                                 Entry::Item(
                                     Text::new("Group 2").into(),
-                                    SwitchGroupMessage::Group2,
+                                    Some(SwitchGroupMessage::Group2),
                                 ),
                                 Entry::Item(
                                     Text::new("Group 3").into(),
-                                    SwitchGroupMessage::Group3,
+                                    if self.config.enable_group_3 {
+                                        Some(SwitchGroupMessage::Group3)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Group 4").into(),
-                                    SwitchGroupMessage::Group4,
+                                    if self.config.enable_group_4 {
+                                        Some(SwitchGroupMessage::Group4)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Group 5").into(),
-                                    SwitchGroupMessage::Group5,
+                                    if self.config.enable_group_5 {
+                                        Some(SwitchGroupMessage::Group5)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Next Group").into(),
-                                    SwitchGroupMessage::NextGroup,
+                                    if self.config.enable_next_group {
+                                        Some(SwitchGroupMessage::NextGroup)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Group").into(),
-                                    SwitchGroupMessage::PreviousGroup,
+                                    if self.config.enable_previous_group {
+                                        Some(SwitchGroupMessage::PreviousGroup)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Group Left [Ctrl+K Ctrl+LeftArrow]").into(),
-                                    SwitchGroupMessage::GroupLeft,
+                                    if self.config.enable_group_left {
+                                        Some(SwitchGroupMessage::GroupLeft)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Group Right [Ctrl+K Ctrl+RightArrow]").into(),
-                                    SwitchGroupMessage::GroupRight,
+                                    if self.config.enable_group_right {
+                                        Some(SwitchGroupMessage::GroupRight)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Group Above [Ctrl+K Ctrl+UpArrow]").into(),
-                                    SwitchGroupMessage::GroupAbove,
+                                    if self.config.enable_group_above {
+                                        Some(SwitchGroupMessage::GroupAbove)
+                                    } else {
+                                        None
+                                    },
                                 ),
                                 Entry::Item(
                                     Text::new("Group Below [Ctrl+K Ctrl+DownArrow]").into(),
-                                    SwitchGroupMessage::GroupBelow,
+                                    if self.config.enable_group_below {
+                                        Some(SwitchGroupMessage::GroupBelow)
+                                    } else {
+                                        None
+                                    },
                                 ),
                             ],
                         )
                         .map(GoMessage::SwitchGroup),
                         Entry::Separator,
-                        Entry::Item(Text::new("Go to File...").into(), GoMessage::GoToFile),
+                        Entry::Item(Text::new("Go to File...").into(), Some(GoMessage::GoToFile)),
                         Entry::Item(
                             Text::new("Go to Symbol in Workspace...").into(),
-                            GoMessage::GoToSymbolInWorkspace,
+                            Some(GoMessage::GoToSymbolInWorkspace),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Go to Symbol in Editor...").into(),
-                            GoMessage::GoToSymbolInEditor,
+                            Some(GoMessage::GoToSymbolInEditor),
                         ),
                         Entry::Item(
                             Text::new("Go to Definition").into(),
-                            GoMessage::GoToDefinition,
+                            if self.config.enable_go_to_definition {
+                                Some(GoMessage::GoToDefinition)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Go to Declaration").into(),
-                            GoMessage::GoToDeclaration,
+                            if self.config.enable_go_to_declaration {
+                                Some(GoMessage::GoToDeclaration)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Go to Type Definition").into(),
-                            GoMessage::GoToTypeDefinition,
+                            if self.config.enable_go_to_type_definition {
+                                Some(GoMessage::GoToTypeDefinition)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Go to Implementations").into(),
-                            GoMessage::GoToImplementations,
+                            if self.config.enable_go_to_implementations {
+                                Some(GoMessage::GoToImplementations)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Go to References").into(),
-                            GoMessage::GoToReferences,
+                            if self.config.enable_go_to_references {
+                                Some(GoMessage::GoToReferences)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Go to Line/Column...").into(),
-                            GoMessage::GoToLineColumn,
+                            Some(GoMessage::GoToLineColumn),
                         ),
-                        Entry::Item(Text::new("Go to Bracket").into(), GoMessage::GoToBracket),
+                        Entry::Item(
+                            Text::new("Go to Bracket").into(),
+                            Some(GoMessage::GoToBracket),
+                        ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Next Problem").into(), GoMessage::NextProblem),
+                        Entry::Item(
+                            Text::new("Next Problem").into(),
+                            Some(GoMessage::NextProblem),
+                        ),
                         Entry::Item(
                             Text::new("Previous Problem").into(),
-                            GoMessage::PreviousProblem,
+                            Some(GoMessage::PreviousProblem),
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Next Change").into(), GoMessage::NextChange),
+                        Entry::Item(Text::new("Next Change").into(), Some(GoMessage::NextChange)),
                         Entry::Item(
                             Text::new("Previous Change").into(),
-                            GoMessage::PreviousChange,
+                            Some(GoMessage::PreviousChange),
                         ),
                     ],
                 )
@@ -603,57 +776,97 @@ impl Sandbox for MenuExample {
                     vec![
                         Entry::Item(
                             Text::new("Start Debugging").into(),
-                            RunMessage::StartDebugging,
+                            Some(RunMessage::StartDebugging),
                         ),
                         Entry::Item(
                             Text::new("Run Without Debugging").into(),
-                            RunMessage::RunWithoutDebugging,
+                            Some(RunMessage::RunWithoutDebugging),
                         ),
                         Entry::Item(
                             Text::new("Stop Debugging").into(),
-                            RunMessage::StopDebugging,
+                            if self.config.enable_stop_debugging {
+                                Some(RunMessage::StopDebugging)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Restart Debugging").into(),
-                            RunMessage::RestartDebugging,
+                            if self.config.enable_restart_debugging {
+                                Some(RunMessage::RestartDebugging)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Open Configurations").into(),
-                            RunMessage::OpenConfigurations,
+                            if self.config.enable_open_configuration {
+                                Some(RunMessage::OpenConfigurations)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Add Configuration...").into(),
-                            RunMessage::AddConfiguration,
+                            Some(RunMessage::AddConfiguration),
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Step Over").into(), RunMessage::StepOver),
-                        Entry::Item(Text::new("Step Into").into(), RunMessage::StepInto),
-                        Entry::Item(Text::new("Step Out").into(), RunMessage::StepOut),
-                        Entry::Item(Text::new("Continue").into(), RunMessage::Continue),
+                        Entry::Item(
+                            Text::new("Step Over").into(),
+                            if self.config.enable_step_over {
+                                Some(RunMessage::StepOver)
+                            } else {
+                                None
+                            },
+                        ),
+                        Entry::Item(
+                            Text::new("Step Into").into(),
+                            if self.config.enable_step_into {
+                                Some(RunMessage::StepInto)
+                            } else {
+                                None
+                            },
+                        ),
+                        Entry::Item(
+                            Text::new("Step Out").into(),
+                            if self.config.enable_step_out {
+                                Some(RunMessage::StepOut)
+                            } else {
+                                None
+                            },
+                        ),
+                        Entry::Item(
+                            Text::new("Continue").into(),
+                            if self.config.enable_continue {
+                                Some(RunMessage::Continue)
+                            } else {
+                                None
+                            },
+                        ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Toggle Breakpoint").into(),
-                            RunMessage::ToggleBreakpoint,
+                            Some(RunMessage::ToggleBreakpoint),
                         ),
                         Entry::Group(
                             Text::new("New Breakpoint").into(),
                             vec![
                                 Entry::Item(
                                     Text::new("Conditional Breakpoint...").into(),
-                                    NewBreakpointMessage::ConditionalBreakpoint,
+                                    Some(NewBreakpointMessage::ConditionalBreakpoint),
                                 ),
                                 Entry::Item(
                                     Text::new("Inline Breakpoint").into(),
-                                    NewBreakpointMessage::InlineBreakpoint,
+                                    Some(NewBreakpointMessage::InlineBreakpoint),
                                 ),
                                 Entry::Item(
                                     Text::new("Function Breakpoint...").into(),
-                                    NewBreakpointMessage::FunctionBreakpoint,
+                                    Some(NewBreakpointMessage::FunctionBreakpoint),
                                 ),
                                 Entry::Item(
                                     Text::new("Logpoint...").into(),
-                                    NewBreakpointMessage::Logpoint,
+                                    Some(NewBreakpointMessage::Logpoint),
                                 ),
                             ],
                         )
@@ -661,20 +874,20 @@ impl Sandbox for MenuExample {
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Enable All Breakpoints").into(),
-                            RunMessage::EnableAllBreakpoints,
+                            Some(RunMessage::EnableAllBreakpoints),
                         ),
                         Entry::Item(
                             Text::new("Disable All Breakpoints").into(),
-                            RunMessage::DisableAllBreakpoints,
+                            Some(RunMessage::DisableAllBreakpoints),
                         ),
                         Entry::Item(
                             Text::new("Remove All Breakpoints").into(),
-                            RunMessage::RemoveAllBreakpoints,
+                            Some(RunMessage::RemoveAllBreakpoints),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Install Additional Debuggers...").into(),
-                            RunMessage::InstallAdditionalDebuggers,
+                            Some(RunMessage::InstallAdditionalDebuggers),
                         ),
                     ],
                 )
@@ -686,47 +899,62 @@ impl Sandbox for MenuExample {
                     vec![
                         Entry::Item(
                             Text::new("New Terminal").into(),
-                            TerminalMessage::NewTerminal,
+                            Some(TerminalMessage::NewTerminal),
                         ),
                         Entry::Item(
                             Text::new("Split Terminal").into(),
-                            TerminalMessage::SplitTerminal,
+                            Some(TerminalMessage::SplitTerminal),
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Run Task...").into(), TerminalMessage::RunTask),
+                        Entry::Item(
+                            Text::new("Run Task...").into(),
+                            Some(TerminalMessage::RunTask),
+                        ),
                         Entry::Item(
                             Text::new("Run Build Task...").into(),
-                            TerminalMessage::RunBuildTask,
+                            Some(TerminalMessage::RunBuildTask),
                         ),
                         Entry::Item(
                             Text::new("Run Active File").into(),
-                            TerminalMessage::RunActiveFile,
+                            Some(TerminalMessage::RunActiveFile),
                         ),
                         Entry::Item(
                             Text::new("Run Selected Text").into(),
-                            TerminalMessage::RunSelectedText,
+                            Some(TerminalMessage::RunSelectedText),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Show Running Tasks...").into(),
-                            TerminalMessage::ShowRunningTasks,
+                            if self.config.enable_show_running_tasks {
+                                Some(TerminalMessage::ShowRunningTasks)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Restart Running Tasks...").into(),
-                            TerminalMessage::RestartRunningTasks,
+                            if self.config.enable_restart_running_tasks {
+                                Some(TerminalMessage::RestartRunningTasks)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Item(
                             Text::new("Terminate Tasks...").into(),
-                            TerminalMessage::TerminateTasks,
+                            if self.config.enable_terminate_tasks {
+                                Some(TerminalMessage::TerminateTasks)
+                            } else {
+                                None
+                            },
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Configure Tasks...").into(),
-                            TerminalMessage::ConfigureTasks,
+                            Some(TerminalMessage::ConfigureTasks),
                         ),
                         Entry::Item(
                             Text::new("Configure Default Build Task...").into(),
-                            TerminalMessage::ConfigureDefaultBuildTasks,
+                            Some(TerminalMessage::ConfigureDefaultBuildTasks),
                         ),
                     ],
                 )
@@ -736,61 +964,70 @@ impl Sandbox for MenuExample {
                 Section::new(
                     Text::new("Help"),
                     vec![
-                        Entry::Item(Text::new("Welcome").into(), HelpMessage::Welcome),
+                        Entry::Item(Text::new("Welcome").into(), Some(HelpMessage::Welcome)),
                         Entry::Item(
                             Text::new("Interactive Playground").into(),
-                            HelpMessage::InteractivePlayground,
+                            Some(HelpMessage::InteractivePlayground),
                         ),
                         Entry::Item(
                             Text::new("Documentation").into(),
-                            HelpMessage::Documentation,
+                            Some(HelpMessage::Documentation),
                         ),
-                        Entry::Item(Text::new("Release Notes").into(), HelpMessage::ReleaseNotes),
+                        Entry::Item(
+                            Text::new("Release Notes").into(),
+                            Some(HelpMessage::ReleaseNotes),
+                        ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Keyboard Shortcuts Reference [Ctrl+K Ctrl+R]").into(),
-                            HelpMessage::KeyboardShortCutsReference,
+                            Some(HelpMessage::KeyboardShortCutsReference),
                         ),
                         Entry::Item(
                             Text::new("Introductory Videos").into(),
-                            HelpMessage::IntroductoryVideos,
+                            Some(HelpMessage::IntroductoryVideos),
                         ),
                         Entry::Item(
                             Text::new("Tips and Tricks").into(),
-                            HelpMessage::TipsAndTricks,
+                            Some(HelpMessage::TipsAndTricks),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Join Us on Twitter").into(),
-                            HelpMessage::JoinUsOnTwitter,
+                            Some(HelpMessage::JoinUsOnTwitter),
                         ),
                         Entry::Item(
                             Text::new("Search Feature Requests").into(),
-                            HelpMessage::SearchFeatureRequests,
+                            Some(HelpMessage::SearchFeatureRequests),
                         ),
-                        Entry::Item(Text::new("Report Issue").into(), HelpMessage::ReportIssue),
+                        Entry::Item(
+                            Text::new("Report Issue").into(),
+                            Some(HelpMessage::ReportIssue),
+                        ),
                         Entry::Separator,
-                        Entry::Item(Text::new("View License").into(), HelpMessage::ViewLicense),
+                        Entry::Item(
+                            Text::new("View License").into(),
+                            Some(HelpMessage::ViewLicense),
+                        ),
                         Entry::Item(
                             Text::new("Privacy Statement").into(),
-                            HelpMessage::PrivacyStatement,
+                            Some(HelpMessage::PrivacyStatement),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Toggle Developer Tools").into(),
-                            HelpMessage::ToggleDeveloperTools,
+                            Some(HelpMessage::ToggleDeveloperTools),
                         ),
                         Entry::Item(
                             Text::new("Open Process Explorer").into(),
-                            HelpMessage::OpenProcessExplorer,
+                            Some(HelpMessage::OpenProcessExplorer),
                         ),
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Download Available Update").into(),
-                            HelpMessage::DownloadAvailableUpdate,
+                            Some(HelpMessage::DownloadAvailableUpdate),
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("About").into(), HelpMessage::About),
+                        Entry::Item(Text::new("About").into(), Some(HelpMessage::About)),
                     ],
                 )
                 .map(MenuMessage::Help),

@@ -44,6 +44,7 @@ where
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
         let _ = style.insert(StyleState::Focused, env.style_sheet.focused());
+        let _ = style.insert(StyleState::Disabled, env.style_sheet.disabled());
 
         let mut mouse_interaction = mouse::Interaction::default();
 
@@ -81,11 +82,13 @@ where
             .iter()
             .zip(children)
             .map(|(section, layout)| {
-                let style_state = if layout.bounds().contains(env.cursor_position) {
-                    StyleState::Hovered
-                } else {
-                    StyleState::Active
-                };
+                let mut style_state = StyleState::Active;
+                if layout.bounds().contains(env.cursor_position) {
+                    style_state = style_state.max(StyleState::Hovered);
+                }
+                if section.entries.is_empty() {
+                    style_state = style_state.max(StyleState::Disabled);
+                }
 
                 let background =
                     style[&style_state]
@@ -144,6 +147,7 @@ where
         let _ = style.insert(StyleState::Selected, env.style_sheet.selected());
         let _ = style.insert(StyleState::Hovered, env.style_sheet.hovered());
         let _ = style.insert(StyleState::Focused, env.style_sheet.focused());
+        let _ = style.insert(StyleState::Disabled, env.style_sheet.disabled());
 
         let mut mouse_interaction = mouse::Interaction::default();
 
@@ -222,11 +226,24 @@ where
         .map(|(entry, layout)| {
             let bounds = layout.bounds();
 
-            let style_state = if layout.bounds().contains(env.cursor_position) {
+            let is_disabled = match entry {
+                Entry::Item(_, message) => message.is_none(),
+                Entry::Group(_, entries) => entries.is_empty(),
+                Entry::Separator => false,
+            };
+
+            /*let style_state = if layout.bounds().contains(env.cursor_position) {
                 StyleState::Hovered
             } else {
                 StyleState::Active
-            };
+            };*/
+            let mut style_state = StyleState::Active;
+            if layout.bounds().contains(env.cursor_position) {
+                style_state = style_state.max(StyleState::Hovered);
+            }
+            if is_disabled {
+                style_state = style_state.max(StyleState::Disabled)
+            }
 
             let background = env.style_sheet[&style_state]
                 .overlay_label_background
