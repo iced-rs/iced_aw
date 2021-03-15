@@ -87,13 +87,16 @@ where
         layout_entries(
             renderer,
             &self.section.entries,
-            //bounds,
             Size::new(
                 bounds.width,
                 bounds.height - position.y,
             ),
             self.padding,
-            Point::new(position.x, 0.0),
+            Positioning {
+                position: Point::new(position.x, 0.0),
+                fallback_offset: 0.0,
+                use_fallback: false,
+            },
             &self.state.stack[1..],
             &mut nodes,
         );
@@ -246,7 +249,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     entries: &[Entry<'a, Message, Renderer>],
     bounds: Size,
     padding: f32,
-    position: Point,
+    positioning: Positioning,
     path: &[usize],
     nodes: &mut Vec<layout::Node>,
 ) {
@@ -311,8 +314,9 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
         entry_nodes,
     );
 
-    node.move_to(position);
+    node.move_to(positioning.position);
     vertical_bounce(&mut node, bounds);
+    let use_fallback = horizontal_bounce(&mut node, bounds, positioning);
 
     if !path.is_empty() {
         if let Entry::Group(_, entries) = &entries[path[0]] {
@@ -321,10 +325,14 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
                 entries,
                 bounds,
                 padding,
-                Point::new(
-                    node.bounds().x + node.bounds().width,
-                    position.y + node.children()[path[0]].bounds().y,
-                ),
+                Positioning {
+                    position: Point::new(
+                        node.bounds().x + node.bounds().width,
+                        positioning.position.y + node.children()[path[0]].bounds().y,
+                    ),
+                    fallback_offset: node.bounds().width,
+                    use_fallback,
+                },
                 &path[1..],
                 nodes,
             );
@@ -341,4 +349,26 @@ fn vertical_bounce(node: &mut layout::Node, bounds: Size) {
             (node.bounds().y + ( bounds.height - (node.bounds().y + node.bounds().height) )).max(0.0),
         ))
     }
+}
+
+fn horizontal_bounce(node: &mut layout::Node, bounds: Size, positioning: Positioning) -> bool {
+    if node.bounds().x + node.bounds().width > bounds.width || positioning.use_fallback {
+        node.move_to(
+            Point::new(
+                (node.bounds().x - node.bounds().width - positioning.fallback_offset).max(0.0),
+                node.bounds().y
+            )
+        );
+
+        true
+    } else {
+        false
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Positioning {
+    position: Point,
+    fallback_offset: f32,
+    use_fallback: bool,
 }
