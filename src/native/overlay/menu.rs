@@ -87,7 +87,11 @@ where
         layout_entries(
             renderer,
             &self.section.entries,
-            bounds,
+            //bounds,
+            Size::new(
+                bounds.width,
+                bounds.height - position.y,
+            ),
             self.padding,
             Point::new(position.x, 0.0),
             &self.state.stack[1..],
@@ -308,6 +312,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     );
 
     node.move_to(position);
+    vertical_bounce(&mut node, bounds);
 
     if !path.is_empty() {
         if let Entry::Group(_, entries) = &entries[path[0]] {
@@ -327,4 +332,13 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     }
 
     nodes.push(node);
+}
+
+fn vertical_bounce(node: &mut layout::Node, bounds: Size) {
+    if node.bounds().y + node.bounds().height > bounds.height {
+        node.move_to(Point::new(
+            node.bounds().x,
+            (node.bounds().y + ( bounds.height - (node.bounds().y + node.bounds().height) )).max(0.0),
+        ))
+    }
 }
