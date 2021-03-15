@@ -117,7 +117,7 @@ where
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if layout.bounds().contains(cursor_position) {
             self.state.clock_cache_needs_clearance = true;
@@ -282,7 +282,7 @@ where
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
 
@@ -417,7 +417,7 @@ where
         _cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
@@ -590,9 +590,9 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>,
+        clipboard: &mut dyn Clipboard,
+        messages: &mut Vec<Message>,
     ) -> event::Status {
         if let event::Status::Captured = self.on_event_keyboard(
             &event,
@@ -645,9 +645,9 @@ where
             event.clone(),
             cancel_button_layout,
             cursor_position,
-            messages,
             renderer,
             clipboard,
+            messages,
         );
 
         let submit_button_layout = children
@@ -660,10 +660,9 @@ where
             event,
             submit_button_layout,
             cursor_position,
-            //messages,
-            &mut fake_messages,
             renderer,
             clipboard,
+            &mut fake_messages,
         );
 
         if !fake_messages.is_empty() {

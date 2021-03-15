@@ -242,9 +242,9 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>,
+        clipboard: &mut dyn Clipboard,
+        messages: &mut Vec<Message>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -258,9 +258,9 @@ where
                 .next()
                 .expect("Native: Layout should have a head content layout"),
             cursor_position,
-            messages,
             renderer,
             clipboard,
+            messages,
         );
 
         let close_status = head_children
@@ -292,9 +292,9 @@ where
                 .next()
                 .expect("Native: Layout should have a body content layout"),
             cursor_position,
-            messages,
             renderer,
             clipboard,
+            messages,
         );
 
         let foot_layout = children
@@ -308,9 +308,9 @@ where
                     .next()
                     .expect("Native: Layout should have a foot content layout"),
                 cursor_position,
-                messages,
                 renderer,
                 clipboard,
+                messages,
             )
         });
 
