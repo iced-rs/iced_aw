@@ -151,10 +151,20 @@ where
 
         let mut mouse_interaction = mouse::Interaction::default();
 
+        let mut selected_childs: Vec<Option<usize>> = state.stack.iter()
+            .skip(1)
+            .map(|i| Some(*i))
+            .fold(Vec::with_capacity(state.stack.len()), |mut v, i| {
+                v.push(i);
+                v
+            });
+        selected_childs.push(None);
+
         let primitives = children
             .into_iter()
             .zip(get_entry_list(section, &state.stack))
-            .map(|(layout, entries)| {
+            .zip(selected_childs)
+            .map(|((layout, entries), selected_child)| {
                 let (primitive, new_mouse_interaction) = draw_entries(
                     self,
                     &DrawEnvironment {
@@ -168,6 +178,7 @@ where
                     state,
                     //&section.entries,
                     entries,
+                    selected_child,
                 );
 
                 mouse_interaction = mouse_interaction.max(new_mouse_interaction);
@@ -186,6 +197,7 @@ fn draw_entries<'a, Message, B>(
     env: &DrawEnvironment<'_, Defaults, HashMap<StyleState, Style>, ()>,
     _state: &State,
     entries: &[Entry<'a, Message, Renderer<B>>],
+    selected_child: Option<usize>,
 ) -> (Primitive, mouse::Interaction)
 where
     B: Backend + backend::Text,
@@ -222,8 +234,9 @@ where
 
     let mut entry_primitives: Vec<Primitive> = entries
         .iter()
+        .enumerate()
         .zip(env.layout.children())
-        .map(|(entry, layout)| {
+        .map(|((i, entry), layout)| {
             let bounds = layout.bounds();
 
             let is_disabled = match entry {
@@ -232,13 +245,8 @@ where
                 Entry::Separator => false,
             };
 
-            /*let style_state = if layout.bounds().contains(env.cursor_position) {
-                StyleState::Hovered
-            } else {
-                StyleState::Active
-            };*/
             let mut style_state = StyleState::Active;
-            if layout.bounds().contains(env.cursor_position) {
+            if (layout.bounds().contains(env.cursor_position) && selected_child.is_none()) || Some(i) == selected_child {
                 style_state = style_state.max(StyleState::Hovered);
             }
             if is_disabled {
@@ -306,5 +314,12 @@ where
     let mut primitives = vec![shadow, background];
     primitives.append(&mut entry_primitives);
 
-    (Primitive::Group { primitives }, mouse_interaction)
+    (
+        Primitive::Clip {
+            bounds,
+            offset: Vector::new(0, 0),
+            content: Box::new(Primitive::Group { primitives }),
+        },
+        mouse_interaction
+    )
 }
