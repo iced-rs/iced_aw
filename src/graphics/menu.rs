@@ -151,13 +151,14 @@ where
 
         let mut mouse_interaction = mouse::Interaction::default();
 
-        let mut selected_childs: Vec<Option<usize>> = state.stack.iter()
-            .skip(1)
-            .map(|i| Some(*i))
-            .fold(Vec::with_capacity(state.stack.len()), |mut v, i| {
-                v.push(i);
-                v
-            });
+        let mut selected_childs: Vec<Option<usize>> =
+            state.stack.iter().skip(1).map(|i| Some(*i)).fold(
+                Vec::with_capacity(state.stack.len()),
+                |mut v, i| {
+                    v.push(i);
+                    v
+                },
+            );
         selected_childs.push(None);
 
         let primitives = children
@@ -246,7 +247,9 @@ where
             };
 
             let mut style_state = StyleState::Active;
-            if (layout.bounds().contains(env.cursor_position) && selected_child.is_none()) || Some(i) == selected_child {
+            if (layout.bounds().contains(env.cursor_position) && selected_child.is_none())
+                || Some(i) == selected_child
+            {
                 style_state = style_state.max(StyleState::Hovered);
             }
             if is_disabled {
@@ -320,6 +323,6 @@ where
             offset: Vector::new(0, 0),
             content: Box::new(Primitive::Group { primitives }),
         },
-        mouse_interaction
+        mouse_interaction,
     )
 }

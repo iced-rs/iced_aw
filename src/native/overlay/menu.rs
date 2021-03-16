@@ -87,10 +87,7 @@ where
         layout_entries(
             renderer,
             &self.section.entries,
-            Size::new(
-                bounds.width,
-                bounds.height - position.y,
-            ),
+            Size::new(bounds.width, bounds.height - position.y),
             self.padding,
             Positioning {
                 position: Point::new(position.x, 0.0),
@@ -346,19 +343,17 @@ fn vertical_bounce(node: &mut layout::Node, bounds: Size) {
     if node.bounds().y + node.bounds().height > bounds.height {
         node.move_to(Point::new(
             node.bounds().x,
-            (node.bounds().y + ( bounds.height - (node.bounds().y + node.bounds().height) )).max(0.0),
+            (node.bounds().y + (bounds.height - (node.bounds().y + node.bounds().height))).max(0.0),
         ))
     }
 }
 
 fn horizontal_bounce(node: &mut layout::Node, bounds: Size, positioning: Positioning) -> bool {
     if node.bounds().x + node.bounds().width > bounds.width || positioning.use_fallback {
-        node.move_to(
-            Point::new(
-                (node.bounds().x - node.bounds().width - positioning.fallback_offset).max(0.0),
-                node.bounds().y
-            )
-        );
+        node.move_to(Point::new(
+            (node.bounds().x - node.bounds().width - positioning.fallback_offset).max(0.0),
+            node.bounds().y,
+        ));
 
         true
     } else {
