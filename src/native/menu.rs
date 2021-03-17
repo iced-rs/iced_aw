@@ -34,14 +34,14 @@ use super::overlay::MenuOverlay;
 ///     .push(Section::new(
 ///         Text::new("Section 1"),
 ///         vec![
-///             Entry::Item(Text::new("Entry 1").into(), Message::Entry1),
-///             Entry::Item(Text::new("Entry 2").into(), Message::Entry2),
+///             Entry::Item(Text::new("Entry 1").into(), Some(Message::Entry1)),
+///             Entry::Item(Text::new("Entry 2").into(), Some(Message::Entry2)),
 ///         ]
 ///     ))
 ///     .push(Section::new(
 ///         Text::new("Section2"),
 ///         vec![
-///             Entry::Item(Text::new("Entry 3").into(), Message::Entry3),
+///             Entry::Item(Text::new("Entry 3").into(), Some(Message::Entry3)),
 ///         ]
 ///     ));
 /// ```
