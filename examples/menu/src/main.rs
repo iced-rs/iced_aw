@@ -108,6 +108,7 @@ impl Default for ToggleEntries {
 }
 
 impl ToggleEntries {
+    #[allow(clippy::collapsible_match, clippy::single_match)]
     pub fn update(&mut self, message: MenuMessage) {
         match message {
             MenuMessage::File(file) => match file {

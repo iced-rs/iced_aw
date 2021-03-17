@@ -352,6 +352,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     nodes.push(node);
 }
 
+/// Lets the node vertically bounce at the given bounds.
 fn vertical_bounce(node: &mut layout::Node, bounds: Size) {
     if node.bounds().y + node.bounds().height > bounds.height {
         node.move_to(Point::new(
@@ -361,6 +362,8 @@ fn vertical_bounce(node: &mut layout::Node, bounds: Size) {
     }
 }
 
+/// Lets the node horizontally bounce at the given bounds. The node will be positioned at the other
+/// side of the parent based on the positioning.
 fn horizontal_bounce(node: &mut layout::Node, bounds: Size, positioning: Positioning) -> bool {
     if node.bounds().x + node.bounds().width > bounds.width || positioning.use_fallback {
         node.move_to(Point::new(
@@ -374,9 +377,13 @@ fn horizontal_bounce(node: &mut layout::Node, bounds: Size, positioning: Positio
     }
 }
 
+/// Positioning information for a group of entries.
 #[derive(Clone, Copy)]
 struct Positioning {
+    /// The position of the group.
     position: Point,
+    /// The fallback offset if the group is bouncing horizontally.
     fallback_offset: f32,
+    /// If the fallback should be used.
     use_fallback: bool,
 }

@@ -194,6 +194,7 @@ where
 }
 
 /// Draws the entries.
+#[allow(clippy::too_many_lines)]
 fn draw_entries<'a, Message, B>(
     renderer: &mut Renderer<B>,
     env: &DrawEnvironment<'_, Defaults, HashMap<StyleState, Style>, ()>,
