@@ -357,6 +357,12 @@ pub enum Entry<'a, Message, Renderer> {
     /// and a message that is send when the item is pressed.
     /// If the message is none the item will be disabled.
     Item(Element<'a, Message, Renderer>, Option<Message>),
+    /// An [`Entry`] item that can be toggled.
+    Toggle(
+        Element<'a, Message, Renderer>,
+        bool,
+        Option<Box<dyn Fn(bool) -> Message + 'static>>,
+    ),
     /// A group of [`Entry`](Entry)s holding an [`Element`](iced_native::Element) for
     /// it's label.
     /// If the vector is empty the group will be disabled.
@@ -382,6 +388,14 @@ impl<'a, Message, Renderer: iced_native::Renderer> Entry<'a, Message, Renderer> 
     {
         match self {
             Entry::Item(label, message) => Entry::Item(label.map(f), message.map(f)),
+            Entry::Toggle(label, toggled, message) => Entry::Toggle(
+                label.map(f),
+                toggled,
+                message.map(|m| {
+                    // TODO: I can't believe that this actually works...
+                    Box::new(move |b: bool| f(m(b))) as Box<dyn Fn(bool) -> B>
+                }),
+            ),
             Entry::Group(label, entries) => Entry::Group(
                 label.map(f),
                 entries.into_iter().map(|entry| entry.map(f)).collect(),

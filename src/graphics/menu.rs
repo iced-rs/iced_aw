@@ -19,6 +19,7 @@ use crate::{
 };
 
 use super::icons::{Icon, ICON_FONT};
+use crate::native::overlay::menu::{GROUP_ICON_SIZE, TOGGLE_ICON_SIZE};
 
 /// A menu bar.
 ///
@@ -242,6 +243,7 @@ where
 
             let is_disabled = match entry {
                 Entry::Item(_, message) => message.is_none(),
+                Entry::Toggle(_, _, message) => message.is_none(),
                 Entry::Group(_, entries) => entries.is_empty(),
                 Entry::Separator => false,
             };
@@ -271,7 +273,9 @@ where
                 .next()
                 .expect("Graphics: Entry should have a label layout");
             let (primitive, new_mouse_interaction) = match entry {
-                Entry::Item(element, _) | Entry::Group(element, _) => element.draw(
+                Entry::Item(element, _)
+                | Entry::Toggle(element, _, _)
+                | Entry::Group(element, _) => element.draw(
                     renderer,
                     &Defaults {
                         text: defaults::Text {
@@ -288,28 +292,53 @@ where
                 }
             };
 
-            let group_icon = match entry {
-                Entry::Group(_, _) => Primitive::Text {
+            let checkmark_icon = if let Entry::Toggle(_, checked, _) = entry {
+                // TODO: clean up, once chained if let becomes stable.
+                if *checked {
+                    Primitive::Text {
+                        content: Icon::Check.into(),
+                        bounds: Rectangle {
+                            x: bounds.x + TOGGLE_ICON_SIZE / 2.0,
+                            y: bounds.center_y(),
+                            width: TOGGLE_ICON_SIZE,
+                            height: TOGGLE_ICON_SIZE,
+                        },
+                        color: env.style_sheet[&style_state].overlay_text_color,
+                        size: TOGGLE_ICON_SIZE,
+                        font: ICON_FONT,
+                        horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
+                        vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                    }
+                } else {
+                    Primitive::None
+                }
+            } else {
+                Primitive::None
+            };
+
+            let group_icon = if let Entry::Group(_, _) = entry {
+                Primitive::Text {
                     content: Icon::CaretRightFill.into(),
                     bounds: Rectangle {
-                        x: bounds.x + bounds.width - 8.0, // TODO
+                        x: bounds.x + bounds.width - GROUP_ICON_SIZE / 2.0,
                         y: bounds.center_y(),
-                        width: 16.0,
-                        height: 16.0,
+                        width: GROUP_ICON_SIZE,
+                        height: GROUP_ICON_SIZE,
                     },
                     color: env.style_sheet[&style_state].overlay_text_color,
-                    size: 16.0,
+                    size: GROUP_ICON_SIZE,
                     font: ICON_FONT,
                     horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
                     vertical_alignment: iced_graphics::VerticalAlignment::Center,
-                },
-                _ => Primitive::None,
+                }
+            } else {
+                Primitive::None
             };
 
             mouse_interaction = mouse_interaction.max(new_mouse_interaction);
 
             Primitive::Group {
-                primitives: vec![background, primitive, group_icon],
+                primitives: vec![background, checkmark_icon, primitive, group_icon],
             }
         })
         .collect();

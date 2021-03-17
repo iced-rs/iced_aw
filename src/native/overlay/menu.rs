@@ -20,7 +20,9 @@ use crate::{
 };
 
 /// The size of the little arrow marking an `Entry::Group`.
-const GROUP_ICON_SIZE: f32 = 16.0;
+pub const GROUP_ICON_SIZE: f32 = 16.0;
+/// The size of the little checkmark icon for `Entry::Touble`.
+pub const TOGGLE_ICON_SIZE: f32 = 16.0;
 
 /// The overlay of the [`Menu`](crate::native::Menu).
 #[allow(missing_debug_implementations)]
@@ -159,6 +161,16 @@ where
                             }
                             _ => {}
                         },
+                        Entry::Toggle(_, b, message) => match event {
+                            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                                if let Some(message) = message {
+                                    messages.push((message)(!*b));
+                                    path = Vec::new();
+                                }
+                            }
+                            _ => {}
+                        },
                         Entry::Group(_, entries) => {
                             if !entries.is_empty() {
                                 path = entry_path;
@@ -258,7 +270,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     let mut entry_nodes: Vec<layout::Node> = entries
         .iter()
         .map(|entry| match entry {
-            Entry::Item(element, _) | Entry::Group(element, _) => {
+            Entry::Item(element, _) | Entry::Toggle(element, _, _) | Entry::Group(element, _) => {
                 element.layout(renderer, &entry_limits)
             }
             Entry::Separator => {
@@ -270,7 +282,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
 
     entry_nodes.iter_mut().for_each(|entry| {
         entry.move_to(Point::new(
-            entry.bounds().x + padding,
+            entry.bounds().x + padding + TOGGLE_ICON_SIZE,
             entry.bounds().y + padding,
         ))
     });
@@ -282,6 +294,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
         // https://stackoverflow.com/a/28446718
         .fold(0.0, |a: f32, b: f32| a.max(b))
         + 2.0 * padding
+        + TOGGLE_ICON_SIZE
         + GROUP_ICON_SIZE;
     let max_height = entry_nodes
         .iter()

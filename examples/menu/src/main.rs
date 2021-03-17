@@ -19,43 +19,157 @@ struct MenuExample {
 }
 #[derive(Default)]
 struct MenuConfig {
-    enable_reopen_closed_editor: bool,
+    enable: EnableEntries,
+    toggle: ToggleEntries,
+}
 
-    enable_save_all: bool,
+#[derive(Default)]
+struct EnableEntries {
+    reopen_closed_editor: bool,
 
-    enable_forward: bool,
+    save_all: bool,
 
-    enable_group_3: bool,
-    enable_group_4: bool,
-    enable_group_5: bool,
+    forward: bool,
 
-    enable_next_group: bool,
-    enable_previous_group: bool,
+    group_3: bool,
+    group_4: bool,
+    group_5: bool,
 
-    enable_group_left: bool,
-    enable_group_right: bool,
-    enable_group_above: bool,
-    enable_group_below: bool,
+    next_group: bool,
+    previous_group: bool,
 
-    enable_go_to_definition: bool,
-    enable_go_to_declaration: bool,
-    enable_go_to_type_definition: bool,
-    enable_go_to_implementations: bool,
-    enable_go_to_references: bool,
+    group_left: bool,
+    group_right: bool,
+    group_above: bool,
+    group_below: bool,
 
-    enable_stop_debugging: bool,
-    enable_restart_debugging: bool,
+    go_to_definition: bool,
+    go_to_declaration: bool,
+    go_to_type_definition: bool,
+    go_to_implementations: bool,
+    go_to_references: bool,
 
-    enable_open_configuration: bool,
+    stop_debugging: bool,
+    restart_debugging: bool,
 
-    enable_step_over: bool,
-    enable_step_into: bool,
-    enable_step_out: bool,
-    enable_continue: bool,
+    open_configuration: bool,
 
-    enable_show_running_tasks: bool,
-    enable_restart_running_tasks: bool,
-    enable_terminate_tasks: bool,
+    step_over: bool,
+    step_into: bool,
+    step_out: bool,
+    r#continue: bool,
+
+    show_running_tasks: bool,
+    restart_running_tasks: bool,
+    terminate_tasks: bool,
+}
+
+struct ToggleEntries {
+    auto_save: bool,
+
+    column_selection_mode: bool,
+
+    show_minimap: bool,
+    show_breadcrumbs: bool,
+    render_whitespace: bool,
+    render_control_characters: bool,
+
+    full_screen: bool,
+    zen_mode: bool,
+    centered_layout: bool,
+    show_menu_bar: bool,
+    show_side_bar: bool,
+    show_status_bar: bool,
+    show_activity_bar: bool,
+    show_editor_bar: bool,
+    show_panel_bar: bool,
+}
+
+impl Default for ToggleEntries {
+    fn default() -> Self {
+        Self {
+            auto_save: true,
+            column_selection_mode: false,
+            show_minimap: true,
+            show_breadcrumbs: false,
+            render_whitespace: false,
+            render_control_characters: true,
+            full_screen: false,
+            zen_mode: true,
+            centered_layout: false,
+            show_menu_bar: true,
+            show_side_bar: true,
+            show_status_bar: true,
+            show_activity_bar: false,
+            show_editor_bar: false,
+            show_panel_bar: false,
+        }
+    }
+}
+
+impl ToggleEntries {
+    pub fn update(&mut self, message: MenuMessage) {
+        match message {
+            MenuMessage::File(file) => match file {
+                FileMessage::AutoSave(b) => {
+                    self.auto_save = b;
+                }
+                _ => {}
+            },
+            MenuMessage::Selection(selection) => match selection {
+                SelectionMessage::ColumnSelectionMode(b) => {
+                    self.column_selection_mode = b;
+                }
+                _ => {}
+            },
+            MenuMessage::View(view) => match view {
+                ViewMessage::Appearance(appearance) => match appearance {
+                    AppearanceMessage::FullScreen(b) => {
+                        self.full_screen = b;
+                    }
+                    AppearanceMessage::ZenMode(b) => {
+                        self.zen_mode = b;
+                    }
+                    AppearanceMessage::CenteredLayout(b) => {
+                        self.centered_layout = b;
+                    }
+                    AppearanceMessage::ShowMenuBar(b) => {
+                        self.show_menu_bar = b;
+                    }
+                    AppearanceMessage::ShowSideBar(b) => {
+                        self.show_side_bar = b;
+                    }
+                    AppearanceMessage::ShowStatusBar(b) => {
+                        self.show_status_bar = b;
+                    }
+                    AppearanceMessage::ShowActivityBar(b) => {
+                        self.show_activity_bar = b;
+                    }
+                    AppearanceMessage::ShowEditorBar(b) => {
+                        self.show_editor_bar = b;
+                    }
+                    AppearanceMessage::ShowPanelBar(b) => {
+                        self.show_panel_bar = b;
+                    }
+                    _ => {}
+                },
+                ViewMessage::ShowMinimap(b) => {
+                    self.show_minimap = b;
+                }
+                ViewMessage::ShowBreadcrumbs(b) => {
+                    self.show_breadcrumbs = b;
+                }
+                ViewMessage::RenderWhitespace(b) => {
+                    self.render_whitespace = b;
+                }
+                ViewMessage::RenderControlCharacters(b) => {
+                    self.render_control_characters = b;
+                }
+                _ => {}
+            },
+            _ => {}
+        }
+    }
 }
 
 impl Sandbox for MenuExample {
@@ -74,6 +188,9 @@ impl Sandbox for MenuExample {
     }
 
     fn update(&mut self, message: Self::Message) {
+        if let Message::Menu(message) = message.clone() {
+            self.config.toggle.update(message);
+        }
         self.last_message = message;
     }
 
@@ -103,7 +220,7 @@ impl Sandbox for MenuExample {
                             vec![
                                 Entry::Item(
                                     Text::new("Reopen Closed Editor").into(),
-                                    if self.config.enable_reopen_closed_editor {
+                                    if self.config.enable.reopen_closed_editor {
                                         Some(OpenRecentMessage::ReopenClosedEditor)
                                     } else {
                                         None
@@ -158,14 +275,18 @@ impl Sandbox for MenuExample {
                         Entry::Item(Text::new("Save As...").into(), Some(FileMessage::SaveAs)),
                         Entry::Item(
                             Text::new("Save All").into(),
-                            if self.config.enable_save_all {
+                            if self.config.enable.save_all {
                                 Some(FileMessage::SaveAll)
                             } else {
                                 None
                             },
                         ),
                         Entry::Separator,
-                        Entry::Item(Text::new("Auto Save").into(), Some(FileMessage::AutoSave)),
+                        Entry::Toggle(
+                            Text::new("Auto Save").into(),
+                            self.config.toggle.auto_save,
+                            Some(Box::new(FileMessage::AutoSave)),
+                        ),
                         Entry::Group(
                             Text::new("Preferences").into(),
                             vec![
@@ -345,9 +466,10 @@ impl Sandbox for MenuExample {
                             Text::new("Switch to Ctrl+Click for Multi-Cursor").into(),
                             Some(SelectionMessage::SwitchToCtrlClickForMultiCursor),
                         ),
-                        Entry::Item(
+                        Entry::Toggle(
                             Text::new("Column Selection Mode").into(),
-                            Some(SelectionMessage::ColumnSelectionMode),
+                            self.config.toggle.column_selection_mode,
+                            Some(Box::new(SelectionMessage::ColumnSelectionMode)),
                         ),
                     ],
                 )
@@ -369,42 +491,51 @@ impl Sandbox for MenuExample {
                         Entry::Group(
                             Text::new("Appearance").into(),
                             vec![
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Full Screen").into(),
-                                    Some(AppearanceMessage::FullScreen),
+                                    self.config.toggle.full_screen,
+                                    Some(Box::new(AppearanceMessage::FullScreen)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Zen Mode [Ctrl+K Z]").into(),
-                                    Some(AppearanceMessage::ZenMode),
+                                    self.config.toggle.zen_mode,
+                                    Some(Box::new(AppearanceMessage::ZenMode)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Centered Layout").into(),
-                                    Some(AppearanceMessage::CenteredLayout),
+                                    self.config.toggle.centered_layout,
+                                    Some(Box::new(AppearanceMessage::CenteredLayout)),
                                 ),
                                 Entry::Separator,
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Menu Bar").into(),
-                                    Some(AppearanceMessage::ShowMenuBar),
+                                    self.config.toggle.show_menu_bar,
+                                    Some(Box::new(AppearanceMessage::ShowMenuBar)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Side Bar").into(),
-                                    Some(AppearanceMessage::ShowSideBar),
+                                    self.config.toggle.show_side_bar,
+                                    Some(Box::new(AppearanceMessage::ShowSideBar)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Status Bar").into(),
-                                    Some(AppearanceMessage::ShowStatusBar),
+                                    self.config.toggle.show_status_bar,
+                                    Some(Box::new(AppearanceMessage::ShowStatusBar)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Activity Bar").into(),
-                                    Some(AppearanceMessage::ShowActivityBar),
+                                    self.config.toggle.show_activity_bar,
+                                    Some(Box::new(AppearanceMessage::ShowActivityBar)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Editor Bar").into(),
-                                    Some(AppearanceMessage::ShowEditorBar),
+                                    self.config.toggle.show_editor_bar,
+                                    Some(Box::new(AppearanceMessage::ShowEditorBar)),
                                 ),
-                                Entry::Item(
+                                Entry::Toggle(
                                     Text::new("Show Panel Bar").into(),
-                                    Some(AppearanceMessage::ShowPanelBar),
+                                    self.config.toggle.show_panel_bar,
+                                    Some(Box::new(AppearanceMessage::ShowPanelBar)),
                                 ),
                                 Entry::Separator,
                                 Entry::Item(
@@ -523,21 +654,25 @@ impl Sandbox for MenuExample {
                             Text::new("Toggle Word Wrap").into(),
                             Some(ViewMessage::ToggleWordWrap),
                         ),
-                        Entry::Item(
+                        Entry::Toggle(
                             Text::new("Show Minimap").into(),
-                            Some(ViewMessage::ShowMinimap),
+                            self.config.toggle.show_minimap,
+                            Some(Box::new(ViewMessage::ShowMinimap)),
                         ),
-                        Entry::Item(
+                        Entry::Toggle(
                             Text::new("Show Breadcrumbs").into(),
-                            Some(ViewMessage::ShowBreadcrumbs),
+                            self.config.toggle.show_breadcrumbs,
+                            Some(Box::new(ViewMessage::ShowBreadcrumbs)),
                         ),
-                        Entry::Item(
+                        Entry::Toggle(
                             Text::new("Render Whitespace").into(),
-                            Some(ViewMessage::RenderWhitespace),
+                            self.config.toggle.render_whitespace,
+                            Some(Box::new(ViewMessage::RenderWhitespace)),
                         ),
-                        Entry::Item(
+                        Entry::Toggle(
                             Text::new("Render Control Characters").into(),
-                            Some(ViewMessage::RenderControlCharacters),
+                            self.config.toggle.render_control_characters,
+                            Some(Box::new(ViewMessage::RenderControlCharacters)),
                         ),
                     ],
                 )
@@ -550,7 +685,7 @@ impl Sandbox for MenuExample {
                         Entry::Item(Text::new("Back").into(), Some(GoMessage::Back)),
                         Entry::Item(
                             Text::new("Forward").into(),
-                            if self.config.enable_forward {
+                            if self.config.enable.forward {
                                 Some(GoMessage::Forward)
                             } else {
                                 None
@@ -616,7 +751,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group 3").into(),
-                                    if self.config.enable_group_3 {
+                                    if self.config.enable.group_3 {
                                         Some(SwitchGroupMessage::Group3)
                                     } else {
                                         None
@@ -624,7 +759,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group 4").into(),
-                                    if self.config.enable_group_4 {
+                                    if self.config.enable.group_4 {
                                         Some(SwitchGroupMessage::Group4)
                                     } else {
                                         None
@@ -632,7 +767,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group 5").into(),
-                                    if self.config.enable_group_5 {
+                                    if self.config.enable.group_5 {
                                         Some(SwitchGroupMessage::Group5)
                                     } else {
                                         None
@@ -641,7 +776,7 @@ impl Sandbox for MenuExample {
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Next Group").into(),
-                                    if self.config.enable_next_group {
+                                    if self.config.enable.next_group {
                                         Some(SwitchGroupMessage::NextGroup)
                                     } else {
                                         None
@@ -649,7 +784,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Previous Group").into(),
-                                    if self.config.enable_previous_group {
+                                    if self.config.enable.previous_group {
                                         Some(SwitchGroupMessage::PreviousGroup)
                                     } else {
                                         None
@@ -658,7 +793,7 @@ impl Sandbox for MenuExample {
                                 Entry::Separator,
                                 Entry::Item(
                                     Text::new("Group Left [Ctrl+K Ctrl+LeftArrow]").into(),
-                                    if self.config.enable_group_left {
+                                    if self.config.enable.group_left {
                                         Some(SwitchGroupMessage::GroupLeft)
                                     } else {
                                         None
@@ -666,7 +801,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group Right [Ctrl+K Ctrl+RightArrow]").into(),
-                                    if self.config.enable_group_right {
+                                    if self.config.enable.group_right {
                                         Some(SwitchGroupMessage::GroupRight)
                                     } else {
                                         None
@@ -674,7 +809,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group Above [Ctrl+K Ctrl+UpArrow]").into(),
-                                    if self.config.enable_group_above {
+                                    if self.config.enable.group_above {
                                         Some(SwitchGroupMessage::GroupAbove)
                                     } else {
                                         None
@@ -682,7 +817,7 @@ impl Sandbox for MenuExample {
                                 ),
                                 Entry::Item(
                                     Text::new("Group Below [Ctrl+K Ctrl+DownArrow]").into(),
-                                    if self.config.enable_group_below {
+                                    if self.config.enable.group_below {
                                         Some(SwitchGroupMessage::GroupBelow)
                                     } else {
                                         None
@@ -704,7 +839,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Go to Definition").into(),
-                            if self.config.enable_go_to_definition {
+                            if self.config.enable.go_to_definition {
                                 Some(GoMessage::GoToDefinition)
                             } else {
                                 None
@@ -712,7 +847,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Go to Declaration").into(),
-                            if self.config.enable_go_to_declaration {
+                            if self.config.enable.go_to_declaration {
                                 Some(GoMessage::GoToDeclaration)
                             } else {
                                 None
@@ -720,7 +855,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Go to Type Definition").into(),
-                            if self.config.enable_go_to_type_definition {
+                            if self.config.enable.go_to_type_definition {
                                 Some(GoMessage::GoToTypeDefinition)
                             } else {
                                 None
@@ -728,7 +863,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Go to Implementations").into(),
-                            if self.config.enable_go_to_implementations {
+                            if self.config.enable.go_to_implementations {
                                 Some(GoMessage::GoToImplementations)
                             } else {
                                 None
@@ -736,7 +871,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Go to References").into(),
-                            if self.config.enable_go_to_references {
+                            if self.config.enable.go_to_references {
                                 Some(GoMessage::GoToReferences)
                             } else {
                                 None
@@ -784,7 +919,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Stop Debugging").into(),
-                            if self.config.enable_stop_debugging {
+                            if self.config.enable.stop_debugging {
                                 Some(RunMessage::StopDebugging)
                             } else {
                                 None
@@ -792,7 +927,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Restart Debugging").into(),
-                            if self.config.enable_restart_debugging {
+                            if self.config.enable.restart_debugging {
                                 Some(RunMessage::RestartDebugging)
                             } else {
                                 None
@@ -801,7 +936,7 @@ impl Sandbox for MenuExample {
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Open Configurations").into(),
-                            if self.config.enable_open_configuration {
+                            if self.config.enable.open_configuration {
                                 Some(RunMessage::OpenConfigurations)
                             } else {
                                 None
@@ -814,7 +949,7 @@ impl Sandbox for MenuExample {
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Step Over").into(),
-                            if self.config.enable_step_over {
+                            if self.config.enable.step_over {
                                 Some(RunMessage::StepOver)
                             } else {
                                 None
@@ -822,7 +957,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Step Into").into(),
-                            if self.config.enable_step_into {
+                            if self.config.enable.step_into {
                                 Some(RunMessage::StepInto)
                             } else {
                                 None
@@ -830,7 +965,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Step Out").into(),
-                            if self.config.enable_step_out {
+                            if self.config.enable.step_out {
                                 Some(RunMessage::StepOut)
                             } else {
                                 None
@@ -838,7 +973,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Continue").into(),
-                            if self.config.enable_continue {
+                            if self.config.enable.r#continue {
                                 Some(RunMessage::Continue)
                             } else {
                                 None
@@ -925,7 +1060,7 @@ impl Sandbox for MenuExample {
                         Entry::Separator,
                         Entry::Item(
                             Text::new("Show Running Tasks...").into(),
-                            if self.config.enable_show_running_tasks {
+                            if self.config.enable.show_running_tasks {
                                 Some(TerminalMessage::ShowRunningTasks)
                             } else {
                                 None
@@ -933,7 +1068,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Restart Running Tasks...").into(),
-                            if self.config.enable_restart_running_tasks {
+                            if self.config.enable.restart_running_tasks {
                                 Some(TerminalMessage::RestartRunningTasks)
                             } else {
                                 None
@@ -941,7 +1076,7 @@ impl Sandbox for MenuExample {
                         ),
                         Entry::Item(
                             Text::new("Terminate Tasks...").into(),
-                            if self.config.enable_terminate_tasks {
+                            if self.config.enable.terminate_tasks {
                                 Some(TerminalMessage::TerminateTasks)
                             } else {
                                 None
@@ -1074,7 +1209,7 @@ enum FileMessage {
     Save,
     SaveAs,
     SaveAll,
-    AutoSave,
+    AutoSave(bool),
     Preferences(PreferencesMessage),
     RevertFile,
     CloseEditor,
@@ -1147,7 +1282,7 @@ enum SelectionMessage {
     AddPreviousOccurrence,
     SelectAllOccurrences,
     SwitchToCtrlClickForMultiCursor,
-    ColumnSelectionMode,
+    ColumnSelectionMode(bool),
 }
 
 #[derive(Clone, Debug)]
@@ -1166,23 +1301,23 @@ enum ViewMessage {
     Terminal,
     Problems,
     ToggleWordWrap,
-    ShowMinimap,
-    ShowBreadcrumbs,
-    RenderWhitespace,
-    RenderControlCharacters,
+    ShowMinimap(bool),
+    ShowBreadcrumbs(bool),
+    RenderWhitespace(bool),
+    RenderControlCharacters(bool),
 }
 
 #[derive(Clone, Debug)]
 enum AppearanceMessage {
-    FullScreen,
-    ZenMode,
-    CenteredLayout,
-    ShowMenuBar,
-    ShowSideBar,
-    ShowStatusBar,
-    ShowActivityBar,
-    ShowEditorBar,
-    ShowPanelBar,
+    FullScreen(bool),
+    ZenMode(bool),
+    CenteredLayout(bool),
+    ShowMenuBar(bool),
+    ShowSideBar(bool),
+    ShowStatusBar(bool),
+    ShowActivityBar(bool),
+    ShowEditorBar(bool),
+    ShowPanelBar(bool),
     MoveSideBarRight,
     MovePanelLeft,
     MovePanelRight,
