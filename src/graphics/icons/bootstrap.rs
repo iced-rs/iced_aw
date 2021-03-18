@@ -2409,7 +2409,9 @@ pub enum Icon {
 }
 
 /// Converts an icon into a char.
-pub fn icon_to_char(icon: Icon) -> char {
+#[must_use]
+#[allow(clippy::too_many_lines)]
+pub const fn icon_to_char(icon: Icon) -> char {
     match icon {
         Icon::Alarm => '\u{f102}',
         Icon::AlarmFill => '\u{f101}',

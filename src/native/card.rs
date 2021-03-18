@@ -48,7 +48,7 @@ pub struct Card<'a, Message, Renderer: self::Renderer> {
     close_size: Option<f32>,
     /// The optional message that is send if the close icon of the [`Card`](Card) is pressed.
     on_close: Option<Message>,
-    /// The head [`Element`](iced_native:Element) of the [`Card`](Card).
+    /// The head [`Element`](iced_native::Element) of the [`Card`](Card).
     head: Element<'a, Message, Renderer>,
     /// The body [`Element`](iced_native::Element) of the [`Card`](Card).
     body: Element<'a, Message, Renderer>,
