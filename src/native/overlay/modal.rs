@@ -133,9 +133,9 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>,
+        clipboard: &mut dyn Clipboard,
+        messages: &mut Vec<Message>,
     ) -> event::Status {
         // TODO clean this up
         let esc_status = self
@@ -174,9 +174,9 @@ where
                 event,
                 layout,
                 cursor_position,
-                messages,
                 renderer,
                 clipboard,
+                messages,
             ),
             event::Status::Captured => event::Status::Captured,
         }
