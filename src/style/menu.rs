@@ -38,6 +38,15 @@ pub struct Style {
     pub overlay_label_background: Option<Background>,
     /// The text color  of the [`MenuOverlay`](crate::native::overlay::MenuOverlay).
     pub overlay_text_color: Color,
+
+    /// The corner radius of the separator.
+    pub separator_radius: f32,
+    /// The width of the separator.
+    pub separator_width: f32,
+    /// The color of the separator.
+    pub separator_color: Color,
+    /// The horizontal marging of the separator.
+    pub separator_horizontal_margin: f32,
 }
 
 /// The appearance of a [`Menu`](crate::native::Menu).
@@ -84,6 +93,11 @@ impl StyleSheet for Default {
             overlay_border_color: [0.0, 0.0, 0.0, 0.5].into(),
             overlay_label_background: None,
             overlay_text_color: Color::BLACK,
+            
+            separator_radius: 5.0,
+            separator_width: 1.0,
+            separator_color: [0.7, 0.7, 0.7].into(),
+            separator_horizontal_margin: 1.0,
         }
     }
 

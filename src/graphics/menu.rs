@@ -246,7 +246,7 @@ where
                 Entry::Item(_, message) => message.is_none(),
                 Entry::Toggle(_, _, message) => message.is_none(),
                 Entry::Group(_, entries) => entries.is_empty(),
-                Entry::Separator => false,
+                Entry::Separator => true,
             };
 
             let mut style_state = StyleState::Active;
@@ -288,8 +288,21 @@ where
                     &label_layout.bounds(),
                 ),
                 Entry::Separator => {
-                    // TODO
-                    (Primitive::None, mouse::Interaction::default())
+                    (
+                        Primitive::Quad {
+                            bounds: Rectangle {
+                                x: bounds.x + env.style_sheet[&style_state].separator_horizontal_margin,
+                                y: bounds.center_y(),
+                                width: bounds.width - 2.0*env.style_sheet[&style_state].separator_horizontal_margin,
+                                height: env.style_sheet[&style_state].separator_width,
+                            },
+                            background: env.style_sheet[&style_state].separator_color.into(),
+                            border_radius: env.style_sheet[&style_state].separator_radius,
+                            border_width: 0.0,
+                            border_color: Color::TRANSPARENT,
+                        },
+                        mouse::Interaction::default()
+                    )
                 }
             };
 
