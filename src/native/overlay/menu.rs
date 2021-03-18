@@ -23,6 +23,8 @@ use crate::{
 pub const GROUP_ICON_SIZE: f32 = 16.0;
 /// The size of the little checkmark icon for `Entry::Touble`.
 pub const TOGGLE_ICON_SIZE: f32 = 16.0;
+/// The vertical padding of a group of entries.
+pub const VERTICAL_PADDING: f32 = 8.0;
 
 /// The overlay of the [`Menu`](crate::native::Menu).
 #[allow(missing_debug_implementations)]
@@ -309,7 +311,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
         .map(|entry| layout::Node::with_children(Size::new(max_width, max_height), vec![entry]))
         .collect();
 
-    let mut offset = 0.0;
+    let mut offset = VERTICAL_PADDING;
 
     entry_nodes.iter_mut().for_each(|entry| {
         entry.move_to(Point::new(entry.bounds().x, offset));
@@ -319,7 +321,7 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     let mut node = layout::Node::with_children(
         Size::new(
             max_width,
-            entry_nodes.iter().map(|entry| entry.bounds().height).sum(),
+            entry_nodes.iter().map(|entry| entry.bounds().height).sum::<f32>() + 2.0 * VERTICAL_PADDING,
         ),
         entry_nodes,
     );
