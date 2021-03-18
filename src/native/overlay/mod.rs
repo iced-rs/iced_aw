@@ -15,6 +15,11 @@ pub mod floating_button;
 #[cfg(feature = "floating_button")]
 pub use floating_button::FloatingButtonOverlay;
 
+#[cfg(feature = "menu")]
+pub mod menu;
+#[cfg(feature = "menu")]
+pub use menu::MenuOverlay;
+
 #[cfg(feature = "modal")]
 pub mod modal;
 #[cfg(feature = "modal")]

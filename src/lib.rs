@@ -78,6 +78,10 @@ mod platform {
     pub use {crate::graphics::floating_button, floating_button::FloatingButton};
 
     #[doc(no_inline)]
+    #[cfg(feature = "menu")]
+    pub use {crate::graphics::menu, menu::Menu};
+
+    #[doc(no_inline)]
     #[cfg(feature = "modal")]
     pub use {crate::graphics::modal, modal::Modal};
 

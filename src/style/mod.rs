@@ -20,6 +20,9 @@ pub mod color_picker;
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
 
+#[cfg(feature = "menu")]
+pub mod menu;
+
 #[cfg(feature = "modal")]
 pub mod modal;
 
