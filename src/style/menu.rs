@@ -93,7 +93,7 @@ impl StyleSheet for Default {
             overlay_border_color: [0.0, 0.0, 0.0, 0.5].into(),
             overlay_label_background: None,
             overlay_text_color: Color::BLACK,
-            
+
             separator_radius: 5.0,
             separator_width: 1.0,
             separator_color: [0.7, 0.7, 0.7].into(),

@@ -287,23 +287,22 @@ where
                     env.cursor_position,
                     &label_layout.bounds(),
                 ),
-                Entry::Separator => {
-                    (
-                        Primitive::Quad {
-                            bounds: Rectangle {
-                                x: bounds.x + env.style_sheet[&style_state].separator_horizontal_margin,
-                                y: bounds.center_y(),
-                                width: bounds.width - 2.0*env.style_sheet[&style_state].separator_horizontal_margin,
-                                height: env.style_sheet[&style_state].separator_width,
-                            },
-                            background: env.style_sheet[&style_state].separator_color.into(),
-                            border_radius: env.style_sheet[&style_state].separator_radius,
-                            border_width: 0.0,
-                            border_color: Color::TRANSPARENT,
+                Entry::Separator => (
+                    Primitive::Quad {
+                        bounds: Rectangle {
+                            x: bounds.x + env.style_sheet[&style_state].separator_horizontal_margin,
+                            y: bounds.center_y(),
+                            width: bounds.width
+                                - 2.0 * env.style_sheet[&style_state].separator_horizontal_margin,
+                            height: env.style_sheet[&style_state].separator_width,
                         },
-                        mouse::Interaction::default()
-                    )
-                }
+                        background: env.style_sheet[&style_state].separator_color.into(),
+                        border_radius: env.style_sheet[&style_state].separator_radius,
+                        border_width: 0.0,
+                        border_color: Color::TRANSPARENT,
+                    },
+                    mouse::Interaction::default(),
+                ),
             };
 
             let checkmark_icon = if let Entry::Toggle(_, checked, _) = entry {

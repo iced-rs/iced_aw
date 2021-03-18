@@ -321,7 +321,11 @@ fn layout_entries<'a, Message, Renderer: iced_native::Renderer>(
     let mut node = layout::Node::with_children(
         Size::new(
             max_width,
-            entry_nodes.iter().map(|entry| entry.bounds().height).sum::<f32>() + 2.0 * VERTICAL_PADDING,
+            entry_nodes
+                .iter()
+                .map(|entry| entry.bounds().height)
+                .sum::<f32>()
+                + 2.0 * VERTICAL_PADDING,
         ),
         entry_nodes,
     );
