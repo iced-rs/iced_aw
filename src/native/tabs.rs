@@ -311,9 +311,9 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>,
+        clipboard: &mut dyn Clipboard,
+        messages: &mut Vec<Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -341,9 +341,9 @@ where
             event.clone(),
             tab_bar_layout,
             cursor_position,
-            messages,
             renderer,
             clipboard,
+            messages,
         );
 
         let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
@@ -353,9 +353,9 @@ where
                     event,
                     tab_content_layout,
                     cursor_position,
-                    messages,
                     renderer,
                     clipboard,
+                    messages,
                 )
             },
         );

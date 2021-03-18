@@ -115,7 +115,7 @@ where
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
@@ -224,7 +224,7 @@ where
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
         let mut color_changed = false;
@@ -384,7 +384,7 @@ where
         _cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
-        _clipboard: Option<&dyn Clipboard>,
+        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
@@ -594,9 +594,9 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        messages: &mut Vec<Message>,
         renderer: &Renderer,
-        clipboard: Option<&dyn Clipboard>,
+        clipboard: &mut dyn Clipboard,
+        messages: &mut Vec<Message>,
     ) -> event::Status {
         if let event::Status::Captured = self.on_event_keyboard(
             &event,
@@ -663,9 +663,9 @@ where
             event.clone(),
             cancel_button_layout,
             cursor_position,
-            messages,
             renderer,
             clipboard,
+            &mut fake_messages,
         );
 
         let submit_button_layout = block2_children
@@ -675,9 +675,9 @@ where
             event,
             submit_button_layout,
             cursor_position,
-            &mut fake_messages,
             renderer,
             clipboard,
+            &mut fake_messages,
         );
 
         if !fake_messages.is_empty() {
