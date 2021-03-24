@@ -417,6 +417,20 @@ where
         self.width.hash(state);
         self.height.hash(state);
     }
+
+    fn overlay(
+        &mut self,
+        layout: Layout<'_>,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+        let layout = match self.tab_bar_position {
+            TabBarPosition::Top => layout.children().nth(1).unwrap(),
+            TabBarPosition::Bottom => layout.children().next().unwrap(),
+        };
+        self.tabs
+            .get_mut(self.tab_bar.get_active_tab())
+            .unwrap()
+            .overlay(layout)
+    }
 }
 
 /// The renderer of a [`Tabs`](Tabs) widget.
