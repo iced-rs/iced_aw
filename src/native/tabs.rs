@@ -423,12 +423,18 @@ where
         layout: Layout<'_>,
     ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         let layout = match self.tab_bar_position {
-            TabBarPosition::Top => layout.children().nth(1).unwrap(),
-            TabBarPosition::Bottom => layout.children().next().unwrap(),
+            TabBarPosition::Top => layout
+                .children()
+                .nth(1)
+                .expect("Native: Layout should have a tab content layout at top position"),
+            TabBarPosition::Bottom => layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a tab content layout at bottom position"),
         };
         self.tabs
             .get_mut(self.tab_bar.get_active_tab())
-            .unwrap()
+            .expect("Native: self.tab_bar.get_active_tab() should never return a value greater than self.tabs.len()")
             .overlay(layout)
     }
 }
