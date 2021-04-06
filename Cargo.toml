@@ -41,16 +41,16 @@ default = [
 ]
 
 [dependencies]
-iced_style = { git = "https://github.com/hecrj/iced", rev = "0333a8daff6db989adc6035a4c09df171a86f6fe" }
+iced_style = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-iced_native = { git = "https://github.com/hecrj/iced", rev = "0333a8daff6db989adc6035a4c09df171a86f6fe" }
-iced_graphics = { git = "https://github.com/hecrj/iced", rev = "0333a8daff6db989adc6035a4c09df171a86f6fe" }
+iced_native = "0.4"
+iced_graphics = "0.2"
 chrono = { version = "0.4.19", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-iced_web = { git = "https://github.com/hecrj/iced", rev = "0333a8daff6db989adc6035a4c09df171a86f6fe" }
+iced_web = "0.4"
 dodrio = "0.2.0"
 wasm-bindgen = "0.2.69"
 
