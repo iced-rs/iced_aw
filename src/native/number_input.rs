@@ -6,7 +6,7 @@ use iced_native::{
     event::{self, Event},
     keyboard,
     layout::{Limits, Node},
-    mouse, row,
+    mouse, row, text,
     text_input::{self, cursor, Value},
     Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Point, Rectangle, Row,
     Size, Text, TextInput, Widget,
@@ -571,5 +571,26 @@ where
 {
     fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
         Element::new(num_input)
+    }
+}
+
+impl Renderer for iced_native::renderer::Null {
+    type Style = ();
+
+    const DEFAULT_PADDING: u16 = 7;
+
+    fn draw(
+        &mut self,
+        _: Point,
+        _: &ModifierState,
+        _: Rectangle,
+        _: Rectangle,
+        _: bool,
+        _: bool,
+        _: bool,
+        _: Self::Output,
+        _: &<Self as Renderer>::Style,
+        _: <Self as text::Renderer>::Font,
+    ) -> Self::Output {
     }
 }
