@@ -40,8 +40,8 @@ pub trait StyleSheet {
         Style {
             button_background: active.button_background.map(|bg| match bg {
                 Background::Color(color) => Background::Color(Color {
-                a: color.a * 0.5,
-                ..color
+                    a: color.a * 0.5,
+                    ..color
                 }),
             }),
             icon_color: Color {

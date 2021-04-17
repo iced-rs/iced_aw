@@ -1,10 +1,10 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
+use crate::native::number_input::{self, ModifierState};
 use iced_graphics::backend::{self, Backend};
 use iced_graphics::{Primitive, Renderer};
 use iced_native::mouse;
-use crate::native::number_input::{self, ModifierState};
 use iced_native::{Background, Color, HorizontalAlignment, Point, Rectangle, VerticalAlignment};
 
 pub use crate::native::number_input::State;
@@ -13,7 +13,8 @@ pub use crate::style::number_input::{Style, StyleSheet};
 /// A field that can only be filled with numeric type.
 ///
 /// This is an alias of an `iced_native` number input with an `iced_wgpu::Renderer`.
-pub type NumberInput<'a, T, Message, Backend> = number_input::NumberInput<'a, T, Message, Renderer<Backend>>;
+pub type NumberInput<'a, T, Message, Backend> =
+    number_input::NumberInput<'a, T, Message, Renderer<Backend>>;
 
 impl<B> number_input::Renderer for Renderer<B>
 where
@@ -113,7 +114,9 @@ where
             Primitive::Group {
                 primitives: vec![content, decrease_btn, increase_btn],
             },
-            if (mouse_over_decrease && !is_decrease_disabled) || (mouse_over_increase && !is_increase_disabled) {
+            if (mouse_over_decrease && !is_decrease_disabled)
+                || (mouse_over_increase && !is_increase_disabled)
+            {
                 mouse::Interaction::Pointer
             } else if is_mouse_over {
                 mouse::Interaction::Text

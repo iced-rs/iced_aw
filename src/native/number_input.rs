@@ -8,7 +8,8 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, row,
     text_input::{self, cursor, Value},
-    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Point, Rectangle, Row, Size, Text, TextInput, Widget,
+    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Point, Rectangle, Row,
+    Size, Text, TextInput, Widget,
 };
 use num_traits::{Num, NumAssignOps};
 use std::fmt::Display;
@@ -81,11 +82,15 @@ where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
     {
-        let State { input_state, mod_state } = state;
+        let State {
+            input_state,
+            mod_state,
+        } = state;
 
         let padding = <Renderer as self::Renderer>::DEFAULT_PADDING;
-        let convert_to_num =
-            move |s: String| on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }));
+        let convert_to_num = move |s: String| {
+            on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }))
+        };
 
         Self {
             state: mod_state,
@@ -94,9 +99,14 @@ where
             bounds: (T::zero(), max),
             padding,
             size: None,
-            content: TextInput::new(input_state, "", format!("{}", value).as_str(), convert_to_num)
-                .padding(padding)
-                .width(Length::Units(127)),
+            content: TextInput::new(
+                input_state,
+                "",
+                format!("{}", value).as_str(),
+                convert_to_num,
+            )
+            .padding(padding)
+            .width(Length::Units(127)),
             on_change: Box::new(on_changed),
             style: <Renderer as self::Renderer>::Style::default(),
             font: Default::default(),
@@ -183,7 +193,10 @@ where
     }
 
     /// Sets the input style of the [`NumberInput`].
-    pub fn input_style(mut self, style: impl Into<<Renderer as text_input::Renderer>::Style>) -> Self {
+    pub fn input_style(
+        mut self,
+        style: impl Into<<Renderer as text_input::Renderer>::Style>,
+    ) -> Self {
         self.content = self.content.style(style.into());
         self
     }
@@ -192,7 +205,11 @@ where
     fn decrease_val(&mut self, messages: &mut Vec<Message>) {
         if self.value > self.bounds.0 {
             let new_val = self.value - self.step;
-            self.value = if new_val > self.bounds.0 { new_val } else { self.bounds.0 };
+            self.value = if new_val > self.bounds.0 {
+                new_val
+            } else {
+                self.bounds.0
+            };
             messages.push((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
@@ -202,7 +219,11 @@ where
     fn increase_val(&mut self, messages: &mut Vec<Message>) {
         if self.value < self.bounds.1 {
             let new_val = self.value + self.step;
-            self.value = if new_val < self.bounds.1 { new_val } else { self.bounds.1 };
+            self.value = if new_val < self.bounds.1 {
+                new_val
+            } else {
+                self.bounds.1
+            };
             messages.push((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
@@ -225,7 +246,10 @@ where
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = f32::from(self.padding);
-        let limits = limits.width(self.width()).height(Length::Shrink).pad(padding);
+        let limits = limits
+            .width(self.width())
+            .height(Length::Shrink)
+            .pad(padding);
         let content = self.content.layout(renderer, &limits.loose());
         let txt_size = self.size.unwrap_or(renderer.default_size());
         let icon_size = txt_size * 3 / 4;
@@ -249,7 +273,10 @@ where
                 .push(btn_mod('▼'))
                 .layout(renderer, &limits.loose())
         };
-        let intrinsic = Size::new(content.size().width - 3.0, content.size().height.max(modifier.size().height));
+        let intrinsic = Size::new(
+            content.size().width - 3.0,
+            content.size().height.max(modifier.size().height),
+        );
         modifier.align(Align::End, Align::Center, intrinsic);
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
@@ -266,11 +293,22 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
-        let mut mod_children = children.next().expect("fail to get modifiers layout").children();
-        let inc_bounds = mod_children.next().expect("fail to get increase mod layout").bounds();
-        let dec_bounds = mod_children.next().expect("fail to get decreate mod layout").bounds();
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
         let is_mouse_over = bounds.contains(cursor_position);
-        let content = self.content.draw(renderer, content_layout, cursor_position, None);
+        let content = self
+            .content
+            .draw(renderer, content_layout, cursor_position, None);
         let is_decrease_disabled = self.value <= self.bounds.0;
         let is_increase_disabled = self.value >= self.bounds.1;
 
@@ -312,9 +350,18 @@ where
     ) -> event::Status {
         let mut children = layout.children();
         let content = children.next().expect("fail to get content layout");
-        let mut mod_children = children.next().expect("fail to get modifiers layout").children();
-        let inc_bounds = mod_children.next().expect("fail to get increase mod layout").bounds();
-        let dec_bounds = mod_children.next().expect("fail to get decreate mod layout").bounds();
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
         let mouse_over_inc = inc_bounds.contains(cursor_position);
         let mouse_over_dec = dec_bounds.contains(cursor_position);
 
@@ -322,111 +369,136 @@ where
             if mouse_over_inc || mouse_over_dec {
                 let mut event_status = event::Status::Captured;
                 match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                    if mouse_over_dec {
-                        self.state.decrease_pressed = true;
-                        self.decrease_val(messages);
-                    } else if mouse_over_inc {
-                        self.state.increase_pressed = true;
-                        self.increase_val(messages);
-                    } else {
-                        event_status = event::Status::Ignored;
+                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                        if mouse_over_dec {
+                            self.state.decrease_pressed = true;
+                            self.decrease_val(messages);
+                        } else if mouse_over_inc {
+                            self.state.increase_pressed = true;
+                            self.increase_val(messages);
+                        } else {
+                            event_status = event::Status::Ignored;
+                        }
                     }
-                }
-                Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                    if mouse_over_dec {
-                        self.state.decrease_pressed = false;
-                    } else if mouse_over_inc {
-                        self.state.increase_pressed = false;
-                    } else {
-                        event_status = event::Status::Ignored;
+                    Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                        if mouse_over_dec {
+                            self.state.decrease_pressed = false;
+                        } else if mouse_over_inc {
+                            self.state.increase_pressed = false;
+                        } else {
+                            event_status = event::Status::Ignored;
+                        }
                     }
-                }
-                _ => event_status = event::Status::Ignored,
+                    _ => event_status = event::Status::Ignored,
                 }
                 event_status
             } else {
                 match event {
-                Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                    if self.content.state().is_focused() && c.is_numeric() =>
-                {
-                    let mut new_val = self.value.to_string();
-                    match self.content.state().cursor().state(&Value::new(&new_val)) {
-                        cursor::State::Index(idx) => {
-                            if T::zero().eq(&self.value) {
-                            new_val = c.to_string();
-                            } else {
-                            new_val.insert(idx, c)
+                    Event::Keyboard(keyboard::Event::CharacterReceived(c))
+                        if self.content.state().is_focused() && c.is_numeric() =>
+                    {
+                        let mut new_val = self.value.to_string();
+                        match self.content.state().cursor().state(&Value::new(&new_val)) {
+                            cursor::State::Index(idx) => {
+                                if T::zero().eq(&self.value) {
+                                    new_val = c.to_string();
+                                } else {
+                                    new_val.insert(idx, c)
+                                }
+                            }
+                            cursor::State::Selection { start, end } => {
+                                new_val.replace_range(start..end, &c.to_string())
                             }
                         }
-                        cursor::State::Selection { start, end } => new_val.replace_range(start..end, &c.to_string()),
-                    }
 
-                    match T::from_str(&new_val) {
-                        Ok(val) => {
-                            if (self.bounds.0..=self.bounds.1).contains(&val) {
-                            self.value = val;
-                            messages.push((self.on_change)(self.value));
-                            self
-                                .content
-                                .on_event(event.clone(), content, cursor_position, renderer, clipboard, messages)
-                            } else {
-                            event::Status::Ignored
+                        match T::from_str(&new_val) {
+                            Ok(val) => {
+                                if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                    self.value = val;
+                                    messages.push((self.on_change)(self.value));
+                                    self.content.on_event(
+                                        event.clone(),
+                                        content,
+                                        cursor_position,
+                                        renderer,
+                                        clipboard,
+                                        messages,
+                                    )
+                                } else {
+                                    event::Status::Ignored
+                                }
                             }
+                            Err(_) => event::Status::Ignored,
                         }
-                        Err(_) => event::Status::Ignored,
                     }
-                }
-                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) if self.content.state().is_focused() => {
-                    match key_code {
-                        keyboard::KeyCode::Up => {
-                            self.increase_val(messages);
-                            event::Status::Captured
-                        }
-                        keyboard::KeyCode::Down => {
-                            self.decrease_val(messages);
-                            event::Status::Captured
-                        }
-                        keyboard::KeyCode::Backspace => {
-                            if self.value.to_string().len() == 1 {
-                            self.value = T::zero();
-                            messages.push((self.on_change)(self.value));
-                            event::Status::Captured
-                            } else if T::zero().eq(&self.value) {
-                            event::Status::Ignored
-                            } else {
-                            self
-                                .content
-                                .on_event(event.clone(), content, cursor_position, renderer, clipboard, messages)
+                    Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
+                        if self.content.state().is_focused() =>
+                    {
+                        match key_code {
+                            keyboard::KeyCode::Up => {
+                                self.increase_val(messages);
+                                event::Status::Captured
                             }
+                            keyboard::KeyCode::Down => {
+                                self.decrease_val(messages);
+                                event::Status::Captured
+                            }
+                            keyboard::KeyCode::Backspace => {
+                                if self.value.to_string().len() == 1 {
+                                    self.value = T::zero();
+                                    messages.push((self.on_change)(self.value));
+                                    event::Status::Captured
+                                } else if T::zero().eq(&self.value) {
+                                    event::Status::Ignored
+                                } else {
+                                    self.content.on_event(
+                                        event.clone(),
+                                        content,
+                                        cursor_position,
+                                        renderer,
+                                        clipboard,
+                                        messages,
+                                    )
+                                }
+                            }
+                            _ => self.content.on_event(
+                                event.clone(),
+                                content,
+                                cursor_position,
+                                renderer,
+                                clipboard,
+                                messages,
+                            ),
                         }
-                        _ => self
-                            .content
-                            .on_event(event.clone(), content, cursor_position, renderer, clipboard, messages),
                     }
-                }
-                // This section from line 462 to 483 was owned by 13r0ck (https://github.com/13r0ck).
-                Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                    if layout.bounds().contains(cursor_position) {
-                        let negative: bool;
-                        match delta {
-                            mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
-                            negative = y.is_sign_negative()
+                    // This section from line 462 to 483 was owned by 13r0ck (https://github.com/13r0ck).
+                    Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
+                        if layout.bounds().contains(cursor_position) {
+                            let negative: bool;
+                            match delta {
+                                mouse::ScrollDelta::Lines { y, .. }
+                                | mouse::ScrollDelta::Pixels { y, .. } => {
+                                    negative = y.is_sign_negative()
+                                }
                             }
-                        }
-                        if negative {
-                            self.increase_val(messages)
+                            if negative {
+                                self.increase_val(messages)
+                            } else {
+                                self.decrease_val(messages)
+                            }
+                            event::Status::Captured
                         } else {
-                            self.decrease_val(messages)
+                            event::Status::Ignored
                         }
-                        event::Status::Captured
-                    } else {
-                        event::Status::Ignored
                     }
-                }
-                _ => self
-                    .content
-                    .on_event(event.clone(), content, cursor_position, renderer, clipboard, messages),
+                    _ => self.content.on_event(
+                        event.clone(),
+                        content,
+                        cursor_position,
+                        renderer,
+                        clipboard,
+                        messages,
+                    ),
                 }
             }
         } else {
@@ -490,7 +562,8 @@ pub trait Renderer: text_input::Renderer {
     ) -> Self::Output;
 }
 
-impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
+    for Element<'a, Message, Renderer>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
