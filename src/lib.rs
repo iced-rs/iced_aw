@@ -35,11 +35,11 @@
     clippy::use_debug,
 )]
 #![allow(
-    clippy::suboptimal_flops,
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss,
-    clippy::cast_possible_wrap,
-    clippy::module_name_repetitions
+   clippy::suboptimal_flops,
+   clippy::cast_possible_truncation,
+   clippy::cast_sign_loss,
+   clippy::cast_possible_wrap,
+   clippy::module_name_repetitions
 )]
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -53,51 +53,55 @@ pub mod style;
 #[cfg(not(target_arch = "wasm32"))]
 /// Exports for all platforms that are not WASM32.
 mod platform {
-    #[doc(no_inline)]
-    #[cfg(feature = "icons")]
-    pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
+   #[doc(no_inline)]
+   #[cfg(feature = "icons")]
+   pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "badge")]
-    pub use {crate::graphics::badge, badge::Badge};
+   #[doc(no_inline)]
+   #[cfg(feature = "badge")]
+   pub use {crate::graphics::badge, badge::Badge};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "card")]
-    pub use {crate::graphics::card, card::Card};
+   #[doc(no_inline)]
+   #[cfg(feature = "card")]
+   pub use {crate::graphics::card, card::Card};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "color_picker")]
-    pub use {crate::graphics::color_picker, color_picker::ColorPicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "color_picker")]
+   pub use {crate::graphics::color_picker, color_picker::ColorPicker};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "date_picker")]
-    pub use {crate::graphics::date_picker, date_picker::DatePicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "date_picker")]
+   pub use {crate::graphics::date_picker, date_picker::DatePicker};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "floating_button")]
-    pub use {crate::graphics::floating_button, floating_button::FloatingButton};
+   #[doc(no_inline)]
+   #[cfg(feature = "floating_button")]
+   pub use {crate::graphics::floating_button, floating_button::FloatingButton};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "modal")]
-    pub use {crate::graphics::modal, modal::Modal};
+   #[doc(no_inline)]
+   #[cfg(feature = "modal")]
+   pub use {crate::graphics::modal, modal::Modal};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "tab_bar")]
-    pub use {
-        crate::graphics::tab_bar,
-        tab_bar::{TabBar, TabLabel},
-    };
+   #[doc(no_inline)]
+   #[cfg(feature = "tab_bar")]
+   pub use {
+      crate::graphics::tab_bar,
+      tab_bar::{TabBar, TabLabel},
+   };
 
-    #[doc(no_inline)]
-    #[cfg(feature = "tabs")]
-    pub use {
-        crate::graphics::tabs,
-        tabs::{TabBarPosition, Tabs},
-    };
+   #[doc(no_inline)]
+   #[cfg(feature = "tabs")]
+   pub use {
+      crate::graphics::tabs,
+      tabs::{TabBarPosition, Tabs},
+   };
 
-    #[doc(no_inline)]
-    #[cfg(feature = "time_picker")]
-    pub use {crate::graphics::time_picker, time_picker::TimePicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "time_picker")]
+   pub use {crate::graphics::time_picker, time_picker::TimePicker};
+
+   #[doc(no_inline)]
+   #[cfg(feature = "number_input")]
+   pub use {crate::graphics::number_input, number_input::NumberInput};
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;
@@ -105,33 +109,33 @@ pub mod web;
 #[cfg(target_arch = "wasm32")]
 /// Exports for the WASM32 platform.
 mod platform {
-    #[doc(no_inline)]
-    #[cfg(feature = "badge")]
-    pub use crate::web::{badge, badge::Badge};
+   #[doc(no_inline)]
+   #[cfg(feature = "badge")]
+   pub use crate::web::{badge, badge::Badge};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "card")]
-    pub use crate::web::{card, card::Card};
+   #[doc(no_inline)]
+   #[cfg(feature = "card")]
+   pub use crate::web::{card, card::Card};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "color_picker")]
-    pub use crate::web::{color_picker, color_picker::ColorPicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "color_picker")]
+   pub use crate::web::{color_picker, color_picker::ColorPicker};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "date_picker")]
-    pub use crate::web::{date_picker, date_picker::DatePicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "date_picker")]
+   pub use crate::web::{date_picker, date_picker::DatePicker};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "floating_button")]
-    pub use crate::web::{floating_button, floating_button::FloatingButton};
+   #[doc(no_inline)]
+   #[cfg(feature = "floating_button")]
+   pub use crate::web::{floating_button, floating_button::FloatingButton};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "modal")]
-    pub use crate::web::{modal, modal::Modal};
+   #[doc(no_inline)]
+   #[cfg(feature = "modal")]
+   pub use crate::web::{modal, modal::Modal};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "time_picker")]
-    pub use crate::web::{time_picker, time_picker::TimePicker};
+   #[doc(no_inline)]
+   #[cfg(feature = "time_picker")]
+   pub use crate::web::{time_picker, time_picker::TimePicker};
 }
 
 #[doc(no_inline)]

@@ -26,6 +26,7 @@ modal = []
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
+number_input = []
 
 default = [
     "badge",
@@ -42,6 +43,7 @@ default = [
 
 [dependencies]
 iced_style = "0.3"
+num-traits = "0.2.14"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 iced_native = "0.4"
@@ -69,5 +71,6 @@ members = [
     #"examples/tabs",
     #"examples/tabs_min",
     "examples/time_picker",
-    "examples/web"
+    "examples/web",
+    "examples/number_input",
 ]
