@@ -444,21 +444,48 @@ where
                                 event::Status::Captured
                             }
                             keyboard::KeyCode::Backspace => {
-                                if self.value.to_string().len() == 1 {
-                                    self.value = T::zero();
-                                    messages.push((self.on_change)(self.value));
-                                    event::Status::Captured
-                                } else if T::zero().eq(&self.value) {
+                                if T::zero().eq(&self.value) {
                                     event::Status::Ignored
                                 } else {
-                                    self.content.on_event(
-                                        event.clone(),
-                                        content,
-                                        cursor_position,
-                                        renderer,
-                                        clipboard,
-                                        messages,
-                                    )
+                                    let mut new_val = self.value.to_string();
+                                    match self.content.state().cursor().state(&Value::new(&new_val)) {
+                                        cursor::State::Index(idx) => {
+                                            if idx >= 1 && idx <= new_val.len() {
+                                                if new_val.len() == 1 {
+                                                    new_val = if self.bounds.0 > T::zero() {
+                                                        self.bounds.0
+                                                    } else {
+                                                        T::zero()
+                                                    }.to_string();
+                                                } else {
+                                                    let _ = new_val.remove(idx-1);
+                                                }
+                                            }
+                                        }
+                                        cursor::State::Selection { start, end } => {
+                                            new_val.replace_range(start..end, "")
+                                        }
+                                    }
+            
+                                    match T::from_str(&new_val) {
+                                        Ok(val) => {
+                                            if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                                self.value = val;
+                                                messages.push((self.on_change)(self.value));
+                                                self.content.on_event(
+                                                    event.clone(),
+                                                    content,
+                                                    cursor_position,
+                                                    renderer,
+                                                    clipboard,
+                                                    messages,
+                                                )
+                                            } else {
+                                                event::Status::Ignored
+                                            }
+                                        }
+                                        Err(_) => event::Status::Ignored,
+                                    }
                                 }
                             }
                             _ => self.content.on_event(
@@ -471,25 +498,21 @@ where
                             ),
                         }
                     }
-                    // This section from line 462 to 483 was owned by 13r0ck (https://github.com/13r0ck).
+                    // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                        if layout.bounds().contains(cursor_position) {
-                            let negative: bool;
-                            match delta {
-                                mouse::ScrollDelta::Lines { y, .. }
-                                | mouse::ScrollDelta::Pixels { y, .. } => {
-                                    negative = y.is_sign_negative()
-                                }
+                        let negative: bool;
+                        match delta {
+                            mouse::ScrollDelta::Lines { y, .. }
+                            | mouse::ScrollDelta::Pixels { y, .. } => {
+                                negative = y.is_sign_negative()
                             }
-                            if negative {
-                                self.increase_val(messages)
-                            } else {
-                                self.decrease_val(messages)
-                            }
-                            event::Status::Captured
-                        } else {
-                            event::Status::Ignored
                         }
+                        if negative {
+                            self.increase_val(messages)
+                        } else {
+                            self.decrease_val(messages)
+                        }
+                        event::Status::Captured
                     }
                     _ => self.content.on_event(
                         event.clone(),

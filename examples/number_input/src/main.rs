@@ -4,12 +4,12 @@ use iced_aw::number_input::{self, NumberInput};
 #[derive(Default)]
 pub struct NumberInputDemo {
     state: number_input::State,
-    value: u8,
+    value: f32,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(u8),
+    NumInpChanged(f32),
 }
 
 fn main() -> iced::Result {
@@ -28,7 +28,7 @@ impl Sandbox for NumberInputDemo {
 
     fn new() -> Self {
         Self {
-            value: 27,
+            value: 27.0,
             ..Self::default()
         }
     }
@@ -47,8 +47,9 @@ impl Sandbox for NumberInputDemo {
 
     fn view(&mut self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = NumberInput::new(&mut self.state, self.value, 255, Message::NumInpChanged)
-            .step(1)
+        let txt_minute = NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)
+            .step(0.5)
+            .min(1.0)
             .input_style(style::CustomTextInput)
             .style(style::CustomNumInput);
 
