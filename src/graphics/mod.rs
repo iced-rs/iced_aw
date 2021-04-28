@@ -53,3 +53,8 @@ pub mod time_picker;
 #[doc(no_inline)]
 #[cfg(feature = "time_picker")]
 pub use time_picker::TimePicker;
+
+#[cfg(feature = "wrap")]
+pub mod wrap;
+#[cfg(feature = "wrap")]
+pub use wrap::Wrap;
