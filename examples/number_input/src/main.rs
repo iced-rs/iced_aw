@@ -47,11 +47,12 @@ impl Sandbox for NumberInputDemo {
 
     fn view(&mut self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)
-            .step(0.5)
-            .min(1.0)
-            .input_style(style::CustomTextInput)
-            .style(style::CustomNumInput);
+        let txt_minute =
+            NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)
+                .step(0.5)
+                .min(1.0)
+                .input_style(style::CustomTextInput)
+                .style(style::CustomNumInput);
 
         Container::new(
             Row::new()

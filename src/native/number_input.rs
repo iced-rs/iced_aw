@@ -448,7 +448,8 @@ where
                                     event::Status::Ignored
                                 } else {
                                     let mut new_val = self.value.to_string();
-                                    match self.content.state().cursor().state(&Value::new(&new_val)) {
+                                    match self.content.state().cursor().state(&Value::new(&new_val))
+                                    {
                                         cursor::State::Index(idx) => {
                                             if idx >= 1 && idx <= new_val.len() {
                                                 if new_val.len() == 1 {
@@ -456,9 +457,10 @@ where
                                                         self.bounds.0
                                                     } else {
                                                         T::zero()
-                                                    }.to_string();
+                                                    }
+                                                    .to_string();
                                                 } else {
-                                                    let _ = new_val.remove(idx-1);
+                                                    let _ = new_val.remove(idx - 1);
                                                 }
                                             }
                                         }
@@ -466,7 +468,7 @@ where
                                             new_val.replace_range(start..end, "")
                                         }
                                     }
-            
+
                                     match T::from_str(&new_val) {
                                         Ok(val) => {
                                             if (self.bounds.0..=self.bounds.1).contains(&val) {
