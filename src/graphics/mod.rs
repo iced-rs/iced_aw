@@ -53,3 +53,8 @@ pub mod time_picker;
 #[doc(no_inline)]
 #[cfg(feature = "time_picker")]
 pub use time_picker::TimePicker;
+
+#[cfg(feature = "number_input")]
+pub mod number_input;
+#[cfg(feature = "number_input")]
+pub use number_input::NumberInput;
