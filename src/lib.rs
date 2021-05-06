@@ -101,10 +101,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "wrap")]
-    pub use {
-        crate::graphics::wrap,
-        wrap::Wrap,
-    };
+    pub use {crate::graphics::wrap, wrap::Wrap};
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;

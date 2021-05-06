@@ -5,14 +5,12 @@
 use iced_native::{
     event,
     layout::{self, Limits, Node},
-    overlay, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size,
-    Widget,
+    overlay, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size, Widget,
 };
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct Wrap<'a,Message,Renderer>
-{
+pub struct Wrap<'a, Message, Renderer> {
     /// Creates an empty [`Row`].
     pub elements: Vec<Element<'a, Message, Renderer>>,
     // pub horizontal_alignment: Align,
@@ -35,8 +33,7 @@ pub struct Wrap<'a,Message,Renderer>
     pub line_height: u32,
 }
 
-impl<'a, Message,Renderer> Wrap<'a, Message, Renderer>
-{
+impl<'a, Message, Renderer> Wrap<'a, Message, Renderer> {
     /// Creates an empty [`Row`].
     pub fn new() -> Self {
         Self::with_elements(Vec::new())
@@ -218,10 +215,7 @@ where
             })
             .fold(event::Status::Ignored, event::Status::merge)
     }
-    fn overlay(
-        &mut self,
-        layout: Layout<'_>,
-    ) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
         self.elements
             .iter_mut()
             .zip(layout.children())
@@ -241,8 +235,7 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::row::Renderer,
     Message: 'a,
@@ -252,10 +245,7 @@ where
     }
 }
 
-
-
-impl<'a, Message,Renderer> Default for Wrap<'a, Message,Renderer>
-{
+impl<'a, Message, Renderer> Default for Wrap<'a, Message, Renderer> {
     fn default() -> Self {
         Self {
             elements: vec![],

@@ -1,7 +1,10 @@
-use iced::{Sandbox, Settings, Text, button::{self, Button}};
+use iced::{
+    button::{self, Button},
+    Sandbox, Settings, Text,
+};
 use iced_aw::Wrap;
 
-fn main()-> iced::Result {
+fn main() -> iced::Result {
     RandStrings::run(Settings::default())
 }
 
