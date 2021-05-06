@@ -1,6 +1,6 @@
-//! Use a time picker as an input element for picking times.
+//! A widget that displays its children in multiple horizontal or vertical runs.
 //!
-//! *This API requires the following crate features to be activated: `time_picker`*
+//! *This API requires the following crate features to be activated: `wrap`*
 
 use iced_native::{
     event,
@@ -11,71 +11,74 @@ use iced_native::{
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
 pub struct Wrap<'a, Message, Renderer> {
-    /// Creates an empty [`Row`].
+    /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Renderer>>,
     // pub horizontal_alignment: Align,
     // pub vertical_alignment: Align,
-    /// Creates an empty [`Row`].
+    /// The width of the [`Wrap`](Wrap).
     pub width: Length,
-    /// Creates an empty [`Row`].
+    /// The height of the [`Wrap`](Wrap).
     pub height: Length,
-    /// Creates an empty [`Row`].
+    /// The maximum width of the [`Wrap`](Wrap).
     pub max_width: u32,
-    /// Creates an empty [`Row`].
+    /// The maximum height of the [`Wrap`](Wrap)
     pub max_height: u32,
-    /// Creates an empty [`Row`].
+    /// The padding of each element of the [`Wrap`](Wrap).
     pub padding: u16,
-    /// Creates an empty [`Row`].
+    /// The spacing between each element of the [`Wrap`](Wrap).
     pub spacing: u16,
-    /// Creates an empty [`Row`].
+    /// The spacing between each line of the [`Wrap`](Wrap).
     pub line_spacing: u16,
-    /// Creates an empty [`Row`].
+    /// The height of each line of the [`Wrap`](Wrap).
     pub line_height: u32,
 }
 
 impl<'a, Message, Renderer> Wrap<'a, Message, Renderer> {
-    /// Creates an empty [`Row`].
+    /// Creates an empty [`Wrap`](Wrap).
     pub fn new() -> Self {
         Self::with_elements(Vec::new())
     }
-    /// Creates a [`Row`] with the given elements.
+    /// Creates a [`Wrap`](Wrap) with the given elements.
+    ///
+    /// It expects:
+    ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
     pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
             elements,
             ..Default::default()
         }
     }
-    /// Creates an empty [`Row`].
+    /// Sets the spacing of the [`Wrap`](Wrap).
     pub fn spacing(mut self, units: u16) -> Self {
         self.spacing = units;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the spacing of the lines of the [`Wrap`](Wrap).
     pub fn line_spacing(mut self, units: u16) -> Self {
         self.line_spacing = units;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the padding of the elements in the [`Wrap`](Wrap).
     pub fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the width of the [`Wrap`](Wrap).
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the height of the [`Wrap`](Wrap).
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the maximum width of the [`Wrap`](Wrap).
     pub fn max_width(mut self, max_width: u32) -> Self {
         self.max_width = max_width;
         self
     }
-    /// Creates an empty [`Row`].
+    /// Sets the maximum height of the [`Wrap`](Wrap).
     pub fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
@@ -90,7 +93,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer> {
     //     self.horizontal_alignment = align;
     //     self
     // }
-    /// Creates an empty [`Row`].
+    /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
     pub fn push<E>(mut self, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
