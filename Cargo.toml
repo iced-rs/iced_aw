@@ -19,6 +19,7 @@ colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
 floating_button = ["button"]
+grid = []
 glow = [] # TODO
 icon_text = []
 icons = []
@@ -35,6 +36,7 @@ default = [
     "date_picker",
     "color_picker",
     "floating_button",
+    "grid",
     "modal",
     "tab_bar",
     "tabs",
