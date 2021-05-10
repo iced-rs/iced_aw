@@ -68,6 +68,7 @@ members = [
     "examples/color_picker",
     "examples/date_picker",
     "examples/floating_button",
+    "examples/grid",
     "examples/modal",
     #"examples/tab_bar",
     #"examples/tabs",
