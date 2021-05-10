@@ -126,6 +126,10 @@ mod platform {
     pub use crate::web::{color_picker, color_picker::ColorPicker};
 
     #[doc(no_inline)]
+    #[cfg(feature = "grid")]
+    pub use crate::web::{grid, grid::Grid};
+
+    #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
     pub use crate::web::{date_picker, date_picker::DatePicker};
 
