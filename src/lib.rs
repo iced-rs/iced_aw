@@ -100,13 +100,11 @@ mod platform {
     pub use {crate::graphics::time_picker, time_picker::TimePicker};
 
     #[doc(no_inline)]
-
     #[cfg(feature = "wrap")]
     pub use {crate::graphics::wrap, wrap::Wrap};
 
     #[cfg(feature = "number_input")]
     pub use {crate::graphics::number_input, number_input::NumberInput};
-
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;

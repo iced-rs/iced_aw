@@ -16,10 +16,8 @@ use iced_native::{
 pub struct Wrap<'a, Message, Renderer, Direction> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Renderer>>,
-    /// The horizontal alignment of the [`Wrap`](Wrap).
-    pub horizontal_alignment: Align,
-    /// The vertical alignment of the [`Wrap`](Wrap).
-    pub vertical_alignment: Align,
+    /// The alignment of the [`Wrap`](Wrap).
+    pub alignment: Align,
     /// The width of the [`Wrap`](Wrap).
     pub width: Length,
     /// The height of the [`Wrap`](Wrap).
@@ -113,14 +111,9 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self.max_height = max_height;
         self
     }
-    /// Sets the vertical alignment of the [`Wrap`](Wrap).
-    pub const fn vertical_alignment(mut self, align: Align) -> Self {
-        self.vertical_alignment = align;
-        self
-    }
-    /// Sets the horizontal alignment of the [`Wrap`](Wrap).
-    pub const fn horizontal_alignment(mut self, align: Align) -> Self {
-        self.horizontal_alignment = align;
+    /// Sets the alignment of the [`Wrap`](Wrap).
+    pub const fn align(mut self, align: Align) -> Self {
+        self.alignment = align;
         self
     }
     /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
@@ -156,8 +149,7 @@ where
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
-        self.vertical_alignment.hash(state);
-        self.horizontal_alignment.hash(state);
+        self.alignment.hash(state);
         self.line_minimal_length.hash(state);
         self.width.hash(state);
         self.height.hash(state);
@@ -244,8 +236,7 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
     fn default() -> Self {
         Self {
             elements: vec![],
-            horizontal_alignment: Align::Center,
-            vertical_alignment: Align::Center,
+            alignment: Align::Start,
             width: Length::Shrink,
             height: Length::Shrink,
             max_width: u32::MAX,
@@ -299,8 +290,10 @@ where
         let mut deep_curse = padding;
         let mut current_line_height = line_minimal_length;
         let mut max_main = curse;
-
-        let nodes: Vec<Node> = self
+        let mut align = vec![];
+        let mut start = 0;
+        let mut end = 0;
+        let mut nodes: Vec<Node> = self
             .elements
             .iter()
             .map(|elem| {
@@ -317,22 +310,32 @@ where
 
                 if offset > max_width {
                     deep_curse += current_line_height + line_spacing;
+                    align.push((start..end, current_line_height));
+                    start = end;
                     current_line_height = line_minimal_length;
                     node.move_to(Point::new(padding, deep_curse));
                     curse = offset_init + padding;
                 } else {
                     node.move_to(Point::new(curse, deep_curse));
                     curse = offset;
+                    end += 1;
                 }
                 current_line_height = current_line_height.max(size.height);
                 max_main = max_main.max(curse);
 
-                // node.align(self.horizontal_alignment, self.vertical_alignment, size);
-
                 node
             })
             .collect();
-
+        if end != start {
+            align.push((start..nodes.len(), current_line_height));
+        }
+        align.into_iter().for_each(|(range, max_length)| {
+            nodes[range].iter_mut().for_each(|node| {
+                let size = node.size();
+                let space = Size::new(size.width, max_length);
+                node.align(Align::Start, self.alignment, space);
+            });
+        });
         let (width, height) = (
             max_main - padding,
             deep_curse - padding + current_line_height,
@@ -377,8 +380,10 @@ where
         // todo
         let mut current_line_width = 10.0;
         let mut max_main = curse;
-
-        let nodes: Vec<Node> = self
+        let mut align = vec![];
+        let mut start = 0;
+        let mut end = 0;
+        let mut nodes: Vec<Node> = self
             .elements
             .iter()
             .map(|elem| {
@@ -395,21 +400,32 @@ where
 
                 if offset > max_height {
                     wide_curse += current_line_width + line_spacing;
+                    align.push((start..end, current_line_width));
+                    start = end;
                     current_line_width = line_minimal_length;
                     node.move_to(Point::new(wide_curse, padding));
                     curse = offset_init + padding;
                 } else {
                     node.move_to(Point::new(wide_curse, curse));
+                    end += 1;
                     curse = offset;
                 }
                 current_line_width = current_line_width.max(size.width);
                 max_main = max_main.max(curse);
 
-                node.align(self.horizontal_alignment, self.vertical_alignment, size);
-
                 node
             })
             .collect();
+        if end != start {
+            align.push((start..nodes.len(), current_line_width));
+        }
+        align.into_iter().for_each(|(range, max_length)| {
+            nodes[range].iter_mut().for_each(|node| {
+                let size = node.size();
+                let space = Size::new(max_length, size.height);
+                node.align(self.alignment, Align::Start, space);
+            });
+        });
 
         let (width, height) = (
             wide_curse - padding + current_line_width,

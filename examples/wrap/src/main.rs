@@ -43,6 +43,7 @@ impl iced::Sandbox for RandStrings {
                 let StrButton { state, str } = button;
                 wrap.push(Button::new(state, Text::new(str.as_str())))
             })
+            .align(iced::Align::Center)
             .into()
     }
 }
