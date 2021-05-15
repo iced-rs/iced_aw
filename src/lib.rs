@@ -102,7 +102,8 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "wrap")]
     pub use {crate::graphics::wrap, wrap::Wrap};
-
+    
+    #[doc(no_inline)]
     #[cfg(feature = "number_input")]
     pub use {crate::graphics::number_input, number_input::NumberInput};
 }
