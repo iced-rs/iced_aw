@@ -75,6 +75,6 @@ members = [
     #"examples/tabs_min",
     "examples/time_picker",
     "examples/wrap",
-    "examples/web"
+    "examples/web",
     "examples/number_input",
 ]
