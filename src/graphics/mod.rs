@@ -58,3 +58,9 @@ pub use time_picker::TimePicker;
 pub mod wrap;
 #[cfg(feature = "wrap")]
 pub use wrap::Wrap;
+
+#[cfg(feature = "number_input")]
+pub mod number_input;
+#[cfg(feature = "number_input")]
+pub use number_input::NumberInput;
+

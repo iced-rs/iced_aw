@@ -27,6 +27,8 @@ tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
 wrap = []
+number_input = ["num-traits"]
+
 
 default = [
     "badge",
@@ -44,6 +46,7 @@ default = [
 
 [dependencies]
 iced_style = "0.3"
+num-traits = { version = "0.2.14", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 iced_native = "0.4"
@@ -73,4 +76,5 @@ members = [
     "examples/time_picker",
     "examples/wrap",
     "examples/web"
+    "examples/number_input",
 ]

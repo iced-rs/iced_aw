@@ -9,8 +9,8 @@ Every widget is hidden by a feature gate. This allows you to cherry pick the wid
 Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
-iced =  { git = "https://github.com/hecrj/iced", rev = "12c0c18d662d2b817b559b94c71d18e122c76990" }
-iced_aw = { git = "https://github.com/kaiden42/iced_aw", default-features = false, features = [...] }
+iced = "0.3"
+iced_aw = { git = "https://github.com/iced-rs/iced_aw", branch = "main", default-features = false, features = [...] }
 ```
 
 **Why not Crates.io?**
@@ -19,14 +19,6 @@ This crate is currently based on top of the master branch of Iced. Crates.io [re
 
 ## Widgets
 
-Currently planned widgets are:
-- [x] Badge
-- [x] Floating Action Button
-- [x] Card
-- [x] Modal
-- [x] Date Picker
-- [x] Time Picker
-- [x] Color Picker
 
 ### Badge
 
@@ -108,6 +100,22 @@ Please take a look into our examples on how to use modals.
 Enable this widget with the feature `modal`.
 To enable predefined styles, enable the feature `colors`.
 
+### NumberInput
+
+Just like TextInput, but only for numbers.
+
+<center>
+
+![NumberInput showcase](./images/showcase/number_input.png)
+
+</center>
+
+Please take a look into our examples on how to use number inputs.
+
+Enable this widget with the feature `number_input`.
+
+*This widget does currently not support web*
+
 ### TabBar and Tabs
 
 <center>
@@ -119,6 +127,8 @@ To enable predefined styles, enable the feature `colors`.
 Please take a look into our examples on how to use TabBars and Tabs.
 
 Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
+
+*This widgets are currently not supporting web*
 
 ### Time Picker
 
@@ -150,4 +160,4 @@ Thanks to [Bootstrap](https://icons.getbootstrap.com), iced_aw now contains ~1,2
 
 Enable icons with the feature `icons`.
 
-*Note: the icon font with ~1,200 weights around 0.5 MB. This features should only be used for experimenting with all the icons.*
+*Note: the icon font with ~1,200 weights around 0.274 MB. This features should only be used for experimenting with all the icons.*
