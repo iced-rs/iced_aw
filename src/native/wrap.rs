@@ -32,7 +32,7 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     pub spacing: u16,
     /// The spacing between each line of the [`Wrap`](Wrap).
     pub line_spacing: u16,
-    /// The height of each line of the [`Wrap`](Wrap).
+    /// The minimal length of each line of the [`Wrap`](Wrap).
     pub line_minimal_length: u32,
     _direction: PhantomData<Direction>,
 }
@@ -377,8 +377,7 @@ where
 
         let mut curse = padding;
         let mut wide_curse = padding;
-        // todo
-        let mut current_line_width = 10.0;
+        let mut current_line_width = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
         let mut start = 0;
