@@ -312,6 +312,7 @@ where
                     deep_curse += current_line_height + line_spacing;
                     align.push((start..end, current_line_height));
                     start = end;
+                    end+=1;
                     current_line_height = line_minimal_length;
                     node.move_to(Point::new(padding, deep_curse));
                     curse = offset_init + padding;
@@ -327,7 +328,7 @@ where
             })
             .collect();
         if end != start {
-            align.push((start..nodes.len(), current_line_height));
+            align.push((start..end, current_line_height));
         }
         align.into_iter().for_each(|(range, max_length)| {
             nodes[range].iter_mut().for_each(|node| {
@@ -401,6 +402,7 @@ where
                     wide_curse += current_line_width + line_spacing;
                     align.push((start..end, current_line_width));
                     start = end;
+                    end+=1;
                     current_line_width = line_minimal_length;
                     node.move_to(Point::new(wide_curse, padding));
                     curse = offset_init + padding;
@@ -416,7 +418,7 @@ where
             })
             .collect();
         if end != start {
-            align.push((start..nodes.len(), current_line_width));
+            align.push((start..end, current_line_width));
         }
         align.into_iter().for_each(|(range, max_length)| {
             nodes[range].iter_mut().for_each(|node| {
