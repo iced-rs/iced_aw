@@ -312,7 +312,7 @@ where
                     deep_curse += current_line_height + line_spacing;
                     align.push((start..end, current_line_height));
                     start = end;
-                    end+=1;
+                    end += 1;
                     current_line_height = line_minimal_length;
                     node.move_to(Point::new(padding, deep_curse));
                     curse = offset_init + padding;
@@ -402,7 +402,7 @@ where
                     wide_curse += current_line_width + line_spacing;
                     align.push((start..end, current_line_width));
                     start = end;
-                    end+=1;
+                    end += 1;
                     current_line_width = line_minimal_length;
                     node.move_to(Point::new(wide_curse, padding));
                     curse = offset_init + padding;

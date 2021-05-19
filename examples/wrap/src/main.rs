@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use iced::{Column, Container, Row, Sandbox, Settings, Text, button::{self, Button}};
+use iced::{
+    button::{self, Button},
+    Column, Container, Row, Sandbox, Settings, Text,
+};
 use iced_aw::{number_input, NumberInput, Wrap};
 use rand::Rng;
 
@@ -72,14 +75,14 @@ impl iced::Sandbox for RandStrings {
 
     fn new() -> Self {
         let mut rng = rand::thread_rng();
-        let data:Vec<StrButton> = (0..45)
-        .into_iter()
-        .map(|s| StrButton {
-            state: button::State::new(),
-            str:s.to_string(),
-            size: rng.gen_range(15..50)
-        })
-        .collect();
+        let data: Vec<StrButton> = (0..45)
+            .into_iter()
+            .map(|s| StrButton {
+                state: button::State::new(),
+                str: s.to_string(),
+                size: rng.gen_range(15..50),
+            })
+            .collect();
         Self {
             vbuttons: data.clone(),
             hbuttons: data,
@@ -129,8 +132,11 @@ impl iced::Sandbox for RandStrings {
             vbuttons
                 .iter_mut()
                 .fold(Wrap::new_vertical(), |wrap, button| {
-                    let StrButton { state, str,.. } = button;
-                    wrap.push(Button::new(state, Text::new(str.as_str()).size(button.size)))
+                    let StrButton { state, str, .. } = button;
+                    wrap.push(Button::new(
+                        state,
+                        Text::new(str.as_str()).size(button.size),
+                    ))
                 })
                 .align(self.align)
                 .spacing(self.spacing)
@@ -142,8 +148,11 @@ impl iced::Sandbox for RandStrings {
             hbuttons
                 .iter_mut()
                 .fold(Wrap::new(), |wrap, button| {
-                    let StrButton { state, str,.. } = button;
-                    wrap.push(Button::new(state, Text::new(str.as_str()).size(button.size)))
+                    let StrButton { state, str, .. } = button;
+                    wrap.push(Button::new(
+                        state,
+                        Text::new(str.as_str()).size(button.size),
+                    ))
                 })
                 .align(self.align)
                 .spacing(self.spacing)
@@ -157,18 +166,23 @@ impl iced::Sandbox for RandStrings {
             Some(self.align.into()),
             Message::ChangeAlign,
         );
-        let spacing_input = Column::new().push(Text::new("spacing")).push(NumberInput::new(
-            spacing_input,
-            self.spacing,
-            500,
-            Message::ChangeSpacing,
-        ));
-        let line_spacing_input = Column::new().push(Text::new("line spacing")).push(NumberInput::new(
-            line_spacing_input,
-            self.line_spacing,
-            500,
-            Message::ChangeLineSpacing,
-        ));
+        let spacing_input = Column::new()
+            .push(Text::new("spacing"))
+            .push(NumberInput::new(
+                spacing_input,
+                self.spacing,
+                500,
+                Message::ChangeSpacing,
+            ));
+        let line_spacing_input =
+            Column::new()
+                .push(Text::new("line spacing"))
+                .push(NumberInput::new(
+                    line_spacing_input,
+                    self.line_spacing,
+                    500,
+                    Message::ChangeLineSpacing,
+                ));
         let line_minimal_length_input =
             Column::new()
                 .push(Text::new("line minimal length"))
@@ -186,10 +200,6 @@ impl iced::Sandbox for RandStrings {
             .height(iced::Length::Shrink)
             .align_items(iced::Align::Center);
 
-        Row::new()
-            .push(ctrls)
-            .push(vertcal)
-            .push(horizontal)
-            .into()
+        Row::new().push(ctrls).push(vertcal).push(horizontal).into()
     }
 }
