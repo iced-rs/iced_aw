@@ -92,12 +92,12 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self
     }
     /// Sets the width of the [`Wrap`](Wrap).
-    pub const fn width(mut self, width: Length) -> Self {
+    pub const fn width_items(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
     /// Sets the height of the [`Wrap`](Wrap).
-    pub const fn height(mut self, height: Length) -> Self {
+    pub const fn height_items(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
@@ -112,7 +112,7 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self
     }
     /// Sets the alignment of the [`Wrap`](Wrap).
-    pub const fn align(mut self, align: Align) -> Self {
+    pub const fn align_items(mut self, align: Align) -> Self {
         self.alignment = align;
         self
     }

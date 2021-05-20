@@ -138,7 +138,7 @@ impl iced::Sandbox for RandStrings {
                         Text::new(str.as_str()).size(button.size),
                     ))
                 })
-                .align(self.align)
+                .align_items(self.align)
                 .spacing(self.spacing)
                 .line_spacing(self.line_spacing)
                 .line_minimal_length(self.line_minimal_length),
@@ -154,7 +154,7 @@ impl iced::Sandbox for RandStrings {
                         Text::new(str.as_str()).size(button.size),
                     ))
                 })
-                .align(self.align)
+                .align_items(self.align)
                 .spacing(self.spacing)
                 .line_spacing(self.line_spacing)
                 .line_minimal_length(self.line_minimal_length),
