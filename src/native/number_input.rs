@@ -599,6 +599,7 @@ where
     }
 }
 
+#[cfg(debug_assertions)]
 impl Renderer for iced_native::renderer::Null {
     type Style = ();
 
