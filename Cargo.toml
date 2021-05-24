@@ -26,7 +26,9 @@ modal = []
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
+wrap = []
 number_input = ["num-traits"]
+
 
 default = [
     "badge",
@@ -38,7 +40,8 @@ default = [
     "modal",
     "tab_bar",
     "tabs",
-    "time_picker"
+    "time_picker",
+    "wrap"
 ]
 
 [dependencies]
@@ -71,6 +74,7 @@ members = [
     #"examples/tabs",
     #"examples/tabs_min",
     "examples/time_picker",
+    "examples/wrap",
     "examples/web",
     "examples/number_input",
 ]
