@@ -78,6 +78,10 @@ mod platform {
     pub use {crate::graphics::floating_button, floating_button::FloatingButton};
 
     #[doc(no_inline)]
+    #[cfg(feature = "grid")]
+    pub use {crate::graphics::grid, grid::Grid};
+
+    #[doc(no_inline)]
     #[cfg(feature = "modal")]
     pub use {crate::graphics::modal, modal::Modal};
 
@@ -124,6 +128,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "color_picker")]
     pub use crate::web::{color_picker, color_picker::ColorPicker};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "grid")]
+    pub use crate::web::{grid, grid::Grid};
 
     #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
