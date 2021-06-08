@@ -110,6 +110,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "number_input")]
     pub use {crate::graphics::number_input, number_input::NumberInput};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "selection_list")]
+    pub use {crate::graphics::selection_list, selection_list::SelectionList};
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;
