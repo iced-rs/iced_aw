@@ -44,7 +44,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
     pub fn new() -> Self {
         Self::with_elements(Vec::new())
     }
-    
+
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
@@ -64,7 +64,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
     pub fn new_vertical() -> Self {
         Self::with_elements_vertical(Vec::new())
     }
-    
+
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
@@ -85,63 +85,63 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self.spacing = units;
         self
     }
-    
+
     /// Sets the spacing of the lines of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn line_spacing(mut self, units: u16) -> Self {
         self.line_spacing = units;
         self
     }
-    
+
     /// Sets the minimal length of the lines of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn line_minimal_length(mut self, units: u32) -> Self {
         self.line_minimal_length = units;
         self
     }
-    
+
     /// Sets the padding of the elements in the [`Wrap`](Wrap).
     #[must_use]
     pub const fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self
     }
-    
+
     /// Sets the width of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn width_items(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
-    
+
     /// Sets the height of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn height_items(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
-    
+
     /// Sets the maximum width of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn max_width(mut self, max_width: u32) -> Self {
         self.max_width = max_width;
         self
     }
-    
+
     /// Sets the maximum height of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
     }
-    
+
     /// Sets the alignment of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn align_items(mut self, align: Align) -> Self {
         self.alignment = align;
         self
     }
-    
+
     /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
     pub fn push<E>(mut self, element: E) -> Self
     where
@@ -375,7 +375,7 @@ where
 
         Node::with_children(size.pad(padding), nodes)
     }
-    
+
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_draw(
