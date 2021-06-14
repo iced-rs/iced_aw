@@ -66,7 +66,7 @@ impl<'a, Message> Grid<'a, Message> {
     /// Inserts an [`Element`](Element) into the [`Grid`](Grid).
     pub fn insert<E>(&mut self, element: E)
     where
-        E: Into<Element<'a, Message, Renderer>>,
+        E: Into<Element<'a, Message>>,
     {
         self.elements.push(element.into());
     }
