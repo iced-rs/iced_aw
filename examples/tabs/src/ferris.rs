@@ -1,5 +1,5 @@
-use iced::{Align, Column, Container, Element, Image, Length, Text, Slider, slider};
-use iced_aw::{TabLabel};
+use iced::{slider, Align, Column, Container, Element, Image, Length, Slider, Text};
+use iced_aw::TabLabel;
 
 use crate::{Icon, Message, Tab};
 
@@ -23,9 +23,7 @@ impl FerrisTab {
 
     pub fn update(&mut self, message: FerrisMessage) {
         match message {
-            FerrisMessage::ImageWidthChanged(value) => {
-                self.ferris_width = value
-            }
+            FerrisMessage::ImageWidthChanged(value) => self.ferris_width = value,
         }
     }
 }
@@ -48,41 +46,32 @@ impl Tab for FerrisTab {
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
-                .push(
-                    Text::new(
-                        if self.ferris_width == 500 {
-                            "Hugs!!!"
-                        } else {
-                            "Pull me closer!"
-                        }
-                    )
-                )
+                .push(Text::new(if self.ferris_width == 500 {
+                    "Hugs!!!"
+                } else {
+                    "Pull me closer!"
+                }))
                 .push(ferris(self.ferris_width))
                 .push(Slider::new(
                     &mut self.slider,
                     100..=500,
                     self.ferris_width,
                     FerrisMessage::ImageWidthChanged,
-                ))
-            )
-            .into();
+                )),
+        )
+        .into();
 
         content.map(Message::Ferris)
     }
 }
 
 fn ferris<'a>(width: u16) -> Container<'a, FerrisMessage> {
-    Container::new(
-        if cfg!(target_carch = "wasm32") {
-            Image::new("images/ferris.png")
-        } else {
-            Image::new(format!(
-                "{}/images/ferris.png",
-                env!("CARGO_MANIFEST_DIR")
-            ))
+    Container::new(if cfg!(target_carch = "wasm32") {
+        Image::new("images/ferris.png")
+    } else {
+        Image::new(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))
             .width(Length::Units(width))
-        }
-    )
+    })
     .width(Length::Fill)
     .center_x()
 }

@@ -1,6 +1,6 @@
 use crate::{Icon, Message, Tab};
 use iced::{button, Align, Button, Column, Container, Element, Row, Text};
-use iced_aw::{TabLabel};
+use iced_aw::TabLabel;
 #[derive(Debug, Clone)]
 pub enum CounterMessage {
     Increase,
@@ -24,18 +24,13 @@ impl CounterTab {
 
     pub fn update(&mut self, message: CounterMessage) {
         match message {
-            CounterMessage::Increase => {
-                self.value += 1
-            },
-            CounterMessage::Decrease => {
-                self.value -= 1
-            }
+            CounterMessage::Increase => self.value += 1,
+            CounterMessage::Decrease => self.value -= 1,
         }
     }
 }
 
 impl Tab for CounterTab {
-    
     type Message = Message;
 
     fn title(&self) -> String {
@@ -54,30 +49,21 @@ impl Tab for CounterTab {
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
-                .push(
-                    Text::new(format!("Count: {}", self.value))
-                        .size(32)
-                )
+                .push(Text::new(format!("Count: {}", self.value)).size(32))
                 .push(
                     Row::new()
                         .spacing(10)
                         .push(
-                            Button::new(
-                                &mut self.decrease_button,
-                                Text::new("Decrease"),
-                            )
-                            .on_press(CounterMessage::Decrease)
+                            Button::new(&mut self.decrease_button, Text::new("Decrease"))
+                                .on_press(CounterMessage::Decrease),
                         )
                         .push(
-                            Button::new(
-                                &mut self.increase_button,
-                                Text::new("Increase"),
-                            )
-                            .on_press(CounterMessage::Increase)
-                        )
-                        
-                )
-        ).into();
+                            Button::new(&mut self.increase_button, Text::new("Increase"))
+                                .on_press(CounterMessage::Increase),
+                        ),
+                ),
+        )
+        .into();
 
         content.map(Message::Counter)
     }
