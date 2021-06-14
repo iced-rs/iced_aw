@@ -1,4 +1,4 @@
-use iced_aw::{tabs};
+use iced_aw::tabs;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Theme {
@@ -89,7 +89,7 @@ mod red {
                 tab_label_background,
                 icon_color: text_color,
                 text_color,
-                .. self.active(is_selected)
+                ..self.active(is_selected)
             }
         }
     }
@@ -136,14 +136,14 @@ mod blue {
             Style {
                 tab_label_background,
                 tab_label_border_color,
-                .. self.active(is_selected)
+                ..self.active(is_selected)
             }
         }
     }
 }
 
 mod green {
-    use iced::{Color};
+    use iced::Color;
     use iced_aw::tabs::{self, Style};
 
     pub struct TabBar;
@@ -154,8 +154,9 @@ mod green {
                 [0.0, 0.5, 0.0]
             } else {
                 [0.7, 0.7, 0.7]
-            }.into();
-            
+            }
+            .into();
+
             Style {
                 background: None,
                 border_color: None,
@@ -165,7 +166,7 @@ mod green {
                 tab_label_border_width: 1.0,
                 icon_color: color,
                 text_color: color,
-            }            
+            }
         }
 
         fn hovered(&self, is_selected: bool) -> tabs::Style {
@@ -175,14 +176,14 @@ mod green {
                 tab_label_border_color: color,
                 icon_color: color,
                 text_color: color,
-                .. self.active(is_selected)
+                ..self.active(is_selected)
             }
         }
     }
 }
 
 mod purple {
-    use iced::{Color};
+    use iced::Color;
     use iced_aw::tabs::{self, Style};
 
     pub struct TabBar;
@@ -213,7 +214,7 @@ mod purple {
             Style {
                 icon_color: text_color,
                 text_color,
-                .. self.active(is_selected)
+                ..self.active(is_selected)
             }
         }
     }

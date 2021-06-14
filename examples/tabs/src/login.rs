@@ -1,5 +1,8 @@
-use iced::{button, Align, Column, Button, Container, Element, HorizontalAlignment, Length, Row, Text, TextInput, text_input};
-use iced_aw::{TabLabel};
+use iced::{
+    button, text_input, Align, Button, Column, Container, Element, HorizontalAlignment, Length,
+    Row, Text, TextInput,
+};
+use iced_aw::TabLabel;
 
 use crate::{Icon, Message, Tab};
 
@@ -34,19 +37,13 @@ impl LoginTab {
 
     pub fn update(&mut self, message: LoginMessage) {
         match message {
-            LoginMessage::UsernameChanged(value) => {
-                self.username = value
-            }
-            LoginMessage::PasswordChanged(value) => {
-                self.password = value
-            }
+            LoginMessage::UsernameChanged(value) => self.username = value,
+            LoginMessage::PasswordChanged(value) => self.password = value,
             LoginMessage::ClearPressed => {
                 self.username = String::new();
                 self.password = String::new();
             }
-            LoginMessage::LoginPressed => {
-
-            }
+            LoginMessage::LoginPressed => {}
         }
     }
 }
@@ -78,7 +75,7 @@ impl Tab for LoginTab {
                         LoginMessage::UsernameChanged,
                     )
                     .padding(10)
-                    .size(32)
+                    .size(32),
                 )
                 .push(
                     TextInput::new(
@@ -89,7 +86,7 @@ impl Tab for LoginTab {
                     )
                     .padding(10)
                     .size(32)
-                    .password()
+                    .password(),
                 )
                 .push(
                     Row::new()
@@ -98,21 +95,21 @@ impl Tab for LoginTab {
                             Button::new(
                                 &mut self.clear_button,
                                 Text::new("Clear")
-                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
                             )
                             .width(Length::Fill)
-                            .on_press(LoginMessage::ClearPressed)
+                            .on_press(LoginMessage::ClearPressed),
                         )
                         .push(
                             Button::new(
                                 &mut self.login_button,
                                 Text::new("Login")
-                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
                             )
                             .width(Length::Fill)
-                            .on_press(LoginMessage::LoginPressed)
-                        )
-                )
+                            .on_press(LoginMessage::LoginPressed),
+                        ),
+                ),
         )
         .align_x(Align::Center)
         .align_y(Align::Center)

@@ -100,28 +100,28 @@ pub fn succ_year(date: NaiveDate) -> NaiveDate {
 #[cfg(not(target_arch = "wasm32"))]
 #[must_use]
 pub fn pred_week(date: NaiveDate) -> NaiveDate {
-    date.to_owned() - Duration::days(7)
+    date - Duration::days(7)
 }
 
 /// Calculates a date with the next week based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
 #[must_use]
 pub fn succ_week(date: NaiveDate) -> NaiveDate {
-    date.to_owned() + Duration::days(7)
+    date + Duration::days(7)
 }
 
 /// Calculates a date with the previous day based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
 #[must_use]
 pub fn pred_day(date: NaiveDate) -> NaiveDate {
-    date.to_owned() - Duration::days(1)
+    date - Duration::days(1)
 }
 
 /// Calculates a date with the next day based on the given date.
 #[cfg(not(target_arch = "wasm32"))]
 #[must_use]
 pub fn succ_day(date: NaiveDate) -> NaiveDate {
-    date.to_owned() + Duration::days(1)
+    date + Duration::days(1)
 }
 
 /// Specifies if the calculated day lays in the previous, same or next month of
