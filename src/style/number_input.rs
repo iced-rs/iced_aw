@@ -48,7 +48,6 @@ pub trait StyleSheet {
                 a: active.icon_color.a * 0.5,
                 ..active.icon_color
             },
-            ..active
         }
     }
 }

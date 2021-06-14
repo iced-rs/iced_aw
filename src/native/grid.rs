@@ -30,12 +30,17 @@ use iced_native::{
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Grid<'a, Message, Renderer: self::Renderer> {
+    /// The distribution [`Strategy`](Strategy) of the [`Grid`](Grid).
     strategy: Strategy,
+    /// The elements in the [`Grid`](Grid).
     elements: Vec<Element<'a, Message, Renderer>>,
 }
 
+/// The [`Strategy`](Strategy) of how to distribute the columns of the [`Grid`](Grid).
 enum Strategy {
+    /// Use `n` columns.
     Columns(usize),
+    /// Try to fit as much columns that have a fixed width.
     ColumnWidth(u16),
 }
 
@@ -51,6 +56,7 @@ where
 {
     /// Creates a new empty [`Grid`](Grid).
     /// Elements will be laid out in a specific amount of columns.
+    #[must_use]
     pub fn with_columns(columns: usize) -> Self {
         Self {
             strategy: Strategy::Columns(columns),
@@ -60,6 +66,7 @@ where
 
     /// Creates a new empty [`Grid`](Grid).
     /// Columns will be generated to fill the given space.
+    #[must_use]
     pub fn with_column_width(column_width: u16) -> Self {
         Self {
             strategy: Strategy::ColumnWidth(column_width),
@@ -113,7 +120,7 @@ where
                 let mut column_widths = Vec::<f32>::with_capacity(columns);
 
                 for (column, element) in (0..columns).cycle().zip(&self.elements) {
-                    let layout = element.layout(renderer, &limits).size();
+                    let layout = element.layout(renderer, limits).size();
                     layouts.push(layout);
 
                     if let Some(column_width) = column_widths.get_mut(column) {
@@ -147,6 +154,7 @@ where
                     .map(|element| element.layout(renderer, &column_limits).size());
                 let column_aligns =
                     std::iter::successors(Some(0.), |width| Some(width + column_width));
+                #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
                 let grid_width = (columns as f32) * column_width;
 
                 build_grid(columns, column_aligns, layouts, grid_width)
@@ -181,7 +189,7 @@ where
 
         children_status
             .into_iter()
-            .fold(event::Status::Ignored, |acc, status| acc.merge(status))
+            .fold(event::Status::Ignored, event::Status::merge)
     }
 
     fn draw(
@@ -206,6 +214,7 @@ where
     }
 }
 
+/// Builds the layout of the [`Grid`](grid).
 fn build_grid(
     columns: usize,
     column_aligns: impl Iterator<Item = f32> + Clone,

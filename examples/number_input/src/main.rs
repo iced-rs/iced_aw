@@ -96,7 +96,6 @@ mod style {
                 border_color: PRIMARY,
                 border_width: 1.0,
                 border_radius: 5.5,
-                ..text_input::Style::default()
             }
         }
 

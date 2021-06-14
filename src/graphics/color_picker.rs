@@ -650,7 +650,7 @@ fn hex_text(
                 border_color: style[&hex_text_style_state].bar_border_color,
             },
             Primitive::Text {
-                content: color.to_owned().as_hex_string(),
+                content: color.clone().as_hex_string(),
                 bounds: Rectangle {
                     x: layout.bounds().center_x(),
                     y: layout.bounds().center_y(),

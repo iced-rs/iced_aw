@@ -34,88 +34,114 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     pub line_spacing: u16,
     /// The minimal length of each line of the [`Wrap`](Wrap).
     pub line_minimal_length: u32,
+    #[allow(clippy::missing_docs_in_private_items)]
     _direction: PhantomData<Direction>,
 }
+
 impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
     /// Creates an empty horizontal [`Wrap`](Wrap).
     #[must_use]
     pub fn new() -> Self {
         Self::with_elements(Vec::new())
     }
+    
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
     ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    #[must_use]
     pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
             elements,
-            ..Default::default()
+            ..Wrap::default()
         }
     }
 }
+
 impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
     /// Creates an empty vertical [`Wrap`](Wrap).
     #[must_use]
     pub fn new_vertical() -> Self {
         Self::with_elements_vertical(Vec::new())
     }
+    
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
     ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    #[must_use]
     pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
             elements,
-            ..Default::default()
+            ..Wrap::default()
         }
     }
 }
+
 impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
     /// Sets the spacing of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn spacing(mut self, units: u16) -> Self {
         self.spacing = units;
         self
     }
+    
     /// Sets the spacing of the lines of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn line_spacing(mut self, units: u16) -> Self {
         self.line_spacing = units;
         self
     }
+    
     /// Sets the minimal length of the lines of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn line_minimal_length(mut self, units: u32) -> Self {
         self.line_minimal_length = units;
         self
     }
+    
     /// Sets the padding of the elements in the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self
     }
+    
     /// Sets the width of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn width_items(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
+    
     /// Sets the height of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn height_items(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
+    
     /// Sets the maximum width of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn max_width(mut self, max_width: u32) -> Self {
         self.max_width = max_width;
         self
     }
+    
     /// Sets the maximum height of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
     }
+    
     /// Sets the alignment of the [`Wrap`](Wrap).
+    #[must_use]
     pub const fn align_items(mut self, align: Align) -> Self {
         self.alignment = align;
         self
     }
+    
     /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
     pub fn push<E>(mut self, element: E) -> Self
     where
@@ -146,6 +172,7 @@ where
 
     fn hash_layout(&self, state: &mut Hasher) {
         use std::hash::Hash;
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -192,8 +219,7 @@ where
         self.elements
             .iter_mut()
             .zip(layout.children())
-            .filter_map(|(child, layout)| child.overlay(layout))
-            .next()
+            .find_map(|(child, layout)| child.overlay(layout))
     }
 
     fn draw(
@@ -220,6 +246,7 @@ where
         Element::new(wrap)
     }
 }
+
 impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
     for Element<'a, Message, Renderer>
 where
@@ -232,6 +259,7 @@ where
         Element::new(wrap)
     }
 }
+
 impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, Direction> {
     fn default() -> Self {
         Self {
@@ -272,11 +300,13 @@ impl<'a, Message, Renderer> WrapLayout<Renderer>
 where
     Renderer: iced_native::row::Renderer + 'a,
 {
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = self.padding as f32;
-        let spacing = self.spacing as f32;
-        let line_spacing = self.line_spacing as f32;
+        let padding = f32::from(self.padding);
+        let spacing = f32::from(self.spacing);
+        let line_spacing = f32::from(self.line_spacing);
+        #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length as f32;
         let limits = limits
             .pad(padding)
@@ -345,6 +375,8 @@ where
 
         Node::with_children(size.pad(padding), nodes)
     }
+    
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_draw(
         &self,
@@ -362,11 +394,13 @@ impl<'a, Message, Renderer> WrapLayout<Renderer>
 where
     Renderer: iced_native::column::Renderer + 'a,
 {
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = self.padding as f32;
-        let spacing = self.spacing as f32;
-        let line_spacing = self.line_spacing as f32;
+        let padding = f32::from(self.padding);
+        let spacing = f32::from(self.spacing);
+        let line_spacing = f32::from(self.line_spacing);
+        #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length as f32;
         let limits = limits
             .pad(padding)
@@ -436,6 +470,8 @@ where
 
         Node::with_children(size.pad(padding), nodes)
     }
+
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_draw(
         &self,
