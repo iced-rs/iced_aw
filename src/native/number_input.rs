@@ -251,7 +251,7 @@ where
             .height(Length::Shrink)
             .pad(padding);
         let content = self.content.layout(renderer, &limits.loose());
-        let txt_size = self.size.unwrap_or(renderer.default_size());
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
         let icon_size = txt_size * 3 / 4;
         let btn_mod = |c| {
             Container::<(), Renderer>::new(Text::new(format!(" {} ", c)).size(icon_size))
@@ -517,7 +517,7 @@ where
                         event::Status::Captured
                     }
                     _ => self.content.on_event(
-                        event.clone(),
+                        event,
                         content,
                         cursor_position,
                         renderer,
@@ -571,6 +571,7 @@ pub trait Renderer: text_input::Renderer {
     /// The default padding of a [`NumberInput`].
     const DEFAULT_PADDING: u16;
 
+    #[allow(clippy::too_many_arguments)]
     /// Draws a [`NumberInput`].
     fn draw(
         &mut self,

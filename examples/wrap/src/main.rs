@@ -62,6 +62,8 @@ struct StrButton {
     str: String,
     size: u16,
 }
+
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy)]
 enum Message {
     ChangeAlign(WrapAlign),

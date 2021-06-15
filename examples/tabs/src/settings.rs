@@ -1,6 +1,6 @@
-use crate::{Icon, Message, Tab, theme::Theme};
+use crate::{theme::Theme, Icon, Message, Tab};
 use iced::{Column, Container, Element, Radio, Text};
-use iced_aw::{TabLabel};
+use iced_aw::TabLabel;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TabBarPosition {
@@ -9,10 +9,7 @@ pub enum TabBarPosition {
 }
 
 impl TabBarPosition {
-    pub const ALL: [TabBarPosition; 2] = [
-        TabBarPosition::Top,
-        TabBarPosition::Bottom,
-    ];
+    pub const ALL: [TabBarPosition; 2] = [TabBarPosition::Top, TabBarPosition::Bottom];
 }
 
 impl From<TabBarPosition> for String {
@@ -31,7 +28,6 @@ impl Default for TabBarPosition {
 }
 
 //#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-
 
 pub struct TabSettings {
     pub tab_bar_position: Option<TabBarPosition>,
@@ -73,9 +69,7 @@ impl SettingsTab {
             SettingsMessage::PositionSelected(position) => {
                 self.settings().tab_bar_position = Some(position)
             }
-            SettingsMessage::ThemeSelected(theme) => {
-                self.settings().tab_bar_theme = Some(theme)
-            }
+            SettingsMessage::ThemeSelected(theme) => self.settings().tab_bar_theme = Some(theme),
         }
     }
 }
@@ -95,46 +89,36 @@ impl Tab for SettingsTab {
     fn content(&mut self) -> Element<'_, Self::Message> {
         let content: Element<'_, SettingsMessage> = Container::new(
             Column::new()
-                .push(
-                    Text::new("TabBar position:")
-                        .size(20)
-                )
-                .push(
-                    TabBarPosition::ALL.iter().cloned().fold(
-                        Column::new().padding(10).spacing(10),
-                        |column, position| {
-                            column.push(
-                                Radio::new(
-                                    position,
-                                    position,
-                                    self.settings().tab_bar_position,
-                                    SettingsMessage::PositionSelected,
-                                )
-                                .size(16)
+                .push(Text::new("TabBar position:").size(20))
+                .push(TabBarPosition::ALL.iter().cloned().fold(
+                    Column::new().padding(10).spacing(10),
+                    |column, position| {
+                        column.push(
+                            Radio::new(
+                                position,
+                                position,
+                                self.settings().tab_bar_position,
+                                SettingsMessage::PositionSelected,
                             )
-                        }
-                    )
-                )
-                .push(
-                    Text::new("TabBar color:")
-                        .size(20)
-                )
-                .push(
-                    Theme::ALL.iter().cloned().fold(
-                        Column::new().padding(10).spacing(10),
-                        |column, theme| {
-                            column.push(
-                                Radio::new(
-                                    theme,
-                                    theme,
-                                    self.settings().tab_bar_theme,
-                                    SettingsMessage::ThemeSelected,
-                                )
-                                .size(16)
+                            .size(16),
+                        )
+                    },
+                ))
+                .push(Text::new("TabBar color:").size(20))
+                .push(Theme::ALL.iter().cloned().fold(
+                    Column::new().padding(10).spacing(10),
+                    |column, theme| {
+                        column.push(
+                            Radio::new(
+                                theme,
+                                theme,
+                                self.settings().tab_bar_theme,
+                                SettingsMessage::ThemeSelected,
                             )
-                        }
-                    )
-                )
+                            .size(16),
+                        )
+                    },
+                )),
         )
         .into();
 

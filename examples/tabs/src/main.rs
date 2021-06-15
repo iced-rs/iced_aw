@@ -1,7 +1,6 @@
-use iced::{Align, Column, Container, Element, Font, Length, Sandbox,
-    Settings, Text, };
+use iced::{Align, Column, Container, Element, Font, Length, Sandbox, Settings, Text};
 
-use iced_aw::{Tabs, TabLabel};
+use iced_aw::{TabLabel, Tabs};
 
 mod login;
 use login::{LoginMessage, LoginTab};
@@ -13,14 +12,14 @@ mod counter;
 use counter::{CounterMessage, CounterTab};
 
 mod settings;
-use settings::{TabBarPosition, SettingsMessage, SettingsTab};
+use settings::{SettingsMessage, SettingsTab, TabBarPosition};
 
 mod theme;
 
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
 
-const ICON_FONT: Font = iced::Font::External{
+const ICON_FONT: Font = iced::Font::External {
     name: "Icons",
     bytes: include_bytes!("../fonts/icons.ttf"),
 };
@@ -83,28 +82,24 @@ impl Sandbox for TabBarExample {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::TabSelected(selected) => {
-                self.active_tab = selected
-            },
-            Message::Login(message) => {
-                self.login_tab.update(message)
-            },
-            Message::Ferris(message) => {
-                self.ferris_tab.update(message)
-            },
-            Message::Counter(message) => {
-                self.counter_tab.update(message)
-            },
-            Message::Settings(message) => {
-                self.settings_tab.update(message)
-            },
+            Message::TabSelected(selected) => self.active_tab = selected,
+            Message::Login(message) => self.login_tab.update(message),
+            Message::Ferris(message) => self.ferris_tab.update(message),
+            Message::Counter(message) => self.counter_tab.update(message),
+            Message::Settings(message) => self.settings_tab.update(message),
         }
     }
 
     fn view(&mut self) -> Element<'_, Self::Message> {
-        let position = self.settings_tab.settings().tab_bar_position
+        let position = self
+            .settings_tab
+            .settings()
+            .tab_bar_position
             .unwrap_or_default();
-        let theme = self.settings_tab.settings().tab_bar_theme
+        let theme = self
+            .settings_tab
+            .settings()
+            .tab_bar_theme
             .unwrap_or_default();
 
         Tabs::new(self.active_tab, Message::TabSelected)
@@ -131,13 +126,10 @@ trait Tab {
 
     fn view(&mut self) -> Element<'_, Self::Message> {
         let column = Column::new()
-        .spacing(20)
-        .push(
-            Text::new(self.title())
-                .size(HEADER_SIZE)
-        )
-        .push(self.content());
-    
+            .spacing(20)
+            .push(Text::new(self.title()).size(HEADER_SIZE))
+            .push(self.content());
+
         Container::new(column)
             .width(Length::Fill)
             .height(Length::Fill)

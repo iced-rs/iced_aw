@@ -119,7 +119,7 @@ where
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
-        let hsv_color: Hsv = self.state.color.to_owned().into();
+        let hsv_color: Hsv = self.state.color.clone().into();
         let mut color_changed = false;
 
         let sat_value_bounds = hsv_color_children
@@ -404,7 +404,7 @@ where
                 self.state.hue_canvas_cache.clear();
             } else {
                 let sat_value_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
-                    let mut hsv_color: Hsv = color.to_owned().into();
+                    let mut hsv_color: Hsv = color.clone().into();
                     let mut status = event::Status::Ignored;
 
                     match key_code {
@@ -438,7 +438,7 @@ where
                 };
 
                 let hue_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
-                    let mut hsv_color: Hsv = color.to_owned().into();
+                    let mut hsv_color: Hsv = color.clone().into();
                     let mut status = event::Status::Ignored;
 
                     let mut value = i32::from(hsv_color.hue);

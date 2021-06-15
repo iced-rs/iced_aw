@@ -418,6 +418,7 @@ where
         self.height.hash(state);
     }
 
+    #[allow(clippy::unwrap_in_result)]
     fn overlay(
         &mut self,
         layout: Layout<'_>,

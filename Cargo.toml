@@ -75,7 +75,7 @@ members = [
     "examples/grid",
     "examples/modal",
     #"examples/tab_bar",
-    #"examples/tabs",
+    "examples/tabs",
     #"examples/tabs_min",
     "examples/time_picker",
     "examples/wrap",
