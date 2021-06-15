@@ -88,7 +88,7 @@ where
     /// Turns the [`ListMenu`] into an overlay [`Element`] at the given target
     /// position.
     ///
-    /// The `target_height` will be used to display the ListMenu either on top
+    /// The `target_height` will be used to display the `ListMenu` either on top
     /// of the target or under it, depending on the screen position and the
     /// dimensions of the [`ListMenu`].
     pub fn overlay<Message: 'a>(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
@@ -105,6 +105,7 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`] for a [`ListMenu`].
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -179,7 +180,7 @@ where
 
     fn hash_layout(&self, state: &mut Hasher, position: Point) {
         use std::hash::Hash;
-
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -226,13 +227,21 @@ where
     }
 }
 
+/// The Private [`List`] Handles the Actual list rendering.
 struct List<'a, T, Renderer: self::Renderer> {
+    /// Options pointer to hold all rendered strings
     options: &'a [T],
+    /// Hovered Item Pointer
     hovered_option: &'a mut Option<usize>,
+    /// Last choosen Item Clicked for Processing
     last_selection: &'a mut Option<T>,
+    /// padding within the list for string offsets
     padding: u16,
+    /// Text size use for rendering the font
     text_size: Option<u16>,
+    /// Font needed for rendering the String
     font: Renderer::Font,
+    /// Style for Font colors and Box hover colors.
     style: <Renderer as self::Renderer>::Style,
 }
 
@@ -256,6 +265,7 @@ where
         let text_size = self.text_size.unwrap_or_else(|| renderer.default_size());
 
         let size = {
+            #[allow(clippy::cast_precision_loss)]
             let intrinsic = Size::new(
                 0.0,
                 f32::from(text_size + (self.padding * 2)) * self.options.len() as f32,
@@ -269,7 +279,7 @@ where
 
     fn hash_layout(&self, state: &mut Hasher) {
         use std::hash::Hash as _;
-
+        #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
@@ -380,6 +390,7 @@ pub trait Renderer: scrollable::Renderer + container::Renderer + text::Renderer 
     ) -> Self::Output;
 
     /// Draws the list of options of a [`ListMenu`].
+    #[allow(clippy::too_many_arguments)]
     fn draw<T: ToString>(
         &mut self,
         bounds: Rectangle,
@@ -394,13 +405,13 @@ pub trait Renderer: scrollable::Renderer + container::Renderer + text::Renderer 
     ) -> Self::Output;
 }
 
-impl<'a, T, Message, Renderer> Into<Element<'a, Message, Renderer>> for List<'a, T, Renderer>
+impl<'a, T, Message, Renderer> From<List<'a, T, Renderer>> for Element<'a, Message, Renderer>
 where
     T: ToString + Clone,
     Message: 'a,
     Renderer: 'a + self::Renderer,
 {
-    fn into(self) -> Element<'a, Message, Renderer> {
-        Element::new(self)
+    fn from(list: List<'a, T, Renderer>) -> Element<'a, Message, Renderer> {
+        Element::new(list)
     }
 }
