@@ -66,3 +66,8 @@ pub use wrap::Wrap;
 pub mod number_input;
 #[cfg(feature = "number_input")]
 pub use number_input::NumberInput;
+
+#[cfg(feature = "selection_list")]
+pub mod selection_list;
+#[cfg(feature = "selection_list")]
+pub use selection_list::{SelectionList, State};

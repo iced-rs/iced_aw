@@ -31,3 +31,6 @@ pub mod time_picker;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;
+
+#[cfg(feature = "selection_list")]
+pub mod selection_list;
