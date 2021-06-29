@@ -46,6 +46,10 @@ pub struct Split<'a, Message, Renderer: self::Renderer> {
     width: Length,
     /// The height of the [`Split`](Split).
     height: Length,
+    /// TODO
+    min_size_first: u16,
+    /// TODO
+    min_size_second: u16,
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
     /// The style of the [`Split`](Split).
@@ -84,6 +88,8 @@ where
             spacing: 5.0,
             width: Length::Fill,
             height: Length::Fill,
+            min_size_first: 5,
+            min_size_second: 5,
             on_resize: Box::new(on_resize),
             style: <Renderer as self::Renderer>::Style::default(),
         }
@@ -138,90 +144,9 @@ where
             .height(Length::Fill)
             .layout(renderer, limits);
 
-        // TODO: clean up
         match self.state.axis {
-            Axis::Horizontal => {
-                let divider_position = self
-                    .state
-                    .divider_position
-                    .unwrap_or_else(|| ((space.bounds().height) / 2.0) as u16);
-                let divider_position = (divider_position.max(self.spacing as u16)
-                    - (self.spacing / 2.0) as u16)
-                    .clamp(
-                        (self.spacing * 2.0) as u16,
-                        (space.bounds().height - self.spacing * 2.0) as u16,
-                    );
-
-                let first_limits = limits
-                    .clone()
-                    .max_height(u32::from(divider_position))
-                    .pad(self.padding);
-                let mut first = self.first.layout(renderer, &first_limits);
-                first.move_to(Point::new(self.padding, self.padding));
-
-                let mut divider =
-                    iced_native::layout::Node::new(Size::new(space.bounds().width, self.spacing));
-                divider.move_to(Point::new(space.bounds().x, f32::from(divider_position)));
-
-                let second_limits = limits
-                    .clone()
-                    .shrink(Size::new(
-                        0.0,
-                        first.bounds().height + (self.spacing / 2.0) + self.padding * 2.0,
-                    ))
-                    .pad(self.padding);
-                let mut second = self.second.layout(renderer, &second_limits);
-                second.move_to(Point::new(
-                    first.bounds().x,
-                    first.bounds().y + first.bounds().height + self.spacing + self.padding * 2.0,
-                ));
-
-                iced_native::layout::Node::with_children(
-                    Size::new(space.bounds().width, space.bounds().height),
-                    vec![first, divider, second],
-                )
-            }
-            Axis::Vertical => {
-                let divider_position = self
-                    .state
-                    .divider_position
-                    .unwrap_or_else(|| ((space.bounds().width - self.spacing) / 2.0) as u16);
-                let divider_position = (divider_position.max(self.spacing as u16)
-                    - (self.spacing / 2.0) as u16)
-                    .clamp(
-                        (self.spacing * 2.0) as u16,
-                        (space.bounds().width - self.spacing * 2.0) as u16,
-                    );
-
-                let first_limits = limits
-                    .clone()
-                    .max_width(u32::from(divider_position))
-                    .pad(self.padding);
-                let mut first = self.first.layout(renderer, &first_limits);
-                first.move_to(Point::new(self.padding, self.padding));
-
-                let mut divider =
-                    iced_native::layout::Node::new(Size::new(self.spacing, space.bounds().height));
-                divider.move_to(Point::new(f32::from(divider_position), space.bounds().y));
-
-                let second_limits = limits
-                    .clone()
-                    .shrink(Size::new(
-                        first.bounds().width + (self.spacing / 2.0) + self.padding * 2.0,
-                        0.0,
-                    ))
-                    .pad(self.padding);
-                let mut second = self.second.layout(renderer, &second_limits);
-                second.move_to(Point::new(
-                    first.bounds().x + first.bounds().width + self.spacing + self.padding * 2.0,
-                    first.bounds().y,
-                ));
-
-                iced_native::layout::Node::with_children(
-                    Size::new(space.bounds().width, space.bounds().width),
-                    vec![first, divider, second],
-                )
-            }
+            Axis::Horizontal => horizontal_split(self, renderer, limits, &space),
+            Axis::Vertical => vertical_split(self, renderer, limits, &space),
         }
     }
 
@@ -328,6 +253,138 @@ where
 
         self.state.divider_position.hash(state);
     }
+}
+
+/// Do a horizontal split.
+fn horizontal_split<'a, Message, Renderer: self::Renderer>(
+    split: &Split<'a, Message, Renderer>,
+    renderer: &Renderer,
+    limits: &iced_native::layout::Limits,
+    space: &iced_native::layout::Node,
+) -> iced_native::layout::Node {
+    if space.bounds().height
+        < split.spacing + f32::from(split.min_size_first + split.min_size_second)
+    {
+        return iced_native::layout::Node::with_children(
+            space.bounds().size(),
+            vec![
+                split.first.layout(
+                    renderer,
+                    &limits.clone().shrink(Size::new(0.0, space.bounds().height)),
+                ),
+                iced_native::layout::Node::new(Size::new(space.bounds().height, split.spacing)),
+                split.second.layout(
+                    renderer,
+                    &limits.clone().shrink(Size::new(0.0, space.bounds().width)),
+                ),
+            ],
+        );
+    }
+
+    let divider_position = split
+        .state
+        .divider_position
+        .unwrap_or_else(|| (space.bounds().height / 2.0) as u16)
+        .max((split.spacing / 2.0) as u16);
+    let divider_position = (divider_position - (split.spacing / 2.0) as u16).clamp(
+        split.min_size_first,
+        space.bounds().height as u16 - split.min_size_second - split.spacing as u16,
+    );
+
+    let first_limits = limits
+        .clone()
+        .shrink(Size::new(
+            0.0,
+            space.bounds().height - f32::from(divider_position),
+        ))
+        .pad(split.padding);
+    let mut first = split.first.layout(renderer, &first_limits);
+    first.move_to(Point::new(
+        space.bounds().x + split.padding,
+        space.bounds().y + split.padding,
+    ));
+
+    let mut divider =
+        iced_native::layout::Node::new(Size::new(space.bounds().width, split.spacing));
+    divider.move_to(Point::new(space.bounds().x, f32::from(divider_position)));
+
+    let second_limits = limits
+        .clone()
+        .shrink(Size::new(0.0, f32::from(divider_position) + split.spacing))
+        .pad(split.padding);
+    let mut second = split.second.layout(renderer, &second_limits);
+    second.move_to(Point::new(
+        space.bounds().x + split.padding,
+        space.bounds().y + f32::from(divider_position) + split.spacing + split.padding,
+    ));
+
+    iced_native::layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
+}
+
+/// Do a vertical split.
+fn vertical_split<'a, Message, Renderer: self::Renderer>(
+    split: &Split<'a, Message, Renderer>,
+    renderer: &Renderer,
+    limits: &iced_native::layout::Limits,
+    space: &iced_native::layout::Node,
+) -> iced_native::layout::Node {
+    if space.bounds().width
+        < split.spacing + f32::from(split.min_size_first + split.min_size_second)
+    {
+        return iced_native::layout::Node::with_children(
+            space.bounds().size(),
+            vec![
+                split.first.layout(
+                    renderer,
+                    &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
+                ),
+                iced_native::layout::Node::new(Size::new(split.spacing, space.bounds().height)),
+                split.second.layout(
+                    renderer,
+                    &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
+                ),
+            ],
+        );
+    }
+
+    let divider_position = split
+        .state
+        .divider_position
+        .unwrap_or_else(|| (space.bounds().width / 2.0) as u16)
+        .max((split.spacing / 2.0) as u16);
+    let divider_position = (divider_position - (split.spacing / 2.0) as u16).clamp(
+        split.min_size_first,
+        space.bounds().width as u16 - split.min_size_second - split.spacing as u16,
+    );
+
+    let first_limits = limits
+        .clone()
+        .shrink(Size::new(
+            space.bounds().width - f32::from(divider_position),
+            0.0,
+        ))
+        .pad(split.padding);
+    let mut first = split.first.layout(renderer, &first_limits);
+    first.move_to(Point::new(
+        space.bounds().x + split.padding,
+        space.bounds().y + split.padding,
+    ));
+
+    let mut divider =
+        iced_native::layout::Node::new(Size::new(split.spacing, space.bounds().height));
+    divider.move_to(Point::new(f32::from(divider_position), space.bounds().y));
+
+    let second_limits = limits
+        .clone()
+        .shrink(Size::new(f32::from(divider_position) + split.spacing, 0.0))
+        .pad(split.padding);
+    let mut second = split.second.layout(renderer, &second_limits);
+    second.move_to(Point::new(
+        space.bounds().x + f32::from(divider_position) + split.spacing + split.padding,
+        space.bounds().y + split.padding,
+    ));
+
+    iced_native::layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
 /// The renderer of a [`Split`](Split).
