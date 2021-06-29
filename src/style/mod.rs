@@ -34,3 +34,6 @@ pub mod number_input;
 
 #[cfg(feature = "selection_list")]
 pub mod selection_list;
+
+#[cfg(feature = "split")]
+pub mod split;

@@ -1,6 +1,5 @@
 use iced::{
-    scrollable, window, Align, Container, Element, Length, Row, Sandbox, Scrollable, Settings,
-    Space, Text,
+    scrollable, Align, Container, Element, Length, Sandbox, Scrollable, Settings, Space, Text,
 };
 use iced_aw::selection_list::{self, SelectionList};
 

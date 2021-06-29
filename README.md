@@ -116,6 +116,22 @@ Enable this widget with the feature `number_input`.
 
 *This widget does currently not support web*
 
+### Split
+
+A split divides the available space to display two different elements.
+
+<center>
+
+![Split showcase](./images/showcase/split_example.gif)
+
+</center>
+
+Please take a look into our examples on how to use Splits.
+
+Enable Splits with the feature `split`.
+
+*This widget is currently not supporting web*
+
 ### TabBar and Tabs
 
 <center>
