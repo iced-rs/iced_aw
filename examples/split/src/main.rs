@@ -24,7 +24,7 @@ impl Sandbox for SplitPaneExample {
     }
 
     fn title(&self) -> String {
-        String::from("SplitPane example")
+        String::from("Split example")
     }
 
     fn update(&mut self, message: Self::Message) {
