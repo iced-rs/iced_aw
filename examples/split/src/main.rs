@@ -34,20 +34,17 @@ impl Sandbox for SplitPaneExample {
     }
 
     fn view(&mut self) -> iced::Element<'_, Self::Message> {
-        let first = Container::new(
-            Text::new("First"),
-        )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x()
-        .center_y();
+        let first = Container::new(Text::new("First"))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x()
+            .center_y();
 
-        let second = Container::new(
-            Text::new("Second")
-        ).width(Length::Fill)
-        .height(Length::Fill)
-        .center_x()
-        .center_y();
+        let second = Container::new(Text::new("Second"))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x()
+            .center_y();
 
         Split::new(&mut self.split_pane, first, second, Message::OnResize).into()
     }
