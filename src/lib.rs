@@ -114,6 +114,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
     pub use {crate::graphics::selection_list, selection_list::SelectionList};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "split")]
+    pub use {crate::graphics::split, split::Split};
 }
 #[cfg(target_arch = "wasm32")]
 pub mod web;

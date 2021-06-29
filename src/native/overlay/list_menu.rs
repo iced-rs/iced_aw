@@ -199,7 +199,7 @@ where
         messages: &mut Vec<Message>,
     ) -> event::Status {
         self.container.on_event(
-            event.clone(),
+            event,
             layout,
             cursor_position,
             renderer,

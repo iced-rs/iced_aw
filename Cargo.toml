@@ -30,6 +30,7 @@ time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
 wrap = []
 number_input = ["num-traits"]
 selection_list = []
+split = []
 
 default = [
     "badge",
@@ -44,7 +45,8 @@ default = [
     "tabs",
     "time_picker",
     "wrap",
-    "selection_list"
+    "selection_list",
+    "split"
 ]
 
 [dependencies]
@@ -82,4 +84,5 @@ members = [
     "examples/web",
     "examples/number_input",
     "examples/selection_list",
+    "examples/split",
 ]

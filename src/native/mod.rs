@@ -71,3 +71,8 @@ pub use number_input::NumberInput;
 pub mod selection_list;
 #[cfg(feature = "selection_list")]
 pub use selection_list::{SelectionList, State};
+
+#[cfg(feature = "split")]
+pub mod split;
+#[cfg(feature = "split")]
+pub use split::Split;
