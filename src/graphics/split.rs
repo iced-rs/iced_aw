@@ -1,7 +1,7 @@
 //! Use a split to split the available space in two parts to display two different elements.
 //!
 //! *This API requires the following crate features to be activated: split*
-use iced_graphics::{Backend, Color, Primitive, Renderer};
+use iced_graphics::{Backend, Color, Primitive, Renderer, Vector};
 use iced_native::mouse;
 
 use crate::native::split;
@@ -125,8 +125,16 @@ where
                     background,
                     first_background,
                     second_background,
-                    first,
-                    second,
+                    Primitive::Clip {
+                        bounds: first_layout.bounds(),
+                        offset: Vector::new(0, 0),
+                        content: Box::new(first),
+                    },
+                    Primitive::Clip {
+                        bounds: second_layout.bounds(),
+                        offset: Vector::new(0, 0),
+                        content: Box::new(second),
+                    },
                     divider_background,
                 ],
             },
