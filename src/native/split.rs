@@ -46,9 +46,9 @@ pub struct Split<'a, Message, Renderer: self::Renderer> {
     width: Length,
     /// The height of the [`Split`](Split).
     height: Length,
-    /// TODO
+    /// The minimum size of the first element of the [`Split`](Split).
     min_size_first: u16,
-    /// TODO
+    /// The minimum size of the second element of the [`Split`](Split).
     min_size_second: u16,
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
@@ -117,6 +117,18 @@ where
     /// Sets the height of the [`Split`](Split).
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
+        self
+    }
+
+    /// Sets the minimum size of the first element of the [`Split`](Split).
+    pub fn min_size_first(mut self, size: u16) -> Self {
+        self.min_size_first = size;
+        self
+    }
+
+    /// Sets the minimum size of the second element of the [`Split`](Split).
+    pub fn min_size_second(mut self, size: u16) -> Self {
+        self.min_size_second = size;
         self
     }
 }
@@ -252,6 +264,8 @@ where
         std::any::TypeId::of::<Marker>().hash(state);
 
         self.state.divider_position.hash(state);
+        self.first.hash_layout(state);
+        self.second.hash_layout(state);
     }
 }
 
