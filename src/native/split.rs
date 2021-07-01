@@ -4,7 +4,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    container, mouse, row, touch, Container, Element, Event, Length, Point, Row, Size, Widget,
+    container, mouse, row, touch, Container, Element, Event, Length, Padding, Point, Row, Size,
+    Widget,
 };
 
 use crate::core::renderer::DrawEnvironment;
@@ -20,7 +21,7 @@ use crate::core::renderer::DrawEnvironment;
 /// # pub type Split<'a, Message> = iced_aw::native::Split<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
-///     Resized(u16),    
+///     Resized(u16),
 /// }
 ///
 /// let mut state = State::new(Some(300), Axis::Vertical);
@@ -305,13 +306,14 @@ fn horizontal_split<'a, Message, Renderer: self::Renderer>(
         space.bounds().height as u16 - split.min_size_second - split.spacing as u16,
     );
 
+    let padding = Padding::from(split.padding as u16);
     let first_limits = limits
         .clone()
         .shrink(Size::new(
             0.0,
             space.bounds().height - f32::from(divider_position),
         ))
-        .pad(split.padding);
+        .pad(padding);
     let mut first = split.first.layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -325,7 +327,7 @@ fn horizontal_split<'a, Message, Renderer: self::Renderer>(
     let second_limits = limits
         .clone()
         .shrink(Size::new(0.0, f32::from(divider_position) + split.spacing))
-        .pad(split.padding);
+        .pad(padding);
     let mut second = split.second.layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -371,13 +373,14 @@ fn vertical_split<'a, Message, Renderer: self::Renderer>(
         space.bounds().width as u16 - split.min_size_second - split.spacing as u16,
     );
 
+    let padding = Padding::from(split.padding as u16);
     let first_limits = limits
         .clone()
         .shrink(Size::new(
             space.bounds().width - f32::from(divider_position),
             0.0,
         ))
-        .pad(split.padding);
+        .pad(padding);
     let mut first = split.first.layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -391,7 +394,7 @@ fn vertical_split<'a, Message, Renderer: self::Renderer>(
     let second_limits = limits
         .clone()
         .shrink(Size::new(f32::from(divider_position) + split.spacing, 0.0))
-        .pad(split.padding);
+        .pad(padding);
     let mut second = split.second.layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + f32::from(divider_position) + split.spacing + split.padding,

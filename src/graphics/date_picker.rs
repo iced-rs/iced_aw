@@ -342,7 +342,7 @@ fn day_labels(
             font: iced_graphics::Font::default(),
             horizontal_alignment: HorizontalAlignment::Center,
             vertical_alignment: VerticalAlignment::Center,
-        })
+        });
     }
 
     Primitive::Group { primitives: labels }
@@ -396,7 +396,7 @@ fn day_table(
                     border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
                     border_width: style.get(&StyleState::Focused).unwrap().border_width,
                     border_color: style.get(&StyleState::Focused).unwrap().border_color,
-                })
+                });
             }
 
             primitives.push(Primitive::Text {
@@ -419,7 +419,7 @@ fn day_table(
                 font: iced_graphics::Font::default(),
                 horizontal_alignment: HorizontalAlignment::Center,
                 vertical_alignment: VerticalAlignment::Center,
-            })
+            });
         }
     }
 

@@ -103,6 +103,7 @@ mod tests {
 
     use super::Hsv;
 
+    #[allow(clippy::cognitive_complexity)]
     #[test]
     fn rgb_to_hsv() {
         // https://de.wikipedia.org/wiki/HSV-Farbraum#Transformation_von_HSV/HSL_und_RGB
@@ -219,6 +220,7 @@ mod tests {
         assert_eq!(light_blue_red_hsv, light_blue_red_rgb.into());
     }
 
+    #[allow(clippy::cognitive_complexity)]
     #[test]
     fn hsv_to_rgb() {
         // https://de.wikipedia.org/wiki/HSV-Farbraum#Transformation_von_HSV/HSL_und_RGB

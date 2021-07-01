@@ -381,7 +381,7 @@ fn clock(
                             .clock_number_background,
                     );
                     frame.stroke(&Path::line(center, *p), hand_stroke);
-                    style_state = style_state.max(StyleState::Selected)
+                    style_state = style_state.max(StyleState::Selected);
                 }
 
                 if i % 5 == 0 {
@@ -441,7 +441,7 @@ fn clock(
                             style.get(&StyleState::Active).unwrap().clock_dots_color,
                         );
                     }
-                })
+                });
             }
         })
         .into_primitive();

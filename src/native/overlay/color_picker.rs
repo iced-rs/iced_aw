@@ -8,7 +8,7 @@ use iced_native::{
     button, column, event, keyboard,
     layout::{self, Limits},
     mouse, overlay, row, text, text_input, touch, Align, Button, Clipboard, Color, Column, Element,
-    Event, Layout, Length, Point, Rectangle, Row, Size, Text, Widget,
+    Event, Layout, Length, Padding, Point, Rectangle, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -119,7 +119,7 @@ where
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
-        let hsv_color: Hsv = self.state.color.clone().into();
+        let hsv_color: Hsv = self.state.color.into();
         let mut color_changed = false;
 
         let sat_value_bounds = hsv_color_children
@@ -162,8 +162,7 @@ where
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-            | Event::Touch(touch::Event::FingerLifted { .. })
-            | Event::Touch(touch::Event::FingerLost { .. }) => {
+            | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
                 self.state.color_bar_dragged = ColorBarDragged::None;
             }
             _ => {}
@@ -326,8 +325,7 @@ where
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-            | Event::Touch(touch::Event::FingerLifted { .. })
-            | Event::Touch(touch::Event::FingerLost { .. }) => {
+            | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
                 self.state.color_bar_dragged = ColorBarDragged::None;
             }
             _ => {}
@@ -404,7 +402,7 @@ where
                 self.state.hue_canvas_cache.clear();
             } else {
                 let sat_value_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
-                    let mut hsv_color: Hsv = color.clone().into();
+                    let mut hsv_color: Hsv = (*color).into();
                     let mut status = event::Status::Ignored;
 
                     match key_code {
@@ -438,7 +436,7 @@ where
                 };
 
                 let hue_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
-                    let mut hsv_color: Hsv = color.clone().into();
+                    let mut hsv_color: Hsv = (*color).into();
                     let mut status = event::Status::Ignored;
 
                     let mut value = i32::from(hsv_color.hue);
@@ -532,7 +530,7 @@ where
         };
 
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(f32::from(PADDING))
+            .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(max_width)
@@ -860,13 +858,13 @@ where
     ));
 
     // Buttons
-    let cancel_limits = block2_limits.clone().max_width(
+    let cancel_limits = block2_limits.max_width(
         ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
     );
 
     let mut cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
-    let submit_limits = block2_limits.clone().max_width(
+    let submit_limits = block2_limits.max_width(
         ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
     );
 
