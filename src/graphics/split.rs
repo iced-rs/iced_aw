@@ -20,6 +20,7 @@ where
 {
     type Style = Box<dyn StyleSheet>;
 
+    #[allow(clippy::too_many_lines)]
     fn draw<Message>(
         &mut self,
         env: crate::core::renderer::DrawEnvironment<Self::Defaults, Self::Style, ()>,

@@ -258,16 +258,21 @@ where
         )
     }
 
-    fn overlay(&mut self, layout: iced_native::Layout<'_>) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+    fn overlay(
+        &mut self,
+        layout: iced_native::Layout<'_>,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         let mut children = layout.children();
-        let first_layout = children.next().expect("Native: Layout should have a first layout");
-        let _divider_layout = children.next().expect("Native: Layout should have a second layout");
-        let second_layout = children.next().expect("Native: Layout should have a second layout");
+        let first_layout = children.next()?;
+        let _divider_layout = children.next()?;
+        let second_layout = children.next()?;
 
         let first = &mut self.first;
         let second = &mut self.second;
 
-        first.overlay(first_layout).or_else(move || second.overlay(second_layout))
+        first
+            .overlay(first_layout)
+            .or_else(move || second.overlay(second_layout))
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -484,7 +489,8 @@ impl State {
     }
 
     /// Gets the position of the divider.
-    pub fn divider_position(&self) -> Option<u16> {
+    #[must_use]
+    pub const fn divider_position(&self) -> Option<u16> {
         self.divider_position
     }
 
@@ -505,6 +511,6 @@ pub enum Axis {
 
 impl Default for Axis {
     fn default() -> Self {
-        Axis::Vertical
+        Self::Vertical
     }
 }
