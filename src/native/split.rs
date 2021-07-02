@@ -258,6 +258,18 @@ where
         )
     }
 
+    fn overlay(&mut self, layout: iced_native::Layout<'_>) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+        let mut children = layout.children();
+        let first_layout = children.next().expect("Native: Layout should have a first layout");
+        let _divider_layout = children.next().expect("Native: Layout should have a second layout");
+        let second_layout = children.next().expect("Native: Layout should have a second layout");
+
+        let first = &mut self.first;
+        let second = &mut self.second;
+
+        first.overlay(first_layout).or_else(move || second.overlay(second_layout))
+    }
+
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
