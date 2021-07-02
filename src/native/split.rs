@@ -446,7 +446,7 @@ where
 }
 
 /// The state of a [`Split`](Split).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct State {
     /// The position of the divider.
     divider_position: Option<u16>,
@@ -471,6 +471,11 @@ impl State {
         }
     }
 
+    /// Gets the position of the divider.
+    pub fn divider_position(&self) -> Option<u16> {
+        self.divider_position
+    }
+
     /// Sets the position of the divider of the [`State`](State).
     pub fn set_divider_position(&mut self, position: u16) {
         self.divider_position = Some(position);
@@ -484,4 +489,10 @@ pub enum Axis {
     Horizontal,
     /// Split vertically.
     Vertical,
+}
+
+impl Default for Axis {
+    fn default() -> Self {
+        Axis::Vertical
+    }
 }
