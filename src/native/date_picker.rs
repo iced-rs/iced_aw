@@ -132,10 +132,10 @@ impl State {
     pub fn reset(&mut self) {
         self.overlay_state.date = Local::today().naive_local();
     }
-    
+
     /// Set the date of the state to the given value.
-    pub fn set_date(&mut self,year:i32,month:u32,day:u32) {
-        self.overlay_state.date =  chrono::NaiveDate::from_ymd(year,month,day);
+    pub fn set_date(&mut self, year: i32, month: u32, day: u32) {
+        self.overlay_state.date = chrono::NaiveDate::from_ymd(year, month, day);
     }
 }
 
