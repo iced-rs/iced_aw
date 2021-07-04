@@ -258,28 +258,34 @@ where
                 .center_y()
                 .center_x()
         };
-        let mut modifier = if self.padding < Renderer::DEFAULT_PADDING {
-            Row::<(), Renderer>::new()
-                .spacing(1)
-                .width(Length::Shrink)
-                .push(btn_mod('+'))
-                .push(btn_mod('-'))
-                .layout(renderer, &limits.loose())
+        if self.state.disable_modifier_buttons {
+            let intrinsic = Size::new(content.size().width - 3.0, content.size().height);
+            let size = limits.resolve(intrinsic);
+            Node::with_children(size, vec![content])
         } else {
-            Column::<(), Renderer>::new()
-                .spacing(1)
-                .width(Length::Shrink)
-                .push(btn_mod('▲'))
-                .push(btn_mod('▼'))
-                .layout(renderer, &limits.loose())
-        };
-        let intrinsic = Size::new(
-            content.size().width - 3.0,
-            content.size().height.max(modifier.size().height),
-        );
-        modifier.align(Align::End, Align::Center, intrinsic);
-        let size = limits.resolve(intrinsic);
-        Node::with_children(size, vec![content, modifier])
+            let mut modifier = if self.padding < Renderer::DEFAULT_PADDING {
+                Row::<(), Renderer>::new()
+                    .spacing(1)
+                    .width(Length::Shrink)
+                    .push(btn_mod('+'))
+                    .push(btn_mod('-'))
+                    .layout(renderer, &limits.loose())
+            } else {
+                Column::<(), Renderer>::new()
+                    .spacing(1)
+                    .width(Length::Shrink)
+                    .push(btn_mod('▲'))
+                    .push(btn_mod('▼'))
+                    .layout(renderer, &limits.loose())
+            };
+            let intrinsic = Size::new(
+                content.size().width - 3.0,
+                content.size().height.max(modifier.size().height),
+            );
+            modifier.align(Align::End, Align::Center, intrinsic);
+            let size = limits.resolve(intrinsic);
+            Node::with_children(size, vec![content, modifier])
+        }
     }
 
     fn draw(
@@ -291,8 +297,15 @@ where
         _viewport: &Rectangle,
     ) -> Renderer::Output {
         let bounds = layout.bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
+        let content = self
+            .content
+            .draw(renderer, content_layout, cursor_position, None);
+        if self.state.disable_modifier_buttons {
+            return self::Renderer::easy_draw(renderer, is_mouse_over, content);
+        }
         let mut mod_children = children
             .next()
             .expect("fail to get modifiers layout")
@@ -305,10 +318,7 @@ where
             .next()
             .expect("fail to get decreate mod layout")
             .bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
-        let content = self
-            .content
-            .draw(renderer, content_layout, cursor_position, None);
+
         let is_decrease_disabled = self.value <= self.bounds.0;
         let is_increase_disabled = self.value >= self.bounds.1;
 
@@ -350,20 +360,26 @@ where
     ) -> event::Status {
         let mut children = layout.children();
         let content = children.next().expect("fail to get content layout");
-        let mut mod_children = children
-            .next()
-            .expect("fail to get modifiers layout")
-            .children();
-        let inc_bounds = mod_children
-            .next()
-            .expect("fail to get increase mod layout")
-            .bounds();
-        let dec_bounds = mod_children
-            .next()
-            .expect("fail to get decreate mod layout")
-            .bounds();
-        let mouse_over_inc = inc_bounds.contains(cursor_position);
-        let mouse_over_dec = dec_bounds.contains(cursor_position);
+
+        let (mouse_over_inc, mouse_over_dec) = if self.state.disable_modifier_buttons {
+            (false, false)
+        } else {
+            let mut mod_children = children
+                .next()
+                .expect("fail to get modifiers layout")
+                .children();
+            let inc_bounds = mod_children
+                .next()
+                .expect("fail to get increase mod layout")
+                .bounds();
+            let dec_bounds = mod_children
+                .next()
+                .expect("fail to get decreate mod layout")
+                .bounds();
+            let mouse_over_inc = inc_bounds.contains(cursor_position);
+            let mouse_over_dec = dec_bounds.contains(cursor_position);
+            (mouse_over_inc, mouse_over_dec)
+        };
 
         if layout.bounds().contains(cursor_position) {
             if mouse_over_inc || mouse_over_dec {
@@ -575,6 +591,51 @@ impl State {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Disables the modifier buttons of the [`NumberInput`]
+    pub fn disable_modifier_buttons(&mut self) {
+        self.mod_state.disable_modifier_buttons = true;
+    }
+
+    /// Enables the modifier buttons of the [`NumberInput`]
+    pub fn enable_modifier_buttons(&mut self) {
+        self.mod_state.disable_modifier_buttons = false;
+    }
+
+    /// Returns whether the [`NumberInput`] is currently focused or not.
+    pub fn is_focused(&self) -> bool {
+        self.input_state.is_focused()
+    }
+
+    /// Returns the [`Cursor`] of the [`NumberInput`].
+    pub fn cursor(&self) -> text_input::Cursor {
+        self.input_state.cursor()
+    }
+
+    /// Focuses the [`NumberInput`].
+    pub fn focus(&mut self) {
+        self.input_state.focus()
+    }
+
+    /// Unfocuses the [`NumberInput`].
+    pub fn unfocus(&mut self) {
+        self.input_state.unfocus()
+    }
+
+    /// Moves the [`Cursor`] of the [`NumberInput`] to the front of the input text.
+    pub fn move_cursor_to_front(&mut self) {
+        self.input_state.move_cursor_to_front()
+    }
+
+    /// Moves the [`Cursor`] of the [`NumberInput`] to the end of the input text.
+    pub fn move_cursor_to_end(&mut self) {
+        self.input_state.move_cursor_to_end()
+    }
+
+    /// Moves the [`Cursor`] of the [`NumberInput`] to an arbitrary location.
+    pub fn move_cursor_to(&mut self, position: usize) {
+        self.input_state.move_cursor_to(position)
+    }
 }
 
 /// The modifier state of a [`NumberInput`].
@@ -584,6 +645,8 @@ pub struct ModifierState {
     pub decrease_pressed: bool,
     /// The state of increase button on a [`NumberInput`].
     pub increase_pressed: bool,
+    /// The state of disable two buttons on a [`NumberInput`].
+    pub disable_modifier_buttons: bool,
 }
 
 /// The renderer of a [`NumberInput`].
@@ -614,6 +677,10 @@ pub trait Renderer: text_input::Renderer {
         style: &<Self as self::Renderer>::Style,
         font: Self::Font,
     ) -> Self::Output;
+
+    #[allow(clippy::too_many_arguments)]
+    /// Easy to draw a [`NumberInput`].
+    fn easy_draw(&mut self, is_mouse_over: bool, content: Self::Output) -> Self::Output;
 }
 
 impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
@@ -648,4 +715,5 @@ impl Renderer for iced_native::renderer::Null {
         _: <Self as text::Renderer>::Font,
     ) -> Self::Output {
     }
+    fn easy_draw(&mut self, _: bool, _: Self::Output) -> Self::Output {}
 }

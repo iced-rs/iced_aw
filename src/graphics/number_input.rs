@@ -125,4 +125,15 @@ where
             },
         )
     }
+
+    fn easy_draw(&mut self, is_mouse_over: bool, (content, _): Self::Output) -> Self::Output {
+        (
+            content,
+            if is_mouse_over {
+                mouse::Interaction::Text
+            } else {
+                mouse::Interaction::default()
+            },
+        )
+    }
 }
