@@ -110,10 +110,7 @@ where
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         use std::f32;
 
-        let limits = limits
-            .width(self.style.width)
-            .height(self.style.height)
-            .pad(f32::from(self.style.padding));
+        let limits = limits.width(self.style.width).height(self.style.height);
 
         let max_width = match self.style.width {
             Length::Shrink => {

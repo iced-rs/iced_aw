@@ -37,8 +37,8 @@ impl std::default::Default for Style {
             border_color: [0.7, 0.7, 0.7].into(),
             selected_text_color: Color::WHITE,
             selected_background: Background::Color([0.4, 0.4, 1.0].into()),
-            width: Length::Shrink,
-            height: Length::Shrink,
+            width: Length::Fill,
+            height: Length::Fill,
             padding: 5,
             text_size: 12,
         }
