@@ -1,11 +1,10 @@
 //! Display a list of selectable values.
 use iced_graphics::{backend, Backend, Color, Point, Primitive, Renderer};
-use iced_native::{mouse, Font, HorizontalAlignment, Rectangle, VerticalAlignment};
-use iced_style::menu;
+use iced_native::{mouse, HorizontalAlignment, Rectangle, VerticalAlignment};
 
-use crate::native::overlay::list_menu;
+use crate::native::overlay::list;
 pub use crate::native::selection_list::{self, State};
-pub use crate::style::selection_list::StyleSheet;
+pub use crate::style::selection_list::{Style, StyleSheet};
 
 /// A widget allowing the selection of a single value from a list of options.
 pub type SelectionList<'a, T, Message, Backend> =
@@ -15,30 +14,11 @@ impl<B> selection_list::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
 {
-    const DEFAULT_PADDING: u16 = 5;
-
-    type Style = Box<dyn StyleSheet>;
-
-    fn menu_style(style: &Box<dyn StyleSheet>) -> menu::Style {
-        style.menu()
-    }
-
-    fn draw(&mut self) -> Self::Output {
-        (Primitive::None, mouse::Interaction::default())
-    }
-}
-
-impl<B> list_menu::Renderer for Renderer<B>
-where
-    B: Backend + backend::Text,
-{
-    type Style = menu::Style;
-
     fn decorate(
         &mut self,
         bounds: Rectangle,
         _cursor_position: Point,
-        style: &menu::Style,
+        style: &Style,
         (primitives, mouse_cursor): Self::Output,
     ) -> Self::Output {
         (
@@ -58,6 +38,15 @@ where
         )
     }
 
+    fn draw(&mut self) -> Self::Output {
+        (Primitive::None, mouse::Interaction::default())
+    }
+}
+
+impl<B> list::Renderer for Renderer<B>
+where
+    B: Backend + backend::Text,
+{
     fn draw<T: ToString>(
         &mut self,
         bounds: Rectangle,
@@ -65,15 +54,12 @@ where
         viewport: &Rectangle,
         options: &[T],
         hovered_option: Option<usize>,
-        padding: u16,
-        text_size: u16,
-        font: Font,
-        style: &menu::Style,
+        font: Self::Font,
+        style: &Style,
     ) -> Self::Output {
         use std::f32;
-
         let is_mouse_over = bounds.contains(cursor_position);
-        let option_height = text_size + (padding * 2);
+        let option_height = style.text_size + (style.padding * 2);
 
         let mut primitives = Vec::new();
 
@@ -90,8 +76,8 @@ where
             let bounds = Rectangle {
                 x: bounds.x,
                 y: bounds.y + f32::from(option_height * i as u16),
-                width: bounds.width,
-                height: f32::from(text_size + (padding * 2)),
+                width: bounds.width - 10.0,
+                height: f32::from(style.text_size + (style.padding * 2)),
             };
 
             if is_selected {
@@ -107,12 +93,12 @@ where
             primitives.push(Primitive::Text {
                 content: option.to_string(),
                 bounds: Rectangle {
-                    x: bounds.x + f32::from(padding),
+                    x: bounds.x + f32::from(style.padding / 2),
                     y: bounds.center_y(),
                     width: f32::INFINITY,
                     ..bounds
                 },
-                size: f32::from(text_size),
+                size: f32::from(style.text_size),
                 font,
                 color: if is_selected {
                     style.selected_text_color
