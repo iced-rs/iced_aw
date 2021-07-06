@@ -76,7 +76,7 @@ where
             let bounds = Rectangle {
                 x: bounds.x,
                 y: bounds.y + f32::from(option_height * i as u16),
-                width: bounds.width - 10.0,
+                width: bounds.width,
                 height: f32::from(style.text_size + (style.padding * 2)),
             };
 
@@ -93,7 +93,7 @@ where
             primitives.push(Primitive::Text {
                 content: option.to_string(),
                 bounds: Rectangle {
-                    x: bounds.x + f32::from(style.padding / 2),
+                    x: bounds.x,
                     y: bounds.center_y(),
                     width: f32::INFINITY,
                     ..bounds

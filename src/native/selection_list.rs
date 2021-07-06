@@ -136,7 +136,7 @@ where
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width + u32::from(self.style.padding * 2) + 10);
+        let limits = limits.max_width(max_width + u32::from(self.style.padding * 2));
 
         let content = self.container.layout(renderer, &limits);
         let size = limits.resolve(content.size());

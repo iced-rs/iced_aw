@@ -46,11 +46,7 @@ where
 
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
-            if self.style.width == Length::Fill {
-                limits.fill().width
-            } else {
-                limits.fill().width - 10.0
-            },
+            limits.fill().width,
             f32::from(self.style.text_size + (self.style.padding * 2)) * self.options.len() as f32,
         );
 
