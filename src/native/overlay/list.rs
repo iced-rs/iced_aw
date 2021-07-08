@@ -102,7 +102,7 @@ where
                         .last_selection
                         .take()
                         .map_or(event::Status::Ignored, |last| {
-                            messages.push((self.on_selected)(last.clone()));
+                            messages.push((self.on_selected)(last));
                             event::Status::Captured
                         });
                 }
