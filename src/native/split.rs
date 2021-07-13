@@ -259,6 +259,23 @@ where
         )
     }
 
+    fn overlay(
+        &mut self,
+        layout: iced_native::Layout<'_>,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+        let mut children = layout.children();
+        let first_layout = children.next()?;
+        let _divider_layout = children.next()?;
+        let second_layout = children.next()?;
+
+        let first = &mut self.first;
+        let second = &mut self.second;
+
+        first
+            .overlay(first_layout)
+            .or_else(move || second.overlay(second_layout))
+    }
+
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
@@ -449,7 +466,7 @@ where
 }
 
 /// The state of a [`Split`](Split).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct State {
     /// The position of the divider.
     divider_position: Option<u16>,
@@ -474,6 +491,12 @@ impl State {
         }
     }
 
+    /// Gets the position of the divider.
+    #[must_use]
+    pub const fn divider_position(&self) -> Option<u16> {
+        self.divider_position
+    }
+
     /// Sets the position of the divider of the [`State`](State).
     pub fn set_divider_position(&mut self, position: u16) {
         self.divider_position = Some(position);
@@ -487,4 +510,10 @@ pub enum Axis {
     Horizontal,
     /// Split vertically.
     Vertical,
+}
+
+impl Default for Axis {
+    fn default() -> Self {
+        Self::Vertical
+    }
 }
