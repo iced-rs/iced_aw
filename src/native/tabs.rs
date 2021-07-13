@@ -253,10 +253,7 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        let tab_bar_limits = limits
-            .clone()
-            .width(self.width)
-            .height(self.tab_bar.get_height());
+        let tab_bar_limits = limits.width(self.width).height(self.tab_bar.get_height());
 
         let mut tab_bar_node = self.tab_bar.layout(renderer, &tab_bar_limits);
 

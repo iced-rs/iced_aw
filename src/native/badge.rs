@@ -4,7 +4,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, layout, Align, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget,
+    event, layout, Align, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Widget,
 };
 
 use crate::core::renderer::DrawEnvironment;
@@ -118,7 +119,7 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
 
         let limits = limits
             .loose()
@@ -129,7 +130,7 @@ where
         let mut content = self.content.layout(renderer, &limits.loose());
         let size = limits.resolve(content.size());
 
-        content.move_to(Point::new(padding, padding));
+        content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
         content.align(self.horizontal_alignment, self.vertical_alignment, size);
 
         layout::Node::with_children(size.pad(padding), vec![content])

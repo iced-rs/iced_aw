@@ -7,5 +7,5 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = "0.3"
+iced = { git = "https://github.com/hecrj/iced.git", rev = "4994d34abab" }
 iced_aw = { path = "../..", default-features = false, features = ["color_picker", "colors"] }

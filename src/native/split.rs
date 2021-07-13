@@ -4,7 +4,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    container, mouse, row, touch, Container, Element, Event, Length, Point, Row, Size, Widget,
+    container, mouse, row, touch, Container, Element, Event, Length, Padding, Point, Row, Size,
+    Widget,
 };
 
 use crate::core::renderer::DrawEnvironment;
@@ -20,7 +21,7 @@ use crate::core::renderer::DrawEnvironment;
 /// # pub type Split<'a, Message> = iced_aw::native::Split<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
-///     Resized(u16),    
+///     Resized(u16),
 /// }
 ///
 /// let mut state = State::new(Some(300), Axis::Vertical);
@@ -46,9 +47,9 @@ pub struct Split<'a, Message, Renderer: self::Renderer> {
     width: Length,
     /// The height of the [`Split`](Split).
     height: Length,
-    /// TODO
+    /// The minimum size of the first element of the [`Split`](Split).
     min_size_first: u16,
-    /// TODO
+    /// The minimum size of the second element of the [`Split`](Split).
     min_size_second: u16,
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
@@ -117,6 +118,18 @@ where
     /// Sets the height of the [`Split`](Split).
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
+        self
+    }
+
+    /// Sets the minimum size of the first element of the [`Split`](Split).
+    pub fn min_size_first(mut self, size: u16) -> Self {
+        self.min_size_first = size;
+        self
+    }
+
+    /// Sets the minimum size of the second element of the [`Split`](Split).
+    pub fn min_size_second(mut self, size: u16) -> Self {
+        self.min_size_second = size;
         self
     }
 }
@@ -246,12 +259,31 @@ where
         )
     }
 
+    fn overlay(
+        &mut self,
+        layout: iced_native::Layout<'_>,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+        let mut children = layout.children();
+        let first_layout = children.next()?;
+        let _divider_layout = children.next()?;
+        let second_layout = children.next()?;
+
+        let first = &mut self.first;
+        let second = &mut self.second;
+
+        first
+            .overlay(first_layout)
+            .or_else(move || second.overlay(second_layout))
+    }
+
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
 
         self.state.divider_position.hash(state);
+        self.first.hash_layout(state);
+        self.second.hash_layout(state);
     }
 }
 
@@ -291,13 +323,14 @@ fn horizontal_split<'a, Message, Renderer: self::Renderer>(
         space.bounds().height as u16 - split.min_size_second - split.spacing as u16,
     );
 
+    let padding = Padding::from(split.padding as u16);
     let first_limits = limits
         .clone()
         .shrink(Size::new(
             0.0,
             space.bounds().height - f32::from(divider_position),
         ))
-        .pad(split.padding);
+        .pad(padding);
     let mut first = split.first.layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -311,7 +344,7 @@ fn horizontal_split<'a, Message, Renderer: self::Renderer>(
     let second_limits = limits
         .clone()
         .shrink(Size::new(0.0, f32::from(divider_position) + split.spacing))
-        .pad(split.padding);
+        .pad(padding);
     let mut second = split.second.layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -357,13 +390,14 @@ fn vertical_split<'a, Message, Renderer: self::Renderer>(
         space.bounds().width as u16 - split.min_size_second - split.spacing as u16,
     );
 
+    let padding = Padding::from(split.padding as u16);
     let first_limits = limits
         .clone()
         .shrink(Size::new(
             space.bounds().width - f32::from(divider_position),
             0.0,
         ))
-        .pad(split.padding);
+        .pad(padding);
     let mut first = split.first.layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
@@ -377,7 +411,7 @@ fn vertical_split<'a, Message, Renderer: self::Renderer>(
     let second_limits = limits
         .clone()
         .shrink(Size::new(f32::from(divider_position) + split.spacing, 0.0))
-        .pad(split.padding);
+        .pad(padding);
     let mut second = split.second.layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + f32::from(divider_position) + split.spacing + split.padding,
@@ -432,7 +466,7 @@ where
 }
 
 /// The state of a [`Split`](Split).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct State {
     /// The position of the divider.
     divider_position: Option<u16>,
@@ -457,6 +491,12 @@ impl State {
         }
     }
 
+    /// Gets the position of the divider.
+    #[must_use]
+    pub const fn divider_position(&self) -> Option<u16> {
+        self.divider_position
+    }
+
     /// Sets the position of the divider of the [`State`](State).
     pub fn set_divider_position(&mut self, position: u16) {
         self.divider_position = Some(position);
@@ -470,4 +510,10 @@ pub enum Axis {
     Horizontal,
     /// Split vertically.
     Vertical,
+}
+
+impl Default for Axis {
+    fn default() -> Self {
+        Self::Vertical
+    }
 }

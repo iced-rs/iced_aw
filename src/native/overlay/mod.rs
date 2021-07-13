@@ -26,6 +26,6 @@ pub mod time_picker;
 pub use time_picker::TimePickerOverlay;
 
 #[cfg(feature = "selection_list")]
-pub mod list_menu;
+pub mod list;
 #[cfg(feature = "selection_list")]
-pub use list_menu::ListMenu;
+pub use list::List;

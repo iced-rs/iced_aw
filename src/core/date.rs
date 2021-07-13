@@ -344,6 +344,7 @@ mod tests {
         assert_eq!(result, expected);
     }
 
+    #[allow(clippy::shadow_unrelated)]
     #[test]
     fn position_to_day_test() {
         let (day, is_in_month) = position_to_day(0, 0, 2020, 12);
@@ -397,11 +398,11 @@ mod tests {
 
     #[test]
     fn is_leap_year_test() {
-        assert_eq!(is_leap_year(2020), true);
-        assert_eq!(is_leap_year(2019), false);
-        assert_eq!(is_leap_year(2021), false);
-        assert_eq!(is_leap_year(2000), true);
-        assert_eq!(is_leap_year(1000), false);
+        assert!(is_leap_year(2020));
+        assert!(!is_leap_year(2019));
+        assert!(!is_leap_year(2021));
+        assert!(is_leap_year(2000));
+        assert!(!is_leap_year(1000));
     }
 
     #[test]

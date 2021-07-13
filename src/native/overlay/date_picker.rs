@@ -8,7 +8,7 @@ use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
     mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Point, Row, Size, Text, Widget,
+    Layout, Length, Padding, Point, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -375,7 +375,7 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(f32::from(PADDING))
+            .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300)
@@ -477,13 +477,11 @@ where
 
         // Buttons
         let cancel_limits = limits
-            .clone()
             .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = limits
-            .clone()
             .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);

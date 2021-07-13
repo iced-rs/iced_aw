@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use dodrio::bumpalo;
-use iced_web::{css, Align, Background, Bus, Css, Element, Length, Widget};
+use iced_web::{css, Align, Background, Bus, Css, Element, Length, Padding, Widget};
 
 pub use crate::style::badge::{Style, StyleSheet};
 
@@ -101,27 +101,18 @@ where
         // (https://github.com/hecrj/iced/blob/master/web/src/widget/button.rs#L144)
         let style = self.style.active();
 
-        let padding_class = style_sheet.insert(bump, css::Rule::Padding(self.padding));
-
         let border_color = match style.border_color {
             None => String::from("none"),
             Some(border_color) => css::color(border_color),
         };
 
-        let class = {
-            use dodrio::bumpalo::collections::String;
-
-            String::from_str_in(&padding_class, bump).into_bump_str()
-        };
-
         let node = div(bump)
-            .attr("class", class)
             .attr(
                 "style",
                 bumpalo::format!(
                     in bump,
                     "background: {}; border-radius: {}rem; width:{}; height: {} \
-                    border: {}px solid {}; display: inline-block; color: {}",
+                    border: {}px solid {}; display: inline-block; padding: {}; color: {}",
                     //css::color(style.background)
                     match style.background {
                         Background::Color(color) => css::color(color),
@@ -131,6 +122,7 @@ where
                     css::length(self.height),
                     style.border_width,
                     border_color,
+                    css::padding(Padding::from(self.padding)),
                     css::color(style.text_color)
                 )
                 .into_bump_str(),

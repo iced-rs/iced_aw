@@ -8,8 +8,8 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, row, text,
     text_input::{self, cursor, Value},
-    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Point, Rectangle, Row,
-    Size, Text, TextInput, Widget,
+    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Padding, Point,
+    Rectangle, Row, Size, Text, TextInput, Widget,
 };
 use num_traits::{Num, NumAssignOps};
 use std::fmt::Display;
@@ -245,7 +245,7 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
             .height(Length::Shrink)
@@ -338,7 +338,7 @@ where
         self.content.hash_layout(state);
     }
 
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn on_event(
         &mut self,
         event: Event,
@@ -403,7 +403,7 @@ where
                                 if T::zero().eq(&self.value) {
                                     new_val = c.to_string();
                                 } else {
-                                    new_val.insert(idx, c)
+                                    new_val.insert(idx, c);
                                 }
                             }
                             cursor::State::Selection { start, end } => {
@@ -413,7 +413,7 @@ where
                                     new_val.replace_range(
                                         if start > end { end..start } else { start..end },
                                         &c.to_string(),
-                                    )
+                                    );
                                 }
                             }
                         }
@@ -482,7 +482,7 @@ where
                                                         start..end
                                                     },
                                                     "",
-                                                )
+                                                );
                                             }
                                         }
                                     }
@@ -524,13 +524,13 @@ where
                         match delta {
                             mouse::ScrollDelta::Lines { y, .. }
                             | mouse::ScrollDelta::Pixels { y, .. } => {
-                                negative = y.is_sign_negative()
+                                negative = y.is_sign_negative();
                             }
                         }
                         if negative {
-                            self.increase_val(messages)
+                            self.increase_val(messages);
                         } else {
-                            self.decrease_val(messages)
+                            self.decrease_val(messages);
                         }
                         event::Status::Captured
                     }
