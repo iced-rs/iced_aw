@@ -1,7 +1,18 @@
-use iced::{
-    scrollable, Align, Container, Element, Length, Sandbox, Scrollable, Settings, Space, Text,
-};
-use iced_aw::selection_list::{self, SelectionList};
+use iced::{Align, Column, Container, Element, Length, Sandbox, Settings, Space, Text};
+use iced_aw::selection_list::{self, SelectionList, Style, StyleSheet};
+
+#[derive(Clone, Copy, Debug)]
+pub struct CustomStyle;
+
+impl StyleSheet for CustomStyle {
+    fn style() -> Style {
+        Style {
+            width: Length::Shrink,
+            height: Length::Units(100),
+            ..Default::default()
+        }
+    }
+}
 
 pub fn main() -> iced::Result {
     Example::run(Settings::default())
@@ -9,7 +20,6 @@ pub fn main() -> iced::Result {
 
 #[derive(Default)]
 struct Example {
-    scroll: scrollable::State,
     vec: Vec<String>,
     selection_list: selection_list::State<String>,
     selected_language: String,
@@ -56,15 +66,15 @@ impl Sandbox for Example {
         let selection_list = SelectionList::new(
             &mut self.selection_list,
             &self.vec[..],
-            Some(self.selected_language.clone()),
+            &Some(self.selected_language.clone()),
             Message::LanguageSelected,
+            CustomStyle::style(),
         );
 
-        let mut content = Scrollable::new(&mut self.scroll)
+        let mut content = Column::new()
             .width(Length::Fill)
             .align_items(Align::Center)
             .spacing(10)
-            .push(Space::with_height(Length::Units(600)))
             .push(selection_list)
             .push(Text::new("Which is your favorite language?"))
             .push(Text::new(format!("{:?}", self.selected_language)));
