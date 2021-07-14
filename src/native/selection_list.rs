@@ -1,5 +1,5 @@
 //! Display a dropdown list of selectable values.
-use super::overlay::list::{self, List};
+pub mod list;
 use crate::selection_list;
 use iced_native::{
     container,
@@ -7,6 +7,7 @@ use iced_native::{
     layout, scrollable, text, Clipboard, Container, Element, Hasher, Layout, Length, Point,
     Rectangle, Scrollable, Size, Widget,
 };
+pub use list::List;
 use std::marker::PhantomData;
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
