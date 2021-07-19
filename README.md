@@ -144,8 +144,6 @@ Please take a look into our examples on how to use TabBars and Tabs.
 
 Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
 
-*This widgets are currently not supporting web*
-
 ### Time Picker
 
 <center>
