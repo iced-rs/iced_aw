@@ -1,7 +1,10 @@
 //! Selection List
 //!
 //! *This API requires the following crate features to be activated: `selection_list`*
+#[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color, Length};
+#[cfg(target_arch = "wasm32")]
+use iced_web::{Background, Color, Length};
 
 /// The appearance of a menu.
 #[derive(Debug, Clone, Copy)]
