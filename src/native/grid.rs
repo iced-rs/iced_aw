@@ -171,25 +171,22 @@ where
         clipboard: &mut dyn Clipboard,
         messages: &mut Vec<Message>,
     ) -> event::Status {
-        let children_status: Vec<event::Status> = self
-            .elements
-            .iter_mut()
-            .zip(layout.children())
-            .map(|(child, layout)| {
-                child.on_event(
-                    event.clone(),
-                    layout,
-                    cursor_position,
-                    renderer,
-                    clipboard,
-                    messages,
-                )
-            })
-            .collect();
+        let children_status =
+            self.elements
+                .iter_mut()
+                .zip(layout.children())
+                .map(|(child, layout)| {
+                    child.on_event(
+                        event.clone(),
+                        layout,
+                        cursor_position,
+                        renderer,
+                        clipboard,
+                        messages,
+                    )
+                });
 
-        children_status
-            .into_iter()
-            .fold(event::Status::Ignored, event::Status::merge)
+        children_status.fold(event::Status::Ignored, event::Status::merge)
     }
 
     fn draw(

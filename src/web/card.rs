@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 use dodrio::bumpalo;
-use iced_web::{css, Background, Bus, Color, Css, Element, Length, Widget};
+use iced_web::{css, Background, Bus, Color, Css, Element, Length, Padding, Widget};
 
 pub use crate::style::card::{Style, StyleSheet};
 
@@ -261,14 +261,6 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let head_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: will change in the future
-
-    let head_class = {
-        use dodrio::bumpalo::collections::String;
-
-        String::from_str_in(&head_padding_class, bump).into_bump_str()
-    };
-
     let head_content = div(bump)
         .attr("style", "width: 100%")
         .children(vec![my_head.node(bump, bus, style_sheet)])
@@ -298,17 +290,17 @@ fn head_node<'a, 'b, Message: 'static + Clone>(
     });
 
     let my_head = div(bump)
-        .attr("class", head_class)
         .attr(
             "style",
             bumpalo::format!(
                 in bump,
                 "background: {}; border-radius: {}px; width: 100%; \
-                color: {}; display: flex;",
+                padding: {}; color: {}; display: flex;",
                 match my_style.head_background {
                     Background::Color(color) => css::color(color),
                 },
                 my_style.border_radius,
+                css::padding(Padding::from(padding as u16)),
                 css::color(my_style.head_text_color)
             )
             .into_bump_str(),
@@ -333,24 +325,16 @@ fn body_node<'a, 'b, Message>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let body_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
-
-    let body_class = {
-        use dodrio::bumpalo::collections::String;
-
-        String::from_str_in(&body_padding_class, bump).into_bump_str()
-    };
-
     let my_body = div(bump)
-        .attr("class", body_class)
         .attr(
             "style",
             bumpalo::format!(
                 in bump,
-                "background: {}; width: 100%; color: {};",
+                "background: {}; width: 100%; padding: {}; color: {};",
                 match my_style.body_background {
                     Background::Color(color) => css::color(color),
                 },
+                css::padding(Padding::from(padding as u16)),
                 css::color(my_style.body_text_color)
             )
             .into_bump_str(),
@@ -372,26 +356,18 @@ fn foot_node<'a, 'b, Message>(
 ) -> dodrio::Node<'b> {
     use dodrio::builder::*;
 
-    let foot_padding_class = style_sheet.insert(bump, css::Rule::Padding(padding as u16)); // TODO: same
-
-    let foot_class = {
-        use dodrio::bumpalo::collections::String;
-
-        String::from_str_in(&foot_padding_class, bump).into_bump_str()
-    };
-
     let foot_node = div(bump)
-        .attr("class", foot_class)
         .attr(
             "style",
             bumpalo::format!(
                 in bump,
                 "background: {}; border-radius: {}px; width: 100% \
-                color: {}",
+                padding: {}; color: {}",
                 match my_style.foot_background {
                     Background::Color(color) => css::color(color),
                 },
                 my_style.border_radius,
+                css::padding(Padding::from(padding as u16)),
                 css::color(my_style.foot_text_color)
             )
             .into_bump_str(),

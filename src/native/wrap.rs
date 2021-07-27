@@ -7,8 +7,8 @@ use std::marker::PhantomData;
 use iced_native::{
     event,
     layout::{self, Limits, Node},
-    overlay, Align, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size,
-    Widget,
+    overlay, Align, Clipboard, Element, Event, Hasher, Layout, Length, Padding, Point, Rectangle,
+    Size, Widget,
 };
 
 /// A container that distributes its contents horizontally.
@@ -187,7 +187,7 @@ where
         self.spacing.hash(state);
 
         for elem in &self.elements {
-            elem.hash_layout(state)
+            elem.hash_layout(state);
         }
     }
 
@@ -303,7 +303,7 @@ where
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let spacing = f32::from(self.spacing);
         let line_spacing = f32::from(self.line_spacing);
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -316,8 +316,8 @@ where
             .max_height(self.max_height);
         let max_width = limits.max().width;
 
-        let mut curse = padding;
-        let mut deep_curse = padding;
+        let mut curse = f32::from(padding.left);
+        let mut deep_curse = f32::from(padding.left);
         let mut current_line_height = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -344,8 +344,8 @@ where
                     start = end;
                     end += 1;
                     current_line_height = line_minimal_length;
-                    node.move_to(Point::new(padding, deep_curse));
-                    curse = offset_init + padding;
+                    node.move_to(Point::new(f32::from(padding.left), deep_curse));
+                    curse = offset_init + f32::from(padding.left);
                 } else {
                     node.move_to(Point::new(curse, deep_curse));
                     curse = offset;
@@ -360,16 +360,16 @@ where
         if end != start {
             align.push((start..end, current_line_height));
         }
-        align.into_iter().for_each(|(range, max_length)| {
+        for (range, max_length) in align {
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(size.width, max_length);
                 node.align(Align::Start, self.alignment, space);
             });
-        });
+        }
         let (width, height) = (
-            max_main - padding,
-            deep_curse - padding + current_line_height,
+            max_main - f32::from(padding.left),
+            deep_curse - f32::from(padding.left) + current_line_height,
         );
         let size = limits.resolve(Size::new(width, height));
 
@@ -397,7 +397,7 @@ where
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let spacing = f32::from(self.spacing);
         let line_spacing = f32::from(self.line_spacing);
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -410,8 +410,8 @@ where
             .max_height(self.max_height);
         let max_height = limits.max().height;
 
-        let mut curse = padding;
-        let mut wide_curse = padding;
+        let mut curse = f32::from(padding.left);
+        let mut wide_curse = f32::from(padding.left);
         let mut current_line_width = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -438,8 +438,8 @@ where
                     start = end;
                     end += 1;
                     current_line_width = line_minimal_length;
-                    node.move_to(Point::new(wide_curse, padding));
-                    curse = offset_init + padding;
+                    node.move_to(Point::new(wide_curse, f32::from(padding.left)));
+                    curse = offset_init + f32::from(padding.left);
                 } else {
                     node.move_to(Point::new(wide_curse, curse));
                     end += 1;
@@ -454,17 +454,18 @@ where
         if end != start {
             align.push((start..end, current_line_width));
         }
-        align.into_iter().for_each(|(range, max_length)| {
+
+        for (range, max_length) in align {
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(max_length, size.height);
                 node.align(self.alignment, Align::Start, space);
             });
-        });
+        }
 
         let (width, height) = (
-            wide_curse - padding + current_line_width,
-            max_main - padding,
+            wide_curse - f32::from(padding.left) + current_line_width,
+            max_main - f32::from(padding.left),
         );
         let size = limits.resolve(Size::new(width, height));
 

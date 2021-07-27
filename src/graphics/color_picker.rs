@@ -273,7 +273,7 @@ fn hsv_color(
     focus: Focus,
 ) -> (Primitive, mouse::Interaction) {
     let mut hsv_color_children = layout.children();
-    let hsv_color: Hsv = color.clone().into();
+    let hsv_color: Hsv = (*color).into();
 
     let mouse_interaction = mouse::Interaction::default();
 
@@ -283,7 +283,7 @@ fn hsv_color(
     let (mut sat_value_style_state, mut sat_value_mouse_interaction) =
         (StyleState::Active, mouse::Interaction::default());
     if focus == Focus::SatValue {
-        sat_value_style_state = sat_value_style_state.max(StyleState::Focused)
+        sat_value_style_state = sat_value_style_state.max(StyleState::Focused);
     }
     if sat_value_layout.bounds().contains(cursor_position) {
         sat_value_style_state = sat_value_style_state.max(StyleState::Hovered);
@@ -632,7 +632,7 @@ fn hex_text(
     style: &HashMap<StyleState, Style>,
     _focus: Focus,
 ) -> Primitive {
-    let hsv: Hsv = color.clone().into();
+    let hsv: Hsv = (*color).into();
 
     let hex_text_style_state = if layout.bounds().contains(cursor_position) {
         StyleState::Hovered
@@ -644,7 +644,7 @@ fn hex_text(
         primitives: vec![
             Primitive::Quad {
                 bounds: layout.bounds(),
-                background: color.clone().into(),
+                background: (*color).into(),
                 border_radius: style[&hex_text_style_state].bar_border_radius,
                 border_width: style[&hex_text_style_state].bar_border_width,
                 border_color: style[&hex_text_style_state].bar_border_color,

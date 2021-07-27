@@ -23,7 +23,7 @@ use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
     mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Point, Row, Text, Widget,
+    Layout, Length, Padding, Point, Row, Text, Widget,
 };
 
 /// The padding around the elements.
@@ -207,8 +207,9 @@ where
                     NearestRadius::None => event::Status::Ignored,
                 },
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerLifted { .. })
-                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                | Event::Touch(
+                    touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
+                ) => {
                     self.state.clock_dragged = ClockDragged::None;
                     event::Status::Captured
                 }
@@ -263,8 +264,9 @@ where
         } else {
             match event {
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerLifted { .. })
-                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                | Event::Touch(
+                    touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
+                ) => {
                     self.state.clock_dragged = ClockDragged::None;
                     event::Status::Captured
                 }
@@ -403,7 +405,7 @@ where
         let digital_clock_status = digital_clock_status.merge(second_status);
 
         if digital_clock_status == event::Status::Captured {
-            self.state.clock_cache.clear()
+            self.state.clock_cache.clear();
         }
 
         digital_clock_status
@@ -450,20 +452,20 @@ where
 
                 match self.state.focus {
                     Focus::DigitalHour => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1));
                     }
                     Focus::DigitalMinute => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1));
                     }
                     Focus::DigitalSecond => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1));
                     }
                     _ => {}
                 }
             }
 
             if status == event::Status::Captured {
-                self.state.clock_cache.clear()
+                self.state.clock_cache.clear();
             }
 
             status
@@ -496,7 +498,7 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(f32::from(PADDING))
+            .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300)
@@ -538,13 +540,11 @@ where
 
         // Buttons
         let cancel_limits = limits
-            .clone()
             .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = limits
-            .clone()
             .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
@@ -688,7 +688,7 @@ where
                 }
             };
 
-            messages.push((self.on_submit)(time))
+            messages.push((self.on_submit)(time));
         }
 
         clock_status
@@ -763,7 +763,7 @@ where
             Column::new() // Just a placeholder
                 .height(Length::Shrink)
                 .push(Text::new("AM").size(font_size)),
-        )
+        );
     }
 
     digital_clock_row = digital_clock_row
@@ -836,7 +836,7 @@ where
                             .width(Length::Units(arrow_size))
                             .height(Length::Units(arrow_size)),
                     ),
-            )
+            );
     }
 
     if !time_picker.state.use_24h {
