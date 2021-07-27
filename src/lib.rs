@@ -154,6 +154,20 @@ mod platform {
     pub use crate::web::{modal, modal::Modal};
 
     #[doc(no_inline)]
+    #[cfg(feature = "tab_bar")]
+    pub use crate::web::{
+        tab_bar,
+        tab_bar::{TabBar, TabLabel},
+    };
+
+    #[doc(no_inline)]
+    #[cfg(feature = "tabs")]
+    pub use crate::web::{
+        tabs,
+        tabs::{TabBarPosition, Tabs},
+    };
+
+    #[doc(no_inline)]
     #[cfg(feature = "time_picker")]
     pub use crate::web::{time_picker, time_picker::TimePicker};
 }

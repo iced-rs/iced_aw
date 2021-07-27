@@ -24,8 +24,3 @@ pub use modal::ModalOverlay;
 pub mod time_picker;
 #[cfg(feature = "time_picker")]
 pub use time_picker::TimePickerOverlay;
-
-#[cfg(feature = "selection_list")]
-pub mod list;
-#[cfg(feature = "selection_list")]
-pub use list::List;

@@ -132,6 +132,12 @@ where
         self.min_size_second = size;
         self
     }
+
+    /// Sets the style of the [`Split`](Split).
+    pub fn style(mut self, style: impl Into<<Renderer as self::Renderer>::Style>) -> Self {
+        self.style = style.into();
+        self
+    }
 }
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
