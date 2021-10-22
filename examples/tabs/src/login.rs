@@ -1,7 +1,6 @@
 use iced::{
-    button,
-    slignment::{Alignment, Horizontal},
-    text_input, Button, Column, Container, Element, Length, Row, Text, TextInput,
+    alignment::{Alignment, Horizontal, Vertical},
+    button, text_input, Button, Column, Container, Element, Length, Row, Text, TextInput,
 };
 use iced_aw::TabLabel;
 
@@ -110,8 +109,8 @@ impl Tab for LoginTab {
                         ),
                 ),
         )
-        .align_x(Alignment::Center)
-        .align_y(Alignment::Center)
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Center)
         .into();
 
         content.map(Message::Login)
