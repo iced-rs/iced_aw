@@ -1,6 +1,7 @@
 use iced::{
-    button, text_input, Align, Button, Column, Container, Element, HorizontalAlignment, Length,
-    Row, Text, TextInput,
+    button,
+    slignment::{Alignment, Horizontal},
+    text_input, Button, Column, Container, Element, Length, Row, Text, TextInput,
 };
 use iced_aw::TabLabel;
 
@@ -63,7 +64,7 @@ impl Tab for LoginTab {
     fn content(&mut self) -> Element<'_, Self::Message> {
         let content: Element<'_, LoginMessage> = Container::new(
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
@@ -94,8 +95,7 @@ impl Tab for LoginTab {
                         .push(
                             Button::new(
                                 &mut self.clear_button,
-                                Text::new("Clear")
-                                    .horizontal_alignment(HorizontalAlignment::Center),
+                                Text::new("Clear").horizontal_alignment(Horizontal::Center),
                             )
                             .width(Length::Fill)
                             .on_press(LoginMessage::ClearPressed),
@@ -103,16 +103,15 @@ impl Tab for LoginTab {
                         .push(
                             Button::new(
                                 &mut self.login_button,
-                                Text::new("Login")
-                                    .horizontal_alignment(HorizontalAlignment::Center),
+                                Text::new("Login").horizontal_alignment(Horizontal::Center),
                             )
                             .width(Length::Fill)
                             .on_press(LoginMessage::LoginPressed),
                         ),
                 ),
         )
-        .align_x(Align::Center)
-        .align_y(Align::Center)
+        .align_x(Alignment::Center)
+        .align_y(Alignment::Center)
         .into();
 
         content.map(Message::Login)

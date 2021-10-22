@@ -1,4 +1,4 @@
-use iced::{Align, Column, Container, Element, Length, Row, Sandbox, Settings, Text};
+use iced::{Alignment, Column, Container, Element, Length, Row, Sandbox, Settings, Text};
 
 use iced_aw::{
     style::{self, badge::StyleSheet},
@@ -50,7 +50,7 @@ impl Sandbox for BadgeExample {
                 .fold(content, |col, (i, (name, count))| {
                     col.push(
                         Row::new()
-                            .align_items(Align::Center)
+                            .align_items(Alignment::Center)
                             .push(Text::new(name).width(Length::Fill))
                             .push(
                                 Badge::new(

@@ -1,5 +1,5 @@
 use crate::{Icon, Message, Tab};
-use iced::{button, Align, Button, Column, Container, Element, Row, Text};
+use iced::{button, Alignment, Button, Column, Container, Element, Row, Text};
 use iced_aw::TabLabel;
 #[derive(Debug, Clone)]
 pub enum CounterMessage {
@@ -45,7 +45,7 @@ impl Tab for CounterTab {
     fn content(&mut self) -> Element<'_, Self::Message> {
         let content: Element<'_, CounterMessage> = Container::new(
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .max_width(600)
                 .padding(20)
                 .spacing(16)

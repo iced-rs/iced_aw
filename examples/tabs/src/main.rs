@@ -1,4 +1,4 @@
-use iced::{Align, Column, Container, Element, Font, Length, Sandbox, Settings, Text};
+use iced::{Alignment, Column, Container, Element, Font, Length, Sandbox, Settings, Text};
 
 use iced_aw::{TabLabel, Tabs};
 
@@ -133,8 +133,8 @@ trait Tab {
         Container::new(column)
             .width(Length::Fill)
             .height(Length::Fill)
-            .align_x(Align::Center)
-            .align_y(Align::Center)
+            .align_x(Alignment::Center)
+            .align_y(Alignment::Center)
             .padding(TAB_PADDING)
             .into()
     }
