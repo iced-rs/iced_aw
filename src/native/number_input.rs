@@ -8,7 +8,7 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, row, text,
     text_input::{self, cursor, Value},
-    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Padding, Point,
+    Alignment, Clipboard, Column, Container, Element, Hasher, Layout, Length, Padding, Point,
     Rectangle, Row, Size, Text, TextInput, Widget,
 };
 use num_traits::{Num, NumAssignOps};
@@ -277,7 +277,7 @@ where
             content.size().width - 3.0,
             content.size().height.max(modifier.size().height),
         );
-        modifier.align(Align::End, Align::Center, intrinsic);
+        modifier.align(Alignment::End, Alignment::Center, intrinsic);
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
     }

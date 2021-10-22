@@ -230,7 +230,7 @@ where
 
         Some(
             TimePickerOverlay::new(
-                &mut self.state,
+                self.state,
                 self.on_cancel.clone(),
                 &self.on_submit,
                 //self.use_24h,

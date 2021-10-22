@@ -193,7 +193,7 @@ where
         let position = Point::new(bounds.x + position.x, bounds.y + position.y);
 
         Some(
-            FloatingButtonOverlay::new(&mut self.state, &self.button, &self.anchor, &self.offset)
+            FloatingButtonOverlay::new(self.state, &self.button, &self.anchor, &self.offset)
                 .overlay(position),
         )
     }

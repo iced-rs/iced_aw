@@ -22,8 +22,8 @@ use iced_graphics::{canvas, Size};
 use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Padding, Point, Row, Text, Widget,
+    mouse, overlay, row, text, touch, Alignment, Button, Clipboard, Column, Container, Element,
+    Event, Layout, Length, Padding, Point, Row, Text, Widget,
 };
 
 /// The padding around the elements.
@@ -429,7 +429,7 @@ where
             let mut status = event::Status::Ignored;
 
             if let keyboard::KeyCode::Tab = key_code {
-                if self.state.keyboard_modifiers.shift {
+                if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous(self.state.show_seconds);
                 } else {
                     self.state.focus = self.state.focus.next(self.state.show_seconds);
@@ -594,14 +594,16 @@ where
         clipboard: &mut dyn Clipboard,
         messages: &mut Vec<Message>,
     ) -> event::Status {
-        if let event::Status::Captured = self.on_event_keyboard(
-            &event,
-            layout,
-            cursor_position,
-            messages,
-            renderer,
-            clipboard,
-        ) {
+        if event::Status::Captured
+            == self.on_event_keyboard(
+                &event,
+                layout,
+                cursor_position,
+                messages,
+                renderer,
+                clipboard,
+            )
+        {
             return event::Status::Captured;
         }
 
@@ -753,7 +755,7 @@ where
     let font_size = (1.2 * f32::from(text::Renderer::default_size(renderer))) as u16;
 
     let mut digital_clock_row = Row::<(), Renderer>::new()
-        .align_items(Align::Center)
+        .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
         .spacing(1);
@@ -770,7 +772,7 @@ where
         .push(
             // Hour
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Hour arrow
@@ -793,7 +795,7 @@ where
         )
         .push(
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Minute arrow
@@ -819,7 +821,7 @@ where
             )
             .push(
                 Column::new()
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .height(Length::Shrink)
                     .push(
                         // Up Minute arrow

@@ -5,7 +5,10 @@
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
 use iced_graphics::{backend, Backend, Color, Primitive, Rectangle, Renderer};
-use iced_native::{mouse, Font, HorizontalAlignment, Layout, VerticalAlignment};
+use iced_native::{
+    alignment::{Horizontal, Vertical},
+    mouse, Font, Layout,
+};
 pub use tab_bar::tab_label::TabLabel;
 
 pub use crate::style::tab_bar::{Style, StyleSheet};
@@ -135,8 +138,8 @@ fn draw_tab(
                 ..cross_bounds
             },
             color: style.icon_color,
-            horizontal_alignment: HorizontalAlignment::Center,
-            vertical_alignment: VerticalAlignment::Center,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
         }
     });
 
@@ -160,8 +163,8 @@ fn draw_tab(
                             ..icon_bounds
                         },
                         color: style.icon_color,
-                        horizontal_alignment: HorizontalAlignment::Center,
-                        vertical_alignment: VerticalAlignment::Center,
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
                     },
                     cross,
                 ],
@@ -186,8 +189,8 @@ fn draw_tab(
                             ..text_bounds
                         },
                         color: style.text_color,
-                        horizontal_alignment: HorizontalAlignment::Center,
-                        vertical_alignment: VerticalAlignment::Center,
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
                     },
                     cross,
                 ],
@@ -216,8 +219,8 @@ fn draw_tab(
                             ..icon_bounds
                         },
                         color: style.icon_color,
-                        horizontal_alignment: HorizontalAlignment::Center,
-                        vertical_alignment: VerticalAlignment::Center,
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
                     },
                     Primitive::Text {
                         content: text.to_string(),
@@ -229,8 +232,8 @@ fn draw_tab(
                             ..text_bounds
                         },
                         color: style.text_color,
-                        horizontal_alignment: HorizontalAlignment::Center,
-                        vertical_alignment: VerticalAlignment::Center,
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
                     },
                     cross,
                 ],

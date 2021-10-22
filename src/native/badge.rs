@@ -4,7 +4,7 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, layout, Align, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    event, layout, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle,
     Widget,
 };
 
@@ -33,9 +33,9 @@ pub struct Badge<'a, Message, Renderer: self::Renderer> {
     /// The height of the [`Badge`].
     height: Length,
     /// The horizontal alignment of the [`Badge`](Badge).
-    horizontal_alignment: Align,
+    horizontal_alignment: Alignment,
     /// The vertical alignment of the [`Badge`](Badge).
-    vertical_alignment: Align,
+    vertical_alignment: Alignment,
     /// The style of the [`Badge`](Badge).
     style: Renderer::Style,
     /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
@@ -58,8 +58,8 @@ where
             padding: 7,
             width: Length::Shrink,
             height: Length::Shrink,
-            horizontal_alignment: Align::Center,
-            vertical_alignment: Align::Center,
+            horizontal_alignment: Alignment::Center,
+            vertical_alignment: Alignment::Center,
             style: Renderer::Style::default(),
             content: content.into(),
         }
@@ -84,13 +84,13 @@ where
     }
 
     /// Sets the horizontal alignment of the content of the [`Badge`](Badge).
-    pub fn align_x(mut self, alignment: Align) -> Self {
+    pub fn align_x(mut self, alignment: Alignment) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
     /// Sets the vertical alignment of the content of the [`Badge`](Badge).
-    pub fn align_y(mut self, alignment: Align) -> Self {
+    pub fn align_y(mut self, alignment: Alignment) -> Self {
         self.vertical_alignment = alignment;
         self
     }

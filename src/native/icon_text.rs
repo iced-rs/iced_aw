@@ -7,7 +7,8 @@
 use std::hash::Hash;
 
 use iced_native::{
-    Color, Element, HorizontalAlignment, Length, Rectangle, Size, VerticalAlignment, Widget,
+    alignment::{Horizontal, Vertical},
+    Color, Element, Length, Rectangle, Size, Widget,
 };
 
 /// Text widget with icon font.
@@ -26,9 +27,9 @@ pub struct IconText<Renderer: self::Renderer> {
     /// The height of the [`IconText`](IconText).
     height: Length,
     /// The horizontal alignment of the [`IconText`](IconText).
-    horizontal_alignment: HorizontalAlignment,
+    horizontal_alignment: Horizontal,
     /// The vertical alignment of the [`IconText`](IconText).
-    vertical_alignment: VerticalAlignment,
+    vertical_alignment: Vertical,
 }
 
 impl<Renderer: self::Renderer> IconText<Renderer> {
@@ -44,8 +45,8 @@ impl<Renderer: self::Renderer> IconText<Renderer> {
             font: None,
             width: Length::Shrink,
             height: Length::Shrink,
-            horizontal_alignment: HorizontalAlignment::Center,
-            vertical_alignment: VerticalAlignment::Center,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
         }
     }
 
@@ -79,16 +80,16 @@ impl<Renderer: self::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`HorizontalAlignment`](iced_native::HorizontalAlignment)
+    /// Sets the [`Horizontal `](iced_native::Horizontal )
     /// of the [`IconText`](IconText).
-    pub fn horizontal_alignment(mut self, alignment: HorizontalAlignment) -> Self {
+    pub fn horizontal_alignment(mut self, alignment: Horizontal) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
-    /// Sets the [`VerticalAlignment`](iced_native::VerticalAlignment)
+    /// Sets the [`Vertical `](iced_native::Vertical )
     /// of the [`IconText`](IconText).
-    pub fn vertical_alignment(mut self, alignment: VerticalAlignment) -> Self {
+    pub fn vertical_alignment(mut self, alignment: Vertical) -> Self {
         self.vertical_alignment = alignment;
         self
     }
@@ -189,8 +190,8 @@ pub trait Renderer: iced_native::Renderer {
         size: u16,
         font: Option<Self::Font>,
         color: Option<Color>,
-        horizontal_alignment: HorizontalAlignment,
-        vertical_alignment: VerticalAlignment,
+        horizontal_alignment: Horizontal,
+        vertical_alignment: Vertical,
     ) -> Self::Output;
 }
 

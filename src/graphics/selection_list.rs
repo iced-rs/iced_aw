@@ -1,6 +1,9 @@
 //! Display a list of selectable values.
 use iced_graphics::{backend, Backend, Color, Point, Primitive, Renderer};
-use iced_native::{mouse, HorizontalAlignment, Rectangle, VerticalAlignment};
+use iced_native::{
+    alignment::{Horizontal, Vertical},
+    mouse, Rectangle,
+};
 
 use crate::native::overlay::list;
 pub use crate::native::selection_list::{self, State};
@@ -105,8 +108,8 @@ where
                 } else {
                     style.text_color
                 },
-                horizontal_alignment: HorizontalAlignment::Left,
-                vertical_alignment: VerticalAlignment::Center,
+                horizontal_alignment: Horizontal::Left,
+                vertical_alignment: Vertical::Center,
             });
         }
 

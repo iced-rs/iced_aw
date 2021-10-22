@@ -6,7 +6,7 @@ use std::hash::Hash;
 use iced_native::{
     event, touch, Clipboard, Element, Event, Layout, Length, Padding, Point, Size, Widget,
 };
-use iced_native::{mouse, Align};
+use iced_native::{mouse, Alignment};
 
 use crate::core::renderer::DrawEnvironment;
 
@@ -389,13 +389,13 @@ where
     let mut size = limits.resolve(head.size());
 
     head.move_to(Point::new(padding, padding));
-    head.align(Align::Start, Align::Center, head.size());
+    head.align(Alignment::Start, Alignment::Center, head.size());
 
     if let Some(node) = close.as_mut() {
         size = Size::new(size.width + close_size, size.height);
 
         node.move_to(Point::new(size.width - padding, padding));
-        node.align(Align::End, Align::Center, node.size());
+        node.align(Alignment::End, Alignment::Center, node.size());
     }
 
     iced_native::layout::Node::with_children(
@@ -430,7 +430,7 @@ where
     let size = limits.resolve(body.size());
 
     body.move_to(Point::new(padding, padding));
-    body.align(Align::Start, Align::Start, size);
+    body.align(Alignment::Start, Alignment::Start, size);
 
     iced_native::layout::Node::with_children(size.pad(pad), vec![body])
 }
@@ -458,7 +458,7 @@ where
     let size = limits.resolve(foot.size());
 
     foot.move_to(Point::new(padding, padding));
-    foot.align(Align::Start, Align::Center, size);
+    foot.align(Alignment::Start, Alignment::Center, size);
 
     iced_native::layout::Node::with_children(size.pad(pad), vec![foot])
 }
