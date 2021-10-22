@@ -1,5 +1,5 @@
 use crate::Section;
-use iced::{Align, Column, Element, Row, Text};
+use iced::{Alignment, Column, Element, Row, Text};
 use iced_aw::Badge;
 
 pub struct BadgeSection;
@@ -20,7 +20,7 @@ impl Section for BadgeSection {
             .spacing(10)
             .push(
                 Row::new()
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .spacing(10)
                     .push(Badge::new(Text::new("Default")).style(iced_aw::style::badge::Default))
                     .push(Badge::new(Text::new("Primary")).style(iced_aw::style::badge::Primary))
@@ -33,7 +33,7 @@ impl Section for BadgeSection {
             .push(
                 Row::new()
                     .spacing(10)
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .push(Badge::new(Text::new("Warning")).style(iced_aw::style::badge::Warning))
                     .push(Badge::new(Text::new("Info")).style(iced_aw::style::badge::Info))
                     .push(Badge::new(Text::new("Dark")).style(iced_aw::style::badge::Dark))
