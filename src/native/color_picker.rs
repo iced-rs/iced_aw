@@ -212,7 +212,7 @@ where
 
         Some(
             ColorPickerOverlay::new(
-                &mut self.state,
+                self.state,
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,

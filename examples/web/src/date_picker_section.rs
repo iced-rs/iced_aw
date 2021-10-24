@@ -1,5 +1,5 @@
 use crate::Section;
-use iced::{button, Align, Button, Column, Element, Length, Row, Text};
+use iced::{button, Alignment, Button, Column, Element, Length, Row, Text};
 use iced_aw::{
     date_picker::{self, Date},
     DatePicker,
@@ -54,12 +54,12 @@ impl Section for DatePickerSection {
         );
 
         let column = Column::new()
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .width(Length::Fill)
             .push(
                 Row::new()
                     .width(Length::Shrink)
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .spacing(20)
                     .push(date_picker)
                     .push(Text::new(format!("Picked date: {}", self.date))),

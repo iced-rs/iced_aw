@@ -11,7 +11,8 @@ use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet}
 
 use chrono::{self, Datelike};
 use iced_graphics::{
-    backend, Backend, Color, HorizontalAlignment, Primitive, Rectangle, Renderer, VerticalAlignment,
+    alignment::{Horizontal, Vertical},
+    backend, Backend, Color, Primitive, Rectangle, Renderer,
 };
 use iced_native::{mouse, Element};
 
@@ -241,8 +242,8 @@ fn month_year(
                     color: style.get(&style_state).unwrap().text_color,
                     size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
                 Primitive::Text {
                     content: text.to_owned(),
@@ -254,8 +255,8 @@ fn month_year(
                     color: style.get(&style_state).unwrap().text_color,
                     size: center_bounds.height,
                     font: iced_graphics::Font::default(),
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
                 Primitive::Text {
                     content: Icon::CaretRightFill.into(),
@@ -267,8 +268,8 @@ fn month_year(
                     color: style.get(&style_state).unwrap().text_color,
                     size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
             ],
         };
@@ -340,8 +341,8 @@ fn day_labels(
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: bounds.height + 5.0,
             font: iced_graphics::Font::default(),
-            horizontal_alignment: HorizontalAlignment::Center,
-            vertical_alignment: VerticalAlignment::Center,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
         });
     }
 
@@ -417,8 +418,8 @@ fn day_table(
                     bounds.height
                 },
                 font: iced_graphics::Font::default(),
-                horizontal_alignment: HorizontalAlignment::Center,
-                vertical_alignment: VerticalAlignment::Center,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
             });
         }
     }

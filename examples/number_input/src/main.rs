@@ -1,4 +1,4 @@
-use iced::{window, Align, Container, Element, Length, Row, Sandbox, Settings, Text};
+use iced::{window, Alignment, Container, Element, Length, Row, Sandbox, Settings, Text};
 use iced_aw::number_input::{self, NumberInput};
 
 #[derive(Default)]
@@ -57,7 +57,7 @@ impl Sandbox for NumberInputDemo {
         Container::new(
             Row::new()
                 .spacing(10)
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
         )

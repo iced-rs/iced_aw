@@ -2,8 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 use iced_graphics::{
-    backend, defaults, Backend, Color, Defaults, HorizontalAlignment, Point, Primitive, Rectangle,
-    Renderer, VerticalAlignment,
+    alignment::{Horizontal, Vertical},
+    backend, defaults, Backend, Color, Defaults, Point, Primitive, Rectangle, Renderer,
 };
 use iced_native::{mouse, Element, Layout};
 
@@ -160,8 +160,8 @@ where
                         ..close_bounds
                     },
                     color: style.close_color,
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
                 if is_mouse_over_close {
                     mouse::Interaction::Pointer

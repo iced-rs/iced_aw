@@ -2,9 +2,9 @@
 name = "selection_list"
 version = "0.1.0"
 authors = ["Héctor Ramón Jiménez <hector0193@gmail.com>", "Andrew Wheeler <genusistimelord@gmail.com>"]
-edition = "2018"
+edition = "2021"
 publish = false
 
 [dependencies]
-iced =  { git = "https://github.com/hecrj/iced.git", rev = "4994d34abab" }
+iced =  { git = "https://github.com/hecrj/iced.git", rev = "20177e4" }
 iced_aw = { path = "../..", default-features = false, features = ["selection_list"] }

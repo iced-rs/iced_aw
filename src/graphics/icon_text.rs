@@ -4,7 +4,10 @@
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: `icon_text`*
-use iced_graphics::{backend, Backend, Font, Primitive, Rectangle, Renderer};
+use iced_graphics::{
+    alignment::{Horizontal, Vertical},
+    backend, Backend, Font, Primitive, Rectangle, Renderer,
+};
 use iced_native::mouse;
 
 use crate::native::icon_text;
@@ -49,19 +52,19 @@ where
         size: u16,
         font: Option<Self::Font>,
         color: Option<iced_graphics::Color>,
-        horizontal_alignment: iced_graphics::HorizontalAlignment,
-        vertical_alignment: iced_graphics::VerticalAlignment,
+        horizontal_alignment: Horizontal,
+        vertical_alignment: Vertical,
     ) -> Self::Output {
         let x = match horizontal_alignment {
-            iced_native::HorizontalAlignment::Left => bounds.x,
-            iced_native::HorizontalAlignment::Center => bounds.center_x(),
-            iced_native::HorizontalAlignment::Right => bounds.x + bounds.width,
+            Horizontal::Left => bounds.x,
+            Horizontal::Center => bounds.center_x(),
+            Horizontal::Right => bounds.x + bounds.width,
         };
 
         let y = match vertical_alignment {
-            iced_native::VerticalAlignment::Top => bounds.y,
-            iced_native::VerticalAlignment::Center => bounds.center_y(),
-            iced_native::VerticalAlignment::Bottom => bounds.y + bounds.height,
+            Vertical::Top => bounds.y,
+            Vertical::Center => bounds.center_y(),
+            Vertical::Bottom => bounds.y + bounds.height,
         };
 
         (

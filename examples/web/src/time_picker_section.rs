@@ -1,5 +1,5 @@
 use crate::Section;
-use iced::{button, Align, Button, Checkbox, Column, Element, Length, Row, Text};
+use iced::{button, Alignment, Button, Checkbox, Column, Element, Length, Row, Text};
 use iced_aw::{time_picker, TimePicker};
 
 pub struct TimePickerSection {
@@ -75,7 +75,7 @@ impl Section for TimePickerSection {
         }
 
         let column = Column::new()
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .width(Length::Fill)
             .spacing(20)
             .push(
@@ -96,7 +96,7 @@ impl Section for TimePickerSection {
             .push(
                 Row::new()
                     .width(Length::Shrink)
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .spacing(20)
                     .push(time_picker)
                     .push(Text::new(format!("Picked time: {}", self.time))),

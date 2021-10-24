@@ -8,8 +8,8 @@ use iced_native::{touch, Element};
 use std::hash::Hash;
 
 use iced_native::{
-    column, event, layout, mouse, row, text, Align, Clipboard, Column, Event, Font, Hasher, Layout,
-    Length, Point, Rectangle, Row, Text, Widget,
+    column, event, layout, mouse, row, text, Alignment, Clipboard, Column, Event, Font, Hasher,
+    Layout, Length, Point, Rectangle, Row, Text, Widget,
 };
 
 pub mod tab_label;
@@ -95,7 +95,7 @@ where
     }
 
     /// Similar to `new` but with a given Vector of the
-    /// [`TabLabel`](tab_label::TabLabel)s.Align
+    /// [`TabLabel`](tab_label::TabLabel)s.Alignment
     ///
     /// It expects:
     ///     * the index of the currently active tab.
@@ -254,16 +254,16 @@ where
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let label = match tab_label {
-                    TabLabel::Icon(_icon) => Column::new().align_items(Align::Center).push(
+                    TabLabel::Icon(_icon) => Column::new().align_items(Alignment::Center).push(
                         Row::new()
                             .width(Length::Units(self.icon_size))
                             .height(Length::Units(self.icon_size)),
                     ),
                     TabLabel::Text(text) => Column::new()
-                        .align_items(Align::Center)
+                        .align_items(Alignment::Center)
                         .push(Text::new(text).size(self.text_size).width(self.tab_width)),
                     TabLabel::IconText(_icon, text) => Column::new()
-                        .align_items(Align::Center)
+                        .align_items(Alignment::Center)
                         .push(
                             Row::new()
                                 .width(Length::Units(self.icon_size))
@@ -275,7 +275,7 @@ where
                 .height(self.height);
 
                 let mut label_row = Row::new()
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .padding(self.padding)
                     .width(self.tab_width)
                     .push(label);
@@ -285,7 +285,7 @@ where
                         Row::new()
                             .width(Length::Units(self.close_size))
                             .height(Length::Units(self.close_size))
-                            .align_items(Align::Center),
+                            .align_items(Alignment::Center),
                     );
                 }
 

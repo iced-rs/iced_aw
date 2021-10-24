@@ -7,8 +7,8 @@ use chrono::{Datelike, Local, NaiveDate};
 use iced_native::{
     button, column, container, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Padding, Point, Row, Size, Text, Widget,
+    mouse, overlay, row, text, touch, Alignment, Button, Clipboard, Column, Container, Element,
+    Event, Layout, Length, Padding, Point, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -292,7 +292,7 @@ where
 
             match key_code {
                 keyboard::KeyCode::Tab => {
-                    if self.state.keyboard_modifiers.shift {
+                    if self.state.keyboard_modifiers.shift() {
                         self.state.focus = self.state.focus.previous();
                     } else {
                         self.state.focus = self.state.focus.next();
@@ -465,7 +465,7 @@ where
 
         let mut col = Column::<(), Renderer>::new()
             .spacing(SPACING)
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .push(month_year)
             .push(days)
             .layout(renderer, &limits);
@@ -528,14 +528,16 @@ where
         clipboard: &mut dyn Clipboard,
         messages: &mut Vec<Message>,
     ) -> event::Status {
-        if let event::Status::Captured = self.on_event_keyboard(
-            &event,
-            layout,
-            cursor_position,
-            messages,
-            renderer,
-            clipboard,
-        ) {
+        if event::Status::Captured
+            == self.on_event_keyboard(
+                &event,
+                layout,
+                cursor_position,
+                messages,
+                renderer,
+                clipboard,
+            )
+        {
             return event::Status::Captured;
         }
 

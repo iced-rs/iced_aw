@@ -7,8 +7,8 @@ use iced_graphics::canvas;
 use iced_native::{
     button, column, event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, text_input, touch, Align, Button, Clipboard, Color, Column, Element,
-    Event, Layout, Length, Padding, Point, Rectangle, Row, Size, Text, Widget,
+    mouse, overlay, row, text, text_input, touch, Alignment, Button, Clipboard, Color, Column,
+    Element, Event, Layout, Length, Padding, Point, Rectangle, Row, Size, Text, Widget,
 };
 
 use crate::{
@@ -392,7 +392,7 @@ where
             let mut status = event::Status::Ignored;
 
             if let keyboard::KeyCode::Tab = key_code {
-                if self.state.keyboard_modifiers.shift {
+                if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous();
                 } else {
                     self.state.focus = self.state.focus.next();
@@ -596,14 +596,16 @@ where
         clipboard: &mut dyn Clipboard,
         messages: &mut Vec<Message>,
     ) -> event::Status {
-        if let event::Status::Captured = self.on_event_keyboard(
-            &event,
-            layout,
-            cursor_position,
-            messages,
-            renderer,
-            clipboard,
-        ) {
+        if event::Status::Captured
+            == self.on_event_keyboard(
+                &event,
+                layout,
+                cursor_position,
+                messages,
+                renderer,
+                clipboard,
+            )
+        {
             self.state.sat_value_canvas_cache.clear();
             self.state.hue_canvas_cache.clear();
             return event::Status::Captured;
@@ -822,14 +824,14 @@ where
     for _ in 0..4 {
         rgba_colors = rgba_colors.push(
             Row::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .spacing(SPACING)
                 .padding(PADDING)
                 .height(Length::Fill)
                 .push(
                     Text::new("X:")
-                        .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                        .vertical_alignment(iced_graphics::VerticalAlignment::Center),
+                        .horizontal_alignment(iced_graphics::alignment::Horizontal::Center)
+                        .vertical_alignment(iced_graphics::alignment::Vertical::Center),
                 )
                 .push(
                     Row::new()
@@ -838,8 +840,8 @@ where
                 )
                 .push(
                     Text::new("XXX")
-                        .horizontal_alignment(iced_graphics::HorizontalAlignment::Center)
-                        .vertical_alignment(iced_graphics::VerticalAlignment::Center),
+                        .horizontal_alignment(iced_graphics::alignment::Horizontal::Center)
+                        .vertical_alignment(iced_graphics::alignment::Vertical::Center),
                 ),
         );
     }

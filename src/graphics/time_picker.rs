@@ -18,8 +18,8 @@ use crate::{
 use canvas::{Cache, LineCap, Path, Stroke, Text};
 use chrono::{NaiveTime, Timelike};
 use iced_graphics::{
-    backend, canvas, Backend, Color, HorizontalAlignment, Point, Primitive, Rectangle, Renderer,
-    Vector, VerticalAlignment,
+    alignment::{Horizontal, Vertical},
+    backend, canvas, Backend, Color, Point, Primitive, Rectangle, Renderer, Vector,
 };
 use iced_native::mouse;
 
@@ -321,8 +321,8 @@ fn clock(
                 color: style.get(&clock_style_state).unwrap().clock_number_color,
                 size: period_size,
                 font: iced_graphics::Font::default(),
-                horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
             };
             frame.fill_text(period_text);
 
@@ -361,8 +361,8 @@ fn clock(
                     color: style.get(&style_state).unwrap().clock_number_color,
                     size: number_size,
                     font: iced_graphics::Font::default(),
-                    horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                    vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 };
 
                 frame.fill_text(text);
@@ -391,8 +391,8 @@ fn clock(
                         color: style.get(&style_state).unwrap().clock_number_color,
                         size: number_size,
                         font: iced_graphics::Font::default(),
-                        horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                        vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
                     };
 
                     frame.fill_text(text);
@@ -429,8 +429,8 @@ fn clock(
                             color: style.get(&style_state).unwrap().clock_number_color,
                             size: number_size,
                             font: iced_graphics::Font::default(),
-                            horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                            vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                            horizontal_alignment: Horizontal::Center,
+                            vertical_alignment: Vertical::Center,
                         };
 
                         frame.fill_text(text);
@@ -525,8 +525,8 @@ fn digital_clock(
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
                 Primitive::Text {
                     content: text,
@@ -538,8 +538,8 @@ fn digital_clock(
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: center_bounds.height,
                     font: iced_graphics::Font::default(),
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
                 Primitive::Text {
                     content: Icon::CaretDownFill.into(),
@@ -551,8 +551,8 @@ fn digital_clock(
                     color: style.get(&StyleState::Active).unwrap().text_color,
                     size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
                     font: ICON_FONT,
-                    horizontal_alignment: HorizontalAlignment::Center,
-                    vertical_alignment: VerticalAlignment::Center,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
                 },
             ],
         };
@@ -596,8 +596,8 @@ fn digital_clock(
         color: style[&StyleState::Active].text_color,
         size: hour_minute_separator.bounds().height,
         font: iced_graphics::Font::default(),
-        horizontal_alignment: HorizontalAlignment::Center,
-        vertical_alignment: VerticalAlignment::Center,
+        horizontal_alignment: Horizontal::Center,
+        vertical_alignment: Vertical::Center,
     };
 
     let minute_layout = children
@@ -623,8 +623,8 @@ fn digital_clock(
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: minute_second_separator.bounds().height,
             font: iced_graphics::Font::default(),
-            horizontal_alignment: HorizontalAlignment::Center,
-            vertical_alignment: VerticalAlignment::Center,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
         };
 
         let second_layout = children
@@ -661,8 +661,8 @@ fn digital_clock(
             color: style.get(&StyleState::Active).unwrap().text_color,
             size: period.bounds().height,
             font: iced_graphics::Font::default(),
-            horizontal_alignment: HorizontalAlignment::Center,
-            vertical_alignment: VerticalAlignment::Center,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
         }
     };
 

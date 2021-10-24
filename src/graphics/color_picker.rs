@@ -484,8 +484,8 @@ fn rgba_color(
             color: defaults.text.color,
             size: label_layout.bounds().height,
             font: iced_graphics::Font::default(),
-            horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-            vertical_alignment: iced_graphics::VerticalAlignment::Center,
+            horizontal_alignment: iced_graphics::alignment::Horizontal::Center,
+            vertical_alignment: iced_graphics::alignment::Vertical::Center,
         };
 
         let bounds = bar_layout.bounds();
@@ -531,8 +531,8 @@ fn rgba_color(
             color: defaults.text.color,
             size: value_layout.bounds().height,
             font: iced_graphics::Font::default(),
-            horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-            vertical_alignment: iced_graphics::VerticalAlignment::Center,
+            horizontal_alignment: iced_graphics::alignment::Horizontal::Center,
+            vertical_alignment: iced_graphics::alignment::Vertical::Center,
         };
 
         let focus = if focus == target {
@@ -667,8 +667,8 @@ fn hex_text(
                 },
                 size: layout.bounds().height * 0.7,
                 font: iced_graphics::Font::default(),
-                horizontal_alignment: iced_graphics::HorizontalAlignment::Center,
-                vertical_alignment: iced_graphics::VerticalAlignment::Center,
+                horizontal_alignment: iced_graphics::alignment::Horizontal::Center,
+                vertical_alignment: iced_graphics::alignment::Vertical::Center,
             },
         ],
     }

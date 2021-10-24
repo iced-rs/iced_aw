@@ -1,4 +1,4 @@
-use iced::{slider, Align, Column, Container, Element, Image, Length, Slider, Text};
+use iced::{slider, Alignment, Column, Container, Element, Image, Length, Slider, Text};
 use iced_aw::TabLabel;
 
 use crate::{Icon, Message, Tab};
@@ -42,7 +42,7 @@ impl Tab for FerrisTab {
     fn content(&mut self) -> Element<'_, Self::Message> {
         let content: Element<'_, FerrisMessage> = Container::new(
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
