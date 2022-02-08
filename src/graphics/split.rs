@@ -14,6 +14,7 @@ pub use crate::style::split::{Style, StyleSheet};
 /// This is an alias of an `iced_native` Split with an `iced_wgpu::Renderer`.
 pub type Split<'a, Message, Backend> = split::Split<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> split::Renderer for Renderer<B>
 where
     B: Backend,
@@ -145,3 +146,4 @@ where
         )
     }
 }
+*/
