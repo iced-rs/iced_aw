@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: card*
 use iced_graphics::{
     alignment::{Horizontal, Vertical},
-    backend, defaults, Backend, Color, Defaults, Point, Primitive, Rectangle, Renderer,
+    backend, Backend, Color, Point, Primitive, Rectangle, Renderer,
 };
 use iced_native::{mouse, Element, Layout};
 
@@ -15,6 +15,7 @@ use crate::{core::renderer::DrawEnvironment, native::card};
 /// This is an alias of an `iced_native` Card with an `iced_wgpu::Renderer`.
 pub type Card<'a, Message, Backend> = card::Card<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> card::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -270,3 +271,4 @@ where
         foot_mouse_interaction,
     )
 }
+*/
