@@ -11,6 +11,7 @@ use crate::native::grid;
 /// This is an alias of an `iced_native` `Grid` with a default `iced_wgpu::Renderer`.
 pub type Grid<'a, Message, Backend> = grid::Grid<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> grid::Renderer for Renderer<B>
 where
     B: Backend,
@@ -48,3 +49,4 @@ where
         )
     }
 }
+*/
