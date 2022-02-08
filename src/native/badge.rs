@@ -4,11 +4,14 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, layout, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle,
-    Widget,
+    event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
+    Padding, Point, Rectangle, Widget,
 };
 
-use crate::core::renderer::DrawEnvironment;
+pub use crate::style::badge::{Style, StyleSheet};
+
+/// The ratio of the border radius.
+const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 
 /// A badge for color highlighting small information.
 ///
@@ -25,7 +28,7 @@ use crate::core::renderer::DrawEnvironment;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Renderer: self::Renderer> {
+pub struct Badge<'a, Message, Renderer> {
     /// The padding of the [`Badge`].
     padding: u16,
     /// The width of the [`Badge`].
@@ -37,14 +40,14 @@ pub struct Badge<'a, Message, Renderer: self::Renderer> {
     /// The vertical alignment of the [`Badge`](Badge).
     vertical_alignment: Alignment,
     /// The style of the [`Badge`](Badge).
-    style: Renderer::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
     /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
     content: Element<'a, Message, Renderer>,
 }
 
 impl<'a, Message, Renderer> Badge<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`Badge`](Badge) with the given content.
     ///
@@ -60,7 +63,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style: Renderer::Style::default(),
+            style_sheet: Renderer::Style::default(),
             content: content.into(),
         }
     }
@@ -96,15 +99,15 @@ where
     }
 
     /// Sets the style of the [`Badge`](Badge).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
-        self.style = style.into();
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 }
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     fn width(&self) -> Length {
         self.width
@@ -158,25 +161,58 @@ where
         )
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: &self.style,
-                viewport: Some(viewport),
-                focus: (),
+        _style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
+        viewport: &iced_graphics::Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let style_sheet = if is_mouse_over {
+            self.style_sheet.hovered()
+        } else {
+            self.style_sheet.active()
+        };
+
+        //println!("height: {}", bounds.height);
+        // 34 15
+        //  x
+        let border_radius = style_sheet
+            .border_radius
+            .unwrap_or_else(|| (bounds.height as f32 / BORDER_RADIUS_RATIO));
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius,
+                border_width: style_sheet.border_width,
+                border_color: style_sheet.border_color.unwrap_or(Color::BLACK),
             },
-            &self.content,
-        )
+            style_sheet.background,
+        );
+
+        self.content.draw(
+            renderer,
+            &renderer::Style {
+                text_color: style_sheet.text_color,
+            },
+            cursor_position,
+            viewport,
+        );
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -192,37 +228,9 @@ where
     }
 }
 
-/// The renderer of a [`Badge`](Badge).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`Badge`](Badge) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// Draws a [`Badge`](Badge).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        content: &Element<'_, Message, Self>,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        _content: &Element<'_, Message, Self>,
-    ) -> Self::Output {
-    }
-}
-
 impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer,
+    Renderer: 'a + iced_native::Renderer,
     Message: 'a,
 {
     fn from(badge: Badge<'a, Message, Renderer>) -> Self {

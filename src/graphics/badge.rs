@@ -1,7 +1,7 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use iced_graphics::{defaults, Backend, Color, Defaults, Primitive, Renderer};
+use iced_graphics::{Backend, Color, Primitive, Renderer};
 
 pub use crate::style::badge::{Style, StyleSheet};
 use crate::{core::renderer::DrawEnvironment, native::badge};
@@ -14,6 +14,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// This is an alias of an `iced_native` Badge with an `iced_wgpu::Renderer`.
 pub type Badge<'a, Message, Backend> = badge::Badge<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> badge::Renderer for Renderer<B>
 where
     B: Backend,
@@ -70,3 +71,4 @@ where
         )
     }
 }
+*/
