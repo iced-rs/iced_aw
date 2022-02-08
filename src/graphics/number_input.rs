@@ -19,6 +19,7 @@ pub use crate::style::number_input::{Style, StyleSheet};
 pub type NumberInput<'a, T, Message, Backend> =
     number_input::NumberInput<'a, T, Message, Renderer<Backend>>;
 
+/*
 impl<B> number_input::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -129,3 +130,4 @@ where
         )
     }
 }
+*/

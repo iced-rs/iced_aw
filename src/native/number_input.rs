@@ -1,19 +1,26 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
+
+use std::{fmt::Display, str::FromStr};
+
 use iced_native::{
-    column, container,
-    event::{self, Event},
-    keyboard,
-    layout::{Limits, Node},
-    mouse, row, text,
-    text_input::{self, cursor, Value},
-    Alignment, Clipboard, Column, Container, Element, Hasher, Layout, Length, Padding, Point,
-    Rectangle, Row, Size, Text, TextInput, Widget,
+    alignment::{Horizontal, Vertical},
+    event, keyboard,
+    layout::{Node, Limits},
+    mouse, renderer,
+    widget::{
+        text_input::{self, cursor, Value},
+        Column, Container, Row, Text, TextInput,
+    },
+    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Size, Widget,
 };
 use num_traits::{Num, NumAssignOps};
-use std::fmt::Display;
-use std::str::FromStr;
+
+pub use crate::style::number_input::{Style, StyleSheet};
+
+const DEFAULT_PADDING: u16 = 5;
 
 /// A field that can only be filled with numeric type.
 ///
@@ -41,7 +48,7 @@ use std::str::FromStr;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Renderer: self::Renderer> {
+pub struct NumberInput<'a, T, Message, Renderer: iced_native::text::Renderer> {
     /// The state of the [`NumberInput`](NumberInput).
     state: &'a mut ModifierState,
     /// The current value of the [`NumberInput`](NumberInput).
@@ -59,7 +66,7 @@ pub struct NumberInput<'a, T, Message, Renderer: self::Renderer> {
     /// The on_change event of the [`NumberInput`](NumberInput).
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`](NumberInput).
-    style: <Renderer as self::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
     /// The font text of the [`NumberInput`](NumberInput).
     font: Renderer::Font,
 }
@@ -68,7 +75,7 @@ impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -87,7 +94,7 @@ where
             mod_state,
         } = state;
 
-        let padding = <Renderer as self::Renderer>::DEFAULT_PADDING;
+        let padding = DEFAULT_PADDING;
         let convert_to_num = move |s: String| {
             on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }))
         };
@@ -108,7 +115,7 @@ where
             .padding(padding)
             .width(Length::Units(127)),
             on_change: Box::new(on_changed),
-            style: <Renderer as self::Renderer>::Style::default(),
+            style_sheet: Style::default(),
             font: Default::default(),
         }
     }
@@ -187,17 +194,17 @@ where
     }
 
     /// Sets the style of the [`NumberInput`].
-    pub fn style(mut self, style: impl Into<<Renderer as self::Renderer>::Style>) -> Self {
-        self.style = style.into();
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+        self.style = style_sheet.into();
         self
     }
 
     /// Sets the input style of the [`NumberInput`].
     pub fn input_style(
         mut self,
-        style: impl Into<<Renderer as text_input::Renderer>::Style>,
+        style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet + 'a>>,
     ) -> Self {
-        self.content = self.content.style(style.into());
+        self.content = self.content.style(style_sheet.into());
         self
     }
 
@@ -234,17 +241,21 @@ impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, 
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: Clone,
-    Renderer: self::Renderer + container::Renderer + column::Renderer + row::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     fn width(&self) -> Length {
-        Widget::<Message, Renderer>::width(&self.content)
+        self.content.width()
     }
 
     fn height(&self) -> Length {
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(
+        &self,
+        renderer: &Renderer,
+        limits: &Limits,
+    ) -> Node {
         let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
@@ -280,62 +291,6 @@ where
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
-    }
-
-    fn draw(
-        &self,
-        renderer: &mut Renderer,
-        _defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        _viewport: &Rectangle,
-    ) -> Renderer::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
-        let content_layout = children.next().expect("fail to get content layout");
-        let mut mod_children = children
-            .next()
-            .expect("fail to get modifiers layout")
-            .children();
-        let inc_bounds = mod_children
-            .next()
-            .expect("fail to get increase mod layout")
-            .bounds();
-        let dec_bounds = mod_children
-            .next()
-            .expect("fail to get decreate mod layout")
-            .bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
-        let content = self
-            .content
-            .draw(renderer, content_layout, cursor_position, None);
-        let is_decrease_disabled = self.value <= self.bounds.0;
-        let is_increase_disabled = self.value >= self.bounds.1;
-
-        self::Renderer::draw(
-            renderer,
-            cursor_position,
-            self.state,
-            inc_bounds,
-            dec_bounds,
-            is_mouse_over,
-            is_decrease_disabled,
-            is_increase_disabled,
-            content,
-            &self.style,
-            self.font,
-        )
-    }
-
-    fn hash_layout(&self, state: &mut Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.padding.hash(state);
-        self.size.hash(state);
-        self.content.hash_layout(state);
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
@@ -558,6 +513,131 @@ where
             }
         }
     }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
+    fn draw(
+        &self,
+        renderer: &mut Renderer,
+        _style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
+        viewport: &iced_graphics::Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let content_layout = children.next().expect("fail to get content layout");
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let content = self
+            .content
+            .draw(renderer, content_layout, cursor_position, None);
+        let is_decrease_disabled = self.value <= self.bounds.0;
+        let is_increase_disabled = self.value >= self.bounds.1;
+
+        let mouse_over_decrease = dec_bounds.contains(cursor_position);
+        let mouse_over_increase = inc_bounds.contains(cursor_position);
+
+        let decrease_btn_style = if is_decrease_disabled {
+            self.style_sheet.disabled()
+        } else if self.state.decrease_pressed {
+            self.style_sheet.pressed()
+        } else {
+            self.style_sheet.active()
+        };
+
+        let increase_btn_style = if is_increase_disabled {
+            self.style_sheet.disabled()
+        } else if self.state.increase_pressed {
+            self.style_sheet.pressed()
+        } else {
+            self.style_sheet.active()
+        };
+
+        // decrease button section
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: dec_bounds,
+                border_radius: 3.0,
+                border_width: 0.,
+                border_color: Color::TRANSPARENT,
+            },
+            decrease_btn_style
+                .button_background
+                .unwrap_or(Background::Color(Color::TRANSPARENT)),
+        );
+
+        renderer.fill_text(iced_native::text::Text {
+            content: "\u{25bc}",
+            bounds: Rectangle {
+                x: dec_bounds.center_x(),
+                y: dec_bounds.center_y(),
+                ..dec_bounds
+            },
+            size: dec_bounds.height * 0.9,
+            color: decrease_btn_style.icon_color,
+            font: self.font,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // increase button section
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: inc_bounds,
+                border_radius: 3.0,
+                border_width: 0.,
+                border_color: Color::TRANSPARENT,
+            },
+            increase_btn_style
+                .button_background
+                .unwrap_or(Background::Color(Color::TRANSPARENT)),
+        );
+
+        renderer.fill_text(iced_native::text::Text {
+            content: "\u{25b2}",
+            bounds: Rectangle {
+                x: inc_bounds.center_x(),
+                y: inc_bounds.center_y(),
+                ..inc_bounds
+            },
+            size: inc_bounds.height * 0.9,
+            color: increase_btn_style.icon_color,
+            font: self.font,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    }
+
+    fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        use std::hash::Hash;
+        #[allow(clippy::missing_docs_in_private_items)]
+        struct Marker;
+        std::any::TypeId::of::<Marker>().hash(state);
+
+        self.padding.hash(state);
+        self.size.hash(state);
+        self.content.hash_layout(state);
+    }
 }
 
 /// The state of a [`NumberInput`].
@@ -586,66 +666,14 @@ pub struct ModifierState {
     pub increase_pressed: bool,
 }
 
-/// The renderer of a [`NumberInput`].
-///
-/// Your [renderer] will need to implement this trait before being
-/// able to use a [`NumberInput`] in your user interface.
-///
-/// [renderer]: crate::renderer
-pub trait Renderer: text_input::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// The default padding of a [`NumberInput`].
-    const DEFAULT_PADDING: u16;
-
-    #[allow(clippy::too_many_arguments)]
-    /// Draws a [`NumberInput`].
-    fn draw(
-        &mut self,
-        cursor_position: Point,
-        state: &ModifierState,
-        inc_bounds: Rectangle,
-        dec_bounds: Rectangle,
-        is_mouse_over: bool,
-        is_decrease_disabled: bool,
-        is_increase_disabled: bool,
-        content: Self::Output,
-        style: &<Self as self::Renderer>::Style,
-        font: Self::Font,
-    ) -> Self::Output;
-}
-
 impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + container::Renderer + column::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
         Element::new(num_input)
-    }
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    const DEFAULT_PADDING: u16 = 7;
-
-    fn draw(
-        &mut self,
-        _: Point,
-        _: &ModifierState,
-        _: Rectangle,
-        _: Rectangle,
-        _: bool,
-        _: bool,
-        _: bool,
-        _: Self::Output,
-        _: &<Self as Renderer>::Style,
-        _: <Self as text::Renderer>::Font,
-    ) -> Self::Output {
     }
 }
