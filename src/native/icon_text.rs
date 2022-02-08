@@ -13,7 +13,7 @@ use iced_native::{
 
 /// Text widget with icon font.
 #[allow(missing_debug_implementations)]
-pub struct IconText<Renderer: self::Renderer> {
+pub struct IconText<Renderer: iced_native::text::Renderer> {
     /// The content of the [`IconText`](IconText).
     content: String,
     /// The optional size of the [`IconText`](IconText).
@@ -32,7 +32,7 @@ pub struct IconText<Renderer: self::Renderer> {
     vertical_alignment: Vertical,
 }
 
-impl<Renderer: self::Renderer> IconText<Renderer> {
+impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
     /// Creates a new [`IconText`](IconText) with the given icon label.
     ///
     /// It expects:
@@ -97,7 +97,7 @@ impl<Renderer: self::Renderer> IconText<Renderer> {
 
 impl<Message, Renderer> Widget<Message, Renderer> for IconText<Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     fn width(&self) -> Length {
         self.width
@@ -133,21 +133,34 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
-        _cursor_position: iced_graphics::Point,
-        _viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(
-            defaults,
-            layout.bounds(),
-            &self.content,
-            self.size.unwrap_or_else(|| renderer.default_size()),
-            self.font,
-            self.color,
-            self.horizontal_alignment,
-            self.vertical_alignment,
-        )
+        cursor_position: iced_graphics::Point,
+        viewport: &iced_graphics::Rectangle,
+    ) {
+        let bounds = layout.bounds();
+
+        let x = match self.horizontal_alignment {
+            Horizontal::Left => bounds.x,
+            Horizontal::Center => bounds.center_x(),
+            Horizontal::Right => bounds.x + bounds.width,
+        };
+
+        let y = match self.vertical_alignment {
+            Vertical::Top => bounds.y,
+            Vertical::Center => bounds.center_y(),
+            Vertical::Bottom => bounds.y + bounds.height,
+        };
+
+        renderer.fill_text(iced_native::text::Text {
+            content: self.content,
+            bounds: Rectangle { x, y, ..bounds },
+            size: f32::from(self.size),
+            color: self.color.unwrap_or(style.text_color),
+            font: self.font.unwrap_or_else(crate::graphics::icons::ICON_FONT),
+            horizontal_alignment: self.horizontal_alignment,
+            vertical_alignment: self.vertical_alignment,
+        })
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -162,49 +175,16 @@ where
     }
 }
 
-/// The renderer of an [`IconText`](IconText).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use an [`IconText`](IconText) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The font type used for [`IconText`](IconText).
-    type Font: Default + Copy;
-
-    /// Returns the default size of [`IconText`](IconText).
-    fn default_size(&self) -> u16;
-
-    /// Returns the default font of [`IconText`](IconText).
-    fn default_font(&self) -> Self::Font;
-
-    /// Measures the [`IconText`](IconText) in the given bounds and returns the
-    /// minimum boundaries that can fit the contents.
-    fn measure(&self, content: &str, size: u16, font: Self::Font, bounds: Size) -> (f32, f32);
-
-    /// Draws an [`IconText`](IconText).
-    #[allow(clippy::too_many_arguments)]
-    fn draw(
-        &mut self,
-        defaults: &Self::Defaults,
-        bounds: Rectangle,
-        content: &str,
-        size: u16,
-        font: Option<Self::Font>,
-        color: Option<Color>,
-        horizontal_alignment: Horizontal,
-        vertical_alignment: Vertical,
-    ) -> Self::Output;
-}
-
 impl<'a, Message, Renderer> From<IconText<Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: self::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
 {
     fn from(icon: IconText<Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(icon)
     }
 }
 
-impl<Renderer: self::Renderer> Clone for IconText<Renderer> {
+impl<Renderer: iced_native::text::Renderer> Clone for IconText<Renderer> {
     fn clone(&self) -> Self {
         Self {
             content: self.content.clone(),

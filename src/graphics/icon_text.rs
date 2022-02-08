@@ -19,6 +19,7 @@ use super::icons::ICON_FONT;
 /// This is an alias of an `iced_native` `IconText` with an `iced_wgpu::Renderer`.
 pub type IconText<Backend> = crate::native::icon_text::IconText<Renderer<Backend>>;
 
+/*
 impl<B> icon_text::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -80,4 +81,4 @@ where
             mouse::Interaction::default(),
         )
     }
-}
+}*/
