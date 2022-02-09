@@ -4,8 +4,9 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, layout::{Node, Limits}, mouse, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Size,
-    Widget, Hasher,
+    event,
+    layout::{Limits, Node},
+    mouse, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size, Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -103,11 +104,7 @@ where
         Length::Shrink
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         if self.elements.is_empty() {
             return Node::new(Size::ZERO);
         }

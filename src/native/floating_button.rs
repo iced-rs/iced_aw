@@ -6,7 +6,7 @@ use std::hash::Hash;
 use iced_native::{
     event, mouse, overlay,
     widget::{button, Button},
-    Clipboard, Element, Event, Layout, Point, Rectangle, Widget, Length,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget,
 };
 
 pub mod anchor;

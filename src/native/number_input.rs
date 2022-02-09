@@ -7,7 +7,7 @@ use std::{fmt::Display, str::FromStr};
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
-    layout::{Node, Limits},
+    layout::{Limits, Node},
     mouse, renderer,
     widget::{
         text_input::{self, cursor, Value},
@@ -251,11 +251,7 @@ where
         Length::Shrink
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
