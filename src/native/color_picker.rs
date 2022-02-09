@@ -1,19 +1,17 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-use std::hash::Hash;
-
 use color_picker::ColorBarDragged;
 use iced_native::{
-    button, column, event, overlay, row, text_input, Clipboard, Color, Element, Event, Layout,
-    Point, Widget,
+    event,
+    layout::{Limits, Node},
+    mouse, renderer,
+    widget::button,
+    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Widget,
 };
 
-pub use super::overlay::color_picker::Renderer;
-use super::{
-    icon_text,
-    overlay::color_picker::{self, ColorPickerOverlay, Focus},
-};
+use super::overlay::color_picker::{self, ColorPickerOverlay, Focus};
+pub use crate::style::color_picker::{Style, StyleSheet};
 
 /// An input element for picking colors.
 ///
@@ -46,7 +44,7 @@ use super::{
 pub struct ColorPicker<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: color_picker::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// The state of the [`ColorPicker`](ColorPicker).
     state: &'a mut State,
@@ -57,13 +55,13 @@ where
     /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style: <Renderer as color_picker::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, Message, Renderer> ColorPicker<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: color_picker::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
@@ -85,16 +83,13 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Renderer as color_picker::Renderer>::Style::default(),
+            style_sheet: Style::default(),
         }
     }
 
     /// Sets the style of the [`ColorPicker`](ColorPicker).
-    pub fn style<S>(mut self, style: S) -> Self
-    where
-        S: Into<<Renderer as color_picker::Renderer>::Style>,
-    {
-        self.style = style.into();
+    pub fn style<S>(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 }
@@ -140,26 +135,17 @@ impl State {
 impl<'a, Message, Renderer> Widget<Message, Renderer> for ColorPicker<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: color_picker::Renderer
-        + button::Renderer
-        + column::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text_input::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
-    fn width(&self) -> iced_native::Length {
+    fn width(&self) -> Length {
         self.underlay.width()
     }
 
-    fn height(&self) -> iced_native::Length {
+    fn height(&self) -> Length {
         self.underlay.height()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay.layout(renderer, limits)
     }
 
@@ -182,19 +168,30 @@ where
         )
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: iced_native::Layout<'_>,
+        style: &renderer::Style,
+        layout: Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
+    ) {
         self.underlay
-            .draw(renderer, defaults, layout, cursor_position, viewport)
+            .draw(renderer, style, layout, cursor_position, viewport)
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
@@ -202,7 +199,7 @@ where
         self.underlay.hash_layout(state);
     }
 
-    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(&mut self, layout: Layout<'_>) -> Option<Element<'_, Message, Renderer>> {
         if !self.state.show {
             return self.underlay.overlay(layout);
         }
@@ -216,7 +213,7 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                &self.style,
+                &self.style_sheet,
             )
             .overlay(),
         )
@@ -227,13 +224,7 @@ impl<'a, Message, Renderer> From<ColorPicker<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: 'a
-        + color_picker::Renderer
-        + button::Renderer
-        + column::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text_input::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn from(color_picker: ColorPicker<'a, Message, Renderer>) -> Self {
         Element::new(color_picker)
