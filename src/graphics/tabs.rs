@@ -5,11 +5,9 @@
 //! the content of the tabs.
 //!
 //! *This API requires the following crate features to be activated: tabs*
-use iced_graphics::{backend, Backend, Primitive, Renderer};
-
+use crate::native::tabs;
 pub use crate::style::tab_bar::{Style, StyleSheet};
-use crate::{core::renderer::DrawEnvironment, native::tabs};
-use iced_native::mouse;
+use iced_graphics::Renderer;
 pub use tabs::tab_bar_position::TabBarPosition;
 
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
@@ -18,7 +16,7 @@ pub use tabs::tab_bar_position::TabBarPosition;
 /// This is an alias of an `iced_native` Tabs widget with an
 /// `iced_wgpu::Renderer`.
 pub type Tabs<'a, Message, Backend> = tabs::Tabs<'a, Message, Renderer<Backend>>;
-
+/*
 impl<B> tabs::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -71,4 +69,4 @@ where
 
         (Primitive::Group { primitives }, mouse_interaction)
     }
-}
+}*/
