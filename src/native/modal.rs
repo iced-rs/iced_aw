@@ -3,10 +3,11 @@
 //! *This API requires the following crate features to be activated: modal*
 use std::hash::Hash;
 
-use iced_native::{event, overlay, Clipboard, Element, Event, Layout, Point, Widget};
+use iced_native::{event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Widget};
 
-pub use super::overlay::modal::Renderer;
 use super::overlay::modal::{self, ModalOverlay};
+
+pub use crate::style::modal::{Style, StyleSheet};
 
 /// A modal content as an overlay.
 ///
@@ -40,7 +41,7 @@ where
     S: 'a,
     Content: Fn(&mut S) -> Element<'_, Message, Renderer>,
     Message: Clone,
-    Renderer: modal::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// The state of the [`Modal`](Modal).
     state: &'a mut State<S>,
@@ -53,7 +54,7 @@ where
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
-    style: Renderer::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, S, Content, Message, Renderer> Modal<'a, S, Content, Message, Renderer>
@@ -61,7 +62,7 @@ where
     S: 'a,
     Content: Fn(&mut S) -> Element<'_, Message, Renderer>,
     Message: Clone,
-    Renderer: modal::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`Modal`](Modal) wrapping the underlying element to
     /// show some content as an overlay.
@@ -84,7 +85,7 @@ where
             content,
             backdrop: None,
             esc: None,
-            style: Renderer::Style::default(),
+            style_sheet: Default::default(),
         }
     }
 
@@ -105,8 +106,8 @@ where
     }
 
     /// Sets the style of the [`Modal`](Modal).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
-        self.style = style.into();
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 }
@@ -157,7 +158,7 @@ where
     S: 'a,
     Content: 'a + Fn(&mut S) -> Element<'_, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + modal::Renderer + iced_native::container::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn width(&self) -> iced_native::Length {
         self.underlay.width()
@@ -194,16 +195,26 @@ where
         )
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
+    ) {
         self.underlay
-            .draw(renderer, defaults, layout, cursor_position, viewport)
+            .draw(renderer, style, layout, cursor_position, viewport);
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -215,9 +226,13 @@ where
         self.underlay.hash_layout(state);
     }
 
-    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         if !self.state.show {
-            return self.underlay.overlay(layout);
+            return self.underlay.overlay(layout, renderer);
         }
 
         let bounds = layout.bounds();
@@ -229,7 +244,7 @@ where
                 &self.content,
                 self.backdrop.clone(),
                 self.esc.clone(),
-                &self.style,
+                &self.style_sheet,
             )
             .overlay(position),
         )
@@ -242,7 +257,7 @@ where
     State: 'a,
     Content: 'a + Fn(&mut State) -> Element<'_, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + modal::Renderer + iced_native::container::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn from(modal: Modal<'a, State, Content, Message, Renderer>) -> Self {
         Element::new(modal)

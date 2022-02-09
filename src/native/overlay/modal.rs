@@ -5,11 +5,11 @@
 use std::hash::Hash;
 
 use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, touch, Clipboard, Container, Element, Event,
-    Layout, Length, Point, Size,
+    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, widget::Container, Clipboard,
+    Color, Element, Event, Layout, Length, Point, Size, Widget,
 };
 
-use crate::core::renderer::DrawEnvironment;
+use crate::style::modal::{Style, StyleSheet};
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
@@ -18,7 +18,7 @@ where
     State: 'a,
     Content: Fn(&'a mut State) -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
     state: &'a mut State,
@@ -29,7 +29,7 @@ where
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`Overlay`](Overlay).
-    style: &'a <Renderer as self::Renderer>::Style,
+    style_sheet: &'a Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, State, Content, Message, Renderer> ModalOverlay<'a, State, Content, Message, Renderer>
@@ -37,7 +37,7 @@ where
     State: 'a,
     Content: Fn(&mut State) -> Element<'_, Message, Renderer>,
     Message: Clone,
-    Renderer: self::Renderer + iced_native::container::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
     pub fn new(
@@ -45,14 +45,14 @@ where
         content: Content,
         backdrop: Option<Message>,
         esc: Option<Message>,
-        style: &'a <Renderer as self::Renderer>::Style,
+        style_sheet: &'a Box<dyn StyleSheet + 'a>,
     ) -> Self {
         ModalOverlay {
             state,
             content,
             backdrop,
             esc,
-            style,
+            style_sheet,
         }
     }
 
@@ -64,7 +64,7 @@ where
 }
 
 /// The [`Overlay`](Overlay) of the [`Modal`](crate::native::Modal).
-struct Overlay<'a, Message, Renderer: self::Renderer> {
+struct Overlay<'a, Message, Renderer: iced_native::Renderer> {
     /// The content of the [`Overlay`](Overlay).
     content: Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
@@ -72,13 +72,13 @@ struct Overlay<'a, Message, Renderer: self::Renderer> {
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`Overlay`](Overlay).
-    style: &'a <Renderer as self::Renderer>::Style,
+    style_sheet: &'a Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, Message, Renderer> Overlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + iced_native::container::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// Creates a new [`Overlay`](Overlay) from the given [`ModalOverlay`](ModalOverlay).
     pub fn new<State, Content>(modal: ModalOverlay<'a, State, Content, Message, Renderer>) -> Self
@@ -90,7 +90,7 @@ where
             content,
             backdrop,
             esc,
-            style,
+            style_sheet,
         } = modal;
 
         Self {
@@ -102,7 +102,7 @@ where
                 .into(),
             backdrop,
             esc,
-            style,
+            style_sheet,
         }
     }
 }
@@ -111,7 +111,7 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for Overlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn layout(
         &self,
@@ -182,24 +182,41 @@ where
         }
     }
 
+    fn mouse_interaction(
+        &self,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &iced_graphics::Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: Point,
-    ) -> Renderer::Output {
-        renderer.draw(
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: self.style,
-                viewport: None,
-                focus: (),
+    ) {
+        let bounds = layout.bounds();
+
+        let style_sheet = self.style_sheet.active();
+
+        // Background
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius: 0.0,
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
             },
-            &self.content,
-        )
+            style_sheet.background,
+        );
+
+        // Modal
+        self.content
+            .draw(renderer, style, layout, cursor_position, &bounds);
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
@@ -210,33 +227,5 @@ where
         (position.x as u32).hash(state);
         (position.y as u32).hash(state);
         self.content.hash_layout(state);
-    }
-}
-
-/// The renderer of a [`ModalOverlay`](ModalOverlay).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`Modal`](crate::native::Modal) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// Draws a [`ModalOverlay`](ModalOverlay).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        modal: &Element<'_, Message, Self>,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        _modal: &Element<'_, Message, Self>,
-    ) -> Self::Output {
     }
 }

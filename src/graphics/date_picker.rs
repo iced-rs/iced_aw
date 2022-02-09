@@ -26,6 +26,7 @@ use super::icons::{Icon, ICON_FONT};
 /// This is an alias of an `iced_native` `DatePicker` with an `iced_wgpu::Renderer`.
 pub type DatePicker<'a, Message, Backend> = date_picker::DatePicker<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> date_picker::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -426,3 +427,4 @@ fn day_table(
 
     (Primitive::Group { primitives }, mouse_interaction)
 }
+*/

@@ -14,6 +14,7 @@ use crate::{core::renderer::DrawEnvironment, native::modal};
 pub type Modal<'a, State, Content, Message, Backend> =
     modal::Modal<'a, State, Content, Message, Renderer<Backend>>;
 
+/*
 impl<B> modal::Renderer for Renderer<B>
 where
     B: Backend,
@@ -47,4 +48,4 @@ where
             mouse_interaction,
         )
     }
-}
+}*/
