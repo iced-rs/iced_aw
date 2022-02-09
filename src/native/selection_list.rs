@@ -206,6 +206,16 @@ where
         cursor_position: Point,
         _viewport: &Rectangle,
     ) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: layout.bounds(),
+                border_color: self.style.border_color,
+                border_width: self.style.border_width,
+                border_radius: 0.0,
+            },
+            self.style.background,
+        );
+
         self.container.draw(
             renderer,
             style,
@@ -215,16 +225,6 @@ where
                 .expect("Scrollable Child Missing in Selection List"),
             cursor_position,
             &layout.bounds(),
-        );
-
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border_color: self.style.border_color,
-                border_width: self.style.border_width,
-                border_radius: 0.0,
-            },
-            self.style.background,
         );
     }
 }
