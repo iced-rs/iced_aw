@@ -1,16 +1,21 @@
 //! Build and show dropdown `ListMenus`.
-use crate::selection_list;
+use crate::selection_list::Style;
+
 use iced_native::{
-    container,
-    event::{self, Event},
-    layout, mouse, scrollable, text, touch, Clipboard, Element, Hasher, Layout, Length, Point,
-    Rectangle, Size, Widget,
+    alignment::{Horizontal, Vertical},
+    event,
+    layout::{Limits, Node},
+    mouse, renderer, touch, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
+    Size, Widget,
 };
 use std::marker::PhantomData;
 
 /// The Private [`List`] Handles the Actual list rendering.
 #[allow(missing_debug_implementations)]
-pub struct List<'a, T, Message, Renderer: self::Renderer> {
+pub struct List<'a, T, Message, Renderer>
+where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
     /// Options pointer to hold all rendered strings
     pub options: &'a [T],
     /// Hovered Item Pointer
@@ -20,7 +25,7 @@ pub struct List<'a, T, Message, Renderer: self::Renderer> {
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
-    pub style: selection_list::Style,
+    pub style: Style,
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(T) -> Message>,
     /// Shadow Type holder for Renderer.
@@ -30,7 +35,7 @@ pub struct List<'a, T, Message, Renderer: self::Renderer> {
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     fn width(&self) -> Length {
         Length::Fill
@@ -40,7 +45,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
@@ -50,10 +55,10 @@ where
             f32::from(self.style.text_size + (self.style.padding * 2)) * self.options.len() as f32,
         );
 
-        layout::Node::new(intrinsic)
+        Node::new(intrinsic)
     }
 
-    fn hash_layout(&self, state: &mut Hasher) {
+    fn hash_layout(&self, state: &mut iced_native::Hasher) {
         use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
@@ -113,46 +118,77 @@ where
         status
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        _defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        self::Renderer::draw(
-            renderer,
-            layout.bounds(),
-            cursor_position,
-            viewport,
-            self.options,
-            *self.hovered_option,
-            self.font,
-            &self.style,
-        )
-    }
-}
+        _style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
+        viewport: &iced_graphics::Rectangle,
+    ) {
+        use std::f32;
+        let bounds = layout.bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let option_height = self.style.text_size + (self.style.padding * 2);
+        let offset = viewport.y - bounds.y;
+        let start = (offset / f32::from(option_height)) as usize;
+        let end = ((offset + viewport.height) / f32::from(option_height)).ceil() as usize;
 
-/// The renderer of a [`List`].
-///
-/// Your [renderer] will need to implement this trait before being
-/// able to use a [`List`] in your user interface.
-///
-/// [renderer]: crate::renderer
-pub trait Renderer: scrollable::Renderer + container::Renderer + text::Renderer {
-    /// Draws the list of options of a [`List`].
-    #[allow(clippy::too_many_arguments)]
-    fn draw<T: ToString>(
-        &mut self,
-        bounds: Rectangle,
-        cursor_position: Point,
-        viewport: &Rectangle,
-        options: &[T],
-        hovered_option: Option<usize>,
-        font: Self::Font,
-        style: &selection_list::Style,
-    ) -> Self::Output;
+        let visible_options = &self.options[start..end.min(self.options.len())];
+
+        for (i, option) in visible_options.iter().enumerate() {
+            let i = start + i;
+            let is_selected = *self.hovered_option == Some(i);
+
+            let bounds = Rectangle {
+                x: bounds.x,
+                y: bounds.y + f32::from(option_height * i as u16),
+                width: bounds.width,
+                height: f32::from(self.style.text_size + (self.style.padding * 2)),
+            };
+
+            if is_selected {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds,
+                        border_radius: 0.0,
+                        border_width: 0.0,
+                        border_color: Color::TRANSPARENT,
+                    },
+                    self.style.selected_background,
+                );
+            }
+
+            renderer.fill_text(iced_native::text::Text {
+                content: &option[..],
+                bounds: Rectangle {
+                    x: bounds.x,
+                    y: bounds.center_y(),
+                    width: f32::INFINITY,
+                    ..bounds
+                },
+                size: f32::from(self.style.text_size),
+                color: if is_selected {
+                    self.style.selected_text_color
+                } else {
+                    self.style.text_color
+                },
+                font: self.font,
+                horizontal_alignment: Horizontal::Left,
+                vertical_alignment: Vertical::Center,
+            });
+        }
+    }
 }
 
 impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
@@ -160,7 +196,7 @@ impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
 where
     T: ToString + Clone,
     Message: 'a,
-    Renderer: 'a + self::Renderer,
+    Renderer: iced_native::Renderer + 'a,
 {
     fn from(list: List<'a, T, Message, Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(list)

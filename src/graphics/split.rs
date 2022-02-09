@@ -1,8 +1,7 @@
 //! Use a split to split the available space in two parts to display two different elements.
 //!
 //! *This API requires the following crate features to be activated: split*
-use iced_graphics::{Backend, Color, Primitive, Renderer, Vector};
-use iced_native::mouse;
+use iced_graphics::Renderer;
 
 use crate::native::split;
 pub use crate::native::split::{Axis, State};

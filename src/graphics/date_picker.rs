@@ -1,25 +1,10 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-use std::collections::HashMap;
-
-use crate::{
-    core::{date::IsInMonth, renderer::DrawEnvironment},
-    style::{date_picker::Style, style_state::StyleState},
-};
-use crate::{native::overlay::date_picker::Focus, style::date_picker::StyleSheet};
-
-use chrono::{self, Datelike};
-use iced_graphics::{
-    alignment::{Horizontal, Vertical},
-    backend, Backend, Color, Primitive, Rectangle, Renderer,
-};
-use iced_native::{mouse, Element};
+use iced_graphics::Renderer;
 
 use crate::native::date_picker;
 pub use crate::native::date_picker::{Date, State};
-
-use super::icons::{Icon, ICON_FONT};
 
 /// An input element for picking dates.
 ///

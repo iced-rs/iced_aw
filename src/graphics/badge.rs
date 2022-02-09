@@ -1,10 +1,10 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use iced_graphics::{Backend, Color, Primitive, Renderer};
+use iced_graphics::Renderer;
 
+use crate::native::badge;
 pub use crate::style::badge::{Style, StyleSheet};
-use crate::{core::renderer::DrawEnvironment, native::badge};
 
 /// The ratio of the border radius.
 const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;

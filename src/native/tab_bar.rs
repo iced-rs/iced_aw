@@ -83,7 +83,7 @@ pub struct TabBar<Message, Renderer: iced_native::text::Renderer> {
     /// The optional text font of the [`TabBar`](TabBar).
     text_font: Option<Font>,
     /// The style of the [`TabBar`](TabBar).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style_sheet: Box<dyn StyleSheet>,
 }
 
 impl<Message, Renderer> TabBar<Message, Renderer>

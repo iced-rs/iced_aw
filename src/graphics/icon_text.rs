@@ -4,15 +4,7 @@
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: `icon_text`*
-use iced_graphics::{
-    alignment::{Horizontal, Vertical},
-    backend, Backend, Font, Primitive, Rectangle, Renderer,
-};
-use iced_native::mouse;
-
-use crate::native::icon_text;
-
-use super::icons::ICON_FONT;
+use iced_graphics::Renderer;
 
 /// Text widget with icon font.
 ///

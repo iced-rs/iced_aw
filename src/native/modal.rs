@@ -5,7 +5,7 @@ use std::hash::Hash;
 
 use iced_native::{event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Widget};
 
-use super::overlay::modal::{self, ModalOverlay};
+use super::overlay::modal::ModalOverlay;
 
 pub use crate::style::modal::{Style, StyleSheet};
 

@@ -1,8 +1,7 @@
 //! Use a grid as an input element for creating grids.
 //!
 //! *This API requires the following crate features to be activated: `grid`*
-use iced_graphics::{Backend, Point, Primitive, Rectangle, Renderer};
-use iced_native::{mouse, Element, Layout};
+use iced_graphics::Renderer;
 
 use crate::native::grid;
 
