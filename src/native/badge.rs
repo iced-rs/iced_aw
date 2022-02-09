@@ -5,7 +5,7 @@ use std::hash::Hash;
 
 use iced_native::{
     event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Widget,
+    Padding, Point, Rectangle, Widget, Shell,
 };
 
 pub use crate::style::badge::{Style, StyleSheet};
@@ -63,7 +63,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style_sheet: Renderer::Style::default(),
+            style_sheet: Default::default(),
             content: content.into(),
         }
     }
@@ -146,7 +146,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<'_, Message>,
     ) -> event::Status {
         self.content.on_event(
             event,
@@ -165,10 +165,10 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.content.mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
@@ -210,6 +210,9 @@ where
             &renderer::Style {
                 text_color: style_sheet.text_color,
             },
+            children
+                .next()
+                .expect("Graphics: Layout should have a children layout for Badge"),
             cursor_position,
             viewport,
         );
