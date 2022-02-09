@@ -1,15 +1,9 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
-use crate::native::number_input::{self, ModifierState};
-use iced_graphics::backend::{self, Backend};
-use iced_graphics::{Primitive, Renderer};
-use iced_native::mouse;
-use iced_native::{
-    alignment::{Horizontal, Vertical},
-    Background, Color, Point, Rectangle,
-};
+use iced_graphics::Renderer;
 
+use crate::native::number_input;
 pub use crate::native::number_input::State;
 pub use crate::style::number_input::{Style, StyleSheet};
 

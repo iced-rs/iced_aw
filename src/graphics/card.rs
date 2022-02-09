@@ -1,14 +1,10 @@
 //! Displays a [`Card`](Card).
 //!
 //! *This API requires the following crate features to be activated: card*
-use iced_graphics::{
-    alignment::{Horizontal, Vertical},
-    backend, Backend, Color, Point, Primitive, Rectangle, Renderer,
-};
-use iced_native::{mouse, Element, Layout};
+use iced_graphics::Renderer;
 
+use crate::native::card;
 pub use crate::style::card::{Style, StyleSheet};
-use crate::{core::renderer::DrawEnvironment, native::card};
 
 /// A card consisting of a head, body and optional foot.
 ///

@@ -2,11 +2,11 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 
-use iced_graphics::{Backend, Color, Primitive, Renderer};
+use iced_graphics::Renderer;
 
+use crate::native::modal;
 pub use crate::native::modal::State;
 pub use crate::style::modal::{Style, StyleSheet};
-use crate::{core::renderer::DrawEnvironment, native::modal};
 
 /// A modal content as an overlay.
 ///

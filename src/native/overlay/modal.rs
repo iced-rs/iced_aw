@@ -9,7 +9,7 @@ use iced_native::{
     Color, Element, Event, Layout, Length, Point, Size, Widget,
 };
 
-use crate::style::modal::{Style, StyleSheet};
+use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
