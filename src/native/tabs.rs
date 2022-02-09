@@ -13,14 +13,13 @@ use iced_native::{
     Clipboard, Element, Event, Layout, Length, Point, Rectangle, Size, Widget,
 };
 
-use crate::native::{TabBar, TabLabel};
+use crate::{
+    native::{TabBar, TabLabel},
+    style::tab_bar::StyleSheet,
+};
+
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
-
-pub use crate::{
-    graphics::icons,
-    style::tab_bar::{Style, StyleSheet},
-};
 
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
 /// along with the tab's content.
@@ -211,11 +210,11 @@ where
     }
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
-    pub fn tab_bar_style<T>(mut self, style: T) -> Self
+    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: T) -> Self
     where
-        T: Into<Style>,
+        T: Into<Box<dyn StyleSheet + 'a>>,
     {
-        self.tab_bar = self.tab_bar.style(style);
+        self.tab_bar = self.tab_bar.style_sheet(style_sheet);
         self
     }
 

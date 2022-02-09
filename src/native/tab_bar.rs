@@ -16,7 +16,7 @@ use iced_native::{
 pub mod tab_label;
 pub use tab_label::TabLabel;
 
-pub use crate::{
+use crate::{
     graphics::icons,
     style::tab_bar::{Style, StyleSheet},
 };
@@ -235,8 +235,8 @@ where
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
-        self.style = style.into();
+    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+        self.style_sheet = style_sheet;
         self
     }
 
@@ -370,7 +370,7 @@ where
         let bounds = layout.bounds();
         let children = layout.children();
         let is_mouse_over = bounds.contains(cursor_position);
-        let style = if is_mouse_over {
+        let style_sheet = if is_mouse_over {
             self.style_sheet.hovered(false)
         } else {
             self.style_sheet.active(false)
@@ -380,10 +380,10 @@ where
             renderer::Quad {
                 bounds,
                 border_radius: 0.0,
-                border_width: style.border_width,
-                border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
+                border_width: style_sheet.border_width,
+                border_color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
             },
-            style
+            style_sheet
                 .background
                 .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -463,8 +463,11 @@ fn draw_tab<Renderer>(
                 .expect("Graphics: Layout should have an icon layout for an Icon")
                 .bounds();
 
+            let mut buffer = [0; 4];
+            let icon = icon.encode_utf8(&mut buffer);
+
             renderer.fill_text(iced_native::text::Text {
-                content: icon.to_string(),
+                content: icon,
                 font: icon_font,
                 size: icon_bounds.height,
                 bounds: Rectangle {
@@ -484,7 +487,7 @@ fn draw_tab<Renderer>(
                 .bounds();
 
             renderer.fill_text(iced_native::text::Text {
-                content: text.to_string(),
+                content: &text[..],
                 font: text_font,
                 size: text_bounds.height,
                 bounds: Rectangle {
@@ -507,8 +510,11 @@ fn draw_tab<Renderer>(
                 .expect("Graphics: Layout should have a text layout for an IconText")
                 .bounds();
 
+            let mut buffer = [0; 4];
+            let icon = icon.encode_utf8(&mut buffer);
+
             renderer.fill_text(iced_native::text::Text {
-                content: icon.to_string(),
+                content: icon,
                 font: icon_font,
                 size: icon_bounds.height,
                 bounds: Rectangle {
@@ -522,7 +528,7 @@ fn draw_tab<Renderer>(
             });
 
             renderer.fill_text(iced_native::text::Text {
-                content: text.to_string(),
+                content: &text[..],
                 font: text_font,
                 size: text_bounds.height,
                 bounds: Rectangle {
@@ -541,8 +547,11 @@ fn draw_tab<Renderer>(
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cross_bounds.contains(cursor_position);
 
+        let mut buffer = [0; 4];
+        let icon = icons::icon_to_char(icons::Icon::X).encode_utf8(&mut buffer);
+
         renderer.fill_text(iced_native::text::Text {
-            content: icons::Icon::X.into(),
+            content: icon,
             font: icons::ICON_FONT,
             size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
             bounds: Rectangle {
