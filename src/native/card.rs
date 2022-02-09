@@ -6,9 +6,10 @@ use std::hash::Hash;
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, mouse, renderer, touch, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Size, Widget,
+    Padding, Point, Rectangle, Shell, Size, Widget,
 };
 
+use crate::graphics::icons::Icon;
 pub use crate::style::card::{Style, StyleSheet};
 
 /// The default padding of a [`Card`](Card).
@@ -93,7 +94,7 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
-            style_sheet: Style::default(),
+            style_sheet: Default::default(),
         }
     }
 
@@ -185,7 +186,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -247,7 +248,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -278,7 +279,7 @@ where
                         // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
                         .filter(|_| close_layout.bounds().contains(cursor_position))
                         .map_or(event::Status::Ignored, |on_close| {
-                            messages.push(on_close);
+                            messages.publish(on_close);
                             event::Status::Captured
                         }),
                     _ => event::Status::Ignored,
@@ -327,16 +328,51 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let mut children = layout.children();
+
+        let mut head_layout_children = children
+            .next()
+            .expect("Graphics: Layout should have a head layout")
+            .children();
+        let _head = head_layout_children.next();
+        let close_layout = head_layout_children.next();
+
+        let is_mouse_over_close = close_layout.map_or(false, |layout| {
+            let bounds = layout.bounds();
+            bounds.contains(cursor_position)
+        });
+
+        let mouse_interaction = if is_mouse_over_close {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        };
+
+        mouse_interaction
+            .max(
+                self.head
+                    .mouse_interaction(layout, cursor_position, viewport, renderer),
+            )
+            .max(
+                self.body
+                    .mouse_interaction(layout, cursor_position, viewport, renderer),
+            )
+            .max(
+                self.foot
+                    .as_ref()
+                    .map_or(mouse::Interaction::default(), |foot| {
+                        foot.mouse_interaction(layout, cursor_position, viewport, renderer)
+                    }),
+            )
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        style: &iced_native::renderer::Style,
+        _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
@@ -344,8 +380,6 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
         let style_sheet = self.style_sheet.active();
-
-        let mouse_interaction = mouse::Interaction::default();
 
         // Background
         renderer.fill_quad(
@@ -367,19 +401,19 @@ where
                 border_width: style_sheet.border_width,
                 border_color: style_sheet.border_color,
             },
-            Color::TRANSPARENT.into(),
+            Color::TRANSPARENT,
         );
 
         // ----------- Head ----------------------
         let head_layout = children
             .next()
             .expect("Graphics: Layout should have a head layout");
-        let (head, head_mouse_interaction) = draw_head(
-            self,
-            self.head,
+        draw_head(
+            renderer,
+            &self.head,
             head_layout,
             cursor_position,
-            viewport.expect("A viewport should exist for Card"),
+            viewport,
             &style_sheet,
         );
 
@@ -387,12 +421,12 @@ where
         let body_layout = children
             .next()
             .expect("Graphics: Layout should have a body layout");
-        let (body, body_mouse_interaction) = draw_body(
-            self,
-            self.body,
+        draw_body(
+            renderer,
+            &self.body,
             body_layout,
             cursor_position,
-            viewport.expect("A viewport should exist for Card"),
+            viewport,
             &style_sheet,
         );
 
@@ -400,12 +434,12 @@ where
         let foot_layout = children
             .next()
             .expect("Graphics: Layout should have a foot layout");
-        let (foot, foot_mouse_interaction) = draw_foot(
-            self,
-            self.foot,
+        draw_foot(
+            renderer,
+            &self.foot,
             foot_layout,
             cursor_position,
-            viewport.expect("A viewport should exist for Card"),
+            viewport,
             &style_sheet,
         );
     }
@@ -438,12 +472,12 @@ fn head_node<'a, Message, Renderer>(
     close_size: Option<f32>,
 ) -> iced_native::layout::Node
 where
-    Renderer: iced_native::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     let pad = Padding::from(padding as u16);
     let mut limits = limits.loose().width(width).height(head.height()).pad(pad);
 
-    let close_size = close_size.unwrap_or_else(|| renderer.default_size());
+    let close_size = close_size.unwrap_or_else(|| f32::from(renderer.default_size()));
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
         Some(iced_native::layout::Node::new(Size::new(
@@ -540,7 +574,7 @@ fn draw_head<Message, Renderer>(
     viewport: &Rectangle,
     style: &Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     let mut head_children = layout.children();
 
@@ -567,12 +601,14 @@ fn draw_head<Message, Renderer>(
         viewport,
     );
 
+    let mut buffer = [0; 4];
+
     if let Some(close_layout) = head_children.next() {
         let close_bounds = close_layout.bounds();
         let is_mouse_over_close = close_bounds.contains(cursor_position);
 
         renderer.fill_text(iced_native::text::Text {
-            content: crate::Icon::X.into(),
+            content: char::from(Icon::X).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: close_bounds.center_x(),
                 y: close_bounds.center_y(),
@@ -596,7 +632,7 @@ fn draw_body<Message, Renderer>(
     viewport: &Rectangle,
     style: &Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     let mut body_children = layout.children();
 
@@ -633,7 +669,7 @@ fn draw_foot<Message, Renderer>(
     viewport: &Rectangle,
     style: &Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     let mut foot_children = layout.children();
 
@@ -665,7 +701,7 @@ fn draw_foot<Message, Renderer>(
 
 impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
     Message: Clone + 'a,
 {
     fn from(card: Card<'a, Message, Renderer>) -> Self {
