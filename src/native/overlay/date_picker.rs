@@ -1,25 +1,31 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-use std::hash::Hash;
+use std::{collections::HashMap, hash::Hash};
 
 use chrono::{Datelike, Local, NaiveDate};
 use iced_native::{
-    button, column, container, event, keyboard,
+    alignment::{Horizontal, Vertical},
+    event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, row, text, touch, Alignment, Button, Clipboard, Column, Container, Element,
-    Event, Layout, Length, Padding, Point, Row, Size, Text, Widget,
+    mouse, overlay, renderer, touch,
+    widget::{Button, Column, Container, Row, Text},
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Renderer, Size,
 };
 
 use crate::{
     core::{
         date::{Date, IsInMonth},
         overlay::Position,
-        renderer::DrawEnvironment,
     },
     graphics::icons::Icon,
-    native::{date_picker, icon_text, IconText},
+    native::{date_picker, IconText},
+    style::style_state::StyleState,
+    ICON_FONT,
 };
+
+pub use crate::style::date_picker::{Style, StyleSheet};
 
 /// The padding around the elements.
 const PADDING: u16 = 10;
@@ -35,7 +41,7 @@ const BUTTON_SPACING: u16 = 5;
 pub struct DatePickerOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// The state of the [`DatePickerOverlay`](DatePickerOverlay).
     state: &'a mut State,
@@ -48,20 +54,13 @@ where
     /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
     /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
-    style: &'a <Renderer as self::Renderer>::Style,
+    style_sheet: &'a Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, Message, Renderer> DatePickerOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// Creates a new [`DatePickerOverlay`](DatePickerOverlay) on the given
     /// position.
@@ -70,7 +69,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
-        style: &'a <Renderer as self::Renderer>::Style,
+        style_sheet: &'a Box<dyn StyleSheet + 'a>,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
     ) -> Self {
         let date_picker::State {
@@ -97,7 +96,7 @@ where
             .into(),
             on_submit,
             position,
-            style,
+            style_sheet,
         }
     }
 
@@ -358,14 +357,7 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for DatePickerOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
 {
     #[allow(clippy::too_many_lines)]
     fn layout(
@@ -391,7 +383,7 @@ where
         ));
 
         // Month/Year
-        let font_size = u32::from(text::Renderer::default_size(renderer));
+        let font_size = u32::from(renderer.default_size());
 
         let month_year = Row::<(), Renderer>::new()
             .width(Length::Fill)
@@ -616,29 +608,125 @@ where
             .merge(submit_status)
     }
 
+    fn mouse_interaction(
+        &self,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &iced_graphics::Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: iced_native::Layout<'_>,
+        style: &iced_native::renderer::Style,
+        layout: Layout<'_>,
         cursor_position: Point,
-    ) -> Renderer::Output {
-        <Renderer as self::Renderer>::draw(
-            renderer,
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: self.style,
-                viewport: None,
-                focus: self.state.focus,
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let mut date_children = children
+            .next()
+            .expect("Graphics: Layout should have a date layout")
+            .children();
+
+        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, self.style_sheet.active());
+        let _ = style_sheet.insert(StyleState::Selected, self.style_sheet.selected());
+        let _ = style_sheet.insert(StyleState::Hovered, self.style_sheet.hovered());
+        let _ = style_sheet.insert(StyleState::Focused, self.style_sheet.focused());
+
+        let mouse_interaction = mouse::Interaction::default();
+
+        let mut style_state = StyleState::Active;
+        if self.state.focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
+        if bounds.contains(cursor_position) {
+            style_state = style_state.max(StyleState::Hovered);
+        }
+
+        // Background
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius: style_sheet[&style_state].border_radius,
+                border_width: style_sheet[&style_state].border_width,
+                border_color: style_sheet[&style_state].border_color,
             },
-            self.state.date,
-            &self.year_as_string(),
+            style_sheet[&style_state].background,
+        );
+
+        // ----------- Year/Month----------------------
+        let month_year_layout = date_children
+            .next()
+            .expect("Graphics: Layout should have a month/year layout");
+
+        month_year(
+            month_year_layout,
             &self.month_as_string(),
-            &self.cancel_button,
-            &self.submit_button,
-        )
+            &self.year_as_string(),
+            cursor_position,
+            &style_sheet,
+            self.state.focus,
+        );
+
+        // ----------- Days ---------------------------
+        let days_layout = date_children
+            .next()
+            .expect("Graphics: Layout should have a days layout parent")
+            .children()
+            .next()
+            .expect("Graphics: Layout should have a days layout");
+
+        days(
+            days_layout,
+            &self.state.date,
+            cursor_position,
+            &style_sheet,
+            self.state.focus,
+        );
+
+        // ----------- Buttons ------------------------
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
+
+        if self.state.focus == Focus::Cancel {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: cancel_button_layout.bounds(),
+                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_width: style_sheet[&StyleState::Focused].border_width,
+                    border_color: style_sheet[&StyleState::Focused].border_color,
+                },
+                Color::TRANSPARENT.into(),
+            );
+        }
+
+        self.cancel_button
+            .draw(self, style, cancel_button_layout, cursor_position, &bounds);
+
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a DatePicker");
+
+        if self.state.focus == Focus::Cancel {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: submit_button_layout.bounds(),
+                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_width: style_sheet[&StyleState::Focused].border_width,
+                    border_color: style_sheet[&StyleState::Focused].border_color,
+                },
+                Color::TRANSPARENT.into(),
+            );
+        }
+
+        self.submit_button
+            .draw(self, style, submit_button_layout, cursor_position, &bounds);
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
@@ -648,43 +736,6 @@ where
 
         (position.x as u32).hash(state);
         (position.y as u32).hash(state);
-    }
-}
-
-/// The renderer of a [`DatePickerOverlay`](DatePickerOverlay).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`DatePicker`](crate::native::DatePicker) in your user
-/// interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// Draws a [`DatePickerOverlay`](DatePickerOverlay).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        date: NaiveDate,
-        year_str: &str,
-        month_str: &str,
-        cancel_button: &Element<'_, Message, Self>,
-        submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        _date: NaiveDate,
-        _year_str: &str,
-        _month_str: &str,
-        _cancel_button: &Element<'_, Message, Self>,
-        _submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output {
     }
 }
 
@@ -766,5 +817,233 @@ impl Focus {
 impl Default for Focus {
     fn default() -> Self {
         Self::None
+    }
+}
+
+/// Draws the month/year row
+fn month_year<Renderer>(
+    renderer: &mut Renderer,
+    layout: iced_native::Layout<'_>,
+    month: &str,
+    year: &str,
+    cursor_position: iced_graphics::Point,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
+    focus: Focus,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
+    let mut children = layout.children();
+
+    let month_layout = children
+        .next()
+        .expect("Graphics: Layout should have a month layout");
+    let year_layout = children
+        .next()
+        .expect("Graphics: Layout should have a year layout");
+
+    let f = |layout: iced_native::Layout<'_>, text: &str, target: Focus| {
+        let style_state = if focus == target {
+            StyleState::Focused
+        } else {
+            StyleState::Active
+        };
+
+        let mut children = layout.children();
+
+        let left_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a left arrow layout")
+            .bounds();
+        let center_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a center layout")
+            .bounds();
+        let right_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a right arrow layout")
+            .bounds();
+
+        let left_arrow_hovered = left_bounds.contains(cursor_position);
+        let right_arrow_hovered = right_bounds.contains(cursor_position);
+
+        if style_state == StyleState::Focused {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: layout.bounds(),
+                    border_color: style.get(&style_state).unwrap().border_color,
+                    border_radius: style.get(&style_state).unwrap().border_radius,
+                    border_width: style.get(&style_state).unwrap().border_width,
+                },
+                style.get(&style_state).unwrap().background,
+            );
+        }
+
+        let mut buffer = [0; 4];
+
+        // Left caret
+        renderer.fill_text(iced_native::text::Text {
+            content: Icon::CaretLeftFill.into::<char>().encode_uft8(&mut buffer),
+            bounds: Rectangle {
+                x: left_bounds.center_x(),
+                y: left_bounds.center_y(),
+                ..left_bounds
+            },
+            size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
+            color: style.get(&style_state).unwrap().text_color,
+            font: ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Text
+        renderer.fill_text(iced_native::text::Text {
+            content: text,
+            bounds: Rectangle {
+                x: center_bounds.center_x(),
+                y: center_bounds.center_y(),
+                ..center_bounds
+            },
+            size: center_bounds.height,
+            color: style.get(&style_state).unwrap().text_color,
+            font: Default::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Right caret
+        renderer.fill_text(iced_native::text::Text {
+            content: Icon::CaretRightFill.into::<char>().encode_uft8(&mut buffer),
+            bounds: Rectangle {
+                x: right_bounds.center_x(),
+                y: right_bounds.center_y(),
+                ..right_bounds
+            },
+            size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
+            color: style.get(&style_state).unwrap().text_color,
+            font: ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    };
+
+    // Draw month
+    f(month_layout, month, Focus::Month);
+
+    // Draw year
+    f(year_layout, year, Focus::Year);
+}
+
+/// Draws the days
+fn days<Renderer>(
+    renderer: &mut Renderer,
+    layout: iced_native::Layout<'_>,
+    date: chrono::NaiveDate,
+    cursor_position: iced_graphics::Point,
+    //style: &Style,
+    style: &HashMap<StyleState, Style>,
+    focus: Focus,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
+    let mut children = layout.children();
+
+    let day_labels_layout = children
+        .next()
+        .expect("Graphics: Layout should have a day labels layout");
+    day_labels(renderer, day_labels_layout, style, focus);
+
+    day_table(&mut children, date, cursor_position, style, focus);
+}
+
+/// Draws the day labels
+fn day_labels<Renderer>(
+    renderer: &mut Renderer,
+    layout: iced_native::Layout<'_>,
+    style: &HashMap<StyleState, Style>,
+    _focus: Focus,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
+    for (i, label) in layout.children().enumerate() {
+        let bounds = label.bounds();
+
+        renderer.fill_text(iced_native::text::Text {
+            content: crate::core::date::WEEKDAY_LABELS[i],
+            bounds: Rectangle {
+                x: bounds.center_x(),
+                y: bounds.center_y(),
+                ..bounds
+            },
+            size: bounds.height + 5.0,
+            color: style.get(&StyleState::Active).unwrap().text_color,
+            font: Default::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    }
+}
+
+/// Draws the day table
+fn day_table<Renderer>(
+    renderer: &mut Renderer,
+    children: &mut dyn Iterator<Item = iced_native::Layout<'_>>,
+    date: chrono::NaiveDate,
+    cursor_position: iced_graphics::Point,
+    style: &HashMap<StyleState, Style>,
+    focus: Focus,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
+    for (y, row) in children.enumerate() {
+        for (x, label) in row.children().enumerate() {
+            let bounds = label.bounds();
+            let (number, is_in_month) =
+                crate::core::date::position_to_day(x, y, date.year(), date.month());
+
+            let mouse_over = bounds.contains(cursor_position);
+
+            let selected = date.day() == number as u32 && is_in_month == IsInMonth::Same;
+
+            let mut style_state = StyleState::Active;
+            if selected {
+                style_state = style_state.max(StyleState::Selected);
+            }
+            if mouse_over {
+                style_state = style_state.max(StyleState::Hovered);
+            }
+
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border_radius: bounds.height / 2.0,
+                    border_width: 0.0,
+                    border_color: Color::TRANSPARENT,
+                },
+                style.get(&style_state).unwrap().day_background,
+            );
+
+            if focus == Focus::Day && selected {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds,
+                        border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
+                        border_width: style.get(&StyleState::Focused).unwrap().border_width,
+                        border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                    },
+                    Color::TRANSPARENT.into(),
+                );
+            }
+
+            renderer.fill_text(iced_native::text::Text {
+                content: format!("{:02}", number), // Todo: is there some way of static format as this has a fixed size?
+                bounds: (),
+                size: (),
+                color: (),
+                font: (),
+                horizontal_alignment: (),
+                vertical_alignment: (),
+            });
+        }
     }
 }
