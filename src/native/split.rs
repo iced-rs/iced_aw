@@ -6,7 +6,7 @@ use std::hash::Hash;
 use iced_native::{
     mouse, renderer, touch,
     widget::{Container, Row},
-    Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Size, Widget,
+    Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size, Widget,
 };
 
 pub use crate::style::split::{Style, StyleSheet};
@@ -55,7 +55,7 @@ pub struct Split<'a, Message, Renderer> {
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
     /// The style of the [`Split`](Split).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style_sheet: Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, Renderer> Split<'a, Message, Renderer>
@@ -93,7 +93,7 @@ where
             min_size_first: 5,
             min_size_second: 5,
             on_resize: Box::new(on_resize),
-            style_sheet: Style::default(),
+            style_sheet: Default::default(),
         }
     }
 
@@ -144,7 +144,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     fn width(&self) -> Length {
         self.width
@@ -177,7 +177,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn iced_native::Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> iced_native::event::Status {
         let mut children = layout.children();
 
@@ -190,7 +190,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let divider_layout = children
@@ -219,7 +219,7 @@ where
                         Axis::Vertical => position.x,
                     };
 
-                    messages.push((self.on_resize)(position as u16));
+                    shell.publish((self.on_resize)(position as u16));
                 }
             }
 
@@ -235,7 +235,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         first_status.merge(second_status)
@@ -245,10 +245,36 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let mut children = layout.children();
+        let _first_layout = children
+            .next()
+            .expect("Graphics: Layout should have a first layout");
+        let first_mouse_interaction =
+            self.first
+                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        let divider_layout = children
+            .next()
+            .expect("Graphics: Layout should have a divider layout");
+        let divider_mouse_interaction = if divider_layout.bounds().contains(cursor_position) {
+            match self.state.axis {
+                Axis::Horizontal => mouse::Interaction::ResizingVertically,
+                Axis::Vertical => mouse::Interaction::ResizingHorizontally,
+            }
+        } else {
+            mouse::Interaction::default()
+        };
+        let _second_layout = children
+            .next()
+            .expect("Graphics: Layout should have a second layout");
+        let second_mouse_interaction =
+            self.second
+                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        first_mouse_interaction
+            .max(second_mouse_interaction)
+            .max(divider_mouse_interaction)
     }
 
     fn draw(
@@ -296,8 +322,10 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        self.first
-            .draw(renderer, style, first_layout, cursor_position, viewport);
+        if first_layout.children().count() > 0 {
+            self.first
+                .draw(renderer, style, first_layout, cursor_position, viewport);
+        }
 
         // Second
         let second_layout = children
@@ -319,8 +347,10 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        self.second
-            .draw(renderer, style, second_layout, cursor_position, viewport);
+        if second_layout.children().count() > 0 {
+            self.second
+                .draw(renderer, style, second_layout, cursor_position, viewport);
+        }
 
         // Divider
         let divider_layout = children

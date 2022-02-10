@@ -53,7 +53,7 @@ pub struct DatePicker<'a, Message: Clone, Renderer: iced_native::Renderer> {
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'static>,
+    style_sheet: Box<dyn StyleSheet>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
 

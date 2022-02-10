@@ -33,7 +33,7 @@ impl Sandbox for SplitPaneExample {
         }
     }
 
-    fn view(&mut self) -> iced::Element<'_, Self::Message> {
+    fn view(&mut self) -> iced::Element<Self::Message> {
         let first = Container::new(Text::new("First"))
             .width(Length::Fill)
             .height(Length::Fill)

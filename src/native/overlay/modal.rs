@@ -29,7 +29,7 @@ where
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`Overlay`](Overlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
 impl<'a, State, Content, Message, Renderer> ModalOverlay<'a, State, Content, Message, Renderer>
