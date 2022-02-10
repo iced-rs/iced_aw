@@ -81,7 +81,7 @@ where
             options,
             hovered_option,
             last_selection,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             style,
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData::default(),
@@ -90,7 +90,7 @@ where
 
         Self {
             options,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             style,
             container,
         }

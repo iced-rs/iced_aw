@@ -87,7 +87,7 @@ where
             content,
             backdrop: None,
             esc: None,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 

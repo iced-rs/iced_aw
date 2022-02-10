@@ -58,7 +58,7 @@ where
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`](TimePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Time) -> Message>,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style_sheet: Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, B> TimePicker<'a, Message, B>
@@ -88,7 +88,7 @@ where
             on_submit: Box::new(on_submit),
             //use_24h: false,
             //show_seconds: false,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 

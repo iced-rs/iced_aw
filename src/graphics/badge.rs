@@ -6,9 +6,6 @@ use iced_graphics::Renderer;
 use crate::native::badge;
 pub use crate::style::badge::{Style, StyleSheet};
 
-/// The ratio of the border radius.
-const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
-
 /// A badge for color highlighting small information.
 ///
 /// This is an alias of an `iced_native` Badge with an `iced_wgpu::Renderer`.

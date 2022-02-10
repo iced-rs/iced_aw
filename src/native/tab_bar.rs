@@ -17,11 +17,9 @@ use iced_native::{
 pub mod tab_label;
 pub use tab_label::TabLabel;
 
-use crate::{
-    graphics::icons,
-    style::tab_bar::{Style, StyleSheet},
-};
+use crate::{graphics::icons, style::tab_bar::StyleSheet};
 
+use std::marker::PhantomData;
 const DEFAULT_ICON_SIZE: u16 = 0;
 const DEFAULT_TEXT_SIZE: u16 = 0;
 const DEFAULT_CLOSE_SIZE: u16 = 0;
@@ -83,16 +81,18 @@ where
     /// The spacing of the tabs of the [`TabBar`](TabBar).
     spacing: u16,
     /// The optional icon font of the [`TabBar`](TabBar).
-    icon_font: Option<Renderer::Font>,
+    icon_font: Option<Font>,
     /// The optional text font of the [`TabBar`](TabBar).
-    text_font: Option<Renderer::Font>,
+    text_font: Option<Font>,
     /// The style of the [`TabBar`](TabBar).
     style_sheet: Box<dyn StyleSheet>,
+    #[allow(clippy::missing_docs_in_private_items)]
+    _renderer: PhantomData<Renderer>,
 }
 
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -136,11 +136,13 @@ where
             spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
+            _renderer: PhantomData::default(),
         }
     }
 
     /// Gets the index of the currently active tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_active_tab(&self) -> usize {
         self.active_tab
     }
@@ -149,6 +151,7 @@ where
     /// on the [`TabBar`](TabBar) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the tabs.
+    #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
@@ -158,34 +161,40 @@ where
     }
 
     /// Sets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_width(&self) -> Length {
         self.width
     }
 
     /// Sets the width of a tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn tab_width(mut self, width: Length) -> Self {
         self.tab_width = width;
         self
     }
 
     /// Sets the height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_height(&self) -> Length {
         self.height
     }
 
     /// Sets the maximum height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
@@ -193,6 +202,7 @@ where
 
     /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
     /// the [`TabBar`](TabBar).
+    #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
         self.icon_size = icon_size;
         self
@@ -200,6 +210,7 @@ where
 
     /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
     /// [`TabBar`](TabBar).
+    #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
         self.text_size = text_size;
         self
@@ -207,18 +218,21 @@ where
 
     /// Sets the size of the close icon of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
         self
     }
 
     /// Sets the padding of the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn padding(mut self, padding: u16) -> Self {
         self.padding = padding;
         self
     }
 
     /// Sets the spacing between the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn spacing(mut self, spacing: u16) -> Self {
         self.spacing = spacing;
         self
@@ -226,25 +240,29 @@ where
 
     /// Sets the font of the icons of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
-    pub fn icon_font(mut self, icon_font: Renderer::Font) -> Self {
+    #[must_use]
+    pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
         self
     }
 
     /// Sets the font of the text of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
-    pub fn text_font(mut self, text_font: Renderer::Font) -> Self {
+    #[must_use]
+    pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
         self
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self
     }
 
     /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self
@@ -253,7 +271,7 @@ where
 
 impl<Message, Renderer> Widget<Message, Renderer> for TabBar<Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -360,7 +378,23 @@ where
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let children = layout.children();
+        let mut mouse_interaction = mouse::Interaction::default();
+
+        for layout in children {
+            let is_mouse_over = layout.bounds().contains(cursor_position);
+            let new_mouse_interaction = if is_mouse_over {
+                mouse::Interaction::Pointer
+            } else {
+                mouse::Interaction::default()
+            };
+
+            if new_mouse_interaction > mouse_interaction {
+                mouse_interaction = new_mouse_interaction;
+            }
+        }
+
+        mouse_interaction
     }
 
     fn draw(
@@ -369,7 +403,7 @@ where
         _style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
-        viewport: &Rectangle,
+        _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let children = layout.children();
@@ -400,8 +434,8 @@ where
                 &self.style_sheet,
                 i == self.active_tab,
                 cursor_position,
-                &self.icon_font.unwrap_or(Renderer::ICON_FONT),
-                &self.text_font.unwrap_or_default(),
+                self.icon_font.unwrap_or(icons::ICON_FONT),
+                self.text_font.unwrap_or_default(),
             );
         }
     }
@@ -431,10 +465,10 @@ fn draw_tab<Renderer>(
     style_sheet: &Box<dyn StyleSheet>,
     is_selected: bool,
     cursor_position: iced_native::Point,
-    icon_font: &Renderer::Font,
-    text_font: &Renderer::Font,
+    icon_font: Font,
+    text_font: Font,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     let is_mouse_over = layout.bounds().contains(cursor_position);
     let style = if is_mouse_over {
@@ -472,7 +506,7 @@ fn draw_tab<Renderer>(
 
             renderer.fill_text(iced_native::text::Text {
                 content: icon,
-                font: icon_font.clone(),
+                font: icon_font,
                 size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
@@ -519,7 +553,7 @@ fn draw_tab<Renderer>(
 
             renderer.fill_text(iced_native::text::Text {
                 content: icon,
-                font: icon_font.clone(),
+                font: icon_font,
                 size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
@@ -556,7 +590,7 @@ fn draw_tab<Renderer>(
 
         renderer.fill_text(iced_native::text::Text {
             content: icon,
-            font: icon_font,
+            font: icons::ICON_FONT,
             size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
             bounds: Rectangle {
                 x: cross_bounds.center_x(),
@@ -572,7 +606,7 @@ fn draw_tab<Renderer>(
 
 impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {

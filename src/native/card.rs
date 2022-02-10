@@ -94,7 +94,7 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 
@@ -695,7 +695,7 @@ fn draw_foot<Message, Renderer>(
                 .expect("Graphics: Layout should have a foot content layout"),
             cursor_position,
             viewport,
-        )
+        );
     }
 }
 

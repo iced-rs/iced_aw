@@ -186,7 +186,7 @@ where
     fn overlay(
         &mut self,
         layout: Layout<'_>,
-        renderer: &Renderer,
+        _renderer: &Renderer,
     ) -> Option<overlay::Element<'_, Message, Renderer>> {
         if self.hidden {
             return None;

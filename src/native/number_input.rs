@@ -18,7 +18,10 @@ use iced_native::{
 };
 use num_traits::{Num, NumAssignOps};
 
-pub use crate::style::number_input::{Style, StyleSheet};
+pub use crate::{
+    graphics::icons::Icon,
+    style::number_input::{Style, StyleSheet},
+};
 
 const DEFAULT_PADDING: u16 = 5;
 
@@ -608,16 +611,18 @@ where
                 .unwrap_or(Background::Color(Color::TRANSPARENT)),
         );
 
+        let mut buffer = [0; 4];
+
         renderer.fill_text(iced_native::text::Text {
-            content: "\u{25bc}",
+            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: dec_bounds.center_x(),
                 y: dec_bounds.center_y(),
                 ..dec_bounds
             },
-            size: dec_bounds.height * 0.9,
+            size: dec_bounds.height,
             color: decrease_btn_style.icon_color,
-            font: self.font,
+            font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -636,15 +641,15 @@ where
         );
 
         renderer.fill_text(iced_native::text::Text {
-            content: "\u{25b2}",
+            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: inc_bounds.center_x(),
                 y: inc_bounds.center_y(),
                 ..inc_bounds
             },
-            size: inc_bounds.height * 0.9,
+            size: inc_bounds.height,
             color: increase_btn_style.icon_color,
-            font: self.font,
+            font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
