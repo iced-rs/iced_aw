@@ -50,7 +50,7 @@ const DEFAULT_PADDING: u16 = 5;
 #[allow(missing_debug_implementations)]
 pub struct NumberInput<'a, T, Message, Renderer>
 where
-    Renderer: iced_native::text::Renderer,
+    Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// The state of the [`NumberInput`](NumberInput).
     state: &'a mut ModifierState,
@@ -247,7 +247,7 @@ where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
-        Length::Fill
+        Length::Shrink
     }
 
     fn height(&self) -> Length {
