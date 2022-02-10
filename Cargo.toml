@@ -71,7 +71,7 @@ version = "0.3"
 members = [
     "examples/badge",
     "examples/card",
-    #"examples/color_picker",
+    "examples/color_picker",
     "examples/date_picker",
     "examples/floating_button",
     "examples/grid",
