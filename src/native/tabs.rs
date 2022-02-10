@@ -227,7 +227,7 @@ where
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+    pub fn tab_bar_style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.tab_bar = self.tab_bar.style_sheet(style_sheet);
         self
     }
@@ -380,18 +380,40 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
+        // Tab bar
+        let mut children = layout.children();
+        let tab_bar_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .next()
+                .expect("Native: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .last()
+                .expect("Native: There should be a TabBar at the bottom position"),
+        };
+
         let mut mouse_interaction = mouse::Interaction::default();
         let new_mouse_interaction =
             self.tab_bar
-                .mouse_interaction(layout, cursor_position, viewport, renderer);
+                .mouse_interaction(tab_bar_layout, cursor_position, viewport, renderer);
 
         if new_mouse_interaction > mouse_interaction {
             mouse_interaction = new_mouse_interaction;
         }
 
+        // Tab content
+        let mut children = layout.children();
+        let tab_content_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .last()
+                .expect("Graphics: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .next()
+                .expect("Graphics: There should be a TabBar at the bottom position"),
+        };
+
         if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
             let new_mouse_interaction =
-                element.mouse_interaction(layout, cursor_position, viewport, renderer);
+                element.mouse_interaction(tab_content_layout, cursor_position, viewport, renderer);
 
             if new_mouse_interaction > mouse_interaction {
                 mouse_interaction = new_mouse_interaction;
