@@ -10,7 +10,7 @@ use iced_native::{
     layout::{Limits, Node},
     mouse,
     widget::Row,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+    Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 use crate::{
@@ -65,7 +65,7 @@ where
 
 impl<'a, Message, Renderer> Tabs<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
     /// and a specified message which will be send when a tab is selected by
@@ -199,7 +199,7 @@ where
     /// Sets the font of the icons of the
     /// [`TabLabel`](super::tab_bar::TabLabel)s of the
     /// [`TabBar`](super::tab_bar::TabBar).
-    pub fn icon_font(mut self, icon_font: Renderer::Font) -> Self {
+    pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.tab_bar = self.tab_bar.icon_font(icon_font);
         self
     }
@@ -207,7 +207,7 @@ where
     /// Sets the font of the text of the
     /// [`TabLabel`](super::tab_bar::TabLabel)s of the
     /// [`TabBar`](super::tab_bar::TabBar).
-    pub fn text_font(mut self, text_font: Renderer::Font) -> Self {
+    pub fn text_font(mut self, text_font: Font) -> Self {
         self.tab_bar = self.tab_bar.text_font(text_font);
         self
     }
@@ -239,7 +239,7 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -361,10 +361,39 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let mut children = layout.children();
+
+        let tab_content_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .last()
+                .expect("Graphics: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .next()
+                .expect("Graphics: There should be a TabBar at the bottom position"),
+        };
+
+        let mut mouse_interaction = mouse::Interaction::default();
+        let new_mouse_interaction =
+            self.tab_bar
+                .mouse_interaction(layout, cursor_position, viewport, renderer);
+
+        if new_mouse_interaction > mouse_interaction {
+            mouse_interaction = new_mouse_interaction;
+        }
+
+        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+            let new_mouse_interaction =
+                element.mouse_interaction(layout, cursor_position, viewport, renderer);
+
+            if new_mouse_interaction > mouse_interaction {
+                mouse_interaction = new_mouse_interaction;
+            }
+        }
+
+        mouse_interaction
     }
 
     fn draw(
@@ -448,7 +477,7 @@ where
 
 impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Message: 'a,
 {
     fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {
