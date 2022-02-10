@@ -6,7 +6,8 @@ use std::hash::Hash;
 use iced_native::{
     event,
     layout::{Limits, Node},
-    mouse, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size, Widget,
+    mouse, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Shell, Size,
+    Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -169,7 +170,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
         let children_status =
             self.elements
@@ -193,10 +194,16 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(e, layout)| e.mouse_interaction(layout, cursor_position, viewport, renderer))
+            .fold(mouse::Interaction::default(), |interaction, next| {
+                interaction.max(next)
+            })
     }
 
     fn draw(
