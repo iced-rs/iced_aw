@@ -17,10 +17,7 @@ use iced_native::{
 pub mod tab_label;
 pub use tab_label::TabLabel;
 
-use crate::{
-    graphics::icons,
-    style::tab_bar::{Style, StyleSheet},
-};
+use crate::{graphics::icons, style::tab_bar::StyleSheet};
 
 use std::marker::PhantomData;
 const DEFAULT_ICON_SIZE: u16 = 0;
