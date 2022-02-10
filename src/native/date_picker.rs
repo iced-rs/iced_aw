@@ -5,13 +5,11 @@ use std::hash::Hash;
 
 use chrono::Local;
 use iced_native::{
-    event, mouse, widget::button, Clipboard, Element, Event, Layout, Point, Rectangle, Widget,
+    event, mouse, widget::button, Clipboard, Element, Event, Layout, Point, Rectangle, Shell,
+    Widget,
 };
 
-use super::{
-    icon_text,
-    overlay::date_picker::{self, DatePickerOverlay, Focus},
-};
+use super::overlay::date_picker::{self, DatePickerOverlay, Focus};
 
 pub use crate::core::date::Date;
 
@@ -138,7 +136,7 @@ impl State {
 impl<'a, Message, Renderer> Widget<Message, Renderer> for DatePicker<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> iced_native::Length {
         self.underlay.width()
@@ -163,7 +161,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
         self.underlay.on_event(
             event,
@@ -179,10 +177,11 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.underlay
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
@@ -236,7 +235,7 @@ impl<'a, Message, Renderer> From<DatePicker<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(date_picker: DatePicker<'a, Message, Renderer>) -> Self {
         Element::new(date_picker)

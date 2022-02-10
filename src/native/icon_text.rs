@@ -97,7 +97,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
 
 impl<Message, Renderer> Widget<Message, Renderer> for IconText<Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -121,7 +121,7 @@ where
         let (width, height) = renderer.measure(
             &self.content,
             size,
-            self.font.unwrap_or_else(|| renderer.default_font()),
+            self.font.unwrap_or_else(|| Default::default()),
             bounds,
         );
 
@@ -135,8 +135,8 @@ where
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _cursor_position: iced_graphics::Point,
+        _viewport: &iced_graphics::Rectangle,
     ) {
         let bounds = layout.bounds();
 
@@ -153,11 +153,13 @@ where
         };
 
         renderer.fill_text(iced_native::text::Text {
-            content: self.content,
+            content: &self.content,
             bounds: Rectangle { x, y, ..bounds },
-            size: f32::from(self.size),
+            size: f32::from(self.size.unwrap_or_else(|| renderer.default_size())),
             color: self.color.unwrap_or(style.text_color),
-            font: self.font.unwrap_or_else(crate::graphics::icons::ICON_FONT),
+            font: self
+                .font
+                .unwrap_or_else(|| crate::graphics::icons::ICON_FONT),
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
         })
@@ -177,14 +179,14 @@ where
 
 impl<'a, Message, Renderer> From<IconText<Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
 {
     fn from(icon: IconText<Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(icon)
     }
 }
 
-impl<Renderer: iced_native::text::Renderer> Clone for IconText<Renderer> {
+impl<Renderer: iced_native::text::Renderer<Font = iced_native::Font>> Clone for IconText<Renderer> {
     fn clone(&self) -> Self {
         Self {
             content: self.content.clone(),
