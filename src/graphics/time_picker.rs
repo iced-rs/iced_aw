@@ -1,32 +1,11 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use crate::{
-    core::renderer::DrawEnvironment, native::overlay::time_picker::Focus,
-    style::style_state::StyleState,
-};
-use std::collections::HashMap;
 
-use crate::{
-    core::clock::{
-        self, NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
-        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
-        SECOND_RADIUS_PERCENTAGE,
-    },
-    style::time_picker::{Style, StyleSheet},
-};
-use canvas::{Cache, LineCap, Path, Stroke, Text};
-use chrono::{NaiveTime, Timelike};
-use iced_graphics::{
-    alignment::{Horizontal, Vertical},
-    backend, canvas, Backend, Color, Point, Primitive, Rectangle, Renderer, Vector,
-};
-use iced_native::mouse;
+use iced_graphics::Renderer;
 
 use crate::native::time_picker;
 pub use crate::native::time_picker::{Period, State, Time};
-
-use super::icons::{Icon, ICON_FONT};
 
 /// The percentage size of the numbers.
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
@@ -38,6 +17,7 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 /// This is an alias of an `iced_native` `TimePicker` with an `iced_wgpu::Renderer`.
 pub type TimePicker<'a, Message, Backend> = time_picker::TimePicker<'a, Message, Renderer<Backend>>;
 
+/*
 impl<B> time_picker::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -683,3 +663,4 @@ fn digital_clock(
             .max(second_mouse_interaction),
     )
 }
+*/
