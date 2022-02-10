@@ -329,10 +329,12 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        if first_layout.children().count() > 0 {
-            self.first
-                .draw(renderer, style, first_layout, cursor_position, viewport);
-        }
+        self.first
+            .draw(renderer, style, first_layout, cursor_position, viewport);
+
+        let divider_layout = children
+            .next()
+            .expect("Graphics: Layout should have a divider layout");
 
         // Second
         let second_layout = children
@@ -354,16 +356,10 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        if second_layout.children().count() > 0 {
-            self.second
-                .draw(renderer, style, second_layout, cursor_position, viewport);
-        }
+        self.second
+            .draw(renderer, style, second_layout, cursor_position, viewport);
 
         // Divider
-        let divider_layout = children
-            .next()
-            .expect("Graphics: Layout should have a divider layout");
-
         let divider_style = if self.state.dragging {
             self.style_sheet.dragged()
         } else if divider_layout.bounds().contains(cursor_position) {
