@@ -6,7 +6,8 @@ use std::hash::Hash;
 use iced_native::{
     event,
     layout::{Limits, Node},
-    Clipboard, Element, Event, Hasher, Layout, Length, Point, Size, Widget,
+    mouse, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Shell, Size,
+    Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -29,7 +30,7 @@ use iced_native::{
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Grid<'a, Message, Renderer: self::Renderer> {
+pub struct Grid<'a, Message, Renderer> {
     /// The distribution [`Strategy`](Strategy) of the [`Grid`](Grid).
     strategy: Strategy,
     /// The elements in the [`Grid`](Grid).
@@ -52,7 +53,7 @@ impl Default for Strategy {
 
 impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new empty [`Grid`](Grid).
     /// Elements will be laid out in a specific amount of columns.
@@ -94,7 +95,7 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     fn width(&self) -> Length {
         Length::Shrink
@@ -169,7 +170,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
         let children_status =
             self.elements
@@ -189,15 +190,33 @@ where
         children_status.fold(event::Status::Ignored, event::Status::merge)
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(e, layout)| e.mouse_interaction(layout, cursor_position, viewport, renderer))
+            .fold(mouse::Interaction::default(), |interaction, next| {
+                interaction.max(next)
+            })
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
+        style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, layout, cursor_position, viewport, &self.elements)
+    ) {
+        for (element, layout) in self.elements.iter().zip(layout.children()) {
+            element.draw(renderer, style, layout, cursor_position, viewport);
+        }
     }
 
     fn hash_layout(&self, state: &mut Hasher) {
@@ -239,41 +258,9 @@ fn build_grid(
     Node::with_children(Size::new(grid_width, grid_height), nodes)
 }
 
-/// The renderer of a [`Grid`](Grid).
-///
-/// Your render will need to implement this trait before being
-/// able to use [`Grid`](Grid) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// Draws a [`Grid`](Grid).
-    ///
-    /// In addition to the default parameters, it expects:
-    /// - the list of [`Element`](Element)s
-    fn draw<Message>(
-        &mut self,
-        defaults: &Self::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
-        elements: &[Element<'_, Message, Self>],
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    fn draw<Message>(
-        &mut self,
-        _defaults: &Self::Defaults,
-        _layout: Layout<'_>,
-        _cursor_position: Point,
-        _viewport: &iced_graphics::Rectangle,
-        _elements: &[Element<'_, Message, Self>],
-    ) {
-    }
-}
-
 impl<'a, Message, Renderer> From<Grid<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer,
+    Renderer: iced_native::Renderer + 'a,
     Message: 'static,
 {
     fn from(grid: Grid<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {

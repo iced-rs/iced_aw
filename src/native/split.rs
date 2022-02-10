@@ -4,11 +4,12 @@
 use std::hash::Hash;
 
 use iced_native::{
-    container, mouse, row, touch, Container, Element, Event, Length, Padding, Point, Row, Size,
-    Widget,
+    mouse, renderer, touch,
+    widget::{Container, Row},
+    Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size, Widget,
 };
 
-use crate::core::renderer::DrawEnvironment;
+pub use crate::style::split::{Style, StyleSheet};
 
 /// A split can divide the available space by half to display two different elements.
 /// It can split horizontally or vertically.
@@ -31,7 +32,7 @@ use crate::core::renderer::DrawEnvironment;
 /// let split = Split::new(&mut state, first, second, Message::Resized);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Split<'a, Message, Renderer: self::Renderer> {
+pub struct Split<'a, Message, Renderer> {
     /// The state of the [`Split`](Split).
     state: &'a mut State,
     /// The first element of the [`Split`](Split).
@@ -54,13 +55,13 @@ pub struct Split<'a, Message, Renderer: self::Renderer> {
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
     /// The style of the [`Split`](Split).
-    style: <Renderer as self::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, Renderer> Split<'a, Message, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + self::Renderer + container::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// Creates a new [`Split`](Split).
     ///
@@ -92,11 +93,12 @@ where
             min_size_first: 5,
             min_size_second: 5,
             on_resize: Box::new(on_resize),
-            style: <Renderer as self::Renderer>::Style::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 
     /// Sets the padding of the [`Split`](Split) around the inner elements.
+    #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
@@ -104,38 +106,44 @@ where
 
     /// Sets the spacing of the [`Split`](Split) between the elements.
     /// This will also be the width of the divider.
+    #[must_use]
     pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Sets the width of the [`Split`](Split).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Split`](Split).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the minimum size of the first element of the [`Split`](Split).
+    #[must_use]
     pub fn min_size_first(mut self, size: u16) -> Self {
         self.min_size_first = size;
         self
     }
 
     /// Sets the minimum size of the second element of the [`Split`](Split).
+    #[must_use]
     pub fn min_size_second(mut self, size: u16) -> Self {
         self.min_size_second = size;
         self
     }
 
     /// Sets the style of the [`Split`](Split).
-    pub fn style(mut self, style: impl Into<<Renderer as self::Renderer>::Style>) -> Self {
-        self.style = style.into();
+    #[must_use]
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 }
@@ -143,13 +151,13 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: self::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer,
 {
-    fn width(&self) -> iced_native::Length {
+    fn width(&self) -> Length {
         self.width
     }
 
-    fn height(&self) -> iced_native::Length {
+    fn height(&self) -> Length {
         self.height
     }
 
@@ -176,7 +184,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn iced_native::Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> iced_native::event::Status {
         let mut children = layout.children();
 
@@ -189,7 +197,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let divider_layout = children
@@ -218,7 +226,7 @@ where
                         Axis::Vertical => position.x,
                     };
 
-                    messages.push((self.on_resize)(position as u16));
+                    shell.publish((self.on_resize)(position as u16));
                 }
             }
 
@@ -234,40 +242,147 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         first_status.merge(second_status)
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        let mut children = layout.children();
+        let _first_layout = children
+            .next()
+            .expect("Graphics: Layout should have a first layout");
+        let first_mouse_interaction =
+            self.first
+                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        let divider_layout = children
+            .next()
+            .expect("Graphics: Layout should have a divider layout");
+        let divider_mouse_interaction = if divider_layout.bounds().contains(cursor_position) {
+            match self.state.axis {
+                Axis::Horizontal => mouse::Interaction::ResizingVertically,
+                Axis::Vertical => mouse::Interaction::ResizingHorizontally,
+            }
+        } else {
+            mouse::Interaction::default()
+        };
+        let _second_layout = children
+            .next()
+            .expect("Graphics: Layout should have a second layout");
+        let second_mouse_interaction =
+            self.second
+                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        first_mouse_interaction
+            .max(second_mouse_interaction)
+            .max(divider_mouse_interaction)
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
-        self::Renderer::draw(
-            renderer,
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: &self.style,
-                viewport: Some(viewport),
-                focus: (),
+    ) {
+        // TODO: clipping!
+        let mut children = layout.children();
+
+        // Background
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: layout.bounds(),
+                border_radius: 0.0,
+                border_width: self.style_sheet.active().border_width,
+                border_color: self.style_sheet.active().border_color,
             },
-            &self.first,
-            &self.second,
-            self.state.dragging,
-            self.state.axis,
-        )
+            self.style_sheet
+                .active()
+                .background
+                .unwrap_or_else(|| Color::TRANSPARENT.into()),
+        );
+
+        let first_layout = children
+            .next()
+            .expect("Graphics: Layout should have a first layout");
+
+        // First
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: first_layout.bounds(),
+                border_radius: 0.0,
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+            if first_layout.bounds().contains(cursor_position) {
+                self.style_sheet.hovered().first_background
+            } else {
+                self.style_sheet.active().first_background
+            }
+            .unwrap_or_else(|| Color::TRANSPARENT.into()),
+        );
+
+        self.first
+            .draw(renderer, style, first_layout, cursor_position, viewport);
+
+        let divider_layout = children
+            .next()
+            .expect("Graphics: Layout should have a divider layout");
+
+        // Second
+        let second_layout = children
+            .next()
+            .expect("Graphics: Layout should have a second layout");
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: second_layout.bounds(),
+                border_radius: 0.0,
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+            },
+            if second_layout.bounds().contains(cursor_position) {
+                self.style_sheet.hovered().second_background
+            } else {
+                self.style_sheet.active().second_background
+            }
+            .unwrap_or_else(|| Color::TRANSPARENT.into()),
+        );
+
+        self.second
+            .draw(renderer, style, second_layout, cursor_position, viewport);
+
+        // Divider
+        let divider_style = if self.state.dragging {
+            self.style_sheet.dragged()
+        } else if divider_layout.bounds().contains(cursor_position) {
+            self.style_sheet.hovered()
+        } else {
+            self.style_sheet.active()
+        };
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: divider_layout.bounds(),
+                border_radius: 0.0,
+                border_width: divider_style.divider_border_width,
+                border_color: divider_style.divider_border_color,
+            },
+            divider_style.divider_background,
+        );
     }
 
     fn overlay(
         &mut self,
         layout: iced_native::Layout<'_>,
+        renderer: &Renderer,
     ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
@@ -278,8 +393,8 @@ where
         let second = &mut self.second;
 
         first
-            .overlay(first_layout)
-            .or_else(move || second.overlay(second_layout))
+            .overlay(first_layout, renderer)
+            .or_else(move || second.overlay(second_layout, renderer))
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -294,7 +409,7 @@ where
 }
 
 /// Do a horizontal split.
-fn horizontal_split<'a, Message, Renderer: self::Renderer>(
+fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
@@ -361,7 +476,7 @@ fn horizontal_split<'a, Message, Renderer: self::Renderer>(
 }
 
 /// Do a vertical split.
-fn vertical_split<'a, Message, Renderer: self::Renderer>(
+fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
@@ -427,43 +542,9 @@ fn vertical_split<'a, Message, Renderer: self::Renderer>(
     iced_native::layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
-/// The renderer of a [`Split`](Split).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`Split`](Split) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// Draws a [`Split`](Split).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        first: &Element<'_, Message, Self>,
-        second: &Element<'_, Message, Self>,
-        dragging: bool,
-        axis: Axis,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style, ()>,
-        _first: &Element<'_, Message, Self>,
-        _second: &Element<'_, Message, Self>,
-        _dragging: bool,
-        _axis: Axis,
-    ) -> Self::Output {
-    }
-}
-
 impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer,
     Message: 'a + Clone,
 {
     fn from(split_pane: Split<'a, Message, Renderer>) -> Self {

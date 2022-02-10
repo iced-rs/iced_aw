@@ -5,17 +5,16 @@ use std::hash::Hash;
 
 use chrono::Local;
 use iced_native::{
-    button, column, container, event, overlay, row, text, Clipboard, Element, Event, Layout, Point,
+    event, mouse, widget::button, Clipboard, Element, Event, Layout, Point, Rectangle, Shell,
     Widget,
 };
 
-pub use super::overlay::date_picker::Renderer;
-use super::{
-    icon_text,
-    overlay::date_picker::{self, DatePickerOverlay, Focus},
-};
+use super::overlay::date_picker::{self, DatePickerOverlay, Focus};
 
 pub use crate::core::date::Date;
+
+pub use crate::style::date_picker::{Style, StyleSheet};
+
 /// An input element for picking dates.
 ///
 /// # Example
@@ -44,7 +43,7 @@ pub use crate::core::date::Date;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct DatePicker<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer> {
+pub struct DatePicker<'a, Message: Clone, Renderer: iced_native::Renderer> {
     /// The state of the [`DatePicker`](DatePicker).
     state: &'a mut State,
     /// The underlying element.
@@ -54,13 +53,11 @@ pub struct DatePicker<'a, Message: Clone, Renderer: date_picker::Renderer + butt
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
-    style: <Renderer as date_picker::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
 
-impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
-    DatePicker<'a, Message, Renderer>
-{
+impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message, Renderer> {
     /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
     ///
     /// It expects:
@@ -81,17 +78,14 @@ impl<'a, Message: Clone, Renderer: date_picker::Renderer + button::Renderer>
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Renderer as date_picker::Renderer>::Style::default(),
+            style_sheet: std::boxed::Box::default(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
         }
     }
 
     /// Sets the style of the [`DatePicker`](DatePicker).
-    pub fn style<S>(mut self, style: S) -> Self
-    where
-        S: Into<<Renderer as date_picker::Renderer>::Style>, // + Clone + Into<<Renderer as button::Renderer>::Style>,
-    {
-        self.style = style.into();
+    pub fn style<S>(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         //self.button_style = style.into();
         self
     }
@@ -142,13 +136,7 @@ impl State {
 impl<'a, Message, Renderer> Widget<Message, Renderer> for DatePicker<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: date_picker::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> iced_native::Length {
         self.underlay.width()
@@ -173,28 +161,33 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.underlay.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.underlay
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.underlay
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
+    ) {
         self.underlay
-            .draw(renderer, defaults, layout, cursor_position, viewport)
+            .draw(renderer, style, layout, cursor_position, viewport);
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
@@ -206,9 +199,13 @@ where
         self.underlay.hash_layout(state);
     }
 
-    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         if !self.state.show {
-            return self.underlay.overlay(layout);
+            return self.underlay.overlay(layout, renderer);
         }
 
         let bounds = layout.bounds();
@@ -220,7 +217,7 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                &self.style,
+                &self.style_sheet,
                 //self.button_style, // Clone not satisfied
             )
             .overlay(),
@@ -232,14 +229,7 @@ impl<'a, Message, Renderer> From<DatePicker<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + date_picker::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(date_picker: DatePicker<'a, Message, Renderer>) -> Self {
         Element::new(date_picker)

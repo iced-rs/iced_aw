@@ -5,9 +5,10 @@
 use iced_native::{
     event,
     layout::{self, Limits, Node},
-    overlay, Alignment, Clipboard, Element, Event, Hasher, Layout, Length, Padding, Point,
-    Rectangle, Size, Widget,
+    mouse, overlay, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shell, Size, Widget,
 };
+
 use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
@@ -169,7 +170,7 @@ where
         self.inner_layout(renderer, limits)
     }
 
-    fn hash_layout(&self, state: &mut Hasher) {
+    fn hash_layout(&self, state: &mut iced_native::Hasher) {
         use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
@@ -197,7 +198,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         self.elements
             .iter_mut()
@@ -209,51 +210,74 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 )
             })
             .fold(event::Status::Ignored, event::Status::merge)
     }
-    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'_, Message, Renderer>> {
         self.elements
             .iter_mut()
             .zip(layout.children())
-            .find_map(|(child, layout)| child.overlay(layout))
+            .find_map(|(child, layout)| child.overlay(layout, renderer))
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(child, layout)| {
+                child.mouse_interaction(layout, cursor_position, viewport, renderer)
+            })
+            .max()
+            .unwrap_or_default()
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-    ) -> Renderer::Output {
-        self.inner_draw(renderer, defaults, layout, cursor_position, viewport)
-    }
-}
-
-impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
-    for Element<'a, Message, Renderer>
-where
-    Renderer: 'a + iced_native::row::Renderer,
-    Message: 'a,
-{
-    fn from(
-        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
-    ) -> Element<'a, Message, Renderer> {
-        Element::new(wrap)
+    ) {
+        for (child, layout) in self.elements.iter().zip(layout.children()) {
+            child.draw(renderer, style, layout, cursor_position, viewport);
+        }
     }
 }
 
 impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::column::Renderer,
+    Renderer: 'a + iced_native::Renderer,
     Message: 'a,
 {
     fn from(
         wrap: Wrap<'a, Message, Renderer, direction::Vertical>,
+    ) -> Element<'a, Message, Renderer> {
+        Element::new(wrap)
+    }
+}
+
+impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
+    for Element<'a, Message, Renderer>
+where
+    Renderer: 'a + iced_native::Renderer,
+    Message: 'a,
+{
+    fn from(
+        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
     ) -> Element<'a, Message, Renderer> {
         Element::new(wrap)
     }
@@ -283,21 +307,12 @@ where
 {
     /// A inner layout of the [`Wrap`](Wrap).
     fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node;
-    /// A inner draw of the [`Wrap`](Wrap).
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Horizontal>
 where
-    Renderer: iced_native::row::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
@@ -374,24 +389,12 @@ where
 
         Node::with_children(size.pad(padding), nodes)
     }
-
-    #[allow(clippy::inline_always)]
-    #[inline(always)]
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, &self.elements, layout, cursor_position, viewport)
-    }
 }
+
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Vertical>
 where
-    Renderer: iced_native::column::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
@@ -469,19 +472,6 @@ where
         let size = limits.resolve(Size::new(width, height));
 
         Node::with_children(size.pad(padding), nodes)
-    }
-
-    #[allow(clippy::inline_always)]
-    #[inline(always)]
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, &self.elements, layout, cursor_position, viewport)
     }
 }
 

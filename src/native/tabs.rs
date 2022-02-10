@@ -5,16 +5,17 @@
 //! the content of the tabs.
 //!
 //! *This API requires the following crate features to be activated: tabs*
-use std::hash::Hash;
-
 use iced_native::{
-    column, event, row, text, Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle,
-    Row, Size, Widget,
+    event,
+    layout::{Limits, Node},
+    mouse,
+    widget::Row,
+    Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 use crate::{
-    core::renderer::DrawEnvironment,
     native::{TabBar, TabLabel},
+    style::tab_bar::StyleSheet,
 };
 
 pub mod tab_bar_position;
@@ -46,7 +47,10 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, Renderer: self::Renderer> {
+pub struct Tabs<'a, Message, Renderer>
+where
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+{
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, Renderer>,
     /// The vector containing the content of the tabs.
@@ -61,7 +65,7 @@ pub struct Tabs<'a, Message, Renderer: self::Renderer> {
 
 impl<'a, Message, Renderer> Tabs<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
     /// and a specified message which will be send when a tab is selected by
@@ -116,6 +120,7 @@ where
     /// on the [`TabBar`](TabBar) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the tabs.
+    #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
@@ -125,12 +130,14 @@ where
     }
 
     /// Sets the width of the [`Tabs`](Tabs).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Tabs`](Tabs).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
@@ -138,6 +145,7 @@ where
 
     /// Sets the width of the [`TabBar`](super::tab_bar::TabBar) of the
     /// [`Tabs`](Tabs).
+    #[must_use]
     pub fn tab_bar_width(mut self, width: Length) -> Self {
         self.tab_bar = self.tab_bar.width(width);
         self
@@ -145,6 +153,7 @@ where
 
     /// Sets the height of the [`TabBar`](super::tab_bar::TabBar) of the
     /// [`Tabs`](Tabs).
+    #[must_use]
     pub fn tab_bar_height(mut self, height: Length) -> Self {
         self.tab_bar = self.tab_bar.height(height);
         self
@@ -152,6 +161,7 @@ where
 
     /// Sets the maximum height of the [`TabBar`](super::tab_bar::TabBar) of the
     /// [`Tabs`](Tabs).
+    #[must_use]
     pub fn tab_bar_max_height(mut self, max_height: u32) -> Self {
         self.tab_bar = self.tab_bar.max_height(max_height);
         self
@@ -159,6 +169,7 @@ where
 
     /// Sets the icon size of the [`TabLabel`](super::tab_bar::TabLabel) of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
         self.tab_bar = self.tab_bar.icon_size(icon_size);
         self
@@ -166,6 +177,7 @@ where
 
     /// Sets the text size of the [`TabLabel`](super::tab_bar::TabLabel) of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
         self.tab_bar = self.tab_bar.text_size(text_size);
         self
@@ -174,12 +186,14 @@ where
     /// Sets the size of the close icon of the
     /// [`TabLabel`](super::tab_bar::TabLabel) of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.tab_bar = self.tab_bar.close_size(close_size);
         self
     }
 
     /// Sets the padding of the tabs of the [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn tab_label_padding(mut self, padding: u16) -> Self {
         self.tab_bar = self.tab_bar.padding(padding);
         self
@@ -187,6 +201,7 @@ where
 
     /// Sets the spacing between the tabs of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn tab_label_spacing(mut self, spacing: u16) -> Self {
         self.tab_bar = self.tab_bar.spacing(spacing);
         self
@@ -195,6 +210,7 @@ where
     /// Sets the font of the icons of the
     /// [`TabLabel`](super::tab_bar::TabLabel)s of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.tab_bar = self.tab_bar.icon_font(icon_font);
         self
@@ -203,22 +219,22 @@ where
     /// Sets the font of the text of the
     /// [`TabLabel`](super::tab_bar::TabLabel)s of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.tab_bar = self.tab_bar.text_font(text_font);
         self
     }
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
-    pub fn tab_bar_style<T>(mut self, style: T) -> Self
-    where
-        T: Into<<Renderer as crate::native::tab_bar::Renderer>::Style>,
-    {
-        self.tab_bar = self.tab_bar.style(style);
+    #[must_use]
+    pub fn tab_bar_style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.tab_bar = self.tab_bar.style_sheet(style_sheet);
         self
     }
 
     /// Sets the [`TabBarPosition`](TabBarPosition) of the
     /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
     pub fn tab_bar_position(mut self, position: TabBarPosition) -> Self {
         self.tab_bar_position = position;
         self
@@ -226,6 +242,7 @@ where
 
     /// Pushes a [`TabLabel`](super::tab_bar::TabLabel) along with the tabs
     /// content to the [`Tabs`](Tabs).
+    #[must_use]
     pub fn push<E>(mut self, tab_label: TabLabel, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
@@ -238,7 +255,7 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, Renderer>
 where
-    Renderer: self::Renderer + column::Renderer + text::Renderer + row::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -248,11 +265,7 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let tab_bar_limits = limits.width(self.width).height(self.tab_bar.get_height());
 
         let mut tab_bar_node = self.tab_bar.layout(renderer, &tab_bar_limits);
@@ -291,7 +304,7 @@ where
                 },
         ));
 
-        iced_native::layout::Node::with_children(
+        Node::with_children(
             Size::new(
                 tab_content_node.size().width,
                 tab_bar_node.size().height + tab_content_node.size().height,
@@ -310,7 +323,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -340,7 +353,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
@@ -352,7 +365,7 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 )
             },
         );
@@ -360,14 +373,14 @@ where
         status_tab_bar.merge(status_element)
     }
 
-    fn draw(
+    fn mouse_interaction(
         &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: iced_native::Layout<'_>,
+        layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-    ) -> Renderer::Output {
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        // Tab bar
         let mut children = layout.children();
         let tab_bar_layout = match self.tab_bar_position {
             TabBarPosition::Top => children
@@ -378,32 +391,83 @@ where
                 .expect("Native: There should be a TabBar at the bottom position"),
         };
 
-        let tab_bar = self.tab_bar.draw(
-            renderer,
-            defaults,
-            tab_bar_layout,
-            cursor_position,
-            viewport,
-        );
+        let mut mouse_interaction = mouse::Interaction::default();
+        let new_mouse_interaction =
+            self.tab_bar
+                .mouse_interaction(tab_bar_layout, cursor_position, viewport, renderer);
 
-        self::Renderer::draw(
-            renderer,
-            DrawEnvironment {
-                defaults,
-                layout,
+        if new_mouse_interaction > mouse_interaction {
+            mouse_interaction = new_mouse_interaction;
+        }
+
+        // Tab content
+        let mut children = layout.children();
+        let tab_content_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .last()
+                .expect("Graphics: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .next()
+                .expect("Graphics: There should be a TabBar at the bottom position"),
+        };
+
+        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+            let new_mouse_interaction =
+                element.mouse_interaction(tab_content_layout, cursor_position, viewport, renderer);
+
+            if new_mouse_interaction > mouse_interaction {
+                mouse_interaction = new_mouse_interaction;
+            }
+        }
+
+        mouse_interaction
+    }
+
+    fn draw(
+        &self,
+        renderer: &mut Renderer,
+        style: &iced_native::renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+    ) {
+        let mut children = layout.children();
+        let tab_bar_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .next()
+                .expect("Native: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .last()
+                .expect("Native: There should be a TabBar at the bottom position"),
+        };
+
+        self.tab_bar
+            .draw(renderer, style, tab_bar_layout, cursor_position, viewport);
+
+        let mut children = layout.children();
+
+        let tab_content_layout = match self.tab_bar_position {
+            TabBarPosition::Top => children
+                .last()
+                .expect("Graphics: There should be a TabBar at the top position"),
+            TabBarPosition::Bottom => children
+                .next()
+                .expect("Graphics: There should be a TabBar at the bottom position"),
+        };
+
+        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+            element.draw(
+                renderer,
+                style,
+                tab_content_layout,
                 cursor_position,
-                style_sheet: &(),
-                viewport: Some(viewport),
-                focus: (),
-            },
-            self.tab_bar.get_active_tab(),
-            tab_bar,
-            &self.tabs,
-            &self.tab_bar_position,
-        )
+                viewport,
+            );
+        }
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
@@ -419,6 +483,7 @@ where
     fn overlay(
         &mut self,
         layout: Layout<'_>,
+        renderer: &Renderer,
     ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout
@@ -433,42 +498,13 @@ where
         self.tabs
             .get_mut(self.tab_bar.get_active_tab())
             .expect("Native: self.tab_bar.get_active_tab() should never return a value greater than self.tabs.len()")
-            .overlay(layout)
-    }
-}
-
-/// The renderer of a [`Tabs`](Tabs) widget.
-///
-/// Your renderer will need to implement this trait before being able to
-/// use a [`Tabs`](Tabs) widget in your user interface.
-pub trait Renderer: iced_native::Renderer + crate::native::tab_bar::Renderer {
-    /// Draws a [`Tabs`](Tabs) widget.
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, (), ()>,
-        active_tab: usize,
-        tab_bar: Self::Output,
-        tabs: &[Element<'_, Message, Self>],
-        tab_bar_position: &TabBarPosition,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
-        _active_tab: usize,
-        _tab_bar: Self::Output,
-        _tabs: &[Element<'_, Message, Self>],
-        _tab_bar_position: &TabBarPosition,
-    ) -> Self::Output {
+            .overlay(layout, renderer)
     }
 }
 
 impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Message: 'a,
 {
     fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {

@@ -4,18 +4,32 @@
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
-use iced_native::{touch, Element};
-use std::hash::Hash;
-
 use iced_native::{
-    column, event, layout, mouse, row, text, Alignment, Clipboard, Column, Event, Font, Hasher,
-    Layout, Length, Point, Rectangle, Row, Text, Widget,
+    alignment::{Horizontal, Vertical},
+    event,
+    layout::{Limits, Node},
+    mouse, renderer, touch,
+    widget::{Column, Row, Text},
+    Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell,
+    Widget,
 };
 
 pub mod tab_label;
 pub use tab_label::TabLabel;
 
-use crate::core::renderer::DrawEnvironment;
+use crate::{graphics::icons, style::tab_bar::StyleSheet};
+
+use std::marker::PhantomData;
+/// The default icon size.
+const DEFAULT_ICON_SIZE: u16 = 32;
+/// The default text size.
+const DEFAULT_TEXT_SIZE: u16 = 16;
+/// The default size of the close icon.
+const DEFAULT_CLOSE_SIZE: u16 = 16;
+/// The default padding between the tabs.
+const DEFAULT_PADDING: u16 = 5;
+/// The default spacing around the tabs.
+const DEFAULT_SPACING: u16 = 0;
 
 /// A tab bar to show tabs.
 ///
@@ -41,7 +55,10 @@ use crate::core::renderer::DrawEnvironment;
 /// .push(TabLabel::Text(String::from("Three")));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TabBar<Message, Renderer: self::Renderer> {
+pub struct TabBar<Message, Renderer>
+where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
     /// The currently active tab.
     active_tab: usize,
     /// The vector containing the labels of the tabs.
@@ -73,12 +90,14 @@ pub struct TabBar<Message, Renderer: self::Renderer> {
     /// The optional text font of the [`TabBar`](TabBar).
     text_font: Option<Font>,
     /// The style of the [`TabBar`](TabBar).
-    style: Renderer::Style,
+    style_sheet: Box<dyn StyleSheet>,
+    #[allow(clippy::missing_docs_in_private_items)]
+    _renderer: PhantomData<Renderer>,
 }
 
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -115,18 +134,20 @@ where
             tab_width: Length::Fill,
             height: Length::Shrink,
             max_height: u32::MAX,
-            icon_size: <Renderer as self::Renderer>::DEFAULT_ICON_SIZE,
-            text_size: <Renderer as self::Renderer>::DEFAULT_TEXT_SIZE,
-            close_size: <Renderer as self::Renderer>::DEFAULT_CLOSE_SIZE,
-            padding: <Renderer as self::Renderer>::DEFAULT_PADDING,
-            spacing: <Renderer as self::Renderer>::DEFAULT_SPACING,
+            icon_size: DEFAULT_ICON_SIZE,
+            text_size: DEFAULT_TEXT_SIZE,
+            close_size: DEFAULT_CLOSE_SIZE,
+            padding: DEFAULT_PADDING,
+            spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style: Renderer::Style::default(),
+            style_sheet: std::boxed::Box::default(),
+            _renderer: PhantomData::default(),
         }
     }
 
     /// Gets the index of the currently active tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_active_tab(&self) -> usize {
         self.active_tab
     }
@@ -135,6 +156,7 @@ where
     /// on the [`TabBar`](TabBar) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the tabs.
+    #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
@@ -144,34 +166,40 @@ where
     }
 
     /// Sets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_width(&self) -> Length {
         self.width
     }
 
     /// Sets the width of a tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn tab_width(mut self, width: Length) -> Self {
         self.tab_width = width;
         self
     }
 
     /// Sets the height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_height(&self) -> Length {
         self.height
     }
 
     /// Sets the maximum height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
@@ -179,6 +207,7 @@ where
 
     /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
     /// the [`TabBar`](TabBar).
+    #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
         self.icon_size = icon_size;
         self
@@ -186,6 +215,7 @@ where
 
     /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
     /// [`TabBar`](TabBar).
+    #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
         self.text_size = text_size;
         self
@@ -193,18 +223,21 @@ where
 
     /// Sets the size of the close icon of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
         self
     }
 
     /// Sets the padding of the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn padding(mut self, padding: u16) -> Self {
         self.padding = padding;
         self
     }
 
     /// Sets the spacing between the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn spacing(mut self, spacing: u16) -> Self {
         self.spacing = spacing;
         self
@@ -212,6 +245,7 @@ where
 
     /// Sets the font of the icons of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
         self
@@ -219,18 +253,21 @@ where
 
     /// Sets the font of the text of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
         self
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
-        self.style = style.into();
+    #[must_use]
+    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 
     /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self
@@ -239,7 +276,7 @@ where
 
 impl<Message, Renderer> Widget<Message, Renderer> for TabBar<Message, Renderer>
 where
-    Renderer: self::Renderer + column::Renderer + text::Renderer + row::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -249,7 +286,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
@@ -304,7 +341,7 @@ where
         cursor_position: Point,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -316,7 +353,7 @@ where
                         .collect();
 
                     if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-                        messages.push(
+                        shell.publish(
                             self.on_close
                                 .as_ref()
                                 .filter(|_on_close| {
@@ -339,32 +376,77 @@ where
         }
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        let children = layout.children();
+        let mut mouse_interaction = mouse::Interaction::default();
+
+        for layout in children {
+            let is_mouse_over = layout.bounds().contains(cursor_position);
+            let new_mouse_interaction = if is_mouse_over {
+                mouse::Interaction::Pointer
+            } else {
+                mouse::Interaction::default()
+            };
+
+            if new_mouse_interaction > mouse_interaction {
+                mouse_interaction = new_mouse_interaction;
+            }
+        }
+
+        mouse_interaction
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        _style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        self::Renderer::draw(
-            renderer,
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: &self.style,
-                viewport: Some(viewport),
-                focus: (),
+        _viewport: &Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        let children = layout.children();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let style_sheet = if is_mouse_over {
+            self.style_sheet.hovered(false)
+        } else {
+            self.style_sheet.active(false)
+        };
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius: 0.0,
+                border_width: style_sheet.border_width,
+                border_color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
             },
-            self.active_tab,
-            &self.tab_labels,
-            self.icon_font,
-            self.text_font,
-        )
+            style_sheet
+                .background
+                .unwrap_or_else(|| Color::TRANSPARENT.into()),
+        );
+
+        for ((i, tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
+            draw_tab(
+                renderer,
+                tab,
+                layout,
+                &self.style_sheet,
+                i == self.active_tab,
+                cursor_position,
+                self.icon_font.unwrap_or(icons::ICON_FONT),
+                self.text_font.unwrap_or_default(),
+            );
+        }
     }
 
-    fn hash_layout(&self, state: &mut Hasher) {
+    fn hash_layout(&self, state: &mut iced_native::Hasher) {
+        use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
@@ -380,68 +462,161 @@ where
     }
 }
 
-/// The renderer of a [`TabBar`](TabBar).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`TabBar`](TabBar) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
+/// Draws a tab.
+#[allow(
+    clippy::borrowed_box,
+    clippy::too_many_lines,
+    clippy::too_many_arguments
+)]
+fn draw_tab<Renderer>(
+    renderer: &mut Renderer,
+    tab: &TabLabel,
+    layout: Layout<'_>,
+    style_sheet: &Box<dyn StyleSheet>,
+    is_selected: bool,
+    cursor_position: iced_native::Point,
+    icon_font: Font,
+    text_font: Font,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+{
+    let is_mouse_over = layout.bounds().contains(cursor_position);
+    let style = if is_mouse_over {
+        style_sheet.hovered(is_selected)
+    } else {
+        style_sheet.active(is_selected)
+    };
 
-    /// The default icon size of a [`TabBar`](TabBar).
-    const DEFAULT_ICON_SIZE: u16;
+    let bounds = layout.bounds();
+    let mut children = layout.children();
+    let label_layout = children
+        .next()
+        .expect("Graphics: Layout should have a label layout");
+    let mut label_layout_children = label_layout.children();
 
-    /// The default text size of a [`TabBar`](TabBar).
-    const DEFAULT_TEXT_SIZE: u16;
+    renderer.fill_quad(
+        renderer::Quad {
+            bounds,
+            border_radius: 0.0,
+            border_width: style.tab_label_border_width,
+            border_color: style.tab_label_border_color,
+        },
+        style.tab_label_background,
+    );
 
-    /// The default close size of a [`TabBar`](TabBar).
-    const DEFAULT_CLOSE_SIZE: u16;
+    match tab {
+        TabLabel::Icon(icon) => {
+            let icon_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have an icon layout for an Icon")
+                .bounds();
 
-    /// The default padding of a [`TabBar`](TabBar).
-    const DEFAULT_PADDING: u16;
+            let mut buffer = [0; 4];
+            let icon = icon.encode_utf8(&mut buffer);
 
-    /// The default spacing of a [`TabBar`](TabBar).
-    const DEFAULT_SPACING: u16;
+            renderer.fill_text(iced_native::text::Text {
+                content: icon,
+                font: icon_font,
+                size: icon_bounds.height,
+                bounds: Rectangle {
+                    x: icon_bounds.center_x(),
+                    y: icon_bounds.center_y(),
+                    ..icon_bounds
+                },
+                color: style.icon_color,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
+        }
+        TabLabel::Text(text) => {
+            let text_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have a text layout for a Text")
+                .bounds();
 
-    /// Draws a [`TabBar`](TabBar).
-    fn draw(
-        &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
-        active_tab: usize,
-        tab_labels: &[TabLabel],
-        icon_font: Option<Font>,
-        text_font: Option<Font>,
-    ) -> Self::Output;
-}
+            renderer.fill_text(iced_native::text::Text {
+                content: &text[..],
+                font: text_font,
+                size: text_bounds.height,
+                bounds: Rectangle {
+                    x: text_bounds.center_x(),
+                    y: text_bounds.center_y(),
+                    ..text_bounds
+                },
+                color: style.text_color,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
+        }
+        TabLabel::IconText(icon, text) => {
+            let icon_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have an icons layout for an IconText")
+                .bounds();
+            let text_bounds = label_layout_children
+                .next()
+                .expect("Graphics: Layout should have a text layout for an IconText")
+                .bounds();
 
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
+            let mut buffer = [0; 4];
+            let icon = icon.encode_utf8(&mut buffer);
 
-    const DEFAULT_ICON_SIZE: u16 = 0;
+            renderer.fill_text(iced_native::text::Text {
+                content: icon,
+                font: icon_font,
+                size: icon_bounds.height,
+                bounds: Rectangle {
+                    x: icon_bounds.center_x(),
+                    y: icon_bounds.center_y(),
+                    ..icon_bounds
+                },
+                color: style.icon_color,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
 
-    const DEFAULT_TEXT_SIZE: u16 = 0;
+            renderer.fill_text(iced_native::text::Text {
+                content: &text[..],
+                font: text_font,
+                size: text_bounds.height,
+                bounds: Rectangle {
+                    x: text_bounds.center_x(),
+                    y: text_bounds.center_y(),
+                    ..text_bounds
+                },
+                color: style.text_color,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
+        }
+    };
 
-    const DEFAULT_CLOSE_SIZE: u16 = 0;
+    if let Some(cross_layout) = children.next() {
+        let cross_bounds = cross_layout.bounds();
+        let is_mouse_over_cross = cross_bounds.contains(cursor_position);
 
-    const DEFAULT_PADDING: u16 = 0;
+        let mut buffer = [0; 4];
+        let icon = icons::icon_to_char(icons::Icon::X).encode_utf8(&mut buffer);
 
-    const DEFAULT_SPACING: u16 = 0;
-
-    fn draw(
-        &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
-        _active_tab: usize,
-        _tab_labels: &[TabLabel],
-        _icon_font: Option<Font>,
-        _text_font: Option<Font>,
-    ) -> Self::Output {
-    }
+        renderer.fill_text(iced_native::text::Text {
+            content: icon,
+            font: icons::ICON_FONT,
+            size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
+            bounds: Rectangle {
+                x: cross_bounds.center_x(),
+                y: cross_bounds.center_y(),
+                ..cross_bounds
+            },
+            color: style.icon_color,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    };
 }
 
 impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer + column::Renderer + text::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {
