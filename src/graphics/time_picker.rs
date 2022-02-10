@@ -2,20 +2,14 @@
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
 
-use iced_graphics::Renderer;
-
 use crate::native::time_picker;
 pub use crate::native::time_picker::{Period, State, Time};
-
-/// The percentage size of the numbers.
-const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
-/// The percentage size of the period.
-const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// An input element for picking times.
 ///
 /// This is an alias of an `iced_native` `TimePicker` with an `iced_wgpu::Renderer`.
-pub type TimePicker<'a, Message, Backend> = time_picker::TimePicker<'a, Message, Renderer<Backend>>;
+//pub type TimePicker<'a, Message, Backend> = time_picker::TimePicker<'a, Message, Renderer<Backend>>;
+pub use time_picker::TimePicker;
 
 /*
 impl<B> time_picker::Renderer for Renderer<B>
