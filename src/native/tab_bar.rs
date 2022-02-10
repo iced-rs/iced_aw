@@ -20,10 +20,15 @@ pub use tab_label::TabLabel;
 use crate::{graphics::icons, style::tab_bar::StyleSheet};
 
 use std::marker::PhantomData;
+/// The default icon size.
 const DEFAULT_ICON_SIZE: u16 = 0;
+/// The default text size.
 const DEFAULT_TEXT_SIZE: u16 = 0;
+/// The default size of the close icon.
 const DEFAULT_CLOSE_SIZE: u16 = 0;
+/// The default padding between the tabs.
 const DEFAULT_PADDING: u16 = 0;
+/// The default spacing around the tabs.
 const DEFAULT_SPACING: u16 = 0;
 
 /// A tab bar to show tabs.
@@ -457,7 +462,12 @@ where
     }
 }
 
-#[allow(clippy::borrowed_box, clippy::too_many_lines)]
+/// Draws a tab.
+#[allow(
+    clippy::borrowed_box,
+    clippy::too_many_lines,
+    clippy::too_many_arguments
+)]
 fn draw_tab<Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,

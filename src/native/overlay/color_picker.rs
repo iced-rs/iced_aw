@@ -839,16 +839,7 @@ where
         let block1_layout = children
             .next()
             .expect("Graphics: Layout should have a 1. block layout");
-        block1(
-            renderer,
-            &self.state.color,
-            &self.state.sat_value_canvas_cache,
-            &self.state.hue_canvas_cache,
-            block1_layout,
-            cursor_position,
-            self.state.focus,
-            &style_sheet,
-        );
+        block1(renderer, self, block1_layout, cursor_position, &style_sheet);
 
         // ----------- Block 2 ----------------------
         let block2_layout = children
@@ -856,13 +847,10 @@ where
             .expect("Graphics: Layout should have a 2. block layout");
         block2(
             renderer,
-            &self.state.color,
-            &self.cancel_button,
-            &self.submit_button,
+            self,
             block2_layout,
             cursor_position,
             style,
-            self.state.focus,
             &bounds,
             &style_sheet,
         );
@@ -1036,16 +1024,14 @@ where
 }
 
 /// Draws the 1. block of the color picker containing the HSV part.
-fn block1<B>(
+fn block1<'a, Message, B>(
     renderer: &mut Renderer<B>,
-    color: &Color,
-    sat_value_canvas_cache: &canvas::Cache,
-    hue_canvas_cache: &canvas::Cache,
+    color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
     cursor_position: Point,
-    focus: Focus,
-    style: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Style>,
 ) where
+    Message: Clone,
     B: Backend + iced_graphics::backend::Text,
 {
     // ----------- Block 1 ----------------------
@@ -1055,35 +1041,26 @@ fn block1<B>(
     //let hsv_color_layout = block1_children.next().unwrap();
     hsv_color(
         renderer,
+        color_picker,
         hsv_color_layout,
-        color,
-        sat_value_canvas_cache,
-        hue_canvas_cache,
         cursor_position,
-        style,
-        focus,
+        style_sheet,
     );
 
     // ----------- Block 1 end ------------------
 }
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
-fn block2<Message, B>(
+fn block2<'a, Message, B>(
     renderer: &mut Renderer<B>,
-    color: &Color,
-    cancel_button: &iced_native::Element<'_, Message, Renderer<B>>,
-    submit_button: &iced_native::Element<'_, Message, Renderer<B>>,
-    //env: &DrawEnvironment<'_, Defaults, (), Focus>,
-
-    // TODO: clean up "draw environment"
+    color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
     cursor_position: Point,
     style: &renderer::Style,
-    focus: Focus,
     viewport: &Rectangle,
-
     style_sheet: &HashMap<StyleState, Style>,
 ) where
+    Message: Clone,
     B: Backend + backend::Text,
 {
     // ----------- Block 2 ----------------------
@@ -1096,11 +1073,11 @@ fn block2<Message, B>(
     rgba_color(
         renderer,
         rgba_color_layout,
-        color,
+        &color_picker.state.color,
         cursor_position,
         style,
         style_sheet,
-        focus,
+        color_picker.state.focus,
     );
 
     // ----------- Hex text ----------------------
@@ -1110,11 +1087,11 @@ fn block2<Message, B>(
     hex_text(
         renderer,
         hex_text_layout,
-        color,
+        &color_picker.state.color,
         cursor_position,
         style,
         style_sheet,
-        focus,
+        color_picker.state.focus,
     );
 
     // ----------- Buttons -------------------------
@@ -1122,7 +1099,7 @@ fn block2<Message, B>(
         .next()
         .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
 
-    cancel_button.draw(
+    color_picker.cancel_button.draw(
         renderer,
         style,
         cancel_button_layout,
@@ -1134,7 +1111,7 @@ fn block2<Message, B>(
         .next()
         .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
 
-    submit_button.draw(
+    color_picker.submit_button.draw(
         renderer,
         style,
         submit_button_layout,
@@ -1143,7 +1120,7 @@ fn block2<Message, B>(
     );
 
     // Buttons are not focusable right now...
-    if focus == Focus::Cancel {
+    if color_picker.state.focus == Focus::Cancel {
         renderer.fill_quad(
             renderer::Quad {
                 bounds: cancel_button_layout.bounds(),
@@ -1155,7 +1132,7 @@ fn block2<Message, B>(
         );
     }
 
-    if focus == Focus::Submit {
+    if color_picker.state.focus == Focus::Submit {
         renderer.fill_quad(
             renderer::Quad {
                 bounds: submit_button_layout.bounds(),
@@ -1171,92 +1148,97 @@ fn block2<Message, B>(
 
 /// Draws the HSV color area.
 #[allow(clippy::too_many_lines)]
-fn hsv_color<B>(
+fn hsv_color<'a, Message, B>(
     renderer: &mut Renderer<B>,
+    color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
-    color: &Color,
-    sat_value_canvas_cache: &canvas::Cache,
-    hue_canvas_cache: &canvas::Cache,
     cursor_position: Point,
-    style: &HashMap<StyleState, Style>,
-    focus: Focus,
+    style_sheet: &HashMap<StyleState, Style>,
 ) where
+    Message: Clone,
     B: Backend + iced_graphics::backend::Text,
 {
     let mut hsv_color_children = layout.children();
-    let hsv_color: Hsv = (*color).into();
+    let hsv_color: Hsv = color_picker.state.color.into();
 
     let sat_value_layout = hsv_color_children
         .next()
         .expect("Graphics: Layout should have a sat/value layout");
     let mut sat_value_style_state = StyleState::Active;
-    if focus == Focus::SatValue {
+    if color_picker.state.focus == Focus::SatValue {
         sat_value_style_state = sat_value_style_state.max(StyleState::Focused);
     }
     if sat_value_layout.bounds().contains(cursor_position) {
         sat_value_style_state = sat_value_style_state.max(StyleState::Hovered);
     }
 
-    let geometry = sat_value_canvas_cache.draw(sat_value_layout.bounds().size(), |frame| {
-        let column_count = frame.width() as u16;
-        let row_count = frame.height() as u16;
+    let geometry =
+        color_picker
+            .state
+            .sat_value_canvas_cache
+            .draw(sat_value_layout.bounds().size(), |frame| {
+                let column_count = frame.width() as u16;
+                let row_count = frame.height() as u16;
 
-        for column in 0..column_count {
-            for row in 0..row_count {
-                let saturation = f32::from(column) / frame.width();
-                let value = f32::from(row) / frame.height();
+                for column in 0..column_count {
+                    for row in 0..row_count {
+                        let saturation = f32::from(column) / frame.width();
+                        let value = f32::from(row) / frame.height();
 
-                frame.fill_rectangle(
-                    Point::new(f32::from(column), f32::from(row)),
-                    Size::new(1.0, 1.0),
-                    Color::from(Hsv::from_hsv(hsv_color.hue, saturation, value)),
+                        frame.fill_rectangle(
+                            Point::new(f32::from(column), f32::from(row)),
+                            Size::new(1.0, 1.0),
+                            Color::from(Hsv::from_hsv(hsv_color.hue, saturation, value)),
+                        );
+                    }
+                }
+
+                let stroke = Stroke {
+                    color: Hsv {
+                        hue: 0,
+                        saturation: 0.0,
+                        value: 1.0 - hsv_color.value,
+                    }
+                    .into(),
+                    width: 3.0,
+                    line_cap: LineCap::Round,
+                    ..Stroke::default()
+                };
+
+                let saturation = hsv_color.saturation * frame.width();
+                let value = hsv_color.value * frame.height();
+
+                frame.stroke(
+                    &Path::line(
+                        Point::new(saturation, 0.0),
+                        Point::new(saturation, frame.height()),
+                    ),
+                    stroke,
                 );
-            }
-        }
 
-        let stroke = Stroke {
-            color: Hsv {
-                hue: 0,
-                saturation: 0.0,
-                value: 1.0 - hsv_color.value,
-            }
-            .into(),
-            width: 3.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
+                frame.stroke(
+                    &Path::line(Point::new(0.0, value), Point::new(frame.width(), value)),
+                    stroke,
+                );
 
-        let saturation = hsv_color.saturation * frame.width();
-        let value = hsv_color.value * frame.height();
+                let stroke = Stroke {
+                    color: style_sheet
+                        .get(&sat_value_style_state)
+                        .unwrap()
+                        .bar_border_color,
+                    width: 2.0,
+                    line_cap: LineCap::Round,
+                    ..Stroke::default()
+                };
 
-        frame.stroke(
-            &Path::line(
-                Point::new(saturation, 0.0),
-                Point::new(saturation, frame.height()),
-            ),
-            stroke,
-        );
-
-        frame.stroke(
-            &Path::line(Point::new(0.0, value), Point::new(frame.width(), value)),
-            stroke,
-        );
-
-        let stroke = Stroke {
-            color: style.get(&sat_value_style_state).unwrap().bar_border_color,
-            width: 2.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
-
-        frame.stroke(
-            &Path::rectangle(
-                Point::new(0.0, 0.0),
-                Size::new(frame.size().width - 0.0, frame.size().height - 0.0),
-            ),
-            stroke,
-        );
-    });
+                frame.stroke(
+                    &Path::rectangle(
+                        Point::new(0.0, 0.0),
+                        Size::new(frame.size().width - 0.0, frame.size().height - 0.0),
+                    ),
+                    stroke,
+                );
+            });
 
     let translation = Vector::new(sat_value_layout.bounds().x, sat_value_layout.bounds().y);
     renderer.with_translation(translation, |renderer| {
@@ -1267,65 +1249,68 @@ fn hsv_color<B>(
         .next()
         .expect("Graphics: Layout should have a hue layout");
     let mut hue_style_state = StyleState::Active;
-    if focus == Focus::Hue {
+    if color_picker.state.focus == Focus::Hue {
         hue_style_state = hue_style_state.max(StyleState::Focused);
     }
     if hue_layout.bounds().contains(cursor_position) {
         hue_style_state = hue_style_state.max(StyleState::Hovered);
     }
 
-    let geometry = hue_canvas_cache.draw(hue_layout.bounds().size(), |frame| {
-        let column_count = frame.width() as u16;
+    let geometry = color_picker
+        .state
+        .hue_canvas_cache
+        .draw(hue_layout.bounds().size(), |frame| {
+            let column_count = frame.width() as u16;
 
-        for column in 0..column_count {
-            let hue = (f32::from(column) * 360.0 / frame.width()) as u16;
+            for column in 0..column_count {
+                let hue = (f32::from(column) * 360.0 / frame.width()) as u16;
 
-            let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
+                let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
+                let stroke = Stroke {
+                    color: hsv_color.into(),
+                    width: 1.0,
+                    line_cap: LineCap::Round,
+                    ..Stroke::default()
+                };
+
+                frame.stroke(
+                    &Path::line(
+                        Point::new(f32::from(column), 0.0),
+                        Point::new(f32::from(column), frame.height()),
+                    ),
+                    stroke,
+                );
+            }
+
             let stroke = Stroke {
-                color: hsv_color.into(),
-                width: 1.0,
+                color: Color::BLACK,
+                width: 3.0,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
+
+            let column = f32::from(hsv_color.hue) * frame.width() / 360.0;
+
+            frame.stroke(
+                &Path::line(Point::new(column, 0.0), Point::new(column, frame.height())),
+                stroke,
+            );
+
+            let stroke = Stroke {
+                color: style_sheet.get(&hue_style_state).unwrap().bar_border_color,
+                width: 2.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
             };
 
             frame.stroke(
-                &Path::line(
-                    Point::new(f32::from(column), 0.0),
-                    Point::new(f32::from(column), frame.height()),
+                &Path::rectangle(
+                    Point::new(0.0, 0.0),
+                    Size::new(frame.size().width, frame.size().height),
                 ),
                 stroke,
             );
-        }
-
-        let stroke = Stroke {
-            color: Color::BLACK,
-            width: 3.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
-
-        let column = f32::from(hsv_color.hue) * frame.width() / 360.0;
-
-        frame.stroke(
-            &Path::line(Point::new(column, 0.0), Point::new(column, frame.height())),
-            stroke,
-        );
-
-        let stroke = Stroke {
-            color: style.get(&hue_style_state).unwrap().bar_border_color,
-            width: 2.0,
-            line_cap: LineCap::Round,
-            ..Stroke::default()
-        };
-
-        frame.stroke(
-            &Path::rectangle(
-                Point::new(0.0, 0.0),
-                Size::new(frame.size().width, frame.size().height),
-            ),
-            stroke,
-        );
-    });
+        });
 
     let translation = Vector::new(hue_layout.bounds().x, hue_layout.bounds().y);
     renderer.with_translation(translation, |renderer| {
@@ -1377,7 +1362,7 @@ fn rgba_color<B>(
             },
             size: label_layout.bounds().height,
             color: style.text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1438,7 +1423,7 @@ fn rgba_color<B>(
             },
             size: value_layout.bounds().height,
             color: style.text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1564,7 +1549,7 @@ fn hex_text<B>(
             }
             .into()
         },
-        font: Default::default(),
+        font: iced_graphics::Font::default(),
         horizontal_alignment: Horizontal::Center,
         vertical_alignment: Vertical::Center,
     });

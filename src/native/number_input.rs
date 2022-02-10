@@ -23,6 +23,7 @@ pub use crate::{
     style::number_input::{Style, StyleSheet},
 };
 
+/// The default padding
 const DEFAULT_PADDING: u16 = 5;
 
 /// A field that can only be filled with numeric type.
@@ -121,8 +122,8 @@ where
             .padding(padding)
             .width(Length::Units(127)),
             on_change: Box::new(on_changed),
-            style_sheet: Default::default(),
-            font: Default::default(),
+            style_sheet: std::boxed::Box::default(),
+            font: iced_graphics::Font::default(),
         }
     }
 
@@ -160,6 +161,7 @@ where
     ///
     /// [`Font`]: crate::widget::text::Renderer::Font
     /// [`Text`]: crate::widget::Text
+    #[allow(clippy::needless_pass_by_value)]
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.font = font;
         self.content = self.content.font(font);
