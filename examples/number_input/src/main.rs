@@ -45,7 +45,7 @@ impl Sandbox for NumberInputDemo {
         }
     }
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&mut self) -> Element<'_, Message> {
         let lb_minute = Text::new("Number Input:");
         let txt_minute =
             NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)

@@ -14,7 +14,7 @@ use iced_native::{
         Column, Container, Row, Text, TextInput,
     },
     Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Size, Widget,
+    Rectangle, Shell, Size, Widget,
 };
 use num_traits::{Num, NumAssignOps};
 
@@ -48,7 +48,10 @@ const DEFAULT_PADDING: u16 = 5;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Renderer: iced_native::text::Renderer> {
+pub struct NumberInput<'a, T, Message, Renderer>
+where
+    Renderer: iced_native::text::Renderer,
+{
     /// The state of the [`NumberInput`](NumberInput).
     state: &'a mut ModifierState,
     /// The current value of the [`NumberInput`](NumberInput).
@@ -75,7 +78,7 @@ impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -115,7 +118,7 @@ where
             .padding(padding)
             .width(Length::Units(127)),
             on_change: Box::new(on_changed),
-            style_sheet: Style::default(),
+            style_sheet: Default::default(),
             font: Default::default(),
         }
     }
@@ -194,22 +197,22 @@ where
     }
 
     /// Sets the style of the [`NumberInput`].
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
-        self.style = style_sheet.into();
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 
     /// Sets the input style of the [`NumberInput`].
     pub fn input_style(
         mut self,
-        style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet + 'a>>,
+        style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet>>,
     ) -> Self {
         self.content = self.content.style(style_sheet.into());
         self
     }
 
     /// Decrease current value by step of the [`NumberInput`].
-    fn decrease_val(&mut self, messages: &mut Vec<Message>) {
+    fn decrease_val(&mut self, shell: &mut Shell<Message>) {
         if self.value > self.bounds.0 {
             let new_val = self.value - self.step;
             self.value = if new_val > self.bounds.0 {
@@ -217,13 +220,13 @@ where
             } else {
                 self.bounds.0
             };
-            messages.push((self.on_change)(self.value));
+            shell.publish((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
     }
 
     /// Increase current value by step of the [`NumberInput`].
-    fn increase_val(&mut self, messages: &mut Vec<Message>) {
+    fn increase_val(&mut self, shell: &mut Shell<Message>) {
         if self.value < self.bounds.1 {
             let new_val = self.value + self.step;
             self.value = if new_val < self.bounds.1 {
@@ -231,7 +234,7 @@ where
             } else {
                 self.bounds.1
             };
-            messages.push((self.on_change)(self.value));
+            shell.publish((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
     }
@@ -241,10 +244,10 @@ impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, 
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
-        self.content.width()
+        Length::Fill
     }
 
     fn height(&self) -> Length {
@@ -265,7 +268,7 @@ where
                 .center_y()
                 .center_x()
         };
-        let mut modifier = if self.padding < Renderer::DEFAULT_PADDING {
+        let mut modifier = if self.padding < DEFAULT_PADDING {
             Row::<(), Renderer>::new()
                 .spacing(1)
                 .width(Length::Shrink)
@@ -297,7 +300,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let content = children.next().expect("fail to get content layout");
@@ -323,10 +326,10 @@ where
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                         if mouse_over_dec {
                             self.state.decrease_pressed = true;
-                            self.decrease_val(messages);
+                            self.decrease_val(shell);
                         } else if mouse_over_inc {
                             self.state.increase_pressed = true;
-                            self.increase_val(messages);
+                            self.increase_val(shell);
                         } else {
                             event_status = event::Status::Ignored;
                         }
@@ -373,14 +376,14 @@ where
                             Ok(val) => {
                                 if (self.bounds.0..=self.bounds.1).contains(&val) {
                                     self.value = val;
-                                    messages.push((self.on_change)(self.value));
+                                    shell.publish((self.on_change)(self.value));
                                     self.content.on_event(
                                         event.clone(),
                                         content,
                                         cursor_position,
                                         renderer,
                                         clipboard,
-                                        messages,
+                                        shell,
                                     )
                                 } else {
                                     event::Status::Ignored
@@ -394,11 +397,11 @@ where
                     {
                         match key_code {
                             keyboard::KeyCode::Up => {
-                                self.increase_val(messages);
+                                self.increase_val(shell);
                                 event::Status::Captured
                             }
                             keyboard::KeyCode::Down => {
-                                self.decrease_val(messages);
+                                self.decrease_val(shell);
                                 event::Status::Captured
                             }
                             keyboard::KeyCode::Backspace => {
@@ -442,14 +445,14 @@ where
                                         Ok(val) => {
                                             if (self.bounds.0..=self.bounds.1).contains(&val) {
                                                 self.value = val;
-                                                messages.push((self.on_change)(self.value));
+                                                shell.publish((self.on_change)(self.value));
                                                 self.content.on_event(
                                                     event.clone(),
                                                     content,
                                                     cursor_position,
                                                     renderer,
                                                     clipboard,
-                                                    messages,
+                                                    shell,
                                                 )
                                             } else {
                                                 event::Status::Ignored
@@ -465,7 +468,7 @@ where
                                 cursor_position,
                                 renderer,
                                 clipboard,
-                                messages,
+                                shell,
                             ),
                         }
                     }
@@ -479,9 +482,9 @@ where
                             }
                         }
                         if negative {
-                            self.increase_val(messages);
+                            self.increase_val(shell);
                         } else {
-                            self.decrease_val(messages);
+                            self.decrease_val(shell);
                         }
                         event::Status::Captured
                     }
@@ -491,7 +494,7 @@ where
                         cursor_position,
                         renderer,
                         clipboard,
-                        messages,
+                        shell,
                     ),
                 }
             }
@@ -504,7 +507,7 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 ),
             }
         }
@@ -517,7 +520,36 @@ where
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let _content_layout = children.next().expect("fail to get content layout");
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let is_decrease_disabled = self.value <= self.bounds.0;
+        let is_increase_disabled = self.value >= self.bounds.1;
+        let mouse_over_decrease = dec_bounds.contains(cursor_position);
+        let mouse_over_increase = inc_bounds.contains(cursor_position);
+
+        if (mouse_over_decrease && !is_decrease_disabled)
+            || (mouse_over_increase && !is_increase_disabled)
+        {
+            mouse::Interaction::Pointer
+        } else if is_mouse_over {
+            mouse::Interaction::Text
+        } else {
+            mouse::Interaction::default()
+        }
     }
 
     fn draw(
@@ -526,9 +558,8 @@ where
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _viewport: &iced_graphics::Rectangle,
     ) {
-        let bounds = layout.bounds();
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
         let mut mod_children = children
@@ -543,15 +574,10 @@ where
             .next()
             .expect("fail to get decreate mod layout")
             .bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
-        let content = self
-            .content
+        self.content
             .draw(renderer, content_layout, cursor_position, None);
         let is_decrease_disabled = self.value <= self.bounds.0;
         let is_increase_disabled = self.value >= self.bounds.1;
-
-        let mouse_over_decrease = dec_bounds.contains(cursor_position);
-        let mouse_over_increase = inc_bounds.contains(cursor_position);
 
         let decrease_btn_style = if is_decrease_disabled {
             self.style_sheet.disabled()
@@ -667,7 +693,7 @@ impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
         Element::new(num_input)

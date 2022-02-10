@@ -71,7 +71,7 @@ version = "0.3"
 members = [
     "examples/badge",
     "examples/card",
-    "examples/color_picker",
+    #"examples/color_picker",
     "examples/date_picker",
     "examples/floating_button",
     "examples/grid",
@@ -79,7 +79,7 @@ members = [
     #"examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
-    "examples/time_picker",
+    #"examples/time_picker",
     "examples/wrap",
     "examples/web",
     "examples/number_input",
