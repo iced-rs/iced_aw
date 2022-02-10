@@ -786,17 +786,7 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
-        if self.state.focus == Focus::Cancel {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds: cancel_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius,
-                    border_width: style_sheet[&StyleState::Focused].border_width,
-                    border_color: style_sheet[&StyleState::Focused].border_color,
-                },
-                Color::TRANSPARENT,
-            );
-        }
+        
 
         self.cancel_button.draw(
             renderer,
@@ -810,7 +800,28 @@ where
             .next()
             .expect("Graphics: Layout should have a submit button layout for a DatePicker");
 
+        self.submit_button.draw(
+            renderer,
+            style,
+            submit_button_layout,
+            cursor_position,
+            &bounds,
+        );
+
+        // Buttons are not focusable right now...
         if self.state.focus == Focus::Cancel {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: cancel_button_layout.bounds(),
+                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_width: style_sheet[&StyleState::Focused].border_width,
+                    border_color: style_sheet[&StyleState::Focused].border_color,
+                },
+                Color::TRANSPARENT,
+            );
+        }
+
+        if self.state.focus == Focus::Submit {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: submit_button_layout.bounds(),
@@ -821,14 +832,6 @@ where
                 Color::TRANSPARENT,
             );
         }
-
-        self.submit_button.draw(
-            renderer,
-            style,
-            submit_button_layout,
-            cursor_position,
-            &bounds,
-        );
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
