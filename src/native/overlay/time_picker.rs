@@ -66,7 +66,7 @@ where
     /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
     position: Point,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, B> TimePickerOverlay<'a, Message, B>
@@ -81,7 +81,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet + 'a>,
+        style_sheet: &'a Box<dyn StyleSheet>,
     ) -> Self {
         let time_picker::State {
             overlay_state,
@@ -1407,7 +1407,7 @@ fn draw_digital_clock<B>(
             },
             size: center_bounds.height,
             color: style.get(&StyleState::Active).unwrap().text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1464,7 +1464,7 @@ fn draw_digital_clock<B>(
         },
         size: hour_minute_separator.bounds().height,
         color: style[&StyleState::Active].text_color,
-        font: Default::default(),
+        font: iced_graphics::Font::default(),
         horizontal_alignment: Horizontal::Center,
         vertical_alignment: Vertical::Center,
     });
@@ -1494,7 +1494,7 @@ fn draw_digital_clock<B>(
             },
             size: minute_second_separator.bounds().height,
             color: style.get(&StyleState::Active).unwrap().text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1525,7 +1525,7 @@ fn draw_digital_clock<B>(
             },
             size: period.bounds().height,
             color: style.get(&StyleState::Active).unwrap().text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1654,4 +1654,9 @@ impl Default for Focus {
     fn default() -> Self {
         Self::None
     }
+}
+
+struct ClockOptions {
+    pub use_24h: bool,
+    pub show_seconds: bool,
 }

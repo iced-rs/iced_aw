@@ -78,7 +78,7 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
         }
     }
@@ -187,7 +187,7 @@ where
         viewport: &iced_graphics::Rectangle,
     ) {
         self.underlay
-            .draw(renderer, style, layout, cursor_position, viewport)
+            .draw(renderer, style, layout, cursor_position, viewport);
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher) {

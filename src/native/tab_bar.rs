@@ -136,12 +136,13 @@ where
             spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
             _renderer: PhantomData::default(),
         }
     }
 
     /// Gets the index of the currently active tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_active_tab(&self) -> usize {
         self.active_tab
     }
@@ -150,6 +151,7 @@ where
     /// on the [`TabBar`](TabBar) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the tabs.
+    #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
         F: 'static + Fn(usize) -> Message,
@@ -159,34 +161,40 @@ where
     }
 
     /// Sets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_width(&self) -> Length {
         self.width
     }
 
     /// Sets the width of a tab on the [`TabBar`](TabBar).
+    #[must_use]
     pub fn tab_width(mut self, width: Length) -> Self {
         self.tab_width = width;
         self
     }
 
     /// Sets the height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Gets the width of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn get_height(&self) -> Length {
         self.height
     }
 
     /// Sets the maximum height of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn max_height(mut self, max_height: u32) -> Self {
         self.max_height = max_height;
         self
@@ -194,6 +202,7 @@ where
 
     /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
     /// the [`TabBar`](TabBar).
+    #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
         self.icon_size = icon_size;
         self
@@ -201,6 +210,7 @@ where
 
     /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
     /// [`TabBar`](TabBar).
+    #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
         self.text_size = text_size;
         self
@@ -208,18 +218,21 @@ where
 
     /// Sets the size of the close icon of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
         self
     }
 
     /// Sets the padding of the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn padding(mut self, padding: u16) -> Self {
         self.padding = padding;
         self
     }
 
     /// Sets the spacing between the tabs of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn spacing(mut self, spacing: u16) -> Self {
         self.spacing = spacing;
         self
@@ -227,6 +240,7 @@ where
 
     /// Sets the font of the icons of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
         self
@@ -234,18 +248,21 @@ where
 
     /// Sets the font of the text of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
         self
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
+    #[must_use]
     pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self
     }
 
     /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self
@@ -361,12 +378,10 @@ where
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
-        let bounds = layout.bounds();
         let children = layout.children();
-        let is_mouse_over = bounds.contains(cursor_position);
         let mut mouse_interaction = mouse::Interaction::default();
 
-        for ((i, tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
+        for layout in children {
             let is_mouse_over = layout.bounds().contains(cursor_position);
             let new_mouse_interaction = if is_mouse_over {
                 mouse::Interaction::Pointer
@@ -388,7 +403,7 @@ where
         _style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
-        viewport: &Rectangle,
+        _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let children = layout.children();

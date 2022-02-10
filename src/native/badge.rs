@@ -63,42 +63,48 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
             content: content.into(),
         }
     }
 
     /// Sets the padding of the [`Badge`](Badge).
+    #[must_use]
     pub fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self
     }
 
     /// Sets the width of the [`Badge`](Badge).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Badge`](Badge).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the horizontal alignment of the content of the [`Badge`](Badge).
+    #[must_use]
     pub fn align_x(mut self, alignment: Alignment) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
     /// Sets the vertical alignment of the content of the [`Badge`](Badge).
+    #[must_use]
     pub fn align_y(mut self, alignment: Alignment) -> Self {
         self.vertical_alignment = alignment;
         self
     }
 
     /// Sets the style of the [`Badge`](Badge).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self

@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use iced_native::{
     event, keyboard, layout::Limits, mouse, overlay, renderer, touch, widget::Container, Clipboard,
-    Color, Element, Event, Layout, Length, Point, Shell, Size, Widget,
+    Color, Element, Event, Layout, Length, Point, Shell, Size,
 };
 
 use crate::style::modal::StyleSheet;

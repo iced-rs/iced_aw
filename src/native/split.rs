@@ -93,11 +93,12 @@ where
             min_size_first: 5,
             min_size_second: 5,
             on_resize: Box::new(on_resize),
-            style_sheet: Default::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 
     /// Sets the padding of the [`Split`](Split) around the inner elements.
+    #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
@@ -105,36 +106,42 @@ where
 
     /// Sets the spacing of the [`Split`](Split) between the elements.
     /// This will also be the width of the divider.
+    #[must_use]
     pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Sets the width of the [`Split`](Split).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Split`](Split).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the minimum size of the first element of the [`Split`](Split).
+    #[must_use]
     pub fn min_size_first(mut self, size: u16) -> Self {
         self.min_size_first = size;
         self
     }
 
     /// Sets the minimum size of the second element of the [`Split`](Split).
+    #[must_use]
     pub fn min_size_second(mut self, size: u16) -> Self {
         self.min_size_second = size;
         self
     }
 
     /// Sets the style of the [`Split`](Split).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self

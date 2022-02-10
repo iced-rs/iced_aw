@@ -1008,7 +1008,7 @@ fn month_year<Renderer>(
             },
             size: center_bounds.height,
             color: style.get(&style_state).unwrap().text_color,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1154,7 +1154,7 @@ fn day_table<Renderer>(
                 } else {
                     style.get(&style_state).unwrap().text_attenuated_color
                 },
-                font: Default::default(),
+                font: iced_graphics::Font::default(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
             });

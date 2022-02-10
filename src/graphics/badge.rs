@@ -7,7 +7,7 @@ use crate::native::badge;
 pub use crate::style::badge::{Style, StyleSheet};
 
 /// The ratio of the border radius.
-const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
+//const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 
 /// A badge for color highlighting small information.
 ///

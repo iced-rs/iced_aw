@@ -19,8 +19,8 @@ use iced_native::{
 use num_traits::{Num, NumAssignOps};
 
 pub use crate::{
+    graphics::icons::Icon,
     style::number_input::{Style, StyleSheet},
-    Icon,
 };
 
 const DEFAULT_PADDING: u16 = 5;
