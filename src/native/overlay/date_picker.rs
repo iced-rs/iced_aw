@@ -53,7 +53,7 @@ where
     /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
     /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'static>,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, Renderer> DatePickerOverlay<'a, Message, Renderer>
@@ -68,7 +68,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet + 'static>,
+        style_sheet: &'a Box<dyn StyleSheet>,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
     ) -> Self {
         let date_picker::State {
