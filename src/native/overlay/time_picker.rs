@@ -749,6 +749,11 @@ where
             mouse_interaction
         };
 
+        if !self.state.use_24h {
+            // Placeholder
+            let _ = digital_clock_children.next();
+        }
+
         let hour_layout = digital_clock_children
             .next()
             .expect("Graphics: Layout should have a hour layout");
