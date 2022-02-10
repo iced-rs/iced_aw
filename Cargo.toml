@@ -43,7 +43,7 @@ default = [
     "modal",
     "tab_bar",
     "tabs",
-    #"time_picker",
+    "time_picker",
     "wrap",
     "selection_list",
     "split",
