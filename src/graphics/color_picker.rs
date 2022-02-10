@@ -1,27 +1,6 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-use iced_native::Layout;
-use std::collections::HashMap;
-
-use iced_graphics::{
-    backend,
-    canvas::{self, LineCap, Path, Stroke},
-    Backend, Color, Defaults, Point, Primitive, Rectangle, Renderer, Size, Vector,
-};
-use iced_native::mouse;
-
-use crate::{
-    core::{
-        color::{HexString, Hsv},
-        renderer::DrawEnvironment,
-    },
-    native::overlay::color_picker::Focus,
-    style::{
-        color_picker::{Style, StyleSheet},
-        style_state::StyleState,
-    },
-};
 
 use crate::native::color_picker;
 pub use crate::native::color_picker::State;
@@ -29,9 +8,9 @@ pub use crate::native::color_picker::State;
 /// An input element for picking colors.
 ///
 /// This is an alias of an `iced_native` `ColorPicker` with an `iced_wgpu::Renderer`.
-pub type ColorPicker<'a, Message, Backend> =
-    color_picker::ColorPicker<'a, Message, Renderer<Backend>>;
+pub use color_picker::ColorPicker;
 
+/*
 impl<B> color_picker::Renderer for Renderer<B>
 where
     B: Backend + backend::Text,
@@ -673,3 +652,4 @@ fn hex_text(
         ],
     }
 }
+*/
