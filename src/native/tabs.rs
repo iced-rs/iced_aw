@@ -10,7 +10,7 @@ use iced_native::{
     layout::{Limits, Node},
     mouse,
     widget::Row,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Size, Widget,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 use crate::{
@@ -47,7 +47,10 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, Renderer> {
+pub struct Tabs<'a, Message, Renderer>
+where
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+{
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, Renderer>,
     /// The vector containing the content of the tabs.
@@ -210,10 +213,7 @@ where
     }
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
-    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: T) -> Self
-    where
-        T: Into<Box<dyn StyleSheet + 'a>>,
-    {
+    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.tab_bar = self.tab_bar.style_sheet(style_sheet);
         self
     }
@@ -307,7 +307,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -337,7 +337,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
@@ -349,7 +349,7 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 )
             },
         );
@@ -374,7 +374,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-    ) -> Renderer::Output {
+    ) {
         let mut children = layout.children();
         let tab_bar_layout = match self.tab_bar_position {
             TabBarPosition::Top => children
@@ -399,7 +399,7 @@ where
                 .expect("Graphics: There should be a TabBar at the bottom position"),
         };
 
-        if let Some(element) = self.tabs.get(self.active_tab) {
+        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
             element.draw(
                 renderer,
                 style,
@@ -448,7 +448,7 @@ where
 
 impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
     Message: 'a,
 {
     fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {

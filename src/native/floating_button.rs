@@ -6,7 +6,7 @@ use std::hash::Hash;
 use iced_native::{
     event, mouse, overlay,
     widget::{button, Button},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Widget,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
 pub mod anchor;
@@ -142,26 +142,21 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.underlay.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.underlay
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.underlay
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(

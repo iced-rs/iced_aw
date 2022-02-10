@@ -1,22 +1,35 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-use std::hash::Hash;
+use std::collections::HashMap;
 
 use iced_graphics::canvas;
+
 use iced_native::{
-    button, column, event, keyboard,
-    layout::{self, Limits},
-    mouse, overlay, row, text, text_input, touch, Alignment, Button, Clipboard, Color, Column,
-    Element, Event, Layout, Length, Padding, Point, Rectangle, Row, Size, Text, Widget,
+    alignment::{Horizontal, Vertical},
+    event, keyboard,
+    layout::{Limits, Node},
+    mouse, overlay, renderer, touch,
+    widget::{
+        text_input::{self, cursor, Value},
+        Button, Column, Container, Row, Text, TextInput,
+    },
+    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Renderer, Size, Vector, Widget,
 };
 
 use crate::{
-    core::{color::Hsv, overlay::Position, renderer::DrawEnvironment},
+    core::{
+        color::{HexString, Hsv},
+        overlay::Position,
+    },
     graphics::icons::Icon,
     native::{color_picker, icon_text, IconText},
+    style::{
+        color_picker::{Style, StyleSheet},
+        style_state::StyleState,
+    },
 };
-
 /// The padding around the elements.
 const PADDING: u16 = 10;
 /// The spacing between the element.
@@ -36,7 +49,7 @@ const RGBA_STEP: i16 = 1;
 pub struct ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
     state: &'a mut State,
@@ -49,20 +62,13 @@ where
     /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style: &'a <Renderer as self::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, Message, Renderer> ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + column::Renderer
-        + button::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer
-        + text_input::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -71,7 +77,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
-        style: &'a <Renderer as self::Renderer>::Style,
+        style_sheet: impl Into<Box<dyn StyleSheet>>,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
         let color_picker::State {
@@ -96,7 +102,7 @@ where
             .into(),
             on_submit,
             position,
-            style,
+            style_sheet,
         }
     }
 
@@ -508,14 +514,7 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + column::Renderer
-        + button::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer
-        + text_input::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
 {
     fn layout(
         &self,
@@ -580,7 +579,7 @@ where
         };
 
         let mut node =
-            layout::Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
+            Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
         node.center_and_bounce(position, bounds);
 
@@ -699,13 +698,84 @@ where
             .merge(submit_button_status)
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        todo!()
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: iced_native::Layout<'_>,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
         cursor_position: Point,
-    ) -> Renderer::Output {
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+
+        let mut style: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style.insert(StyleState::Active, self.style_sheet.active());
+        let _ = style.insert(StyleState::Selected, self.style_sheet.selected());
+        let _ = style.insert(StyleState::Hovered, self.style_sheet.hovered());
+        let _ = style.insert(StyleState::Focused, self.style_sheet.focused());
+
+        let mouse_interaction = mouse::Interaction::default();
+
+        let mut style_state = StyleState::Active;
+        if self.focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
+        if bounds.contains(cursor_position) {
+            style_state = style_state.max(StyleState::Hovered);
+        }
+
+        let background = Primitive::Quad {
+            bounds,
+            background: style[&style_state].background,
+            border_radius: style[&style_state].border_radius,
+            border_width: style[&style_state].border_width,
+            border_color: style[&style_state].border_color,
+        };
+
+        // ----------- Block 1 ----------------------
+        let block1_layout = children
+            .next()
+            .expect("Graphics: Layout should have a 1. block layout");
+        block1(
+            color,
+            sat_value_canvas_cache,
+            hue_canvas_cache,
+            block1_layout,
+            env.cursor_position,
+            env.focus,
+            &style,
+        );
+
+        // ----------- Block 2 ----------------------
+        let block2_layout = children
+            .next()
+            .expect("Graphics: Layout should have a 2. block layout");
+        block2(
+            self,
+            color,
+            cancel_button,
+            submit_button,
+            &DrawEnvironment {
+                defaults: env.defaults,
+                layout: block2_layout,
+                cursor_position: env.cursor_position,
+                style_sheet: &(),
+                viewport: Some(&bounds),
+                focus: env.focus,
+            },
+            &style,
+        );
+
         <Renderer as self::Renderer>::draw(
             renderer,
             DrawEnvironment {
@@ -726,6 +796,7 @@ where
     }
 
     fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
+        use std::hash::Hash;
         #[allow(clippy::missing_docs_in_private_items)]
         struct Marker;
         std::any::TypeId::of::<Marker>().hash(state);
@@ -744,14 +815,7 @@ fn block1_layout<'a, Message, Renderer>(
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + column::Renderer
-        + button::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer
-        + text_input::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
 {
     let block1_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -788,14 +852,7 @@ fn block2_layout<'a, Message, Renderer>(
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + column::Renderer
-        + button::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer
-        + text_input::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
 {
     let block2_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -809,7 +866,7 @@ where
     let mut hex_text = Row::<(), Renderer>::new()
         .width(Length::Fill)
         .height(Length::Units(
-            text::Renderer::default_size(renderer) + 2 * PADDING,
+            Renderer::default_size(renderer) + 2 * PADDING,
         ))
         .layout(renderer, &hex_text_limits);
 
@@ -891,7 +948,7 @@ where
             + 2.0 * f32::from(SPACING),
     ));
 
-    let mut block2_node = layout::Node::with_children(
+    let mut block2_node = Node::with_children(
         Size::new(
             rgba_colors.bounds().width + (2.0 * f32::from(PADDING)),
             rgba_colors.bounds().height
@@ -905,45 +962,6 @@ where
     block2_node.move_to(Point::new(bounds.x, bounds.y));
 
     block2_node
-}
-
-/// The renderer of a [`ColorPickerOverlay`](ColorPickerOverlay).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`ColorPicker`](crate::native::ColorPicker) in your user
-/// interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// Draws a [`ColorPickerOverlay`](ColorPickerOverlay)
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        color: &Color,
-        sat_value_canvas_cache: &canvas::Cache,
-        hue_canvas_cache: &canvas::Cache,
-        //text_input: &Element<'_, Message, Self>,
-        cancel_button: &Element<'_, Message, Self>,
-        submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, Focus>,
-        _color: &Color,
-        _sat_value_canvas_cache: &canvas::Cache,
-        _hue_canvas_cache: &canvas::Cache,
-        //_text_input: &Element<'_, Message, Self>,
-        _cancel_button: &Element<'_, Message, Self>,
-        _submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output {
-    }
 }
 
 /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).

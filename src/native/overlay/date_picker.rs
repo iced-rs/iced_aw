@@ -19,10 +19,9 @@ use crate::{
         date::{Date, IsInMonth},
         overlay::Position,
     },
-    graphics::icons::Icon,
+    graphics::icons::{Icon, ICON_FONT},
     native::{date_picker, IconText},
     style::style_state::StyleState,
-    ICON_FONT,
 };
 
 pub use crate::style::date_picker::{Style, StyleSheet};
@@ -54,7 +53,7 @@ where
     /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
     /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, Renderer> DatePickerOverlay<'a, Message, Renderer>
@@ -69,7 +68,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet + 'a>,
+        style_sheet: &'a Box<dyn StyleSheet>,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
     ) -> Self {
         let date_picker::State {
@@ -518,17 +517,10 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         if event::Status::Captured
-            == self.on_event_keyboard(
-                &event,
-                layout,
-                cursor_position,
-                messages,
-                renderer,
-                clipboard,
-            )
+            == self.on_event_keyboard(&event, layout, cursor_position, shell, renderer, clipboard)
         {
             return event::Status::Captured;
         }
@@ -548,7 +540,7 @@ where
             &event,
             month_year_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -564,7 +556,7 @@ where
             &event,
             days_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -580,7 +572,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let submit_button_layout = children
@@ -599,7 +591,7 @@ where
         );
 
         if !fake_messages.is_empty() {
-            messages.publish((self.on_submit)(self.state.date.into()));
+            shell.publish((self.on_submit)(self.state.date.into()));
         }
 
         month_year_status

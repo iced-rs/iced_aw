@@ -6,7 +6,7 @@ use iced_native::{
     event,
     layout::{Limits, Node},
     mouse, renderer, touch, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
-    Size, Widget,
+    Shell, Size, Widget,
 };
 use std::marker::PhantomData;
 
@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 #[allow(missing_debug_implementations)]
 pub struct List<'a, T, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Options pointer to hold all rendered strings
     pub options: &'a [T],
@@ -35,7 +35,7 @@ where
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         Length::Fill
@@ -75,7 +75,7 @@ where
         cursor_position: Point,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let bounds = layout.bounds();
         let mut status = event::Status::Ignored;
@@ -107,7 +107,7 @@ where
                         .last_selection
                         .take()
                         .map_or(event::Status::Ignored, |last| {
-                            messages.push((self.on_selected)(last));
+                            shell.publish((self.on_selected)(last));
                             event::Status::Captured
                         });
                 }
@@ -125,7 +125,14 @@ where
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        let bounds = layout.bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
+
+        if is_mouse_over {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        }
     }
 
     fn draw(
@@ -133,12 +140,11 @@ where
         renderer: &mut Renderer,
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
+        _cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
     ) {
         use std::f32;
         let bounds = layout.bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
         let option_height = self.style.text_size + (self.style.padding * 2);
         let offset = viewport.y - bounds.y;
         let start = (offset / f32::from(option_height)) as usize;
@@ -170,7 +176,7 @@ where
             }
 
             renderer.fill_text(iced_native::text::Text {
-                content: &option[..],
+                content: &option.to_string(),
                 bounds: Rectangle {
                     x: bounds.x,
                     y: bounds.center_y(),
@@ -196,7 +202,7 @@ impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
 where
     T: ToString + Clone,
     Message: 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(list: List<'a, T, Message, Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(list)

@@ -6,7 +6,7 @@ use iced_native::{
     event,
     layout::{self, Limits, Node},
     mouse, overlay, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Size, Widget,
+    Rectangle, Shell, Size, Widget,
 };
 
 use std::marker::PhantomData;
@@ -198,7 +198,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         self.elements
             .iter_mut()
@@ -210,7 +210,7 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 )
             })
             .fold(event::Status::Ignored, event::Status::merge)
@@ -230,10 +230,17 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(child, layout)| {
+                child.mouse_interaction(layout, cursor_position, viewport, renderer)
+            })
+            .max()
+            .unwrap_or_default()
     }
 
     fn draw(
@@ -250,13 +257,28 @@ where
     }
 }
 
-impl<'a, Message, Renderer, Direction> From<Wrap<'a, Message, Renderer, Direction>>
+impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
     for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer,
     Message: 'a,
 {
-    fn from(wrap: Wrap<'a, Message, Renderer, Direction>) -> Element<'a, Message, Renderer> {
+    fn from(
+        wrap: Wrap<'a, Message, Renderer, direction::Vertical>,
+    ) -> Element<'a, Message, Renderer> {
+        Element::new(wrap)
+    }
+}
+
+impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
+    for Element<'a, Message, Renderer>
+where
+    Renderer: 'a + iced_native::Renderer,
+    Message: 'a,
+{
+    fn from(
+        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
+    ) -> Element<'a, Message, Renderer> {
         Element::new(wrap)
     }
 }

@@ -5,7 +5,7 @@ use std::hash::Hash;
 
 use iced_native::{
     event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Widget, Shell,
+    Padding, Point, Rectangle, Shell, Widget,
 };
 
 pub use crate::style::badge::{Style, StyleSheet};
@@ -99,7 +99,7 @@ where
     }
 
     /// Sets the style of the [`Badge`](Badge).
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self
     }
@@ -168,7 +168,8 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content.mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.content
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(

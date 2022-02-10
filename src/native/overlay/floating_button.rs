@@ -9,7 +9,7 @@ use iced_native::{
     layout::Limits,
     overlay,
     widget::{button, Button},
-    Clipboard, Event, Layout, Point, Size, Widget,
+    Clipboard, Event, Layout, Point, Shell, Size, Widget,
 };
 
 use crate::native::floating_button::{Anchor, Offset};
@@ -140,26 +140,21 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.button.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.button
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
     }
 
     fn mouse_interaction(
         &self,
-        _layout: Layout<'_>,
-        _cursor_position: Point,
-        _viewport: &iced_graphics::Rectangle,
-        _renderer: &Renderer,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &iced_graphics::Rectangle,
+        renderer: &Renderer,
     ) -> iced_native::mouse::Interaction {
-        todo!()
+        self.button
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(

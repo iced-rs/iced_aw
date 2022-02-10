@@ -7,7 +7,7 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, renderer,
     widget::{scrollable, Container, Scrollable},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Size, Widget,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 pub use list::List;
@@ -18,7 +18,7 @@ use std::marker::PhantomData;
 pub struct SelectionList<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Container for Rendering List.
     container: Container<'a, Message, Renderer>,
@@ -54,7 +54,7 @@ impl<T> Default for State<T> {
 impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     T: Clone + ToString + Eq,
 {
     /// Creates a new [`SelectionList`] with the given [`State`], a list of options,
@@ -102,7 +102,7 @@ impl<'a, T: 'a, Message, Renderer> Widget<Message, Renderer>
 where
     T: Clone + ToString + Eq,
     Message: 'static,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
 {
     fn width(&self) -> Length {
         self.style.width
@@ -173,7 +173,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         self.container.on_event(
             event,
@@ -184,7 +184,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         )
     }
 
@@ -192,10 +192,11 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.container
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
@@ -234,7 +235,7 @@ impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
 where
     T: Clone + ToString + Eq,
     Message: 'static,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Renderer>) -> Self {
         Element::new(selection_list)

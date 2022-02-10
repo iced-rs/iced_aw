@@ -10,7 +10,8 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, renderer, touch,
     widget::{Column, Row, Text},
-    Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Widget,
+    Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell,
+    Widget,
 };
 
 pub mod tab_label;
@@ -51,7 +52,10 @@ const DEFAULT_SPACING: u16 = 0;
 /// .push(TabLabel::Text(String::from("Three")));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TabBar<Message, Renderer: iced_native::text::Renderer> {
+pub struct TabBar<Message, Renderer>
+where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+{
     /// The currently active tab.
     active_tab: usize,
     /// The vector containing the labels of the tabs.
@@ -79,16 +83,16 @@ pub struct TabBar<Message, Renderer: iced_native::text::Renderer> {
     /// The spacing of the tabs of the [`TabBar`](TabBar).
     spacing: u16,
     /// The optional icon font of the [`TabBar`](TabBar).
-    icon_font: Option<Font>,
+    icon_font: Option<Renderer::Font>,
     /// The optional text font of the [`TabBar`](TabBar).
-    text_font: Option<Font>,
+    text_font: Option<Renderer::Font>,
     /// The style of the [`TabBar`](TabBar).
     style_sheet: Box<dyn StyleSheet>,
 }
 
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -132,7 +136,7 @@ where
             spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style_sheet: Style::default(),
+            style_sheet: Default::default(),
         }
     }
 
@@ -222,21 +226,21 @@ where
 
     /// Sets the font of the icons of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
-    pub fn icon_font(mut self, icon_font: Font) -> Self {
+    pub fn icon_font(mut self, icon_font: Renderer::Font) -> Self {
         self.icon_font = Some(icon_font);
         self
     }
 
     /// Sets the font of the text of the
     /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
-    pub fn text_font(mut self, text_font: Font) -> Self {
+    pub fn text_font(mut self, text_font: Renderer::Font) -> Self {
         self.text_font = Some(text_font);
         self
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
-    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
-        self.style_sheet = style_sheet;
+    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 
@@ -314,7 +318,7 @@ where
         cursor_position: Point,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -326,7 +330,7 @@ where
                         .collect();
 
                     if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-                        messages.push(
+                        shell.publish(
                             self.on_close
                                 .as_ref()
                                 .filter(|_on_close| {
@@ -396,8 +400,8 @@ where
                 &self.style_sheet,
                 i == self.active_tab,
                 cursor_position,
-                self.icon_font.unwrap_or(Renderer::ICON_FONT),
-                self.text_font.unwrap_or_default(),
+                &self.icon_font.unwrap_or(Renderer::ICON_FONT),
+                &self.text_font.unwrap_or_default(),
             );
         }
     }
@@ -427,8 +431,8 @@ fn draw_tab<Renderer>(
     style_sheet: &Box<dyn StyleSheet>,
     is_selected: bool,
     cursor_position: iced_native::Point,
-    icon_font: Font,
-    text_font: Font,
+    icon_font: &Renderer::Font,
+    text_font: &Renderer::Font,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
@@ -468,7 +472,7 @@ fn draw_tab<Renderer>(
 
             renderer.fill_text(iced_native::text::Text {
                 content: icon,
-                font: icon_font,
+                font: icon_font.clone(),
                 size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
@@ -515,7 +519,7 @@ fn draw_tab<Renderer>(
 
             renderer.fill_text(iced_native::text::Text {
                 content: icon,
-                font: icon_font,
+                font: icon_font.clone(),
                 size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
@@ -552,7 +556,7 @@ fn draw_tab<Renderer>(
 
         renderer.fill_text(iced_native::text::Text {
             content: icon,
-            font: icons::ICON_FONT,
+            font: icon_font,
             size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
             bounds: Rectangle {
                 x: cross_bounds.center_x(),
@@ -568,7 +572,7 @@ fn draw_tab<Renderer>(
 
 impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {
