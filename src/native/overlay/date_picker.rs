@@ -786,8 +786,6 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
-        
-
         self.cancel_button.draw(
             renderer,
             style,
