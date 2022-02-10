@@ -210,10 +210,7 @@ where
     }
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
-    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: T) -> Self
-    where
-        T: Into<Box<dyn StyleSheet + 'a>>,
-    {
+    pub fn tab_bar_style_sheet<T>(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.tab_bar = self.tab_bar.style_sheet(style_sheet);
         self
     }

@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use iced_native::{
     event, keyboard, layout::Limits, mouse, overlay, renderer, touch, widget::Container, Clipboard,
-    Color, Element, Event, Layout, Length, Point, Size, Widget,
+    Color, Element, Event, Layout, Length, Point, Shell, Size, Widget,
 };
 
 use crate::style::modal::StyleSheet;
@@ -45,7 +45,7 @@ where
         content: Content,
         backdrop: Option<Message>,
         esc: Option<Message>,
-        style_sheet: &'a Box<dyn StyleSheet + 'a>,
+        style_sheet: &'a Box<dyn StyleSheet>,
     ) -> Self {
         ModalOverlay {
             state,
@@ -72,7 +72,7 @@ struct Overlay<'a, Message, Renderer: iced_native::Renderer> {
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`Overlay`](Overlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
 impl<'a, Message, Renderer> Overlay<'a, Message, Renderer>
@@ -135,7 +135,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         // TODO clean this up
         let esc_status = self
@@ -144,7 +144,7 @@ where
             .map_or(event::Status::Ignored, |esc| match event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
                     if key_code == keyboard::KeyCode::Escape {
-                        messages.push(esc.to_owned());
+                        shell.publish(esc.to_owned());
                         event::Status::Captured
                     } else {
                         event::Status::Ignored
@@ -161,7 +161,7 @@ where
                     if layout.bounds().contains(cursor_position) {
                         event::Status::Ignored
                     } else {
-                        messages.push(backdrop.to_owned());
+                        shell.publish(backdrop.to_owned());
                         event::Status::Captured
                     }
                 }
@@ -170,26 +170,23 @@ where
         );
 
         match esc_status.merge(backdrop_status) {
-            event::Status::Ignored => self.content.on_event(
-                event,
-                layout,
-                cursor_position,
-                renderer,
-                clipboard,
-                messages,
-            ),
+            event::Status::Ignored => {
+                self.content
+                    .on_event(event, layout, cursor_position, renderer, clipboard, shell)
+            }
             event::Status::Captured => event::Status::Captured,
         }
     }
 
     fn mouse_interaction(
         &self,
-        _layout: Layout<'_>,
-        _cursor_position: Point,
-        _viewport: &iced_graphics::Rectangle,
-        _renderer: &Renderer,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &iced_graphics::Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.content
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(

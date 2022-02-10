@@ -3,7 +3,9 @@
 //! *This API requires the following crate features to be activated: modal*
 use std::hash::Hash;
 
-use iced_native::{event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Widget};
+use iced_native::{
+    event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Widget,
+};
 
 use super::overlay::modal::ModalOverlay;
 
@@ -106,7 +108,7 @@ where
     }
 
     /// Sets the style of the [`Modal`](Modal).
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self
     }
@@ -183,26 +185,21 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.underlay.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.underlay
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
-        todo!()
+        self.underlay
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(

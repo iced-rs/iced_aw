@@ -235,7 +235,7 @@ where
     }
 
     /// Sets the style of the [`TabBar`](TabBar).
-    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet;
         self
     }

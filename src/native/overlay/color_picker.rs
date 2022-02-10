@@ -77,7 +77,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
-        style_sheet: impl Into<Box<dyn StyleSheet + 'a>>,
+        style_sheet: impl Into<Box<dyn StyleSheet>>,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
         let color_picker::State {

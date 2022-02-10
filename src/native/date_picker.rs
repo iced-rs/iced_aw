@@ -53,7 +53,7 @@ pub struct DatePicker<'a, Message: Clone, Renderer: iced_native::Renderer> {
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style_sheet: Box<dyn StyleSheet + 'static>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
 
@@ -84,7 +84,7 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
     }
 
     /// Sets the style of the [`DatePicker`](DatePicker).
-    pub fn style<S>(mut self, style_sheet: impl Into<Box<dyn StyleSheet + 'a>>) -> Self {
+    pub fn style<S>(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         //self.button_style = style.into();
         self
@@ -161,16 +161,10 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.underlay.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.underlay
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
     }
 
     fn mouse_interaction(

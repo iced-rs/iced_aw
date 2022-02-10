@@ -76,7 +76,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet + 'a>,
+        style_sheet: &'a Box<dyn StyleSheet>,
     ) -> Self {
         let time_picker::State {
             overlay_state,
