@@ -79,7 +79,7 @@ members = [
     "examples/tab_bar",
     #"examples/tabs",
     #"examples/tabs_min",
-    #"examples/time_picker",
+    "examples/time_picker",
     "examples/wrap",
     "examples/web",
     "examples/number_input",

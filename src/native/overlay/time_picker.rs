@@ -4,15 +4,20 @@
 use std::{collections::HashMap, hash::Hash};
 
 use chrono::{Duration, Local, NaiveTime, Timelike};
-use iced_graphics::canvas::{self, Cache, LineCap, Path, Stroke};
+use iced_graphics::{
+    canvas::{self, Cache, LineCap, Path, Stroke},
+    Backend, Renderer,
+};
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, renderer, touch,
+    mouse, overlay, renderer,
+    text::Renderer as _,
+    touch,
     widget::{Button, Column, Container, Row, Text},
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Size,
-    Vector,
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Renderer as _, Shell, Size, Vector, Widget,
 };
 
 use crate::{
@@ -21,13 +26,13 @@ use crate::{
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
-    core::{clock, time::Period},
+    core::{clock, overlay::Position, time::Period},
     native::{
         time_picker::{self, Time},
         IconText,
     },
     style::style_state::StyleState,
-    Icon, ICON_FONT,
+    Icon,
 };
 
 pub use crate::style::time_picker::{Style, StyleSheet};
@@ -45,29 +50,29 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// The overlay of the [`TimePicker`](crate::native::TimePicker).
 #[allow(missing_debug_implementations)]
-pub struct TimePickerOverlay<'a, Message, Renderer>
+pub struct TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    B: Backend,
 {
     /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
-    cancel_button: Element<'a, Message, Renderer>,
+    cancel_button: Element<'a, Message, Renderer<B>>,
     /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
-    submit_button: Element<'a, Message, Renderer>,
+    submit_button: Element<'a, Message, Renderer<B>>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
     /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
     position: Point,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style_sheet: &'a Box<dyn StyleSheet + 'a>,
 }
 
-impl<'a, Message, Renderer> TimePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B> TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
     /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
     /// position.
@@ -76,7 +81,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet>,
+        style_sheet: &'a Box<dyn StyleSheet + 'a>,
     ) -> Self {
         let time_picker::State {
             overlay_state,
@@ -107,7 +112,7 @@ where
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B>> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -118,8 +123,8 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if layout.bounds().contains(cursor_position) {
@@ -285,8 +290,8 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
@@ -420,8 +425,8 @@ where
         event: &Event,
         _layout: Layout<'_>,
         _cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -481,15 +486,15 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for TimePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B> iced_native::Overlay<Message, Renderer<B>>
+    for TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
     fn layout(
         &self,
-        renderer: &Renderer,
+        renderer: &Renderer<B>,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -516,7 +521,7 @@ where
         ));
 
         // Clock-Canvas
-        let mut clock = Row::<(), Renderer>::new()
+        let mut clock = Row::<(), Renderer<B>>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(renderer, &limits);
@@ -586,19 +591,12 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer,
+        renderer: &Renderer<B>,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         if event::Status::Captured
-            == self.on_event_keyboard(
-                &event,
-                layout,
-                cursor_position,
-                messages,
-                renderer,
-                clipboard,
-            )
+            == self.on_event_keyboard(&event, layout, cursor_position, shell, renderer, clipboard)
         {
             return event::Status::Captured;
         }
@@ -613,7 +611,7 @@ where
             &event,
             clock_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -629,7 +627,7 @@ where
             &event,
             digital_clock_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -645,7 +643,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let submit_button_layout = children
@@ -660,7 +658,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            &mut fake_messages,
+            &mut Shell::new(&mut fake_messages),
         );
 
         if !fake_messages.is_empty() {
@@ -686,7 +684,7 @@ where
                 }
             };
 
-            messages.push((self.on_submit)(time));
+            shell.publish((self.on_submit)(time));
         }
 
         clock_status
@@ -699,15 +697,116 @@ where
         &self,
         layout: Layout<'_>,
         cursor_position: Point,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
+        viewport: &Rectangle,
+        renderer: &Renderer<B>,
     ) -> mouse::Interaction {
-        todo!()
+        let mut children = layout.children();
+        let mouse_interaction = mouse::Interaction::default();
+
+        // Clock canvas
+        let clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a clock canvas layout");
+        let clock_mouse_interaction = if clock_layout.bounds().contains(cursor_position) {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        };
+
+        // Digital clock
+        let digital_clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a digital clock layout");
+        //let digital_clock_mouse_interaction = mouse::Interaction::default();
+        let mut digital_clock_children = digital_clock_layout
+            .children()
+            .next()
+            .expect("Graphics: Layout should have digital clock children")
+            .children();
+
+        let f = |layout: iced_native::Layout<'_>| {
+            let mut children = layout.children();
+
+            let up_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a up arrow bounds")
+                .bounds();
+            let _center_bounds = children.next();
+            let down_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a down arrow bounds")
+                .bounds();
+
+            let mut mouse_interaction = mouse::Interaction::default();
+
+            let up_arrow_hovered = up_bounds.contains(cursor_position);
+            let down_arrow_hovered = down_bounds.contains(cursor_position);
+
+            if up_arrow_hovered || down_arrow_hovered {
+                mouse_interaction = mouse_interaction.max(mouse::Interaction::Pointer);
+            }
+
+            mouse_interaction
+        };
+
+        let hour_layout = digital_clock_children
+            .next()
+            .expect("Graphics: Layout should have a hour layout");
+        let hour_mouse_interaction = f(hour_layout);
+
+        let _hour_minute_separator = digital_clock_children.next();
+
+        let minute_layout = digital_clock_children
+            .next()
+            .expect("Graphics: Layout should have a minute layout");
+        let minute_mouse_interaction = f(minute_layout);
+
+        let second_mouse_interaction = if self.state.show_seconds {
+            let _minute_second_separator = digital_clock_children.next();
+
+            let second_layout = digital_clock_children
+                .next()
+                .expect("Graphics: Layout should have a second layout");
+            f(second_layout)
+        } else {
+            mouse::Interaction::default()
+        };
+
+        // Buttons
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
+
+        let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
+            cancel_button_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
+
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a TimePicker");
+
+        let submit_mouse_interaction = self.submit_button.mouse_interaction(
+            submit_button_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
+
+        mouse_interaction
+            .max(clock_mouse_interaction)
+            .max(hour_mouse_interaction)
+            .max(minute_mouse_interaction)
+            .max(second_mouse_interaction)
+            .max(cancel_mouse_interaction)
+            .max(submit_mouse_interaction)
     }
 
     fn draw(
         &self,
-        renderer: &mut Renderer,
+        renderer: &mut Renderer<B>,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -760,6 +859,7 @@ where
             .next()
             .expect("Graphics: Layout should have a digital clock layout");
         draw_digital_clock(
+            renderer,
             digital_clock_layout,
             self.state.time,
             cursor_position,
@@ -774,15 +874,25 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
 
-        self.cancel_button
-            .draw(self, style, cancel_button_layout, cursor_position, &bounds);
+        self.cancel_button.draw(
+            renderer,
+            style,
+            cancel_button_layout,
+            cursor_position,
+            &bounds,
+        );
 
         let submit_button_layout = children
             .next()
             .expect("Graphics: Layout should have a submit button layout for a TimePicker");
 
-        self.submit_button
-            .draw(self, style, submit_button_layout, cursor_position, &bounds);
+        self.submit_button.draw(
+            renderer,
+            style,
+            submit_button_layout,
+            cursor_position,
+            &bounds,
+        );
 
         // Buttons are not focusable right now...
         if self.state.focus == Focus::Cancel {
@@ -793,7 +903,7 @@ where
                     border_width: style_sheet[&StyleState::Focused].border_width,
                     border_color: style_sheet[&StyleState::Focused].border_color,
                 },
-                Color::TRANSPARENT.into(),
+                Color::TRANSPARENT,
             );
         }
 
@@ -805,7 +915,7 @@ where
                     border_width: style_sheet[&StyleState::Focused].border_width,
                     border_color: style_sheet[&StyleState::Focused].border_color,
                 },
-                Color::TRANSPARENT.into(),
+                Color::TRANSPARENT,
             );
         }
     }
@@ -823,19 +933,19 @@ where
 }
 
 /// Defines the layout of the digital clock of the time picker.
-fn digital_clock<'a, Message, Renderer>(
-    time_picker: &TimePickerOverlay<'a, Message, Renderer>,
-    renderer: &Renderer,
+fn digital_clock<'a, Message, B>(
+    time_picker: &TimePickerOverlay<'a, Message, B>,
+    renderer: &Renderer<B>,
     limits: Limits,
 ) -> iced_native::layout::Node
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
     let arrow_size = renderer.default_size();
     let font_size = (1.2 * f32::from(renderer.default_size())) as u16;
 
-    let mut digital_clock_row = Row::<(), Renderer>::new()
+    let mut digital_clock_row = Row::<(), Renderer<B>>::new()
         .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
@@ -940,8 +1050,8 @@ where
 
 /// Draws the analog clock.
 #[allow(clippy::too_many_lines)]
-fn draw_clock<Renderer>(
-    renderer: &mut Renderer,
+fn draw_clock<B>(
+    renderer: &mut Renderer<B>,
     layout: iced_native::Layout<'_>,
     time: NaiveTime,
     clock_cache: &Cache,
@@ -950,13 +1060,11 @@ fn draw_clock<Renderer>(
     show_seconds: bool,
     style: &HashMap<StyleState, Style>,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    B: Backend + iced_graphics::backend::Text,
 {
     let mut clock_style_state = StyleState::Active;
-    let mut clock_mouse_interaction = mouse::Interaction::default();
     if layout.bounds().contains(cursor_position) {
         clock_style_state = clock_style_state.max(StyleState::Hovered);
-        clock_mouse_interaction = clock_mouse_interaction.max(mouse::Interaction::Pointer);
     }
 
     let geometry = clock_cache.draw(layout.bounds().size(), |frame| {
@@ -1212,8 +1320,8 @@ fn draw_clock<Renderer>(
 
 /// Draws the digital clock.
 #[allow(clippy::too_many_lines)]
-fn draw_digital_clock<Renderer>(
-    renderer: &mut Renderer,
+fn draw_digital_clock<B>(
+    renderer: &mut Renderer<B>,
     layout: iced_native::Layout<'_>,
     time: NaiveTime,
     cursor_position: Point,
@@ -1222,7 +1330,7 @@ fn draw_digital_clock<Renderer>(
     style: &HashMap<StyleState, Style>,
     focus: Focus,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    B: Backend + iced_graphics::backend::Text,
 {
     //println!("layout: {:#?}", layout);
     let mut children = layout
@@ -1231,7 +1339,10 @@ fn draw_digital_clock<Renderer>(
         .expect("Graphics: Layout should have digital clock children")
         .children();
 
-    let f = |layout: iced_native::Layout<'_>, text: String, target: Focus| {
+    let f = |renderer: &mut Renderer<B>,
+             layout: iced_native::Layout<'_>,
+             text: String,
+             target: Focus| {
         let style_state = if focus == target {
             StyleState::Focused
         } else {
@@ -1273,7 +1384,7 @@ fn draw_digital_clock<Renderer>(
 
         // Caret up
         renderer.fill_text(iced_native::text::Text {
-            content: Icon::CaretUpFill.into::<char>().encode_uft8(&mut buffer),
+            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: up_bounds.center_x(),
                 y: up_bounds.center_y(),
@@ -1281,14 +1392,14 @@ fn draw_digital_clock<Renderer>(
             },
             size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
             color: style.get(&StyleState::Active).unwrap().text_color,
-            font: ICON_FONT,
+            font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
 
         // Text
         renderer.fill_text(iced_native::text::Text {
-            content: text,
+            content: &text,
             bounds: Rectangle {
                 x: center_bounds.center_x(),
                 y: center_bounds.center_y(),
@@ -1303,7 +1414,7 @@ fn draw_digital_clock<Renderer>(
 
         // Down caret
         renderer.fill_text(iced_native::text::Text {
-            content: Icon::CaretDownFill.into::<char>().encode_uft8(&mut buffer),
+            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: down_bounds.center_x(),
                 y: down_bounds.center_y(),
@@ -1311,7 +1422,7 @@ fn draw_digital_clock<Renderer>(
             },
             size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
             color: style.get(&StyleState::Active).unwrap().text_color,
-            font: ICON_FONT,
+            font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
@@ -1327,6 +1438,7 @@ fn draw_digital_clock<Renderer>(
         .next()
         .expect("Graphics: Layout should have a hour layout");
     f(
+        renderer,
         hour_layout,
         format!(
             "{:02}",
@@ -1362,6 +1474,7 @@ fn draw_digital_clock<Renderer>(
         .next()
         .expect("Graphics: Layout should have a minute layout");
     f(
+        renderer,
         minute_layout,
         format!("{:02}", time.minute()),
         Focus::DigitalMinute,
@@ -1391,6 +1504,7 @@ fn draw_digital_clock<Renderer>(
             .next()
             .expect("Graphics: Layout should have a second layout");
         f(
+            renderer,
             second_layout,
             format!("{:02}", time.second()),
             Focus::DigitalSecond,
