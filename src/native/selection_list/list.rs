@@ -20,8 +20,10 @@ where
     pub options: &'a [T],
     /// Hovered Item Pointer
     pub hovered_option: &'a mut Option<usize>,
-    /// Last choosen Item Clicked for Processing
-    pub last_selection: &'a mut Option<T>,
+    /// Last chosen Item Clicked for Processing
+    pub last_selected_item: &'a mut Option<T>,
+    /// The index in the list of options of the last chosen Item Clicked for Processing
+    pub last_selected_index: Option<usize>,
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
@@ -99,17 +101,18 @@ where
 
                     if let Some(index) = self.hovered_option {
                         if let Some(option) = self.options.get(*index) {
-                            *self.last_selection = Some(option.clone());
+                            *self.last_selected_item = Some(option.clone());
+                            self.last_selected_index = Some(index.clone());
                         }
                     }
 
-                    status = self
-                        .last_selection
-                        .take()
-                        .map_or(event::Status::Ignored, |last| {
-                            shell.publish((self.on_selected)(last));
-                            event::Status::Captured
-                        });
+                    status =
+                        self.last_selected_item
+                            .take()
+                            .map_or(event::Status::Ignored, |last| {
+                                shell.publish((self.on_selected)(last));
+                                event::Status::Captured
+                            });
                 }
                 _ => {}
             }
@@ -154,7 +157,8 @@ where
 
         for (i, option) in visible_options.iter().enumerate() {
             let i = start + i;
-            let is_selected = *self.hovered_option == Some(i);
+            let is_selected = self.last_selected_index == Some(i);
+            let is_hovered = *self.hovered_option == Some(i);
 
             let bounds = Rectangle {
                 x: bounds.x,
@@ -163,7 +167,7 @@ where
                 height: f32::from(self.style.text_size + (self.style.padding * 2)),
             };
 
-            if is_selected {
+            if is_selected || is_hovered {
                 renderer.fill_quad(
                     renderer::Quad {
                         bounds,
@@ -171,9 +175,21 @@ where
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                     },
-                    self.style.selected_background,
+                    if is_selected {
+                        self.style.selected_background
+                    } else {
+                        self.style.hovered_background
+                    },
                 );
             }
+
+            let text_color = if is_selected {
+                self.style.selected_text_color
+            } else if is_hovered {
+                self.style.hovered_text_color
+            } else {
+                self.style.text_color
+            };
 
             renderer.fill_text(iced_native::text::Text {
                 content: &option.to_string(),
@@ -184,11 +200,7 @@ where
                     ..bounds
                 },
                 size: f32::from(self.style.text_size),
-                color: if is_selected {
-                    self.style.selected_text_color
-                } else {
-                    self.style.text_color
-                },
+                color: text_color,
                 font: self.font,
                 horizontal_alignment: Horizontal::Left,
                 vertical_alignment: Vertical::Center,

@@ -77,6 +77,10 @@ where
             .iter()
             .position(|option| Some(option) == selected.as_ref());
 
+        let last_selected_index = options
+            .iter()
+            .position(|option| Some(option) == selected.as_ref());
+
         let container = Container::new(Scrollable::new(&mut state.scrollable).push(List {
             options,
             hovered_option,
