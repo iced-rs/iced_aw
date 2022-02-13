@@ -6,7 +6,7 @@ use iced_native::{
     event,
     layout::{Limits, Node},
     mouse, renderer, touch, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
-    Shell, Size, Widget,
+    Renderer, Shell, Size, Widget,
 };
 use std::marker::PhantomData;
 
