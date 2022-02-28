@@ -76,6 +76,7 @@ where
     }
 
     /// Adds an [`Element`](Element) to the [`Grid`](Grid).
+    #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
@@ -124,10 +125,9 @@ where
                     let layout = element.layout(renderer, limits).size();
                     layouts.push(layout);
 
-                    if let Some(column_width) = column_widths.get_mut(column) {
-                        *column_width = column_width.max(layout.width);
-                    } else {
-                        column_widths.insert(column, layout.width);
+                    match column_widths.get_mut(column) {
+                        Some(column_width) => *column_width = column_width.max(layout.width),
+                        None => column_widths.insert(column, layout.width),
                     }
                 }
 

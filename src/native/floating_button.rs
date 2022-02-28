@@ -90,12 +90,14 @@ where
     }
 
     /// Sets the [`Anchor`](Anchor) of the [`FloatingButton`](FloatingButton).
+    #[must_use]
     pub fn anchor(mut self, anchor: Anchor) -> Self {
         self.anchor = anchor;
         self
     }
 
     /// Sets the [`Offset`](Offset) of the [`FloatingButton`](FloatingButton).
+    #[must_use]
     pub fn offset<O>(mut self, offset: O) -> Self
     where
         O: Into<Offset>,
@@ -106,6 +108,7 @@ where
 
     /// Hide or unhide the [`Button`](iced_native::button::Button) on the
     /// [`FloatingButton`](FloatingButton).
+    #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;
         self

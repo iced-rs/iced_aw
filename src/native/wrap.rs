@@ -143,6 +143,7 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
     }
 
     /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
+    #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
