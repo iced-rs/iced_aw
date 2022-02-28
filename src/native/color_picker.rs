@@ -89,6 +89,7 @@ where
     }
 
     /// Sets the style of the [`ColorPicker`](ColorPicker).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self

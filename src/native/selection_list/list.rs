@@ -6,7 +6,7 @@ use iced_native::{
     event,
     layout::{Limits, Node},
     mouse, renderer, touch, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
-    Renderer, Shell, Size, Widget,
+    Shell, Size, Widget,
 };
 use std::marker::PhantomData;
 
@@ -102,7 +102,7 @@ where
                     if let Some(index) = self.hovered_option {
                         if let Some(option) = self.options.get(*index) {
                             *self.last_selected_item = Some(option.clone());
-                            self.last_selected_index = Some(index.clone());
+                            self.last_selected_index = Some(*index);
                         }
                     }
 

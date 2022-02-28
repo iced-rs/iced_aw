@@ -100,6 +100,7 @@ where
 
     /// Sets the [`Element`](iced_native::Element) of the foot of the
     /// [`Card`](Card).
+    #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self
     where
         F: Into<Element<'a, Message, Renderer>>,
@@ -109,24 +110,28 @@ where
     }
 
     /// Sets the width of the [`Card`](Card).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Card`](Card).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the maximum width of the [`Card`](Card).
+    #[must_use]
     pub fn max_width(mut self, width: u32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Sets the maximum height of the [`Card`](Card).
+    #[must_use]
     pub fn max_height(mut self, height: u32) -> Self {
         self.max_height = height;
         self
@@ -136,6 +141,7 @@ where
     ///
     /// This will set the padding of the head, body and foot to the
     /// same value.
+    #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding_head = padding;
         self.padding_body = padding;
@@ -144,24 +150,28 @@ where
     }
 
     /// Sets the padding of the head of the [`Card`](Card).
+    #[must_use]
     pub fn padding_head(mut self, padding: f32) -> Self {
         self.padding_head = padding;
         self
     }
 
     /// Sets the padding of the body of the [`Card`](Card).
+    #[must_use]
     pub fn padding_body(mut self, padding: f32) -> Self {
         self.padding_body = padding;
         self
     }
 
     /// Sets the padding of the foot of the [`Card`](Card).
+    #[must_use]
     pub fn padding_foot(mut self, padding: f32) -> Self {
         self.padding_foot = padding;
         self
     }
 
     /// Sets the size of the close icon of the [`Card`](Card).
+    #[must_use]
     pub fn close_size(mut self, size: f32) -> Self {
         self.close_size = Some(size);
         self
@@ -171,12 +181,14 @@ where
     /// [`Card`](Card) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the [`Card`](Card).
+    #[must_use]
     pub fn on_close(mut self, msg: Message) -> Self {
         self.on_close = Some(msg);
         self
     }
 
     /// Sets the style of the [`Card`](Card).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self

@@ -51,30 +51,35 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
     }
 
     /// Sets the size of the [`IconText`](IconText).
+    #[must_use]
     pub fn size(mut self, size: u16) -> Self {
         self.size = Some(size);
         self
     }
 
     /// Sets the [`Color`](iced_native::Color) of the [`IconText`](IconText).
+    #[must_use]
     pub fn color<C: Into<Color>>(mut self, color: C) -> Self {
         self.color = Some(color.into());
         self
     }
 
     /// Sets the [`Font`](iced_native::Font) of the [`IconText`](IconText).
+    #[must_use]
     pub fn font(mut self, font: impl Into<Renderer::Font>) -> Self {
         self.font = Some(font.into());
         self
     }
 
     /// Sets the width of the [`IconText`](IconText) boundaries.
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`IconText`](IconText) boundaries.
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
@@ -82,6 +87,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
 
     /// Sets the [`Horizontal `](iced_native::Horizontal )
     /// of the [`IconText`](IconText).
+    #[must_use]
     pub fn horizontal_alignment(mut self, alignment: Horizontal) -> Self {
         self.horizontal_alignment = alignment;
         self
@@ -89,6 +95,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
 
     /// Sets the [`Vertical `](iced_native::Vertical )
     /// of the [`IconText`](IconText).
+    #[must_use]
     pub fn vertical_alignment(mut self, alignment: Vertical) -> Self {
         self.vertical_alignment = alignment;
         self

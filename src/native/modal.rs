@@ -93,6 +93,7 @@ where
 
     /// Sets the message that will be produced when the backdrop of the
     /// [`Modal`](Modal) is clicked.
+    #[must_use]
     pub fn backdrop(mut self, message: Message) -> Self {
         self.backdrop = Some(message);
         self
@@ -102,12 +103,14 @@ where
     /// pressed when the modal is open.
     ///
     /// This can be used to close the modal on ESC.
+    #[must_use]
     pub fn on_esc(mut self, message: Message) -> Self {
         self.esc = Some(message);
         self
     }
 
     /// Sets the style of the [`Modal`](Modal).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self

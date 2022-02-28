@@ -128,12 +128,14 @@ where
     }
 
     /// Sets the step of the [`NumberInput`].
+    #[must_use]
     pub fn step(mut self, step: T) -> Self {
         self.step = step;
         self
     }
 
     /// Sets the minimum value of the [`NumberInput`].
+    #[must_use]
     pub fn min(mut self, min: T) -> Self {
         if min < self.bounds.1 {
             self.bounds.0 = min;
@@ -142,6 +144,7 @@ where
     }
 
     /// Sets the maximum value of the [`NumberInput`].
+    #[must_use]
     pub fn max(mut self, max: T) -> Self {
         if max > self.bounds.0 {
             self.bounds.1 = max;
@@ -150,6 +153,7 @@ where
     }
 
     /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
+    #[must_use]
     pub fn bounds(mut self, bounds: (T, T)) -> Self {
         if bounds.0 < bounds.1 {
             self.bounds = bounds;
@@ -162,6 +166,7 @@ where
     /// [`Font`]: crate::widget::text::Renderer::Font
     /// [`Text`]: crate::widget::Text
     #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.font = font;
         self.content = self.content.font(font);
@@ -169,18 +174,21 @@ where
     }
 
     /// Sets the width of the [`NumberInput`].
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.content = self.content.width(width);
         self
     }
 
     /// Sets the maximum width of the [`NumberInput`].
+    #[must_use]
     pub fn max_width(mut self, max_width: u32) -> Self {
         self.content = self.content.max_width(max_width);
         self
     }
 
     /// Sets the padding of the [`NumberInput`].
+    #[must_use]
     pub fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self.content = self.content.padding(units);
@@ -188,6 +196,7 @@ where
     }
 
     /// Sets the text size of the [`NumberInput`].
+    #[must_use]
     pub fn size(mut self, size: u16) -> Self {
         self.size = Some(size);
         self.content = self.content.size(size);
@@ -196,18 +205,21 @@ where
 
     /// Sets the message that should be produced when the [`NumberInput`] is
     /// focused and the enter key is pressed.
+    #[must_use]
     pub fn on_submit(mut self, message: Message) -> Self {
         self.content = self.content.on_submit(message);
         self
     }
 
     /// Sets the style of the [`NumberInput`].
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         self
     }
 
     /// Sets the input style of the [`NumberInput`].
+    #[must_use]
     pub fn input_style(
         mut self,
         style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet>>,
@@ -479,13 +491,10 @@ where
                     }
                     // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                        let negative: bool;
-                        match delta {
+                        let negative = match delta {
                             mouse::ScrollDelta::Lines { y, .. }
-                            | mouse::ScrollDelta::Pixels { y, .. } => {
-                                negative = y.is_sign_negative();
-                            }
-                        }
+                            | mouse::ScrollDelta::Pixels { y, .. } => y.is_sign_negative(),
+                        };
                         if negative {
                             self.increase_val(shell);
                         } else {

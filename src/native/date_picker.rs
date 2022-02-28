@@ -84,6 +84,7 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
     }
 
     /// Sets the style of the [`DatePicker`](DatePicker).
+    #[must_use]
     pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
         self.style_sheet = style_sheet.into();
         //self.button_style = style.into();
