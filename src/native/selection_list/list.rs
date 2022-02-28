@@ -60,16 +60,6 @@ where
         Node::new(intrinsic)
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-        self.options.len().hash(state);
-        self.style.text_size.hash(state);
-        self.style.padding.hash(state);
-    }
-
     fn on_event(
         &mut self,
         event: Event,

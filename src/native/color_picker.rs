@@ -187,15 +187,6 @@ where
             .draw(renderer, style, layout, cursor_position, viewport);
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.underlay.hash_layout(state);
-    }
-
     fn overlay(
         &mut self,
         layout: Layout<'_>,

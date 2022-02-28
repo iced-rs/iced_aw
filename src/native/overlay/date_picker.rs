@@ -1,7 +1,7 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use chrono::{Datelike, Local, NaiveDate};
 use iced_native::{
@@ -830,15 +830,6 @@ where
                 Color::TRANSPARENT,
             );
         }
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        (position.x as u32).hash(state);
-        (position.y as u32).hash(state);
     }
 }
 

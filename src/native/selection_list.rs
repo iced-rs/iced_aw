@@ -150,27 +150,6 @@ where
         Node::with_children(size, vec![content])
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash as _;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        match self.style.width {
-            Length::Shrink => {
-                self.options
-                    .iter()
-                    .map(ToString::to_string)
-                    .for_each(|label| label.hash(state));
-            }
-            _ => {
-                self.style.width.hash(state);
-            }
-        }
-
-        self.container.hash_layout(state);
-    }
-
     fn on_event(
         &mut self,
         event: Event,

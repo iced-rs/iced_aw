@@ -466,19 +466,6 @@ where
         }
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.tab_bar.hash_layout(state);
-        self.tabs.iter().for_each(|tab| tab.hash_layout(state));
-        self.tab_bar_position.hash(state);
-        self.width.hash(state);
-        self.height.hash(state);
-    }
-
     #[allow(clippy::unwrap_in_result)]
     fn overlay(
         &mut self,

@@ -4,8 +4,6 @@
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: `icon_text`*
-use std::hash::Hash;
-
 use iced_native::{
     alignment::{Horizontal, Vertical},
     Color, Element, Length, Rectangle, Size, Widget,
@@ -164,17 +162,6 @@ where
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
         });
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.content.hash(state);
-        self.size.hash(state);
-        self.width.hash(state);
-        self.height.hash(state);
     }
 }
 
