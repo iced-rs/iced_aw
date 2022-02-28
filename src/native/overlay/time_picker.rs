@@ -1,7 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_graphics::{
@@ -911,17 +911,6 @@ where
                 Color::TRANSPARENT,
             );
         }
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        (position.x as u32).hash(state);
-        (position.y as u32).hash(state);
-        self.state.show_seconds.hash(state);
-        self.state.use_24h.hash(state);
     }
 }
 

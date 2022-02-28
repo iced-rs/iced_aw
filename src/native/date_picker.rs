@@ -1,8 +1,6 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-use std::hash::Hash;
-
 use chrono::Local;
 use iced_native::{
     event, mouse, widget::button, Clipboard, Element, Event, Layout, Point, Rectangle, Shell,
@@ -189,15 +187,6 @@ where
     ) {
         self.underlay
             .draw(renderer, style, layout, cursor_position, viewport);
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.state.show.hash(state);
-        self.underlay.hash_layout(state);
     }
 
     fn overlay(

@@ -444,22 +444,6 @@ where
             );
         }
     }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.active_tab.hash(state);
-        self.tab_labels.iter().for_each(|tab| tab.hash(state));
-        self.width.hash(state);
-        self.height.hash(state);
-        self.max_height.hash(state);
-        self.icon_size.hash(state);
-        self.text_size.hash(state);
-        self.close_size.hash(state);
-    }
 }
 
 /// Draws a tab.

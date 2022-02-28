@@ -1,13 +1,10 @@
 //! Use a grid as an input element for creating grids.
 //!
 //! *This API requires the following crate features to be activated: `grid`*
-use std::hash::Hash;
-
 use iced_native::{
     event,
     layout::{Limits, Node},
-    mouse, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Shell, Size,
-    Widget,
+    mouse, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -216,16 +213,6 @@ where
     ) {
         for (element, layout) in self.elements.iter().zip(layout.children()) {
             element.draw(renderer, style, layout, cursor_position, viewport);
-        }
-    }
-
-    fn hash_layout(&self, state: &mut Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        for element in &self.elements {
-            element.hash_layout(state);
         }
     }
 }

@@ -1,8 +1,6 @@
 //! Displays a [`Card`](Card).
 //!
 //! *This API requires the following crate features to be activated: card*
-use std::hash::Hash;
-
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, mouse, renderer, touch, Alignment, Clipboard, Color, Element, Event, Layout, Length,
@@ -454,22 +452,6 @@ where
             viewport,
             &style_sheet,
         );
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.width.hash(state);
-        self.height.hash(state);
-        self.max_width.hash(state);
-        self.max_height.hash(state);
-        self.head.hash_layout(state);
-        self.body.hash_layout(state);
-        if let Some(foot) = self.foot.as_ref() {
-            foot.hash_layout(state);
-        };
     }
 }
 

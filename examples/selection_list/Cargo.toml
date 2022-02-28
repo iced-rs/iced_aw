@@ -9,7 +9,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced.git", rev = "adce9e0" }
+iced = { git = "https://github.com/iced-rs/iced.git", rev = "af7cbf0" }
 iced_aw = { path = "../..", default-features = false, features = [
     "selection_list",
 ] }

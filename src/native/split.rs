@@ -1,8 +1,6 @@
 //! Use a split to split the available space in two parts to display two different elements.
 //!
 //! *This API requires the following crate features to be activated: split*
-use std::hash::Hash;
-
 use iced_native::{
     mouse, renderer, touch,
     widget::{Container, Row},
@@ -395,16 +393,6 @@ where
         first
             .overlay(first_layout, renderer)
             .or_else(move || second.overlay(second_layout, renderer))
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.state.divider_position.hash(state);
-        self.first.hash_layout(state);
-        self.second.hash_layout(state);
     }
 }
 

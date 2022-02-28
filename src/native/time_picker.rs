@@ -1,8 +1,6 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use std::hash::Hash;
-
 use chrono::Local;
 use iced_graphics::{Backend, Renderer};
 use iced_native::{
@@ -209,14 +207,6 @@ where
     ) {
         self.underlay
             .draw(renderer, style, layout, cursor_position, viewport);
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.underlay.hash_layout(state);
     }
 
     fn overlay(

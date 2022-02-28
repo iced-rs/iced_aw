@@ -1,8 +1,6 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use std::hash::Hash;
-
 use iced_native::{
     event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
     Padding, Point, Rectangle, Shell, Widget,
@@ -223,18 +221,6 @@ where
             cursor_position,
             viewport,
         );
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.padding.hash(state);
-        self.width.hash(state);
-        self.height.hash(state);
-
-        self.content.hash_layout(state);
     }
 }
 

@@ -1,8 +1,6 @@
 //! Use a floating button to overlay a button over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_button`*
-use std::hash::Hash;
-
 use iced_native::{
     event, mouse, overlay,
     widget::{button, Button},
@@ -172,18 +170,6 @@ where
     ) {
         self.underlay
             .draw(renderer, style, layout, cursor_position, viewport);
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.anchor.hash(state);
-        (self.offset.x as u32).hash(state);
-        (self.offset.y as u32).hash(state);
-        self.hidden.hash(state);
-        self.underlay.hash_layout(state);
     }
 
     fn overlay(

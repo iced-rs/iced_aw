@@ -171,27 +171,6 @@ where
         self.inner_layout(renderer, limits)
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.alignment.hash(state);
-        self.line_minimal_length.hash(state);
-        self.width.hash(state);
-        self.height.hash(state);
-        self.max_width.hash(state);
-        self.max_height.hash(state);
-        self.line_spacing.hash(state);
-        self.padding.hash(state);
-        self.spacing.hash(state);
-
-        for elem in &self.elements {
-            elem.hash_layout(state);
-        }
-    }
-
     fn on_event(
         &mut self,
         event: Event,

@@ -1,8 +1,6 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use std::hash::Hash;
-
 use iced_native::{
     event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Widget,
 };
@@ -215,15 +213,6 @@ where
     ) {
         self.underlay
             .draw(renderer, style, layout, cursor_position, viewport);
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.state.show.hash(state);
-        self.underlay.hash_layout(state);
     }
 
     fn overlay(

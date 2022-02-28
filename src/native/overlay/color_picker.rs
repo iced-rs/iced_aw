@@ -855,16 +855,6 @@ where
             &style_sheet,
         );
     }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        (position.x as u32).hash(state);
-        (position.y as u32).hash(state);
-    }
 }
 
 /// Defines the layout of the 1. block of the color picker containing the HSV part.

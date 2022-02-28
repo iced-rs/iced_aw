@@ -665,17 +665,6 @@ where
             vertical_alignment: Vertical::Center,
         });
     }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.padding.hash(state);
-        self.size.hash(state);
-        self.content.hash_layout(state);
-    }
 }
 
 /// The state of a [`NumberInput`].
