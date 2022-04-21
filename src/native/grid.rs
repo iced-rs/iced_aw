@@ -120,14 +120,15 @@ where
                 let mut column_widths = Vec::<f32>::with_capacity(columns);
 
                 for (column, element) in (0..columns).cycle().zip(&self.elements) {
-                    let layout = element.layout(renderer, limits).size();
-                    layouts.push(layout);
+                    let layout = element.layout(renderer, limits);
 
                     if let Some(column_width) = column_widths.get_mut(column) {
-                        *column_width = column_width.max(layout.width);
+                        *column_width = column_width.max(layout.size().width);
                     } else {
-                        column_widths.insert(column, layout.width);
+                        column_widths.insert(column, layout.size().width);
                     }
+                    
+                    layouts.push(layout);
                 }
 
                 let column_aligns =
@@ -151,7 +152,7 @@ where
                 let layouts = self
                     .elements
                     .iter()
-                    .map(|element| element.layout(renderer, &column_limits).size());
+                    .map(|element| element.layout(renderer, &column_limits));
                 let column_aligns =
                     std::iter::successors(Some(0.), |width| Some(width + column_width));
                 #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -218,23 +219,23 @@ where
 fn build_grid(
     columns: usize,
     column_aligns: impl Iterator<Item = f32> + Clone,
-    layouts: impl Iterator<Item = Size> + ExactSizeIterator,
+    layouts: impl Iterator<Item = Node> + ExactSizeIterator,
     grid_width: f32,
 ) -> Node {
     let mut nodes = Vec::with_capacity(layouts.len());
     let mut grid_height = 0.;
     let mut row_height = 0.;
 
-    for ((column, column_align), size) in (0..columns).zip(column_aligns).cycle().zip(layouts) {
+    for ((column, column_align), mut node) in (0..columns).zip(column_aligns).cycle().zip(layouts) {
         if column == 0 {
             grid_height += row_height;
             row_height = 0.;
         }
 
-        let mut node = Node::new(size);
+        //let mut node = Node::new(size);
         node.move_to(Point::new(column_align, grid_height));
+        row_height = row_height.max(node.size().height);
         nodes.push(node);
-        row_height = row_height.max(size.height);
     }
 
     grid_height += row_height;
