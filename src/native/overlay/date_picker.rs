@@ -965,11 +965,23 @@ fn month_year<Renderer>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_color: style.get(&style_state).unwrap().border_color,
-                    border_radius: style.get(&style_state).unwrap().border_radius,
-                    border_width: style.get(&style_state).unwrap().border_width,
+                    border_color: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_color,
+                    border_radius: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_radius,
+                    border_width: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_width,
                 },
-                style.get(&style_state).unwrap().background,
+                style
+                    .get(&style_state)
+                    .expect("Style Sheet not found.")
+                    .background,
             );
         }
 
@@ -984,7 +996,10 @@ fn month_year<Renderer>(
                 ..left_bounds
             },
             size: left_bounds.height + if left_arrow_hovered { 5.0 } else { 0.0 },
-            color: style.get(&style_state).unwrap().text_color,
+            color: style
+                .get(&style_state)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -999,7 +1014,10 @@ fn month_year<Renderer>(
                 ..center_bounds
             },
             size: center_bounds.height,
-            color: style.get(&style_state).unwrap().text_color,
+            color: style
+                .get(&style_state)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1014,7 +1032,10 @@ fn month_year<Renderer>(
                 ..right_bounds
             },
             size: right_bounds.height + if right_arrow_hovered { 5.0 } else { 0.0 },
-            color: style.get(&style_state).unwrap().text_color,
+            color: style
+                .get(&style_state)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1070,7 +1091,10 @@ fn day_labels<Renderer>(
                 ..bounds
             },
             size: bounds.height + 5.0,
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: Default::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1114,16 +1138,28 @@ fn day_table<Renderer>(
                     border_width: 0.0,
                     border_color: Color::TRANSPARENT,
                 },
-                style.get(&style_state).unwrap().day_background,
+                style
+                    .get(&style_state)
+                    .expect("Style Sheet not found.")
+                    .day_background,
             );
 
             if focus == Focus::Day && selected {
                 renderer.fill_quad(
                     renderer::Quad {
                         bounds,
-                        border_radius: style.get(&StyleState::Focused).unwrap().border_radius,
-                        border_width: style.get(&StyleState::Focused).unwrap().border_width,
-                        border_color: style.get(&StyleState::Focused).unwrap().border_color,
+                        border_radius: style
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_radius,
+                        border_width: style
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_width,
+                        border_color: style
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_color,
                     },
                     Color::TRANSPARENT,
                 );
@@ -1142,9 +1178,15 @@ fn day_table<Renderer>(
                     bounds.height
                 },
                 color: if is_in_month == IsInMonth::Same {
-                    style.get(&style_state).unwrap().text_color
+                    style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .text_color
                 } else {
-                    style.get(&style_state).unwrap().text_attenuated_color
+                    style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .text_attenuated_color
                 },
                 font: iced_graphics::Font::default(),
                 horizontal_alignment: Horizontal::Center,

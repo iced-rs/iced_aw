@@ -1109,8 +1109,14 @@ fn draw_clock<'a, Message, B>(
             let second_points = crate::core::clock::circle_points(second_radius, center, 60);
 
             let hand_stroke = Stroke {
-                width: style.get(&clock_style_state).unwrap().clock_hand_width,
-                color: style.get(&clock_style_state).unwrap().clock_hand_color,
+                width: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_hand_width,
+                color: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_hand_color,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
             };
@@ -1121,7 +1127,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(center, period_size),
                         style
                             .get(&StyleState::Hovered)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                 }
@@ -1133,7 +1139,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(nearest_point, 5.0),
                         style
                             .get(&StyleState::Hovered)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                 }
@@ -1147,7 +1153,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(nearest_point, 5.0),
                         style
                             .get(&StyleState::Hovered)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                 }
@@ -1161,7 +1167,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(nearest_point, 5.0),
                         style
                             .get(&StyleState::Hovered)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                 }
@@ -1171,7 +1177,10 @@ fn draw_clock<'a, Message, B>(
             let period_text = canvas::Text {
                 content: format!("{}", period),
                 position: center,
-                color: style.get(&clock_style_state).unwrap().clock_number_color,
+                color: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_number_color,
                 size: period_size,
                 font: iced_graphics::Font::default(),
                 horizontal_alignment: Horizontal::Center,
@@ -1192,7 +1201,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(*p, number_size * 0.8),
                         style
                             .get(&StyleState::Selected)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                     frame.stroke(&Path::line(center, *p), hand_stroke);
@@ -1211,7 +1220,10 @@ fn draw_clock<'a, Message, B>(
                         }
                     ),
                     position: *p,
-                    color: style.get(&style_state).unwrap().clock_number_color,
+                    color: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .clock_number_color,
                     size: number_size,
                     font: iced_graphics::Font::default(),
                     horizontal_alignment: Horizontal::Center,
@@ -1230,7 +1242,7 @@ fn draw_clock<'a, Message, B>(
                         &Path::circle(*p, number_size * 0.5),
                         style
                             .get(&StyleState::Selected)
-                            .unwrap()
+                            .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
                     frame.stroke(&Path::line(center, *p), hand_stroke);
@@ -1241,7 +1253,10 @@ fn draw_clock<'a, Message, B>(
                     let text = canvas::Text {
                         content: format!("{:02}", i),
                         position: *p,
-                        color: style.get(&style_state).unwrap().clock_number_color,
+                        color: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .clock_number_color,
                         size: number_size,
                         font: iced_graphics::Font::default(),
                         horizontal_alignment: Horizontal::Center,
@@ -1253,7 +1268,10 @@ fn draw_clock<'a, Message, B>(
                     let circle = Path::circle(*p, number_size * 0.1);
                     frame.fill(
                         &circle,
-                        style.get(&StyleState::Active).unwrap().clock_dots_color,
+                        style
+                            .get(&StyleState::Active)
+                            .expect("Style Sheet not found.")
+                            .clock_dots_color,
                     );
                 }
             });
@@ -1268,7 +1286,7 @@ fn draw_clock<'a, Message, B>(
                             &Path::circle(*p, number_size * 0.5),
                             style
                                 .get(&StyleState::Selected)
-                                .unwrap()
+                                .expect("Style Sheet not found.")
                                 .clock_number_background,
                         );
                         frame.stroke(&Path::line(center, *p), hand_stroke);
@@ -1279,7 +1297,10 @@ fn draw_clock<'a, Message, B>(
                         let text = canvas::Text {
                             content: format!("{:02}", i),
                             position: *p,
-                            color: style.get(&style_state).unwrap().clock_number_color,
+                            color: style
+                                .get(&style_state)
+                                .expect("Style Sheet not found.")
+                                .clock_number_color,
                             size: number_size,
                             font: iced_graphics::Font::default(),
                             horizontal_alignment: Horizontal::Center,
@@ -1291,7 +1312,10 @@ fn draw_clock<'a, Message, B>(
                         let circle = Path::circle(*p, number_size * 0.1);
                         frame.fill(
                             &circle,
-                            style.get(&StyleState::Active).unwrap().clock_dots_color,
+                            style
+                                .get(&StyleState::Active)
+                                .expect("Style Sheet not found.")
+                                .clock_dots_color,
                         );
                     }
                 });
@@ -1357,11 +1381,23 @@ fn draw_digital_clock<'a, Message, B>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_color: style.get(&style_state).unwrap().border_color,
-                    border_radius: style.get(&style_state).unwrap().border_radius,
-                    border_width: style.get(&style_state).unwrap().border_width,
+                    border_color: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_color,
+                    border_radius: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_radius,
+                    border_width: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_width,
                 },
-                style.get(&style_state).unwrap().background,
+                style
+                    .get(&style_state)
+                    .expect("Style Sheet not found.")
+                    .background,
             );
         }
 
@@ -1376,7 +1412,10 @@ fn draw_digital_clock<'a, Message, B>(
                 ..up_bounds
             },
             size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1391,7 +1430,10 @@ fn draw_digital_clock<'a, Message, B>(
                 ..center_bounds
             },
             size: center_bounds.height,
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1406,7 +1448,10 @@ fn draw_digital_clock<'a, Message, B>(
                 ..down_bounds
             },
             size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1478,7 +1523,10 @@ fn draw_digital_clock<'a, Message, B>(
                 ..minute_second_separator.bounds()
             },
             size: minute_second_separator.bounds().height,
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -1513,7 +1561,10 @@ fn draw_digital_clock<'a, Message, B>(
                 ..period.bounds()
             },
             size: period.bounds().height,
-            color: style.get(&StyleState::Active).unwrap().text_color,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             font: iced_graphics::Font::default(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
