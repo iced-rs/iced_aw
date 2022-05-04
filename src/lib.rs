@@ -40,7 +40,9 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap,
     clippy::module_name_repetitions,
-    clippy::borrowed_box
+    clippy::borrowed_box,
+    clippy::missing_const_for_fn,
+    clippy::too_many_lines
 )]
 
 #[cfg(not(target_arch = "wasm32"))]

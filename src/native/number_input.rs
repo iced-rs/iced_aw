@@ -180,13 +180,6 @@ where
         self
     }
 
-    /// Sets the maximum width of the [`NumberInput`].
-    #[must_use]
-    pub fn max_width(mut self, max_width: u32) -> Self {
-        self.content = self.content.max_width(max_width);
-        self
-    }
-
     /// Sets the padding of the [`NumberInput`].
     #[must_use]
     pub fn padding(mut self, units: u16) -> Self {

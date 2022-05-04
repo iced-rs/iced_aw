@@ -17,7 +17,7 @@ pub use crate::style::modal::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::native::modal;
-/// # use iced_native::{Text, renderer::Null};
+/// # use iced_native::{widget::Text, renderer::Null};
 /// #
 /// # pub type Modal<'a, S, Content, Message>
 /// #  = iced_aw::native::Modal<'a, Message, S, Content, Null>;

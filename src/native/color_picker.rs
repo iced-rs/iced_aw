@@ -19,7 +19,7 @@ pub use crate::style::color_picker::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::color_picker;
-/// # use iced_native::{Button, Color, Text, button, renderer::Null};
+/// # use iced_native::{widget::{button, Button, Text}, Color, renderer::Null};
 /// #
 /// # pub type ColorPicker<'a, Message> = iced_aw::native::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]

@@ -19,7 +19,7 @@ pub use crate::style::time_picker::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::time_picker;
-/// # use iced_native::{Button, Text, button, renderer::Null};
+/// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
 /// #
 /// # pub type TimePicker<'a, Message> = iced_aw::native::TimePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]

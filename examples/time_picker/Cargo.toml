@@ -7,8 +7,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced.git", rev = "af7cbf0" }
 iced_aw = { path = "../..", default-features = false, features = [
     "colors",
     "time_picker",
 ] }
+
+[dependencies.iced]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "af7cbf0"
+version = "0.4"

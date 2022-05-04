@@ -102,10 +102,9 @@ where
     }
 }
 
-impl<'a, T: 'a, Message, Renderer> Widget<Message, Renderer>
-    for SelectionList<'a, T, Message, Renderer>
+impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SelectionList<'a, T, Message, Renderer>
 where
-    T: Clone + ToString + Eq,
+    T: 'a + Clone + ToString + Eq,
     Message: 'static,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
 {

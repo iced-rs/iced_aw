@@ -15,7 +15,7 @@ pub use crate::style::split::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::split::{State, Axis};
-/// # use iced_native::{Text, renderer::Null};
+/// # use iced_native::{widget::Text, renderer::Null};
 /// #
 /// # pub type Split<'a, Message> = iced_aw::native::Split<'a, Message, Null>;
 /// #[derive(Debug, Clone)]

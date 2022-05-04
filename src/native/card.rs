@@ -17,7 +17,7 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// # Example
 /// ```
-/// # use iced_native::{renderer::Null, Text};
+/// # use iced_native::{renderer::Null, widget::Text};
 /// #
 /// # pub type Card<'a, Message> = iced_aw::native::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]

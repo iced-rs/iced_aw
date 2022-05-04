@@ -1214,7 +1214,7 @@ fn hsv_color<'a, Message, B>(
                 let stroke = Stroke {
                     color: style_sheet
                         .get(&sat_value_style_state)
-                        .unwrap()
+                        .expect("Style Sheet not found.")
                         .bar_border_color,
                     width: 2.0,
                     line_cap: LineCap::Round,
@@ -1287,7 +1287,10 @@ fn hsv_color<'a, Message, B>(
             );
 
             let stroke = Stroke {
-                color: style_sheet.get(&hue_style_state).unwrap().bar_border_color,
+                color: style_sheet
+                    .get(&hue_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_color,
                 width: 2.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
@@ -1374,8 +1377,14 @@ fn rgba_color<B>(
                     width: bounds.width * value,
                     height: bounds.height,
                 },
-                border_radius: style_sheet.get(&bar_style_state).unwrap().bar_border_radius,
-                border_width: style_sheet.get(&bar_style_state).unwrap().bar_border_width,
+                border_radius: style_sheet
+                    .get(&bar_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_radius,
+                border_width: style_sheet
+                    .get(&bar_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_width,
                 border_color: Color::TRANSPARENT,
             },
             color,
@@ -1385,9 +1394,18 @@ fn rgba_color<B>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet.get(&bar_style_state).unwrap().bar_border_radius,
-                border_width: style_sheet.get(&bar_style_state).unwrap().bar_border_width,
-                border_color: style_sheet.get(&bar_style_state).unwrap().bar_border_color,
+                border_radius: style_sheet
+                    .get(&bar_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_radius,
+                border_width: style_sheet
+                    .get(&bar_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_width,
+                border_color: style_sheet
+                    .get(&bar_style_state)
+                    .expect("Style Sheet not found.")
+                    .bar_border_color,
             },
             Color::TRANSPARENT,
         );
@@ -1396,9 +1414,18 @@ fn rgba_color<B>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_radius: style_sheet.get(&StyleState::Focused).unwrap().border_radius,
-                border_width: style_sheet.get(&StyleState::Focused).unwrap().border_width,
-                border_color: style_sheet.get(&StyleState::Focused).unwrap().border_color,
+                border_radius: style_sheet
+                    .get(&StyleState::Focused)
+                    .expect("Style Sheet not found.")
+                    .border_radius,
+                border_width: style_sheet
+                    .get(&StyleState::Focused)
+                    .expect("Style Sheet not found.")
+                    .border_width,
+                border_color: style_sheet
+                    .get(&StyleState::Focused)
+                    .expect("Style Sheet not found.")
+                    .border_color,
             },
             Color::TRANSPARENT,
         );
@@ -1422,9 +1449,18 @@ fn rgba_color<B>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_radius: style_sheet.get(&StyleState::Focused).unwrap().border_radius,
-                    border_width: style_sheet.get(&StyleState::Focused).unwrap().border_width,
-                    border_color: style_sheet.get(&StyleState::Focused).unwrap().border_color,
+                    border_radius: style_sheet
+                        .get(&StyleState::Focused)
+                        .expect("Style Sheet not found.")
+                        .border_radius,
+                    border_width: style_sheet
+                        .get(&StyleState::Focused)
+                        .expect("Style Sheet not found.")
+                        .border_width,
+                    border_color: style_sheet
+                        .get(&StyleState::Focused)
+                        .expect("Style Sheet not found.")
+                        .border_color,
                 },
                 Color::TRANSPARENT,
             );

@@ -27,7 +27,7 @@ pub use tab_bar_position::TabBarPosition;
 /// # Example
 /// ```
 /// # use iced_aw::{TabLabel};
-/// # use iced_native::{renderer::Null, Text};
+/// # use iced_native::{renderer::Null, widget::Text};
 /// #
 /// # pub type Tabs<'a, Message> = iced_aw::native::Tabs<'a, Message, Null>;
 /// #[derive(Debug, Clone)]

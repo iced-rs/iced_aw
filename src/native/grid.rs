@@ -12,7 +12,7 @@ use iced_native::{
 /// # Example
 ///
 /// ```
-/// # use iced_native::{renderer::Null, Text};
+/// # use iced_native::{renderer::Null, widget::Text};
 /// #
 /// # pub type Grid<'a, Message> = iced_aw::native::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
