@@ -18,7 +18,7 @@ pub use crate::style::date_picker::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::date_picker;
-/// # use iced_native::{Button, Text, button, renderer::Null};
+/// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
 /// #
 /// # pub type DatePicker<'a, Message> = iced_aw::native::DatePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]

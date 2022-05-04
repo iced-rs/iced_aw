@@ -19,7 +19,7 @@ use super::overlay::floating_button::FloatingButtonOverlay;
 ///
 /// # Example
 /// ```
-/// # use iced_native::{button, Button, Column, renderer::Null, Text};
+/// # use iced_native::{widget::{button, Button, Column, Text}, renderer::Null};
 /// #
 /// # pub type FloatingButton<'a, B, Message> = iced_aw::native::FloatingButton<'a, B, Message, Null>;
 /// #[derive(Debug, Clone)]

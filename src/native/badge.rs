@@ -16,7 +16,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// # Example
 /// ```
 /// # use iced_aw::style::badge;
-/// # use iced_native::{Text, renderer::Null};
+/// # use iced_native::{widget::Text, renderer::Null};
 /// #
 /// # pub type Badge<'a, Message> = iced_aw::native::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
