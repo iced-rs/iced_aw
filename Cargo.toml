@@ -24,6 +24,7 @@ glow = [] # TODO
 icon_text = ["icons"]
 icons = []
 modal = []
+pure = ["iced_pure"]
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
@@ -41,6 +42,7 @@ default = [
     "floating_button",
     "grid",
     "modal",
+    "pure",
     "tab_bar",
     "tabs",
     "time_picker",
@@ -65,6 +67,10 @@ version = "0.5"
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "af7cbf0"
 version = "0.3"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_pure]
+version = "0.2.1"
+optional = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 dodrio = "0.2"
@@ -92,6 +98,7 @@ members = [
     "examples/floating_button",
     "examples/grid",
     "examples/modal",
+    "examples/pure/badge",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",

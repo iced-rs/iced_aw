@@ -177,3 +177,6 @@ mod platform {
 
 #[doc(no_inline)]
 pub use platform::*;
+
+#[cfg(feature = "pure")]
+pub mod pure;

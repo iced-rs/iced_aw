@@ -1,10 +1,12 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
+use crate::native::badge;
 use iced_native::{
-    event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Shell, Widget,
+    event, layout, mouse, renderer, Alignment, Clipboard, Color, Event, Layout, Length, Point,
+    Rectangle, Shell,
 };
+use iced_pure::{widget::Tree, Element, Widget};
 
 pub use crate::style::badge::{Style, StyleSheet};
 
@@ -43,10 +45,7 @@ pub struct Badge<'a, Message, Renderer> {
     content: Element<'a, Message, Renderer>,
 }
 
-impl<'a, Message, Renderer> Badge<'a, Message, Renderer>
-where
-    Renderer: iced_native::Renderer,
-{
+impl<'a, Message, Renderer> Badge<'a, Message, Renderer> {
     /// Creates a new [`Badge`](Badge) with the given content.
     ///
     /// It expects:
@@ -109,33 +108,18 @@ where
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-/// Computes the layout of a [`Badge`](Badge).
-pub fn layout<Renderer>(
-    renderer: &Renderer,
-    limits: &layout::Limits,
-    width: Length,
-    height: Length,
-    padding: Padding,
-    horizontal_alignment: Alignment,
-    vertical_alignment: Alignment,
-    layout_content: impl FnOnce(&Renderer, &layout::Limits) -> layout::Node,
-) -> iced_native::layout::Node {
-    let limits = limits.loose().width(width).height(height).pad(padding);
-
-    let mut content = layout_content(renderer, &limits.loose());
-    let size = limits.resolve(content.size());
-
-    content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
-    content.align(horizontal_alignment, vertical_alignment, size);
-
-    layout::Node::with_children(size.pad(padding), vec![content])
-}
-
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
 {
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.content)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.content));
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -145,7 +129,7 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
-        layout(
+        badge::layout(
             renderer,
             limits,
             self.width,
@@ -153,20 +137,22 @@ where
             self.padding.into(),
             self.horizontal_alignment,
             self.vertical_alignment,
-            |renderer, limits| self.content.layout(renderer, limits),
+            |renderer, limits| self.content.as_widget().layout(renderer, limits),
         )
     }
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<'_, Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        self.content.on_event(
+        self.content.as_widget_mut().on_event(
+            &mut state.children[0],
             event,
             layout
                 .children()
@@ -175,28 +161,35 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         )
     }
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.content.as_widget().mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
         &self,
+        state: &iced_pure::widget::Tree,
         renderer: &mut Renderer,
-        _style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
@@ -224,7 +217,8 @@ where
             style_sheet.background,
         );
 
-        self.content.draw(
+        self.content.as_widget().draw(
+            &state.children[0],
             renderer,
             &renderer::Style {
                 text_color: style_sheet.text_color,
