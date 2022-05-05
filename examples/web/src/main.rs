@@ -1,5 +1,5 @@
 use iced::{
-    button, scrollable, Button, Column, Container, Element, HorizontalAlignment, Length, Sandbox,
+    alignment::Horizontal, button, scrollable, Button, Column, Container, Element, Length, Sandbox,
     Scrollable, Settings, Text,
 };
 
@@ -161,7 +161,7 @@ fn primary_modal(state: &mut PrimaryModalState) -> Element<'_, Message> {
         Button::new(
             &mut state.ok_button,
             Text::new("Ok")
-                .horizontal_alignment(HorizontalAlignment::Center)
+                .horizontal_alignment(Horizontal::Center)
                 .width(Length::Fill),
         )
         .on_press(Message::ClosePrimaryModal)

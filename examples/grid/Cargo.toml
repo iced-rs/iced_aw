@@ -2,10 +2,14 @@
 name = "grid"
 version = "0.1.0"
 authors = ["daxpedda <daxpedda@gmail.com>", "Luni-4 <luni-4@hotmail.it>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced =  "0.3"
 iced_aw = { path = "../..", default-features = false, features = ["grid"] }
+
+[dependencies.iced]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "af7cbf0"
+version = "0.4"

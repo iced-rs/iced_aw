@@ -2,3 +2,4 @@ target/
 Cargo.lock
 pkg/
 .vscode
+.idea

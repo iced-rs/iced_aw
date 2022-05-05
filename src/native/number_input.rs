@@ -1,19 +1,30 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
+
+use std::{fmt::Display, str::FromStr};
+
 use iced_native::{
-    column, container,
-    event::{self, Event},
-    keyboard,
+    alignment::{Horizontal, Vertical},
+    event, keyboard,
     layout::{Limits, Node},
-    mouse, row, text,
-    text_input::{self, cursor, Value},
-    Align, Clipboard, Column, Container, Element, Hasher, Layout, Length, Point, Rectangle, Row,
-    Size, Text, TextInput, Widget,
+    mouse, renderer,
+    widget::{
+        text_input::{self, cursor, Value},
+        Column, Container, Row, Text, TextInput,
+    },
+    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shell, Size, Widget,
 };
 use num_traits::{Num, NumAssignOps};
-use std::fmt::Display;
-use std::str::FromStr;
+
+pub use crate::{
+    graphics::icons::Icon,
+    style::number_input::{Style, StyleSheet},
+};
+
+/// The default padding
+const DEFAULT_PADDING: u16 = 5;
 
 /// A field that can only be filled with numeric type.
 ///
@@ -41,7 +52,10 @@ use std::str::FromStr;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Renderer: self::Renderer> {
+pub struct NumberInput<'a, T, Message, Renderer>
+where
+    Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
+{
     /// The state of the [`NumberInput`](NumberInput).
     state: &'a mut ModifierState,
     /// The current value of the [`NumberInput`](NumberInput).
@@ -59,7 +73,7 @@ pub struct NumberInput<'a, T, Message, Renderer: self::Renderer> {
     /// The on_change event of the [`NumberInput`](NumberInput).
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`](NumberInput).
-    style: <Renderer as self::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
     /// The font text of the [`NumberInput`](NumberInput).
     font: Renderer::Font,
 }
@@ -68,7 +82,7 @@ impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -87,7 +101,7 @@ where
             mod_state,
         } = state;
 
-        let padding = <Renderer as self::Renderer>::DEFAULT_PADDING;
+        let padding = DEFAULT_PADDING;
         let convert_to_num = move |s: String| {
             on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }))
         };
@@ -108,18 +122,20 @@ where
             .padding(padding)
             .width(Length::Units(127)),
             on_change: Box::new(on_changed),
-            style: <Renderer as self::Renderer>::Style::default(),
-            font: Default::default(),
+            style_sheet: std::boxed::Box::default(),
+            font: iced_graphics::Font::default(),
         }
     }
 
     /// Sets the step of the [`NumberInput`].
+    #[must_use]
     pub fn step(mut self, step: T) -> Self {
         self.step = step;
         self
     }
 
     /// Sets the minimum value of the [`NumberInput`].
+    #[must_use]
     pub fn min(mut self, min: T) -> Self {
         if min < self.bounds.1 {
             self.bounds.0 = min;
@@ -128,6 +144,7 @@ where
     }
 
     /// Sets the maximum value of the [`NumberInput`].
+    #[must_use]
     pub fn max(mut self, max: T) -> Self {
         if max > self.bounds.0 {
             self.bounds.1 = max;
@@ -136,6 +153,7 @@ where
     }
 
     /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
+    #[must_use]
     pub fn bounds(mut self, bounds: (T, T)) -> Self {
         if bounds.0 < bounds.1 {
             self.bounds = bounds;
@@ -147,6 +165,8 @@ where
     ///
     /// [`Font`]: crate::widget::text::Renderer::Font
     /// [`Text`]: crate::widget::Text
+    #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.font = font;
         self.content = self.content.font(font);
@@ -154,18 +174,14 @@ where
     }
 
     /// Sets the width of the [`NumberInput`].
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.content = self.content.width(width);
         self
     }
 
-    /// Sets the maximum width of the [`NumberInput`].
-    pub fn max_width(mut self, max_width: u32) -> Self {
-        self.content = self.content.max_width(max_width);
-        self
-    }
-
     /// Sets the padding of the [`NumberInput`].
+    #[must_use]
     pub fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self.content = self.content.padding(units);
@@ -173,6 +189,7 @@ where
     }
 
     /// Sets the text size of the [`NumberInput`].
+    #[must_use]
     pub fn size(mut self, size: u16) -> Self {
         self.size = Some(size);
         self.content = self.content.size(size);
@@ -181,28 +198,31 @@ where
 
     /// Sets the message that should be produced when the [`NumberInput`] is
     /// focused and the enter key is pressed.
+    #[must_use]
     pub fn on_submit(mut self, message: Message) -> Self {
         self.content = self.content.on_submit(message);
         self
     }
 
     /// Sets the style of the [`NumberInput`].
-    pub fn style(mut self, style: impl Into<<Renderer as self::Renderer>::Style>) -> Self {
-        self.style = style.into();
+    #[must_use]
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 
     /// Sets the input style of the [`NumberInput`].
+    #[must_use]
     pub fn input_style(
         mut self,
-        style: impl Into<<Renderer as text_input::Renderer>::Style>,
+        style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet>>,
     ) -> Self {
-        self.content = self.content.style(style.into());
+        self.content = self.content.style(style_sheet.into());
         self
     }
 
     /// Decrease current value by step of the [`NumberInput`].
-    fn decrease_val(&mut self, messages: &mut Vec<Message>) {
+    fn decrease_val(&mut self, shell: &mut Shell<Message>) {
         if self.value > self.bounds.0 {
             let new_val = self.value - self.step;
             self.value = if new_val > self.bounds.0 {
@@ -210,13 +230,13 @@ where
             } else {
                 self.bounds.0
             };
-            messages.push((self.on_change)(self.value));
+            shell.publish((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
     }
 
     /// Increase current value by step of the [`NumberInput`].
-    fn increase_val(&mut self, messages: &mut Vec<Message>) {
+    fn increase_val(&mut self, shell: &mut Shell<Message>) {
         if self.value < self.bounds.1 {
             let new_val = self.value + self.step;
             self.value = if new_val < self.bounds.1 {
@@ -224,7 +244,7 @@ where
             } else {
                 self.bounds.1
             };
-            messages.push((self.on_change)(self.value));
+            shell.publish((self.on_change)(self.value));
             // self.content.state().move_cursor_to_end();
         }
     }
@@ -234,10 +254,10 @@ impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, 
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: Clone,
-    Renderer: self::Renderer + container::Renderer + column::Renderer + row::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
-        Widget::<Message, Renderer>::width(&self.content)
+        Length::Shrink
     }
 
     fn height(&self) -> Length {
@@ -245,7 +265,7 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
             .height(Length::Shrink)
@@ -258,7 +278,7 @@ where
                 .center_y()
                 .center_x()
         };
-        let mut modifier = if self.padding < Renderer::DEFAULT_PADDING {
+        let mut modifier = if self.padding < DEFAULT_PADDING {
             Row::<(), Renderer>::new()
                 .spacing(1)
                 .width(Length::Shrink)
@@ -277,68 +297,12 @@ where
             content.size().width - 3.0,
             content.size().height.max(modifier.size().height),
         );
-        modifier.align(Align::End, Align::Center, intrinsic);
+        modifier.align(Alignment::End, Alignment::Center, intrinsic);
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
     }
 
-    fn draw(
-        &self,
-        renderer: &mut Renderer,
-        _defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        _viewport: &Rectangle,
-    ) -> Renderer::Output {
-        let bounds = layout.bounds();
-        let mut children = layout.children();
-        let content_layout = children.next().expect("fail to get content layout");
-        let mut mod_children = children
-            .next()
-            .expect("fail to get modifiers layout")
-            .children();
-        let inc_bounds = mod_children
-            .next()
-            .expect("fail to get increase mod layout")
-            .bounds();
-        let dec_bounds = mod_children
-            .next()
-            .expect("fail to get decreate mod layout")
-            .bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
-        let content = self
-            .content
-            .draw(renderer, content_layout, cursor_position, None);
-        let is_decrease_disabled = self.value <= self.bounds.0;
-        let is_increase_disabled = self.value >= self.bounds.1;
-
-        self::Renderer::draw(
-            renderer,
-            cursor_position,
-            self.state,
-            inc_bounds,
-            dec_bounds,
-            is_mouse_over,
-            is_decrease_disabled,
-            is_increase_disabled,
-            content,
-            &self.style,
-            self.font,
-        )
-    }
-
-    fn hash_layout(&self, state: &mut Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.padding.hash(state);
-        self.size.hash(state);
-        self.content.hash_layout(state);
-    }
-
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn on_event(
         &mut self,
         event: Event,
@@ -346,7 +310,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let content = children.next().expect("fail to get content layout");
@@ -372,10 +336,10 @@ where
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                         if mouse_over_dec {
                             self.state.decrease_pressed = true;
-                            self.decrease_val(messages);
+                            self.decrease_val(shell);
                         } else if mouse_over_inc {
                             self.state.increase_pressed = true;
-                            self.increase_val(messages);
+                            self.increase_val(shell);
                         } else {
                             event_status = event::Status::Ignored;
                         }
@@ -403,7 +367,7 @@ where
                                 if T::zero().eq(&self.value) {
                                     new_val = c.to_string();
                                 } else {
-                                    new_val.insert(idx, c)
+                                    new_val.insert(idx, c);
                                 }
                             }
                             cursor::State::Selection { start, end } => {
@@ -413,7 +377,7 @@ where
                                     new_val.replace_range(
                                         if start > end { end..start } else { start..end },
                                         &c.to_string(),
-                                    )
+                                    );
                                 }
                             }
                         }
@@ -422,14 +386,14 @@ where
                             Ok(val) => {
                                 if (self.bounds.0..=self.bounds.1).contains(&val) {
                                     self.value = val;
-                                    messages.push((self.on_change)(self.value));
+                                    shell.publish((self.on_change)(self.value));
                                     self.content.on_event(
                                         event.clone(),
                                         content,
                                         cursor_position,
                                         renderer,
                                         clipboard,
-                                        messages,
+                                        shell,
                                     )
                                 } else {
                                     event::Status::Ignored
@@ -443,11 +407,11 @@ where
                     {
                         match key_code {
                             keyboard::KeyCode::Up => {
-                                self.increase_val(messages);
+                                self.increase_val(shell);
                                 event::Status::Captured
                             }
                             keyboard::KeyCode::Down => {
-                                self.decrease_val(messages);
+                                self.decrease_val(shell);
                                 event::Status::Captured
                             }
                             keyboard::KeyCode::Backspace => {
@@ -482,7 +446,7 @@ where
                                                         start..end
                                                     },
                                                     "",
-                                                )
+                                                );
                                             }
                                         }
                                     }
@@ -491,14 +455,14 @@ where
                                         Ok(val) => {
                                             if (self.bounds.0..=self.bounds.1).contains(&val) {
                                                 self.value = val;
-                                                messages.push((self.on_change)(self.value));
+                                                shell.publish((self.on_change)(self.value));
                                                 self.content.on_event(
                                                     event.clone(),
                                                     content,
                                                     cursor_position,
                                                     renderer,
                                                     clipboard,
-                                                    messages,
+                                                    shell,
                                                 )
                                             } else {
                                                 event::Status::Ignored
@@ -514,23 +478,20 @@ where
                                 cursor_position,
                                 renderer,
                                 clipboard,
-                                messages,
+                                shell,
                             ),
                         }
                     }
                     // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                        let negative: bool;
-                        match delta {
+                        let negative = match delta {
                             mouse::ScrollDelta::Lines { y, .. }
-                            | mouse::ScrollDelta::Pixels { y, .. } => {
-                                negative = y.is_sign_negative()
-                            }
-                        }
+                            | mouse::ScrollDelta::Pixels { y, .. } => y.is_sign_negative(),
+                        };
                         if negative {
-                            self.increase_val(messages)
+                            self.increase_val(shell);
                         } else {
-                            self.decrease_val(messages)
+                            self.decrease_val(shell);
                         }
                         event::Status::Captured
                     }
@@ -540,7 +501,7 @@ where
                         cursor_position,
                         renderer,
                         clipboard,
-                        messages,
+                        shell,
                     ),
                 }
             }
@@ -553,10 +514,149 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 ),
             }
         }
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _viewport: &Rectangle,
+        _renderer: &Renderer,
+    ) -> mouse::Interaction {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let _content_layout = children.next().expect("fail to get content layout");
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
+        let is_mouse_over = bounds.contains(cursor_position);
+        let is_decrease_disabled = self.value <= self.bounds.0;
+        let is_increase_disabled = self.value >= self.bounds.1;
+        let mouse_over_decrease = dec_bounds.contains(cursor_position);
+        let mouse_over_increase = inc_bounds.contains(cursor_position);
+
+        if (mouse_over_decrease && !is_decrease_disabled)
+            || (mouse_over_increase && !is_increase_disabled)
+        {
+            mouse::Interaction::Pointer
+        } else if is_mouse_over {
+            mouse::Interaction::Text
+        } else {
+            mouse::Interaction::default()
+        }
+    }
+
+    fn draw(
+        &self,
+        renderer: &mut Renderer,
+        _style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
+        _viewport: &iced_graphics::Rectangle,
+    ) {
+        let mut children = layout.children();
+        let content_layout = children.next().expect("fail to get content layout");
+        let mut mod_children = children
+            .next()
+            .expect("fail to get modifiers layout")
+            .children();
+        let inc_bounds = mod_children
+            .next()
+            .expect("fail to get increase mod layout")
+            .bounds();
+        let dec_bounds = mod_children
+            .next()
+            .expect("fail to get decreate mod layout")
+            .bounds();
+        self.content
+            .draw(renderer, content_layout, cursor_position, None);
+        let is_decrease_disabled = self.value <= self.bounds.0;
+        let is_increase_disabled = self.value >= self.bounds.1;
+
+        let decrease_btn_style = if is_decrease_disabled {
+            self.style_sheet.disabled()
+        } else if self.state.decrease_pressed {
+            self.style_sheet.pressed()
+        } else {
+            self.style_sheet.active()
+        };
+
+        let increase_btn_style = if is_increase_disabled {
+            self.style_sheet.disabled()
+        } else if self.state.increase_pressed {
+            self.style_sheet.pressed()
+        } else {
+            self.style_sheet.active()
+        };
+
+        // decrease button section
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: dec_bounds,
+                border_radius: 3.0,
+                border_width: 0.,
+                border_color: Color::TRANSPARENT,
+            },
+            decrease_btn_style
+                .button_background
+                .unwrap_or(Background::Color(Color::TRANSPARENT)),
+        );
+
+        let mut buffer = [0; 4];
+
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: dec_bounds.center_x(),
+                y: dec_bounds.center_y(),
+                ..dec_bounds
+            },
+            size: dec_bounds.height,
+            color: decrease_btn_style.icon_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // increase button section
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: inc_bounds,
+                border_radius: 3.0,
+                border_width: 0.,
+                border_color: Color::TRANSPARENT,
+            },
+            increase_btn_style
+                .button_background
+                .unwrap_or(Background::Color(Color::TRANSPARENT)),
+        );
+
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: inc_bounds.center_x(),
+                y: inc_bounds.center_y(),
+                ..inc_bounds
+            },
+            size: inc_bounds.height,
+            color: increase_btn_style.icon_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
     }
 }
 
@@ -586,66 +686,14 @@ pub struct ModifierState {
     pub increase_pressed: bool,
 }
 
-/// The renderer of a [`NumberInput`].
-///
-/// Your [renderer] will need to implement this trait before being
-/// able to use a [`NumberInput`] in your user interface.
-///
-/// [renderer]: crate::renderer
-pub trait Renderer: text_input::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
-
-    /// The default padding of a [`NumberInput`].
-    const DEFAULT_PADDING: u16;
-
-    #[allow(clippy::too_many_arguments)]
-    /// Draws a [`NumberInput`].
-    fn draw(
-        &mut self,
-        cursor_position: Point,
-        state: &ModifierState,
-        inc_bounds: Rectangle,
-        dec_bounds: Rectangle,
-        is_mouse_over: bool,
-        is_decrease_disabled: bool,
-        is_increase_disabled: bool,
-        content: Self::Output,
-        style: &<Self as self::Renderer>::Style,
-        font: Self::Font,
-    ) -> Self::Output;
-}
-
 impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + container::Renderer + column::Renderer + row::Renderer,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
         Element::new(num_input)
-    }
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
-
-    const DEFAULT_PADDING: u16 = 7;
-
-    fn draw(
-        &mut self,
-        _: Point,
-        _: &ModifierState,
-        _: Rectangle,
-        _: Rectangle,
-        _: bool,
-        _: bool,
-        _: bool,
-        _: Self::Output,
-        _: &<Self as Renderer>::Style,
-        _: <Self as text::Renderer>::Font,
-    ) -> Self::Output {
     }
 }

@@ -1,5 +1,5 @@
 use iced::{
-    button, Align, Button, Color, Container, Element, Length, Row, Sandbox, Settings, Text,
+    button, Alignment, Button, Color, Container, Element, Length, Row, Sandbox, Settings, Text,
 };
 
 use iced_aw::color_picker::{self, ColorPicker};
@@ -65,7 +65,7 @@ impl Sandbox for ColorPickerExample {
         );
 
         let row = Row::new()
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .spacing(10)
             .push(datepicker)
             .push(Text::new(format!("Color: {:?}", self.color)));

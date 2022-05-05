@@ -1,7 +1,24 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use std::hash::Hash;
+use std::collections::HashMap;
+
+use chrono::{Duration, Local, NaiveTime, Timelike};
+use iced_graphics::{
+    canvas::{self, LineCap, Path, Stroke},
+    Backend, Renderer,
+};
+use iced_native::{
+    alignment::{Horizontal, Vertical},
+    event, keyboard,
+    layout::{self, Limits},
+    mouse, overlay, renderer,
+    text::Renderer as _,
+    touch,
+    widget::{Button, Column, Container, Row, Text},
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Renderer as _, Shell, Size, Vector, Widget,
+};
 
 use crate::{
     core::clock::{
@@ -9,22 +26,16 @@ use crate::{
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
-    core::{overlay::Position, renderer::DrawEnvironment, time::Period},
-    graphics::icons::Icon,
+    core::{clock, overlay::Position, time::Period},
     native::{
-        icon_text,
         time_picker::{self, Time},
         IconText,
     },
+    style::style_state::StyleState,
+    Icon,
 };
-use chrono::{Duration, Local, NaiveTime, Timelike};
-use iced_graphics::{canvas, Size};
-use iced_native::{
-    button, column, container, event, keyboard,
-    layout::{self, Limits},
-    mouse, overlay, row, text, touch, Align, Button, Clipboard, Column, Container, Element, Event,
-    Layout, Length, Point, Row, Text, Widget,
-};
+
+pub use crate::style::time_picker::{Style, StyleSheet};
 
 /// The padding around the elements.
 const PADDING: u16 = 10;
@@ -32,39 +43,36 @@ const PADDING: u16 = 10;
 const SPACING: u16 = 15;
 /// The spacing between the buttons.
 const BUTTON_SPACING: u16 = 5;
+/// The percentage size of the numbers.
+const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
+/// The percentage size of the period.
+const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// The overlay of the [`TimePicker`](crate::native::TimePicker).
 #[allow(missing_debug_implementations)]
-pub struct TimePickerOverlay<'a, Message, Renderer>
+pub struct TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a + self::Renderer + button::Renderer,
+    B: Backend,
 {
     /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
-    cancel_button: Element<'a, Message, Renderer>,
+    cancel_button: Element<'a, Message, Renderer<B>>,
     /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
-    submit_button: Element<'a, Message, Renderer>,
+    submit_button: Element<'a, Message, Renderer<B>>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
     /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
     position: Point,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
-    style: &'a <Renderer as self::Renderer>::Style,
+    style_sheet: &'a Box<dyn StyleSheet>,
 }
 
-impl<'a, Message, Renderer> TimePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B> TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
     /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
     /// position.
@@ -73,7 +81,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style: &'a <Renderer as self::Renderer>::Style,
+        style_sheet: &'a Box<dyn StyleSheet>,
     ) -> Self {
         let time_picker::State {
             overlay_state,
@@ -97,14 +105,14 @@ where
             .into(),
             on_submit,
             position,
-            style,
+            style_sheet,
         }
     }
 
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B>> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -115,8 +123,8 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if layout.bounds().contains(cursor_position) {
@@ -207,8 +215,9 @@ where
                     NearestRadius::None => event::Status::Ignored,
                 },
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerLifted { .. })
-                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                | Event::Touch(
+                    touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
+                ) => {
                     self.state.clock_dragged = ClockDragged::None;
                     event::Status::Captured
                 }
@@ -263,8 +272,9 @@ where
         } else {
             match event {
                 Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerLifted { .. })
-                | Event::Touch(touch::Event::FingerLost { .. }) => {
+                | Event::Touch(
+                    touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
+                ) => {
                     self.state.clock_dragged = ClockDragged::None;
                     event::Status::Captured
                 }
@@ -280,8 +290,8 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
@@ -403,7 +413,7 @@ where
         let digital_clock_status = digital_clock_status.merge(second_status);
 
         if digital_clock_status == event::Status::Captured {
-            self.state.clock_cache.clear()
+            self.state.clock_cache.clear();
         }
 
         digital_clock_status
@@ -415,8 +425,8 @@ where
         event: &Event,
         _layout: Layout<'_>,
         _cursor_position: Point,
-        _messages: &mut Vec<Message>,
-        _renderer: &Renderer,
+        _shell: &mut Shell<Message>,
+        _renderer: &Renderer<B>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -427,7 +437,7 @@ where
             let mut status = event::Status::Ignored;
 
             if let keyboard::KeyCode::Tab = key_code {
-                if self.state.keyboard_modifiers.shift {
+                if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous(self.state.show_seconds);
                 } else {
                     self.state.focus = self.state.focus.next(self.state.show_seconds);
@@ -450,20 +460,20 @@ where
 
                 match self.state.focus {
                     Focus::DigitalHour => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1));
                     }
                     Focus::DigitalMinute => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1));
                     }
                     Focus::DigitalSecond => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1))
+                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1));
                     }
                     _ => {}
                 }
             }
 
             if status == event::Status::Captured {
-                self.state.clock_cache.clear()
+                self.state.clock_cache.clear();
             }
 
             status
@@ -476,27 +486,20 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for TimePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B> iced_native::Overlay<Message, Renderer<B>>
+    for TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
     fn layout(
         &self,
-        renderer: &Renderer,
+        renderer: &Renderer<B>,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(f32::from(PADDING))
+            .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300)
@@ -518,7 +521,7 @@ where
         ));
 
         // Clock-Canvas
-        let mut clock = Row::<(), Renderer>::new()
+        let mut clock = Row::<(), Renderer<B>>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(renderer, &limits);
@@ -538,13 +541,11 @@ where
 
         // Buttons
         let cancel_limits = limits
-            .clone()
             .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
         let submit_limits = limits
-            .clone()
             .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
@@ -590,18 +591,13 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer,
+        renderer: &Renderer<B>,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        if let event::Status::Captured = self.on_event_keyboard(
-            &event,
-            layout,
-            cursor_position,
-            messages,
-            renderer,
-            clipboard,
-        ) {
+        if event::Status::Captured
+            == self.on_event_keyboard(&event, layout, cursor_position, shell, renderer, clipboard)
+        {
             return event::Status::Captured;
         }
 
@@ -615,7 +611,7 @@ where
             &event,
             clock_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -631,7 +627,7 @@ where
             &event,
             digital_clock_layout,
             cursor_position,
-            messages,
+            shell,
             renderer,
             clipboard,
         );
@@ -647,7 +643,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let submit_button_layout = children
@@ -662,7 +658,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            &mut fake_messages,
+            &mut Shell::new(&mut fake_messages),
         );
 
         if !fake_messages.is_empty() {
@@ -688,7 +684,7 @@ where
                 }
             };
 
-            messages.push((self.on_submit)(time))
+            shell.publish((self.on_submit)(time));
         }
 
         clock_status
@@ -697,63 +693,242 @@ where
             .merge(submit_status)
     }
 
-    fn draw(
+    fn mouse_interaction(
         &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: iced_native::Layout<'_>,
+        layout: Layout<'_>,
         cursor_position: Point,
-    ) -> Renderer::Output {
-        <Renderer as self::Renderer>::draw(
+        viewport: &Rectangle,
+        renderer: &Renderer<B>,
+    ) -> mouse::Interaction {
+        let mut children = layout.children();
+        let mouse_interaction = mouse::Interaction::default();
+
+        // Clock canvas
+        let clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a clock canvas layout");
+        let clock_mouse_interaction = if clock_layout.bounds().contains(cursor_position) {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        };
+
+        // Digital clock
+        let digital_clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a digital clock layout");
+        //let digital_clock_mouse_interaction = mouse::Interaction::default();
+        let mut digital_clock_children = digital_clock_layout
+            .children()
+            .next()
+            .expect("Graphics: Layout should have digital clock children")
+            .children();
+
+        let f = |layout: iced_native::Layout<'_>| {
+            let mut children = layout.children();
+
+            let up_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a up arrow bounds")
+                .bounds();
+            let _center_bounds = children.next();
+            let down_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a down arrow bounds")
+                .bounds();
+
+            let mut mouse_interaction = mouse::Interaction::default();
+
+            let up_arrow_hovered = up_bounds.contains(cursor_position);
+            let down_arrow_hovered = down_bounds.contains(cursor_position);
+
+            if up_arrow_hovered || down_arrow_hovered {
+                mouse_interaction = mouse_interaction.max(mouse::Interaction::Pointer);
+            }
+
+            mouse_interaction
+        };
+
+        if !self.state.use_24h {
+            // Placeholder
+            let _ = digital_clock_children.next();
+        }
+
+        let hour_layout = digital_clock_children
+            .next()
+            .expect("Graphics: Layout should have a hour layout");
+        let hour_mouse_interaction = f(hour_layout);
+
+        let _hour_minute_separator = digital_clock_children.next();
+
+        let minute_layout = digital_clock_children
+            .next()
+            .expect("Graphics: Layout should have a minute layout");
+        let minute_mouse_interaction = f(minute_layout);
+
+        let second_mouse_interaction = if self.state.show_seconds {
+            let _minute_second_separator = digital_clock_children.next();
+
+            let second_layout = digital_clock_children
+                .next()
+                .expect("Graphics: Layout should have a second layout");
+            f(second_layout)
+        } else {
+            mouse::Interaction::default()
+        };
+
+        // Buttons
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
+
+        let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
+            cancel_button_layout,
+            cursor_position,
+            viewport,
             renderer,
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: self.style,
-                viewport: None,
-                focus: self.state.focus,
-            },
-            self.state,
-            &self.cancel_button,
-            &self.submit_button,
-        )
+        );
+
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a TimePicker");
+
+        let submit_mouse_interaction = self.submit_button.mouse_interaction(
+            submit_button_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
+
+        mouse_interaction
+            .max(clock_mouse_interaction)
+            .max(hour_mouse_interaction)
+            .max(minute_mouse_interaction)
+            .max(second_mouse_interaction)
+            .max(cancel_mouse_interaction)
+            .max(submit_mouse_interaction)
     }
 
-    fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
+    fn draw(
+        &self,
+        renderer: &mut Renderer<B>,
+        style: &iced_native::renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
 
-        (position.x as u32).hash(state);
-        (position.y as u32).hash(state);
-        self.state.show_seconds.hash(state);
-        self.state.use_24h.hash(state);
+        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, self.style_sheet.active());
+        let _ = style_sheet.insert(StyleState::Selected, self.style_sheet.selected());
+        let _ = style_sheet.insert(StyleState::Hovered, self.style_sheet.hovered());
+        let _ = style_sheet.insert(StyleState::Focused, self.style_sheet.focused());
+
+        let mut style_state = StyleState::Active;
+        if self.state.focus == Focus::Overlay {
+            style_state = style_state.max(StyleState::Focused);
+        }
+        if bounds.contains(cursor_position) {
+            style_state = style_state.max(StyleState::Hovered);
+        }
+
+        // Background
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius: style_sheet[&style_state].border_radius,
+                border_width: style_sheet[&style_state].border_width,
+                border_color: style_sheet[&style_state].border_color,
+            },
+            style_sheet[&style_state].background,
+        );
+
+        // ----------- Clock canvas --------------------
+        let clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a clock canvas layout");
+        draw_clock(renderer, self, clock_layout, cursor_position, &style_sheet);
+
+        // ----------- Digital clock ------------------
+        let digital_clock_layout = children
+            .next()
+            .expect("Graphics: Layout should have a digital clock layout");
+        draw_digital_clock(
+            renderer,
+            self,
+            digital_clock_layout,
+            cursor_position,
+            &style_sheet,
+        );
+
+        // ----------- Buttons ------------------------
+        let cancel_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
+
+        self.cancel_button.draw(
+            renderer,
+            style,
+            cancel_button_layout,
+            cursor_position,
+            &bounds,
+        );
+
+        let submit_button_layout = children
+            .next()
+            .expect("Graphics: Layout should have a submit button layout for a TimePicker");
+
+        self.submit_button.draw(
+            renderer,
+            style,
+            submit_button_layout,
+            cursor_position,
+            &bounds,
+        );
+
+        // Buttons are not focusable right now...
+        if self.state.focus == Focus::Cancel {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: cancel_button_layout.bounds(),
+                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_width: style_sheet[&StyleState::Focused].border_width,
+                    border_color: style_sheet[&StyleState::Focused].border_color,
+                },
+                Color::TRANSPARENT,
+            );
+        }
+
+        if self.state.focus == Focus::Submit {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: submit_button_layout.bounds(),
+                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_width: style_sheet[&StyleState::Focused].border_width,
+                    border_color: style_sheet[&StyleState::Focused].border_color,
+                },
+                Color::TRANSPARENT,
+            );
+        }
     }
 }
 
 /// Defines the layout of the digital clock of the time picker.
-fn digital_clock<'a, Message, Renderer>(
-    time_picker: &TimePickerOverlay<'a, Message, Renderer>,
-    renderer: &Renderer,
+fn digital_clock<'a, Message, B>(
+    time_picker: &TimePickerOverlay<'a, Message, B>,
+    renderer: &Renderer<B>,
     limits: Limits,
 ) -> iced_native::layout::Node
 where
     Message: 'a + Clone,
-    Renderer: 'a
-        + self::Renderer
-        + button::Renderer
-        + column::Renderer
-        + container::Renderer
-        + icon_text::Renderer
-        + row::Renderer
-        + text::Renderer,
+    B: 'a + Backend + iced_graphics::backend::Text,
 {
-    let arrow_size = text::Renderer::default_size(renderer);
-    let font_size = (1.2 * f32::from(text::Renderer::default_size(renderer))) as u16;
+    let arrow_size = renderer.default_size();
+    let font_size = (1.2 * f32::from(renderer.default_size())) as u16;
 
-    let mut digital_clock_row = Row::<(), Renderer>::new()
-        .align_items(Align::Center)
+    let mut digital_clock_row = Row::<(), Renderer<B>>::new()
+        .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
         .spacing(1);
@@ -763,14 +938,14 @@ where
             Column::new() // Just a placeholder
                 .height(Length::Shrink)
                 .push(Text::new("AM").size(font_size)),
-        )
+        );
     }
 
     digital_clock_row = digital_clock_row
         .push(
             // Hour
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Hour arrow
@@ -793,7 +968,7 @@ where
         )
         .push(
             Column::new()
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Minute arrow
@@ -819,7 +994,7 @@ where
             )
             .push(
                 Column::new()
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .height(Length::Shrink)
                     .push(
                         // Up Minute arrow
@@ -836,7 +1011,7 @@ where
                             .width(Length::Units(arrow_size))
                             .height(Length::Units(arrow_size)),
                     ),
-            )
+            );
     }
 
     if !time_picker.state.use_24h {
@@ -855,36 +1030,545 @@ where
         .layout(renderer, &limits)
 }
 
-/// The renderer of a [`TimePickerOverlay`](TimePickerOverlay).
-///
-/// Your renderer fill need to implement this trait before being
-/// able to use a [`TimePicker`](crate::native::TimePicker) in your user
-/// interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
+/// Draws the analog clock.
+#[allow(clippy::too_many_lines)]
+fn draw_clock<'a, Message, B>(
+    renderer: &mut Renderer<B>,
+    time_picker: &TimePickerOverlay<'a, Message, B>,
+    layout: iced_native::Layout<'_>,
+    cursor_position: Point,
+    style: &HashMap<StyleState, Style>,
+) where
+    Message: Clone,
+    B: Backend + iced_graphics::backend::Text,
+{
+    let mut clock_style_state = StyleState::Active;
+    if layout.bounds().contains(cursor_position) {
+        clock_style_state = clock_style_state.max(StyleState::Hovered);
+    }
 
-    /// Draws a [`TimePickerOverlay`](TimePickerOverlay).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
-        state: &State,
-        cancel_button: &Element<'_, Message, Self>,
-        submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output;
+    let geometry = time_picker
+        .state
+        .clock_cache
+        .draw(layout.bounds().size(), |frame| {
+            let center = frame.center();
+            let radius = frame.width().min(frame.height()) * 0.5;
+            let period = if time_picker.state.time.hour12().0 {
+                clock::Period::PM
+            } else {
+                clock::Period::AM
+            };
+
+            let number_size = radius * NUMBER_SIZE_PERCENTAGE;
+            let period_size = radius * PERIOD_SIZE_PERCENTAGE;
+
+            let period_radius = radius * PERIOD_PERCENTAGE;
+
+            let (hour_radius, minute_radius, second_radius) = if time_picker.state.show_seconds {
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE,
+                    radius * MINUTE_RADIUS_PERCENTAGE,
+                    radius * SECOND_RADIUS_PERCENTAGE,
+                )
+            } else {
+                (
+                    radius * HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+                    radius * MINUTE_RADIUS_PERCENTAGE_NO_SECONDS,
+                    f32::MAX,
+                )
+            };
+
+            let internal_cursor_position =
+                cursor_position - Vector::new(layout.bounds().x, layout.bounds().y);
+
+            let nearest_radius = if layout.bounds().contains(cursor_position) {
+                crate::core::clock::nearest_radius(
+                    &if time_picker.state.show_seconds {
+                        vec![
+                            (period_radius, NearestRadius::Period),
+                            (hour_radius, NearestRadius::Hour),
+                            (minute_radius, NearestRadius::Minute),
+                            (second_radius, NearestRadius::Second),
+                        ]
+                    } else {
+                        vec![
+                            (period_radius, NearestRadius::Period),
+                            (hour_radius, NearestRadius::Hour),
+                            (minute_radius, NearestRadius::Minute),
+                        ]
+                    },
+                    internal_cursor_position,
+                    center,
+                )
+            } else {
+                NearestRadius::None
+            };
+
+            let hour_points = crate::core::clock::circle_points(hour_radius, center, 12);
+            let minute_points = crate::core::clock::circle_points(minute_radius, center, 60);
+            let second_points = crate::core::clock::circle_points(second_radius, center, 60);
+
+            let hand_stroke = Stroke {
+                width: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_hand_width,
+                color: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_hand_color,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
+
+            match nearest_radius {
+                NearestRadius::Period => {
+                    frame.fill(
+                        &Path::circle(center, period_size),
+                        style
+                            .get(&StyleState::Hovered)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                }
+                NearestRadius::Hour => {
+                    let nearest_point = hour_points
+                        [crate::core::clock::nearest_point(&hour_points, internal_cursor_position)];
+
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                }
+                NearestRadius::Minute => {
+                    let nearest_point = minute_points[crate::core::clock::nearest_point(
+                        &minute_points,
+                        internal_cursor_position,
+                    )];
+
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                }
+                NearestRadius::Second => {
+                    let nearest_point = second_points[crate::core::clock::nearest_point(
+                        &second_points,
+                        internal_cursor_position,
+                    )];
+
+                    frame.fill(
+                        &Path::circle(nearest_point, 5.0),
+                        style
+                            .get(&StyleState::Hovered)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                }
+                NearestRadius::None => {}
+            }
+
+            let period_text = canvas::Text {
+                content: format!("{}", period),
+                position: center,
+                color: style
+                    .get(&clock_style_state)
+                    .expect("Style Sheet not found.")
+                    .clock_number_color,
+                size: period_size,
+                font: iced_graphics::Font::default(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            };
+            frame.fill_text(period_text);
+
+            hour_points.iter().enumerate().for_each(|(i, p)| {
+                let (pm, selected) = {
+                    let (pm, _) = time_picker.state.time.hour12();
+                    let hour = time_picker.state.time.hour();
+                    (pm, hour % 12 == i as u32)
+                };
+
+                let mut style_state = StyleState::Active;
+                if selected {
+                    frame.fill(
+                        &Path::circle(*p, number_size * 0.8),
+                        style
+                            .get(&StyleState::Selected)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    style_state = style_state.max(StyleState::Selected);
+                }
+
+                let text = canvas::Text {
+                    content: format!(
+                        "{}",
+                        if pm && time_picker.state.use_24h {
+                            i + 12
+                        } else if !time_picker.state.use_24h && i == 0 {
+                            12
+                        } else {
+                            i
+                        }
+                    ),
+                    position: *p,
+                    color: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .clock_number_color,
+                    size: number_size,
+                    font: iced_graphics::Font::default(),
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                };
+
+                frame.fill_text(text);
+            });
+
+            minute_points.iter().enumerate().for_each(|(i, p)| {
+                let selected = time_picker.state.time.minute() == i as u32;
+
+                let mut style_state = StyleState::Active;
+                if selected {
+                    frame.fill(
+                        &Path::circle(*p, number_size * 0.5),
+                        style
+                            .get(&StyleState::Selected)
+                            .expect("Style Sheet not found.")
+                            .clock_number_background,
+                    );
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    style_state = style_state.max(StyleState::Selected);
+                }
+
+                if i % 5 == 0 {
+                    let text = canvas::Text {
+                        content: format!("{:02}", i),
+                        position: *p,
+                        color: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .clock_number_color,
+                        size: number_size,
+                        font: iced_graphics::Font::default(),
+                        horizontal_alignment: Horizontal::Center,
+                        vertical_alignment: Vertical::Center,
+                    };
+
+                    frame.fill_text(text);
+                } else {
+                    let circle = Path::circle(*p, number_size * 0.1);
+                    frame.fill(
+                        &circle,
+                        style
+                            .get(&StyleState::Active)
+                            .expect("Style Sheet not found.")
+                            .clock_dots_color,
+                    );
+                }
+            });
+
+            if time_picker.state.show_seconds {
+                second_points.iter().enumerate().for_each(|(i, p)| {
+                    let selected = time_picker.state.time.second() == i as u32;
+
+                    let mut style_state = StyleState::Active;
+                    if selected {
+                        frame.fill(
+                            &Path::circle(*p, number_size * 0.5),
+                            style
+                                .get(&StyleState::Selected)
+                                .expect("Style Sheet not found.")
+                                .clock_number_background,
+                        );
+                        frame.stroke(&Path::line(center, *p), hand_stroke);
+                        style_state = style_state.max(StyleState::Selected);
+                    }
+
+                    if i % 10 == 0 {
+                        let text = canvas::Text {
+                            content: format!("{:02}", i),
+                            position: *p,
+                            color: style
+                                .get(&style_state)
+                                .expect("Style Sheet not found.")
+                                .clock_number_color,
+                            size: number_size,
+                            font: iced_graphics::Font::default(),
+                            horizontal_alignment: Horizontal::Center,
+                            vertical_alignment: Vertical::Center,
+                        };
+
+                        frame.fill_text(text);
+                    } else {
+                        let circle = Path::circle(*p, number_size * 0.1);
+                        frame.fill(
+                            &circle,
+                            style
+                                .get(&StyleState::Active)
+                                .expect("Style Sheet not found.")
+                                .clock_dots_color,
+                        );
+                    }
+                });
+            }
+        });
+
+    // TODO: find out how to render a canvas
+    let translation = Vector::new(layout.bounds().x, layout.bounds().y);
+    renderer.with_translation(translation, |renderer| {
+        renderer.draw_primitive(geometry.into_primitive());
+    });
 }
 
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
+/// Draws the digital clock.
+#[allow(clippy::too_many_lines)]
+fn draw_digital_clock<'a, Message, B>(
+    renderer: &mut Renderer<B>,
+    time_picker: &TimePickerOverlay<'a, Message, B>,
+    layout: iced_native::Layout<'_>,
+    cursor_position: Point,
+    style: &HashMap<StyleState, Style>,
+) where
+    Message: Clone,
+    B: Backend + iced_graphics::backend::Text,
+{
+    //println!("layout: {:#?}", layout);
+    let mut children = layout
+        .children()
+        .next()
+        .expect("Graphics: Layout should have digital clock children")
+        .children();
 
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<Self::Defaults, Self::Style, Focus>,
-        _state: &State,
-        _cancel_button: &Element<'_, Message, Self>,
-        _submit_button: &Element<'_, Message, Self>,
-    ) -> Self::Output {
+    let f = |renderer: &mut Renderer<B>,
+             layout: iced_native::Layout<'_>,
+             text: String,
+             target: Focus| {
+        let style_state = if time_picker.state.focus == target {
+            StyleState::Focused
+        } else {
+            StyleState::Active
+        };
+
+        let mut children = layout.children();
+
+        let up_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a up arrow bounds")
+            .bounds();
+        let center_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a center bounds")
+            .bounds();
+        let down_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a down arrow bounds")
+            .bounds();
+
+        let up_arrow_hovered = up_bounds.contains(cursor_position);
+        let down_arrow_hovered = down_bounds.contains(cursor_position);
+
+        // Background
+        if style_state == StyleState::Focused {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: layout.bounds(),
+                    border_color: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_color,
+                    border_radius: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_radius,
+                    border_width: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_width,
+                },
+                style
+                    .get(&style_state)
+                    .expect("Style Sheet not found.")
+                    .background,
+            );
+        }
+
+        let mut buffer = [0; 4];
+
+        // Caret up
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: up_bounds.center_x(),
+                y: up_bounds.center_y(),
+                ..up_bounds
+            },
+            size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Text
+        renderer.fill_text(iced_native::text::Text {
+            content: &text,
+            bounds: Rectangle {
+                x: center_bounds.center_x(),
+                y: center_bounds.center_y(),
+                ..center_bounds
+            },
+            size: center_bounds.height,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: iced_graphics::Font::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Down caret
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: down_bounds.center_x(),
+                y: down_bounds.center_y(),
+                ..down_bounds
+            },
+            size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    };
+
+    if !time_picker.state.use_24h {
+        // Placeholder
+        let _ = children.next();
+    }
+
+    // Draw hours
+    let hour_layout = children
+        .next()
+        .expect("Graphics: Layout should have a hour layout");
+    f(
+        renderer,
+        hour_layout,
+        format!(
+            "{:02}",
+            if time_picker.state.use_24h {
+                time_picker.state.time.hour()
+            } else {
+                time_picker.state.time.hour12().1
+            }
+        ),
+        Focus::DigitalHour,
+    );
+
+    // Draw separator between hours and minutes
+    let hour_minute_separator = children
+        .next()
+        .expect("Graphics: Layout should have a hour/minute separator layout");
+    renderer.fill_text(iced_native::text::Text {
+        content: ":",
+        bounds: Rectangle {
+            x: hour_minute_separator.bounds().center_x(),
+            y: hour_minute_separator.bounds().center_y(),
+            ..hour_minute_separator.bounds()
+        },
+        size: hour_minute_separator.bounds().height,
+        color: style[&StyleState::Active].text_color,
+        font: iced_graphics::Font::default(),
+        horizontal_alignment: Horizontal::Center,
+        vertical_alignment: Vertical::Center,
+    });
+
+    // Draw minutes
+    let minute_layout = children
+        .next()
+        .expect("Graphics: Layout should have a minute layout");
+    f(
+        renderer,
+        minute_layout,
+        format!("{:02}", time_picker.state.time.minute()),
+        Focus::DigitalMinute,
+    );
+
+    if time_picker.state.show_seconds {
+        // Draw separator between minutes and seconds
+        let minute_second_separator = children
+            .next()
+            .expect("Graphics: Layout should have a minute/second separator layout");
+        renderer.fill_text(iced_native::text::Text {
+            content: ":",
+            bounds: Rectangle {
+                x: minute_second_separator.bounds().center_x(),
+                y: minute_second_separator.bounds().center_y(),
+                ..minute_second_separator.bounds()
+            },
+            size: minute_second_separator.bounds().height,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: iced_graphics::Font::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Draw seconds
+        let second_layout = children
+            .next()
+            .expect("Graphics: Layout should have a second layout");
+        f(
+            renderer,
+            second_layout,
+            format!("{:02}", time_picker.state.time.second()),
+            Focus::DigitalSecond,
+        );
+    }
+
+    // Draw period
+    if !time_picker.state.use_24h {
+        let period = children
+            .next()
+            .expect("Graphics: Layout should have a period layout");
+        renderer.fill_text(iced_native::text::Text {
+            content: if time_picker.state.time.hour12().0 {
+                "PM"
+            } else {
+                "AM"
+            },
+            bounds: Rectangle {
+                x: period.bounds().center_x(),
+                y: period.bounds().center_y(),
+                ..period.bounds()
+            },
+            size: period.bounds().height,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: iced_graphics::Font::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
     }
 }
 

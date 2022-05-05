@@ -1,18 +1,23 @@
 //! Displays a [`Card`](Card).
 //!
 //! *This API requires the following crate features to be activated: card*
-use std::hash::Hash;
+use iced_native::{
+    alignment::{Horizontal, Vertical},
+    event, mouse, renderer, touch, Alignment, Clipboard, Color, Element, Event, Layout, Length,
+    Padding, Point, Rectangle, Shell, Size, Widget,
+};
 
-use iced_native::{event, touch, Clipboard, Element, Event, Layout, Length, Point, Size, Widget};
-use iced_native::{mouse, Align};
+use crate::graphics::icons::Icon;
+pub use crate::style::card::{Style, StyleSheet};
 
-use crate::core::renderer::DrawEnvironment;
+/// The default padding of a [`Card`](Card).
+const DEFAULT_PADDING: f32 = 10.0;
 
 /// A card consisting of a head, body and optional foot.
 ///
 /// # Example
 /// ```
-/// # use iced_native::{renderer::Null, Text};
+/// # use iced_native::{renderer::Null, widget::Text};
 /// #
 /// # pub type Card<'a, Message> = iced_aw::native::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
@@ -29,7 +34,7 @@ use crate::core::renderer::DrawEnvironment;
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Renderer: self::Renderer> {
+pub struct Card<'a, Message, Renderer> {
     /// The width of the [`Card`](Card).
     width: Length,
     /// The height of the [`Card`](Card).
@@ -55,12 +60,12 @@ pub struct Card<'a, Message, Renderer: self::Renderer> {
     /// The optional foot [`Element`](iced_native::Element) of the [`Card`](Card).
     foot: Option<Element<'a, Message, Renderer>>,
     /// The style of the [`Card`](Card).
-    style: <Renderer as self::Renderer>::Style,
+    style_sheet: Box<dyn StyleSheet + 'a>,
 }
 
 impl<'a, Message, Renderer> Card<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new [`Card`](Card) containing the given head and body.
     ///
@@ -79,20 +84,21 @@ where
             height: Length::Shrink,
             max_width: u32::MAX,
             max_height: u32::MAX,
-            padding_head: <Renderer as self::Renderer>::DEFAULT_PADDING,
-            padding_body: <Renderer as self::Renderer>::DEFAULT_PADDING,
-            padding_foot: <Renderer as self::Renderer>::DEFAULT_PADDING,
+            padding_head: DEFAULT_PADDING,
+            padding_body: DEFAULT_PADDING,
+            padding_foot: DEFAULT_PADDING,
             close_size: None,
             on_close: None,
             head: head.into(),
             body: body.into(),
             foot: None,
-            style: <Renderer as self::Renderer>::Style::default(),
+            style_sheet: std::boxed::Box::default(),
         }
     }
 
     /// Sets the [`Element`](iced_native::Element) of the foot of the
     /// [`Card`](Card).
+    #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self
     where
         F: Into<Element<'a, Message, Renderer>>,
@@ -102,24 +108,28 @@ where
     }
 
     /// Sets the width of the [`Card`](Card).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Card`](Card).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the maximum width of the [`Card`](Card).
+    #[must_use]
     pub fn max_width(mut self, width: u32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Sets the maximum height of the [`Card`](Card).
+    #[must_use]
     pub fn max_height(mut self, height: u32) -> Self {
         self.max_height = height;
         self
@@ -129,6 +139,7 @@ where
     ///
     /// This will set the padding of the head, body and foot to the
     /// same value.
+    #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding_head = padding;
         self.padding_body = padding;
@@ -137,24 +148,28 @@ where
     }
 
     /// Sets the padding of the head of the [`Card`](Card).
+    #[must_use]
     pub fn padding_head(mut self, padding: f32) -> Self {
         self.padding_head = padding;
         self
     }
 
     /// Sets the padding of the body of the [`Card`](Card).
+    #[must_use]
     pub fn padding_body(mut self, padding: f32) -> Self {
         self.padding_body = padding;
         self
     }
 
     /// Sets the padding of the foot of the [`Card`](Card).
+    #[must_use]
     pub fn padding_foot(mut self, padding: f32) -> Self {
         self.padding_foot = padding;
         self
     }
 
     /// Sets the size of the close icon of the [`Card`](Card).
+    #[must_use]
     pub fn close_size(mut self, size: f32) -> Self {
         self.close_size = Some(size);
         self
@@ -164,14 +179,16 @@ where
     /// [`Card`](Card) is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the [`Card`](Card).
+    #[must_use]
     pub fn on_close(mut self, msg: Message) -> Self {
         self.on_close = Some(msg);
         self
     }
 
     /// Sets the style of the [`Card`](Card).
-    pub fn style(mut self, style: impl Into<Renderer::Style>) -> Self {
-        self.style = style.into();
+    #[must_use]
+    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style_sheet = style_sheet.into();
         self
     }
 }
@@ -179,7 +196,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -194,10 +211,7 @@ where
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
-        let limits = limits
-            .clone()
-            .max_width(self.max_width)
-            .max_height(self.max_height);
+        let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
             renderer,
@@ -244,7 +258,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -275,7 +289,7 @@ where
                         // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
                         .filter(|_| close_layout.bounds().contains(cursor_position))
                         .map_or(event::Status::Ignored, |on_close| {
-                            messages.push(on_close);
+                            messages.publish(on_close);
                             event::Status::Captured
                         }),
                     _ => event::Status::Ignored,
@@ -320,43 +334,132 @@ where
             .merge(foot_status)
     }
 
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        let mut children = layout.children();
+
+        let head_layout = children
+            .next()
+            .expect("Graphics: Layout should have a head layout");
+
+        let mut head_layout_children = head_layout.children();
+        let _head = head_layout_children.next();
+        let close_layout = head_layout_children.next();
+
+        let is_mouse_over_close = close_layout.map_or(false, |layout| {
+            let bounds = layout.bounds();
+            bounds.contains(cursor_position)
+        });
+
+        let mouse_interaction = if is_mouse_over_close {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::default()
+        };
+
+        let body_layout = children
+            .next()
+            .expect("Graphics: Layout should have a body layout");
+
+        mouse_interaction
+            .max(
+                self.head
+                    .mouse_interaction(head_layout, cursor_position, viewport, renderer),
+            )
+            .max(
+                self.body
+                    .mouse_interaction(body_layout, cursor_position, viewport, renderer),
+            )
+            .max(
+                self.foot
+                    .as_ref()
+                    .map_or(mouse::Interaction::default(), |foot| {
+                        let foot_layout = children
+                            .next()
+                            .expect("Graphics: Layout should have a foot layout");
+                        foot.mouse_interaction(foot_layout, cursor_position, viewport, renderer)
+                    }),
+            )
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(
-            DrawEnvironment {
-                defaults,
-                layout,
-                cursor_position,
-                style_sheet: &self.style,
-                viewport: Some(viewport),
-                focus: (),
+    ) {
+        let bounds = layout.bounds();
+        let mut children = layout.children();
+        let style_sheet = self.style_sheet.active();
+
+        // Background
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border_radius: style_sheet.border_radius,
+                border_width: style_sheet.border_width,
+                border_color: style_sheet.border_color,
             },
+            style_sheet.background,
+        );
+
+        // Border
+        renderer.fill_quad(
+            // TODO: fill not necessary
+            renderer::Quad {
+                bounds,
+                border_radius: style_sheet.border_radius,
+                border_width: style_sheet.border_width,
+                border_color: style_sheet.border_color,
+            },
+            Color::TRANSPARENT,
+        );
+
+        // ----------- Head ----------------------
+        let head_layout = children
+            .next()
+            .expect("Graphics: Layout should have a head layout");
+        draw_head(
+            renderer,
             &self.head,
+            head_layout,
+            cursor_position,
+            viewport,
+            &style_sheet,
+        );
+
+        // ----------- Body ----------------------
+        let body_layout = children
+            .next()
+            .expect("Graphics: Layout should have a body layout");
+        draw_body(
+            renderer,
             &self.body,
+            body_layout,
+            cursor_position,
+            viewport,
+            &style_sheet,
+        );
+
+        // ----------- Foot ----------------------
+        let foot_layout = children
+            .next()
+            .expect("Graphics: Layout should have a foot layout");
+        draw_foot(
+            renderer,
             &self.foot,
-        )
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.width.hash(state);
-        self.height.hash(state);
-        self.max_width.hash(state);
-        self.max_height.hash(state);
-        self.head.hash_layout(state);
-        self.body.hash_layout(state);
-        if let Some(foot) = self.foot.as_ref() {
-            foot.hash_layout(state)
-        };
+            foot_layout,
+            cursor_position,
+            viewport,
+            &style_sheet,
+        );
     }
 }
 
@@ -371,15 +474,12 @@ fn head_node<'a, Message, Renderer>(
     close_size: Option<f32>,
 ) -> iced_native::layout::Node
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
-    let mut limits = limits
-        .loose()
-        .width(width)
-        .height(head.height())
-        .pad(padding);
+    let pad = Padding::from(padding as u16);
+    let mut limits = limits.loose().width(width).height(head.height()).pad(pad);
 
-    let close_size = close_size.unwrap_or_else(|| renderer.default_size());
+    let close_size = close_size.unwrap_or_else(|| f32::from(renderer.default_size()));
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
         Some(iced_native::layout::Node::new(Size::new(
@@ -393,17 +493,17 @@ where
     let mut size = limits.resolve(head.size());
 
     head.move_to(Point::new(padding, padding));
-    head.align(Align::Start, Align::Center, head.size());
+    head.align(Alignment::Start, Alignment::Center, head.size());
 
     if let Some(node) = close.as_mut() {
         size = Size::new(size.width + close_size, size.height);
 
         node.move_to(Point::new(size.width - padding, padding));
-        node.align(Align::End, Align::Center, node.size())
+        node.align(Alignment::End, Alignment::Center, node.size());
     }
 
     iced_native::layout::Node::with_children(
-        size.pad(padding),
+        size.pad(pad),
         match close {
             Some(node) => vec![head, node],
             None => vec![head],
@@ -420,22 +520,23 @@ fn body_node<'a, Message, Renderer>(
     width: Length,
 ) -> iced_native::layout::Node
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
+    let pad = Padding::from(padding as u16);
     let limits = limits
         .clone()
         .loose()
         .width(width)
         .height(body.height())
-        .pad(padding);
+        .pad(pad);
 
     let mut body = body.layout(renderer, &limits);
     let size = limits.resolve(body.size());
 
     body.move_to(Point::new(padding, padding));
-    body.align(Align::Start, Align::Start, size);
+    body.align(Alignment::Start, Alignment::Start, size);
 
-    iced_native::layout::Node::with_children(size.pad(padding), vec![body])
+    iced_native::layout::Node::with_children(size.pad(pad), vec![body])
 }
 
 /// Calculates the layout of the foot.
@@ -447,71 +548,162 @@ fn foot_node<'a, Message, Renderer>(
     width: Length,
 ) -> iced_native::layout::Node
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
+    let pad = Padding::from(padding as u16);
     let limits = limits
         .clone()
         .loose()
         .width(width)
         .height(foot.height())
-        .pad(padding);
+        .pad(pad);
 
     let mut foot = foot.layout(renderer, &limits);
     let size = limits.resolve(foot.size());
 
     foot.move_to(Point::new(padding, padding));
-    foot.align(Align::Start, Align::Center, size);
+    foot.align(Alignment::Start, Alignment::Center, size);
 
-    iced_native::layout::Node::with_children(size.pad(padding), vec![foot])
+    iced_native::layout::Node::with_children(size.pad(pad), vec![foot])
 }
 
-/// The renderer of a [`Card`](Card).
-///
-/// Your renderer will need to implement this trait before being
-/// able to use a [`Cary`](Card) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// The style supported by this renderer.
-    type Style: Default;
+/// Draws the head of the card.
+fn draw_head<Message, Renderer>(
+    renderer: &mut Renderer,
+    head: &Element<'_, Message, Renderer>,
+    layout: Layout<'_>,
+    cursor_position: Point,
+    viewport: &Rectangle,
+    style: &Style,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+{
+    let mut head_children = layout.children();
 
-    /// The default padding of a [`Card`](Card).
-    const DEFAULT_PADDING: f32;
+    // Head background
+    renderer.fill_quad(
+        renderer::Quad {
+            bounds: layout.bounds(),
+            border_radius: style.border_radius,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+        },
+        style.head_background,
+    );
 
-    /// The default text size of a [`Card`](Card).
-    fn default_size(&self) -> f32;
+    head.draw(
+        renderer,
+        &renderer::Style {
+            text_color: style.head_text_color,
+        },
+        head_children
+            .next()
+            .expect("Graphics: Layout should have a head content layout"),
+        cursor_position,
+        viewport,
+    );
 
-    /// Draws a [`Card`](Card).
-    fn draw<Message>(
-        &mut self,
-        env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
-        head: &Element<'_, Message, Self>,
-        body: &Element<'_, Message, Self>,
-        foot: &Option<Element<'_, Message, Self>>,
-    ) -> Self::Output;
-}
+    let mut buffer = [0; 4];
 
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    type Style = ();
+    if let Some(close_layout) = head_children.next() {
+        let close_bounds = close_layout.bounds();
+        let is_mouse_over_close = close_bounds.contains(cursor_position);
 
-    const DEFAULT_PADDING: f32 = 0.0;
-
-    fn default_size(&self) -> f32 {
-        0.0
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::X).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: close_bounds.center_x(),
+                y: close_bounds.center_y(),
+                ..close_bounds
+            },
+            size: close_layout.bounds().height + if is_mouse_over_close { 5.0 } else { 0.0 },
+            color: style.close_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
     }
+}
 
-    fn draw<Message>(
-        &mut self,
-        _env: DrawEnvironment<'_, Self::Defaults, Self::Style, ()>,
-        _head: &Element<'_, Message, Self>,
-        _body: &Element<'_, Message, Self>,
-        _foot: &Option<Element<'_, Message, Self>>,
-    ) -> Self::Output {
+/// Draws the body of the card.
+fn draw_body<Message, Renderer>(
+    renderer: &mut Renderer,
+    body: &Element<'_, Message, Renderer>,
+    layout: Layout<'_>,
+    cursor_position: Point,
+    viewport: &Rectangle,
+    style: &Style,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+{
+    let mut body_children = layout.children();
+
+    // Body background
+    renderer.fill_quad(
+        renderer::Quad {
+            bounds: layout.bounds(),
+            border_radius: 0.0,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+        },
+        style.body_background,
+    );
+
+    body.draw(
+        renderer,
+        &renderer::Style {
+            text_color: style.body_text_color,
+        },
+        body_children
+            .next()
+            .expect("Graphics: Layout should have a body content layout"),
+        cursor_position,
+        viewport,
+    );
+}
+
+/// Draws the foot of the card.
+fn draw_foot<Message, Renderer>(
+    renderer: &mut Renderer,
+    foot: &Option<Element<'_, Message, Renderer>>,
+    layout: Layout<'_>,
+    cursor_position: Point,
+    viewport: &Rectangle,
+    style: &Style,
+) where
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+{
+    let mut foot_children = layout.children();
+
+    // Foot background
+    renderer.fill_quad(
+        renderer::Quad {
+            bounds: layout.bounds(),
+            border_radius: style.border_radius,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+        },
+        style.foot_background,
+    );
+
+    if let Some(foot) = foot.as_ref() {
+        foot.draw(
+            renderer,
+            &renderer::Style {
+                text_color: style.foot_text_color,
+            },
+            foot_children
+                .next()
+                .expect("Graphics: Layout should have a foot content layout"),
+            cursor_position,
+            viewport,
+        );
     }
 }
 
 impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: self::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
     Message: Clone + 'a,
 {
     fn from(card: Card<'a, Message, Renderer>) -> Self {

@@ -1,6 +1,6 @@
 use iced::{
-    button, Align, Button, Container, Element, HorizontalAlignment, Length, Row, Sandbox, Settings,
-    Text,
+    alignment::{Alignment, Horizontal},
+    button, Button, Container, Element, Length, Row, Sandbox, Settings, Text,
 };
 
 use iced_aw::{modal, Card, Modal};
@@ -55,7 +55,7 @@ impl Sandbox for ModalExample {
         let content = Container::new(
             Row::new()
                 .spacing(10)
-                .align_items(Align::Center)
+                .align_items(Alignment::Center)
                 .push(
                     Button::new(&mut self.open_state, Text::new("Open modal!"))
                         .on_press(Message::OpenModal),
@@ -87,7 +87,7 @@ impl Sandbox for ModalExample {
                     .push(
                         Button::new(
                             &mut state.cancel_state,
-                            Text::new("Cancel").horizontal_alignment(HorizontalAlignment::Center),
+                            Text::new("Cancel").horizontal_alignment(Horizontal::Center),
                         )
                         .width(Length::Fill)
                         .on_press(Message::CancelButtonPressed),
@@ -95,7 +95,7 @@ impl Sandbox for ModalExample {
                     .push(
                         Button::new(
                             &mut state.ok_state,
-                            Text::new("Ok").horizontal_alignment(HorizontalAlignment::Center),
+                            Text::new("Ok").horizontal_alignment(Horizontal::Center),
                         )
                         .width(Length::Fill)
                         .on_press(Message::OkButtonPressed),

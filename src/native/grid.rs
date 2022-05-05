@@ -1,12 +1,10 @@
 //! Use a grid as an input element for creating grids.
 //!
 //! *This API requires the following crate features to be activated: `grid`*
-use std::hash::Hash;
-
 use iced_native::{
     event,
     layout::{Limits, Node},
-    Clipboard, Element, Event, Hasher, Layout, Length, Point, Size, Widget,
+    mouse, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -14,7 +12,7 @@ use iced_native::{
 /// # Example
 ///
 /// ```
-/// # use iced_native::{renderer::Null, Text};
+/// # use iced_native::{renderer::Null, widget::Text};
 /// #
 /// # pub type Grid<'a, Message> = iced_aw::native::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
@@ -29,7 +27,7 @@ use iced_native::{
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Grid<'a, Message, Renderer: self::Renderer> {
+pub struct Grid<'a, Message, Renderer> {
     /// The distribution [`Strategy`](Strategy) of the [`Grid`](Grid).
     strategy: Strategy,
     /// The elements in the [`Grid`](Grid).
@@ -52,7 +50,7 @@ impl Default for Strategy {
 
 impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     /// Creates a new empty [`Grid`](Grid).
     /// Elements will be laid out in a specific amount of columns.
@@ -75,6 +73,7 @@ where
     }
 
     /// Adds an [`Element`](Element) to the [`Grid`](Grid).
+    #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
@@ -94,7 +93,7 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Renderer>
 where
-    Renderer: self::Renderer,
+    Renderer: iced_native::Renderer,
 {
     fn width(&self) -> Length {
         Length::Shrink
@@ -122,12 +121,11 @@ where
                 for (column, element) in (0..columns).cycle().zip(&self.elements) {
                     let layout = element.layout(renderer, limits);
 
-                    if let Some(column_width) = column_widths.get_mut(column) {
-                        *column_width = column_width.max(layout.size().width);
-                    } else {
-                        column_widths.insert(column, layout.size().width);
+                    match column_widths.get_mut(column) {
+                        Some(column_width) => *column_width = column_width.max(layout.size().width),
+                        None => column_widths.insert(column, layout.size().width),
                     }
-                    
+                  
                     layouts.push(layout);
                 }
 
@@ -170,47 +168,52 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        messages: &mut Shell<Message>,
     ) -> event::Status {
-        let children_status: Vec<event::Status> = self
-            .elements
-            .iter_mut()
-            .zip(layout.children())
-            .map(|(child, layout)| {
-                child.on_event(
-                    event.clone(),
-                    layout,
-                    cursor_position,
-                    renderer,
-                    clipboard,
-                    messages,
-                )
-            })
-            .collect();
+        let children_status =
+            self.elements
+                .iter_mut()
+                .zip(layout.children())
+                .map(|(child, layout)| {
+                    child.on_event(
+                        event.clone(),
+                        layout,
+                        cursor_position,
+                        renderer,
+                        clipboard,
+                        messages,
+                    )
+                });
 
-        children_status
-            .into_iter()
-            .fold(event::Status::Ignored, event::Status::merge)
+        children_status.fold(event::Status::Ignored, event::Status::merge)
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(e, layout)| e.mouse_interaction(layout, cursor_position, viewport, renderer))
+            .fold(mouse::Interaction::default(), |interaction, next| {
+                interaction.max(next)
+            })
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
+        style: &iced_native::renderer::Style,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced_graphics::Point,
         viewport: &iced_graphics::Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, layout, cursor_position, viewport, &self.elements)
-    }
-
-    fn hash_layout(&self, state: &mut Hasher) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        for element in &self.elements {
-            element.hash_layout(state);
+    ) {
+        for (element, layout) in self.elements.iter().zip(layout.children()) {
+            element.draw(renderer, style, layout, cursor_position, viewport);
         }
     }
 }
@@ -232,7 +235,6 @@ fn build_grid(
             row_height = 0.;
         }
 
-        //let mut node = Node::new(size);
         node.move_to(Point::new(column_align, grid_height));
         row_height = row_height.max(node.size().height);
         nodes.push(node);
@@ -243,41 +245,9 @@ fn build_grid(
     Node::with_children(Size::new(grid_width, grid_height), nodes)
 }
 
-/// The renderer of a [`Grid`](Grid).
-///
-/// Your render will need to implement this trait before being
-/// able to use [`Grid`](Grid) in your user interface.
-pub trait Renderer: iced_native::Renderer {
-    /// Draws a [`Grid`](Grid).
-    ///
-    /// In addition to the default parameters, it expects:
-    /// - the list of [`Element`](Element)s
-    fn draw<Message>(
-        &mut self,
-        defaults: &Self::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
-        elements: &[Element<'_, Message, Self>],
-    ) -> Self::Output;
-}
-
-#[cfg(debug_assertions)]
-impl Renderer for iced_native::renderer::Null {
-    fn draw<Message>(
-        &mut self,
-        _defaults: &Self::Defaults,
-        _layout: Layout<'_>,
-        _cursor_position: Point,
-        _viewport: &iced_graphics::Rectangle,
-        _elements: &[Element<'_, Message, Self>],
-    ) {
-    }
-}
-
 impl<'a, Message, Renderer> From<Grid<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + self::Renderer,
+    Renderer: iced_native::Renderer + 'a,
     Message: 'static,
 {
     fn from(grid: Grid<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {

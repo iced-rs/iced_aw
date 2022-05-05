@@ -2,14 +2,14 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 
-use std::marker::PhantomData;
-
 use iced_native::{
     event,
     layout::{self, Limits, Node},
-    overlay, Align, Clipboard, Element, Event, Hasher, Layout, Length, Point, Rectangle, Size,
-    Widget,
+    mouse, overlay, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shell, Size, Widget,
 };
+
+use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
@@ -17,7 +17,7 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Renderer>>,
     /// The alignment of the [`Wrap`](Wrap).
-    pub alignment: Align,
+    pub alignment: Alignment,
     /// The width of the [`Wrap`](Wrap).
     pub width: Length,
     /// The height of the [`Wrap`](Wrap).
@@ -137,12 +137,13 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
 
     /// Sets the alignment of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn align_items(mut self, align: Align) -> Self {
+    pub const fn align_items(mut self, align: Alignment) -> Self {
         self.alignment = align;
         self
     }
 
     /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
+    #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
@@ -170,27 +171,6 @@ where
         self.inner_layout(renderer, limits)
     }
 
-    fn hash_layout(&self, state: &mut Hasher) {
-        use std::hash::Hash;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        self.alignment.hash(state);
-        self.line_minimal_length.hash(state);
-        self.width.hash(state);
-        self.height.hash(state);
-        self.max_width.hash(state);
-        self.max_height.hash(state);
-        self.line_spacing.hash(state);
-        self.padding.hash(state);
-        self.spacing.hash(state);
-
-        for elem in &self.elements {
-            elem.hash_layout(state)
-        }
-    }
-
     fn on_event(
         &mut self,
         event: Event,
@@ -198,7 +178,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         self.elements
             .iter_mut()
@@ -210,47 +190,57 @@ where
                     cursor_position,
                     renderer,
                     clipboard,
-                    messages,
+                    shell,
                 )
             })
             .fold(event::Status::Ignored, event::Status::merge)
     }
-    fn overlay(&mut self, layout: Layout<'_>) -> Option<overlay::Element<'_, Message, Renderer>> {
+    fn overlay(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'_, Message, Renderer>> {
         self.elements
             .iter_mut()
             .zip(layout.children())
-            .find_map(|(child, layout)| child.overlay(layout))
+            .find_map(|(child, layout)| child.overlay(layout, renderer))
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.elements
+            .iter()
+            .zip(layout.children())
+            .map(|(child, layout)| {
+                child.mouse_interaction(layout, cursor_position, viewport, renderer)
+            })
+            .max()
+            .unwrap_or_default()
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-    ) -> Renderer::Output {
-        self.inner_draw(renderer, defaults, layout, cursor_position, viewport)
-    }
-}
-
-impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
-    for Element<'a, Message, Renderer>
-where
-    Renderer: 'a + iced_native::row::Renderer,
-    Message: 'a,
-{
-    fn from(
-        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
-    ) -> Element<'a, Message, Renderer> {
-        Element::new(wrap)
+    ) {
+        for (child, layout) in self.elements.iter().zip(layout.children()) {
+            child.draw(renderer, style, layout, cursor_position, viewport);
+        }
     }
 }
 
 impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::column::Renderer,
+    Renderer: 'a + iced_native::Renderer,
     Message: 'a,
 {
     fn from(
@@ -260,11 +250,24 @@ where
     }
 }
 
+impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
+    for Element<'a, Message, Renderer>
+where
+    Renderer: 'a + iced_native::Renderer,
+    Message: 'a,
+{
+    fn from(
+        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
+    ) -> Element<'a, Message, Renderer> {
+        Element::new(wrap)
+    }
+}
+
 impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, Direction> {
     fn default() -> Self {
         Self {
             elements: vec![],
-            alignment: Align::Start,
+            alignment: Alignment::Start,
             width: Length::Shrink,
             height: Length::Shrink,
             max_width: u32::MAX,
@@ -284,26 +287,17 @@ where
 {
     /// A inner layout of the [`Wrap`](Wrap).
     fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node;
-    /// A inner draw of the [`Wrap`](Wrap).
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Horizontal>
 where
-    Renderer: iced_native::row::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let spacing = f32::from(self.spacing);
         let line_spacing = f32::from(self.line_spacing);
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -316,8 +310,8 @@ where
             .max_height(self.max_height);
         let max_width = limits.max().width;
 
-        let mut curse = padding;
-        let mut deep_curse = padding;
+        let mut curse = f32::from(padding.left);
+        let mut deep_curse = f32::from(padding.left);
         let mut current_line_height = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -344,8 +338,8 @@ where
                     start = end;
                     end += 1;
                     current_line_height = line_minimal_length;
-                    node.move_to(Point::new(padding, deep_curse));
-                    curse = offset_init + padding;
+                    node.move_to(Point::new(f32::from(padding.left), deep_curse));
+                    curse = offset_init + f32::from(padding.left);
                 } else {
                     node.move_to(Point::new(curse, deep_curse));
                     curse = offset;
@@ -360,44 +354,32 @@ where
         if end != start {
             align.push((start..end, current_line_height));
         }
-        align.into_iter().for_each(|(range, max_length)| {
+        for (range, max_length) in align {
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(size.width, max_length);
-                node.align(Align::Start, self.alignment, space);
+                node.align(Alignment::Start, self.alignment, space);
             });
-        });
+        }
         let (width, height) = (
-            max_main - padding,
-            deep_curse - padding + current_line_height,
+            max_main - f32::from(padding.left),
+            deep_curse - f32::from(padding.left) + current_line_height,
         );
         let size = limits.resolve(Size::new(width, height));
 
         Node::with_children(size.pad(padding), nodes)
     }
-
-    #[allow(clippy::inline_always)]
-    #[inline(always)]
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, &self.elements, layout, cursor_position, viewport)
-    }
 }
+
 impl<'a, Message, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, Renderer, direction::Vertical>
 where
-    Renderer: iced_native::column::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = f32::from(self.padding);
+        let padding = Padding::from(self.padding);
         let spacing = f32::from(self.spacing);
         let line_spacing = f32::from(self.line_spacing);
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -410,8 +392,8 @@ where
             .max_height(self.max_height);
         let max_height = limits.max().height;
 
-        let mut curse = padding;
-        let mut wide_curse = padding;
+        let mut curse = f32::from(padding.left);
+        let mut wide_curse = f32::from(padding.left);
         let mut current_line_width = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -438,8 +420,8 @@ where
                     start = end;
                     end += 1;
                     current_line_width = line_minimal_length;
-                    node.move_to(Point::new(wide_curse, padding));
-                    curse = offset_init + padding;
+                    node.move_to(Point::new(wide_curse, f32::from(padding.left)));
+                    curse = offset_init + f32::from(padding.left);
                 } else {
                     node.move_to(Point::new(wide_curse, curse));
                     end += 1;
@@ -454,34 +436,22 @@ where
         if end != start {
             align.push((start..end, current_line_width));
         }
-        align.into_iter().for_each(|(range, max_length)| {
+
+        for (range, max_length) in align {
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(max_length, size.height);
-                node.align(self.alignment, Align::Start, space);
+                node.align(self.alignment, Alignment::Start, space);
             });
-        });
+        }
 
         let (width, height) = (
-            wide_curse - padding + current_line_width,
-            max_main - padding,
+            wide_curse - f32::from(padding.left) + current_line_width,
+            max_main - f32::from(padding.left),
         );
         let size = limits.resolve(Size::new(width, height));
 
         Node::with_children(size.pad(padding), nodes)
-    }
-
-    #[allow(clippy::inline_always)]
-    #[inline(always)]
-    fn inner_draw(
-        &self,
-        renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) -> Renderer::Output {
-        renderer.draw(defaults, &self.elements, layout, cursor_position, viewport)
     }
 }
 

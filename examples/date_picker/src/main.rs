@@ -1,4 +1,4 @@
-use iced::{button, Align, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
+use iced::{button, Alignment, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
 
 use iced_aw::date_picker::{self, Date, DatePicker};
 
@@ -63,7 +63,7 @@ impl Sandbox for DatePickerExample {
         );
 
         let row = Row::new()
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .spacing(10)
             .push(datepicker)
             .push(Text::new(format!("Date: {}", self.date,)));

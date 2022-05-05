@@ -1,5 +1,5 @@
 use crate::Section;
-use iced::{button, Align, Button, Column, Element, Length, Text};
+use iced::{button, Alignment, Button, Column, Element, Length, Text};
 
 pub struct ModalSection {
     open_button: button::State,
@@ -20,7 +20,7 @@ impl Section for ModalSection {
 
     fn content(&mut self) -> Element<'_, Self::Message> {
         Column::new()
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .width(Length::Fill)
             .push(
                 Button::new(&mut self.open_button, Text::new("Open modal!"))

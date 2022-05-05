@@ -1,4 +1,4 @@
-use iced::{Align, Column, Container, Element, Length, Sandbox, Settings, Space, Text};
+use iced::{Alignment, Column, Container, Element, Length, Sandbox, Settings, Space, Text};
 use iced_aw::selection_list::{self, SelectionList, Style, StyleSheet};
 
 #[derive(Clone, Copy, Debug)]
@@ -73,7 +73,7 @@ impl Sandbox for Example {
 
         let mut content = Column::new()
             .width(Length::Fill)
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .spacing(10)
             .push(selection_list)
             .push(Text::new("Which is your favorite language?"))

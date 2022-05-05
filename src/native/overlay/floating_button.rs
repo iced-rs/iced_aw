@@ -1,11 +1,12 @@
 //! Use a floating button to overlay a button over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_button`*
-
-use std::hash::Hash;
-
 use iced_native::{
-    button, event, layout::Limits, overlay, Button, Clipboard, Event, Layout, Point, Size, Widget,
+    event,
+    layout::Limits,
+    overlay,
+    widget::{button, Button},
+    Clipboard, Event, Layout, Point, Shell, Size, Widget,
 };
 
 use crate::native::floating_button::{Anchor, Offset};
@@ -13,7 +14,7 @@ use crate::native::floating_button::{Anchor, Offset};
 /// The internal overlay of a [`FloatingButton`](crate::native::FloatingButton) for
 /// rendering a [`Button`](iced_native::button::Button) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingButtonOverlay<'a, B, Message: Clone, Renderer: iced_native::button::Renderer>
+pub struct FloatingButtonOverlay<'a, B, Message: Clone, Renderer: iced_native::Renderer>
 where
     B: Fn(&'a mut button::State) -> Button<'a, Message, Renderer>,
 {
@@ -31,7 +32,7 @@ impl<'a, B, Message, Renderer> FloatingButtonOverlay<'a, B, Message, Renderer>
 where
     B: Fn(&mut button::State) -> Button<'_, Message, Renderer>,
     Message: Clone + 'a,
-    Renderer: iced_native::button::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     /// Creates a new [`FloatingButtonOverlay`] containing the given
     /// [`Button`](iced_native::button::Button).
@@ -58,7 +59,7 @@ where
 }
 
 /// The [`Overlay`](Overlay) of the [`FloatingButton`](crate::native::FloatingButton).
-struct Overlay<'a, Message, Renderer: iced_native::button::Renderer> {
+struct Overlay<'a, Message, Renderer: iced_native::Renderer> {
     /// The anchor of the button.
     anchor: &'a Anchor,
     /// The offset of the button.
@@ -67,10 +68,10 @@ struct Overlay<'a, Message, Renderer: iced_native::button::Renderer> {
     button: Button<'a, Message, Renderer>,
 }
 
-impl<'a, Message, Renderer: iced_native::button::Renderer> Overlay<'a, Message, Renderer>
+impl<'a, Message, Renderer> Overlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a,
+    Renderer: 'a + iced_native::Renderer,
 {
     /// Creates a new [`Overlay`] from the given [`FloatingButtonOverlay`](FloatingButtonOverlay).
     pub fn new<B>(floating_button: FloatingButtonOverlay<'a, B, Message, Renderer>) -> Self
@@ -96,7 +97,7 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for Overlay<'a, Message, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced_native::button::Renderer + 'a,
+    Renderer: iced_native::Renderer + 'a,
 {
     fn layout(
         &self,
@@ -136,41 +137,31 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.button.on_event(
-            event,
-            layout,
-            cursor_position,
-            renderer,
-            clipboard,
-            messages,
-        )
+        self.button
+            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &iced_graphics::Rectangle,
+        renderer: &Renderer,
+    ) -> iced_native::mouse::Interaction {
+        self.button
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
-    ) -> Renderer::Output {
-        self.button.draw(
-            renderer,
-            defaults,
-            layout,
-            cursor_position,
-            &layout.bounds(),
-        )
-    }
-
-    fn hash_layout(&self, state: &mut iced_native::Hasher, position: Point) {
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        (position.x as u32).hash(state);
-        (position.y as u32).hash(state);
-        self.button.hash_layout(state);
+    ) {
+        self.button
+            .draw(renderer, style, layout, cursor_position, &layout.bounds());
     }
 }

@@ -1,6 +1,6 @@
 use iced::{
-    Align, Button, Column, Element, Length, Sandbox, Settings, Row, Text, TextInput,
-    button, text_input
+    button, text_input, Alignment, Button, Column, Element, Length, Row, Sandbox, Settings, Text,
+    TextInput,
 };
 use iced_aw::{TabBar, TabLabel};
 
@@ -28,7 +28,6 @@ struct TabBarExample {
 }
 
 impl Sandbox for TabBarExample {
-
     type Message = Message;
 
     fn new() -> Self {
@@ -49,37 +48,34 @@ impl Sandbox for TabBarExample {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::TabSelected(index) => {
-                self.active_tab = index
-            },
+            Message::TabSelected(index) => self.active_tab = index,
             Message::TabClosed(index) => {
                 self.tabs.remove(index);
                 println!("active tab before: {}", self.active_tab);
                 self.active_tab = if self.tabs.is_empty() {
                     0
                 } else {
-                    usize::max(0, usize::min(self.active_tab, self.tabs.len()-1))
+                    usize::max(0, usize::min(self.active_tab, self.tabs.len() - 1))
                 };
                 println!("active tab after: {}", self.active_tab);
             }
-            Message::TabLabelInputChanged(value) => {
-                self.new_tab_label = value
-            },
-            Message::TabContentInputChanged(value) => {
-                self.new_tab_content = value
-            },
+            Message::TabLabelInputChanged(value) => self.new_tab_label = value,
+            Message::TabContentInputChanged(value) => self.new_tab_content = value,
             Message::NewTab => {
                 println!("New");
                 if !self.new_tab_label.is_empty() && !self.new_tab_content.is_empty() {
                     println!("Create");
-                    self.tabs.push((self.new_tab_label.to_owned(), self.new_tab_content.to_owned()));
+                    self.tabs.push((
+                        self.new_tab_label.to_owned(),
+                        self.new_tab_content.to_owned(),
+                    ));
                     self.new_tab_label.clear();
                     self.new_tab_content.clear();
                 }
             }
         }
     }
-    
+
     fn view(&mut self) -> Element<Message> {
         Column::new()
             .push(
@@ -92,7 +88,7 @@ impl Sandbox for TabBarExample {
                             Message::TabLabelInputChanged,
                         )
                         .size(22)
-                        .padding(5)
+                        .padding(5),
                     )
                     .push(
                         TextInput::new(
@@ -102,32 +98,30 @@ impl Sandbox for TabBarExample {
                             Message::TabContentInputChanged,
                         )
                         .size(22)
-                        .padding(5)
+                        .padding(5),
                     )
                     .push(
-                        Button::new(
-                            &mut self.new_button,
-                            Text::new("New"),
-                        )
-                        .on_press(Message::NewTab)
+                        Button::new(&mut self.new_button, Text::new("New"))
+                            .on_press(Message::NewTab),
                     )
-                    .align_items(Align::Center)
+                    .align_items(Alignment::Center)
                     .padding(10)
-                    .spacing(5)
+                    .spacing(5),
             )
             .push(
-                self.tabs.iter()
+                self.tabs
+                    .iter()
                     .fold(
                         TabBar::new(self.active_tab, Message::TabSelected),
                         |tab_bar, (tab_label, _)| {
                             tab_bar.push(TabLabel::Text(tab_label.to_owned()))
-                        }
+                        },
                     )
                     .on_close(Message::TabClosed)
                     .tab_width(Length::Shrink)
                     .spacing(5)
                     .padding(5)
-                    .text_size(32)
+                    .text_size(32),
             )
             .push(
                 if let Some((_, content)) = self.tabs.get(self.active_tab) {
@@ -135,7 +129,7 @@ impl Sandbox for TabBarExample {
                 } else {
                     Text::new("Please create a new tab")
                 }
-                .size(25)
+                .size(25),
             )
             .into()
     }

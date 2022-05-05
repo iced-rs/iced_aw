@@ -1,5 +1,5 @@
 use iced::{
-    button, scrollable, Align, Button, Color, Column, Container, Element, Length, Sandbox,
+    button, scrollable, Alignment, Button, Color, Column, Container, Element, Length, Sandbox,
     Scrollable, Settings, Text,
 };
 
@@ -68,7 +68,7 @@ impl Sandbox for GridExample {
 
         let column: Element<'_, Message> = Column::new()
             .spacing(15)
-            .align_items(Align::Center)
+            .align_items(Alignment::Center)
             .push(grid)
             .push(add_button)
             .into();

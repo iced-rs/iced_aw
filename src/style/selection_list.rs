@@ -18,6 +18,10 @@ pub struct Style {
     /// The container Border color
     pub border_color: Color,
     /// The List Label Text Select Color
+    pub hovered_text_color: Color,
+    /// The List Label Text Select Background Color
+    pub hovered_background: Background,
+    /// The List Label Text Select Color
     pub selected_text_color: Color,
     /// The List Label Text Select Background Color
     pub selected_background: Background,
@@ -38,8 +42,10 @@ impl std::default::Default for Style {
             background: Background::Color([0.87, 0.87, 0.87].into()),
             border_width: 1.0,
             border_color: [0.7, 0.7, 0.7].into(),
+            hovered_text_color: Color::WHITE,
+            hovered_background: Background::Color([0.0, 0.5, 1.0].into()),
             selected_text_color: Color::WHITE,
-            selected_background: Background::Color([0.4, 0.4, 1.0].into()),
+            selected_background: Background::Color([0.2, 0.5, 0.8].into()),
             width: Length::Fill,
             height: Length::Fill,
             padding: 5,

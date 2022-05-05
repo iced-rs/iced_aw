@@ -2,10 +2,17 @@
 name = "number_input"
 version = "0.1.0"
 authors = ["leang27 <52003343+leang27@users.noreply.github.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced =  "0.3"
-iced_aw = { path = "../..", default-features = false, features = ["number_input"] }
+iced_aw = { path = "../..", default-features = false, features = [
+    "number_input",
+    "icons",
+] }
+
+[dependencies.iced]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "af7cbf0"
+version = "0.4"

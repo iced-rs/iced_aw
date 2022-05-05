@@ -1,20 +1,24 @@
 //! Display a dropdown list of selectable values.
 pub mod list;
-use crate::selection_list;
+use crate::selection_list::Style;
+
 use iced_native::{
-    container,
-    event::{self, Event},
-    layout, scrollable, text, Clipboard, Container, Element, Hasher, Layout, Length, Point,
-    Rectangle, Scrollable, Size, Widget,
+    event,
+    layout::{Limits, Node},
+    mouse, renderer,
+    widget::{scrollable, Container, Scrollable},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
+
 pub use list::List;
 use std::marker::PhantomData;
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
-pub struct SelectionList<'a, T, Message, Renderer: self::Renderer>
+pub struct SelectionList<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Container for Rendering List.
     container: Container<'a, Message, Renderer>,
@@ -23,7 +27,7 @@ where
     /// Label Font
     font: Renderer::Font,
     /// Style for Looks
-    style: selection_list::Style,
+    style: Style,
 }
 
 /// The local state of a [`SelectionList`].
@@ -47,10 +51,10 @@ impl<T> Default for State<T> {
     }
 }
 
-impl<'a, T, Message, Renderer: self::Renderer> SelectionList<'a, T, Message, Renderer>
+impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
 where
     Message: 'a,
-    Renderer: 'a,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     T: Clone + ToString + Eq,
 {
     /// Creates a new [`SelectionList`] with the given [`State`], a list of options,
@@ -61,7 +65,7 @@ where
         options: &'a [T],
         selected: &Option<T>,
         on_selected: impl Fn(T) -> Message + 'static,
-        style: selection_list::Style,
+        style: Style,
     ) -> Self {
         let State {
             hovered_option,
@@ -73,11 +77,16 @@ where
             .iter()
             .position(|option| Some(option) == selected.as_ref());
 
+        let last_selected_index = options
+            .iter()
+            .position(|option| Some(option) == selected.as_ref());
+
         let container = Container::new(Scrollable::new(&mut state.scrollable).push(List {
             options,
             hovered_option,
-            last_selection,
-            font: Default::default(),
+            last_selected_item: last_selection,
+            last_selected_index,
+            font: iced_graphics::Font::default(),
             style,
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData::default(),
@@ -86,19 +95,18 @@ where
 
         Self {
             options,
-            font: Default::default(),
+            font: iced_graphics::Font::default(),
             style,
             container,
         }
     }
 }
 
-impl<'a, T: 'a, Message, Renderer> Widget<Message, Renderer>
-    for SelectionList<'a, T, Message, Renderer>
+impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SelectionList<'a, T, Message, Renderer>
 where
-    T: Clone + ToString + Eq,
+    T: 'a + Clone + ToString + Eq,
     Message: 'static,
-    Renderer: self::Renderer + scrollable::Renderer + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
 {
     fn width(&self) -> Length {
         self.style.width
@@ -108,7 +116,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
 
         let limits = limits.width(self.style.width).height(self.style.height);
@@ -138,28 +146,7 @@ where
 
         let content = self.container.layout(renderer, &limits);
         let size = limits.resolve(content.size());
-        layout::Node::with_children(size, vec![content])
-    }
-
-    fn hash_layout(&self, state: &mut Hasher) {
-        use std::hash::Hash as _;
-        #[allow(clippy::missing_docs_in_private_items)]
-        struct Marker;
-        std::any::TypeId::of::<Marker>().hash(state);
-
-        match self.style.width {
-            Length::Shrink => {
-                self.options
-                    .iter()
-                    .map(ToString::to_string)
-                    .for_each(|label| label.hash(state));
-            }
-            _ => {
-                self.style.width.hash(state);
-            }
-        }
-
-        self.container.hash_layout(state);
+        Node::with_children(size, vec![content])
     }
 
     fn on_event(
@@ -169,7 +156,7 @@ where
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Vec<Message>,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         self.container.on_event(
             event,
@@ -180,21 +167,42 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         )
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.container
+            .mouse_interaction(layout, cursor_position, viewport, renderer)
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
-        defaults: &Renderer::Defaults,
+        style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
-    ) -> Renderer::Output {
-        let primitives = self.container.draw(
+    ) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: layout.bounds(),
+                border_color: self.style.border_color,
+                border_width: self.style.border_width,
+                border_radius: 0.0,
+            },
+            self.style.background,
+        );
+
+        self.container.draw(
             renderer,
-            defaults,
+            style,
             layout
                 .children()
                 .next()
@@ -202,33 +210,7 @@ where
             cursor_position,
             &layout.bounds(),
         );
-
-        renderer.decorate(layout.bounds(), cursor_position, &self.style, primitives)
     }
-}
-
-/// The renderer of a [`SelectionList`].
-///
-/// Your [renderer] will need to implement this trait before being
-/// able to use a [`SelectionList`] in your user interface.
-///
-/// [renderer]: crate::renderer
-pub trait Renderer:
-    text::Renderer + list::Renderer + container::Renderer + scrollable::Renderer
-{
-    /// Decorates a the list of options of a [`SelectionList`].
-    ///
-    /// This method can be used to draw a background for the [`SelectionList`].
-    fn decorate(
-        &mut self,
-        bounds: Rectangle,
-        cursor_position: Point,
-        style: &selection_list::Style,
-        primitive: Self::Output,
-    ) -> Self::Output;
-
-    /// Draws the list of options of a [`SelectionList`].
-    fn draw(&mut self) -> Self::Output;
 }
 
 impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
@@ -236,7 +218,7 @@ impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
 where
     T: Clone + ToString + Eq,
     Message: 'static,
-    Renderer: self::Renderer + 'a,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Renderer>) -> Self {
         Element::new(selection_list)

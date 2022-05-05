@@ -21,7 +21,7 @@ struct RandStrings {
     spacing_input: number_input::State,
     line_spacing_input: number_input::State,
     line_minimal_length_input: number_input::State,
-    align: iced::Align,
+    align: iced::Alignment,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum WrapAlign {
@@ -29,16 +29,17 @@ enum WrapAlign {
     Center,
     End,
 }
-impl From<iced::Align> for WrapAlign {
-    fn from(align: iced::Align) -> Self {
+impl From<iced::Alignment> for WrapAlign {
+    fn from(align: iced::Alignment) -> Self {
         match align {
-            iced::Align::Start => Self::Start,
-            iced::Align::Center => Self::Center,
-            iced::Align::End => Self::End,
+            iced::Alignment::Start => Self::Start,
+            iced::Alignment::Center => Self::Center,
+            iced::Alignment::End => Self::End,
+            iced::Alignment::Fill => panic!("Does not Exist for wrap align"),
         }
     }
 }
-impl From<WrapAlign> for iced::Align {
+impl From<WrapAlign> for iced::Alignment {
     fn from(wrap_align: WrapAlign) -> Self {
         match wrap_align {
             WrapAlign::Start => Self::Start,
@@ -88,7 +89,7 @@ impl iced::Sandbox for RandStrings {
         Self {
             vbuttons: data.clone(),
             hbuttons: data,
-            align: iced::Align::Start,
+            align: iced::Alignment::Start,
             change_align_picklist: iced::pick_list::State::default(),
             spacing: 0,
             line_spacing: 0,
@@ -200,7 +201,7 @@ impl iced::Sandbox for RandStrings {
             .push(line_spacing_input)
             .push(line_minimal_length_input)
             .height(iced::Length::Shrink)
-            .align_items(iced::Align::Center);
+            .align_items(iced::Alignment::Center);
 
         Row::new().push(ctrls).push(vertcal).push(horizontal).into()
     }

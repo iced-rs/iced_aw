@@ -130,40 +130,40 @@ mod tests {
         let expected = vec![
             Point { x: 0.0, y: -10.0 },
             Point {
-                x: 5.8778524,
+                x: 5.877_852_4,
                 y: -8.09017,
             },
             Point {
-                x: 9.510566,
-                y: -3.0901697,
+                x: 9.510_566,
+                y: -3.090_169_7,
             },
             Point {
-                x: 9.510565,
-                y: 3.0901704,
+                x: 9.510_565,
+                y: 3.090_170_4,
             },
             Point {
-                x: 5.877852,
-                y: 8.090171,
+                x: 5.877_852,
+                y: 8.090_171,
             },
             Point {
-                x: -0.0000008742278,
+                x: -0.000_000_874_227_8,
                 y: 10.0,
             },
             Point {
-                x: -5.8778534,
+                x: -5.877_853_4,
                 y: 8.09017,
             },
             Point {
-                x: -9.510565,
-                y: 3.0901709,
+                x: -9.510_565,
+                y: 3.090_170_9,
             },
             Point {
-                x: -9.510565,
-                y: -3.0901713,
+                x: -9.510_565,
+                y: -3.090_171_3,
             },
             Point {
-                x: -5.8778496,
-                y: -8.090173,
+                x: -5.877_849_6,
+                y: -8.090_173,
             },
         ];
 
@@ -202,14 +202,14 @@ mod tests {
     fn nearest_point_test() {
         let points = circle_points(10.0, Point::new(0.0, 0.0), 10);
 
-        let index = 5;
+        let mut index = 5;
         let cursor_position = points[index] + Vector::new(1.0, -1.0);
-        let result = nearest_point(&points, cursor_position);
+        let mut result = nearest_point(&points, cursor_position);
         assert_eq!(index, result);
 
-        let index = 0;
+        index = 0;
         let cursor_position = points[index] + Vector::new(-1.0, 1.0);
-        let result = nearest_point(&points, cursor_position);
+        result = nearest_point(&points, cursor_position);
         assert_eq!(index, result);
     }
 }
