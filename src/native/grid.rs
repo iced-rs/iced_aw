@@ -125,7 +125,7 @@ where
                         Some(column_width) => *column_width = column_width.max(layout.size().width),
                         None => column_widths.insert(column, layout.size().width),
                     }
-
+                  
                     layouts.push(layout);
                 }
 
@@ -235,7 +235,6 @@ fn build_grid(
             row_height = 0.;
         }
 
-        //let mut node = Node::new(node);
         node.move_to(Point::new(column_align, grid_height));
         row_height = row_height.max(node.size().height);
         nodes.push(node);
