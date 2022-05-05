@@ -343,10 +343,11 @@ where
     ) -> mouse::Interaction {
         let mut children = layout.children();
 
-        let mut head_layout_children = children
+        let head_layout = children
             .next()
-            .expect("Graphics: Layout should have a head layout")
-            .children();
+            .expect("Graphics: Layout should have a head layout");
+
+        let mut head_layout_children = head_layout.children();
         let _head = head_layout_children.next();
         let close_layout = head_layout_children.next();
 
@@ -361,20 +362,27 @@ where
             mouse::Interaction::default()
         };
 
+        let body_layout = children
+            .next()
+            .expect("Graphics: Layout should have a body layout");
+
         mouse_interaction
             .max(
                 self.head
-                    .mouse_interaction(layout, cursor_position, viewport, renderer),
+                    .mouse_interaction(head_layout, cursor_position, viewport, renderer),
             )
             .max(
                 self.body
-                    .mouse_interaction(layout, cursor_position, viewport, renderer),
+                    .mouse_interaction(body_layout, cursor_position, viewport, renderer),
             )
             .max(
                 self.foot
                     .as_ref()
                     .map_or(mouse::Interaction::default(), |foot| {
-                        foot.mouse_interaction(layout, cursor_position, viewport, renderer)
+                        let foot_layout = children
+                            .next()
+                            .expect("Graphics: Layout should have a foot layout");
+                        foot.mouse_interaction(foot_layout, cursor_position, viewport, renderer)
                     }),
             )
     }
