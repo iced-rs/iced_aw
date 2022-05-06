@@ -101,6 +101,7 @@ members = [
     "examples/pure/badge",
     "examples/pure/card",
     "examples/pure/color_picker",
+    "examples/pure/date_picker",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
