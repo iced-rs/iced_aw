@@ -9,3 +9,8 @@ pub use badge::Badge;
 pub mod card;
 #[cfg(feature = "card")]
 pub use card::Card;
+
+#[cfg(feature = "color_picker")]
+pub mod color_picker;
+#[cfg(feature = "color_picker")]
+pub use color_picker::ColorPicker;
