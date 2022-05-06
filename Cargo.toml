@@ -60,15 +60,19 @@ lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_native]
 #git = "https://github.com/iced-rs/iced.git"
+#branch = "generic-widget-tree"
 #rev = "af7cbf0"
 version = "0.5"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_graphics]
 #git = "https://github.com/iced-rs/iced.git"
+#branch = "generic-widget-tree"
 #rev = "af7cbf0"
 version = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_pure]
+#git = "https://github.com/iced-rs/iced.git"
+#branch = "generic-widget-tree"
 version = "0.2.1"
 optional = true
 
@@ -86,6 +90,7 @@ version = "0.3"
 
 [dependencies.iced_style]
 #git = "https://github.com/iced-rs/iced.git"
+#branch = "generic-widget-tree"
 #rev = "af7cbf0"
 version = "0.4"
 
@@ -106,6 +111,7 @@ members = [
     "examples/wrap",
     "examples/web",
     "examples/number_input",
+    "examples/pure/number_input",
     "examples/selection_list",
     "examples/split",
 ]

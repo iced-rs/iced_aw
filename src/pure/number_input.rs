@@ -256,11 +256,23 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.content.into())]
+        vec![Tree {
+            tag: self.content.tag(),
+            state: self.content.state(),
+            children: self.content.children(),
+        }]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(std::slice::from_ref(&self.content.into()));
+        tree.diff_children_custom(
+            &[&self.content],
+            |state, content| content.diff(state),
+            |&content| Tree {
+                tag: content.tag(),
+                state: content.state(),
+                children: content.children(),
+            },
+        );
     }
 
     fn width(&self) -> Length {

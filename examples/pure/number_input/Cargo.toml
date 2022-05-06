@@ -1,16 +1,16 @@
 [package]
-name = "modal"
+name = "pure_number_input"
 version = "0.1.0"
-authors = ["Kaiden42 <gitlab@tinysn.com>"]
+authors = ["leang27 <52003343+leang27@users.noreply.github.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced_aw = { path = "../..", default-features = false, features = [
-    "card",
-    "colors",
-    "modal",
+iced_aw = { path = "../../..", default-features = false, features = [
+    "number_input",
+    "icons",
+    "pure",
 ] }
 
 [dependencies.iced]
@@ -18,3 +18,4 @@ iced_aw = { path = "../..", default-features = false, features = [
 #branch = "generic-widget-tree"
 #rev = "af7cbf0"
 version = "0.4"
+features = ["pure"]
