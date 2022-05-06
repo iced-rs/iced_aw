@@ -99,6 +99,7 @@ members = [
     "examples/grid",
     "examples/modal",
     "examples/pure/badge",
+    "examples/pure/card",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
