@@ -9,6 +9,7 @@ pub use badge::Badge;
 pub mod number_input;
 #[cfg(feature = "number_input")]
 pub use number_input::NumberInput;
+
 #[cfg(feature = "card")]
 pub mod card;
 #[cfg(feature = "card")]
@@ -23,3 +24,8 @@ pub use color_picker::ColorPicker;
 pub mod date_picker;
 #[cfg(feature = "date_picker")]
 pub use date_picker::DatePicker;
+
+#[cfg(feature = "selection_list")]
+pub mod selection_list;
+#[cfg(feature = "selection_list")]
+pub use selection_list::{List, SelectionList};

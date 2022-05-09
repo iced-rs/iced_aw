@@ -15,7 +15,7 @@ iced_aw = { path = "../..", default-features = false, features = [
 rand = "0.8"
 
 [dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
+git = "https://github.com/iced-rs/iced.git"
 #branch = "generic-widget-tree"
 #rev = "af7cbf0"
 version = "0.4"

@@ -1,16 +1,17 @@
 [package]
-name = "pure_number_input"
+name = "pure_selection_list"
 version = "0.1.0"
-authors = ["leang27 <52003343+leang27@users.noreply.github.com>"]
+authors = [
+    "Héctor Ramón Jiménez <hector0193@gmail.com>",
+    "Andrew Wheeler <genusistimelord@gmail.com>",
+]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+publish = false
 
 [dependencies]
 iced_aw = { path = "../../..", default-features = false, features = [
-    "number_input",
-    "icons",
-    "pure",
+    "selection_list",
+    "pure"
 ] }
 
 [dependencies.iced]
