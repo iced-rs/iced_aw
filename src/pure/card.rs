@@ -372,11 +372,11 @@ where
 
         let head_layout = children
             .next()
-            .expect("Graphics: Layout should have a head layout");
+            .expect("Native: Layout should have a head layout");
+        let mut head_children = head_layout.children();
 
-        let mut head_layout_children = head_layout.children();
-        let _head = head_layout_children.next();
-        let close_layout = head_layout_children.next();
+        let head = head_children.next().expect("Native: Layout should have a head layout");
+        let close_layout = head_children.next();
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
             let bounds = layout.bounds();
@@ -391,19 +391,27 @@ where
 
         let body_layout = children
             .next()
-            .expect("Graphics: Layout should have a body layout");
+            .expect("Native: Layout should have a body layout");
+        let mut body_children = body_layout.children();
+        
+        let foot_layout = children
+            .next()
+            .expect("Native: Layout should have a foot layout");
+        let mut foot_children = foot_layout.children();
 
         mouse_interaction
             .max(self.head.as_widget().mouse_interaction(
                 &state.children[0],
-                head_layout,
+                head,
                 cursor_position,
                 viewport,
                 renderer,
             ))
             .max(self.body.as_widget().mouse_interaction(
                 &state.children[1],
-                body_layout,
+                body_children
+                    .next()
+                    .expect("Native: Layout should have a body content layout"),
                 cursor_position,
                 viewport,
                 renderer,
@@ -412,12 +420,11 @@ where
                 self.foot
                     .as_ref()
                     .map_or(mouse::Interaction::default(), |foot| {
-                        let foot_layout = children
-                            .next()
-                            .expect("Graphics: Layout should have a foot layout");
                         foot.as_widget().mouse_interaction(
                             &state.children[2],
-                            foot_layout,
+                            foot_children
+                                .next()
+                                .expect("Native: Layout should have a foot content layout"),
                             cursor_position,
                             viewport,
                             renderer,
