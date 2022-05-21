@@ -213,12 +213,10 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        // TODO: don't know if this works
-        tree.diff_children(std::slice::from_ref(&self.head));
-        tree.diff_children(std::slice::from_ref(&self.body));
-
         if let Some(foot) = self.foot.as_ref() {
-            tree.diff_children(std::slice::from_ref(foot));
+            tree.diff_children(&[&self.head, &self.body, foot]);
+        } else {
+            tree.diff_children(&[&self.head, &self.body]);
         }
     }
 
