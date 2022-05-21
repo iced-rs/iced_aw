@@ -31,3 +31,8 @@ pub use floating_element::FloatingElement;
 pub mod grid;
 #[cfg(feature = "grid")]
 pub use grid::Grid;
+
+#[cfg(feature = "icon_text")]
+pub mod icon_text;
+#[cfg(feature = "icon_text")]
+pub use icon_text::IconText;
