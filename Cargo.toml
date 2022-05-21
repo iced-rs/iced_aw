@@ -106,6 +106,7 @@ members = [
     "examples/pure/color_picker",
     "examples/pure/date_picker",
     "examples/pure/floating_element",
+    "examples/pure/grid",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
