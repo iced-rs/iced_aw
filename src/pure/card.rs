@@ -375,7 +375,9 @@ where
             .expect("Native: Layout should have a head layout");
         let mut head_children = head_layout.children();
 
-        let head = head_children.next().expect("Native: Layout should have a head layout");
+        let head = head_children
+            .next()
+            .expect("Native: Layout should have a head layout");
         let close_layout = head_children.next();
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
@@ -393,7 +395,7 @@ where
             .next()
             .expect("Native: Layout should have a body layout");
         let mut body_children = body_layout.children();
-        
+
         let foot_layout = children
             .next()
             .expect("Native: Layout should have a foot layout");
@@ -407,15 +409,17 @@ where
                 viewport,
                 renderer,
             ))
-            .max(self.body.as_widget().mouse_interaction(
-                &state.children[1],
-                body_children
-                    .next()
-                    .expect("Native: Layout should have a body content layout"),
-                cursor_position,
-                viewport,
-                renderer,
-            ))
+            .max(
+                self.body.as_widget().mouse_interaction(
+                    &state.children[1],
+                    body_children
+                        .next()
+                        .expect("Native: Layout should have a body content layout"),
+                    cursor_position,
+                    viewport,
+                    renderer,
+                ),
+            )
             .max(
                 self.foot
                     .as_ref()
