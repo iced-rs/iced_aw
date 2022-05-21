@@ -1,5 +1,7 @@
 //! Stateless, pure widgets for iced
 
+pub mod overlay;
+
 #[cfg(feature = "badge")]
 pub mod badge;
 #[cfg(feature = "badge")]
@@ -19,3 +21,8 @@ pub use color_picker::ColorPicker;
 pub mod date_picker;
 #[cfg(feature = "date_picker")]
 pub use date_picker::DatePicker;
+
+#[cfg(feature = "floating_element")]
+pub mod floating_element;
+#[cfg(feature = "floating_element")]
+pub use floating_element::FloatingElement;

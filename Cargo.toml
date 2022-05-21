@@ -19,6 +19,7 @@ colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
 floating_button = ["button"]
+floating_element = ["button", "floating_button"]
 grid = []
 glow = [] # TODO
 icon_text = ["icons"]
@@ -104,6 +105,7 @@ members = [
     "examples/pure/card",
     "examples/pure/color_picker",
     "examples/pure/date_picker",
+    "examples/pure/floating_element",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
