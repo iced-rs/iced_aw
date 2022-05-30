@@ -1,5 +1,7 @@
 //! Stateless, pure widgets for iced
 
+pub mod overlay;
+
 #[cfg(feature = "badge")]
 pub mod badge;
 #[cfg(feature = "badge")]
@@ -29,3 +31,33 @@ pub use date_picker::DatePicker;
 pub mod selection_list;
 #[cfg(feature = "selection_list")]
 pub use selection_list::{List, SelectionList};
+
+#[cfg(feature = "floating_element")]
+pub mod floating_element;
+#[cfg(feature = "floating_element")]
+pub use floating_element::FloatingElement;
+
+#[cfg(feature = "grid")]
+pub mod grid;
+#[cfg(feature = "grid")]
+pub use grid::Grid;
+
+#[cfg(feature = "icon_text")]
+pub mod icon_text;
+#[cfg(feature = "icon_text")]
+pub use icon_text::IconText;
+
+#[cfg(feature = "modal")]
+pub mod modal;
+#[cfg(feature = "modal")]
+pub use modal::Modal;
+
+#[cfg(feature = "tab_bar")]
+pub mod tab_bar;
+#[cfg(feature = "tab_bar")]
+pub use tab_bar::{TabBar, TabLabel};
+
+#[cfg(feature = "tabs")]
+pub mod tabs;
+#[cfg(feature = "tabs")]
+pub use tabs::{TabBarPosition, Tabs};
