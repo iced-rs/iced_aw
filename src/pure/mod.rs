@@ -51,3 +51,8 @@ pub use tab_bar::{TabBar, TabLabel};
 pub mod tabs;
 #[cfg(feature = "tabs")]
 pub use tabs::{TabBarPosition, Tabs};
+
+#[cfg(feature = "time_picker")]
+pub mod time_picker;
+#[cfg(feature = "time_picker")]
+pub use time_picker::TimePicker;
