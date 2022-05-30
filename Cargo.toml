@@ -108,6 +108,7 @@ members = [
     "examples/pure/floating_element",
     "examples/pure/modal",
     "examples/pure/grid",
+    "examples/pure/tab_bar",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",

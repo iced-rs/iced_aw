@@ -1,0 +1,16 @@
+[package]
+name = "pure_tab_bar"
+version = "0.1.0"
+authors = ["Kaiden42 <gitlab@tinysn.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+iced_aw = { path = "../../..", features = ["tab_bar", "pure"] }
+
+[dependencies.iced]
+git = "https://github.com/iced-rs/iced.git"
+rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+#version = "0.4"
+features = ["pure"]

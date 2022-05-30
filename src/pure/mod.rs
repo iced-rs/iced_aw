@@ -41,3 +41,8 @@ pub use icon_text::IconText;
 pub mod modal;
 #[cfg(feature = "modal")]
 pub use modal::Modal;
+
+#[cfg(feature = "tab_bar")]
+pub mod tab_bar;
+#[cfg(feature = "tab_bar")]
+pub use tab_bar::{TabBar, TabLabel};
