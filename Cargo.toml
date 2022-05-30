@@ -117,6 +117,8 @@ members = [
     "examples/wrap",
     "examples/web",
     "examples/number_input",
+    "examples/pure/number_input",
     "examples/selection_list",
+    "examples/pure/selection_list",
     "examples/split",
 ]
