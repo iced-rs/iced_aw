@@ -20,10 +20,11 @@ pub use crate::style::color_picker::{Style, StyleSheet};
 
 use crate::native::color_picker::State;
 
+//TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// # use iced_aw::color_picker;
 /// # use iced_native::{widget::{button, Button, Text}, Color, renderer::Null};
 /// #

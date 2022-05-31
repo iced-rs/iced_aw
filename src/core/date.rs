@@ -127,7 +127,7 @@ pub fn succ_day(date: NaiveDate) -> NaiveDate {
 /// Specifies if the calculated day lays in the previous, same or next month of
 /// the date.
 #[cfg(not(target_arch = "wasm32"))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum IsInMonth {
     /// The day lays in the previous month.
     Previous,
