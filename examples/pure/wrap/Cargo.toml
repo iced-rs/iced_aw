@@ -1,5 +1,5 @@
 [package]
-name = "wrap"
+name = "pure_wrap"
 version = "0.1.0"
 authors = ["Downtime <yrainbxqc@gmail.com>"]
 edition = "2021"
@@ -11,6 +11,7 @@ edition = "2021"
 iced_aw = { path = "../../..", default-features = false, features = [
     "wrap",
     "number_input",
+    "pure"
 ] }
 rand = "0.8"
 

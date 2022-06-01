@@ -1,5 +1,5 @@
 [package]
-name = "pure_wrap"
+name = "wrap"
 version = "0.1.0"
 authors = ["Downtime <yrainbxqc@gmail.com>"]
 edition = "2021"
