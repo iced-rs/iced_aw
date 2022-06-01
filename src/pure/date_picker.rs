@@ -15,10 +15,11 @@ pub use crate::style::date_picker::{Style, StyleSheet};
 
 use crate::native::date_picker::State;
 
+//TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking dates.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// # use iced_aw::date_picker;
 /// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
 /// #

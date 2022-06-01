@@ -47,7 +47,7 @@ impl Display for Period {
 }
 
 /// The radius nearest to the cursor position.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum NearestRadius {
     /// Nothing is near to the cursor position.
     None,

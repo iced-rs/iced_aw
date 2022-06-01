@@ -1632,7 +1632,7 @@ pub enum ClockDragged {
 }
 
 /// An enumeration of all focusable elements of the [`TimePickerOverlay`](TimePickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,
