@@ -4,8 +4,8 @@
 
 use iced_graphics::{Backend, Renderer};
 use iced_native::{
-    event, mouse, overlay, renderer, Clipboard, Color, Event, Layout, Length, Point, Rectangle,
-    Shell,
+    event, mouse, overlay, renderer, widget::button, Clipboard, Color, Event, Layout, Length,
+    Point, Rectangle, Shell,
 };
 use iced_pure::{
     widget::{
@@ -15,10 +15,9 @@ use iced_pure::{
     Element, Widget,
 };
 
-use crate::native::overlay::color_picker::ColorPickerOverlay;
 pub use crate::style::color_picker::{Style, StyleSheet};
 
-use crate::native::color_picker::State;
+use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 
 /// An input element for picking colors.
 ///
@@ -55,6 +54,8 @@ where
 {
     /// Show the picker.
     show_picker: bool,
+    /// The color to show.
+    color: Color,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer<B>>,
     /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
@@ -73,20 +74,28 @@ where
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
     /// It expects:
-    ///     * a mutable reference to the [`ColorPicker`](ColorPicker)'s [`State`](State).
+    ///     * if the overlay of the color picker is visible.
+    ///     * the initial color to show.
     ///     * the underlay [`Element`](iced_native::Element) on which this [`ColorPicker`](ColorPicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
     ///         is pressed.
     ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
     ///         is pressed, which takes the picked [`Color`](iced_native::Color) value.
-    pub fn new<U, F>(show_picker: bool, underlay: U, on_cancel: Message, on_submit: F) -> Self
+    pub fn new<U, F>(
+        show_picker: bool,
+        color: Color,
+        underlay: U,
+        on_cancel: Message,
+        on_submit: F,
+    ) -> Self
     where
         U: Into<Element<'a, Message, Renderer<B>>>,
         F: 'static + Fn(Color) -> Message,
     {
         Self {
             show_picker,
+            color,
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
@@ -102,6 +111,35 @@ where
     }
 }
 
+/// The state of the [`ColorPicker`](ColorPicker).
+#[derive(Debug, Default)]
+pub struct State {
+    /// The state of the overlay.
+    pub(crate) overlay_state: color_picker::State,
+    /// The state of the cancel button.
+    pub(crate) cancel_button: button::State,
+    /// The state of the submit button.
+    pub(crate) submit_button: button::State,
+}
+
+impl State {
+    /// Creates a new [`State`](State).
+    #[must_use]
+    pub fn new(color: Color) -> Self {
+        Self {
+            overlay_state: color_picker::State::new(color),
+            cancel_button: button::State::new(),
+            submit_button: button::State::new(),
+        }
+    }
+
+    /// Resets the color of the state.
+    pub fn reset(&mut self) {
+        self.overlay_state.color = Color::from_rgb(0.5, 0.25, 0.25);
+        self.overlay_state.color_bar_dragged = ColorBarDragged::None;
+    }
+}
+
 impl<'a, Message, B> Widget<Message, Renderer<B>> for ColorPicker<'a, Message, B>
 where
     Message: 'static + Clone,
@@ -112,7 +150,7 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::new())
+        tree::State::new(State::new(self.color))
     }
 
     fn children(&self) -> Vec<Tree> {

@@ -63,6 +63,7 @@ impl Sandbox for ColorPickerExample {
 
         let datepicker = ColorPicker::new(
             self.show_picker,
+            self.color,
             but,
             Message::CancelColor,
             Message::SubmitColor,
