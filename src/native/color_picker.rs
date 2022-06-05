@@ -14,10 +14,11 @@ use iced_native::{
 use super::overlay::color_picker::{self, ColorPickerOverlay, Focus};
 pub use crate::style::color_picker::{Style, StyleSheet};
 
+//TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// # use iced_aw::color_picker;
 /// # use iced_native::{widget::{button, Button, Text}, Color, renderer::Null};
 /// #

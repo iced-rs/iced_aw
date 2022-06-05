@@ -118,7 +118,7 @@ impl Display for Time {
 }
 
 /// The current period of the clock
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Period {
     /// No period - using 24 hour format.
     H24,

@@ -855,7 +855,7 @@ impl Default for State {
 }
 
 /// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

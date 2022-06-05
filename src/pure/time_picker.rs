@@ -16,10 +16,11 @@ pub use crate::core::time::{Period, Time};
 
 pub use crate::style::time_picker::{Style, StyleSheet};
 
+//TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking times.
 ///
 /// # Example
-/// ```
+/// ```ignore
 /// # use iced_aw::time_picker;
 /// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
 /// #

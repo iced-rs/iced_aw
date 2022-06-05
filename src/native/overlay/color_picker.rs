@@ -1643,7 +1643,7 @@ impl Default for ColorBarDragged {
 }
 
 /// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,
