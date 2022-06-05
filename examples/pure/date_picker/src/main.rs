@@ -29,7 +29,7 @@ impl Sandbox for DatePickerExample {
 
     fn new() -> Self {
         DatePickerExample {
-            date: Date::default(),
+            date: Date::today(),
             show_picker: false,
         }
     }
@@ -59,6 +59,7 @@ impl Sandbox for DatePickerExample {
 
         let datepicker = DatePicker::new(
             self.show_picker,
+            self.date,
             but,
             Message::CancelDate,
             Message::SubmitDate,

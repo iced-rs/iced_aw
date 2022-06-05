@@ -2,18 +2,18 @@
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
 
+use chrono::Local;
+use iced_native::widget::button;
 use iced_native::{event, mouse, Clipboard, Event, Layout, Point, Rectangle, Shell};
 use iced_pure::widget::tree::{self, Tag};
 use iced_pure::widget::Tree;
 use iced_pure::{Element, Widget};
 
-use crate::native::overlay::date_picker::DatePickerOverlay;
-
 pub use crate::core::date::Date;
 
 pub use crate::style::date_picker::{Style, StyleSheet};
 
-use crate::native::date_picker::State;
+use super::overlay::date_picker::{self, DatePickerOverlay};
 
 /// An input element for picking dates.
 ///
@@ -46,6 +46,8 @@ use crate::native::date_picker::State;
 pub struct DatePicker<'a, Message: Clone, Renderer: iced_native::Renderer> {
     /// Show the picker.
     show_picker: bool,
+    /// The date to show.
+    date: Date,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The message that is send if the cancel button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
@@ -61,20 +63,28 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
     /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
     ///
     /// It expects:
-    ///     * a mutable reference to the [`DatePicker`](DatePicker)'s [`State`](State).
+    ///     * if the overlay of the date picker is visible.
+    ///     * the initial date to show.
     ///     * the underlay [`Element`](iced_native::Element) on which this [`DatePicker`](DatePicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
     ///         is pressed.
     ///     * a function that will be called when the submit button of the [`DatePicker`](DatePicker)
     ///         is pressed, which takes the picked [`Date`](crate::date_picker::Date) value.
-    pub fn new<U, F>(show_picker: bool, underlay: U, on_cancel: Message, on_submit: F) -> Self
+    pub fn new<U, F>(
+        show_picker: bool,
+        date: impl Into<Date>,
+        underlay: U,
+        on_cancel: Message,
+        on_submit: F,
+    ) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
         F: 'static + Fn(Date) -> Message,
     {
         Self {
             show_picker,
+            date: date.into(),
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
@@ -92,6 +102,44 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
     }
 }
 
+/// The state of the [`DatePicker`](DatePicker) / [`DatePickerOverlay`](DatePickerOverlay).
+#[derive(Debug)]
+pub struct State {
+    /// The state of the overlay.
+    pub(crate) overlay_state: date_picker::State,
+    /// The state of the cancel button.
+    pub(crate) cancel_button: button::State,
+    /// The state of the submit button.
+    pub(crate) submit_button: button::State,
+}
+
+impl State {
+    /// Creates a new [`State`](State) with the current date.
+    #[must_use]
+    pub fn now() -> Self {
+        Self {
+            overlay_state: date_picker::State::default(),
+            cancel_button: button::State::new(),
+            submit_button: button::State::new(),
+        }
+    }
+
+    /// Creates a new [`State`](State) with the given date.
+    #[must_use]
+    pub fn new(date: Date) -> Self {
+        Self {
+            overlay_state: date_picker::State::new(date.into()),
+            cancel_button: button::State::new(),
+            submit_button: button::State::new(),
+        }
+    }
+
+    /// Resets the date of the state to the current date.
+    pub fn reset(&mut self) {
+        self.overlay_state.date = Local::today().naive_local();
+    }
+}
+
 impl<'a, Message, Renderer> Widget<Message, Renderer> for DatePicker<'a, Message, Renderer>
 where
     Message: Clone,
@@ -102,7 +150,7 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::now())
+        tree::State::new(State::new(self.date))
     }
 
     fn children(&self) -> Vec<Tree> {

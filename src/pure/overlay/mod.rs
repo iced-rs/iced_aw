@@ -5,6 +5,11 @@ pub mod color_picker;
 #[cfg(feature = "color_picker")]
 pub use color_picker::ColorPickerOverlay;
 
+#[cfg(feature = "date_picker")]
+pub mod date_picker;
+#[cfg(feature = "date_picker")]
+pub use date_picker::DatePickerOverlay;
+
 #[cfg(feature = "floating_element")]
 pub mod floating_element;
 #[cfg(feature = "floating_element")]
