@@ -170,6 +170,17 @@ impl From<Time> for chrono::NaiveTime {
     }
 }
 
+impl From<chrono::NaiveTime> for Time {
+    fn from(time: chrono::NaiveTime) -> Self {
+        Self::Hms {
+            hour: time.hour(),
+            minute: time.minute(),
+            second: time.second(),
+            period: Period::H24,
+        }
+    }
+}
+
 #[cfg(test)]
 #[cfg(not(target_arch = "wasm32"))]
 mod tests {

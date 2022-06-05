@@ -85,7 +85,7 @@ where
     ///         is pressed, which takes the picked [`Time`](crate::time_picker::Time) value.
     pub fn new<U, F>(
         show_picker: bool,
-        time: Time,
+        time: impl Into<Time>,
         underlay: U,
         on_cancel: Message,
         on_submit: F,
@@ -96,7 +96,7 @@ where
     {
         Self {
             show_picker,
-            time,
+            time: time.into(),
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
