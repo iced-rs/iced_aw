@@ -18,6 +18,7 @@ use std::marker::PhantomData;
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
+#[allow(clippy::type_repetition_in_bounds)]
 pub struct SelectionList<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
@@ -34,6 +35,7 @@ where
     style: Style,
 }
 
+#[allow(clippy::type_repetition_in_bounds)]
 impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
 where
     Message: 'a + Clone,
