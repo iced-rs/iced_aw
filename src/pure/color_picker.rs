@@ -24,10 +24,11 @@ use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::color_picker;
-/// # use iced_native::{widget::{button, Button, Text}, Color, renderer::Null};
+/// # use iced_aw::pure::color_picker;
+/// # use iced_native::{Color, renderer::Null};
+/// # use iced_pure::widget::{button, Button, Text};
 /// #
-/// # pub type ColorPicker<'a, Message> = iced_aw::native::ColorPicker<'a, Message, Null>;
+/// # pub type ColorPicker<'a, Message> = iced_aw::pure::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,
@@ -35,13 +36,10 @@ use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 ///     Submit(Color),
 /// }
 ///
-/// let mut button_state = button::State::new();
-/// let mut state = color_picker::State::new();
-/// state.show(true);
-///
 /// let color_picker = ColorPicker::new(
-///     &mut state,
-///     Button::new(&mut button_state, Text::new("Pick color"))
+///     true,
+///     Color::default(),
+///     Button::new(Text::new("Pick color"))
 ///         .on_press(Message::Open),
 ///     Message::Cancel,
 ///     Message::Submit,
@@ -77,7 +75,7 @@ where
     /// It expects:
     ///     * if the overlay of the color picker is visible.
     ///     * the initial color to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`ColorPicker`](ColorPicker)
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`ColorPicker`](ColorPicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
     ///         is pressed.

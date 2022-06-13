@@ -10,27 +10,26 @@ pub use crate::style::modal::{Style, StyleSheet};
 
 /// A modal content as an overlay.
 ///
-/// Can be used in combination with the [`Card`](crate::native::card::Card)
+/// Can be used in combination with the [`Card`](crate::pure::card::Card)
 /// widget to form dialog elements.
 ///
 /// # Example
 /// ```
-/// # use iced_aw::native::modal;
-/// # use iced_native::{widget::Text, renderer::Null};
+/// # use iced_aw::pure::modal;
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::Text;
 /// #
-/// # pub type Modal<'a, S, Content, Message>
-/// #  = iced_aw::native::Modal<'a, Message, S, Content, Null>;
+/// # pub type Modal<'a, Content, Message>
+/// #  = iced_aw::pure::Modal<'a, Message, Content, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     CloseModal,
 /// }
 ///
-/// let mut state = modal::State::new(());
-///
 /// let modal = Modal::new(
-///     &mut state,
+///     true,
 ///     Text::new("Underlay"),
-///     |_state| Text::new("Overlay").into()
+///     || Text::new("Overlay").into()
 /// )
 /// .backdrop(Message::CloseModal);
 /// ```
@@ -68,10 +67,10 @@ where
     /// overlying content.
     ///
     /// It expects:
-    ///     * a mutable reference to the content's [`State`](State) of the [`Modal`](Modal).
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
+    ///     * if the overlay of the date picker is visible.
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`Modal`](Modal)
     ///         will be wrapped around.
-    ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
+    ///     * the content [`Element`](iced_pure::Element) of the [`Modal`](Modal).
     pub fn new<U>(show_modal: bool, underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,

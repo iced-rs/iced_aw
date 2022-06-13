@@ -18,9 +18,10 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// # Example
 /// ```
 /// # use iced_aw::style::badge;
-/// # use iced_native::{widget::Text, renderer::Null};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::Text;
 /// #
-/// # pub type Badge<'a, Message> = iced_aw::native::Badge<'a, Message, Null>;
+/// # pub type Badge<'a, Message> = iced_aw::pure::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }
@@ -41,7 +42,7 @@ pub struct Badge<'a, Message, Renderer> {
     vertical_alignment: Alignment,
     /// The style of the [`Badge`](Badge).
     style_sheet: Box<dyn StyleSheet + 'a>,
-    /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
+    /// The content [`Element`](iced_pure::Element) of the [`Badge`](Badge).
     content: Element<'a, Message, Renderer>,
 }
 
@@ -49,7 +50,7 @@ impl<'a, Message, Renderer> Badge<'a, Message, Renderer> {
     /// Creates a new [`Badge`](Badge) with the given content.
     ///
     /// It expects:
-    ///     * the content [`Element`](iced_native::Element) to display in the [`Badge`](Badge).
+    ///     * the content [`Element`](iced_pure::Element) to display in the [`Badge`](Badge).
     pub fn new<T>(content: T) -> Self
     where
         T: Into<Element<'a, Message, Renderer>>,

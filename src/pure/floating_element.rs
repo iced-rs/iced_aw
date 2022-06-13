@@ -1,6 +1,6 @@
-//! Use a floating button to overlay a button over some content
+//! Use a floating element to overlay an element over some content
 //!
-//! *This API requires the following crate features to be activated: `floating_button`*
+//! *This API requires the following crate features to be activated: `floating_element`*
 use iced_native::{
     event, mouse, overlay, Clipboard, Event, Layout, Length, Point, Rectangle, Shell,
 };
@@ -10,26 +10,25 @@ pub use crate::native::floating_button::{Anchor, Offset};
 
 use super::overlay::floating_element::FloatingElementOverlay;
 
-/// A floating button floating over some content.
+/// A floating element floating over some content.
 ///
 /// # Example
 /// ```
-/// # use iced_native::{widget::{button, Button, Column, Text}, renderer::Null};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::{button, Button, Column, Text};
 /// #
-/// # pub type FloatingButton<'a, B, Message> = iced_aw::native::FloatingButton<'a, B, Message, Null>;
+/// # pub type FloatingElement<'a, B, Message> = iced_aw::pure::FloatingElement<'a, B, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,
 /// }
 ///
-/// let mut button_state = button::State::default();
-///
 /// let content = Column::new();
-/// let floating_button = FloatingButton::new(
-///     &mut button_state,
+/// let floating_element = FloatingElement::new(
 ///     content,
-///     |state| Button::new(state, Text::new("Press Me!"))
+///     || Button::new(Text::new("Press Me!"))
 ///         .on_press(Message::ButtonPressed)
+///         .into()
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
@@ -39,16 +38,16 @@ where
     Message: Clone,
     Renderer: iced_native::Renderer,
 {
-    /// The anchor of the button.
+    /// The anchor of the element.
     anchor: Anchor,
-    /// The offset of the button.
+    /// The offset of the element.
     offset: Offset,
-    /// The visibility of the button.
+    /// The visibility of the element.
     hidden: bool,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
-    /// The floating button of the [`FloatingButtonOverlay`](FloatingButtonOverlay).
-    button: B,
+    /// The floating element of the [`FloatingElementOverlay`](FloatingElementOverlay).
+    element: B,
 }
 
 impl<'a, B, Message, Renderer> FloatingElement<'a, B, Message, Renderer>
@@ -57,16 +56,14 @@ where
     Message: Clone,
     Renderer: iced_native::Renderer,
 {
-    /// Creates a new [`FloatingButton`](FloatingButton) over some content,
-    /// showing the given [`Button`](iced_native::button::Button).
+    /// Creates a new [`FloatingElement`](FloatingElement) over some content,
+    /// showing the given [`Element`](iced_pure::Element).
     ///
     /// It expects:
-    ///     * a mutable reference to the [`FloatingButton`](FloatingButton)'s
-    ///         [`State`](iced_native::button::State).
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingButton`](FloatingButton)
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`FloatingElement`](FloatingElement)
     ///         will be wrapped around.
-    ///     * a function that will lazy create the [`Button`](iced_native::Button) for the overlay.
-    pub fn new<U>(underlay: U, button: B) -> Self
+    ///     * a function that will lazy create the [`Element`](iced_pure::Element) for the overlay.
+    pub fn new<U>(underlay: U, element: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
     {
@@ -75,18 +72,18 @@ where
             offset: 5.0.into(),
             hidden: false,
             underlay: underlay.into(),
-            button,
+            element,
         }
     }
 
-    /// Sets the [`Anchor`](Anchor) of the [`FloatingButton`](FloatingButton).
+    /// Sets the [`Anchor`](Anchor) of the [`FloatingElement`](FloatingElement).
     #[must_use]
     pub fn anchor(mut self, anchor: Anchor) -> Self {
         self.anchor = anchor;
         self
     }
 
-    /// Sets the [`Offset`](Offset) of the [`FloatingButton`](FloatingButton).
+    /// Sets the [`Offset`](Offset) of the [`FloatingElement`](FloatingElement).
     #[must_use]
     pub fn offset<O>(mut self, offset: O) -> Self
     where
@@ -96,8 +93,8 @@ where
         self
     }
 
-    /// Hide or unhide the [`Button`](iced_native::button::Button) on the
-    /// [`FloatingButton`](FloatingButton).
+    /// Hide or unhide the [`Element`](iced_pure::Element) on the
+    /// [`FloatingElement`](FloatingElement).
     #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;
@@ -113,11 +110,11 @@ where
     Renderer: 'a + iced_native::Renderer,
 {
     fn children(&self) -> Vec<iced_pure::widget::Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.button)())]
+        vec![Tree::new(&self.underlay), Tree::new(&(self.element)())]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.button)()]);
+        tree.diff_children(&[&self.underlay, &(self.element)()]);
     }
 
     fn width(&self) -> Length {
@@ -220,7 +217,7 @@ where
             Some(
                 FloatingElementOverlay::new(
                     &mut state.children[1],
-                    (self.button)(),
+                    (self.element)(),
                     &self.anchor,
                     &self.offset,
                 )
@@ -239,7 +236,7 @@ where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
 {
-    fn from(floating_button: FloatingElement<'a, B, Message, Renderer>) -> Self {
-        Element::new(floating_button)
+    fn from(floating_element: FloatingElement<'a, B, Message, Renderer>) -> Self {
+        Element::new(floating_element)
     }
 }

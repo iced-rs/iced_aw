@@ -22,9 +22,10 @@ pub use crate::style::time_picker::{Style, StyleSheet};
 /// # Example
 /// ```ignore
 /// # use iced_aw::time_picker;
-/// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::{button, Button, Text};
 /// #
-/// # pub type TimePicker<'a, Message> = iced_aw::native::TimePicker<'a, Message, Null>;
+/// # pub type TimePicker<'a, Message> = iced_aw::pure::TimePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,
@@ -32,13 +33,10 @@ pub use crate::style::time_picker::{Style, StyleSheet};
 ///     Submit(time_picker::Time),
 /// }
 ///
-/// let mut button_state = button::State::new();
-/// let mut state = time_picker::State::now();
-/// state.show(true);
-///
 /// let time_picker = TimePicker::new(
-///     &mut state,
-///     Button::new(&mut button_state, Text::new("Pick time"))
+///     true,
+///     time_picker::Time::now_hms(true),
+///     Button::new(Text::new("Pick time"))
 ///         .on_press(Message::Open),
 ///     Message::Cancel,
 ///     Message::Submit,
@@ -78,7 +76,7 @@ where
     /// It expects:
     ///     * if the overlay of the time picker is visible.
     ///     * the initial time to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`TimePicker`](TimePicker)
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`TimePicker`](TimePicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`TimePicker`](TimePicker)
     ///         is pressed.

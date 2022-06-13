@@ -19,11 +19,12 @@ use super::overlay::date_picker::{self, DatePickerOverlay};
 /// An input element for picking dates.
 ///
 /// # Example
-/// ```ignore
-/// # use iced_aw::date_picker;
-/// # use iced_native::{widget::{button, Button, Text}, renderer::Null};
+/// ```
+/// # use iced_aw::pure::date_picker;
+/// # use iced_native::{renderer::Null};
+/// # use iced_pure::widget::{button, Button, Text};
 /// #
-/// # pub type DatePicker<'a, Message> = iced_aw::native::DatePicker<'a, Message, Null>;
+/// # pub type DatePicker<'a, Message> = iced_aw::pure::DatePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,
@@ -31,13 +32,10 @@ use super::overlay::date_picker::{self, DatePickerOverlay};
 ///     Submit(date_picker::Date),
 /// }
 ///
-/// let mut button_state = button::State::new();
-/// let mut state = date_picker::State::now();
-/// state.show(true);
-///
 /// let date_picker = DatePicker::new(
-///     &mut state,
-///     Button::new(&mut button_state, Text::new("Pick date"))
+///     true,
+///     date_picker::Date::today(),
+///     Button::new(Text::new("Pick date"))
 ///         .on_press(Message::Open),
 ///     Message::Cancel,
 ///     Message::Submit,
@@ -66,7 +64,7 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
     /// It expects:
     ///     * if the overlay of the date picker is visible.
     ///     * the initial date to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`DatePicker`](DatePicker)
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`DatePicker`](DatePicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
     ///         is pressed.

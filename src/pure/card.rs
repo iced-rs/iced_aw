@@ -18,9 +18,10 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// # Example
 /// ```
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::Text;
 /// #
-/// # pub type Card<'a, Message> = iced_aw::native::Card<'a, Message, Null>;
+/// # pub type Card<'a, Message> = iced_aw::pure::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ClosingCard,
@@ -54,11 +55,11 @@ pub struct Card<'a, Message, Renderer> {
     close_size: Option<f32>,
     /// The optional message that is send if the close icon of the [`Card`](Card) is pressed.
     on_close: Option<Message>,
-    /// The head [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The head [`Element`](iced_pure::Element) of the [`Card`](Card).
     head: Element<'a, Message, Renderer>,
-    /// The body [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The body [`Element`](iced_pure::Element) of the [`Card`](Card).
     body: Element<'a, Message, Renderer>,
-    /// The optional foot [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The optional foot [`Element`](iced_pure::Element) of the [`Card`](Card).
     foot: Option<Element<'a, Message, Renderer>>,
     /// The style of the [`Card`](Card).
     style_sheet: Box<dyn StyleSheet + 'a>,
@@ -71,9 +72,9 @@ where
     /// Creates a new [`Card`](Card) containing the given head and body.
     ///
     /// It expects:
-    ///     * the head [`Element`](iced_native::Element) to display at the top of
+    ///     * the head [`Element`](iced_pure::Element) to display at the top of
     ///         the [`Card`](Card).
-    ///     * the body [`Element`](iced_native::Element) to display at the middle
+    ///     * the body [`Element`](iced_pure::Element) to display at the middle
     ///         of the [`Card`](Card).
     pub fn new<H, B>(head: H, body: B) -> Self
     where
@@ -97,7 +98,7 @@ where
         }
     }
 
-    /// Sets the [`Element`](iced_native::Element) of the foot of the
+    /// Sets the [`Element`](iced_pure::Element) of the foot of the
     /// [`Card`](Card).
     #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self

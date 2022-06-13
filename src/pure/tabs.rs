@@ -28,9 +28,10 @@ pub use crate::native::tabs::tab_bar_position::TabBarPosition;
 /// # Example
 /// ```
 /// # use iced_aw::{TabLabel};
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::Text;
 /// #
-/// # pub type Tabs<'a, Message> = iced_aw::native::Tabs<'a, Message, Null>;
+/// # pub type Tabs<'a, Message> = iced_aw::pure::Tabs<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
@@ -89,7 +90,7 @@ where
     /// It expects:
     ///     * the index of the currently active tab.
     ///     * a vector containing the [`TabLabel`](TabLabel)s along with the content
-    ///         [`Element`](iced_native::Element)s of the [`Tabs`](Tabs).
+    ///         [`Element`](iced_pure::Element)s of the [`Tabs`](Tabs).
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(

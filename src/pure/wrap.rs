@@ -48,7 +48,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`](iced_pure::Element)s for this [`Wrap`](Wrap).
     #[must_use]
     pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -68,7 +68,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
     /// Creates a [`Wrap`](Wrap) with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`](iced_native::Element)s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`](iced_pure::Element)s for this [`Wrap`](Wrap).
     #[must_use]
     pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -142,7 +142,7 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
         self
     }
 
-    /// Pushes an [`Element`](iced_native::Element) to the [`Wrap`](Wrap).
+    /// Pushes an [`Element`](iced_pure::Element) to the [`Wrap`](Wrap).
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where

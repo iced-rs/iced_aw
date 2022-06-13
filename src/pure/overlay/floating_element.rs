@@ -1,22 +1,22 @@
-//! Use a floating button to overlay a button over some content
+//! Use a floating element to overlay a element over some content
 //!
-//! *This API requires the following crate features to be activated: `floating_button`*
+//! *This API requires the following crate features to be activated: `floating_element`*
 use iced_native::{event, layout::Limits, overlay, Clipboard, Event, Layout, Point, Shell, Size};
 use iced_pure::{widget::Tree, Element};
 
 use crate::native::floating_button::{Anchor, Offset};
 
-/// The internal overlay of a [`FloatingButton`](crate::native::FloatingButton) for
-/// rendering a [`Button`](iced_native::button::Button) as an overlay.
+/// The internal overlay of a [`FloatingElement`](crate::pure::FloatingElement) for
+/// rendering a [`Element`](iced_pure::Element) as an overlay.
 #[allow(missing_debug_implementations)]
 pub struct FloatingElementOverlay<'a, Message: Clone, Renderer: iced_native::Renderer> {
-    /// The state of the button.
+    /// The state of the element.
     state: &'a mut Tree,
-    /// The floating button
-    button: Element<'a, Message, Renderer>,
-    /// The anchor of the button.
+    /// The floating element
+    element: Element<'a, Message, Renderer>,
+    /// The anchor of the element.
     anchor: &'a Anchor,
-    /// The offset of the button.
+    /// The offset of the element.
     offset: &'a Offset,
 }
 
@@ -25,21 +25,21 @@ where
     Message: Clone + 'a,
     Renderer: iced_native::Renderer + 'a,
 {
-    /// Creates a new [`FloatingButtonOverlay`] containing the given
-    /// [`Button`](iced_native::button::Button).
-    pub fn new<B>(state: &'a mut Tree, button: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
+    /// Creates a new [`FloatingElementOverlay`] containing the given
+    /// [`Element`](iced_pure::Element).
+    pub fn new<B>(state: &'a mut Tree, element: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
     where
         B: Into<Element<'a, Message, Renderer>>,
     {
         FloatingElementOverlay {
             state,
-            button: button.into(),
+            element: element.into(),
             anchor,
             offset,
         }
     }
 
-    /// Turns the [`FloatingButtonOverlay`](FloatingButtonOverlay) into an
+    /// Turns the [`FloatingElementOverlay`](FloatingElementOverlay) into an
     /// overlay [`Element`](iced_native::overlay::Element) at the given target
     /// position.
     #[must_use]
@@ -61,28 +61,28 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds);
-        let mut button = self.button.as_widget().layout(renderer, &limits);
+        let mut element = self.element.as_widget().layout(renderer, &limits);
 
         match self.anchor {
-            Anchor::NorthWest => button.move_to(Point::new(
+            Anchor::NorthWest => element.move_to(Point::new(
                 position.x + self.offset.x,
                 position.y + self.offset.y,
             )),
-            Anchor::NorthEast => button.move_to(Point::new(
-                position.x - button.bounds().width - self.offset.x,
+            Anchor::NorthEast => element.move_to(Point::new(
+                position.x - element.bounds().width - self.offset.x,
                 position.y + self.offset.y,
             )),
-            Anchor::SouthWest => button.move_to(Point::new(
+            Anchor::SouthWest => element.move_to(Point::new(
                 position.x + self.offset.x,
-                position.y - button.bounds().height - self.offset.y,
+                position.y - element.bounds().height - self.offset.y,
             )),
-            Anchor::SouthEast => button.move_to(Point::new(
-                position.x - button.bounds().width - self.offset.x,
-                position.y - button.bounds().height - self.offset.y,
+            Anchor::SouthEast => element.move_to(Point::new(
+                position.x - element.bounds().width - self.offset.x,
+                position.y - element.bounds().height - self.offset.y,
             )),
         }
 
-        button
+        element
     }
 
     fn on_event(
@@ -94,7 +94,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        self.button.as_widget_mut().on_event(
+        self.element.as_widget_mut().on_event(
             self.state,
             event,
             layout,
@@ -112,7 +112,7 @@ where
         viewport: &iced_graphics::Rectangle,
         renderer: &Renderer,
     ) -> iced_native::mouse::Interaction {
-        self.button.as_widget().mouse_interaction(
+        self.element.as_widget().mouse_interaction(
             self.state,
             layout,
             cursor_position,
@@ -128,7 +128,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
     ) {
-        self.button.as_widget().draw(
+        self.element.as_widget().draw(
             self.state,
             renderer,
             style,

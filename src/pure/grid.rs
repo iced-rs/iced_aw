@@ -11,9 +11,10 @@ use iced_pure::{overlay, widget::Tree, Element, Widget};
 /// # Example
 ///
 /// ```
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_pure::widget::Text;
 /// #
-/// # pub type Grid<'a, Message> = iced_aw::native::Grid<'a, Message, Null>;
+/// # pub type Grid<'a, Message> = iced_aw::pure::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }
