@@ -52,6 +52,11 @@ pub mod modal;
 #[cfg(feature = "modal")]
 pub use modal::Modal;
 
+#[cfg(feature = "split")]
+pub mod split;
+#[cfg(feature = "split")]
+pub use split::Split;
+
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
 #[cfg(feature = "tab_bar")]

@@ -112,6 +112,7 @@ members = [
     "examples/pure/floating_element",
     "examples/pure/modal",
     "examples/pure/grid",
+    "examples/pure/split",
     "examples/pure/tab_bar",
     "examples/pure/tabs",
     "examples/pure/time_picker",
