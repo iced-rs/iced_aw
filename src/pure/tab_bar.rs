@@ -117,7 +117,7 @@ where
     }
 
     /// Similar to `new` but with a given Vector of the
-    /// [`TabLabel`](tab_label::TabLabel)s.Alignment
+    /// [`TabLabel`](crate::pure::tab_bar::TabLabel)s.Alignment
     ///
     /// It expects:
     ///     * the index of the currently active tab.
@@ -208,7 +208,7 @@ where
         self
     }
 
-    /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
+    /// Sets the icon size of the [`TabLabel`](crate::pure::tab_bar::TabLabel)s of
     /// the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
@@ -216,7 +216,7 @@ where
         self
     }
 
-    /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
+    /// Sets the text size of the [`TabLabel`](crate::pure::tab_bar::TabLabel)s of the
     /// [`TabBar`](TabBar).
     #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
@@ -225,7 +225,7 @@ where
     }
 
     /// Sets the size of the close icon of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::pure::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
@@ -247,7 +247,7 @@ where
     }
 
     /// Sets the font of the icons of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::pure::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
@@ -255,7 +255,7 @@ where
     }
 
     /// Sets the font of the text of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::pure::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
@@ -269,7 +269,7 @@ where
         self
     }
 
-    /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    /// Pushes a [`TabLabel`](crate::pure::tab_bar::TabLabel) to the [`TabBar`](TabBar).
     #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);

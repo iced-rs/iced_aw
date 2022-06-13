@@ -43,7 +43,7 @@ where
     T: Clone + ToString + Eq,
     [T]: ToOwned<Owned = Vec<T>>,
 {
-    /// Creates a new [`SelectionList`] with the given [`State`], a list of options,
+    /// Creates a new [`SelectionList`] with the given list of options,
     /// the current selected value, and the message to produce when an option is
     /// selected.
     pub fn new(

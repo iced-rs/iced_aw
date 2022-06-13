@@ -84,7 +84,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`Horizontal `](iced_native::Horizontal )
+    /// Sets the [`Horizontal `](iced_native::alignment::Horizontal )
     /// of the [`IconText`](IconText).
     #[must_use]
     pub fn horizontal_alignment(mut self, alignment: Horizontal) -> Self {
@@ -92,7 +92,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`Vertical `](iced_native::Vertical )
+    /// Sets the [`Vertical `](iced_native::alignment::Vertical )
     /// of the [`IconText`](IconText).
     #[must_use]
     pub fn vertical_alignment(mut self, alignment: Vertical) -> Self {

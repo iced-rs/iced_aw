@@ -12,7 +12,7 @@ use iced_native::{
 use crate::native::floating_button::{Anchor, Offset};
 
 /// The internal overlay of a [`FloatingButton`](crate::native::FloatingButton) for
-/// rendering a [`Button`](iced_native::button::Button) as an overlay.
+/// rendering a [`Button`](iced_native::widget::button::Button) as an overlay.
 #[allow(missing_debug_implementations)]
 pub struct FloatingButtonOverlay<'a, B, Message: Clone, Renderer: iced_native::Renderer>
 where
@@ -35,7 +35,7 @@ where
     Renderer: iced_native::Renderer + 'a,
 {
     /// Creates a new [`FloatingButtonOverlay`] containing the given
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     pub fn new(
         state: &'a mut button::State,
         button: B,

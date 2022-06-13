@@ -485,12 +485,12 @@ where
     }
 }
 
-/// An optional directional attribute of the [`Wrap`](Wrap).
+/// An optional directional attribute of the [`Wrap`](crate::pure::Wrap).
 pub mod direction {
-    /// An vertical direction of the [`Wrap`](Wrap).
+    /// An vertical direction of the [`Wrap`](crate::pure::Wrap).
     #[derive(Debug)]
     pub struct Vertical;
-    /// An horizontal direction of the [`Wrap`](Wrap).
+    /// An horizontal direction of the [`Wrap`](crate::pure::Wrap).
     #[derive(Debug)]
     pub struct Horizontal;
 }

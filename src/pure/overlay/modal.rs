@@ -19,13 +19,13 @@ where
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
     state: &'a mut Tree,
-    /// The content of the [`Overlay`](Overlay).
+    /// The content of the [`ModalOverlay`](ModalOverlay).
     content: Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
-    /// The style of the [`Overlay`](Overlay).
+    /// The style of the [`ModalOverlay`](ModalOverlay).
     style_sheet: &'a Box<dyn StyleSheet>,
 }
 
