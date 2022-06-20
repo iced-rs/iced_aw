@@ -10,7 +10,7 @@ Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
 iced = "0.4.2"
-iced_aw = { git = "https://github.com/iced-rs/iced_aw", branch = "main", default-features = false, features = [...] }
+iced_aw = { version = "0.2.0", default-features = false, features = [...] }
 ```
 
 **Why not Crates.io?**
