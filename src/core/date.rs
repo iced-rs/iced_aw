@@ -2,6 +2,7 @@
 
 use std::fmt::Display;
 
+use chrono::Local;
 #[cfg(not(target_arch = "wasm32"))]
 use chrono::{Datelike, Duration, NaiveDate};
 #[cfg(not(target_arch = "wasm32"))]
@@ -19,6 +20,13 @@ pub struct Date {
 }
 
 impl Date {
+    /// Creates a new date from the current timestamp.
+    #[must_use]
+    pub fn today() -> Self {
+        let today = Local::now().naive_local().date();
+        today.into()
+    }
+
     /// Creates a new date.
     #[must_use]
     pub const fn from_ymd(year: i32, month: u32, day: u32) -> Self {
@@ -127,7 +135,7 @@ pub fn succ_day(date: NaiveDate) -> NaiveDate {
 /// Specifies if the calculated day lays in the previous, same or next month of
 /// the date.
 #[cfg(not(target_arch = "wasm32"))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum IsInMonth {
     /// The day lays in the previous month.
     Previous,

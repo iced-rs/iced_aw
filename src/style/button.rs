@@ -1,18 +1,18 @@
-//! Predefined styles for a [`Button`](iced_native::button::Button).
+//! Predefined styles for a [`Button`](iced_native::widget::button::Button).
 //!
 //! *This API requires the following crate features to be activated: colors*
 
 #[cfg(feature = "colors")]
 pub use predefined::*;
 #[cfg(feature = "colors")]
-/// Predefined styles for the [`Button`](iced_native::Button) widget.
+/// Predefined styles for the [`Button`](iced_native::widget::Button) widget.
 mod predefined {
     use iced_style::button::{Style, StyleSheet};
 
     use crate::style::colors;
 
     /// The appearance with the [`primary`](colors::PRIMARY) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Primary;
 
@@ -27,7 +27,7 @@ mod predefined {
     }
 
     /// The appearance with the [`secondary`](colors::SECONDARY) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Secondary;
 
@@ -42,7 +42,7 @@ mod predefined {
     }
 
     /// The appearance with the [`success`](colors::SUCCESS) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Success;
 
@@ -57,7 +57,7 @@ mod predefined {
     }
 
     /// The appearance with the [`danger`](colors::DANGER) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Danger;
 
@@ -72,7 +72,7 @@ mod predefined {
     }
 
     /// The appearance with the [`warning`](colors::WARNING) color of a
-    /// [`Warning`](iced_native::button::Button).
+    /// [`Warning`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Warning;
 
@@ -86,7 +86,7 @@ mod predefined {
     }
 
     /// The appearance with the [`info`](colors::INFO) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Info;
 
@@ -100,7 +100,7 @@ mod predefined {
     }
 
     /// The appearance with the [`light`](colors::LIGHT) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Light;
 
@@ -114,7 +114,7 @@ mod predefined {
     }
 
     /// The appearance with the [`dark`](colors::DARK) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct Dark;
 
@@ -129,7 +129,7 @@ mod predefined {
     }
 
     /// The appearance with the [`white`](colors::WHITE) color of a
-    /// [`Button`](iced_native::button::Button).
+    /// [`Button`](iced_native::widget::button::Button).
     #[derive(Clone, Copy, Debug)]
     pub struct White;
 

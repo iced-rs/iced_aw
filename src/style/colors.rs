@@ -8,8 +8,6 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::Color;
-#[cfg(target_arch = "wasm32")]
-use iced_web::Color;
 
 /// Primary <span style="color:dodgerblue">Color</span>.
 pub const PRIMARY: Color = DODGER_BLUE;

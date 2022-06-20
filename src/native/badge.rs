@@ -109,6 +109,29 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
+/// Computes the layout of a [`Badge`](Badge).
+pub fn layout<Renderer>(
+    renderer: &Renderer,
+    limits: &layout::Limits,
+    width: Length,
+    height: Length,
+    padding: Padding,
+    horizontal_alignment: Alignment,
+    vertical_alignment: Alignment,
+    layout_content: impl FnOnce(&Renderer, &layout::Limits) -> layout::Node,
+) -> iced_native::layout::Node {
+    let limits = limits.loose().width(width).height(height).pad(padding);
+
+    let mut content = layout_content(renderer, &limits.loose());
+    let size = limits.resolve(content.size());
+
+    content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
+    content.align(horizontal_alignment, vertical_alignment, size);
+
+    layout::Node::with_children(size.pad(padding), vec![content])
+}
+
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
@@ -121,26 +144,17 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
-        let padding = Padding::from(self.padding);
-
-        let limits = limits
-            .loose()
-            .width(self.width)
-            .height(self.height)
-            .pad(padding);
-
-        let mut content = self.content.layout(renderer, &limits.loose());
-        let size = limits.resolve(content.size());
-
-        content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
-        content.align(self.horizontal_alignment, self.vertical_alignment, size);
-
-        layout::Node::with_children(size.pad(padding), vec![content])
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+        layout(
+            renderer,
+            limits,
+            self.width,
+            self.height,
+            self.padding.into(),
+            self.horizontal_alignment,
+            self.vertical_alignment,
+            |renderer, limits| self.content.layout(renderer, limits),
+        )
     }
 
     fn on_event(

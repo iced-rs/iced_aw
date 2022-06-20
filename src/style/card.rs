@@ -3,8 +3,6 @@
 //! *This API requires the following crate features to be activated: card*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
-#[cfg(target_arch = "wasm32")]
-use iced_web::{Background, Color};
 
 /// The appearance of a [`Card`](crate::native::card::Card).
 #[derive(Clone, Copy, Debug)]
