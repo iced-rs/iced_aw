@@ -4,8 +4,6 @@
 
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::Background;
-#[cfg(target_arch = "wasm32")]
-use iced_web::Background;
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[derive(Clone, Copy, Debug)]

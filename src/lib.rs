@@ -122,58 +122,6 @@ mod platform {
     #[cfg(feature = "split")]
     pub use {crate::graphics::split, split::Split};
 }
-#[cfg(target_arch = "wasm32")]
-pub mod web;
-
-#[cfg(target_arch = "wasm32")]
-/// Exports for the WASM32 platform.
-mod platform {
-    #[doc(no_inline)]
-    #[cfg(feature = "badge")]
-    pub use crate::web::{badge, badge::Badge};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "card")]
-    pub use crate::web::{card, card::Card};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "color_picker")]
-    pub use crate::web::{color_picker, color_picker::ColorPicker};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "grid")]
-    pub use crate::web::{grid, grid::Grid};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "date_picker")]
-    pub use crate::web::{date_picker, date_picker::DatePicker};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "floating_button")]
-    pub use crate::web::{floating_button, floating_button::FloatingButton};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "modal")]
-    pub use crate::web::{modal, modal::Modal};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "tab_bar")]
-    pub use crate::web::{
-        tab_bar,
-        tab_bar::{TabBar, TabLabel},
-    };
-
-    #[doc(no_inline)]
-    #[cfg(feature = "tabs")]
-    pub use crate::web::{
-        tabs,
-        tabs::{TabBarPosition, Tabs},
-    };
-
-    #[doc(no_inline)]
-    #[cfg(feature = "time_picker")]
-    pub use crate::web::{time_picker, time_picker::TimePicker};
-}
 
 #[doc(no_inline)]
 pub use platform::*;

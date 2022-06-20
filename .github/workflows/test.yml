@@ -40,7 +40,7 @@ jobs:
 
   todo_macos:
     name: Mac OS Checks
-    runs-on: macOS-latest
+    runs-on: macos-latest
     strategy:
       matrix:
         rust: [stable, beta]
@@ -53,17 +53,3 @@ jobs:
       run: |
         cargo test --verbose --all
         cargo test --verbose --all --all-features
-
-  todo_web:
-    name: Web Checks
-    runs-on: ubuntu-latest
-    steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: stable
-        targets: wasm32-unknown-unknown
-    - uses: actions/checkout@master
-    - name: Run checks
-      run: cargo check --package iced_aw --target wasm32-unknown-unknown
-    - name: Check compilation of `web` example
-      run: cargo build --package web --target wasm32-unknown-unknown
