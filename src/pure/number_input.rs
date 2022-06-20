@@ -46,12 +46,10 @@ const DEFAULT_PADDING: u16 = 5;
 ///     NumberInputChanged(u32),
 /// }
 ///
-/// let mut state = number_input::State::new();
 /// let value = 12;
 /// let max = 1275;
 ///
 /// let input = NumberInput::new(
-///     &mut state,
 ///     value,
 ///     max,
 ///     Message::NumberInputChanged,
