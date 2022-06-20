@@ -19,11 +19,13 @@ colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
 floating_button = ["button"]
+floating_element = ["button", "floating_button"]
 grid = []
 glow = [] # TODO
 icon_text = ["icons"]
 icons = []
 modal = []
+pure = ["iced_pure"]
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
@@ -39,8 +41,10 @@ default = [
     "date_picker",
     "color_picker",
     "floating_button",
+    "floating_element",
     "grid",
     "modal",
+    "pure",
     "tab_bar",
     "tabs",
     "time_picker",
@@ -50,7 +54,7 @@ default = [
 ]
 
 [dependencies]
-num-traits = { version = "0.2.14", optional = true }
+num-traits = { version = "0.2.15", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 chrono = { version = "0.4.19", optional = true }
@@ -58,30 +62,27 @@ lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_native]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "af7cbf0"
-version = "0.5"
+#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+version = "0.5.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_graphics]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "af7cbf0"
-version = "0.3"
+#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+version = "0.3.0"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-dodrio = "0.2"
-wasm-bindgen = "0.2"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies.iced_web]
-#git = "https://github.com/iced-rs/iced_web"
-#rev = "5f85529"
-version = "0.4"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
-version = "0.3"
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_pure]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+version = "0.2.2"
+optional = true
 
 [dependencies.iced_style]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "af7cbf0"
-version = "0.4"
+#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+version = "0.4.0"
+
+[profile.dev.package."*"]
+opt-level = 2
 
 [workspace]
 members = [
@@ -92,13 +93,27 @@ members = [
     "examples/floating_button",
     "examples/grid",
     "examples/modal",
+    "examples/pure/badge",
+    "examples/pure/card",
+    "examples/pure/color_picker",
+    "examples/pure/date_picker",
+    "examples/pure/floating_element",
+    "examples/pure/modal",
+    "examples/pure/grid",
+    "examples/pure/split",
+    "examples/pure/tab_bar",
+    "examples/pure/tabs",
+    "examples/pure/time_picker",
     "examples/tab_bar",
     "examples/tabs",
     #"examples/tabs_min",
     "examples/time_picker",
     "examples/wrap",
+    "examples/pure/wrap",
     "examples/web",
     "examples/number_input",
+    "examples/pure/number_input",
     "examples/selection_list",
+    "examples/pure/selection_list",
     "examples/split",
 ]

@@ -65,14 +65,14 @@ where
     Renderer: iced_native::Renderer,
 {
     /// Creates a new [`FloatingButton`](FloatingButton) over some content,
-    /// showing the given [`Button`](iced_native::button::Button).
+    /// showing the given [`Button`](iced_native::widget::button::Button).
     ///
     /// It expects:
     ///     * a mutable reference to the [`FloatingButton`](FloatingButton)'s
-    ///         [`State`](iced_native::button::State).
+    ///         [`State`](iced_native::widget::button::State).
     ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingButton`](FloatingButton)
     ///         will be wrapped around.
-    ///     * a function that will lazy create the [`Button`](iced_native::Button) for the overlay.
+    ///     * a function that will lazy create the [`Button`](iced_native::widget::Button) for the overlay.
     pub fn new<U>(state: &'a mut button::State, underlay: U, button: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
@@ -104,7 +104,7 @@ where
         self
     }
 
-    /// Hide or unhide the [`Button`](iced_native::button::Button) on the
+    /// Hide or unhide the [`Button`](iced_native::widget::button::Button) on the
     /// [`FloatingButton`](FloatingButton).
     #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {

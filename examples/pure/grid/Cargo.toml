@@ -1,0 +1,16 @@
+[package]
+name = "pure_grid"
+version = "0.1.0"
+authors = ["daxpedda <daxpedda@gmail.com>", "Luni-4 <luni-4@hotmail.it>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+iced_aw = { path = "../../..", default-features = false, features = ["grid", "pure"] }
+
+[dependencies.iced]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
+version = "0.4.2"
+features = [ "pure" ]

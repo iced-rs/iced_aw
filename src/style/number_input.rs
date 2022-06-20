@@ -3,8 +3,6 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
-#[cfg(target_arch = "wasm32")]
-use iced_web::{Background, Color};
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]

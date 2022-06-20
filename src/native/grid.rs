@@ -125,7 +125,7 @@ where
                         Some(column_width) => *column_width = column_width.max(layout.size().width),
                         None => column_widths.insert(column, layout.size().width),
                     }
-                  
+
                     layouts.push(layout);
                 }
 

@@ -3,6 +3,8 @@
 //! *This API requires the following crate features to be activated: `time_picker`*
 use std::fmt::Display;
 
+use chrono::{Local, Timelike};
+
 /// The time value
 #[derive(Clone, Copy, Debug)]
 pub enum Time {
@@ -30,6 +32,47 @@ pub enum Time {
 }
 
 impl Time {
+    /// Creates a new time (hours, minutes) from the current timestamp.
+    #[must_use]
+    pub fn now_hm(use_24h: bool) -> Self {
+        let now = Local::now().naive_local().time();
+
+        let (hour, period) = if use_24h {
+            (now.hour(), Period::H24)
+        } else {
+            let (period, hour12) = now.hour12();
+
+            (hour12, if period { Period::Pm } else { Period::Am })
+        };
+
+        Self::Hm {
+            hour,
+            minute: now.minute(),
+            period,
+        }
+    }
+
+    /// Creates a new time (hours, minutes, seconds) from the current timestamp.
+    #[must_use]
+    pub fn now_hms(use_24h: bool) -> Self {
+        let now = Local::now().naive_local().time();
+
+        let (hour, period) = if use_24h {
+            (now.hour(), Period::H24)
+        } else {
+            let (period, hour12) = now.hour12();
+
+            (hour12, if period { Period::Pm } else { Period::Am })
+        };
+
+        Self::Hms {
+            hour,
+            minute: now.minute(),
+            second: now.second(),
+            period,
+        }
+    }
+
     /// The default time `00:00` with the given period.
     #[must_use]
     pub const fn default_hm(period: Period) -> Self {
@@ -75,7 +118,7 @@ impl Display for Time {
 }
 
 /// The current period of the clock
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Period {
     /// No period - using 24 hour format.
     H24,
@@ -124,6 +167,17 @@ impl From<Time> for chrono::NaiveTime {
         };
 
         Self::from_hms(h, m, s)
+    }
+}
+
+impl From<chrono::NaiveTime> for Time {
+    fn from(time: chrono::NaiveTime) -> Self {
+        Self::Hms {
+            hour: time.hour(),
+            minute: time.minute(),
+            second: time.second(),
+            period: Period::H24,
+        }
     }
 }
 

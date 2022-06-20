@@ -3,8 +3,6 @@
 //! *This API requires the following crate features to be activated: split*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
-#[cfg(target_arch = "wasm32")]
-use iced_web::{Background, Color};
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[derive(Clone, Copy, Debug)]
