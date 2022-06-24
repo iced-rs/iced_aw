@@ -92,7 +92,7 @@ To enable predefined styles for buttons, enable the feature `colors`.
 
 ### Modal
 
-Modals are usefull for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
+Modals are useful for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
 
 <center>
 
