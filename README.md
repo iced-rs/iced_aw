@@ -1,5 +1,9 @@
 # Iced - Additional Widgets
 
+[![Documentation](https://docs.rs/iced_aw/badge.svg)](https://docs.rs/iced_aw)
+[![Crates.io](https://img.shields.io/crates/v/iced_aw.svg)](https://crates.io/crates/iced)
+[![License](https://img.shields.io/crates/l/iced_aw.svg)](https://github.com/iced-rs/iced/blob/master/LICENSE)
+
 This crate contains additional widgets for the GUI library [Iced](https://github.com/hecrj/iced).
 
 Every widget is hidden by a feature gate. This allows you to cherry pick the widgets you actually need.
@@ -10,12 +14,14 @@ Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
 iced = "0.4.2"
-iced_aw = { git = "https://github.com/iced-rs/iced_aw", branch = "main", default-features = false, features = [...] }
+iced_aw = { version = "0.2", default-features = false, features = [...] }
 ```
 
-**Why not Crates.io?**
+## Versioning
 
-This crate is currently based on top of the master branch of Iced. Crates.io [refuses](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories) crates that uses git repositories as their dependencies. Once Iced becomes stable, `iced_aw` will be published on Crates.io as well.
+| `iced` version | `iced_aw` version |
+| -------------- | ----------------- |
+| 0.4            | 0.2               |
 
 ## Widgets
 
