@@ -1,13 +1,9 @@
 use iced::{
-    application::Appearance,
     widget::{Column, Container, Row, Text},
     Alignment, Element, Length, Sandbox, Settings,
 };
 
-use iced_aw::{
-    style::{self, badge::StyleSheet},
-    Badge,
-};
+use iced_aw::{style::badge, Badge};
 
 const BADGE_TEXT_SIZE: u16 = 15;
 
@@ -57,12 +53,8 @@ impl Sandbox for BadgeExample {
                             .align_items(Alignment::Center)
                             .push(Text::new(name).width(Length::Fill))
                             .push(
-                                Badge::new(
-                                    Text::new(format!("{}", count))
-                                        .color(style::colors::SNOW)
-                                        .size(BADGE_TEXT_SIZE),
-                                )
-                                .style(predefined_style(i)),
+                                Badge::new(Text::new(format!("{}", count)).size(BADGE_TEXT_SIZE))
+                                    .style(predefined_style(i)),
                             ),
                     )
                 });
@@ -74,34 +66,19 @@ impl Sandbox for BadgeExample {
                 Row::new()
                     .spacing(10)
                     .push(Badge::new(Text::new("Default")))
-                    .push(
-                        Badge::new(Text::new("Primary").color(style::colors::LIGHT))
-                            .style(style::badge::Primary),
-                    )
-                    .push(
-                        Badge::new(Text::new("Secondary").color(style::colors::LIGHT))
-                            .style(style::badge::Secondary),
-                    )
-                    .push(
-                        Badge::new(Text::new("Success").color(style::colors::LIGHT))
-                            .style(style::badge::Success),
-                    )
-                    .push(
-                        Badge::new(Text::new("Danger").color(style::colors::LIGHT))
-                            .style(style::badge::Danger),
-                    ),
+                    .push(Badge::new(Text::new("Primary")).style(badge::Badge::Primary))
+                    .push(Badge::new(Text::new("Secondary")).style(badge::Badge::Secondary))
+                    .push(Badge::new(Text::new("Success")).style(badge::Badge::Success))
+                    .push(Badge::new(Text::new("Danger")).style(badge::Badge::Danger)),
             )
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Warning")).style(style::badge::Warning))
-                    .push(Badge::new(Text::new("Info")).style(style::badge::Info))
-                    .push(Badge::new(Text::new("Light")).style(style::badge::Light))
-                    .push(
-                        Badge::new(Text::new("Dark").color(style::colors::LIGHT))
-                            .style(style::badge::Dark),
-                    )
-                    .push(Badge::new(Text::new("White")).style(style::badge::White)),
+                    .push(Badge::new(Text::new("Warning")).style(badge::Badge::Warning))
+                    .push(Badge::new(Text::new("Info")).style(badge::Badge::Info))
+                    .push(Badge::new(Text::new("Light")).style(badge::Badge::Light))
+                    .push(Badge::new(Text::new("Dark")).style(badge::Badge::Dark))
+                    .push(Badge::new(Text::new("White")).style(badge::Badge::White)),
             );
 
         Container::new(
@@ -118,16 +95,16 @@ impl Sandbox for BadgeExample {
     }
 }
 
-fn predefined_style(index: usize) -> dyn StyleSheet<Style = Appearance> {
+fn predefined_style(index: usize) -> badge::Badge {
     match index {
-        0 => style::badge::Primary.into(),
-        1 => style::badge::Secondary.into(),
-        2 => style::badge::Success.into(),
-        3 => style::badge::Danger.into(),
-        4 => style::badge::Warning.into(),
-        5 => style::badge::Info.into(),
-        6 => style::badge::Light.into(),
-        7 => style::badge::Dark.into(),
-        _ => style::badge::Appearance,
+        0 => badge::Badge::Primary,
+        1 => badge::Badge::Secondary,
+        2 => badge::Badge::Success,
+        3 => badge::Badge::Danger,
+        4 => badge::Badge::Warning,
+        5 => badge::Badge::Info,
+        6 => badge::Badge::Light,
+        7 => badge::Badge::Dark,
+        _ => badge::Badge::Default,
     }
 }
