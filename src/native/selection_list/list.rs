@@ -5,25 +5,24 @@ use iced_native::{
     alignment::{Horizontal, Vertical},
     event,
     layout::{Limits, Node},
-    mouse, renderer, touch, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
-    Shell, Size, Widget,
+    mouse, renderer, touch, Clipboard, Color, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
+use std::borrow::Cow;
 use std::marker::PhantomData;
+
+use iced_native::widget::tree::{self, Tree};
+use iced_native::{Element, Widget};
 
 /// The Private [`List`] Handles the Actual list rendering.
 #[allow(missing_debug_implementations)]
-pub struct List<'a, T, Message, Renderer>
+pub struct List<'a, T: 'a, Message, Renderer>
 where
+    [T]: ToOwned<Owned = Vec<T>>,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Options pointer to hold all rendered strings
-    pub options: &'a [T],
+    pub options: Cow<'a, [T]>,
     /// Hovered Item Pointer
-    pub hovered_option: &'a mut Option<usize>,
-    /// Last chosen Item Clicked for Processing
-    pub last_selected_item: &'a mut Option<T>,
-    /// The index in the list of options of the last chosen Item Clicked for Processing
-    pub last_selected_index: Option<usize>,
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
@@ -34,11 +33,28 @@ where
     pub phantomdata: PhantomData<Renderer>,
 }
 
+/// The Private [`ListState`] Handles the State of the inner list.
+#[derive(Debug, Clone, Default)]
+pub struct ListState {
+    /// Statehood of hovered_option
+    pub hovered_option: Option<usize>,
+    /// The index in the list of options of the last chosen Item Clicked for Processing
+    pub last_selected_index: Option<usize>,
+}
+
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<ListState>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(ListState::default())
+    }
+
     fn width(&self) -> Length {
         Length::Fill
     }
@@ -62,6 +78,7 @@ where
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -71,11 +88,12 @@ where
     ) -> event::Status {
         let bounds = layout.bounds();
         let mut status = event::Status::Ignored;
+        let list_state = state.state.downcast_mut::<ListState>();
 
         if bounds.contains(cursor_position) {
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
-                    *self.hovered_option = Some(
+                    list_state.hovered_option = Some(
                         ((cursor_position.y - bounds.y)
                             / f32::from(self.style.text_size + (self.style.padding * 2)))
                             as usize,
@@ -83,25 +101,26 @@ where
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    *self.hovered_option = Some(
+                    list_state.hovered_option = Some(
                         ((cursor_position.y - bounds.y)
                             / f32::from(self.style.text_size + (self.style.padding * 2)))
                             as usize,
                     );
 
-                    if let Some(index) = self.hovered_option {
-                        if let Some(option) = self.options.get(*index) {
-                            *self.last_selected_item = Some(option.clone());
-                            self.last_selected_index = Some(*index);
-                        }
+                    if let Some(index) = list_state.hovered_option {
+                        list_state.last_selected_index = Some(index);
                     }
 
                     status =
-                        self.last_selected_item
-                            .take()
+                        list_state
+                            .last_selected_index
                             .map_or(event::Status::Ignored, |last| {
-                                shell.publish((self.on_selected)(last));
-                                event::Status::Captured
+                                if let Some(option) = self.options.get(last) {
+                                    shell.publish((self.on_selected)(option.clone()));
+                                    event::Status::Captured
+                                } else {
+                                    event::Status::Ignored
+                                }
                             });
                 }
                 _ => {}
@@ -113,6 +132,7 @@ where
 
     fn mouse_interaction(
         &self,
+        _state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
@@ -130,6 +150,7 @@ where
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
@@ -144,11 +165,12 @@ where
         let end = ((offset + viewport.height) / f32::from(option_height)).ceil() as usize;
 
         let visible_options = &self.options[start..end.min(self.options.len())];
+        let list_state = state.state.downcast_ref::<ListState>();
 
         for (i, option) in visible_options.iter().enumerate() {
             let i = start + i;
-            let is_selected = self.last_selected_index == Some(i);
-            let is_hovered = *self.hovered_option == Some(i);
+            let is_selected = list_state.last_selected_index == Some(i);
+            let is_hovered = list_state.hovered_option == Some(i);
 
             let bounds = Rectangle {
                 x: bounds.x,

@@ -1,5 +1,8 @@
-use iced::{slider, Alignment, Column, Container, Element, Image, Length, Slider, Text};
-use iced_aw::TabLabel;
+use iced::{
+    widget::{Column, Container, Image, Slider, Text},
+    Alignment, Element, Length,
+};
+use iced_aw::tab_bar::TabLabel;
 
 use crate::{Icon, Message, Tab};
 
@@ -10,15 +13,11 @@ pub enum FerrisMessage {
 
 pub struct FerrisTab {
     ferris_width: u16,
-    slider: slider::State,
 }
 
 impl FerrisTab {
     pub fn new() -> Self {
-        FerrisTab {
-            ferris_width: 100,
-            slider: slider::State::default(),
-        }
+        FerrisTab { ferris_width: 100 }
     }
 
     pub fn update(&mut self, message: FerrisMessage) {
@@ -39,7 +38,7 @@ impl Tab for FerrisTab {
         TabLabel::IconText(Icon::Heart.into(), self.title())
     }
 
-    fn content(&mut self) -> Element<'_, Self::Message> {
+    fn content(&self) -> Element<'_, Self::Message> {
         let content: Element<'_, FerrisMessage> = Container::new(
             Column::new()
                 .align_items(Alignment::Center)
@@ -53,7 +52,6 @@ impl Tab for FerrisTab {
                 }))
                 .push(ferris(self.ferris_width))
                 .push(Slider::new(
-                    &mut self.slider,
                     100..=500,
                     self.ferris_width,
                     FerrisMessage::ImageWidthChanged,

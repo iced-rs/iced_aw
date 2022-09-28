@@ -8,15 +8,14 @@
 use iced_native::{
     event,
     layout::{Limits, Node},
-    mouse,
-    widget::Row,
-    Clipboard, Element, Event, Font, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+    mouse, Clipboard, Event, Font, Layout, Length, Point, Rectangle, Shell, Size,
+};
+use iced_native::{
+    widget::{Row, Tree},
+    Element, Widget,
 };
 
-use crate::{
-    native::{TabBar, TabLabel},
-    style::tab_bar::StyleSheet,
-};
+use crate::{style::tab_bar::StyleSheet, TabBar, TabLabel};
 
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
@@ -27,9 +26,10 @@ pub use tab_bar_position::TabBarPosition;
 /// # Example
 /// ```
 /// # use iced_aw::{TabLabel};
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_native::widget::Text;
 /// #
-/// # pub type Tabs<'a, Message> = iced_aw::native::Tabs<'a, Message, Null>;
+/// # pub type Tabs<'a, Message> = iced_aw::Tabs<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
@@ -257,6 +257,14 @@ impl<'a, Message, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, Rend
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
+    fn children(&self) -> Vec<Tree> {
+        self.tabs.iter().map(Tree::new).collect()
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.tabs);
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -283,7 +291,7 @@ where
                     .height(Length::Fill)
                     .layout(renderer, &tab_content_limits)
             },
-            |element| element.layout(renderer, &tab_content_limits),
+            |element| element.as_widget().layout(renderer, &tab_content_limits),
         );
 
         tab_bar_node.move_to(Point::new(
@@ -318,12 +326,13 @@ where
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -348,6 +357,7 @@ where
         };
 
         let status_tab_bar = self.tab_bar.on_event(
+            &mut Tree::empty(),
             event.clone(),
             tab_bar_layout,
             cursor_position,
@@ -359,7 +369,8 @@ where
         let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
             event::Status::Ignored,
             |element| {
-                element.on_event(
+                element.as_widget_mut().on_event(
+                    &mut state.children[self.tab_bar.get_active_tab()],
                     event,
                     tab_content_layout,
                     cursor_position,
@@ -375,6 +386,7 @@ where
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
@@ -392,9 +404,13 @@ where
         };
 
         let mut mouse_interaction = mouse::Interaction::default();
-        let new_mouse_interaction =
-            self.tab_bar
-                .mouse_interaction(tab_bar_layout, cursor_position, viewport, renderer);
+        let new_mouse_interaction = self.tab_bar.mouse_interaction(
+            &Tree::empty(),
+            tab_bar_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
 
         if new_mouse_interaction > mouse_interaction {
             mouse_interaction = new_mouse_interaction;
@@ -412,8 +428,13 @@ where
         };
 
         if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
-            let new_mouse_interaction =
-                element.mouse_interaction(tab_content_layout, cursor_position, viewport, renderer);
+            let new_mouse_interaction = element.as_widget().mouse_interaction(
+                &state.children[self.tab_bar.get_active_tab()],
+                tab_content_layout,
+                cursor_position,
+                viewport,
+                renderer,
+            );
 
             if new_mouse_interaction > mouse_interaction {
                 mouse_interaction = new_mouse_interaction;
@@ -425,6 +446,7 @@ where
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
@@ -441,8 +463,14 @@ where
                 .expect("Native: There should be a TabBar at the bottom position"),
         };
 
-        self.tab_bar
-            .draw(renderer, style, tab_bar_layout, cursor_position, viewport);
+        self.tab_bar.draw(
+            &Tree::empty(),
+            renderer,
+            style,
+            tab_bar_layout,
+            cursor_position,
+            viewport,
+        );
 
         let mut children = layout.children();
 
@@ -456,7 +484,8 @@ where
         };
 
         if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
-            element.draw(
+            element.as_widget().draw(
+                &state.children[self.tab_bar.get_active_tab()],
                 renderer,
                 style,
                 tab_content_layout,
@@ -466,26 +495,31 @@ where
         }
     }
 
-    #[allow(clippy::unwrap_in_result)]
-    fn overlay(
-        &mut self,
+    fn overlay<'b>(
+        &'b self,
+        state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
         let layout = match self.tab_bar_position {
-            TabBarPosition::Top => layout
-                .children()
-                .nth(1)
-                .expect("Native: Layout should have a tab content layout at top position"),
-            TabBarPosition::Bottom => layout
-                .children()
-                .next()
-                .expect("Native: Layout should have a tab content layout at bottom position"),
+            TabBarPosition::Top => layout.children().nth(1),
+            TabBarPosition::Bottom => layout.children().next(),
         };
-        self.tabs
-            .get_mut(self.tab_bar.get_active_tab())
-            .expect("Native: self.tab_bar.get_active_tab() should never return a value greater than self.tabs.len()")
-            .overlay(layout, renderer)
+
+        match layout {
+            Some(layout) => self
+                .tabs
+                .get(self.tab_bar.get_active_tab())
+                .map(Element::as_widget)
+                .and_then(|w| {
+                    w.overlay(
+                        &mut state.children[self.tab_bar.get_active_tab()],
+                        layout,
+                        renderer,
+                    )
+                }),
+            None => None,
+        }
     }
 }
 

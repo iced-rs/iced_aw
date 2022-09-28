@@ -4,10 +4,10 @@
 
 use iced_native::{
     event,
-    layout::{self, Limits, Node},
-    mouse, overlay, Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shell, Size, Widget,
+    layout::{Limits, Node},
+    mouse, Alignment, Clipboard, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
 };
+use iced_native::{widget::tree::Tree, Element, Widget};
 
 use std::marker::PhantomData;
 
@@ -159,6 +159,14 @@ where
     Self: WrapLayout<Renderer>,
     Renderer: iced_native::Renderer,
 {
+    fn children(&self) -> Vec<Tree> {
+        self.elements.iter().map(Tree::new).collect()
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.elements);
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -167,12 +175,13 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.inner_layout(renderer, limits)
     }
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -182,9 +191,11 @@ where
     ) -> event::Status {
         self.elements
             .iter_mut()
+            .zip(&mut state.children)
             .zip(layout.children())
-            .map(|(child, layout)| {
-                child.on_event(
+            .map(|((child, state), layout)| {
+                child.as_widget_mut().on_event(
+                    state,
                     event.clone(),
                     layout,
                     cursor_position,
@@ -195,19 +206,23 @@ where
             })
             .fold(event::Status::Ignored, event::Status::merge)
     }
-    fn overlay(
-        &mut self,
+
+    fn overlay<'b>(
+        &'b self,
+        state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'_, Message, Renderer>> {
+    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
         self.elements
-            .iter_mut()
+            .iter()
+            .zip(&mut state.children)
             .zip(layout.children())
-            .find_map(|(child, layout)| child.overlay(layout, renderer))
+            .find_map(|((child, state), layout)| child.as_widget().overlay(state, layout, renderer))
     }
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
@@ -215,9 +230,16 @@ where
     ) -> mouse::Interaction {
         self.elements
             .iter()
+            .zip(&state.children)
             .zip(layout.children())
-            .map(|(child, layout)| {
-                child.mouse_interaction(layout, cursor_position, viewport, renderer)
+            .map(|((child, state), layout)| {
+                child.as_widget().mouse_interaction(
+                    state,
+                    layout,
+                    cursor_position,
+                    viewport,
+                    renderer,
+                )
             })
             .max()
             .unwrap_or_default()
@@ -225,14 +247,22 @@ where
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
     ) {
-        for (child, layout) in self.elements.iter().zip(layout.children()) {
-            child.draw(renderer, style, layout, cursor_position, viewport);
+        for ((child, state), layout) in self
+            .elements
+            .iter()
+            .zip(&state.children)
+            .zip(layout.children())
+        {
+            child
+                .as_widget()
+                .draw(state, renderer, style, layout, cursor_position, viewport);
         }
     }
 }
@@ -286,7 +316,7 @@ where
     Renderer: iced_native::Renderer,
 {
     /// A inner layout of the [`Wrap`](Wrap).
-    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node;
+    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
@@ -325,7 +355,7 @@ where
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
-                let mut node = elem.layout(renderer, &node_limit);
+                let mut node = elem.as_widget().layout(renderer, &node_limit);
 
                 let size = node.size();
 
@@ -407,7 +437,7 @@ where
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
-                let mut node = elem.layout(renderer, &node_limit);
+                let mut node = elem.as_widget().layout(renderer, &node_limit);
 
                 let size = node.size();
 
@@ -455,12 +485,12 @@ where
     }
 }
 
-/// An optional directional attribute of the [`Wrap`](crate::native::Wrap).
+/// An optional directional attribute of the [`Wrap`](crate::Wrap).
 pub mod direction {
-    /// An vertical direction of the [`Wrap`](crate::native::Wrap).
+    /// An vertical direction of the [`Wrap`](crate::Wrap).
     #[derive(Debug)]
     pub struct Vertical;
-    /// An horizontal direction of the [`Wrap`](crate::native::Wrap).
+    /// An horizontal direction of the [`Wrap`](crate::Wrap).
     #[derive(Debug)]
     pub struct Horizontal;
 }

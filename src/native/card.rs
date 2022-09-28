@@ -3,9 +3,10 @@
 //! *This API requires the following crate features to be activated: card*
 use iced_native::{
     alignment::{Horizontal, Vertical},
-    event, mouse, renderer, touch, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Shell, Size, Widget,
+    event, mouse, renderer, touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding,
+    Point, Rectangle, Shell, Size,
 };
+use iced_native::{widget::Tree, Element, Widget};
 
 use crate::graphics::icons::Icon;
 pub use crate::style::card::{Style, StyleSheet};
@@ -17,9 +18,10 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// # Example
 /// ```
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_native::widget::Text;
 /// #
-/// # pub type Card<'a, Message> = iced_aw::native::Card<'a, Message, Null>;
+/// # pub type Card<'a, Message> = iced_aw::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ClosingCard,
@@ -198,6 +200,27 @@ where
     Message: Clone,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
+    fn children(&self) -> Vec<Tree> {
+        self.foot.as_ref().map_or_else(
+            || vec![Tree::new(&self.head), Tree::new(&self.body)],
+            |foot| {
+                vec![
+                    Tree::new(&self.head),
+                    Tree::new(&self.body),
+                    Tree::new(foot),
+                ]
+            },
+        )
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        if let Some(foot) = self.foot.as_ref() {
+            tree.diff_children(&[&self.head, &self.body, foot]);
+        } else {
+            tree.diff_children(&[&self.head, &self.body]);
+        }
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -253,12 +276,13 @@ where
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -266,7 +290,8 @@ where
             .next()
             .expect("Native: Layout should have a head layout");
         let mut head_children = head_layout.children();
-        let head_status = self.head.on_event(
+        let head_status = self.head.as_widget_mut().on_event(
+            &mut state.children[0],
             event.clone(),
             head_children
                 .next()
@@ -274,7 +299,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let close_status = head_children
@@ -289,7 +314,7 @@ where
                         // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
                         .filter(|_| close_layout.bounds().contains(cursor_position))
                         .map_or(event::Status::Ignored, |on_close| {
-                            messages.publish(on_close);
+                            shell.publish(on_close);
                             event::Status::Captured
                         }),
                     _ => event::Status::Ignored,
@@ -300,7 +325,8 @@ where
             .next()
             .expect("Native: Layout should have a body layout");
         let mut body_children = body_layout.children();
-        let body_status = self.body.on_event(
+        let body_status = self.body.as_widget_mut().on_event(
+            &mut state.children[1],
             event.clone(),
             body_children
                 .next()
@@ -308,7 +334,7 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         );
 
         let foot_layout = children
@@ -316,7 +342,8 @@ where
             .expect("Native: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
-            foot.on_event(
+            foot.as_widget_mut().on_event(
+                &mut state.children[2],
                 event,
                 foot_children
                     .next()
@@ -324,7 +351,7 @@ where
                 cursor_position,
                 renderer,
                 clipboard,
-                messages,
+                shell,
             )
         });
 
@@ -336,6 +363,7 @@ where
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
@@ -345,11 +373,13 @@ where
 
         let head_layout = children
             .next()
-            .expect("Graphics: Layout should have a head layout");
+            .expect("Native: Layout should have a head layout");
+        let mut head_children = head_layout.children();
 
-        let mut head_layout_children = head_layout.children();
-        let _head = head_layout_children.next();
-        let close_layout = head_layout_children.next();
+        let head = head_children
+            .next()
+            .expect("Native: Layout should have a head layout");
+        let close_layout = head_children.next();
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
             let bounds = layout.bounds();
@@ -364,36 +394,58 @@ where
 
         let body_layout = children
             .next()
-            .expect("Graphics: Layout should have a body layout");
+            .expect("Native: Layout should have a body layout");
+        let mut body_children = body_layout.children();
+
+        let foot_layout = children
+            .next()
+            .expect("Native: Layout should have a foot layout");
+        let mut foot_children = foot_layout.children();
 
         mouse_interaction
+            .max(self.head.as_widget().mouse_interaction(
+                &state.children[0],
+                head,
+                cursor_position,
+                viewport,
+                renderer,
+            ))
             .max(
-                self.head
-                    .mouse_interaction(head_layout, cursor_position, viewport, renderer),
-            )
-            .max(
-                self.body
-                    .mouse_interaction(body_layout, cursor_position, viewport, renderer),
+                self.body.as_widget().mouse_interaction(
+                    &state.children[1],
+                    body_children
+                        .next()
+                        .expect("Native: Layout should have a body content layout"),
+                    cursor_position,
+                    viewport,
+                    renderer,
+                ),
             )
             .max(
                 self.foot
                     .as_ref()
                     .map_or(mouse::Interaction::default(), |foot| {
-                        let foot_layout = children
-                            .next()
-                            .expect("Graphics: Layout should have a foot layout");
-                        foot.mouse_interaction(foot_layout, cursor_position, viewport, renderer)
+                        foot.as_widget().mouse_interaction(
+                            &state.children[2],
+                            foot_children
+                                .next()
+                                .expect("Native: Layout should have a foot content layout"),
+                            cursor_position,
+                            viewport,
+                            renderer,
+                        )
                     }),
             )
     }
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
-        _style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
@@ -427,6 +479,7 @@ where
             .next()
             .expect("Graphics: Layout should have a head layout");
         draw_head(
+            &state.children[0],
             renderer,
             &self.head,
             head_layout,
@@ -440,6 +493,7 @@ where
             .next()
             .expect("Graphics: Layout should have a body layout");
         draw_body(
+            &state.children[1],
             renderer,
             &self.body,
             body_layout,
@@ -453,6 +507,7 @@ where
             .next()
             .expect("Graphics: Layout should have a foot layout");
         draw_foot(
+            state.children.get(2),
             renderer,
             &self.foot,
             foot_layout,
@@ -477,7 +532,11 @@ where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
 {
     let pad = Padding::from(padding as u16);
-    let mut limits = limits.loose().width(width).height(head.height()).pad(pad);
+    let mut limits = limits
+        .loose()
+        .width(width)
+        .height(head.as_widget().height())
+        .pad(pad);
 
     let close_size = close_size.unwrap_or_else(|| f32::from(renderer.default_size()));
     let mut close = if on_close {
@@ -489,7 +548,7 @@ where
         None
     };
 
-    let mut head = head.layout(renderer, &limits);
+    let mut head = head.as_widget().layout(renderer, &limits);
     let mut size = limits.resolve(head.size());
 
     head.move_to(Point::new(padding, padding));
@@ -527,10 +586,10 @@ where
         .clone()
         .loose()
         .width(width)
-        .height(body.height())
+        .height(body.as_widget().height())
         .pad(pad);
 
-    let mut body = body.layout(renderer, &limits);
+    let mut body = body.as_widget().layout(renderer, &limits);
     let size = limits.resolve(body.size());
 
     body.move_to(Point::new(padding, padding));
@@ -555,10 +614,10 @@ where
         .clone()
         .loose()
         .width(width)
-        .height(foot.height())
+        .height(foot.as_widget().height())
         .pad(pad);
 
-    let mut foot = foot.layout(renderer, &limits);
+    let mut foot = foot.as_widget().layout(renderer, &limits);
     let size = limits.resolve(foot.size());
 
     foot.move_to(Point::new(padding, padding));
@@ -569,6 +628,7 @@ where
 
 /// Draws the head of the card.
 fn draw_head<Message, Renderer>(
+    state: &Tree,
     renderer: &mut Renderer,
     head: &Element<'_, Message, Renderer>,
     layout: Layout<'_>,
@@ -591,7 +651,8 @@ fn draw_head<Message, Renderer>(
         style.head_background,
     );
 
-    head.draw(
+    head.as_widget().draw(
+        state,
         renderer,
         &renderer::Style {
             text_color: style.head_text_color,
@@ -627,6 +688,7 @@ fn draw_head<Message, Renderer>(
 
 /// Draws the body of the card.
 fn draw_body<Message, Renderer>(
+    state: &Tree,
     renderer: &mut Renderer,
     body: &Element<'_, Message, Renderer>,
     layout: Layout<'_>,
@@ -649,7 +711,8 @@ fn draw_body<Message, Renderer>(
         style.body_background,
     );
 
-    body.draw(
+    body.as_widget().draw(
+        state,
         renderer,
         &renderer::Style {
             text_color: style.body_text_color,
@@ -664,6 +727,7 @@ fn draw_body<Message, Renderer>(
 
 /// Draws the foot of the card.
 fn draw_foot<Message, Renderer>(
+    state: Option<&Tree>,
     renderer: &mut Renderer,
     foot: &Option<Element<'_, Message, Renderer>>,
     layout: Layout<'_>,
@@ -686,8 +750,9 @@ fn draw_foot<Message, Renderer>(
         style.foot_background,
     );
 
-    if let Some(foot) = foot.as_ref() {
-        foot.draw(
+    if let Some((foot, state)) = foot.as_ref().zip(state) {
+        foot.as_widget().draw(
+            state,
             renderer,
             &renderer::Style {
                 text_color: style.foot_text_color,

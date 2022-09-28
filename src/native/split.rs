@@ -2,9 +2,14 @@
 //!
 //! *This API requires the following crate features to be activated: split*
 use iced_native::{
-    mouse, renderer, touch,
-    widget::{Container, Row},
-    Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size, Widget,
+    mouse, renderer, touch, Color, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
+};
+use iced_native::{
+    widget::{
+        tree::{self, Tag},
+        Container, Row, Tree,
+    },
+    Element, Widget,
 };
 
 pub use crate::style::split::{Style, StyleSheet};
@@ -15,28 +20,30 @@ pub use crate::style::split::{Style, StyleSheet};
 /// # Example
 /// ```
 /// # use iced_aw::split::{State, Axis};
-/// # use iced_native::{widget::Text, renderer::Null};
+/// # use iced_native::renderer::Null;
+/// # use iced_native::widget::Text;
 /// #
-/// # pub type Split<'a, Message> = iced_aw::native::Split<'a, Message, Null>;
+/// # pub type Split<'a, Message> = iced_aw::Split<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     Resized(u16),
 /// }
 ///
-/// let mut state = State::new(Some(300), Axis::Vertical);
 /// let first = Text::new("First");
 /// let second = Text::new("Second");
 ///
-/// let split = Split::new(&mut state, first, second, Message::Resized);
+/// let split = Split::new(first, second, Some(300), Axis::Vertical, Message::Resized);
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Split<'a, Message, Renderer> {
-    /// The state of the [`Split`](Split).
-    state: &'a mut State,
     /// The first element of the [`Split`](Split).
     first: Element<'a, Message, Renderer>,
     /// The second element of the [`Split`](Split).
     second: Element<'a, Message, Renderer>,
+    /// The position of the divider.
+    divider_position: Option<u16>,
+    /// The axis to split at.
+    axis: Axis,
     /// The padding around the elements of the [`Split`](Split).
     padding: f32,
     /// The spacing between the elements of the [`Split`](Split).
@@ -64,18 +71,24 @@ where
     /// Creates a new [`Split`](Split).
     ///
     /// It expects:
-    ///     - The [`State`](State) of the [`Split`](Split)
     ///     - The first [`Element`](Element) to display
     ///     - The second [`Element`](Element) to display
+    ///     - The position of the divider. If none, the space will be split in half.
+    ///     - The [`Axis`](Axis) to split at.
     ///     - The message that is send on moving the divider
-    pub fn new<A, B, F>(state: &'a mut State, first: A, second: B, on_resize: F) -> Self
+    pub fn new<A, B, F>(
+        first: A,
+        second: B,
+        divider_position: Option<u16>,
+        axis: Axis,
+        on_resize: F,
+    ) -> Self
     where
         A: Into<Element<'a, Message, Renderer>>,
         B: Into<Element<'a, Message, Renderer>>,
         F: 'static + Fn(u16) -> Message,
     {
         Self {
-            state,
             first: Container::new(first.into())
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -84,6 +97,8 @@ where
                 .width(Length::Fill)
                 .height(Length::Fill)
                 .into(),
+            divider_position,
+            axis,
             padding: 0.0,
             spacing: 5.0,
             width: Length::Fill,
@@ -151,6 +166,22 @@ where
     Message: Clone,
     Renderer: 'a + iced_native::Renderer,
 {
+    fn tag(&self) -> Tag {
+        Tag::of::<State>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(State::new())
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.first), Tree::new(&self.second)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.first, &self.second]);
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -169,7 +200,7 @@ where
             .height(Length::Fill)
             .layout(renderer, limits);
 
-        match self.state.axis {
+        match self.axis {
             Axis::Horizontal => horizontal_split(self, renderer, limits, &space),
             Axis::Vertical => vertical_split(self, renderer, limits, &space),
         }
@@ -177,19 +208,22 @@ where
 
     fn on_event(
         &mut self,
-        event: iced_native::Event,
-        layout: iced_native::Layout<'_>,
+        state: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn iced_native::Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> iced_native::event::Status {
+        let split_state: &mut State = state.state.downcast_mut();
         let mut children = layout.children();
 
         let first_layout = children
             .next()
             .expect("Native: Layout should have a first layout");
-        let first_status = self.first.on_event(
+        let first_status = self.first.as_widget_mut().on_event(
+            &mut state.children[0],
             event.clone(),
             first_layout,
             cursor_position,
@@ -205,21 +239,21 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if divider_layout.bounds().contains(cursor_position) {
-                    self.state.dragging = true;
+                    split_state.dragging = true;
                 }
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerLifted { .. }) => {
-                if self.state.dragging {
-                    self.state.dragging = false;
+                if split_state.dragging {
+                    split_state.dragging = false;
                 }
             }
 
             Event::Mouse(mouse::Event::CursorMoved { position })
             | Event::Touch(touch::Event::FingerMoved { position, .. }) => {
-                if self.state.dragging {
-                    let position = match self.state.axis {
+                if split_state.dragging {
+                    let position = match self.axis {
                         Axis::Horizontal => position.y,
                         Axis::Vertical => position.x,
                     };
@@ -234,7 +268,8 @@ where
         let second_layout = children
             .next()
             .expect("Native: Layout should have a second layout");
-        let second_status = self.second.on_event(
+        let second_status = self.second.as_widget_mut().on_event(
+            &mut state.children[1],
             event,
             second_layout,
             cursor_position,
@@ -248,35 +283,44 @@ where
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
-        let _first_layout = children
+        let first_layout = children
             .next()
             .expect("Graphics: Layout should have a first layout");
-        let first_mouse_interaction =
-            self.first
-                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        let first_mouse_interaction = self.first.as_widget().mouse_interaction(
+            &state.children[0],
+            first_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
         let divider_layout = children
             .next()
             .expect("Graphics: Layout should have a divider layout");
         let divider_mouse_interaction = if divider_layout.bounds().contains(cursor_position) {
-            match self.state.axis {
+            match self.axis {
                 Axis::Horizontal => mouse::Interaction::ResizingVertically,
                 Axis::Vertical => mouse::Interaction::ResizingHorizontally,
             }
         } else {
             mouse::Interaction::default()
         };
-        let _second_layout = children
+        let second_layout = children
             .next()
             .expect("Graphics: Layout should have a second layout");
-        let second_mouse_interaction =
-            self.second
-                .mouse_interaction(layout, cursor_position, viewport, renderer);
+        let second_mouse_interaction = self.second.as_widget().mouse_interaction(
+            &state.children[0],
+            second_layout,
+            cursor_position,
+            viewport,
+            renderer,
+        );
         first_mouse_interaction
             .max(second_mouse_interaction)
             .max(divider_mouse_interaction)
@@ -284,12 +328,14 @@ where
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
+        let split_state: &State = state.state.downcast_ref();
         // TODO: clipping!
         let mut children = layout.children();
 
@@ -327,8 +373,14 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        self.first
-            .draw(renderer, style, first_layout, cursor_position, viewport);
+        self.first.as_widget().draw(
+            &state.children[0],
+            renderer,
+            style,
+            first_layout,
+            cursor_position,
+            viewport,
+        );
 
         let divider_layout = children
             .next()
@@ -354,11 +406,17 @@ where
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
 
-        self.second
-            .draw(renderer, style, second_layout, cursor_position, viewport);
+        self.second.as_widget().draw(
+            &state.children[0],
+            renderer,
+            style,
+            second_layout,
+            cursor_position,
+            viewport,
+        );
 
         // Divider
-        let divider_style = if self.state.dragging {
+        let divider_style = if split_state.dragging {
             self.style_sheet.dragged()
         } else if divider_layout.bounds().contains(cursor_position) {
             self.style_sheet.hovered()
@@ -377,22 +435,32 @@ where
         );
     }
 
-    fn overlay(
-        &mut self,
-        layout: iced_native::Layout<'_>,
+    fn overlay<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
+    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
         let _divider_layout = children.next()?;
         let second_layout = children.next()?;
 
-        let first = &mut self.first;
-        let second = &mut self.second;
+        let first = &self.first;
+        let second = &self.second;
+
+        // Not pretty but works to get two mutable references
+        // https://stackoverflow.com/a/30075629
+        let (first_state, second_state) = state.children.split_at_mut(1);
 
         first
-            .overlay(first_layout, renderer)
-            .or_else(move || second.overlay(second_layout, renderer))
+            .as_widget()
+            .overlay(&mut first_state[0], first_layout, renderer)
+            .or_else(|| {
+                second
+                    .as_widget()
+                    .overlay(&mut second_state[0], second_layout, renderer)
+            })
     }
 }
 
@@ -409,12 +477,12 @@ fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
         return iced_native::layout::Node::with_children(
             space.bounds().size(),
             vec![
-                split.first.layout(
+                split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().height)),
                 ),
                 iced_native::layout::Node::new(Size::new(space.bounds().height, split.spacing)),
-                split.second.layout(
+                split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().width)),
                 ),
@@ -423,7 +491,6 @@ fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
     }
 
     let divider_position = split
-        .state
         .divider_position
         .unwrap_or_else(|| (space.bounds().height / 2.0) as u16)
         .max((split.spacing / 2.0) as u16);
@@ -440,7 +507,7 @@ fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
             space.bounds().height - f32::from(divider_position),
         ))
         .pad(padding);
-    let mut first = split.first.layout(renderer, &first_limits);
+    let mut first = split.first.as_widget().layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + split.padding,
@@ -454,7 +521,7 @@ fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
         .clone()
         .shrink(Size::new(0.0, f32::from(divider_position) + split.spacing))
         .pad(padding);
-    let mut second = split.second.layout(renderer, &second_limits);
+    let mut second = split.second.as_widget().layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + f32::from(divider_position) + split.spacing + split.padding,
@@ -476,12 +543,12 @@ fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
         return iced_native::layout::Node::with_children(
             space.bounds().size(),
             vec![
-                split.first.layout(
+                split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
                 ),
                 iced_native::layout::Node::new(Size::new(split.spacing, space.bounds().height)),
-                split.second.layout(
+                split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
                 ),
@@ -490,7 +557,6 @@ fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
     }
 
     let divider_position = split
-        .state
         .divider_position
         .unwrap_or_else(|| (space.bounds().width / 2.0) as u16)
         .max((split.spacing / 2.0) as u16);
@@ -507,7 +573,7 @@ fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
             0.0,
         ))
         .pad(padding);
-    let mut first = split.first.layout(renderer, &first_limits);
+    let mut first = split.first.as_widget().layout(renderer, &first_limits);
     first.move_to(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + split.padding,
@@ -521,7 +587,7 @@ fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
         .clone()
         .shrink(Size::new(f32::from(divider_position) + split.spacing, 0.0))
         .pad(padding);
-    let mut second = split.second.layout(renderer, &second_limits);
+    let mut second = split.second.as_widget().layout(renderer, &second_limits);
     second.move_to(Point::new(
         space.bounds().x + f32::from(divider_position) + split.spacing + split.padding,
         space.bounds().y + split.padding,
@@ -543,10 +609,6 @@ where
 /// The state of a [`Split`](Split).
 #[derive(Clone, Debug, Default)]
 pub struct State {
-    /// The position of the divider.
-    divider_position: Option<u16>,
-    /// The axis to split at.
-    axis: Axis,
     /// If the divider is dragged by the user.
     dragging: bool,
 }
@@ -558,23 +620,8 @@ impl State {
     ///     - The optional position of the divider. If none, the available space will be split in half.
     ///     - The [`Axis`](Axis) to split at.
     #[must_use]
-    pub const fn new(divider_position: Option<u16>, axis: Axis) -> Self {
-        Self {
-            divider_position,
-            axis,
-            dragging: false,
-        }
-    }
-
-    /// Gets the position of the divider.
-    #[must_use]
-    pub const fn divider_position(&self) -> Option<u16> {
-        self.divider_position
-    }
-
-    /// Sets the position of the divider of the [`State`](State).
-    pub fn set_divider_position(&mut self, position: u16) {
-        self.divider_position = Some(position);
+    pub const fn new() -> Self {
+        Self { dragging: false }
     }
 }
 

@@ -3,6 +3,18 @@
 //! *This API requires the following crate features to be activated: `time_picker`*
 use std::collections::HashMap;
 
+use crate::time_picker::{self, Time};
+use crate::{
+    core::clock::{
+        NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
+        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
+        SECOND_RADIUS_PERCENTAGE,
+    },
+    core::{clock, overlay::Position, time::Period},
+    native::IconText,
+    style::style_state::StyleState,
+    Icon,
+};
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_graphics::{
     canvas::{self, LineCap, Path, Stroke},
@@ -18,21 +30,6 @@ use iced_native::{
     widget::{Button, Column, Container, Row, Text},
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
     Renderer as _, Shell, Size, Vector, Widget,
-};
-
-use crate::{
-    core::clock::{
-        NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
-        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
-        SECOND_RADIUS_PERCENTAGE,
-    },
-    core::{clock, overlay::Position, time::Period},
-    native::{
-        time_picker::{self, Time},
-        IconText,
-    },
-    style::style_state::StyleState,
-    Icon,
 };
 
 pub use crate::style::time_picker::{Style, StyleSheet};
@@ -58,9 +55,9 @@ where
     /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
-    cancel_button: Element<'a, Message, Renderer<B>>,
+    cancel_button: Element<'a, Message, Renderer>,
     /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
-    submit_button: Element<'a, Message, Renderer<B>>,
+    submit_button: Element<'a, Message, Renderer>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
     /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
@@ -87,7 +84,6 @@ where
             overlay_state,
             cancel_button,
             submit_button,
-            ..
         } = state;
 
         TimePickerOverlay {
@@ -112,7 +108,7 @@ where
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -124,7 +120,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if layout.bounds().contains(cursor_position) {
@@ -291,7 +287,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
@@ -426,7 +422,7 @@ where
         _layout: Layout<'_>,
         _cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -486,15 +482,14 @@ where
     }
 }
 
-impl<'a, Message, B> iced_native::Overlay<Message, Renderer<B>>
-    for TimePickerOverlay<'a, Message, B>
+impl<'a, Message, B> iced_native::Overlay<Message, Renderer> for TimePickerOverlay<'a, Message, B>
 where
     Message: 'a + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
 {
     fn layout(
         &self,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -521,7 +516,7 @@ where
         ));
 
         // Clock-Canvas
-        let mut clock = Row::<(), Renderer<B>>::new()
+        let mut clock = Row::<(), Renderer>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(renderer, &limits);
@@ -591,7 +586,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -698,7 +693,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
         let mouse_interaction = mouse::Interaction::default();
@@ -811,7 +806,7 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<B>,
+        renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -917,7 +912,7 @@ where
 /// Defines the layout of the digital clock of the time picker.
 fn digital_clock<'a, Message, B>(
     time_picker: &TimePickerOverlay<'a, Message, B>,
-    renderer: &Renderer<B>,
+    renderer: &Renderer,
     limits: Limits,
 ) -> iced_native::layout::Node
 where
@@ -927,7 +922,7 @@ where
     let arrow_size = renderer.default_size();
     let font_size = (1.2 * f32::from(renderer.default_size())) as u16;
 
-    let mut digital_clock_row = Row::<(), Renderer<B>>::new()
+    let mut digital_clock_row = Row::<(), Renderer>::new()
         .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
@@ -1033,7 +1028,7 @@ where
 /// Draws the analog clock.
 #[allow(clippy::too_many_lines)]
 fn draw_clock<'a, Message, B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     time_picker: &TimePickerOverlay<'a, Message, B>,
     layout: iced_native::Layout<'_>,
     cursor_position: Point,
@@ -1332,7 +1327,7 @@ fn draw_clock<'a, Message, B>(
 /// Draws the digital clock.
 #[allow(clippy::too_many_lines)]
 fn draw_digital_clock<'a, Message, B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     time_picker: &TimePickerOverlay<'a, Message, B>,
     layout: iced_native::Layout<'_>,
     cursor_position: Point,
@@ -1348,115 +1343,113 @@ fn draw_digital_clock<'a, Message, B>(
         .expect("Graphics: Layout should have digital clock children")
         .children();
 
-    let f = |renderer: &mut Renderer<B>,
-             layout: iced_native::Layout<'_>,
-             text: String,
-             target: Focus| {
-        let style_state = if time_picker.state.focus == target {
-            StyleState::Focused
-        } else {
-            StyleState::Active
-        };
+    let f =
+        |renderer: &mut Renderer, layout: iced_native::Layout<'_>, text: String, target: Focus| {
+            let style_state = if time_picker.state.focus == target {
+                StyleState::Focused
+            } else {
+                StyleState::Active
+            };
 
-        let mut children = layout.children();
+            let mut children = layout.children();
 
-        let up_bounds = children
-            .next()
-            .expect("Graphics: Layout should have a up arrow bounds")
-            .bounds();
-        let center_bounds = children
-            .next()
-            .expect("Graphics: Layout should have a center bounds")
-            .bounds();
-        let down_bounds = children
-            .next()
-            .expect("Graphics: Layout should have a down arrow bounds")
-            .bounds();
+            let up_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a up arrow bounds")
+                .bounds();
+            let center_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a center bounds")
+                .bounds();
+            let down_bounds = children
+                .next()
+                .expect("Graphics: Layout should have a down arrow bounds")
+                .bounds();
 
-        let up_arrow_hovered = up_bounds.contains(cursor_position);
-        let down_arrow_hovered = down_bounds.contains(cursor_position);
+            let up_arrow_hovered = up_bounds.contains(cursor_position);
+            let down_arrow_hovered = down_bounds.contains(cursor_position);
 
-        // Background
-        if style_state == StyleState::Focused {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds: layout.bounds(),
-                    border_color: style
+            // Background
+            if style_state == StyleState::Focused {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: layout.bounds(),
+                        border_color: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_color,
+                        border_radius: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_radius,
+                        border_width: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_width,
+                    },
+                    style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
-                        .border_color,
-                    border_radius: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_radius,
-                    border_width: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_width,
+                        .background,
+                );
+            }
+
+            let mut buffer = [0; 4];
+
+            // Caret up
+            renderer.fill_text(iced_native::text::Text {
+                content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+                bounds: Rectangle {
+                    x: up_bounds.center_x(),
+                    y: up_bounds.center_y(),
+                    ..up_bounds
                 },
-                style
-                    .get(&style_state)
+                size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
+                color: style
+                    .get(&StyleState::Active)
                     .expect("Style Sheet not found.")
-                    .background,
-            );
-        }
+                    .text_color,
+                font: crate::graphics::icons::ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
 
-        let mut buffer = [0; 4];
+            // Text
+            renderer.fill_text(iced_native::text::Text {
+                content: &text,
+                bounds: Rectangle {
+                    x: center_bounds.center_x(),
+                    y: center_bounds.center_y(),
+                    ..center_bounds
+                },
+                size: center_bounds.height,
+                color: style
+                    .get(&StyleState::Active)
+                    .expect("Style Sheet not found.")
+                    .text_color,
+                font: iced_graphics::Font::default(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
 
-        // Caret up
-        renderer.fill_text(iced_native::text::Text {
-            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: up_bounds.center_x(),
-                y: up_bounds.center_y(),
-                ..up_bounds
-            },
-            size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: crate::graphics::icons::ICON_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-        });
-
-        // Text
-        renderer.fill_text(iced_native::text::Text {
-            content: &text,
-            bounds: Rectangle {
-                x: center_bounds.center_x(),
-                y: center_bounds.center_y(),
-                ..center_bounds
-            },
-            size: center_bounds.height,
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: iced_graphics::Font::default(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-        });
-
-        // Down caret
-        renderer.fill_text(iced_native::text::Text {
-            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: down_bounds.center_x(),
-                y: down_bounds.center_y(),
-                ..down_bounds
-            },
-            size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: crate::graphics::icons::ICON_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-        });
-    };
+            // Down caret
+            renderer.fill_text(iced_native::text::Text {
+                content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+                bounds: Rectangle {
+                    x: down_bounds.center_x(),
+                    y: down_bounds.center_y(),
+                    ..down_bounds
+                },
+                size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
+                color: style
+                    .get(&StyleState::Active)
+                    .expect("Style Sheet not found.")
+                    .text_color,
+                font: crate::graphics::icons::ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+            });
+        };
 
     if !time_picker.state.use_24h {
         // Placeholder
@@ -1591,6 +1584,17 @@ pub struct State {
     pub(crate) focus: Focus,
     /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
+}
+
+impl State {
+    /// Creates a new State with the given time.
+    #[must_use]
+    pub fn new(time: Time) -> Self {
+        Self {
+            time: time.into(),
+            ..Self::default()
+        }
+    }
 }
 
 impl Default for State {

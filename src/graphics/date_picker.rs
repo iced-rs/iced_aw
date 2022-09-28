@@ -9,4 +9,5 @@ pub use crate::native::date_picker::{Date, State};
 /// An input element for picking dates.
 ///
 /// This is an alias of an `iced_native` `DatePicker` with an `iced_wgpu::Renderer`.
-pub type DatePicker<'a, Message, Backend> = date_picker::DatePicker<'a, Message, Renderer<Backend>>;
+pub type DatePicker<'a, Message, Backend, Theme> =
+    date_picker::DatePicker<'a, Message, Renderer<Backend, Theme>>;

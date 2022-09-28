@@ -8,10 +8,12 @@ use iced_native::{
     alignment::{Horizontal, Vertical},
     event,
     layout::{Limits, Node},
-    mouse, renderer, touch,
-    widget::{Column, Row, Text},
-    Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell,
-    Widget,
+    mouse, renderer, touch, Alignment, Clipboard, Color, Event, Font, Layout, Length, Point,
+    Rectangle, Shell,
+};
+use iced_native::{
+    widget::{Column, Row, Text, Tree},
+    Element, Widget,
 };
 
 pub mod tab_label;
@@ -38,7 +40,7 @@ const DEFAULT_SPACING: u16 = 0;
 /// # use iced_aw::{TabLabel};
 /// # use iced_native::{renderer::Null};
 /// #
-/// # pub type TabBar<Message> = iced_aw::native::TabBar<Message, Null>;
+/// # pub type TabBar<Message> = iced_aw::TabBar<Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
@@ -114,7 +116,7 @@ where
     }
 
     /// Similar to `new` but with a given Vector of the
-    /// [`TabLabel`](tab_label::TabLabel)s.Alignment
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s.Alignment
     ///
     /// It expects:
     ///     * the index of the currently active tab.
@@ -205,7 +207,7 @@ where
         self
     }
 
-    /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
+    /// Sets the icon size of the [`TabLabel`](crate::tab_bar::TabLabel)s of
     /// the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
@@ -213,7 +215,7 @@ where
         self
     }
 
-    /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
+    /// Sets the text size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the
     /// [`TabBar`](TabBar).
     #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
@@ -222,7 +224,7 @@ where
     }
 
     /// Sets the size of the close icon of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
@@ -244,7 +246,7 @@ where
     }
 
     /// Sets the font of the icons of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
@@ -252,7 +254,7 @@ where
     }
 
     /// Sets the font of the text of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
@@ -266,7 +268,7 @@ where
         self
     }
 
-    /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`](TabBar).
     #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
@@ -336,12 +338,13 @@ where
 
     fn on_event(
         &mut self,
+        _state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -378,6 +381,7 @@ where
 
     fn mouse_interaction(
         &self,
+        _state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
@@ -404,8 +408,9 @@ where
 
     fn draw(
         &self,
+        _state: &Tree,
         renderer: &mut Renderer,
-        _style: &iced_native::renderer::Style,
+        _style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,

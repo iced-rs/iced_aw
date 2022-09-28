@@ -6,7 +6,7 @@ use iced_native::{Background, Color};
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the [`ColorPicker`](crate::native::ColorPicker).
     pub background: Background,
 
@@ -31,20 +31,21 @@ pub struct Style {
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 pub trait StyleSheet {
+    type Style: std::default::Default + Copy;
     /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
-    fn active(&self) -> Style;
+    fn active(&self) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn selected(&self) -> Style;
+    fn selected(&self) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn hovered(&self) -> Style;
+    fn hovered(&self) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn focused(&self) -> Style;
+    fn focused(&self) -> Appearance;
 }
 
 /// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
@@ -52,8 +53,8 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+    fn active(&self) -> Appearance {
+        Appearance {
             background: Color::WHITE.into(),
             border_radius: 15.0,
             border_width: 1.0,
@@ -64,36 +65,19 @@ impl StyleSheet for Default {
         }
     }
 
-    fn selected(&self) -> Style {
-        Style { ..self.active() }
+    fn selected(&self) -> Appearance {
+        Appearance { ..self.active() }
     }
 
-    fn hovered(&self) -> Style {
-        Style { ..self.active() }
+    fn hovered(&self) -> Appearance {
+        Appearance { ..self.active() }
     }
 
-    fn focused(&self) -> Style {
-        Style {
+    fn focused(&self) -> Appearance {
+        Appearance {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             bar_border_color: Color::from_rgb(0.5, 0.5, 0.5),
             ..self.active()
         }
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
     }
 }

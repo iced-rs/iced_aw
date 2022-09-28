@@ -11,4 +11,4 @@ pub use crate::style::split::{Style, StyleSheet};
 /// It can split horizontally or vertically.
 ///
 /// This is an alias of an `iced_native` Split with an `iced_wgpu::Renderer`.
-pub type Split<'a, Message, Backend> = split::Split<'a, Message, Renderer<Backend>>;
+pub type Split<'a, Message, Backend, Theme> = split::Split<'a, Message, Renderer<Backend, Theme>>;

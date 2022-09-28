@@ -1,12 +1,9 @@
 use iced::{
-    pure::{
-        widget::{Button, Column, Container, Scrollable, Text},
-        Element, Sandbox,
-    },
-    Length, Settings,
+    widget::{Button, Column, Container, Scrollable, Text},
+    Element, Length, Sandbox, Settings,
 };
 
-use iced_aw::pure::floating_element::{self, FloatingElement};
+use iced_aw::floating_element::{self, FloatingElement};
 use iced_aw::{Icon, ICON_FONT};
 
 fn main() -> iced::Result {

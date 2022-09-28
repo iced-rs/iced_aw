@@ -7,7 +7,7 @@ use iced_native::Background;
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The backgronud of the [`Modal`](crate::native::Modal).
     ///
     /// This is used to color the backdrop of the modal.
@@ -16,8 +16,9 @@ pub struct Style {
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 pub trait StyleSheet {
+    type Appearance: std::default::Default + Copy;
     /// The normal appearance of a [`Modal`](crate::native::Modal).
-    fn active(&self) -> Style;
+    fn active(&self) -> Appearance;
 }
 
 /// The default appearance of a [`Modal`](crate::native::Modal).
@@ -25,26 +26,9 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+    fn active(&self) -> Appearance {
+        Appearance {
             background: Background::Color([0.87, 0.87, 0.87, 0.30].into()),
         }
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
     }
 }

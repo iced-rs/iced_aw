@@ -1,4 +1,7 @@
-use iced::{Container, Length, Sandbox, Settings, Text};
+use iced::{
+    widget::{Container, Text},
+    Element, Length, Sandbox, Settings,
+};
 use iced_aw::{split, Split};
 
 fn main() -> iced::Result {
@@ -11,7 +14,7 @@ enum Message {
 }
 
 struct SplitPaneExample {
-    split_pane: split::State,
+    divider_position: Option<u16>,
 }
 
 impl Sandbox for SplitPaneExample {
@@ -19,7 +22,7 @@ impl Sandbox for SplitPaneExample {
 
     fn new() -> Self {
         SplitPaneExample {
-            split_pane: split::State::new(None, split::Axis::Vertical),
+            divider_position: None,
         }
     }
 
@@ -29,11 +32,11 @@ impl Sandbox for SplitPaneExample {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::OnResize(position) => self.split_pane.set_divider_position(position),
+            Message::OnResize(position) => self.divider_position = Some(position),
         }
     }
 
-    fn view(&mut self) -> iced::Element<Self::Message> {
+    fn view(&self) -> Element<Self::Message> {
         let first = Container::new(Text::new("First"))
             .width(Length::Fill)
             .height(Length::Fill)
@@ -46,6 +49,13 @@ impl Sandbox for SplitPaneExample {
             .center_x()
             .center_y();
 
-        Split::new(&mut self.split_pane, first, second, Message::OnResize).into()
+        Split::new(
+            first,
+            second,
+            self.divider_position,
+            split::Axis::Vertical,
+            Message::OnResize,
+        )
+        .into()
     }
 }

@@ -54,6 +54,7 @@ impl std::default::Default for Style {
 
 /// A set of rules that dictate the style of a container.
 pub trait StyleSheet {
+    type Style: std::default::Default + Copy;
     /// Produces the style of a container.
     fn style() -> Style;
 }

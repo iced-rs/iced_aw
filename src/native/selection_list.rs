@@ -5,87 +5,55 @@ use crate::selection_list::Style;
 use iced_native::{
     event,
     layout::{Limits, Node},
-    mouse, renderer,
-    widget::{scrollable, Container, Scrollable},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+    mouse, renderer, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
 
+use iced_native::widget::tree::Tree;
+use iced_native::widget::{Container, Scrollable};
+use iced_native::{Element, Widget};
+
 pub use list::List;
+use std::borrow::Cow;
 use std::marker::PhantomData;
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
+#[allow(clippy::type_repetition_in_bounds)]
 pub struct SelectionList<'a, T, Message, Renderer>
 where
     T: Clone + ToString,
+    [T]: ToOwned<Owned = Vec<T>>,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
     /// Container for Rendering List.
     container: Container<'a, Message, Renderer>,
     /// List of Elements to Render.
-    options: &'a [T],
+    options: Cow<'a, [T]>,
     /// Label Font
     font: Renderer::Font,
     /// Style for Looks
     style: Style,
 }
 
-/// The local state of a [`SelectionList`].
-#[derive(Debug, Clone)]
-pub struct State<T> {
-    /// Statehood of Scrollbar
-    scrollable: scrollable::State,
-    /// Statehood of hovered_option
-    hovered_option: Option<usize>,
-    /// Statehood of last_selection
-    last_selection: Option<T>,
-}
-
-impl<T> Default for State<T> {
-    fn default() -> Self {
-        Self {
-            scrollable: scrollable::State::default(),
-            hovered_option: Option::default(),
-            last_selection: Option::default(),
-        }
-    }
-}
-
+#[allow(clippy::type_repetition_in_bounds)]
 impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
 where
-    Message: 'a,
+    Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     T: Clone + ToString + Eq,
+    [T]: ToOwned<Owned = Vec<T>>,
 {
-    /// Creates a new [`SelectionList`] with the given [`State`], a list of options,
+    /// Creates a new [`SelectionList`] with the given list of options,
     /// the current selected value, and the message to produce when an option is
     /// selected.
     pub fn new(
-        state: &'a mut State<T>,
-        options: &'a [T],
-        selected: &Option<T>,
+        options: impl Into<Cow<'a, [T]>>,
         on_selected: impl Fn(T) -> Message + 'static,
         style: Style,
     ) -> Self {
-        let State {
-            hovered_option,
-            last_selection,
-            ..
-        } = state;
-
-        *hovered_option = options
-            .iter()
-            .position(|option| Some(option) == selected.as_ref());
-
-        let last_selected_index = options
-            .iter()
-            .position(|option| Some(option) == selected.as_ref());
-
-        let container = Container::new(Scrollable::new(&mut state.scrollable).push(List {
-            options,
-            hovered_option,
-            last_selected_item: last_selection,
-            last_selected_index,
+        let options = options.into();
+        let container = Container::new(Scrollable::new(List {
+            options: options.clone(),
             font: iced_graphics::Font::default(),
             style,
             on_selected: Box::new(on_selected),
@@ -108,6 +76,14 @@ where
     Message: 'static,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
 {
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.container as &dyn Widget<_, _>)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.container as &dyn Widget<_, _>]);
+    }
+
     fn width(&self) -> Length {
         self.style.width
     }
@@ -151,6 +127,7 @@ where
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -159,6 +136,7 @@ where
         shell: &mut Shell<Message>,
     ) -> event::Status {
         self.container.on_event(
+            &mut state.children[0],
             event,
             layout
                 .children()
@@ -173,17 +151,24 @@ where
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.container
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.container.mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
@@ -201,6 +186,7 @@ where
         );
 
         self.container.draw(
+            &state.children[0],
             renderer,
             style,
             layout

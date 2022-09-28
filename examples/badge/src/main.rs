@@ -1,4 +1,8 @@
-use iced::{Alignment, Column, Container, Element, Length, Row, Sandbox, Settings, Text};
+use iced::{
+    application::Appearance,
+    widget::{Column, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
+};
 
 use iced_aw::{
     style::{self, badge::StyleSheet},
@@ -37,7 +41,7 @@ impl Sandbox for BadgeExample {
 
     fn update(&mut self, _message: Message) {}
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
             .spacing(15)
@@ -69,7 +73,7 @@ impl Sandbox for BadgeExample {
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Default")).style(style::badge::Default))
+                    .push(Badge::new(Text::new("Default")))
                     .push(
                         Badge::new(Text::new("Primary").color(style::colors::LIGHT))
                             .style(style::badge::Primary),
@@ -114,7 +118,7 @@ impl Sandbox for BadgeExample {
     }
 }
 
-fn predefined_style(index: usize) -> Box<dyn StyleSheet> {
+fn predefined_style(index: usize) -> dyn StyleSheet<Style = Appearance> {
     match index {
         0 => style::badge::Primary.into(),
         1 => style::badge::Secondary.into(),
@@ -124,6 +128,6 @@ fn predefined_style(index: usize) -> Box<dyn StyleSheet> {
         5 => style::badge::Info.into(),
         6 => style::badge::Light.into(),
         7 => style::badge::Dark.into(),
-        _ => style::badge::Default.into(),
+        _ => style::badge::Appearance,
     }
 }

@@ -6,8 +6,9 @@
 //! //! *This API requires the following crate features to be activated: `icon_text`*
 use iced_native::{
     alignment::{Horizontal, Vertical},
-    Color, Element, Length, Rectangle, Size, Widget,
+    Color, Length, Rectangle, Size,
 };
+use iced_native::{Element, Widget};
 
 /// Text widget with icon font.
 #[allow(missing_debug_implementations)]
@@ -133,11 +134,12 @@ where
 
     fn draw(
         &self,
+        _state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         _cursor_position: iced_graphics::Point,
-        _viewport: &iced_graphics::Rectangle,
+        _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
 

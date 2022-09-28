@@ -15,4 +15,4 @@ pub use tabs::tab_bar_position::TabBarPosition;
 ///
 /// This is an alias of an `iced_native` Tabs widget with an
 /// `iced_wgpu::Renderer`.
-pub type Tabs<'a, Message, Backend> = tabs::Tabs<'a, Message, Renderer<Backend>>;
+pub type Tabs<'a, Message, Backend, Theme> = tabs::Tabs<'a, Message, Renderer<Backend, Theme>>;

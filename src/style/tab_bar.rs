@@ -10,7 +10,7 @@ use iced_native::{Background, Color};
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the tab bar.
     pub background: Option<Background>,
 
@@ -38,15 +38,16 @@ pub struct Style {
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 pub trait StyleSheet {
+    type Appearance: std::default::Default + Copy;
     /// The normal appearance0of a tab bar and its tab labels.
     ///
     /// `is_active` is true if the tab is selected.
-    fn active(&self, is_active: bool) -> Style;
+    fn active(&self, is_active: bool) -> Appearance;
 
     /// The appearance when the tab bar and/or a tab label is hovered.
     ///
     /// `is_active` is true if the tab is selected.
-    fn hovered(&self, is_active: bool) -> Style;
+    fn hovered(&self, is_active: bool) -> Appearance;
 }
 
 /// The default appearance of a [`TabBar`](crate::native::TabBar).
@@ -54,8 +55,8 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self, is_active: bool) -> Style {
-        Style {
+    fn active(&self, is_active: bool) -> Appearance {
+        Appearance {
             background: None,
             border_color: None,
             border_width: 0.0,
@@ -71,27 +72,10 @@ impl StyleSheet for Default {
         }
     }
 
-    fn hovered(&self, is_active: bool) -> Style {
-        Style {
+    fn hovered(&self, is_active: bool) -> Appearance {
+        Appearance {
             tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
             ..self.active(is_active)
         }
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
     }
 }

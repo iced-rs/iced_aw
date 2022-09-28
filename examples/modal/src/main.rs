@@ -1,9 +1,10 @@
 use iced::{
-    alignment::{Alignment, Horizontal},
-    button, Button, Container, Element, Length, Row, Sandbox, Settings, Text,
+    alignment::Horizontal,
+    widget::{Button, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
 };
 
-use iced_aw::{modal, Card, Modal};
+use iced_aw::{Card, Modal};
 
 fn main() -> iced::Result {
     ModalExample::run(Settings::default())
@@ -19,15 +20,8 @@ enum Message {
 
 #[derive(Default)]
 struct ModalExample {
-    open_state: button::State,
-    modal_state: modal::State<ModalState>,
+    show_modal: bool,
     last_message: Option<Message>,
-}
-
-#[derive(Default)]
-struct ModalState {
-    cancel_state: button::State,
-    ok_state: button::State,
 }
 
 impl Sandbox for ModalExample {
@@ -43,23 +37,20 @@ impl Sandbox for ModalExample {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::OpenModal => self.modal_state.show(true),
-            Message::CloseModal => self.modal_state.show(false),
-            Message::CancelButtonPressed => self.modal_state.show(false),
-            Message::OkButtonPressed => self.modal_state.show(false),
+            Message::OpenModal => self.show_modal = true,
+            Message::CloseModal => self.show_modal = false,
+            Message::CancelButtonPressed => self.show_modal = false,
+            Message::OkButtonPressed => self.show_modal = false,
         }
         self.last_message = Some(message)
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         let content = Container::new(
             Row::new()
                 .spacing(10)
                 .align_items(Alignment::Center)
-                .push(
-                    Button::new(&mut self.open_state, Text::new("Open modal!"))
-                        .on_press(Message::OpenModal),
-                )
+                .push(Button::new(Text::new("Open modal!")).on_press(Message::OpenModal))
                 .push(Text::new(format!(
                     "Last message: {}",
                     match self.last_message.as_ref() {
@@ -74,7 +65,7 @@ impl Sandbox for ModalExample {
                 ))),
         );
 
-        Modal::new(&mut self.modal_state, content, |state| {
+        Modal::new(self.show_modal, content, || {
             Card::new(
                 Text::new("My modal"),
                 Text::new("This is a modal!"), //Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit​​, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead.")
@@ -85,20 +76,14 @@ impl Sandbox for ModalExample {
                     .padding(5)
                     .width(Length::Fill)
                     .push(
-                        Button::new(
-                            &mut state.cancel_state,
-                            Text::new("Cancel").horizontal_alignment(Horizontal::Center),
-                        )
-                        .width(Length::Fill)
-                        .on_press(Message::CancelButtonPressed),
+                        Button::new(Text::new("Cancel").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill)
+                            .on_press(Message::CancelButtonPressed),
                     )
                     .push(
-                        Button::new(
-                            &mut state.ok_state,
-                            Text::new("Ok").horizontal_alignment(Horizontal::Center),
-                        )
-                        .width(Length::Fill)
-                        .on_press(Message::OkButtonPressed),
+                        Button::new(Text::new("Ok").horizontal_alignment(Horizontal::Center))
+                            .width(Length::Fill)
+                            .on_press(Message::OkButtonPressed),
                     ),
             )
             .max_width(300)

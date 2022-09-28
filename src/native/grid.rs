@@ -2,19 +2,19 @@
 //!
 //! *This API requires the following crate features to be activated: `grid`*
 use iced_native::{
-    event,
-    layout::{Limits, Node},
-    mouse, Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+    event, layout::Node, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
+use iced_native::{overlay, widget::Tree, Element, Widget};
 
 /// A container that distributes its contents in a grid.
 ///
 /// # Example
 ///
 /// ```
-/// # use iced_native::{renderer::Null, widget::Text};
+/// # use iced_native::renderer::Null;
+/// # use iced_native::widget::Text;
 /// #
-/// # pub type Grid<'a, Message> = iced_aw::native::Grid<'a, Message, Null>;
+/// # pub type Grid<'a, Message> = iced_aw::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }
@@ -95,6 +95,14 @@ impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Rend
 where
     Renderer: iced_native::Renderer,
 {
+    fn children(&self) -> Vec<Tree> {
+        self.elements.iter().map(Tree::new).collect()
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.elements);
+    }
+
     fn width(&self) -> Length {
         Length::Shrink
     }
@@ -103,7 +111,11 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(
+        &self,
+        renderer: &Renderer,
+        limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
         if self.elements.is_empty() {
             return Node::new(Size::ZERO);
         }
@@ -119,7 +131,7 @@ where
                 let mut column_widths = Vec::<f32>::with_capacity(columns);
 
                 for (column, element) in (0..columns).cycle().zip(&self.elements) {
-                    let layout = element.layout(renderer, limits);
+                    let layout = element.as_widget().layout(renderer, limits);
 
                     match column_widths.get_mut(column) {
                         Some(column_width) => *column_width = column_width.max(layout.size().width),
@@ -150,7 +162,7 @@ where
                 let layouts = self
                     .elements
                     .iter()
-                    .map(|element| element.layout(renderer, &column_limits));
+                    .map(|element| element.as_widget().layout(renderer, &column_limits));
                 let column_aligns =
                     std::iter::successors(Some(0.), |width| Some(width + column_width));
                 #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -163,33 +175,37 @@ where
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        let children_status =
-            self.elements
-                .iter_mut()
-                .zip(layout.children())
-                .map(|(child, layout)| {
-                    child.on_event(
-                        event.clone(),
-                        layout,
-                        cursor_position,
-                        renderer,
-                        clipboard,
-                        messages,
-                    )
-                });
+        let children_status = self
+            .elements
+            .iter_mut()
+            .zip(&mut state.children)
+            .zip(layout.children())
+            .map(|((child, state), layout)| {
+                child.as_widget_mut().on_event(
+                    state,
+                    event.clone(),
+                    layout,
+                    cursor_position,
+                    renderer,
+                    clipboard,
+                    shell,
+                )
+            });
 
         children_status.fold(event::Status::Ignored, event::Status::merge)
     }
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
@@ -197,8 +213,12 @@ where
     ) -> mouse::Interaction {
         self.elements
             .iter()
+            .zip(&state.children)
             .zip(layout.children())
-            .map(|(e, layout)| e.mouse_interaction(layout, cursor_position, viewport, renderer))
+            .map(|((e, state), layout)| {
+                e.as_widget()
+                    .mouse_interaction(state, layout, cursor_position, viewport, renderer)
+            })
             .fold(mouse::Interaction::default(), |interaction, next| {
                 interaction.max(next)
             })
@@ -206,15 +226,32 @@ where
 
     fn draw(
         &self,
+        state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
         style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
-        for (element, layout) in self.elements.iter().zip(layout.children()) {
-            element.draw(renderer, style, layout, cursor_position, viewport);
+        for ((element, state), layout) in self
+            .elements
+            .iter()
+            .zip(&state.children)
+            .zip(layout.children())
+        {
+            element
+                .as_widget()
+                .draw(state, renderer, style, layout, cursor_position, viewport);
         }
+    }
+
+    fn overlay<'b>(
+        &'b self,
+        tree: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+        overlay::from_children(&self.elements, tree, layout, renderer)
     }
 }
 

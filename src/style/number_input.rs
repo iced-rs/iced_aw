@@ -6,14 +6,14 @@ use iced_native::{Background, Color};
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the [`NumberInput`](crate::native::number_input::NumberInput).
     pub button_background: Option<Background>,
     /// The Color of the arrows of [`NumberInput`](crate::native::number_input::NumberInput).
     pub icon_color: Color,
 }
 
-impl std::default::Default for Style {
+impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
             button_background: None,
@@ -24,18 +24,19 @@ impl std::default::Default for Style {
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 pub trait StyleSheet {
+    type Appearance: std::default::Default + Copy;
     /// The normal appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-    fn active(&self) -> Style;
+    fn active(&self) -> Appearance;
 
     /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
-    fn pressed(&self) -> Style {
+    fn pressed(&self) -> Appearance {
         self.active()
     }
 
     /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
-    fn disabled(&self) -> Style {
+    fn disabled(&self) -> Appearance {
         let active = self.active();
-        Style {
+        Appearance {
             button_background: active.button_background.map(|bg| match bg {
                 Background::Color(color) => Background::Color(Color {
                     a: color.a * 0.5,
@@ -55,24 +56,7 @@ pub trait StyleSheet {
 struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style::default()
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
+    fn active(&self) -> Appearance {
+        Appearance::default()
     }
 }

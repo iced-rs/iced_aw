@@ -1,9 +1,11 @@
-use iced::{window, Alignment, Container, Element, Length, Row, Sandbox, Settings, Text};
-use iced_aw::number_input::{self, NumberInput};
+use iced::{
+    widget::{Container, Row, Text},
+    window, Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::number_input::NumberInput;
 
 #[derive(Default)]
 pub struct NumberInputDemo {
-    state: number_input::State,
     value: f32,
 }
 
@@ -27,10 +29,7 @@ impl Sandbox for NumberInputDemo {
     type Message = Message;
 
     fn new() -> Self {
-        Self {
-            value: 27.0,
-            ..Self::default()
-        }
+        Self { value: 27.0 }
     }
 
     fn title(&self) -> String {
@@ -45,14 +44,13 @@ impl Sandbox for NumberInputDemo {
         }
     }
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute =
-            NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)
-                .step(0.5)
-                .min(1.0)
-                .input_style(style::CustomTextInput)
-                .style(style::CustomNumInput);
+        let txt_minute = NumberInput::new(self.value, 255.0, Message::NumInpChanged)
+            .step(0.5)
+            .min(1.0)
+            .input_style(style::CustomTextInput)
+            .style(style::CustomNumInput);
 
         Container::new(
             Row::new()

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use iced_graphics::{
     backend,
-    canvas::{self, LineCap, Path, Stroke},
+    widget::canvas::{self, LineCap, Path, Stroke},
     Backend, Renderer,
 };
 
@@ -22,12 +22,13 @@ use iced_native::{
 };
 
 use crate::{
+    color_picker,
     core::{
         color::{HexString, Hsv},
         overlay::Position,
     },
     graphics::icons::Icon,
-    native::{color_picker, IconText},
+    native::IconText,
     style::{
         color_picker::{Style, StyleSheet},
         style_state::StyleState,
@@ -49,29 +50,30 @@ const RGBA_STEP: i16 = 1;
 
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
 #[allow(missing_debug_implementations)]
-pub struct ColorPickerOverlay<'a, Message, B>
+pub struct ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: Clone,
-    B: Backend,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    cancel_button: Element<'a, Message, Renderer<B>>,
+    cancel_button: Element<'a, Message, Renderer>,
     /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    submit_button: Element<'a, Message, Renderer<B>>,
+    submit_button: Element<'a, Message, Renderer>,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     on_submit: &'a dyn Fn(Color) -> Message,
     /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style_sheet: <Renderer::Theme as StyleSheet>::Style::default(),
 }
 
-impl<'a, Message, B> ColorPickerOverlay<'a, Message, B>
+impl<'a, Message, Renderer> ColorPickerOverlay<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    Renderer: 'a + Backend + iced_graphics::backend::Text,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -87,7 +89,6 @@ where
             overlay_state,
             cancel_button,
             submit_button,
-            ..
         } = state;
 
         ColorPickerOverlay {
@@ -112,7 +113,7 @@ where
     /// Turn this [`ColorPickerOverlay`](ColorPickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -123,7 +124,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
@@ -231,7 +232,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
@@ -390,7 +391,7 @@ where
         _layout: Layout<'_>,
         _cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -513,15 +514,14 @@ where
     }
 }
 
-impl<'a, Message, B> iced_native::Overlay<Message, Renderer<B>>
-    for ColorPickerOverlay<'a, Message, B>
+impl<'a, Message, B> iced_native::Overlay<Message, Renderer> for ColorPickerOverlay<'a, Message, B>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
 {
     fn layout(
         &self,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -539,13 +539,13 @@ where
             .max_height(max_height);
 
         let divider = if bounds.width > bounds.height {
-            Row::<(), Renderer<B>>::new()
+            Row::<(), Renderer>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .layout(renderer, &limits)
         } else {
-            Column::<(), Renderer<B>>::new()
+            Column::<(), Renderer>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
@@ -594,7 +594,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -699,7 +699,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer<B>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
 
@@ -803,7 +803,7 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<B>,
+        renderer: &mut Renderer,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -860,7 +860,7 @@ where
 /// Defines the layout of the 1. block of the color picker containing the HSV part.
 fn block1_layout<'a, Message, B>(
     _color_picker: &ColorPickerOverlay<'a, Message, B>,
-    renderer: &Renderer<B>,
+    renderer: &Renderer,
     bounds: iced_graphics::Rectangle,
     _position: Point,
 ) -> iced_native::layout::Node
@@ -872,7 +872,7 @@ where
         .width(Length::Fill)
         .height(Length::Fill);
 
-    let mut block1_node = Column::<(), Renderer<B>>::new()
+    let mut block1_node = Column::<(), Renderer>::new()
         .spacing(PADDING)
         .push(
             Row::new()
@@ -897,7 +897,7 @@ where
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
 fn block2_layout<'a, Message, B>(
     color_picker: &ColorPickerOverlay<'a, Message, B>,
-    renderer: &Renderer<B>,
+    renderer: &Renderer,
     bounds: iced_graphics::Rectangle,
     _position: Point,
 ) -> iced_native::layout::Node
@@ -914,7 +914,7 @@ where
     let cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
     let hex_text_limits = block2_limits;
-    let mut hex_text = Row::<(), Renderer<B>>::new()
+    let mut hex_text = Row::<(), Renderer>::new()
         .width(Length::Fill)
         .height(Length::Units(renderer.default_size() + 2 * PADDING))
         .layout(renderer, &hex_text_limits);
@@ -925,7 +925,7 @@ where
     ));
 
     // RGBA Colors
-    let mut rgba_colors = Column::<(), Renderer<B>>::new();
+    let mut rgba_colors = Column::<(), Renderer>::new();
 
     for _ in 0..4 {
         rgba_colors = rgba_colors.push(
@@ -1015,7 +1015,7 @@ where
 
 /// Draws the 1. block of the color picker containing the HSV part.
 fn block1<'a, Message, B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
     cursor_position: Point,
@@ -1042,7 +1042,7 @@ fn block1<'a, Message, B>(
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
 fn block2<'a, Message, B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
     cursor_position: Point,
@@ -1139,7 +1139,7 @@ fn block2<'a, Message, B>(
 /// Draws the HSV color area.
 #[allow(clippy::too_many_lines)]
 fn hsv_color<'a, Message, B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'a, Message, B>,
     layout: Layout<'_>,
     cursor_position: Point,
@@ -1314,7 +1314,7 @@ fn hsv_color<'a, Message, B>(
 /// Draws the RGBA color area.
 #[allow(clippy::too_many_lines)]
 fn rgba_color<B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
     cursor_position: Point,
@@ -1326,7 +1326,7 @@ fn rgba_color<B>(
 {
     let mut rgba_color_children = layout.children();
 
-    let f = |renderer: &mut Renderer<B>,
+    let f = |renderer: &mut Renderer,
              layout: Layout,
              label: &str,
              color: Color,
@@ -1530,7 +1530,7 @@ fn rgba_color<B>(
 
 /// Draws the hex text representation of the color.
 fn hex_text<B>(
-    renderer: &mut Renderer<B>,
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
     cursor_position: Point,
@@ -1598,6 +1598,17 @@ pub struct State {
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
+impl State {
+    /// Creates a new State with the given color.
+    #[must_use]
+    pub fn new(color: Color) -> Self {
+        Self {
+            color,
+            ..Self::default()
+        }
+    }
+}
+
 impl Default for State {
     fn default() -> Self {
         Self {
@@ -1643,7 +1654,7 @@ impl Default for ColorBarDragged {
 }
 
 /// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

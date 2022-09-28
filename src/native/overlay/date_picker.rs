@@ -19,8 +19,9 @@ use crate::{
         date::{Date, IsInMonth},
         overlay::Position,
     },
+    date_picker,
     graphics::icons::{Icon, ICON_FONT},
-    native::{date_picker, IconText},
+    native::IconText,
     style::style_state::StyleState,
 };
 
@@ -75,7 +76,6 @@ where
             overlay_state,
             cancel_button,
             submit_button,
-            ..
         } = state;
 
         DatePickerOverlay {
@@ -844,6 +844,17 @@ pub struct State {
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
+impl State {
+    /// Creates a new State with the given date.
+    #[must_use]
+    pub fn new(date: NaiveDate) -> Self {
+        Self {
+            date,
+            ..Self::default()
+        }
+    }
+}
+
 impl Default for State {
     fn default() -> Self {
         Self {
@@ -855,7 +866,7 @@ impl Default for State {
 }
 
 /// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

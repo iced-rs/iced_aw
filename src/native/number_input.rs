@@ -10,11 +10,18 @@ use iced_native::{
     layout::{Limits, Node},
     mouse, renderer,
     widget::{
+        self,
         text_input::{self, cursor, Value},
+    },
+    Alignment, Background, Clipboard, Color, Event, Layout, Length, Padding, Point, Rectangle,
+    Shell, Size,
+};
+use iced_native::{
+    widget::{
+        tree::{self, Tree},
         Column, Container, Row, Text, TextInput,
     },
-    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shell, Size, Widget,
+    Element, Widget,
 };
 use num_traits::{Num, NumAssignOps};
 
@@ -31,7 +38,7 @@ const DEFAULT_PADDING: u16 = 5;
 /// # Example
 /// ```
 /// # use iced_native::renderer::Null;
-/// # use iced_aw::native::number_input;
+/// # use iced_aw::number_input;
 /// #
 /// # pub type NumberInput<'a, T, Message> = number_input::NumberInput<'a, T, Message, Null>;
 /// #[derive(Debug, Clone)]
@@ -39,12 +46,10 @@ const DEFAULT_PADDING: u16 = 5;
 ///     NumberInputChanged(u32),
 /// }
 ///
-/// let mut state = number_input::State::new();
 /// let value = 12;
 /// let max = 1275;
 ///
 /// let input = NumberInput::new(
-///     &mut state,
 ///     value,
 ///     max,
 ///     Message::NumberInputChanged,
@@ -56,8 +61,6 @@ pub struct NumberInput<'a, T, Message, Renderer>
 where
     Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
 {
-    /// The state of the [`NumberInput`](NumberInput).
-    state: &'a mut ModifierState,
     /// The current value of the [`NumberInput`](NumberInput).
     value: T,
     /// The step for each modify of the [`NumberInput`](NumberInput).
@@ -91,36 +94,25 @@ where
     /// - the current value
     /// - the max value
     /// - a function that produces a message when the [`NumberInput`] changes
-    pub fn new<F>(state: &'a mut State, value: T, max: T, on_changed: F) -> Self
+    pub fn new<F>(value: T, max: T, on_changed: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
     {
-        let State {
-            input_state,
-            mod_state,
-        } = state;
-
         let padding = DEFAULT_PADDING;
         let convert_to_num = move |s: String| {
             on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }))
         };
 
         Self {
-            state: mod_state,
             value,
             step: T::one(),
             bounds: (T::zero(), max),
             padding,
             size: None,
-            content: TextInput::new(
-                input_state,
-                "",
-                format!("{}", value).as_str(),
-                convert_to_num,
-            )
-            .padding(padding)
-            .width(Length::Units(127)),
+            content: TextInput::new("", format!("{}", value).as_str(), convert_to_num)
+                .padding(padding)
+                .width(Length::Units(127)),
             on_change: Box::new(on_changed),
             style_sheet: std::boxed::Box::default(),
             font: iced_graphics::Font::default(),
@@ -231,7 +223,6 @@ where
                 self.bounds.0
             };
             shell.publish((self.on_change)(self.value));
-            // self.content.state().move_cursor_to_end();
         }
     }
 
@@ -245,7 +236,6 @@ where
                 self.bounds.1
             };
             shell.publish((self.on_change)(self.value));
-            // self.content.state().move_cursor_to_end();
         }
     }
 }
@@ -256,6 +246,33 @@ where
     Message: Clone,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
 {
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<ModifierState>()
+    }
+    fn state(&self) -> tree::State {
+        tree::State::new(ModifierState::default())
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree {
+            tag: self.content.tag(),
+            state: self.content.state(),
+            children: self.content.children(),
+        }]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children_custom(
+            &[&self.content],
+            |state, content| content.diff(state),
+            |&content| Tree {
+                tag: content.tag(),
+                state: content.state(),
+                children: content.children(),
+            },
+        );
+    }
+
     fn width(&self) -> Length {
         Length::Shrink
     }
@@ -305,6 +322,7 @@ where
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -328,6 +346,8 @@ where
             .bounds();
         let mouse_over_inc = inc_bounds.contains(cursor_position);
         let mouse_over_dec = dec_bounds.contains(cursor_position);
+        let modifiers = state.state.downcast_mut::<ModifierState>();
+        let child = &mut state.children[0];
 
         if layout.bounds().contains(cursor_position) {
             if mouse_over_inc || mouse_over_dec {
@@ -335,10 +355,10 @@ where
                 match event {
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                         if mouse_over_dec {
-                            self.state.decrease_pressed = true;
+                            modifiers.decrease_pressed = true;
                             self.decrease_val(shell);
                         } else if mouse_over_inc {
-                            self.state.increase_pressed = true;
+                            modifiers.increase_pressed = true;
                             self.increase_val(shell);
                         } else {
                             event_status = event::Status::Ignored;
@@ -346,9 +366,9 @@ where
                     }
                     Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                         if mouse_over_dec {
-                            self.state.decrease_pressed = false;
+                            modifiers.decrease_pressed = false;
                         } else if mouse_over_inc {
-                            self.state.increase_pressed = false;
+                            modifiers.increase_pressed = false;
                         } else {
                             event_status = event::Status::Ignored;
                         }
@@ -359,10 +379,19 @@ where
             } else {
                 match event {
                     Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                        if self.content.state().is_focused() && c.is_numeric() =>
+                        if child
+                            .state
+                            .downcast_mut::<widget::text_input::State>()
+                            .is_focused()
+                            && c.is_numeric() =>
                     {
                         let mut new_val = self.value.to_string();
-                        match self.content.state().cursor().state(&Value::new(&new_val)) {
+                        match child
+                            .state
+                            .downcast_mut::<widget::text_input::State>()
+                            .cursor()
+                            .state(&Value::new(&new_val))
+                        {
                             cursor::State::Index(idx) => {
                                 if T::zero().eq(&self.value) {
                                     new_val = c.to_string();
@@ -388,6 +417,7 @@ where
                                     self.value = val;
                                     shell.publish((self.on_change)(self.value));
                                     self.content.on_event(
+                                        child,
                                         event.clone(),
                                         content,
                                         cursor_position,
@@ -403,7 +433,10 @@ where
                         }
                     }
                     Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
-                        if self.content.state().is_focused() =>
+                        if child
+                            .state
+                            .downcast_mut::<widget::text_input::State>()
+                            .is_focused() =>
                     {
                         match key_code {
                             keyboard::KeyCode::Up => {
@@ -419,7 +452,11 @@ where
                                     event::Status::Ignored
                                 } else {
                                     let mut new_val = self.value.to_string();
-                                    match self.content.state().cursor().state(&Value::new(&new_val))
+                                    match child
+                                        .state
+                                        .downcast_mut::<widget::text_input::State>()
+                                        .cursor()
+                                        .state(&Value::new(&new_val))
                                     {
                                         cursor::State::Index(idx) => {
                                             if idx >= 1 && idx <= new_val.len() {
@@ -457,6 +494,7 @@ where
                                                 self.value = val;
                                                 shell.publish((self.on_change)(self.value));
                                                 self.content.on_event(
+                                                    child,
                                                     event.clone(),
                                                     content,
                                                     cursor_position,
@@ -473,6 +511,7 @@ where
                                 }
                             }
                             _ => self.content.on_event(
+                                child,
                                 event.clone(),
                                 content,
                                 cursor_position,
@@ -496,6 +535,7 @@ where
                         event::Status::Captured
                     }
                     _ => self.content.on_event(
+                        child,
                         event,
                         content,
                         cursor_position,
@@ -509,6 +549,7 @@ where
             match event {
                 Event::Keyboard(_) => event::Status::Ignored,
                 _ => self.content.on_event(
+                    child,
                     event,
                     content,
                     cursor_position,
@@ -522,6 +563,7 @@ where
 
     fn mouse_interaction(
         &self,
+        _state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
@@ -561,11 +603,12 @@ where
 
     fn draw(
         &self,
+        state: &Tree,
         renderer: &mut Renderer,
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
-        _viewport: &iced_graphics::Rectangle,
+        viewport: &iced_graphics::Rectangle,
     ) {
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
@@ -581,14 +624,20 @@ where
             .next()
             .expect("fail to get decreate mod layout")
             .bounds();
-        self.content
-            .draw(renderer, content_layout, cursor_position, None);
+        self.content.draw(
+            &state.children[0],
+            renderer,
+            &renderer::Style::default(),
+            content_layout,
+            cursor_position,
+            viewport,
+        );
         let is_decrease_disabled = self.value <= self.bounds.0;
         let is_increase_disabled = self.value >= self.bounds.1;
 
         let decrease_btn_style = if is_decrease_disabled {
             self.style_sheet.disabled()
-        } else if self.state.decrease_pressed {
+        } else if state.state.downcast_ref::<ModifierState>().decrease_pressed {
             self.style_sheet.pressed()
         } else {
             self.style_sheet.active()
@@ -596,7 +645,7 @@ where
 
         let increase_btn_style = if is_increase_disabled {
             self.style_sheet.disabled()
-        } else if self.state.increase_pressed {
+        } else if state.state.downcast_ref::<ModifierState>().increase_pressed {
             self.style_sheet.pressed()
         } else {
             self.style_sheet.active()
@@ -657,23 +706,6 @@ where
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
         });
-    }
-}
-
-/// The state of a [`NumberInput`].
-#[derive(Default, Clone, Debug)]
-pub struct State {
-    /// The state of the text_input.
-    input_state: text_input::State,
-    /// The state of the modifiers.
-    mod_state: ModifierState,
-}
-
-impl State {
-    /// Creates a new [`State`], representing an unfocused [`NumberInput`].
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
     }
 }
 

@@ -4,9 +4,9 @@
 use iced_graphics::Renderer;
 
 use crate::native::badge;
-pub use crate::style::badge::{Style, StyleSheet};
+pub use crate::style::badge::{Appearance, StyleSheet};
 
 /// A badge for color highlighting small information.
 ///
 /// This is an alias of an `iced_native` Badge with an `iced_wgpu::Renderer`.
-pub type Badge<'a, Message, Backend> = badge::Badge<'a, Message, Renderer<Backend>>;
+pub type Badge<'a, Message, Backend, Theme> = badge::Badge<'a, Message, Renderer<Backend, Theme>>;

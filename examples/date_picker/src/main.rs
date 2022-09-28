@@ -1,6 +1,8 @@
-use iced::{button, Alignment, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
-
-use iced_aw::date_picker::{self, Date, DatePicker};
+use iced::{
+    widget::{Button, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::{date_picker::Date, DatePicker};
 
 fn main() -> iced::Result {
     DatePickerExample::run(Settings::default())
@@ -16,8 +18,7 @@ enum Message {
 
 struct DatePickerExample {
     date: Date,
-    state: date_picker::State,
-    button_state: button::State,
+    show_picker: bool,
 }
 
 impl Sandbox for DatePickerExample {
@@ -25,9 +26,8 @@ impl Sandbox for DatePickerExample {
 
     fn new() -> Self {
         DatePickerExample {
-            date: Date::default(),
-            state: date_picker::State::now(),
-            button_state: button::State::new(),
+            date: Date::today(),
+            show_picker: false,
         }
     }
 
@@ -38,25 +38,25 @@ impl Sandbox for DatePickerExample {
     fn update(&mut self, message: Self::Message) {
         match message {
             Message::ChooseDate => {
-                self.state.reset();
-                self.state.show(true);
+                //self.state.reset();
+                self.show_picker = true;
             }
             Message::SubmitDate(date) => {
                 self.date = date;
-                self.state.show(false);
+                self.show_picker = false;
             }
             Message::CancelDate => {
-                self.state.show(false);
+                self.show_picker = false;
             }
         }
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
-        let but = Button::new(&mut self.button_state, Text::new("Set Date"))
-            .on_press(Message::ChooseDate);
+    fn view(&self) -> Element<'_, Self::Message> {
+        let but = Button::new(Text::new("Set Date")).on_press(Message::ChooseDate);
 
         let datepicker = DatePicker::new(
-            &mut self.state,
+            self.show_picker,
+            self.date,
             but,
             Message::CancelDate,
             Message::SubmitDate,

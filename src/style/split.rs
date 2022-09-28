@@ -6,7 +6,7 @@ use iced_native::{Background, Color};
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The optional background of the [`Split`](crate::native::split::Split).
     pub background: Option<Background>,
     /// The optional background of the first element of the [`Split`](crate::native::split::Split).
@@ -27,14 +27,15 @@ pub struct Style {
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 pub trait StyleSheet {
+    type Appearance: std::default::Default + Copy;
     /// The normal appearance of a [`Split`](crate::native::split::Split).
-    fn active(&self) -> Style;
+    fn active(&self) -> Appearance;
 
     /// The appearance when the [`Split`](crate::native::split::Split) is hovered.
-    fn hovered(&self) -> Style;
+    fn hovered(&self) -> Appearance;
 
     /// The appearance when the divider of the [`Split`](crate::native::split::Split) is dragged
-    fn dragged(&self) -> Style;
+    fn dragged(&self) -> Appearance;
 }
 
 /// The default appearance of the [`Split`](crate::native::split::Split).
@@ -42,8 +43,8 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+    fn active(&self) -> Appearance {
+        Appearance {
             background: None,
             first_background: None,
             second_background: None,
@@ -55,34 +56,17 @@ impl StyleSheet for Default {
         }
     }
 
-    fn hovered(&self) -> Style {
-        Style {
+    fn hovered(&self) -> Appearance {
+        Appearance {
             divider_background: Color::from_rgb(0.8, 0.8, 0.8).into(),
             ..self.active()
         }
     }
 
-    fn dragged(&self) -> Style {
-        Style {
+    fn dragged(&self) -> Appearance {
+        Appearance {
             divider_background: Color::from_rgb(0.7, 0.7, 0.7).into(),
             ..self.active()
         }
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
     }
 }

@@ -12,4 +12,4 @@ pub use tab_bar::tab_label::TabLabel;
 /// A tab bar to show tabs.
 ///
 /// This is an alias of an `iced_native` `TabBar` with an `iced_wgpu::Renderer`.
-pub type TabBar<Message, Backend> = tab_bar::TabBar<Message, Renderer<Backend>>;
+pub type TabBar<Message, Backend, Theme> = tab_bar::TabBar<Message, Renderer<Backend, Theme>>;

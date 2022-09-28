@@ -1,8 +1,9 @@
 use iced::{
-    button, Alignment, Button, Color, Container, Element, Length, Row, Sandbox, Settings, Text,
+    widget::{Button, Container, Row, Text},
+    Alignment, Color, Element, Length, Sandbox, Settings,
 };
 
-use iced_aw::color_picker::{self, ColorPicker};
+use iced_aw::ColorPicker;
 
 fn main() -> iced::Result {
     ColorPickerExample::run(Settings::default())
@@ -18,8 +19,7 @@ enum Message {
 
 struct ColorPickerExample {
     color: Color,
-    state: color_picker::State,
-    button_state: button::State,
+    show_picker: bool,
 }
 
 impl Sandbox for ColorPickerExample {
@@ -28,8 +28,7 @@ impl Sandbox for ColorPickerExample {
     fn new() -> Self {
         ColorPickerExample {
             color: Color::default(),
-            state: color_picker::State::new(),
-            button_state: button::State::new(),
+            show_picker: false,
         }
     }
 
@@ -41,24 +40,27 @@ impl Sandbox for ColorPickerExample {
         match message {
             Message::ChooseColor => {
                 //self.state.reset();
-                self.state.show(true);
+                //self.state.show(true);
+                self.show_picker = true;
             }
             Message::SubmitColor(color) => {
                 self.color = color;
-                self.state.show(false);
+                //self.state.show(false);
+                self.show_picker = false;
             }
             Message::CancelColor => {
-                self.state.show(false);
+                //self.state.show(false);
+                self.show_picker = false;
             }
         }
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
-        let but = Button::new(&mut self.button_state, Text::new("Set Color"))
-            .on_press(Message::ChooseColor);
+    fn view(&self) -> Element<'_, Self::Message> {
+        let but = Button::new(Text::new("Set Color")).on_press(Message::ChooseColor);
 
         let datepicker = ColorPicker::new(
-            &mut self.state,
+            self.show_picker,
+            self.color,
             but,
             Message::CancelColor,
             Message::SubmitColor,

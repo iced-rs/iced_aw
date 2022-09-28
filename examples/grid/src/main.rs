@@ -1,6 +1,6 @@
 use iced::{
-    button, scrollable, Alignment, Button, Color, Column, Container, Element, Length, Sandbox,
-    Scrollable, Settings, Text,
+    widget::{Button, Column, Container, Scrollable, Text},
+    Alignment, Color, Element, Length, Sandbox, Settings,
 };
 
 use iced_aw::Grid;
@@ -19,19 +19,13 @@ enum Message {
 
 struct GridExample {
     element_index: usize,
-    button_state: button::State,
-    scrollable_state: scrollable::State,
 }
 
 impl Sandbox for GridExample {
     type Message = Message;
 
     fn new() -> Self {
-        GridExample {
-            element_index: 0,
-            button_state: button::State::new(),
-            scrollable_state: scrollable::State::new(),
-        }
+        GridExample { element_index: 0 }
     }
 
     fn title(&self) -> String {
@@ -46,7 +40,7 @@ impl Sandbox for GridExample {
         }
     }
 
-    fn view(&mut self) -> Element<'_, self::Message> {
+    fn view(&self) -> Element<'_, self::Message> {
         // Creates a grid with two columns
         let mut grid = Grid::with_columns(COLUMNS)
             .push(Text::new("Column 1").color(Color::from_rgb8(255, 0, 0)))
@@ -61,21 +55,19 @@ impl Sandbox for GridExample {
             )));
         }
 
-        let add_button: Element<'_, Message> =
-            Button::new(&mut self.button_state, Text::new("Add element"))
-                .on_press(Message::AddElement)
-                .into();
+        let add_button: Element<'_, Message> = Button::new(Text::new("Add element"))
+            .on_press(Message::AddElement)
+            .into();
 
         let column: Element<'_, Message> = Column::new()
             .spacing(15)
+            .max_width(600)
             .align_items(Alignment::Center)
             .push(grid)
             .push(add_button)
             .into();
 
-        let content = Scrollable::new(&mut self.scrollable_state)
-            .max_width(600)
-            .push(column);
+        let content = Scrollable::new(column);
 
         Container::new(content)
             .width(Length::Fill)

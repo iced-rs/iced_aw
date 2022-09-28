@@ -1,6 +1,9 @@
 use crate::{theme::Theme, Icon, Message, Tab};
-use iced::{Column, Container, Element, Radio, Text};
-use iced_aw::TabLabel;
+use iced::{
+    widget::{Column, Container, Radio, Text},
+    Element,
+};
+use iced_aw::tab_bar::TabLabel;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TabBarPosition {
@@ -60,16 +63,16 @@ impl SettingsTab {
         }
     }
 
-    pub fn settings(&mut self) -> &mut TabSettings {
-        &mut self.settings
+    pub fn settings(&self) -> &TabSettings {
+        &self.settings
     }
 
     pub fn update(&mut self, message: SettingsMessage) {
         match message {
             SettingsMessage::PositionSelected(position) => {
-                self.settings().tab_bar_position = Some(position)
+                self.settings.tab_bar_position = Some(position)
             }
-            SettingsMessage::ThemeSelected(theme) => self.settings().tab_bar_theme = Some(theme),
+            SettingsMessage::ThemeSelected(theme) => self.settings.tab_bar_theme = Some(theme),
         }
     }
 }
@@ -86,7 +89,7 @@ impl Tab for SettingsTab {
         TabLabel::IconText(Icon::CogAlt.into(), self.title())
     }
 
-    fn content(&mut self) -> Element<'_, Self::Message> {
+    fn content(&self) -> Element<'_, Self::Message> {
         let content: Element<'_, SettingsMessage> = Container::new(
             Column::new()
                 .push(Text::new("TabBar position:").size(20))

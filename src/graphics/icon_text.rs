@@ -9,4 +9,4 @@ use iced_graphics::Renderer;
 /// Text widget with icon font.
 ///
 /// This is an alias of an `iced_native` `IconText` with an `iced_wgpu::Renderer`.
-pub type IconText<Backend> = crate::native::icon_text::IconText<Renderer<Backend>>;
+pub type IconText<Backend, Theme> = crate::native::icon_text::IconText<Renderer<Backend, Theme>>;

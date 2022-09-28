@@ -1,9 +1,8 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_native::{
-    event, mouse, Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Widget,
-};
+use iced_native::{event, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell};
+use iced_native::{widget::Tree, Element, Widget};
 
 use super::overlay::modal::ModalOverlay;
 
@@ -11,40 +10,38 @@ pub use crate::style::modal::{Style, StyleSheet};
 
 /// A modal content as an overlay.
 ///
-/// Can be used in combination with the [`Card`](crate::native::card::Card)
+/// Can be used in combination with the [`Card`](crate::card::Card)
 /// widget to form dialog elements.
 ///
 /// # Example
 /// ```
-/// # use iced_aw::native::modal;
-/// # use iced_native::{widget::Text, renderer::Null};
+/// # use iced_aw::modal;
+/// # use iced_native::renderer::Null;
+/// # use iced_native::widget::Text;
 /// #
-/// # pub type Modal<'a, S, Content, Message>
-/// #  = iced_aw::native::Modal<'a, Message, S, Content, Null>;
+/// # pub type Modal<'a, Content, Message>
+/// #  = iced_aw::Modal<'a, Message, Content, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     CloseModal,
 /// }
 ///
-/// let mut state = modal::State::new(());
-///
 /// let modal = Modal::new(
-///     &mut state,
+///     true,
 ///     Text::new("Underlay"),
-///     |_state| Text::new("Overlay").into()
+///     || Text::new("Overlay").into()
 /// )
 /// .backdrop(Message::CloseModal);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Modal<'a, S, Content, Message, Renderer>
+pub struct Modal<'a, Content, Message, Renderer>
 where
-    S: 'a,
-    Content: Fn(&mut S) -> Element<'_, Message, Renderer>,
+    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: iced_native::Renderer,
 {
-    /// The state of the [`Modal`](Modal).
-    state: &'a mut State<S>,
+    /// Show the modal.
+    show_modal: bool,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The content of teh [`ModalOverlay`](ModalOverlay).
@@ -57,10 +54,9 @@ where
     style_sheet: Box<dyn StyleSheet>,
 }
 
-impl<'a, S, Content, Message, Renderer> Modal<'a, S, Content, Message, Renderer>
+impl<'a, Content, Message, Renderer> Modal<'a, Content, Message, Renderer>
 where
-    S: 'a,
-    Content: Fn(&mut S) -> Element<'_, Message, Renderer>,
+    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: iced_native::Renderer,
 {
@@ -71,16 +67,16 @@ where
     /// overlying content.
     ///
     /// It expects:
-    ///     * a mutable reference to the content's [`State`](State) of the [`Modal`](Modal).
+    ///     * if the overlay of the date picker is visible.
     ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
     ///         will be wrapped around.
     ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
-    pub fn new<U>(state: &'a mut State<S>, underlay: U, content: Content) -> Self
+    pub fn new<U>(show_modal: bool, underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
     {
         Modal {
-            state,
+            show_modal,
             underlay: underlay.into(),
             content,
             backdrop: None,
@@ -115,6 +111,134 @@ where
     }
 }
 
+impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
+    for Modal<'a, Content, Message, Renderer>
+where
+    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+{
+    fn children(&self) -> Vec<iced_native::widget::Tree> {
+        vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.underlay, &(self.content)()]);
+    }
+
+    fn width(&self) -> Length {
+        self.underlay.as_widget().width()
+    }
+
+    fn height(&self) -> Length {
+        self.underlay.as_widget().height()
+    }
+
+    fn layout(
+        &self,
+        renderer: &Renderer,
+        limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        self.underlay.as_widget().layout(renderer, limits)
+    }
+
+    fn on_event(
+        &mut self,
+        state: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+    ) -> event::Status {
+        self.underlay.as_widget_mut().on_event(
+            &mut state.children[0],
+            event,
+            layout,
+            cursor_position,
+            renderer,
+            clipboard,
+            shell,
+        )
+    }
+
+    fn mouse_interaction(
+        &self,
+        state: &Tree,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.underlay.as_widget().mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor_position,
+            viewport,
+            renderer,
+        )
+    }
+
+    fn draw(
+        &self,
+        state: &iced_native::widget::Tree,
+        renderer: &mut Renderer,
+        style: &iced_native::renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+    ) {
+        self.underlay.as_widget().draw(
+            &state.children[0],
+            renderer,
+            style,
+            layout,
+            cursor_position,
+            viewport,
+        );
+    }
+
+    fn overlay<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+        if !self.show_modal {
+            return self
+                .underlay
+                .as_widget()
+                .overlay(&mut state.children[0], layout, renderer);
+        }
+
+        let bounds = layout.bounds();
+        let position = Point::new(bounds.x, bounds.y);
+
+        Some(
+            ModalOverlay::new(
+                &mut state.children[1],
+                (self.content)(),
+                self.backdrop.clone(),
+                self.esc.clone(),
+                &self.style_sheet,
+            )
+            .overlay(position),
+        )
+    }
+}
+
+impl<'a, Content, Message, Renderer> From<Modal<'a, Content, Message, Renderer>>
+    for Element<'a, Message, Renderer>
+where
+    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+{
+    fn from(modal: Modal<'a, Content, Message, Renderer>) -> Self {
+        Element::new(modal)
+    }
+}
 /// The state of the modal.
 #[derive(Debug, Default)]
 pub struct State<S> {
@@ -152,103 +276,5 @@ impl<S> State<S> {
     /// Get a reference to the inner state data.
     pub const fn inner(&self) -> &S {
         &self.state
-    }
-}
-
-impl<'a, S, Content, Message, Renderer> Widget<Message, Renderer>
-    for Modal<'a, S, Content, Message, Renderer>
-where
-    S: 'a,
-    Content: 'a + Fn(&mut S) -> Element<'_, Message, Renderer>,
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
-{
-    fn width(&self) -> iced_native::Length {
-        self.underlay.width()
-    }
-
-    fn height(&self) -> iced_native::Length {
-        self.underlay.height()
-    }
-
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
-        self.underlay.layout(renderer, limits)
-    }
-
-    fn on_event(
-        &mut self,
-        event: Event,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
-    ) -> event::Status {
-        self.underlay
-            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
-    }
-
-    fn mouse_interaction(
-        &self,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-        renderer: &Renderer,
-    ) -> mouse::Interaction {
-        self.underlay
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
-    }
-
-    fn draw(
-        &self,
-        renderer: &mut Renderer,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
-    ) {
-        self.underlay
-            .draw(renderer, style, layout, cursor_position, viewport);
-    }
-
-    fn overlay(
-        &mut self,
-        layout: Layout<'_>,
-        renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'_, Message, Renderer>> {
-        if !self.state.show {
-            return self.underlay.overlay(layout, renderer);
-        }
-
-        let bounds = layout.bounds();
-        let position = Point::new(bounds.x, bounds.y);
-
-        Some(
-            ModalOverlay::new(
-                &mut self.state.state,
-                &self.content,
-                self.backdrop.clone(),
-                self.esc.clone(),
-                &self.style_sheet,
-            )
-            .overlay(position),
-        )
-    }
-}
-
-impl<'a, State, Content, Message, Renderer> From<Modal<'a, State, Content, Message, Renderer>>
-    for Element<'a, Message, Renderer>
-where
-    State: 'a,
-    Content: 'a + Fn(&mut State) -> Element<'_, Message, Renderer>,
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
-{
-    fn from(modal: Modal<'a, State, Content, Message, Renderer>) -> Self {
-        Element::new(modal)
     }
 }

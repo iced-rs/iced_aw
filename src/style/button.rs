@@ -7,7 +7,7 @@ pub use predefined::*;
 #[cfg(feature = "colors")]
 /// Predefined styles for the [`Button`](iced_native::widget::Button) widget.
 mod predefined {
-    use iced_style::button::{Style, StyleSheet};
+    use iced_style::button::{Appearance, StyleSheet};
 
     use crate::style::colors;
 
@@ -17,11 +17,11 @@ mod predefined {
     pub struct Primary;
 
     impl StyleSheet for Primary {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::PRIMARY.into(),
                 text_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -32,11 +32,11 @@ mod predefined {
     pub struct Secondary;
 
     impl StyleSheet for Secondary {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::SECONDARY.into(),
                 text_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -47,11 +47,11 @@ mod predefined {
     pub struct Success;
 
     impl StyleSheet for Success {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::SUCCESS.into(),
                 text_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -62,11 +62,11 @@ mod predefined {
     pub struct Danger;
 
     impl StyleSheet for Danger {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::DANGER.into(),
                 text_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -77,10 +77,10 @@ mod predefined {
     pub struct Warning;
 
     impl StyleSheet for Warning {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::WARNING.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -91,10 +91,10 @@ mod predefined {
     pub struct Info;
 
     impl StyleSheet for Info {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::INFO.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -105,10 +105,10 @@ mod predefined {
     pub struct Light;
 
     impl StyleSheet for Light {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::LIGHT.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -119,11 +119,11 @@ mod predefined {
     pub struct Dark;
 
     impl StyleSheet for Dark {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::DARK.into(),
                 text_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -134,10 +134,10 @@ mod predefined {
     pub struct White;
 
     impl StyleSheet for White {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 background: colors::WHITE.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }

@@ -6,7 +6,7 @@ use iced_native::{Background, Color};
 
 /// The appearance of a [`Card`](crate::native::card::Card).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the [`Card`](crate::native::card::Card).
     pub background: Background,
 
@@ -43,8 +43,9 @@ pub struct Style {
 
 /// The appearance of a [`Card`](crate::native::card::Card).
 pub trait StyleSheet {
+    type Style: std::default::Default + Copy;
     /// The normal appearance of a [`Card`](crate::native::card::Card).
-    fn active(&self) -> Style;
+    fn active(&self) -> Appearance;
 }
 
 /// The default appearance of a [`Card`](crate::native::card::Card).
@@ -52,8 +53,8 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+    fn active(&self) -> Appearance {
+        Appearance {
             background: Color::WHITE.into(),
             border_radius: 10.0, //32.0,
             border_width: 1.0,
@@ -69,24 +70,7 @@ impl StyleSheet for Default {
     }
 }
 
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
-    }
-}
-
-impl std::default::Default for Style {
+impl std::default::Default for Appearance {
     fn default() -> Self {
         Default.active()
     }
@@ -98,7 +82,7 @@ pub use predefined::*;
 /// Predefined styles for the [`Card`](crate::native::Card) widget.
 mod predefined {
     use crate::style::{
-        card::{Style, StyleSheet},
+        card::{Appearance, StyleSheet},
         colors,
     };
 
@@ -108,13 +92,13 @@ mod predefined {
     pub struct Primary;
 
     impl StyleSheet for Primary {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::PRIMARY,
                 head_background: colors::PRIMARY.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -125,13 +109,13 @@ mod predefined {
     pub struct Secondary;
 
     impl StyleSheet for Secondary {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::SECONDARY,
                 head_background: colors::SECONDARY.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -142,13 +126,13 @@ mod predefined {
     pub struct Success;
 
     impl StyleSheet for Success {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::SUCCESS,
                 head_background: colors::SUCCESS.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -159,13 +143,13 @@ mod predefined {
     pub struct Danger;
 
     impl StyleSheet for Danger {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::DANGER,
                 head_background: colors::DANGER.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -176,11 +160,11 @@ mod predefined {
     pub struct Warning;
 
     impl StyleSheet for Warning {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::WARNING,
                 head_background: colors::WARNING.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -191,11 +175,11 @@ mod predefined {
     pub struct Info;
 
     impl StyleSheet for Info {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::INFO,
                 head_background: colors::INFO.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -206,11 +190,11 @@ mod predefined {
     pub struct Light;
 
     impl StyleSheet for Light {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::LIGHT,
                 head_background: colors::LIGHT.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -221,13 +205,13 @@ mod predefined {
     pub struct Dark;
 
     impl StyleSheet for Dark {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::DARK,
                 head_background: colors::DARK.into(),
                 head_text_color: colors::WHITE,
                 close_color: colors::WHITE,
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }
@@ -238,11 +222,11 @@ mod predefined {
     pub struct White;
 
     impl StyleSheet for White {
-        fn active(&self) -> Style {
-            Style {
+        fn active(&self) -> Appearance {
+            Appearance {
                 border_color: colors::WHITE,
                 head_background: colors::WHITE.into(),
-                ..Style::default()
+                ..Appearance::default()
             }
         }
     }

@@ -1,6 +1,6 @@
 use iced::{
-    button, text_input, Alignment, Button, Column, Element, Length, Row, Sandbox, Settings, Text,
-    TextInput,
+    widget::{Button, Column, Row, Text, TextInput},
+    Alignment, Element, Length, Sandbox, Settings,
 };
 use iced_aw::{TabBar, TabLabel};
 
@@ -19,11 +19,8 @@ enum Message {
 
 struct TabBarExample {
     active_tab: usize,
-    tab_label_input: text_input::State,
     new_tab_label: String,
-    tab_content_input: text_input::State,
     new_tab_content: String,
-    new_button: button::State,
     tabs: Vec<(String, String)>,
 }
 
@@ -33,11 +30,8 @@ impl Sandbox for TabBarExample {
     fn new() -> Self {
         TabBarExample {
             active_tab: 0,
-            tab_label_input: text_input::State::new(),
             new_tab_label: String::new(),
-            tab_content_input: text_input::State::new(),
             new_tab_content: String::new(),
-            new_button: button::State::new(),
             tabs: Vec::new(),
         }
     }
@@ -76,13 +70,12 @@ impl Sandbox for TabBarExample {
         }
     }
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
         Column::new()
             .push(
                 Row::new()
                     .push(
                         TextInput::new(
-                            &mut self.tab_label_input,
                             "Tab label",
                             &self.new_tab_label,
                             Message::TabLabelInputChanged,
@@ -92,7 +85,6 @@ impl Sandbox for TabBarExample {
                     )
                     .push(
                         TextInput::new(
-                            &mut self.tab_content_input,
                             "Tab content",
                             &self.new_tab_content,
                             Message::TabContentInputChanged,
@@ -100,10 +92,7 @@ impl Sandbox for TabBarExample {
                         .size(22)
                         .padding(5),
                     )
-                    .push(
-                        Button::new(&mut self.new_button, Text::new("New"))
-                            .on_press(Message::NewTab),
-                    )
+                    .push(Button::new(Text::new("New")).on_press(Message::NewTab))
                     .align_items(Alignment::Center)
                     .padding(10)
                     .spacing(5),

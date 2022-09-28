@@ -11,5 +11,5 @@ pub use crate::style::modal::{Style, StyleSheet};
 /// A modal content as an overlay.
 ///
 /// This is an alias of an `iced_native` Modal with an `iced_wgpu::Renderer`.
-pub type Modal<'a, State, Content, Message, Backend> =
-    modal::Modal<'a, State, Content, Message, Renderer<Backend>>;
+pub type Modal<'a, Content, Message, Backend, Theme> =
+    modal::Modal<'a, Content, Message, Renderer<Backend, Theme>>;
