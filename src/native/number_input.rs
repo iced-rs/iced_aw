@@ -200,8 +200,11 @@ where
 
     /// Sets the style of the [`NumberInput`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as number_input::StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(
+        mut self,
+        style: impl Into<<Renderer::Theme as number_input::StyleSheet>::Style>,
+    ) -> Self {
+        self.style = style.into();
         self
     }
 

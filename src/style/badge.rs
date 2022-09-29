@@ -53,7 +53,7 @@ impl std::default::Default for Appearance {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub enum Badge {
+pub enum BadgeStyles {
     Primary,
     Secondary,
     Success,
@@ -68,7 +68,7 @@ pub enum Badge {
 }
 
 impl StyleSheet for Theme {
-    type Style = Badge;
+    type Style = BadgeStyles;
 
     fn active(&self, style: Self::Style) -> Appearance {
         let from_colors = |color: Color, text_color: Color| Appearance {
@@ -79,16 +79,16 @@ impl StyleSheet for Theme {
         };
 
         match style {
-            Badge::Primary => from_colors(colors::PRIMARY, colors::WHITE),
-            Badge::Secondary => from_colors(colors::SECONDARY, colors::WHITE),
-            Badge::Success => from_colors(colors::SUCCESS, colors::WHITE),
-            Badge::Danger => from_colors(colors::DANGER, colors::WHITE),
-            Badge::Warning => from_colors(colors::WARNING, colors::BLACK),
-            Badge::Info => from_colors(colors::INFO, colors::BLACK),
-            Badge::Light => from_colors(colors::LIGHT, colors::BLACK),
-            Badge::Dark => from_colors(colors::DARK, colors::WHITE),
-            Badge::White => from_colors(colors::WHITE, colors::BLACK),
-            Badge::Default => Appearance::default(),
+            BadgeStyles::Primary => from_colors(colors::PRIMARY, colors::WHITE),
+            BadgeStyles::Secondary => from_colors(colors::SECONDARY, colors::WHITE),
+            BadgeStyles::Success => from_colors(colors::SUCCESS, colors::WHITE),
+            BadgeStyles::Danger => from_colors(colors::DANGER, colors::WHITE),
+            BadgeStyles::Warning => from_colors(colors::WARNING, colors::BLACK),
+            BadgeStyles::Info => from_colors(colors::INFO, colors::BLACK),
+            BadgeStyles::Light => from_colors(colors::LIGHT, colors::BLACK),
+            BadgeStyles::Dark => from_colors(colors::DARK, colors::WHITE),
+            BadgeStyles::White => from_colors(colors::WHITE, colors::BLACK),
+            BadgeStyles::Default => Appearance::default(),
         }
     }
 

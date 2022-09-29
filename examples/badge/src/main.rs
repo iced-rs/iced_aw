@@ -3,7 +3,7 @@ use iced::{
     Alignment, Element, Length, Sandbox, Settings,
 };
 
-use iced_aw::{style::badge, Badge};
+use iced_aw::{style::BadgeStyles, Badge};
 
 const BADGE_TEXT_SIZE: u16 = 15;
 
@@ -66,19 +66,19 @@ impl Sandbox for BadgeExample {
                 Row::new()
                     .spacing(10)
                     .push(Badge::new(Text::new("Default")))
-                    .push(Badge::new(Text::new("Primary")).style(badge::Badge::Primary))
-                    .push(Badge::new(Text::new("Secondary")).style(badge::Badge::Secondary))
-                    .push(Badge::new(Text::new("Success")).style(badge::Badge::Success))
-                    .push(Badge::new(Text::new("Danger")).style(badge::Badge::Danger)),
+                    .push(Badge::new(Text::new("Primary")).style(BadgeStyles::Primary))
+                    .push(Badge::new(Text::new("Secondary")).style(BadgeStyles::Secondary))
+                    .push(Badge::new(Text::new("Success")).style(BadgeStyles::Success))
+                    .push(Badge::new(Text::new("Danger")).style(BadgeStyles::Danger)),
             )
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Warning")).style(badge::Badge::Warning))
-                    .push(Badge::new(Text::new("Info")).style(badge::Badge::Info))
-                    .push(Badge::new(Text::new("Light")).style(badge::Badge::Light))
-                    .push(Badge::new(Text::new("Dark")).style(badge::Badge::Dark))
-                    .push(Badge::new(Text::new("White")).style(badge::Badge::White)),
+                    .push(Badge::new(Text::new("Warning")).style(BadgeStyles::Warning))
+                    .push(Badge::new(Text::new("Info")).style(BadgeStyles::Info))
+                    .push(Badge::new(Text::new("Light")).style(BadgeStyles::Light))
+                    .push(Badge::new(Text::new("Dark")).style(BadgeStyles::Dark))
+                    .push(Badge::new(Text::new("White")).style(BadgeStyles::White)),
             );
 
         Container::new(
@@ -95,16 +95,16 @@ impl Sandbox for BadgeExample {
     }
 }
 
-fn predefined_style(index: usize) -> badge::Badge {
+fn predefined_style(index: usize) -> BadgeStyles {
     match index {
-        0 => badge::Badge::Primary,
-        1 => badge::Badge::Secondary,
-        2 => badge::Badge::Success,
-        3 => badge::Badge::Danger,
-        4 => badge::Badge::Warning,
-        5 => badge::Badge::Info,
-        6 => badge::Badge::Light,
-        7 => badge::Badge::Dark,
-        _ => badge::Badge::Default,
+        0 => BadgeStyles::Primary,
+        1 => BadgeStyles::Secondary,
+        2 => BadgeStyles::Success,
+        3 => BadgeStyles::Danger,
+        4 => BadgeStyles::Warning,
+        5 => BadgeStyles::Info,
+        6 => BadgeStyles::Light,
+        7 => BadgeStyles::Dark,
+        _ => BadgeStyles::Default,
     }
 }

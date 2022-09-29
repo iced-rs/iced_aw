@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
-use iced_style::Theme;
+use iced_style::theme::Theme;
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
@@ -53,11 +53,24 @@ pub trait StyleSheet {
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = Appearance;
+#[derive(Default, Debug, Copy, Clone)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+//TODO: Figure out a way to add custom Styles or Appearances with Stylesheets that match.
+pub enum NumberInputStyles {
+    #[default]
+    Default,
+}
 
-    fn active(&self, style: Self::Style) -> Appearance {
-        style
+impl StyleSheet for Theme {
+    type Style = NumberInputStyles;
+
+    fn active(&self, _style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
+        Appearance {
+            button_background: Some(palette.primary.strong.color.into()),
+            icon_color: palette.primary.strong.text,
+        }
     }
 
     /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
