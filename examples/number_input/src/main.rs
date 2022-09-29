@@ -1,6 +1,6 @@
 use iced::{
     widget::{Container, Row, Text},
-    window, Alignment, Element, Length, Sandbox, Settings,
+    window, Alignment, Background, Color, Element, Length, Sandbox, Settings, Theme,
 };
 use iced_aw::number_input::NumberInput;
 
@@ -68,7 +68,7 @@ impl Sandbox for NumberInputDemo {
 }
 
 mod style {
-    use iced::{text_input, Color};
+    use iced::{widget::text_input, Background, Color, Theme};
     use iced_aw::number_input;
 
     const BACKGROUND: Color = Color::from_rgb(238.0 / 255.0, 238.0 / 255.0, 238.0 / 255.0);
@@ -76,20 +76,25 @@ mod style {
     const HOVERED: Color = Color::from_rgb(129.0 / 255.0, 129.0 / 255.0, 129.0 / 255.0);
     const PRIMARY: Color = Color::from_rgb(12.0 / 255.0, 46.0 / 251.0, 179.0 / 255.0);
 
+    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
     pub struct CustomNumInput;
     impl number_input::StyleSheet for CustomNumInput {
-        fn active(&self) -> number_input::Style {
-            number_input::Style {
+        type Style = CustomNumInput;
+
+        fn active(&self, style: Self::Style) -> number_input::Appearance {
+            number_input::Appearance {
                 icon_color: PRIMARY,
-                ..number_input::Style::default()
+                ..number_input::Appearance::default()
             }
         }
     }
 
+    #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
     pub struct CustomTextInput;
     impl text_input::StyleSheet for CustomTextInput {
-        fn active(&self) -> text_input::Style {
-            text_input::Style {
+        type Style = ();
+        fn active(&self, style: Self::Style) -> text_input::Appearance {
+            text_input::Appearance {
                 background: BACKGROUND.into(),
                 border_color: PRIMARY,
                 border_width: 1.0,
@@ -97,24 +102,24 @@ mod style {
             }
         }
 
-        fn focused(&self) -> text_input::Style {
-            let active = self.active();
+        fn focused(&self, style: Self::Style) -> text_input::Appearance {
+            let active = self.active(style);
 
-            text_input::Style {
+            text_input::Appearance {
                 background: FOREGROUND.into(),
                 ..active
             }
         }
 
-        fn placeholder_color(&self) -> Color {
+        fn placeholder_color(&self, style: Self::Style) -> Color {
             HOVERED
         }
 
-        fn selection_color(&self) -> Color {
+        fn selection_color(&self, style: Self::Style) -> Color {
             HOVERED
         }
 
-        fn value_color(&self) -> Color {
+        fn value_color(&self, style: Self::Style) -> Color {
             Color::BLACK
         }
     }

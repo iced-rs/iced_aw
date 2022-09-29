@@ -2,32 +2,26 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 
-use std::{fmt::Display, str::FromStr};
-
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
     mouse, renderer,
     widget::{
-        self,
+        self, container, text,
         text_input::{self, cursor, Value},
-    },
-    Alignment, Background, Clipboard, Color, Event, Layout, Length, Padding, Point, Rectangle,
-    Shell, Size,
-};
-use iced_native::{
-    widget::{
         tree::{self, Tree},
-        Column, Container, Row, Text, TextInput,
+        Column, Container, Operation, Row, Text, TextInput,
     },
-    Element, Widget,
+    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shell, Size, Widget,
 };
 use num_traits::{Num, NumAssignOps};
+use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
     graphics::icons::Icon,
-    style::number_input::{Style, StyleSheet},
+    style::number_input::{self, Appearance, StyleSheet},
 };
 
 /// The default padding
@@ -60,6 +54,10 @@ const DEFAULT_PADDING: u16 = 5;
 pub struct NumberInput<'a, T, Message, Renderer>
 where
     Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: number_input::StyleSheet
+        + text_input::StyleSheet
+        + container::StyleSheet
+        + text::StyleSheet,
 {
     /// The current value of the [`NumberInput`](NumberInput).
     value: T,
@@ -76,7 +74,7 @@ where
     /// The on_change event of the [`NumberInput`](NumberInput).
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`](NumberInput).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style: <Renderer::Theme as number_input::StyleSheet>::Style,
     /// The font text of the [`NumberInput`](NumberInput).
     font: Renderer::Font,
 }
@@ -85,7 +83,11 @@ impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: number_input::StyleSheet
+        + text_input::StyleSheet
+        + container::StyleSheet
+        + text::StyleSheet,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -114,7 +116,7 @@ where
                 .padding(padding)
                 .width(Length::Units(127)),
             on_change: Box::new(on_changed),
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
             font: iced_graphics::Font::default(),
         }
     }
@@ -198,8 +200,8 @@ where
 
     /// Sets the style of the [`NumberInput`].
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as number_input::StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 
@@ -207,9 +209,9 @@ where
     #[must_use]
     pub fn input_style(
         mut self,
-        style_sheet: impl Into<Box<dyn iced_style::text_input::StyleSheet>>,
+        style: impl Into<<Renderer::Theme as iced_style::text_input::StyleSheet>::Style>,
     ) -> Self {
-        self.content = self.content.style(style_sheet.into());
+        self.content = self.content.style(style);
         self
     }
 
@@ -243,8 +245,12 @@ where
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
-    Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: number_input::StyleSheet
+        + text_input::StyleSheet
+        + container::StyleSheet
+        + text::StyleSheet,
 {
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<ModifierState>()
@@ -317,6 +323,19 @@ where
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
+    }
+
+    fn operate(&self, tree: &mut Tree, layout: Layout<'_>, operation: &mut dyn Operation<Message>) {
+        operation.container(None, &mut |operation| {
+            self.content.operate(
+                &mut tree.children[0],
+                layout
+                    .children()
+                    .next()
+                    .expect("NumberInput inner child Textbox was not created."),
+                operation,
+            );
+        });
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
@@ -605,10 +624,11 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _viewport: &iced_graphics::Rectangle,
     ) {
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
@@ -627,28 +647,28 @@ where
         self.content.draw(
             &state.children[0],
             renderer,
-            &renderer::Style::default(),
+            theme,
             content_layout,
             cursor_position,
-            viewport,
+            None,
         );
         let is_decrease_disabled = self.value <= self.bounds.0;
         let is_increase_disabled = self.value >= self.bounds.1;
 
         let decrease_btn_style = if is_decrease_disabled {
-            self.style_sheet.disabled()
+            theme.disabled(self.style)
         } else if state.state.downcast_ref::<ModifierState>().decrease_pressed {
-            self.style_sheet.pressed()
+            theme.pressed(self.style)
         } else {
-            self.style_sheet.active()
+            theme.active(self.style)
         };
 
         let increase_btn_style = if is_increase_disabled {
-            self.style_sheet.disabled()
+            theme.disabled(self.style)
         } else if state.state.downcast_ref::<ModifierState>().increase_pressed {
-            self.style_sheet.pressed()
+            theme.pressed(self.style)
         } else {
-            self.style_sheet.active()
+            theme.active(self.style)
         };
 
         // decrease button section
@@ -723,7 +743,11 @@ impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: number_input::StyleSheet
+        + text_input::StyleSheet
+        + container::StyleSheet
+        + text::StyleSheet,
 {
     fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
         Element::new(num_input)

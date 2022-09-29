@@ -4,7 +4,7 @@
 use iced_graphics::Renderer;
 
 use crate::native::number_input;
-pub use crate::style::number_input::{Style, StyleSheet};
+pub use crate::style::number_input::{Appearance, StyleSheet};
 
 /// A field that can only be filled with numeric type.
 ///

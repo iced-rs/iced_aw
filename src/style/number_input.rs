@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
@@ -13,7 +14,7 @@ pub struct Appearance {
     pub icon_color: Color,
 }
 
-impl std::default::Default for Appearance {
+impl Default for Appearance {
     fn default() -> Self {
         Self {
             button_background: None,
@@ -23,19 +24,20 @@ impl std::default::Default for Appearance {
 }
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
-    type Appearance: std::default::Default + Copy;
+    type Style: Default + Copy;
     /// The normal appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
-    fn pressed(&self) -> Appearance {
-        self.active()
+    fn pressed(&self, style: Self::Style) -> Appearance {
+        self.active(style)
     }
 
     /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
-    fn disabled(&self) -> Appearance {
-        let active = self.active();
+    fn disabled(&self, style: Self::Style) -> Appearance {
+        let active = self.active(style);
         Appearance {
             button_background: active.button_background.map(|bg| match bg {
                 Background::Color(color) => Background::Color(Color {
@@ -51,12 +53,32 @@ pub trait StyleSheet {
     }
 }
 
-/// The default appearance of the [`NumberInput`](crate::native::number_input::NumberInput).
-#[derive(Clone, Copy, Debug)]
-struct Default;
+impl StyleSheet for Theme {
+    type Style = Appearance;
 
-impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
-        Appearance::default()
+    fn active(&self, style: Self::Style) -> Appearance {
+        style
+    }
+
+    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
+    fn pressed(&self, style: Self::Style) -> Appearance {
+        self.active(style)
+    }
+
+    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
+    fn disabled(&self, style: Self::Style) -> Appearance {
+        let active = self.active(style);
+        Appearance {
+            button_background: active.button_background.map(|bg| match bg {
+                Background::Color(color) => Background::Color(Color {
+                    a: color.a * 0.5,
+                    ..color
+                }),
+            }),
+            icon_color: Color {
+                a: active.icon_color.a * 0.5,
+                ..active.icon_color
+            },
+        }
     }
 }
