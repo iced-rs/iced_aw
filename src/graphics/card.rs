@@ -4,7 +4,7 @@
 use iced_graphics::Renderer;
 
 use crate::native::card;
-pub use crate::style::card::{Style, StyleSheet};
+pub use crate::style::card::{Appearance, StyleSheet};
 
 /// A card consisting of a head, body and optional foot.
 ///

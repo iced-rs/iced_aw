@@ -83,7 +83,7 @@ members = [
     #"examples/date_picker",
     #"examples/floating_element",
     #"examples/grid",
-    #"examples/modal",
+    #"examples/modal",S
     #"examples/tab_bar",
     #"examples/tabs",
     #"examples/time_picker",

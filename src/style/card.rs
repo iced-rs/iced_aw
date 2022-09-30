@@ -42,10 +42,57 @@ pub struct Appearance {
 }
 
 /// The appearance of a [`Card`](crate::native::card::Card).
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
     type Style: std::default::Default + Copy;
     /// The normal appearance of a [`Card`](crate::native::card::Card).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+pub enum BadgeStyles {
+    Primary,
+    Secondary,
+    Success,
+    Danger,
+    Warning,
+    Info,
+    Light,
+    Dark,
+    White,
+    #[default]
+    Default,
+}
+
+impl StyleSheet for Theme {
+    type Style = BadgeStyles;
+
+    fn active(&self, style: Self::Style) -> Appearance {
+        let from_colors = |color: Color, text_color: Color| Appearance {
+            background: Background::Color(color),
+            border_color: Some(color),
+            text_color,
+            ..Appearance::default()
+        };
+
+        match style {
+            BadgeStyles::Primary => from_colors(colors::PRIMARY, colors::WHITE),
+            BadgeStyles::Secondary => from_colors(colors::SECONDARY, colors::WHITE),
+            BadgeStyles::Success => from_colors(colors::SUCCESS, colors::WHITE),
+            BadgeStyles::Danger => from_colors(colors::DANGER, colors::WHITE),
+            BadgeStyles::Warning => from_colors(colors::WARNING, colors::BLACK),
+            BadgeStyles::Info => from_colors(colors::INFO, colors::BLACK),
+            BadgeStyles::Light => from_colors(colors::LIGHT, colors::BLACK),
+            BadgeStyles::Dark => from_colors(colors::DARK, colors::WHITE),
+            BadgeStyles::White => from_colors(colors::WHITE, colors::BLACK),
+            BadgeStyles::Default => Appearance::default(),
+        }
+    }
+
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        self.active(style)
+    }
 }
 
 /// The default appearance of a [`Card`](crate::native::card::Card).
@@ -53,7 +100,8 @@ pub trait StyleSheet {
 pub struct Default;
 
 impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
+    type Style = Appearance;
+    fn active(&self, style: Self::Style) -> Appearance {
         Appearance {
             background: Color::WHITE.into(),
             border_radius: 10.0, //32.0,
@@ -72,7 +120,19 @@ impl StyleSheet for Default {
 
 impl std::default::Default for Appearance {
     fn default() -> Self {
-        Default.active()
+        Self {
+            background: Color::WHITE.into(),
+            border_radius: 10.0, //32.0,
+            border_width: 1.0,
+            border_color: [0.87, 0.87, 0.87].into(), //Color::BLACK.into(),
+            head_background: Background::Color([0.87, 0.87, 0.87].into()),
+            head_text_color: Color::BLACK,
+            body_background: Color::TRANSPARENT.into(),
+            body_text_color: Color::BLACK,
+            foot_background: Color::TRANSPARENT.into(),
+            foot_text_color: Color::BLACK,
+            close_color: Color::BLACK,
+        }
     }
 }
 
@@ -92,7 +152,8 @@ mod predefined {
     pub struct Primary;
 
     impl StyleSheet for Primary {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::PRIMARY,
                 head_background: colors::PRIMARY.into(),
@@ -109,7 +170,8 @@ mod predefined {
     pub struct Secondary;
 
     impl StyleSheet for Secondary {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::SECONDARY,
                 head_background: colors::SECONDARY.into(),
@@ -126,7 +188,8 @@ mod predefined {
     pub struct Success;
 
     impl StyleSheet for Success {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::SUCCESS,
                 head_background: colors::SUCCESS.into(),
@@ -143,7 +206,8 @@ mod predefined {
     pub struct Danger;
 
     impl StyleSheet for Danger {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::DANGER,
                 head_background: colors::DANGER.into(),
@@ -160,7 +224,8 @@ mod predefined {
     pub struct Warning;
 
     impl StyleSheet for Warning {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::WARNING,
                 head_background: colors::WARNING.into(),
@@ -175,7 +240,8 @@ mod predefined {
     pub struct Info;
 
     impl StyleSheet for Info {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::INFO,
                 head_background: colors::INFO.into(),
@@ -190,7 +256,8 @@ mod predefined {
     pub struct Light;
 
     impl StyleSheet for Light {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::LIGHT,
                 head_background: colors::LIGHT.into(),
@@ -205,7 +272,8 @@ mod predefined {
     pub struct Dark;
 
     impl StyleSheet for Dark {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::DARK,
                 head_background: colors::DARK.into(),
@@ -222,7 +290,8 @@ mod predefined {
     pub struct White;
 
     impl StyleSheet for White {
-        fn active(&self) -> Appearance {
+        type Style = Appearance;
+        fn active(&self, style: Self::Style) -> Appearance {
             Appearance {
                 border_color: colors::WHITE,
                 head_background: colors::WHITE.into(),

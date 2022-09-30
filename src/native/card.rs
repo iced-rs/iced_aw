@@ -9,7 +9,7 @@ use iced_native::{
 use iced_native::{widget::Tree, Element, Widget};
 
 use crate::graphics::icons::Icon;
-pub use crate::style::card::{Style, StyleSheet};
+pub use crate::style::card::{Appearance, StyleSheet};
 
 /// The default padding of a [`Card`](Card).
 const DEFAULT_PADDING: f32 = 10.0;
@@ -36,7 +36,11 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Renderer> {
+pub struct Card<'a, Message, Renderer>
+where
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
+{
     /// The width of the [`Card`](Card).
     width: Length,
     /// The height of the [`Card`](Card).
@@ -62,12 +66,13 @@ pub struct Card<'a, Message, Renderer> {
     /// The optional foot [`Element`](iced_native::Element) of the [`Card`](Card).
     foot: Option<Element<'a, Message, Renderer>>,
     /// The style of the [`Card`](Card).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
 impl<'a, Message, Renderer> Card<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Card`](Card) containing the given head and body.
     ///
@@ -94,7 +99,7 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
 
@@ -189,16 +194,17 @@ where
 
     /// Sets the style of the [`Card`](Card).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
 where
-    Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         self.foot.as_ref().map_or_else(
@@ -442,6 +448,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -449,7 +456,7 @@ where
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
-        let style_sheet = self.style_sheet.active();
+        let style_sheet = theme.active(self.style);
 
         // Background
         renderer.fill_quad(
@@ -485,7 +492,8 @@ where
             head_layout,
             cursor_position,
             viewport,
-            &style_sheet,
+            theme,
+            &self.style,
         );
 
         // ----------- Body ----------------------
@@ -499,7 +507,8 @@ where
             body_layout,
             cursor_position,
             viewport,
-            &style_sheet,
+            theme,
+            &self.style,
         );
 
         // ----------- Foot ----------------------
@@ -513,7 +522,8 @@ where
             foot_layout,
             cursor_position,
             viewport,
-            &style_sheet,
+            theme,
+            &self.style,
         );
     }
 }
@@ -634,28 +644,32 @@ fn draw_head<Message, Renderer>(
     layout: Layout<'_>,
     cursor_position: Point,
     viewport: &Rectangle,
-    style: &Style,
+    theme: &Renderer::Theme,
+    style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     let mut head_children = layout.children();
+    let style_sheet = theme.active(*style);
 
     // Head background
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style.border_radius,
+            border_radius: style_sheet.border_radius,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
-        style.head_background,
+        style_sheet.head_background,
     );
 
     head.as_widget().draw(
         state,
         renderer,
+        theme,
         &renderer::Style {
-            text_color: style.head_text_color,
+            text_color: style_sheet.head_text_color,
         },
         head_children
             .next()
@@ -678,7 +692,7 @@ fn draw_head<Message, Renderer>(
                 ..close_bounds
             },
             size: close_layout.bounds().height + if is_mouse_over_close { 5.0 } else { 0.0 },
-            color: style.close_color,
+            color: style_sheet.close_color,
             font: crate::graphics::icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
@@ -694,11 +708,14 @@ fn draw_body<Message, Renderer>(
     layout: Layout<'_>,
     cursor_position: Point,
     viewport: &Rectangle,
-    style: &Style,
+    theme: &Renderer::Theme,
+    style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     let mut body_children = layout.children();
+    let style_sheet = theme.active(*style);
 
     // Body background
     renderer.fill_quad(
@@ -708,14 +725,15 @@ fn draw_body<Message, Renderer>(
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
-        style.body_background,
+        style_sheet.body_background,
     );
 
     body.as_widget().draw(
         state,
         renderer,
+        theme,
         &renderer::Style {
-            text_color: style.body_text_color,
+            text_color: style_sheet.body_text_color,
         },
         body_children
             .next()
@@ -733,29 +751,33 @@ fn draw_foot<Message, Renderer>(
     layout: Layout<'_>,
     cursor_position: Point,
     viewport: &Rectangle,
-    style: &Style,
+    theme: &Renderer::Theme,
+    style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
+    let style_sheet = theme.active(*style);
 
     // Foot background
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style.border_radius,
+            border_radius: style_sheet.border_radius,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
-        style.foot_background,
+        style_sheet.foot_background,
     );
 
     if let Some((foot, state)) = foot.as_ref().zip(state) {
         foot.as_widget().draw(
             state,
             renderer,
+            theme,
             &renderer::Style {
-                text_color: style.foot_text_color,
+                text_color: style_sheet.foot_text_color,
             },
             foot_children
                 .next()
@@ -768,7 +790,8 @@ fn draw_foot<Message, Renderer>(
 
 impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
     Message: Clone + 'a,
 {
     fn from(card: Card<'a, Message, Renderer>) -> Self {
