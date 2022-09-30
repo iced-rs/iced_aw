@@ -15,6 +15,8 @@ pub mod button;
 
 #[cfg(feature = "card")]
 pub mod card;
+#[cfg(feature = "card")]
+pub use card::CardStyles;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;

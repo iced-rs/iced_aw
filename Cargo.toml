@@ -34,7 +34,7 @@ split = []
 
 default = [
     "badge",
-    #"card",
+    "card",
     "colors",
     "number_input",
     #"date_picker",
@@ -78,7 +78,7 @@ opt-level = 2
 [workspace]
 members = [
     "examples/badge",
-    #"examples/card",
+    "examples/card",
     #"examples/color_picker",
     #"examples/date_picker",
     #"examples/floating_element",

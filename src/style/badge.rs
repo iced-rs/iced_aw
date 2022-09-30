@@ -53,6 +53,7 @@ impl std::default::Default for Appearance {
 
 #[derive(Debug, Clone, Copy, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``Badge`` Styles
 pub enum BadgeStyles {
     Primary,
     Secondary,

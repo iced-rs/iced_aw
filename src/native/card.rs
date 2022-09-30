@@ -637,6 +637,7 @@ where
 }
 
 /// Draws the head of the card.
+#[allow(clippy::too_many_arguments)]
 fn draw_head<Message, Renderer>(
     state: &Tree,
     renderer: &mut Renderer,
@@ -701,6 +702,7 @@ fn draw_head<Message, Renderer>(
 }
 
 /// Draws the body of the card.
+#[allow(clippy::too_many_arguments)]
 fn draw_body<Message, Renderer>(
     state: &Tree,
     renderer: &mut Renderer,
@@ -744,6 +746,7 @@ fn draw_body<Message, Renderer>(
 }
 
 /// Draws the foot of the card.
+#[allow(clippy::too_many_arguments)]
 fn draw_foot<Message, Renderer>(
     state: Option<&Tree>,
     renderer: &mut Renderer,

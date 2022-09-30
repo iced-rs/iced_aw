@@ -55,7 +55,7 @@ pub trait StyleSheet {
 
 #[derive(Default, Debug, Copy, Clone)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-//TODO: Figure out a way to add custom Styles or Appearances with Stylesheets that match.
+/// Default Prebuilt ``NumberInput`` Styles
 pub enum NumberInputStyles {
     #[default]
     Default,
