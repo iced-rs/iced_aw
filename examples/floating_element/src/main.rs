@@ -1,4 +1,5 @@
 use iced::{
+    theme,
     widget::{Button, Column, Container, Scrollable, Text},
     Element, Length, Sandbox, Settings,
 };
@@ -52,10 +53,10 @@ impl Sandbox for FloatingElementExample {
                 .height(Length::Fill)
                 .max_width(400)
                 .max_height(600)
-                .style(BorderedContainer),
+                .style(theme::Container::Box),
             || {
                 Button::new(
-                    Text::new(Icon::Plus)
+                    Text::new(Icon::Plus.to_string())
                         .width(Length::Shrink)
                         .height(Length::Shrink)
                         .font(ICON_FONT)
@@ -64,7 +65,7 @@ impl Sandbox for FloatingElementExample {
                 //.style(iced_aw::style::button::Primary),
                 .on_press(Message::ButtonPressed)
                 .padding(5)
-                .style(RoundedButton)
+                .style(theme::Button::Primary)
                 .into()
             },
         )
@@ -79,29 +80,5 @@ impl Sandbox for FloatingElementExample {
             .center_x()
             .center_y()
             .into()
-    }
-}
-
-struct RoundedButton;
-
-impl iced::button::StyleSheet for RoundedButton {
-    fn active(&self) -> iced::button::Style {
-        iced::button::Style {
-            border_radius: 25.0,
-            ..iced_aw::style::button::Primary.active()
-        }
-    }
-}
-
-struct BorderedContainer;
-
-impl iced::container::StyleSheet for BorderedContainer {
-    fn style(&self) -> iced::container::Style {
-        iced::container::Style {
-            border_width: 1.0,
-            border_color: iced::Color::BLACK,
-            border_radius: 10.0,
-            ..Default::default()
-        }
     }
 }

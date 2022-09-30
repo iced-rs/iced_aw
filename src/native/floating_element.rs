@@ -179,6 +179,7 @@ where
         &self,
         state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -187,6 +188,7 @@ where
         self.underlay.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             layout,
             cursor_position,

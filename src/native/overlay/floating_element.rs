@@ -124,6 +124,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -131,6 +132,7 @@ where
         self.element.as_widget().draw(
             self.state,
             renderer,
+            theme,
             style,
             layout,
             cursor_position,
