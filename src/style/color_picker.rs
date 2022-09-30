@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: `color_picker`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 #[derive(Clone, Copy, Debug)]
@@ -33,51 +34,60 @@ pub struct Appearance {
 pub trait StyleSheet {
     type Style: std::default::Default + Copy;
     /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn selected(&self) -> Appearance;
+    fn selected(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn hovered(&self) -> Appearance;
+    fn hovered(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn focused(&self) -> Appearance;
+    fn focused(&self, style: Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Default;
 
-impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
+impl StyleSheet for Theme {
+    type Style = Default;
+
+    fn active(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
         Appearance {
-            background: Color::WHITE.into(),
+            background: palette.background.base.color.into(),
             border_radius: 15.0,
             border_width: 1.0,
-            border_color: Color::BLACK,
+            border_color: palette.background.base.color,
             bar_border_radius: 5.0,
             bar_border_width: 1.0,
-            bar_border_color: Color::BLACK,
+            bar_border_color: palette.background.base.color,
         }
     }
 
-    fn selected(&self) -> Appearance {
-        Appearance { ..self.active() }
-    }
-
-    fn hovered(&self) -> Appearance {
-        Appearance { ..self.active() }
-    }
-
-    fn focused(&self) -> Appearance {
+    fn selected(&self, style: Self::Style) -> Appearance {
         Appearance {
-            border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            bar_border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            ..self.active()
+            ..self.active(style)
+        }
+    }
+
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        Appearance {
+            ..self.active(style)
+        }
+    }
+
+    fn focused(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        Appearance {
+            border_color: palette.background.strong.color,
+            bar_border_color: palette.background.strong.color,
+            ..self.active(style)
         }
     }
 }

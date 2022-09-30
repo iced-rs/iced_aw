@@ -15,7 +15,7 @@ use iced_native::{
     Element, Widget,
 };
 
-pub use crate::style::color_picker::{Style, StyleSheet};
+pub use crate::style::color_picker::{Appearance, StyleSheet};
 
 use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 
@@ -46,10 +46,11 @@ use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ColorPicker<'a, Message, B>
+pub struct ColorPicker<'a, Message, Renderer>
 where
     Message: Clone,
-    B: Backend,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet + button::StyleSheet,
 {
     /// Show the picker.
     show_picker: bool,
@@ -62,13 +63,14 @@ where
     /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<'a, Message, B> ColorPicker<'a, Message, B>
+impl<'a, Message, Renderer> ColorPicker<'a, Message, Renderer>
 where
     Message: Clone,
-    B: Backend,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet + button::StyleSheet,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
@@ -98,14 +100,14 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
 
     /// Sets the style of the [`ColorPicker`](ColorPicker).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
@@ -115,10 +117,6 @@ where
 pub struct State {
     /// The state of the overlay.
     pub(crate) overlay_state: color_picker::State,
-    /// The state of the cancel button.
-    pub(crate) cancel_button: button::State,
-    /// The state of the submit button.
-    pub(crate) submit_button: button::State,
 }
 
 impl State {
@@ -127,8 +125,6 @@ impl State {
     pub fn new(color: Color) -> Self {
         Self {
             overlay_state: color_picker::State::new(color),
-            cancel_button: button::State::new(),
-            submit_button: button::State::new(),
         }
     }
 
@@ -139,10 +135,11 @@ impl State {
     }
 }
 
-impl<'a, Message, B> Widget<Message, Renderer> for ColorPicker<'a, Message, B>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for ColorPicker<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    Renderer: iced_native::text::Renderer,
+    Renderer::Theme: StyleSheet + button::StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -218,6 +215,7 @@ where
         &self,
         state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -226,6 +224,7 @@ where
         self.underlay.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             layout,
             cursor_position,
@@ -264,12 +263,14 @@ where
     }
 }
 
-impl<'a, Message, B> From<ColorPicker<'a, Message, B>> for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<ColorPicker<'a, Message, Renderer>>
+    for Element<'a, Message, Renderer>
 where
     Message: 'static + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    Renderer: 'a + iced_native::text::Renderer,
+    Renderer::Theme: StyleSheet + button::StyleSheet,
 {
-    fn from(color_picker: ColorPicker<'a, Message, B>) -> Self {
+    fn from(color_picker: ColorPicker<'a, Message, Renderer>) -> Self {
         Element::new(color_picker)
     }
 }

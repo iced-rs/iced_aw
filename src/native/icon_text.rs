@@ -136,6 +136,7 @@ where
         &self,
         _state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        _theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         _cursor_position: iced_graphics::Point,
