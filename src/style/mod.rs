@@ -10,9 +10,6 @@ pub mod badge;
 #[cfg(feature = "badge")]
 pub use badge::BadgeStyles;
 
-#[cfg(feature = "button")]
-pub mod button;
-
 #[cfg(feature = "card")]
 pub mod card;
 #[cfg(feature = "card")]

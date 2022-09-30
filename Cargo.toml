@@ -13,12 +13,11 @@ categories = ["gui"]
 
 [features]
 badge = []
-button = []
 card = []
 colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
-floating_element = ["button"]
+floating_element = []
 grid = []
 glow = [] # TODO
 icon_text = ["icons"]
