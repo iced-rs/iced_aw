@@ -24,11 +24,11 @@ use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::color_picker;
+/// # use iced_aw::pure::color_picker;
 /// # use iced_native::{Color, renderer::Null};
-/// # use iced_native::widget::{button, Button, Text};
+/// # use iced_pure::widget::{button, Button, Text};
 /// #
-/// # pub type ColorPicker<'a, Message> = iced_aw::ColorPicker<'a, Message, Null>;
+/// # pub type ColorPicker<'a, Message> = iced_aw::pure::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,
@@ -77,7 +77,7 @@ where
     /// It expects:
     ///     * if the overlay of the color picker is visible.
     ///     * the initial color to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`ColorPicker`](ColorPicker)
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`ColorPicker`](ColorPicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
     ///         is pressed.
@@ -107,7 +107,7 @@ where
     /// Sets the style of the [`ColorPicker`](ColorPicker).
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+        self.style = style.into();
         self
     }
 }
@@ -257,6 +257,8 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
+                self.style,
+                &state,
             )
             .overlay(),
         )

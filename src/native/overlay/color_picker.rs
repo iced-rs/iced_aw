@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 
 use iced_graphics::{
+    backend,
     widget::canvas::{self, LineCap, Path, Stroke},
     Backend, Renderer,
 };
@@ -15,7 +16,7 @@ use iced_native::{
     mouse, overlay, renderer,
     text::Renderer as _,
     touch,
-    widget::{Button, Column, Row, Text},
+    widget::{Button, Column, Row, Text, Tree},
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
     Renderer as _, Shell, Size, Vector, Widget,
 };
@@ -28,7 +29,10 @@ use crate::{
     },
     graphics::icons::Icon,
     native::IconText,
-    style::{self, color_picker::StyleSheet, style_state::StyleState},
+    style::{
+        color_picker::{Appearance, StyleSheet},
+        style_state::StyleState,
+    },
 };
 /// The padding around the elements.
 const PADDING: u16 = 10;
@@ -50,27 +54,28 @@ pub struct ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: Clone,
     B: Backend,
-    Theme: StyleSheet,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
 {
     /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    cancel_button: Element<'a, Message, Renderer<B, Theme>>,
+    cancel_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    submit_button: Element<'a, Message, Renderer<B, Theme>>,
+    submit_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     on_submit: &'a dyn Fn(Color) -> Message,
     /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
+    tree: &'static Tree,
 }
 
 impl<'a, Message, B, Theme> ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -79,6 +84,8 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
+        style: <Theme as StyleSheet>::Style,
+        tree: &'static Tree,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
         let color_picker::State { overlay_state } = state;
@@ -95,7 +102,8 @@ where
                 .into(),
             on_submit,
             position,
-            style: <Theme as StyleSheet>::Style::default(),
+            style,
+            tree,
         }
     }
 
@@ -507,10 +515,8 @@ impl<'a, Message, B, Theme> iced_native::Overlay<Message, Renderer<B, Theme>>
     for ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
     B: 'a + Backend + iced_graphics::backend::Text,
-    iced_native::overlay::Element<'a, Message, Renderer<B, Theme>>:
-        std::convert::From<iced_native::widget::Button<'a, Message, Renderer<B, Theme>>>,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     fn layout(
         &self,
@@ -648,6 +654,7 @@ where
             .next()
             .expect("Native: Layout should have a cancel button layout for a ColorPicker");
         let cancel_button_status = self.cancel_button.on_event(
+            &mut self.tree,
             event.clone(),
             cancel_button_layout,
             cursor_position,
@@ -659,7 +666,8 @@ where
         let submit_button_layout = block2_children
             .next()
             .expect("Native: Layout should have a submit button layout for a ColorPicker");
-        let submit_button_status = self.submit_button.as_widget().on_event(
+        let submit_button_status = self.submit_button.on_event(
+            &mut self.tree,
             event,
             submit_button_layout,
             cursor_position,
@@ -771,6 +779,7 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
         let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
+            &self.tree,
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -781,6 +790,7 @@ where
             .next()
             .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
         let submit_mouse_interaction = self.submit_button.mouse_interaction(
+            &self.tree,
             submit_button_layout,
             cursor_position,
             viewport,
@@ -797,7 +807,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer<B, Theme>,
-        theme: &Theme,
+        theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -805,17 +815,14 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let mut style_sheet: HashMap<StyleState, style::color_picker::Appearance> = HashMap::new();
+        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, self.style));
         let _ = style_sheet.insert(
-            StyleState::Active,
-            style::color_picker::StyleSheet::active(theme, self.style),
+            StyleState::Selected,
+            StyleSheet::selected(theme, self.style),
         );
-        let _ = style_sheet.insert(StyleState::Selected, theme.selected(self.style));
-        let _ = style_sheet.insert(
-            StyleState::Hovered,
-            style::color_picker::StyleSheet::hovered(theme, self.style),
-        );
-        let _ = style_sheet.insert(StyleState::Focused, theme.focused(self.style));
+        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, self.style));
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -867,8 +874,8 @@ fn block1_layout<'a, Message, B, Theme>(
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
-    Theme: StyleSheet,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let block1_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -905,8 +912,8 @@ fn block2_layout<'a, Message, B, Theme>(
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + iced_style::text::StyleSheet,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let block2_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -914,9 +921,7 @@ where
 
     // Pre-Buttons TODO: get rid of it
     let cancel_limits = block2_limits;
-    let cancel_button = color_picker
-        .cancel_button
-        .layout(renderer, cancel_limits.min());
+    let cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
     let hex_text_limits = block2_limits;
     let mut hex_text = Row::<(), Renderer<B, Theme>>::new()
@@ -975,17 +980,13 @@ where
         ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
     );
 
-    let mut cancel_button = color_picker
-        .cancel_button
-        .layout(renderer, cancel_limits.min());
+    let mut cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
     let submit_limits = block2_limits.max_width(
         ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
     );
 
-    let mut submit_button = color_picker
-        .submit_button
-        .layout(renderer, submit_limits.min());
+    let mut submit_button = color_picker.submit_button.layout(renderer, &submit_limits);
 
     cancel_button.move_to(Point::new(
         cancel_button.bounds().x + f32::from(PADDING),
@@ -1028,11 +1029,11 @@ fn block1<'a, Message, B, Theme>(
     color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
-    style_sheet: &HashMap<StyleState, style::color_picker::Appearance>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
-    Theme: StyleSheet,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     // ----------- Block 1 ----------------------
     let hsv_color_layout = layout;
@@ -1059,11 +1060,11 @@ fn block2<'a, Message, B, Theme>(
     theme: &Theme,
     style: &renderer::Style,
     viewport: &Rectangle,
-    style_sheet: &HashMap<StyleState, style::color_picker::Appearance>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
-    Theme: StyleSheet,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    B: Backend + backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     // ----------- Block 2 ----------------------
     let mut block2_children = layout.children();
@@ -1102,11 +1103,13 @@ fn block2<'a, Message, B, Theme>(
         .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
 
     color_picker.cancel_button.draw(
+        &color_picker.tree,
         renderer,
         theme,
         style,
         cancel_button_layout,
         cursor_position,
+        viewport,
     );
 
     let submit_button_layout = block2_children
@@ -1114,11 +1117,13 @@ fn block2<'a, Message, B, Theme>(
         .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
 
     color_picker.submit_button.draw(
+        &color_picker.tree,
         renderer,
         theme,
         style,
         submit_button_layout,
         cursor_position,
+        viewport,
     );
 
     // Buttons are not focusable right now...
@@ -1155,11 +1160,11 @@ fn hsv_color<'a, Message, B, Theme>(
     color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
-    style_sheet: &HashMap<StyleState, style::color_picker::Appearance>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
-    Theme: StyleSheet,
-    B: 'a + Backend + iced_graphics::backend::Text,
+    B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let mut hsv_color_children = layout.children();
     let hsv_color: Hsv = color_picker.state.color.into();
@@ -1332,11 +1337,11 @@ fn rgba_color<B, Theme>(
     color: &Color,
     cursor_position: Point,
     style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, style::color_picker::Appearance>,
+    style_sheet: &HashMap<StyleState, Appearance>,
     focus: Focus,
 ) where
-    Theme: StyleSheet,
     B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let mut rgba_color_children = layout.children();
 
@@ -1549,11 +1554,11 @@ fn hex_text<B, Theme>(
     color: &Color,
     cursor_position: Point,
     _style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, style::color_picker::Appearance>,
+    style_sheet: &HashMap<StyleState, Appearance>,
     _focus: Focus,
 ) where
-    Theme: StyleSheet,
-    B: Backend + iced_graphics::backend::Text,
+    B: Backend + backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let hsv: Hsv = (*color).into();
 
@@ -1633,6 +1638,7 @@ impl Default for State {
             color_bar_dragged: ColorBarDragged::None,
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
+            ..Default::default()
         }
     }
 }
