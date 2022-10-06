@@ -27,7 +27,7 @@ impl Sandbox for ColorPickerExample {
 
     fn new() -> Self {
         ColorPickerExample {
-            color: Color::default(),
+            color: Color::from_rgba(0.5, 0.2, 0.7, 1.0),
             show_picker: false,
         }
     }
