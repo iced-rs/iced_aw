@@ -32,6 +32,7 @@ pub struct Appearance {
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 pub trait StyleSheet {
+    /// The style type of this stylesheet
     type Style: std::default::Default + Copy;
     /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
     fn active(&self, style: Self::Style) -> Appearance;
@@ -56,7 +57,7 @@ pub struct Default;
 impl StyleSheet for Theme {
     type Style = Default;
 
-    fn active(&self, style: Self::Style) -> Appearance {
+    fn active(&self, _style: Self::Style) -> Appearance {
         let palette = self.extended_palette();
 
         Appearance {

@@ -17,7 +17,9 @@ use iced_native::{
 
 pub use crate::style::color_picker::{Appearance, StyleSheet};
 
-use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
+use super::overlay::color_picker::{
+    self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
+};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.
@@ -49,7 +51,7 @@ use super::overlay::color_picker::{self, ColorBarDragged, ColorPickerOverlay};
 pub struct ColorPicker<'a, Message, B, Theme>
 where
     Message: Clone,
-    B: Backend,
+    B: Backend + iced_graphics::backend::Text,
     Theme: StyleSheet + button::StyleSheet,
 {
     /// Show the picker.
@@ -64,13 +66,15 @@ where
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
+    // The buttons of the overlay.
+    overlay_state: Element<'a, Message, Renderer<B, Theme>>,
 }
 
 impl<'a, Message, B, Theme> ColorPicker<'a, Message, B, Theme>
 where
-    Message: Clone,
-    B: Backend,
-    Theme: StyleSheet + button::StyleSheet,
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
@@ -101,6 +105,7 @@ where
             on_cancel,
             on_submit: Box::new(on_submit),
             style: <Theme as StyleSheet>::Style::default(),
+            overlay_state: ColorPickerOverlayButtons::default().into(),
         }
     }
 
@@ -151,11 +156,11 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay)]
+        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(std::slice::from_ref(&self.underlay));
+        tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
     fn width(&self) -> Length {
@@ -258,7 +263,7 @@ where
                 &self.on_submit,
                 position,
                 self.style,
-                &state,
+                &mut state.children[1],
             )
             .overlay(),
         )
@@ -270,7 +275,7 @@ impl<'a, Message, B, Theme> From<ColorPicker<'a, Message, B, Theme>>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
 {
     fn from(color_picker: ColorPicker<'a, Message, B, Theme>) -> Self {
         Element::new(color_picker)
