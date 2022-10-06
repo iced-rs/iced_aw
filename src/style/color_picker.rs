@@ -59,15 +59,16 @@ impl StyleSheet for Theme {
 
     fn active(&self, _style: Self::Style) -> Appearance {
         let palette = self.extended_palette();
+        let foreground = self.palette();
 
         Appearance {
             background: palette.background.base.color.into(),
             border_radius: 15.0,
             border_width: 1.0,
-            border_color: palette.background.base.color,
+            border_color: foreground.text,
             bar_border_radius: 5.0,
             bar_border_width: 1.0,
-            bar_border_color: palette.background.base.color,
+            bar_border_color: foreground.text,
         }
     }
 

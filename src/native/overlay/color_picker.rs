@@ -1429,26 +1429,6 @@ fn rgba_color<B, Theme>(
             Color::TRANSPARENT,
         );
 
-        // Focus
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border_radius: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_radius,
-                border_width: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_width,
-                border_color: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_color,
-            },
-            Color::TRANSPARENT,
-        );
-
         // Value
         renderer.fill_text(iced_native::text::Text {
             content: &format!("{}", (255.0 * value) as u8),
