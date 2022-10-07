@@ -23,9 +23,13 @@ pub mod date_picker;
 
 #[cfg(feature = "modal")]
 pub mod modal;
+#[cfg(feature = "modal")]
+pub use modal::ModalStyles;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
+#[cfg(feature = "tab_bar")]
+pub use tab_bar::TabBarStyles;
 
 #[cfg(feature = "time_picker")]
 pub mod time_picker;

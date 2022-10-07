@@ -51,7 +51,7 @@ pub trait StyleSheet {
 
 #[derive(Clone, Copy, Debug, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``Badge`` Styles
+/// Default Prebuilt ``SelectionList`` Styles
 pub enum SelectionListStyles {
     #[default]
     Default,

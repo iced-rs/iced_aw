@@ -60,6 +60,7 @@ const DEFAULT_SPACING: u16 = 0;
 pub struct TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The currently active tab.
     active_tab: usize,
@@ -92,7 +93,7 @@ where
     /// The optional text font of the [`TabBar`](TabBar).
     text_font: Option<Font>,
     /// The style of the [`TabBar`](TabBar).
-    style_sheet: Box<dyn StyleSheet>,
+    style: <Renderer::Theme as StyleSheet>::Style,
     #[allow(clippy::missing_docs_in_private_items)]
     _renderer: PhantomData<Renderer>,
 }
@@ -100,6 +101,7 @@ where
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -143,7 +145,7 @@ where
             spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
             _renderer: PhantomData::default(),
         }
     }
@@ -263,8 +265,8 @@ where
 
     /// Sets the style of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style_sheet(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 
@@ -279,6 +281,7 @@ where
 impl<Message, Renderer> Widget<Message, Renderer> for TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     fn width(&self) -> Length {
         self.width
@@ -410,6 +413,7 @@ where
         &self,
         _state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -419,9 +423,9 @@ where
         let children = layout.children();
         let is_mouse_over = bounds.contains(cursor_position);
         let style_sheet = if is_mouse_over {
-            self.style_sheet.hovered(false)
+            theme.hovered(self.style, false)
         } else {
-            self.style_sheet.active(false)
+            theme.active(self.style, false)
         };
 
         renderer.fill_quad(
@@ -441,7 +445,8 @@ where
                 renderer,
                 tab,
                 layout,
-                &self.style_sheet,
+                theme,
+                self.style,
                 i == self.active_tab,
                 cursor_position,
                 self.icon_font.unwrap_or(icons::ICON_FONT),
@@ -461,19 +466,21 @@ fn draw_tab<Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,
     layout: Layout<'_>,
-    style_sheet: &Box<dyn StyleSheet>,
+    theme: &Renderer::Theme,
+    style: <Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
     cursor_position: iced_native::Point,
     icon_font: Font,
     text_font: Font,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     let is_mouse_over = layout.bounds().contains(cursor_position);
     let style = if is_mouse_over {
-        style_sheet.hovered(is_selected)
+        theme.hovered(style, is_selected)
     } else {
-        style_sheet.active(is_selected)
+        theme.active(style, is_selected)
     };
 
     let bounds = layout.bounds();
@@ -606,6 +613,7 @@ fn draw_tab<Renderer>(
 impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {

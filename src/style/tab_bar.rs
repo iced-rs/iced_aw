@@ -7,6 +7,7 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]
@@ -38,24 +39,32 @@ pub struct Appearance {
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 pub trait StyleSheet {
-    type Appearance: std::default::Default + Copy;
+    ///Style for the trait to use.
+    type Style: Default + Copy;
+
     /// The normal appearance0of a tab bar and its tab labels.
     ///
     /// `is_active` is true if the tab is selected.
-    fn active(&self, is_active: bool) -> Appearance;
+    fn active(&self, style: Self::Style, is_active: bool) -> Appearance;
 
     /// The appearance when the tab bar and/or a tab label is hovered.
     ///
     /// `is_active` is true if the tab is selected.
-    fn hovered(&self, is_active: bool) -> Appearance;
+    fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance;
 }
 
-/// The default appearance of a [`TabBar`](crate::native::TabBar).
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
+#[derive(Clone, Copy, Debug, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``TabBar`` Styles
+pub enum TabBarStyles {
+    #[default]
+    Default,
+}
 
-impl StyleSheet for Default {
-    fn active(&self, is_active: bool) -> Appearance {
+impl StyleSheet for Theme {
+    type Style = TabBarStyles;
+
+    fn active(&self, _style: Self::Style, is_active: bool) -> Appearance {
         Appearance {
             background: None,
             border_color: None,
@@ -72,10 +81,10 @@ impl StyleSheet for Default {
         }
     }
 
-    fn hovered(&self, is_active: bool) -> Appearance {
+    fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance {
         Appearance {
             tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
-            ..self.active(is_active)
+            ..self.active(style, is_active)
         }
     }
 }
