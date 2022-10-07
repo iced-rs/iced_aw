@@ -6,7 +6,7 @@ use iced_native::{widget::Tree, Element, Widget};
 
 use super::overlay::modal::ModalOverlay;
 
-pub use crate::style::modal::{Style, StyleSheet};
+pub use crate::style::modal::StyleSheet;
 
 /// A modal content as an overlay.
 ///
@@ -39,6 +39,7 @@ where
     Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Show the modal.
     show_modal: bool,
@@ -51,7 +52,7 @@ where
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
-    style_sheet: Box<dyn StyleSheet>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
 impl<'a, Content, Message, Renderer> Modal<'a, Content, Message, Renderer>
@@ -59,6 +60,7 @@ where
     Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Modal`](Modal) wrapping the underlying element to
     /// show some content as an overlay.
@@ -81,7 +83,7 @@ where
             content,
             backdrop: None,
             esc: None,
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
 
@@ -105,8 +107,8 @@ where
 
     /// Sets the style of the [`Modal`](Modal).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
@@ -117,6 +119,7 @@ where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<iced_native::widget::Tree> {
         vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
@@ -184,6 +187,7 @@ where
         &self,
         state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -192,6 +196,7 @@ where
         self.underlay.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             layout,
             cursor_position,
@@ -221,7 +226,7 @@ where
                 (self.content)(),
                 self.backdrop.clone(),
                 self.esc.clone(),
-                &self.style_sheet,
+                self.style,
             )
             .overlay(position),
         )
@@ -234,6 +239,7 @@ where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn from(modal: Modal<'a, Content, Message, Renderer>) -> Self {
         Element::new(modal)

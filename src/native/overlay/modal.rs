@@ -16,6 +16,7 @@ pub struct ModalOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
     state: &'a mut Tree,
@@ -26,13 +27,14 @@ where
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
-    style_sheet: &'a Box<dyn StyleSheet>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
 impl<'a, Message, Renderer> ModalOverlay<'a, Message, Renderer>
 where
     Message: Clone,
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
     pub fn new<C>(
@@ -40,7 +42,7 @@ where
         content: C,
         backdrop: Option<Message>,
         esc: Option<Message>,
-        style_sheet: &'a Box<dyn StyleSheet>,
+        style: <Renderer::Theme as StyleSheet>::Style,
     ) -> Self
     where
         C: Into<Element<'a, Message, Renderer>>,
@@ -50,7 +52,7 @@ where
             content: content.into(),
             backdrop,
             esc,
-            style_sheet,
+            style,
         }
     }
 
@@ -66,6 +68,7 @@ impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn layout(
         &self,
@@ -175,13 +178,14 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: Point,
     ) {
         let bounds = layout.bounds();
 
-        let style_sheet = self.style_sheet.active();
+        let style_sheet = theme.active(self.style);
 
         // Background
         renderer.fill_quad(
@@ -203,6 +207,7 @@ where
         self.content.as_widget().draw(
             self.state,
             renderer,
+            theme,
             style,
             content_layout,
             cursor_position,
