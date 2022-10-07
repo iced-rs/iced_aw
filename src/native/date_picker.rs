@@ -14,7 +14,7 @@ pub use crate::core::date::Date;
 
 pub use crate::style::date_picker::{Appearance, StyleSheet};
 
-use super::overlay::date_picker::{self, DatePickerOverlay, TimePickerOverlayButtons};
+use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking dates.
@@ -105,7 +105,7 @@ where
             on_cancel,
             on_submit: Box::new(on_submit),
             style: <Theme as StyleSheet>::Style::default(),
-            overlay_state: TimePickerOverlayButtons::default().into(),
+            overlay_state: DatePickerOverlayButtons::default().into(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
         }
     }

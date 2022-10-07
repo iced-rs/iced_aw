@@ -896,19 +896,19 @@ impl Default for State {
 
 /// Just a workaround to pass the button states from the tree to the overlay
 #[allow(missing_debug_implementations)]
-pub struct TimePickerOverlayButtons<'a, Message, B, Theme>
+pub struct DatePickerOverlayButtons<'a, Message, B, Theme>
 where
     Message: Clone,
     B: Backend,
     Theme: StyleSheet + iced_style::button::StyleSheet,
 {
-    /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
     cancel_button: Element<'a, Message, Renderer<B, Theme>>,
-    /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
     submit_button: Element<'a, Message, Renderer<B, Theme>>,
 }
 
-impl<'a, Message, B, Theme> Default for TimePickerOverlayButtons<'a, Message, B, Theme>
+impl<'a, Message, B, Theme> Default for DatePickerOverlayButtons<'a, Message, B, Theme>
 where
     Message: 'a + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
@@ -927,7 +927,7 @@ where
 }
 
 impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
-    for TimePickerOverlayButtons<'a, Message, B, Theme>
+    for DatePickerOverlayButtons<'a, Message, B, Theme>
 where
     Message: Clone,
     B: Backend,
@@ -974,14 +974,14 @@ where
     }
 }
 
-impl<'a, Message, B, Theme> From<TimePickerOverlayButtons<'a, Message, B, Theme>>
+impl<'a, Message, B, Theme> From<DatePickerOverlayButtons<'a, Message, B, Theme>>
     for Element<'a, Message, Renderer<B, Theme>>
 where
     Message: 'a + Clone,
     B: 'a + Backend,
     Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::container::StyleSheet,
 {
-    fn from(overlay: TimePickerOverlayButtons<'a, Message, B, Theme>) -> Self {
+    fn from(overlay: DatePickerOverlayButtons<'a, Message, B, Theme>) -> Self {
         Self::new(overlay)
     }
 }
