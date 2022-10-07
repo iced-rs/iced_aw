@@ -1,4 +1,5 @@
 use iced::{
+    theme,
     widget::{Button, Column, Container, Scrollable, Text},
     Alignment, Color, Element, Length, Sandbox, Settings,
 };
@@ -43,8 +44,8 @@ impl Sandbox for GridExample {
     fn view(&self) -> Element<'_, self::Message> {
         // Creates a grid with two columns
         let mut grid = Grid::with_columns(COLUMNS)
-            .push(Text::new("Column 1").color(Color::from_rgb8(255, 0, 0)))
-            .push(Text::new("Column 2").color(Color::from_rgb8(255, 0, 0)));
+            .push(Text::new("Column 1").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))))
+            .push(Text::new("Column 2").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))));
 
         // Add elements to the grid
         for i in 0..self.element_index {

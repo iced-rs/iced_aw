@@ -40,7 +40,7 @@ default = [
     #"color_picker",
     "floating_element",
     "icon_text",
-    #"grid",
+    "grid",
     #"modal",
     #"tab_bar",
     #"tabs",
@@ -82,7 +82,7 @@ members = [
     #"examples/color_picker",
     #"examples/date_picker",
     "examples/floating_element",
-    #"examples/grid",
+    "examples/grid",
     #"examples/modal",S
     #"examples/tab_bar",
     #"examples/tabs",
