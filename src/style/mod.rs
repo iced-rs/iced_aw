@@ -37,6 +37,8 @@ pub use number_input::NumberInputStyles;
 
 #[cfg(feature = "selection_list")]
 pub mod selection_list;
+#[cfg(feature = "selection_list")]
+pub use selection_list::SelectionListStyles;
 
 #[cfg(feature = "split")]
 pub mod split;

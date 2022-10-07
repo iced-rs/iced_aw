@@ -46,7 +46,7 @@ default = [
     #"tabs",
     #"time_picker",
     "wrap",
-    #"selection_list",
+    "selection_list",
     "split",
 ]
 
@@ -89,6 +89,6 @@ members = [
     #"examples/time_picker",
     "examples/wrap",
     "examples/number_input",
-    #"examples/selection_list",
+    "examples/selection_list",
     "examples/split",
 ]
