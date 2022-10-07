@@ -66,7 +66,7 @@ where
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
-    // The buttons of the overlay.
+    /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Renderer<B, Theme>>,
 }
 
@@ -112,7 +112,7 @@ where
     /// Sets the style of the [`ColorPicker`](ColorPicker).
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style.into();
+        self.style = style;
         self
     }
 }

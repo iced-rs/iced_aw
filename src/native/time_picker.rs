@@ -127,7 +127,7 @@ where
     /// Sets the style of the [`TimePicker`](TimePicker).
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style.into();
+        self.style = style;
         self
     }
 }

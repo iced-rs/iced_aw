@@ -68,6 +68,7 @@ where
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
 }
 
@@ -94,12 +95,10 @@ where
             state: overlay_state,
             cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
-                .into(),
+                .on_press(on_cancel.clone()),
             submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
-                .into(),
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
             style,
@@ -1052,6 +1051,7 @@ fn block1<'a, Message, B, Theme>(
 }
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
+#[allow(clippy::too_many_arguments)]
 fn block2<'a, Message, B, Theme>(
     renderer: &mut Renderer<B, Theme>,
     color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
@@ -1650,6 +1650,7 @@ where
     }
 }
 
+#[allow(clippy::unimplemented)]
 impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
     for ColorPickerOverlayButtons<'a, Message, B, Theme>
 where
@@ -1742,7 +1743,7 @@ impl Default for ColorBarDragged {
 }
 
 /// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

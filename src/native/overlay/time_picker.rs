@@ -66,6 +66,7 @@ where
     position: Point,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
     style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
 }
 
@@ -1667,6 +1668,7 @@ where
     }
 }
 
+#[allow(clippy::unimplemented)]
 impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
     for TimePickerOverlayButtons<'a, Message, B, Theme>
 where

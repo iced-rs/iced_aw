@@ -59,6 +59,7 @@ where
     position: Point,
     /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
     style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
 }
 
@@ -89,14 +90,12 @@ where
             state: overlay_state,
             cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
                 //.style(button_style.clone())
-                .into(),
+                .on_press(on_cancel.clone()),
             submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
                 //.style(button_style)
-                .into(),
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
             style,
@@ -926,6 +925,7 @@ where
     }
 }
 
+#[allow(clippy::unimplemented)]
 impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
     for DatePickerOverlayButtons<'a, Message, B, Theme>
 where
@@ -987,7 +987,7 @@ where
 }
 
 /// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

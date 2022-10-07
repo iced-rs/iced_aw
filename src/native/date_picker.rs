@@ -61,7 +61,7 @@ where
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
     style: <Theme as StyleSheet>::Style,
-    // The buttons of the overlay.
+    /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Renderer<B, Theme>>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
@@ -113,7 +113,7 @@ where
     /// Sets the style of the [`DatePicker`](DatePicker).
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style.into();
+        self.style = style;
         //self.button_style = style.into();
         self
     }
