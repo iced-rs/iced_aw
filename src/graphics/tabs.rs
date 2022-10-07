@@ -6,7 +6,7 @@
 //!
 //! *This API requires the following crate features to be activated: tabs*
 use crate::native::tabs;
-pub use crate::style::tab_bar::{Style, StyleSheet};
+pub use crate::style::tab_bar::{StyleSheet, TabBarStyles};
 use iced_graphics::Renderer;
 pub use tabs::tab_bar_position::TabBarPosition;
 

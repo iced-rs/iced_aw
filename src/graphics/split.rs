@@ -5,7 +5,7 @@ use iced_graphics::Renderer;
 
 use crate::native::split;
 pub use crate::native::split::{Axis, State};
-pub use crate::style::split::{Style, StyleSheet};
+pub use crate::style::split::{Appearance, StyleSheet};
 
 /// A split can divide the available space by half to display two different elements.
 /// It can split horizontally or vertically.

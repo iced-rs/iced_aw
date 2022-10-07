@@ -249,6 +249,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -260,9 +261,15 @@ where
             .zip(&state.children)
             .zip(layout.children())
         {
-            child
-                .as_widget()
-                .draw(state, renderer, style, layout, cursor_position, viewport);
+            child.as_widget().draw(
+                state,
+                renderer,
+                theme,
+                style,
+                layout,
+                cursor_position,
+                viewport,
+            );
         }
     }
 }

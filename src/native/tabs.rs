@@ -15,7 +15,7 @@ use iced_native::{
     Element, Widget,
 };
 
-use crate::{style::tab_bar::StyleSheet, TabBar, TabLabel};
+use crate::{native::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
@@ -50,6 +50,7 @@ pub use tab_bar_position::TabBarPosition;
 pub struct Tabs<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, Renderer>,
@@ -65,7 +66,8 @@ where
 
 impl<'a, Message, Renderer> Tabs<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
     /// and a specified message which will be send when a tab is selected by
@@ -227,8 +229,8 @@ where
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_bar_style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.tab_bar = self.tab_bar.style_sheet(style_sheet);
+    pub fn tab_bar_style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.tab_bar = self.tab_bar.style(style);
         self
     }
 
@@ -256,6 +258,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         self.tabs.iter().map(Tree::new).collect()
@@ -448,6 +451,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -466,6 +470,7 @@ where
         self.tab_bar.draw(
             &Tree::empty(),
             renderer,
+            theme,
             style,
             tab_bar_layout,
             cursor_position,
@@ -487,6 +492,7 @@ where
             element.as_widget().draw(
                 &state.children[self.tab_bar.get_active_tab()],
                 renderer,
+                theme,
                 style,
                 tab_content_layout,
                 cursor_position,
@@ -506,9 +512,8 @@ where
             TabBarPosition::Bottom => layout.children().next(),
         };
 
-        match layout {
-            Some(layout) => self
-                .tabs
+        layout.and_then(|layout| {
+            self.tabs
                 .get(self.tab_bar.get_active_tab())
                 .map(Element::as_widget)
                 .and_then(|w| {
@@ -517,15 +522,15 @@ where
                         layout,
                         renderer,
                     )
-                }),
-            None => None,
-        }
+                })
+        })
     }
 }
 
 impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
 {
     fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {

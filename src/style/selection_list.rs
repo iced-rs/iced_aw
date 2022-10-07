@@ -2,11 +2,12 @@
 //!
 //! *This API requires the following crate features to be activated: `selection_list`*
 #[cfg(not(target_arch = "wasm32"))]
-use iced_native::{Background, Color, Length};
+use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a menu.
 #[derive(Debug, Clone, Copy)]
-pub struct Style {
+pub struct Appearance {
     /// The List Label Text Color
     pub text_color: Color,
     /// The background
@@ -23,17 +24,9 @@ pub struct Style {
     pub selected_text_color: Color,
     /// The List Label Text Select Background Color
     pub selected_background: Background,
-    /// The Containers Width
-    pub width: Length,
-    /// The Containers height
-    pub height: Length,
-    /// The padding Width
-    pub padding: u16,
-    /// The Text Size
-    pub text_size: u16,
 }
 
-impl std::default::Default for Style {
+impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
             text_color: Color::BLACK,
@@ -44,27 +37,29 @@ impl std::default::Default for Style {
             hovered_background: Background::Color([0.0, 0.5, 1.0].into()),
             selected_text_color: Color::WHITE,
             selected_background: Background::Color([0.2, 0.5, 0.8].into()),
-            width: Length::Fill,
-            height: Length::Fill,
-            padding: 5,
-            text_size: 12,
         }
     }
 }
 
 /// A set of rules that dictate the style of a container.
 pub trait StyleSheet {
+    ///Style for the trait to use.
     type Style: std::default::Default + Copy;
     /// Produces the style of a container.
-    fn style() -> Style;
+    fn style(&self, style: Self::Style) -> Appearance;
 }
 
-/// default Style holder.
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
+#[derive(Clone, Copy, Debug, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``SelectionList`` Styles
+pub enum SelectionListStyles {
+    #[default]
+    Default,
+}
 
-impl StyleSheet for Default {
-    fn style() -> Style {
-        Style::default()
+impl StyleSheet for Theme {
+    type Style = SelectionListStyles;
+    fn style(&self, _style: Self::Style) -> Appearance {
+        Appearance::default()
     }
 }

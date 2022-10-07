@@ -16,8 +16,6 @@ use counter::{CounterMessage, CounterTab};
 mod settings;
 use settings::{SettingsMessage, SettingsTab, TabBarPosition};
 
-mod theme;
-
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
 

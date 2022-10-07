@@ -132,7 +132,7 @@ where
 
                 for (column, element) in (0..columns).cycle().zip(&self.elements) {
                     let layout = element.as_widget().layout(renderer, limits);
-
+                    #[allow(clippy::option_if_let_else)]
                     match column_widths.get_mut(column) {
                         Some(column_width) => *column_width = column_width.max(layout.size().width),
                         None => column_widths.insert(column, layout.size().width),
@@ -228,6 +228,7 @@ where
         &self,
         state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -239,9 +240,15 @@ where
             .zip(&state.children)
             .zip(layout.children())
         {
-            element
-                .as_widget()
-                .draw(state, renderer, style, layout, cursor_position, viewport);
+            element.as_widget().draw(
+                state,
+                renderer,
+                theme,
+                style,
+                layout,
+                cursor_position,
+                viewport,
+            );
         }
     }
 

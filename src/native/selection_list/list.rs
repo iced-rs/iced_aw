@@ -1,5 +1,5 @@
 //! Build and show dropdown `ListMenus`.
-use crate::selection_list::Style;
+use crate::selection_list::StyleSheet;
 
 use iced_native::{
     alignment::{Horizontal, Vertical},
@@ -19,6 +19,7 @@ pub struct List<'a, T: 'a, Message, Renderer>
 where
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     /// Options pointer to hold all rendered strings
     pub options: Cow<'a, [T]>,
@@ -26,9 +27,13 @@ where
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
-    pub style: Style,
+    pub style: <Renderer::Theme as StyleSheet>::Style,
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(T) -> Message>,
+    /// The padding Width
+    pub padding: u16,
+    /// The Text Size
+    pub text_size: u16,
     /// Shadow Type holder for Renderer.
     pub phantomdata: PhantomData<Renderer>,
 }
@@ -46,6 +51,7 @@ impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message
 where
     T: Clone + ToString,
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<ListState>()
@@ -70,7 +76,7 @@ where
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
             limits.fill().width,
-            f32::from(self.style.text_size + (self.style.padding * 2)) * self.options.len() as f32,
+            f32::from(self.text_size + (self.padding * 2)) * self.options.len() as f32,
         );
 
         Node::new(intrinsic)
@@ -95,7 +101,7 @@ where
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
                         ((cursor_position.y - bounds.y)
-                            / f32::from(self.style.text_size + (self.style.padding * 2)))
+                            / f32::from(self.text_size + (self.padding * 2)))
                             as usize,
                     );
                 }
@@ -103,7 +109,7 @@ where
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
                         ((cursor_position.y - bounds.y)
-                            / f32::from(self.style.text_size + (self.style.padding * 2)))
+                            / f32::from(self.text_size + (self.padding * 2)))
                             as usize,
                     );
 
@@ -152,6 +158,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         _style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         _cursor_position: iced_graphics::Point,
@@ -159,7 +166,7 @@ where
     ) {
         use std::f32;
         let bounds = layout.bounds();
-        let option_height = self.style.text_size + (self.style.padding * 2);
+        let option_height = self.text_size + (self.padding * 2);
         let offset = viewport.y - bounds.y;
         let start = (offset / f32::from(option_height)) as usize;
         let end = ((offset + viewport.height) / f32::from(option_height)).ceil() as usize;
@@ -176,7 +183,7 @@ where
                 x: bounds.x,
                 y: bounds.y + f32::from(option_height * i as u16),
                 width: bounds.width,
-                height: f32::from(self.style.text_size + (self.style.padding * 2)),
+                height: f32::from(self.text_size + (self.padding * 2)),
             };
 
             if is_selected || is_hovered {
@@ -188,19 +195,19 @@ where
                         border_color: Color::TRANSPARENT,
                     },
                     if is_selected {
-                        self.style.selected_background
+                        theme.style(self.style).selected_background
                     } else {
-                        self.style.hovered_background
+                        theme.style(self.style).hovered_background
                     },
                 );
             }
 
             let text_color = if is_selected {
-                self.style.selected_text_color
+                theme.style(self.style).selected_text_color
             } else if is_hovered {
-                self.style.hovered_text_color
+                theme.style(self.style).hovered_text_color
             } else {
-                self.style.text_color
+                theme.style(self.style).text_color
             };
 
             renderer.fill_text(iced_native::text::Text {
@@ -211,7 +218,7 @@ where
                     width: f32::INFINITY,
                     ..bounds
                 },
-                size: f32::from(self.style.text_size),
+                size: f32::from(self.text_size),
                 color: text_color,
                 font: self.font,
                 horizontal_alignment: Horizontal::Left,
@@ -227,6 +234,7 @@ where
     T: ToString + Clone,
     Message: 'a,
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     fn from(list: List<'a, T, Message, Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(list)

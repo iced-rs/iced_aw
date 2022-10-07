@@ -6,7 +6,7 @@ use iced_graphics::Renderer;
 
 use crate::native::modal;
 pub use crate::native::modal::State;
-pub use crate::style::modal::{Style, StyleSheet};
+pub use crate::style::modal::{ModalStyles, StyleSheet};
 
 /// A modal content as an overlay.
 ///
