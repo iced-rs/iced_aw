@@ -86,7 +86,7 @@ members = [
     "examples/modal",
     "examples/tab_bar",
     "examples/tabs",
-    #"examples/time_picker",
+    "examples/time_picker",
     "examples/wrap",
     "examples/number_input",
     "examples/selection_list",
