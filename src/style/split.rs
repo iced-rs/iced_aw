@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: split*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[derive(Clone, Copy, Debug)]
@@ -26,25 +27,31 @@ pub struct Appearance {
 }
 
 /// The appearance of a [`Split`](crate::native::split::Split).
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
-    type Appearance: std::default::Default + Copy;
+    type Style: Default + Copy;
     /// The normal appearance of a [`Split`](crate::native::split::Split).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the [`Split`](crate::native::split::Split) is hovered.
-    fn hovered(&self) -> Appearance;
+    fn hovered(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the divider of the [`Split`](crate::native::split::Split) is dragged
-    fn dragged(&self) -> Appearance;
+    fn dragged(&self, style: Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`Split`](crate::native::split::Split).
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
+#[derive(Clone, Copy, Debug, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``Split`` Styles
+pub enum SplitStyles {
+    #[default]
+    Default,
+}
 
-impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
-        Appearance {
+impl std::default::Default for Appearance {
+    fn default() -> Self {
+        Self {
             background: None,
             first_background: None,
             second_background: None,
@@ -55,18 +62,25 @@ impl StyleSheet for Default {
             divider_border_color: Color::from_rgb(0.8, 0.8, 0.8),
         }
     }
+}
 
-    fn hovered(&self) -> Appearance {
+impl StyleSheet for Theme {
+    type Style = SplitStyles;
+    fn active(&self, _style: Self::Style) -> Appearance {
+        Appearance::default()
+    }
+
+    fn hovered(&self, _style: Self::Style) -> Appearance {
         Appearance {
             divider_background: Color::from_rgb(0.8, 0.8, 0.8).into(),
-            ..self.active()
+            ..Appearance::default()
         }
     }
 
-    fn dragged(&self) -> Appearance {
+    fn dragged(&self, _style: Self::Style) -> Appearance {
         Appearance {
             divider_background: Color::from_rgb(0.7, 0.7, 0.7).into(),
-            ..self.active()
+            ..Appearance::default()
         }
     }
 }

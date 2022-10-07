@@ -37,7 +37,7 @@ default = [
     "colors",
     "number_input",
     #"date_picker",
-    "color_picker",
+    #"color_picker",
     "floating_element",
     "icon_text",
     #"grid",
@@ -47,7 +47,7 @@ default = [
     #"time_picker",
     #"wrap",
     #"selection_list",
-    #"split",
+    "split",
 ]
 
 [dependencies]
@@ -90,5 +90,5 @@ members = [
     #"examples/wrap",
     "examples/number_input",
     #"examples/selection_list",
-    #"examples/split",
+    "examples/split",
 ]

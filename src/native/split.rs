@@ -12,7 +12,7 @@ use iced_native::{
     Element, Widget,
 };
 
-pub use crate::style::split::{Style, StyleSheet};
+pub use crate::style::split::{Appearance, StyleSheet};
 
 /// A split can divide the available space by half to display two different elements.
 /// It can split horizontally or vertically.
@@ -35,7 +35,11 @@ pub use crate::style::split::{Style, StyleSheet};
 /// let split = Split::new(first, second, Some(300), Axis::Vertical, Message::Resized);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Split<'a, Message, Renderer> {
+pub struct Split<'a, Message, Renderer>
+where
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
+{
     /// The first element of the [`Split`](Split).
     first: Element<'a, Message, Renderer>,
     /// The second element of the [`Split`](Split).
@@ -60,13 +64,14 @@ pub struct Split<'a, Message, Renderer> {
     /// The message that is send when the divider of the [`Split`](Split) is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
     /// The style of the [`Split`](Split).
-    style_sheet: Box<dyn StyleSheet>,
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
 impl<'a, Message, Renderer> Split<'a, Message, Renderer>
 where
     Message: 'a,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet + iced_style::container::StyleSheet,
 {
     /// Creates a new [`Split`](Split).
     ///
@@ -106,7 +111,7 @@ where
             min_size_first: 5,
             min_size_second: 5,
             on_resize: Box::new(on_resize),
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
 
@@ -155,8 +160,8 @@ where
 
     /// Sets the style of the [`Split`](Split).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
@@ -165,6 +170,7 @@ impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Ren
 where
     Message: Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -330,6 +336,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -344,11 +351,11 @@ where
             renderer::Quad {
                 bounds: layout.bounds(),
                 border_radius: 0.0,
-                border_width: self.style_sheet.active().border_width,
-                border_color: self.style_sheet.active().border_color,
+                border_width: theme.active(self.style).border_width,
+                border_color: theme.active(self.style).border_color,
             },
-            self.style_sheet
-                .active()
+            theme
+                .active(self.style)
                 .background
                 .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -366,9 +373,9 @@ where
                 border_color: Color::TRANSPARENT,
             },
             if first_layout.bounds().contains(cursor_position) {
-                self.style_sheet.hovered().first_background
+                theme.hovered(self.style).first_background
             } else {
-                self.style_sheet.active().first_background
+                theme.active(self.style).first_background
             }
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -376,6 +383,7 @@ where
         self.first.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             first_layout,
             cursor_position,
@@ -399,9 +407,9 @@ where
                 border_color: Color::TRANSPARENT,
             },
             if second_layout.bounds().contains(cursor_position) {
-                self.style_sheet.hovered().second_background
+                theme.hovered(self.style).second_background
             } else {
-                self.style_sheet.active().second_background
+                theme.active(self.style).second_background
             }
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -409,6 +417,7 @@ where
         self.second.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             second_layout,
             cursor_position,
@@ -417,11 +426,11 @@ where
 
         // Divider
         let divider_style = if split_state.dragging {
-            self.style_sheet.dragged()
+            theme.dragged(self.style)
         } else if divider_layout.bounds().contains(cursor_position) {
-            self.style_sheet.hovered()
+            theme.hovered(self.style)
         } else {
-            self.style_sheet.active()
+            theme.active(self.style)
         };
 
         renderer.fill_quad(
@@ -465,12 +474,16 @@ where
 }
 
 /// Do a horizontal split.
-fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
+fn horizontal_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
     space: &iced_native::layout::Node,
-) -> iced_native::layout::Node {
+) -> iced_native::layout::Node
+where
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
+{
     if space.bounds().height
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
@@ -531,12 +544,16 @@ fn horizontal_split<'a, Message, Renderer: iced_native::Renderer>(
 }
 
 /// Do a vertical split.
-fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
+fn vertical_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
     limits: &iced_native::layout::Limits,
     space: &iced_native::layout::Node,
-) -> iced_native::layout::Node {
+) -> iced_native::layout::Node
+where
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
+{
     if space.bounds().width
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
@@ -598,8 +615,9 @@ fn vertical_split<'a, Message, Renderer: iced_native::Renderer>(
 
 impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
     Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn from(split_pane: Split<'a, Message, Renderer>) -> Self {
         Element::new(split_pane)

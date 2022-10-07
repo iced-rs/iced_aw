@@ -40,3 +40,4 @@ pub mod selection_list;
 
 #[cfg(feature = "split")]
 pub mod split;
+pub use split::SplitStyles;
