@@ -80,7 +80,7 @@ members = [
     "examples/badge",
     "examples/card",
     "examples/color_picker",
-    #"examples/date_picker",
+    "examples/date_picker",
     "examples/floating_element",
     #"examples/grid",
     #"examples/modal",S

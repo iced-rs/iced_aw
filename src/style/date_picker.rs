@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: `date_picker`*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
 #[derive(Clone, Copy, Debug)]
@@ -33,58 +34,70 @@ pub struct Appearance {
 
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
 pub trait StyleSheet {
-    type Appearance: std::default::Default + Copy;
+    /// The style type of this stylesheet
+    type Style: std::default::Default + Copy;
     /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn selected(&self) -> Appearance;
+    fn selected(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn hovered(&self) -> Appearance;
+    fn hovered(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn focused(&self) -> Appearance;
+    fn focused(&self, style: Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Default;
 
-impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
+impl StyleSheet for Theme {
+    type Style = Default;
+
+    fn active(&self, _style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let foreground = self.palette();
+
         Appearance {
-            background: Color::WHITE.into(),
+            background: palette.background.base.color.into(),
             border_radius: 15.0,
             border_width: 1.0,
-            border_color: Color::BLACK,
-            text_color: Color::BLACK,
+            border_color: foreground.text,
+            text_color: foreground.text,
             text_attenuated_color: [0.87, 0.87, 0.87].into(),
-            day_background: Color::WHITE.into(),
+            day_background: palette.background.base.color.into(),
         }
     }
 
-    fn selected(&self) -> Appearance {
+    fn selected(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
         Appearance {
-            day_background: Background::Color([0.87, 0.87, 0.87].into()),
-            ..self.active()
+            day_background: palette.primary.strong.color.into(),
+            text_color: palette.primary.strong.text,
+            ..self.active(style)
         }
     }
 
-    fn hovered(&self) -> Appearance {
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
         Appearance {
-            day_background: Background::Color([0.87, 0.87, 0.87].into()),
-            ..self.active()
+            day_background: palette.primary.weak.color.into(),
+            text_color: palette.primary.weak.text,
+            ..self.active(style)
         }
     }
 
-    fn focused(&self) -> Appearance {
+    fn focused(&self, style: Self::Style) -> Appearance {
         Appearance {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            ..self.active()
+            ..self.active(style)
         }
     }
 }
