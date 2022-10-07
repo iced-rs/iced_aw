@@ -779,7 +779,7 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
         let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
-            &self.tree,
+            &self.tree.children[0],
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -790,7 +790,7 @@ where
             .next()
             .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
         let submit_mouse_interaction = self.submit_button.mouse_interaction(
-            &self.tree,
+            &self.tree.children[1],
             submit_button_layout,
             cursor_position,
             viewport,
