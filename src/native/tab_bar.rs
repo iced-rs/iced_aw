@@ -265,7 +265,7 @@ where
 
     /// Sets the style of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn style_sheet(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }

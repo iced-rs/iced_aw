@@ -53,38 +53,152 @@ pub trait StyleSheet {
     fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance;
 }
 
-#[derive(Clone, Copy, Debug, Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``TabBar`` Styles
-pub enum TabBarStyles {
-    #[default]
-    Default,
-}
-
-impl StyleSheet for Theme {
-    type Style = TabBarStyles;
-
-    fn active(&self, _style: Self::Style, is_active: bool) -> Appearance {
-        Appearance {
+impl Default for Appearance {
+    fn default() -> Self {
+        Self {
             background: None,
             border_color: None,
             border_width: 0.0,
-            tab_label_background: if is_active {
-                Background::Color([0.9, 0.9, 0.9].into())
-            } else {
-                Background::Color([0.87, 0.87, 0.87].into())
-            },
+            tab_label_background: Background::Color([0.87, 0.87, 0.87].into()),
             tab_label_border_color: [0.7, 0.7, 0.7].into(),
             tab_label_border_width: 1.0,
             icon_color: Color::BLACK,
             text_color: Color::BLACK,
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``TabBar`` Styles
+pub enum TabBarStyles {
+    #[default]
+    Default,
+    Red,
+    Blue,
+    Green,
+    Purple,
+}
+
+impl From<TabBarStyles> for String {
+    fn from(style: TabBarStyles) -> Self {
+        Self::from(match style {
+            TabBarStyles::Default => "Default",
+            TabBarStyles::Red => "Red",
+            TabBarStyles::Blue => "Blue",
+            TabBarStyles::Green => "Green",
+            TabBarStyles::Purple => "Purple",
+        })
+    }
+}
+
+impl StyleSheet for Theme {
+    type Style = TabBarStyles;
+
+    fn active(&self, style: Self::Style, is_active: bool) -> Appearance {
+        let mut appearance = Appearance::default();
+
+        match style {
+            TabBarStyles::Default => {
+                appearance.tab_label_background = if is_active {
+                    Background::Color([0.9, 0.9, 0.9].into())
+                } else {
+                    Background::Color([0.87, 0.87, 0.87].into())
+                };
+            }
+            TabBarStyles::Red => {
+                let text_color = if is_active {
+                    Color::WHITE
+                } else {
+                    Color::BLACK
+                };
+
+                appearance.tab_label_background = if is_active {
+                    Background::Color([1.0, 0.0, 0.0].into())
+                } else {
+                    Background::Color(Color::WHITE)
+                };
+                appearance.tab_label_border_width = 0.0;
+                appearance.tab_label_border_color = Color::TRANSPARENT;
+                appearance.icon_color = text_color;
+                appearance.text_color = text_color;
+            }
+            TabBarStyles::Blue => {
+                appearance.tab_label_background = if is_active {
+                    Background::Color([0.0, 0.0, 1.0].into())
+                } else {
+                    Background::Color([0.5, 0.5, 1.0].into())
+                };
+                appearance.tab_label_border_color = if is_active {
+                    [0.0, 0.0, 1.0].into()
+                } else {
+                    [0.5, 0.5, 1.0].into()
+                };
+                appearance.icon_color = Color::WHITE;
+                appearance.text_color = Color::WHITE;
+            }
+            TabBarStyles::Green => {
+                let color = if is_active {
+                    [0.0, 0.5, 0.0]
+                } else {
+                    [0.7, 0.7, 0.7]
+                }
+                .into();
+
+                appearance.tab_label_border_color = color;
+                appearance.tab_label_background = Color::WHITE.into();
+                appearance.icon_color = color;
+                appearance.text_color = color;
+            }
+            TabBarStyles::Purple => {
+                let text_color = if is_active {
+                    [0.7, 0.0, 1.0].into()
+                } else {
+                    Color::BLACK
+                };
+
+                appearance.tab_label_background = Color::WHITE.into();
+                appearance.tab_label_border_color = Color::TRANSPARENT;
+                appearance.tab_label_border_width = 0.0;
+                appearance.icon_color = text_color;
+                appearance.text_color = text_color;
+            }
+        }
+
+        appearance
+    }
 
     fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance {
-        Appearance {
-            tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
-            ..self.active(style, is_active)
+        match style {
+            TabBarStyles::Default => Appearance {
+                tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
+                ..self.active(style, is_active)
+            },
+            TabBarStyles::Red => Appearance {
+                tab_label_background: Background::Color([1.0, 0.0, 0.0].into()),
+                icon_color: Color::WHITE,
+                text_color: Color::WHITE,
+                ..self.active(style, is_active)
+            },
+            TabBarStyles::Blue => Appearance {
+                tab_label_background: Background::Color([0.0, 0.0, 1.0].into()),
+                tab_label_border_color: [0.0, 0.0, 1.0].into(),
+                ..self.active(style, is_active)
+            },
+            TabBarStyles::Green => Appearance {
+                tab_label_border_color: [0.0, 0.4, 0.0].into(),
+                icon_color: [0.0, 0.4, 0.0].into(),
+                text_color: [0.0, 0.4, 0.0].into(),
+                ..self.active(style, is_active)
+            },
+            TabBarStyles::Purple => {
+                let text_color = [0.7, 0.0, 1.0].into();
+                Appearance {
+                    icon_color: text_color,
+                    text_color,
+                    ..self.active(style, is_active)
+                }
+            }
         }
     }
 }

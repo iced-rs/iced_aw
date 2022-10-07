@@ -1,10 +1,10 @@
-use crate::{theme::Theme, Icon, Message, Tab};
+use crate::{Icon, Message, Tab};
 use iced::{
     widget::{Column, Container, Radio, Text},
     Element,
 };
+use iced_aw::style::TabBarStyles;
 use iced_aw::tab_bar::TabLabel;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TabBarPosition {
     Top,
@@ -34,14 +34,14 @@ impl Default for TabBarPosition {
 
 pub struct TabSettings {
     pub tab_bar_position: Option<TabBarPosition>,
-    pub tab_bar_theme: Option<Theme>,
+    pub tab_bar_theme: Option<TabBarStyles>,
 }
 
 impl TabSettings {
     pub fn new() -> Self {
         TabSettings {
             tab_bar_position: Some(TabBarPosition::Top),
-            tab_bar_theme: Some(Theme::default()),
+            tab_bar_theme: Some(TabBarStyles::default()),
         }
     }
 }
@@ -49,7 +49,7 @@ impl TabSettings {
 #[derive(Debug, Clone)]
 pub enum SettingsMessage {
     PositionSelected(TabBarPosition),
-    ThemeSelected(Theme),
+    ThemeSelected(TabBarStyles),
 }
 
 pub struct SettingsTab {
@@ -108,23 +108,33 @@ impl Tab for SettingsTab {
                     },
                 ))
                 .push(Text::new("TabBar color:").size(20))
-                .push(Theme::ALL.iter().cloned().fold(
-                    Column::new().padding(10).spacing(10),
-                    |column, theme| {
+                .push(
+                    (0..5).fold(Column::new().padding(10).spacing(10), |column, id| {
                         column.push(
                             Radio::new(
-                                theme,
-                                theme,
+                                predefined_style(id),
+                                predefined_style(id),
                                 self.settings().tab_bar_theme,
                                 SettingsMessage::ThemeSelected,
                             )
                             .size(16),
                         )
-                    },
-                )),
+                    }),
+                ),
         )
         .into();
 
         content.map(Message::Settings)
+    }
+}
+
+fn predefined_style(index: usize) -> TabBarStyles {
+    match index {
+        0 => TabBarStyles::Default,
+        1 => TabBarStyles::Red,
+        2 => TabBarStyles::Blue,
+        3 => TabBarStyles::Green,
+        4 => TabBarStyles::Purple,
+        _ => TabBarStyles::Default,
     }
 }
