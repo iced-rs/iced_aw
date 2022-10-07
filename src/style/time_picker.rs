@@ -1,6 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
+use iced_native::Theme;
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
 
@@ -45,61 +46,73 @@ pub struct Appearance {
 
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
 pub trait StyleSheet {
-    type Appearance: std::default::Default + Copy;
+    /// The style type of this stylesheet
+    type Style: std::default::Default + Copy;
     /// The normal appearance of a [`TimePicker`](crate::native::TimePicker).
-    fn active(&self) -> Appearance;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`TimePicker`](crate::native::TimePicker)
-    fn selected(&self) -> Appearance;
+    fn selected(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`TimePicker`](crate::native::TimePicker).
-    fn hovered(&self) -> Appearance;
+    fn hovered(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`TimePicker`](crate::native::TimePicker).
-    fn focused(&self) -> Appearance;
+    fn focused(&self, style: Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`TimePicker`](crate::native::TimePicker)
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Default;
 
-impl StyleSheet for Default {
-    fn active(&self) -> Appearance {
+impl StyleSheet for Theme {
+    type Style = Default;
+
+    fn active(&self, _style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let foreground = self.palette();
+
         Appearance {
-            background: Color::WHITE.into(),
+            background: palette.background.base.color.into(),
             border_radius: 15.0,
             border_width: 1.0,
-            border_color: Color::BLACK,
-            text_color: Color::BLACK,
-            clock_number_color: Color::BLACK,
-            clock_number_background: Color::WHITE,
+            border_color: foreground.text,
+            text_color: foreground.text,
+            clock_number_color: foreground.text,
+            clock_number_background: palette.background.base.color,
             clock_dots_color: [0.87, 0.87, 0.87].into(),
             clock_hand_color: [0.87, 0.87, 0.87].into(),
-            clock_hand_width: 1.0,
+            clock_hand_width: 3.0,
         }
     }
 
-    fn selected(&self) -> Appearance {
+    fn selected(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
         Appearance {
-            clock_number_background: [0.87, 0.87, 0.87].into(),
-            ..self.active()
+            clock_number_color: palette.primary.strong.text,
+            clock_number_background: palette.primary.strong.color,
+            ..self.active(style)
         }
     }
 
-    fn hovered(&self) -> Appearance {
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
         Appearance {
-            clock_number_background: [0.87, 0.87, 0.87].into(),
-            ..self.active()
+            clock_number_color: palette.primary.weak.text,
+            clock_number_background: palette.primary.weak.color,
+            ..self.active(style)
         }
     }
 
-    fn focused(&self) -> Appearance {
+    fn focused(&self, style: Self::Style) -> Appearance {
         Appearance {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            ..self.active()
+            ..self.active(style)
         }
     }
 }

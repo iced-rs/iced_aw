@@ -17,9 +17,10 @@ use crate::{
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_graphics::{
-    canvas::{self, LineCap, Path, Stroke},
+    widget::canvas::{self, LineCap, Path, Stroke},
     Backend, Renderer,
 };
+use iced_native::widget::Tree;
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
@@ -32,7 +33,7 @@ use iced_native::{
     Renderer as _, Shell, Size, Vector, Widget,
 };
 
-pub use crate::style::time_picker::{Style, StyleSheet};
+pub use crate::style::time_picker::{Appearance, StyleSheet};
 
 /// The padding around the elements.
 const PADDING: u16 = 10;
@@ -47,29 +48,37 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// The overlay of the [`TimePicker`](crate::native::TimePicker).
 #[allow(missing_debug_implementations)]
-pub struct TimePickerOverlay<'a, Message, B>
+pub struct TimePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
+    Message: Clone,
     B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
 {
     /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
-    cancel_button: Element<'a, Message, Renderer>,
+    cancel_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
-    submit_button: Element<'a, Message, Renderer>,
+    submit_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
     /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
     position: Point,
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet>,
+    style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
+    tree: &'a mut Tree,
 }
 
-impl<'a, Message, B> TimePickerOverlay<'a, Message, B>
+impl<'a, Message, B, Theme> TimePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
+    Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
     /// position.
@@ -78,37 +87,30 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet>,
+        style: <Theme as StyleSheet>::Style,
+        tree: &'a mut Tree,
     ) -> Self {
-        let time_picker::State {
-            overlay_state,
-            cancel_button,
-            submit_button,
-        } = state;
+        let time_picker::State { overlay_state } = state;
 
         TimePickerOverlay {
             state: overlay_state,
-            cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
+            cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
-                .into(),
-            submit_button: Button::new(
-                submit_button,
-                IconText::new(Icon::Check).width(Length::Fill),
-            )
-            .width(Length::Fill)
-            .on_press(on_cancel) // Sending a fake message
-            .into(),
+                .on_press(on_cancel.clone()),
+            submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
+                .width(Length::Fill)
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style_sheet,
+            style,
+            tree,
         }
     }
 
     /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B, Theme>> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -120,7 +122,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if layout.bounds().contains(cursor_position) {
@@ -287,7 +289,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
@@ -422,7 +424,7 @@ where
         _layout: Layout<'_>,
         _cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -482,14 +484,20 @@ where
     }
 }
 
-impl<'a, Message, B> iced_native::Overlay<Message, Renderer> for TimePickerOverlay<'a, Message, B>
+impl<'a, Message, B, Theme> iced_native::Overlay<Message, Renderer<B, Theme>>
+    for TimePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
+    Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     fn layout(
         &self,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -516,7 +524,7 @@ where
         ));
 
         // Clock-Canvas
-        let mut clock = Row::<(), Renderer>::new()
+        let mut clock = Row::<(), Renderer<B, Theme>>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(renderer, &limits);
@@ -586,7 +594,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -633,6 +641,7 @@ where
             .expect("Native: Layout should have a cancel button layout for a TimePicker");
 
         let cancel_status = self.cancel_button.on_event(
+            &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
             cursor_position,
@@ -648,6 +657,7 @@ where
         let mut fake_messages: Vec<Message> = Vec::new();
 
         let submit_status = self.submit_button.on_event(
+            &mut self.tree.children[1],
             event,
             submit_button_layout,
             cursor_position,
@@ -693,7 +703,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
     ) -> mouse::Interaction {
         let mut children = layout.children();
         let mouse_interaction = mouse::Interaction::default();
@@ -778,6 +788,7 @@ where
             .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
 
         let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
+            &self.tree.children[0],
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -789,6 +800,7 @@ where
             .expect("Graphics: Layout should have a submit button layout for a TimePicker");
 
         let submit_mouse_interaction = self.submit_button.mouse_interaction(
+            &self.tree.children[1],
             submit_button_layout,
             cursor_position,
             viewport,
@@ -806,7 +818,8 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer,
+        renderer: &mut Renderer<B, Theme>,
+        theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -814,11 +827,14 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, self.style_sheet.active());
-        let _ = style_sheet.insert(StyleState::Selected, self.style_sheet.selected());
-        let _ = style_sheet.insert(StyleState::Hovered, self.style_sheet.hovered());
-        let _ = style_sheet.insert(StyleState::Focused, self.style_sheet.focused());
+        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, self.style));
+        let _ = style_sheet.insert(
+            StyleState::Selected,
+            StyleSheet::selected(theme, self.style),
+        );
+        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, self.style));
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -863,7 +879,9 @@ where
             .expect("Graphics: Layout should have a cancel button layout for a TimePicker");
 
         self.cancel_button.draw(
+            &self.tree.children[0],
             renderer,
+            theme,
             style,
             cancel_button_layout,
             cursor_position,
@@ -875,7 +893,9 @@ where
             .expect("Graphics: Layout should have a submit button layout for a TimePicker");
 
         self.submit_button.draw(
+            &self.tree.children[1],
             renderer,
+            theme,
             style,
             submit_button_layout,
             cursor_position,
@@ -910,19 +930,23 @@ where
 }
 
 /// Defines the layout of the digital clock of the time picker.
-fn digital_clock<'a, Message, B>(
-    time_picker: &TimePickerOverlay<'a, Message, B>,
-    renderer: &Renderer,
+fn digital_clock<'a, Message, B, Theme>(
+    time_picker: &TimePickerOverlay<'a, Message, B, Theme>,
+    renderer: &Renderer<B, Theme>,
     limits: Limits,
 ) -> iced_native::layout::Node
 where
-    Message: 'a + Clone,
+    Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     let arrow_size = renderer.default_size();
     let font_size = (1.2 * f32::from(renderer.default_size())) as u16;
 
-    let mut digital_clock_row = Row::<(), Renderer>::new()
+    let mut digital_clock_row = Row::<(), Renderer<B, Theme>>::new()
         .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
@@ -1027,15 +1051,16 @@ where
 
 /// Draws the analog clock.
 #[allow(clippy::too_many_lines)]
-fn draw_clock<'a, Message, B>(
-    renderer: &mut Renderer,
-    time_picker: &TimePickerOverlay<'a, Message, B>,
+fn draw_clock<'a, Message, B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
+    time_picker: &TimePickerOverlay<'a, Message, B, Theme>,
     layout: iced_native::Layout<'_>,
     cursor_position: Point,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
 ) where
-    Message: Clone,
-    B: Backend + iced_graphics::backend::Text,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let mut clock_style_state = StyleState::Active;
     if layout.bounds().contains(cursor_position) {
@@ -1192,6 +1217,7 @@ fn draw_clock<'a, Message, B>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     frame.fill(
                         &Path::circle(*p, number_size * 0.8),
                         style
@@ -1199,7 +1225,6 @@ fn draw_clock<'a, Message, B>(
                             .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
-                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     style_state = style_state.max(StyleState::Selected);
                 }
 
@@ -1233,14 +1258,14 @@ fn draw_clock<'a, Message, B>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     frame.fill(
-                        &Path::circle(*p, number_size * 0.5),
+                        &Path::circle(*p, number_size * 0.6),
                         style
                             .get(&StyleState::Selected)
                             .expect("Style Sheet not found.")
                             .clock_number_background,
                     );
-                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     style_state = style_state.max(StyleState::Selected);
                 }
 
@@ -1277,14 +1302,14 @@ fn draw_clock<'a, Message, B>(
 
                     let mut style_state = StyleState::Active;
                     if selected {
+                        frame.stroke(&Path::line(center, *p), hand_stroke);
                         frame.fill(
-                            &Path::circle(*p, number_size * 0.5),
+                            &Path::circle(*p, number_size * 0.6),
                             style
                                 .get(&StyleState::Selected)
                                 .expect("Style Sheet not found.")
                                 .clock_number_background,
                         );
-                        frame.stroke(&Path::line(center, *p), hand_stroke);
                         style_state = style_state.max(StyleState::Selected);
                     }
 
@@ -1326,15 +1351,16 @@ fn draw_clock<'a, Message, B>(
 
 /// Draws the digital clock.
 #[allow(clippy::too_many_lines)]
-fn draw_digital_clock<'a, Message, B>(
-    renderer: &mut Renderer,
-    time_picker: &TimePickerOverlay<'a, Message, B>,
+fn draw_digital_clock<'a, Message, B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
+    time_picker: &TimePickerOverlay<'a, Message, B, Theme>,
     layout: iced_native::Layout<'_>,
     cursor_position: Point,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
 ) where
-    Message: Clone,
-    B: Backend + iced_graphics::backend::Text,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     //println!("layout: {:#?}", layout);
     let mut children = layout
@@ -1343,113 +1369,115 @@ fn draw_digital_clock<'a, Message, B>(
         .expect("Graphics: Layout should have digital clock children")
         .children();
 
-    let f =
-        |renderer: &mut Renderer, layout: iced_native::Layout<'_>, text: String, target: Focus| {
-            let style_state = if time_picker.state.focus == target {
-                StyleState::Focused
-            } else {
-                StyleState::Active
-            };
+    let f = |renderer: &mut Renderer<B, Theme>,
+             layout: iced_native::Layout<'_>,
+             text: String,
+             target: Focus| {
+        let style_state = if time_picker.state.focus == target {
+            StyleState::Focused
+        } else {
+            StyleState::Active
+        };
 
-            let mut children = layout.children();
+        let mut children = layout.children();
 
-            let up_bounds = children
-                .next()
-                .expect("Graphics: Layout should have a up arrow bounds")
-                .bounds();
-            let center_bounds = children
-                .next()
-                .expect("Graphics: Layout should have a center bounds")
-                .bounds();
-            let down_bounds = children
-                .next()
-                .expect("Graphics: Layout should have a down arrow bounds")
-                .bounds();
+        let up_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a up arrow bounds")
+            .bounds();
+        let center_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a center bounds")
+            .bounds();
+        let down_bounds = children
+            .next()
+            .expect("Graphics: Layout should have a down arrow bounds")
+            .bounds();
 
-            let up_arrow_hovered = up_bounds.contains(cursor_position);
-            let down_arrow_hovered = down_bounds.contains(cursor_position);
+        let up_arrow_hovered = up_bounds.contains(cursor_position);
+        let down_arrow_hovered = down_bounds.contains(cursor_position);
 
-            // Background
-            if style_state == StyleState::Focused {
-                renderer.fill_quad(
-                    renderer::Quad {
-                        bounds: layout.bounds(),
-                        border_color: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_color,
-                        border_radius: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_radius,
-                        border_width: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_width,
-                    },
-                    style
+        // Background
+        if style_state == StyleState::Focused {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: layout.bounds(),
+                    border_color: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
-                        .background,
-                );
-            }
-
-            let mut buffer = [0; 4];
-
-            // Caret up
-            renderer.fill_text(iced_native::text::Text {
-                content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
-                bounds: Rectangle {
-                    x: up_bounds.center_x(),
-                    y: up_bounds.center_y(),
-                    ..up_bounds
+                        .border_color,
+                    border_radius: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_radius,
+                    border_width: style
+                        .get(&style_state)
+                        .expect("Style Sheet not found.")
+                        .border_width,
                 },
-                size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
-                color: style
-                    .get(&StyleState::Active)
+                style
+                    .get(&style_state)
                     .expect("Style Sheet not found.")
-                    .text_color,
-                font: crate::graphics::icons::ICON_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-            });
+                    .background,
+            );
+        }
 
-            // Text
-            renderer.fill_text(iced_native::text::Text {
-                content: &text,
-                bounds: Rectangle {
-                    x: center_bounds.center_x(),
-                    y: center_bounds.center_y(),
-                    ..center_bounds
-                },
-                size: center_bounds.height,
-                color: style
-                    .get(&StyleState::Active)
-                    .expect("Style Sheet not found.")
-                    .text_color,
-                font: iced_graphics::Font::default(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-            });
+        let mut buffer = [0; 4];
 
-            // Down caret
-            renderer.fill_text(iced_native::text::Text {
-                content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
-                bounds: Rectangle {
-                    x: down_bounds.center_x(),
-                    y: down_bounds.center_y(),
-                    ..down_bounds
-                },
-                size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
-                color: style
-                    .get(&StyleState::Active)
-                    .expect("Style Sheet not found.")
-                    .text_color,
-                font: crate::graphics::icons::ICON_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-            });
-        };
+        // Caret up
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: up_bounds.center_x(),
+                y: up_bounds.center_y(),
+                ..up_bounds
+            },
+            size: up_bounds.height + if up_arrow_hovered { 5.0 } else { 0.0 },
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Text
+        renderer.fill_text(iced_native::text::Text {
+            content: &text,
+            bounds: Rectangle {
+                x: center_bounds.center_x(),
+                y: center_bounds.center_y(),
+                ..center_bounds
+            },
+            size: center_bounds.height,
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: iced_graphics::Font::default(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+
+        // Down caret
+        renderer.fill_text(iced_native::text::Text {
+            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+            bounds: Rectangle {
+                x: down_bounds.center_x(),
+                y: down_bounds.center_y(),
+                ..down_bounds
+            },
+            size: down_bounds.height + if down_arrow_hovered { 5.0 } else { 0.0 },
+            color: style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
+            font: crate::graphics::icons::ICON_FONT,
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+        });
+    };
 
     if !time_picker.state.use_24h {
         // Placeholder
@@ -1609,6 +1637,95 @@ impl Default for State {
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
+    }
+}
+
+/// Just a workaround to pass the button states from the tree to the overlay
+#[allow(missing_debug_implementations)]
+pub struct TimePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
+    cancel_button: Element<'a, Message, Renderer<B, Theme>>,
+    /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
+    submit_button: Element<'a, Message, Renderer<B, Theme>>,
+}
+
+impl<'a, Message, B, Theme> Default for TimePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
+{
+    fn default() -> Self {
+        Self {
+            cancel_button: Button::new(IconText::new(Icon::X)).into(),
+            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+        }
+    }
+}
+
+#[allow(clippy::unimplemented)]
+impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
+    for TimePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    fn children(&self) -> Vec<Tree> {
+        vec![
+            Tree::new(&self.cancel_button),
+            Tree::new(&self.submit_button),
+        ]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    }
+
+    fn width(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn height(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn layout(
+        &self,
+        _renderer: &Renderer<B, Theme>,
+        _limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn draw(
+        &self,
+        _state: &Tree,
+        _renderer: &mut Renderer<B, Theme>,
+        _theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &Rectangle,
+    ) {
+        unimplemented!("This should never be reached!")
+    }
+}
+
+impl<'a, Message, B, Theme> From<TimePickerOverlayButtons<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet,
+{
+    fn from(overlay: TimePickerOverlayButtons<'a, Message, B, Theme>) -> Self {
+        Self::new(overlay)
     }
 }
 

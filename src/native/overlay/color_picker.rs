@@ -68,14 +68,15 @@ where
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
-    tree: &'static Tree,
+    /// The reference to the tree holding the state of this overlay.
+    tree: &'a mut Tree,
 }
 
 impl<'a, Message, B, Theme> ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -85,7 +86,7 @@ where
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
         style: <Theme as StyleSheet>::Style,
-        tree: &'static Tree,
+        tree: &'a mut Tree,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
         let color_picker::State { overlay_state } = state;
@@ -94,12 +95,10 @@ where
             state: overlay_state,
             cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
-                .into(),
+                .on_press(on_cancel.clone()),
             submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel) // Sending a fake message
-                .into(),
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
             style,
@@ -516,7 +515,7 @@ impl<'a, Message, B, Theme> iced_native::Overlay<Message, Renderer<B, Theme>>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     fn layout(
         &self,
@@ -654,7 +653,7 @@ where
             .next()
             .expect("Native: Layout should have a cancel button layout for a ColorPicker");
         let cancel_button_status = self.cancel_button.on_event(
-            &mut self.tree,
+            &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
             cursor_position,
@@ -667,7 +666,7 @@ where
             .next()
             .expect("Native: Layout should have a submit button layout for a ColorPicker");
         let submit_button_status = self.submit_button.on_event(
-            &mut self.tree,
+            &mut self.tree.children[1],
             event,
             submit_button_layout,
             cursor_position,
@@ -779,7 +778,7 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
         let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
-            &self.tree,
+            &self.tree.children[0],
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -790,7 +789,7 @@ where
             .next()
             .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
         let submit_mouse_interaction = self.submit_button.mouse_interaction(
-            &self.tree,
+            &self.tree.children[1],
             submit_button_layout,
             cursor_position,
             viewport,
@@ -1052,6 +1051,7 @@ fn block1<'a, Message, B, Theme>(
 }
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
+#[allow(clippy::too_many_arguments)]
 fn block2<'a, Message, B, Theme>(
     renderer: &mut Renderer<B, Theme>,
     color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
@@ -1103,7 +1103,7 @@ fn block2<'a, Message, B, Theme>(
         .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
 
     color_picker.cancel_button.draw(
-        &color_picker.tree,
+        &color_picker.tree.children[0],
         renderer,
         theme,
         style,
@@ -1117,7 +1117,7 @@ fn block2<'a, Message, B, Theme>(
         .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
 
     color_picker.submit_button.draw(
-        &color_picker.tree,
+        &color_picker.tree.children[1],
         renderer,
         theme,
         style,
@@ -1429,26 +1429,6 @@ fn rgba_color<B, Theme>(
             Color::TRANSPARENT,
         );
 
-        // Focus
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border_radius: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_radius,
-                border_width: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_width,
-                border_color: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_color,
-            },
-            Color::TRANSPARENT,
-        );
-
         // Value
         renderer.fill_text(iced_native::text::Text {
             content: &format!("{}", (255.0 * value) as u8),
@@ -1638,8 +1618,96 @@ impl Default for State {
             color_bar_dragged: ColorBarDragged::None,
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
-            ..Default::default()
         }
+    }
+}
+
+/// Just a workaround to pass the button states from the tree to the overlay
+#[allow(missing_debug_implementations)]
+pub struct ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    cancel_button: Element<'a, Message, Renderer<B, Theme>>,
+    /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    submit_button: Element<'a, Message, Renderer<B, Theme>>,
+}
+
+impl<'a, Message, B, Theme> Default for ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
+{
+    fn default() -> Self {
+        Self {
+            cancel_button: Button::new(IconText::new(Icon::X)).into(),
+            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+        }
+    }
+}
+
+#[allow(clippy::unimplemented)]
+impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
+    for ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    fn children(&self) -> Vec<Tree> {
+        vec![
+            Tree::new(&self.cancel_button),
+            Tree::new(&self.submit_button),
+        ]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    }
+
+    fn width(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn height(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn layout(
+        &self,
+        _renderer: &Renderer<B, Theme>,
+        _limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn draw(
+        &self,
+        _state: &Tree,
+        _renderer: &mut Renderer<B, Theme>,
+        _theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &Rectangle,
+    ) {
+        unimplemented!("This should never be reached!")
+    }
+}
+
+impl<'a, Message, B, Theme> From<ColorPickerOverlayButtons<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet,
+{
+    fn from(overlay: ColorPickerOverlayButtons<'a, Message, B, Theme>) -> Self {
+        Self::new(overlay)
     }
 }
 
@@ -1675,7 +1743,7 @@ impl Default for ColorBarDragged {
 }
 
 /// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.
     None,

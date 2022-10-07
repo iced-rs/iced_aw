@@ -32,6 +32,7 @@ pub struct Appearance {
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 pub trait StyleSheet {
+    /// The style type of this stylesheet
     type Style: std::default::Default + Copy;
     /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
     fn active(&self, style: Self::Style) -> Appearance;
@@ -56,17 +57,18 @@ pub struct Default;
 impl StyleSheet for Theme {
     type Style = Default;
 
-    fn active(&self, style: Self::Style) -> Appearance {
+    fn active(&self, _style: Self::Style) -> Appearance {
         let palette = self.extended_palette();
+        let foreground = self.palette();
 
         Appearance {
             background: palette.background.base.color.into(),
             border_radius: 15.0,
             border_width: 1.0,
-            border_color: palette.background.base.color,
+            border_color: foreground.text,
             bar_border_radius: 5.0,
             bar_border_width: 1.0,
-            bar_border_color: palette.background.base.color,
+            bar_border_color: foreground.text,
         }
     }
 

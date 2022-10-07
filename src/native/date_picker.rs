@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: `date_picker`*
 
 use chrono::Local;
+use iced_graphics::{Backend, Renderer};
 use iced_native::widget::button;
 use iced_native::widget::tree::{self, Tag};
 use iced_native::widget::Tree;
@@ -11,9 +12,9 @@ use iced_native::{Element, Widget};
 
 pub use crate::core::date::Date;
 
-pub use crate::style::date_picker::{Style, StyleSheet};
+pub use crate::style::date_picker::{Appearance, StyleSheet};
 
-use super::overlay::date_picker::{self, DatePickerOverlay};
+use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking dates.
@@ -42,23 +43,39 @@ use super::overlay::date_picker::{self, DatePickerOverlay};
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct DatePicker<'a, Message: Clone, Renderer: iced_native::Renderer> {
+pub struct DatePicker<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + button::StyleSheet,
+{
     /// Show the picker.
     show_picker: bool,
     /// The date to show.
     date: Date,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer>,
+    underlay: Element<'a, Message, Renderer<B, Theme>>,
     /// The message that is send if the cancel button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_cancel: Message,
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: Box<dyn StyleSheet>,
+    style: <Theme as StyleSheet>::Style,
+    /// The buttons of the overlay.
+    overlay_state: Element<'a, Message, Renderer<B, Theme>>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
 
-impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message, Renderer> {
+impl<'a, Message, B, Theme> DatePicker<'a, Message, B, Theme>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
+{
     /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
     ///
     /// It expects:
@@ -78,7 +95,7 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
         on_submit: F,
     ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer>>,
+        U: Into<Element<'a, Message, Renderer<B, Theme>>>,
         F: 'static + Fn(Date) -> Message,
     {
         Self {
@@ -87,15 +104,16 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style_sheet: std::boxed::Box::default(),
+            style: <Theme as StyleSheet>::Style::default(),
+            overlay_state: DatePickerOverlayButtons::default().into(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
         }
     }
 
     /// Sets the style of the [`DatePicker`](DatePicker).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         //self.button_style = style.into();
         self
     }
@@ -106,10 +124,6 @@ impl<'a, Message: Clone, Renderer: iced_native::Renderer> DatePicker<'a, Message
 pub struct State {
     /// The state of the overlay.
     pub(crate) overlay_state: date_picker::State,
-    /// The state of the cancel button.
-    pub(crate) cancel_button: button::State,
-    /// The state of the submit button.
-    pub(crate) submit_button: button::State,
 }
 
 impl State {
@@ -118,8 +132,6 @@ impl State {
     pub fn now() -> Self {
         Self {
             overlay_state: date_picker::State::default(),
-            cancel_button: button::State::new(),
-            submit_button: button::State::new(),
         }
     }
 
@@ -128,8 +140,6 @@ impl State {
     pub fn new(date: Date) -> Self {
         Self {
             overlay_state: date_picker::State::new(date.into()),
-            cancel_button: button::State::new(),
-            submit_button: button::State::new(),
         }
     }
 
@@ -139,10 +149,15 @@ impl State {
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for DatePicker<'a, Message, Renderer>
+impl<'a, Message, B, Theme> Widget<Message, Renderer<B, Theme>>
+    for DatePicker<'a, Message, B, Theme>
 where
-    Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet
+        + button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -153,11 +168,11 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay)]
+        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(std::slice::from_ref(&self.underlay));
+        tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
     fn width(&self) -> iced_native::Length {
@@ -170,7 +185,7 @@ where
 
     fn layout(
         &self,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
         self.underlay.as_widget().layout(renderer, limits)
@@ -182,7 +197,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
@@ -203,7 +218,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
@@ -217,7 +232,8 @@ where
     fn draw(
         &self,
         state: &iced_native::widget::Tree,
-        renderer: &mut Renderer,
+        renderer: &mut Renderer<B, Theme>,
+        theme: &Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -226,6 +242,7 @@ where
         self.underlay.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             layout,
             cursor_position,
@@ -237,8 +254,8 @@ where
         &'b self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+        renderer: &Renderer<B, Theme>,
+    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer<B, Theme>>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -257,7 +274,8 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                &self.style_sheet,
+                self.style,
+                &mut state.children[1],
                 //self.button_style, // Clone not satisfied
             )
             .overlay(),
@@ -265,13 +283,18 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<DatePicker<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, B, Theme> From<DatePicker<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
-    fn from(date_picker: DatePicker<'a, Message, Renderer>) -> Self {
+    fn from(date_picker: DatePicker<'a, Message, B, Theme>) -> Self {
         Element::new(date_picker)
     }
 }
