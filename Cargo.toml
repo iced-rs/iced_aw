@@ -45,7 +45,7 @@ default = [
     #"tab_bar",
     #"tabs",
     #"time_picker",
-    #"wrap",
+    "wrap",
     #"selection_list",
     "split",
 ]
@@ -83,11 +83,11 @@ members = [
     #"examples/date_picker",
     "examples/floating_element",
     "examples/grid",
-    #"examples/modal",S
+    #"examples/modal",
     #"examples/tab_bar",
     #"examples/tabs",
     #"examples/time_picker",
-    #"examples/wrap",
+    "examples/wrap",
     "examples/number_input",
     #"examples/selection_list",
     "examples/split",
