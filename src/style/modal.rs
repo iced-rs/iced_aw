@@ -48,7 +48,8 @@ impl StyleSheet for Theme {
             background: Color {
                 a: palette.background.base.color.a * 0.5,
                 ..palette.background.base.color
-            }.into()
+            }
+            .into(),
         }
     }
 }
