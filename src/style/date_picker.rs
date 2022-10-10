@@ -69,7 +69,10 @@ impl StyleSheet for Theme {
             border_width: 1.0,
             border_color: foreground.text,
             text_color: foreground.text,
-            text_attenuated_color: [0.87, 0.87, 0.87].into(),
+            text_attenuated_color: Color {
+                a: foreground.text.a * 0.5,
+                ..foreground.text
+            },
             day_background: palette.background.base.color.into(),
         }
     }
