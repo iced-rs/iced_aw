@@ -67,20 +67,33 @@ impl std::default::Default for Appearance {
 impl StyleSheet for Theme {
     type Style = SplitStyles;
     fn active(&self, _style: Self::Style) -> Appearance {
-        Appearance::default()
-    }
+        let palette = self.extended_palette();
 
-    fn hovered(&self, _style: Self::Style) -> Appearance {
         Appearance {
-            divider_background: Color::from_rgb(0.8, 0.8, 0.8).into(),
+            divider_background: palette.background.base.color.into(),
+            divider_border_color: palette.background.weak.color,
+            border_color: palette.background.base.color,
             ..Appearance::default()
         }
     }
 
-    fn dragged(&self, _style: Self::Style) -> Appearance {
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let active = self.active(style);
+
         Appearance {
-            divider_background: Color::from_rgb(0.7, 0.7, 0.7).into(),
-            ..Appearance::default()
+            divider_background: palette.background.strong.color.into(),
+            ..active
+        }
+    }
+
+    fn dragged(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let active = self.active(style);
+
+        Appearance {
+            divider_background: palette.background.weak.color.into(),
+            ..active
         }
     }
 }
