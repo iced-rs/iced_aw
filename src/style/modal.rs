@@ -1,6 +1,7 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
+use iced_graphics::Color;
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::Background;
 use iced_style::Theme;
@@ -41,6 +42,13 @@ impl StyleSheet for Theme {
     type Style = ModalStyles;
 
     fn active(&self, _style: Self::Style) -> Appearance {
-        Appearance::default()
+        let palette = self.extended_palette();
+
+        Appearance {
+            background: Color {
+                a: palette.background.base.color.a * 0.5,
+                ..palette.background.base.color
+            }.into()
+        }
     }
 }
