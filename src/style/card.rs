@@ -72,17 +72,27 @@ impl StyleSheet for Theme {
     type Style = CardStyles;
 
     fn active(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let foreground = self.palette();
+
+
         let backing_with_text = |color: Color, text_color: Color| Appearance {
             border_color: color,
             head_background: color.into(),
             head_text_color: text_color,
             close_color: text_color,
+            background: palette.background.base.color.into(),
+            body_text_color: foreground.text,
+            foot_text_color: foreground.text,
             ..Appearance::default()
         };
 
         let backing_only = |color: Color| Appearance {
             border_color: color,
             head_background: color.into(),
+            background: palette.background.base.color.into(),
+            body_text_color: foreground.text,
+            foot_text_color: foreground.text,
             ..Appearance::default()
         };
 
