@@ -60,6 +60,18 @@ pub enum SelectionListStyles {
 impl StyleSheet for Theme {
     type Style = SelectionListStyles;
     fn style(&self, _style: Self::Style) -> Appearance {
-        Appearance::default()
+        let palette = self.extended_palette();
+        let foreground = self.palette();
+
+        Appearance {
+            text_color: foreground.text,
+            background: palette.background.base.color.into(),
+            border_color: foreground.text,
+            hovered_text_color: palette.primary.weak.text,
+            hovered_background: palette.primary.weak.color.into(),
+            selected_text_color: palette.primary.strong.text,
+            selected_background: palette.primary.strong.color.into(),
+            ..Appearance::default()
+        }
     }
 }
