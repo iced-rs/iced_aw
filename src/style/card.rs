@@ -75,7 +75,6 @@ impl StyleSheet for Theme {
         let palette = self.extended_palette();
         let foreground = self.palette();
 
-
         let backing_with_text = |color: Color, text_color: Color| Appearance {
             border_color: color,
             head_background: color.into(),
