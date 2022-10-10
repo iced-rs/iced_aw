@@ -105,7 +105,7 @@ impl StyleSheet for Theme {
             CardStyles::Light => backing_only(colors::LIGHT),
             CardStyles::Dark => backing_with_text(colors::DARK, colors::WHITE),
             CardStyles::White => backing_only(colors::WHITE),
-            CardStyles::Default => Appearance::default(),
+            CardStyles::Default => backing_only([0.87, 0.87, 0.87].into()),
         }
     }
 }
