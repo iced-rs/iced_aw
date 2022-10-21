@@ -1,6 +1,6 @@
 use iced::{
     widget::{Container, Text},
-    Element, Length, Sandbox, Settings,
+    Application, Command, Element, Length, Settings, Theme,
 };
 use iced_aw::{split, Split};
 
@@ -17,26 +17,34 @@ struct SplitPaneExample {
     divider_position: Option<u16>,
 }
 
-impl Sandbox for SplitPaneExample {
+impl Application for SplitPaneExample {
     type Message = Message;
+    type Flags = ();
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
 
-    fn new() -> Self {
-        SplitPaneExample {
-            divider_position: None,
-        }
+    fn new(_flags: Self::Flags) -> (SplitPaneExample, Command<Message>) {
+        (
+            SplitPaneExample {
+                divider_position: None,
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
         String::from("Split example")
     }
 
-    fn update(&mut self, message: Self::Message) {
+    fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::OnResize(position) => self.divider_position = Some(position),
         }
+
+        Command::none()
     }
 
-    fn view(&self) -> Element<Self::Message> {
+    fn view(&self) -> Element<Message> {
         let first = Container::new(Text::new("First"))
             .width(Length::Fill)
             .height(Length::Fill)
