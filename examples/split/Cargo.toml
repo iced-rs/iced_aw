@@ -11,5 +11,5 @@ iced_aw = { path = "../..", default-features = false, features = ["split"] }
 
 [dependencies.iced]
 git = "https://github.com/iced-rs/iced.git"
-rev = "77800bc"
+rev = "8221794"
 version = "0.4.2"
