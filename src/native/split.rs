@@ -321,7 +321,7 @@ where
             .next()
             .expect("Graphics: Layout should have a second layout");
         let second_mouse_interaction = self.second.as_widget().mouse_interaction(
-            &state.children[0],
+            &state.children[1],
             second_layout,
             cursor_position,
             viewport,
@@ -415,7 +415,7 @@ where
         );
 
         self.second.as_widget().draw(
-            &state.children[0],
+            &state.children[1],
             renderer,
             theme,
             style,
