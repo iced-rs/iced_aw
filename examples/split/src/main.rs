@@ -10,11 +10,13 @@ fn main() -> iced::Result {
 
 #[derive(Debug, Clone)]
 enum Message {
-    OnResize(u16),
+    OnVerResize(u16),
+    OnHorResize(u16),
 }
 
 struct SplitPaneExample {
-    divider_position: Option<u16>,
+    ver_divider_position: Option<u16>,
+    hor_divider_position: Option<u16>,
 }
 
 impl Application for SplitPaneExample {
@@ -26,7 +28,8 @@ impl Application for SplitPaneExample {
     fn new(_flags: Self::Flags) -> (SplitPaneExample, Command<Message>) {
         (
             SplitPaneExample {
-                divider_position: None,
+                ver_divider_position: None,
+                hor_divider_position: None,
             },
             Command::none(),
         )
@@ -38,7 +41,8 @@ impl Application for SplitPaneExample {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::OnResize(position) => self.divider_position = Some(position),
+            Message::OnVerResize(position) => self.ver_divider_position = Some(position),
+            Message::OnHorResize(position) => self.hor_divider_position = Some(position),
         }
 
         Command::none()
@@ -57,12 +61,26 @@ impl Application for SplitPaneExample {
             .center_x()
             .center_y();
 
-        Split::new(
+        let top = Container::new(Text::new("Top"))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x()
+            .center_y();
+
+        let bottom_content = Split::new(
             first,
             second,
-            self.divider_position,
+            self.ver_divider_position,
             split::Axis::Vertical,
-            Message::OnResize,
+            Message::OnVerResize,
+        );
+
+        Split::new(
+            top,
+            bottom_content,
+            self.hor_divider_position,
+            split::Axis::Horizontal,
+            Message::OnHorResize,
         )
         .into()
     }
