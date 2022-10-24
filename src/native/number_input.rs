@@ -112,7 +112,7 @@ where
             bounds: (T::zero(), max),
             padding,
             size: None,
-            content: TextInput::new("", format!("{}", value).as_str(), convert_to_num)
+            content: TextInput::new("", format!("{value}").as_str(), convert_to_num)
                 .padding(padding)
                 .width(Length::Units(127)),
             on_change: Box::new(on_changed),
@@ -300,7 +300,7 @@ where
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
         let icon_size = txt_size * 3 / 4;
         let btn_mod = |c| {
-            Container::<(), Renderer>::new(Text::new(format!(" {} ", c)).size(icon_size))
+            Container::<(), Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y()
                 .center_x()
         };

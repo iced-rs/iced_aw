@@ -7,9 +7,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced_aw = { path = "../..", default-features = false, features = ["grid"] }
-
-[dependencies.iced]
-git = "https://github.com/iced-rs/iced.git"
-rev = "8221794"
-version = "0.4.2"
+iced_aw = { workspace = true, features = ["grid"] }
+iced.workspace = true

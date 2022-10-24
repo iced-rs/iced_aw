@@ -49,11 +49,7 @@ impl Sandbox for GridExample {
 
         // Add elements to the grid
         for i in 0..self.element_index {
-            grid.insert(Text::new(format!(
-                "Row {} Element {}",
-                (i / COLUMNS) as usize,
-                i
-            )));
+            grid.insert(Text::new(format!("Row {} Element {}", (i / COLUMNS), i)));
         }
 
         let add_button: Element<'_, Message> = Button::new(Text::new("Add element"))

@@ -1298,7 +1298,7 @@ fn day_table<Renderer>(
             }
 
             renderer.fill_text(iced_native::text::Text {
-                content: &format!("{:02}", number), // Todo: is there some way of static format as this has a fixed size?
+                content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                 bounds: Rectangle {
                     x: bounds.center_x(),
                     y: bounds.center_y(),

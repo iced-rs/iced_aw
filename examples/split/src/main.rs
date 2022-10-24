@@ -84,4 +84,8 @@ impl Application for SplitPaneExample {
         )
         .into()
     }
+
+    fn theme(&self) -> Self::Theme {
+        Theme::Light
+    }
 }

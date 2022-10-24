@@ -1195,7 +1195,7 @@ fn draw_clock<'a, Message, B, Theme>(
             }
 
             let period_text = canvas::Text {
-                content: format!("{}", period),
+                content: format!("{period}"),
                 position: center,
                 color: style
                     .get(&clock_style_state)
@@ -1271,7 +1271,7 @@ fn draw_clock<'a, Message, B, Theme>(
 
                 if i % 5 == 0 {
                     let text = canvas::Text {
-                        content: format!("{:02}", i),
+                        content: format!("{i:02}"),
                         position: *p,
                         color: style
                             .get(&style_state)
@@ -1315,7 +1315,7 @@ fn draw_clock<'a, Message, B, Theme>(
 
                     if i % 10 == 0 {
                         let text = canvas::Text {
-                            content: format!("{:02}", i),
+                            content: format!("{i:02}"),
                             position: *p,
                             color: style
                                 .get(&style_state)

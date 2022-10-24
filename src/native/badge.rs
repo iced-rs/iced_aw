@@ -220,7 +220,7 @@ where
         //  x
         let border_radius = style_sheet
             .border_radius
-            .unwrap_or(bounds.height as f32 / BORDER_RADIUS_RATIO);
+            .unwrap_or(bounds.height / BORDER_RADIUS_RATIO);
 
         renderer.fill_quad(
             renderer::Quad {
