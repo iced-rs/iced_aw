@@ -17,7 +17,7 @@ use crate::{
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_graphics::{
-    widget::canvas::{self, LineCap, Path, Stroke},
+    widget::canvas::{self, stroke::Style, LineCap, Path, Stroke},
     Backend, Renderer,
 };
 use iced_native::widget::Tree;
@@ -1129,14 +1129,16 @@ fn draw_clock<'a, Message, B, Theme>(
             let second_points = crate::core::clock::circle_points(second_radius, center, 60);
 
             let hand_stroke = Stroke {
+                style: Style::Solid(
+                    style
+                        .get(&clock_style_state)
+                        .expect("Style Sheet not found.")
+                        .clock_hand_color,
+                ),
                 width: style
                     .get(&clock_style_state)
                     .expect("Style Sheet not found.")
                     .clock_hand_width,
-                color: style
-                    .get(&clock_style_state)
-                    .expect("Style Sheet not found.")
-                    .clock_hand_color,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
             };
@@ -1217,7 +1219,7 @@ fn draw_clock<'a, Message, B, Theme>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
-                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    frame.stroke(&Path::line(center, *p), hand_stroke.clone());
                     frame.fill(
                         &Path::circle(*p, number_size * 0.8),
                         style
@@ -1258,7 +1260,7 @@ fn draw_clock<'a, Message, B, Theme>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
-                    frame.stroke(&Path::line(center, *p), hand_stroke);
+                    frame.stroke(&Path::line(center, *p), hand_stroke.clone());
                     frame.fill(
                         &Path::circle(*p, number_size * 0.6),
                         style
@@ -1302,7 +1304,7 @@ fn draw_clock<'a, Message, B, Theme>(
 
                     let mut style_state = StyleState::Active;
                     if selected {
-                        frame.stroke(&Path::line(center, *p), hand_stroke);
+                        frame.stroke(&Path::line(center, *p), hand_stroke.clone());
                         frame.fill(
                             &Path::circle(*p, number_size * 0.6),
                             style
