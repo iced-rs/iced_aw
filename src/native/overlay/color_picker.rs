@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use iced_graphics::{
     backend,
+    triangle::Style,
     widget::canvas::{self, LineCap, Path, Stroke},
     Backend, Renderer,
 };
@@ -1202,12 +1203,14 @@ fn hsv_color<'a, Message, B, Theme>(
                 }
 
                 let stroke = Stroke {
-                    color: Hsv {
-                        hue: 0,
-                        saturation: 0.0,
-                        value: 1.0 - hsv_color.value,
-                    }
-                    .into(),
+                    style: Style::Solid(
+                        Hsv {
+                            hue: 0,
+                            saturation: 0.0,
+                            value: 1.0 - hsv_color.value,
+                        }
+                        .into(),
+                    ),
                     width: 3.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1221,7 +1224,7 @@ fn hsv_color<'a, Message, B, Theme>(
                         Point::new(saturation, 0.0),
                         Point::new(saturation, frame.height()),
                     ),
-                    stroke,
+                    stroke.clone(),
                 );
 
                 frame.stroke(
@@ -1230,10 +1233,12 @@ fn hsv_color<'a, Message, B, Theme>(
                 );
 
                 let stroke = Stroke {
-                    color: style_sheet
-                        .get(&sat_value_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_color,
+                    style: Style::Solid(
+                        style_sheet
+                            .get(&sat_value_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_color,
+                    ),
                     width: 2.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1275,7 +1280,7 @@ fn hsv_color<'a, Message, B, Theme>(
 
                 let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
                 let stroke = Stroke {
-                    color: hsv_color.into(),
+                    style: Style::Solid(hsv_color.into()),
                     width: 1.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1291,7 +1296,7 @@ fn hsv_color<'a, Message, B, Theme>(
             }
 
             let stroke = Stroke {
-                color: Color::BLACK,
+                style: Style::Solid(Color::BLACK),
                 width: 3.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
@@ -1305,10 +1310,12 @@ fn hsv_color<'a, Message, B, Theme>(
             );
 
             let stroke = Stroke {
-                color: style_sheet
-                    .get(&hue_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_color,
+                style: Style::Solid(
+                    style_sheet
+                        .get(&hue_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_color,
+                ),
                 width: 2.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
