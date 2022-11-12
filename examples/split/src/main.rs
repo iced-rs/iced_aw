@@ -1,6 +1,6 @@
 use iced::{
     widget::{Container, Text},
-    Element, Length, Sandbox, Settings,
+    Application, Command, Element, Length, Settings, Theme,
 };
 use iced_aw::{split, Split};
 
@@ -10,33 +10,45 @@ fn main() -> iced::Result {
 
 #[derive(Debug, Clone)]
 enum Message {
-    OnResize(u16),
+    OnVerResize(u16),
+    OnHorResize(u16),
 }
 
 struct SplitPaneExample {
-    divider_position: Option<u16>,
+    ver_divider_position: Option<u16>,
+    hor_divider_position: Option<u16>,
 }
 
-impl Sandbox for SplitPaneExample {
+impl Application for SplitPaneExample {
     type Message = Message;
+    type Flags = ();
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
 
-    fn new() -> Self {
-        SplitPaneExample {
-            divider_position: None,
-        }
+    fn new(_flags: Self::Flags) -> (SplitPaneExample, Command<Message>) {
+        (
+            SplitPaneExample {
+                ver_divider_position: None,
+                hor_divider_position: None,
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
         String::from("Split example")
     }
 
-    fn update(&mut self, message: Self::Message) {
+    fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::OnResize(position) => self.divider_position = Some(position),
+            Message::OnVerResize(position) => self.ver_divider_position = Some(position),
+            Message::OnHorResize(position) => self.hor_divider_position = Some(position),
         }
+
+        Command::none()
     }
 
-    fn view(&self) -> Element<Self::Message> {
+    fn view(&self) -> Element<Message> {
         let first = Container::new(Text::new("First"))
             .width(Length::Fill)
             .height(Length::Fill)
@@ -49,13 +61,31 @@ impl Sandbox for SplitPaneExample {
             .center_x()
             .center_y();
 
-        Split::new(
+        let top = Container::new(Text::new("Top"))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x()
+            .center_y();
+
+        let bottom_content = Split::new(
             first,
             second,
-            self.divider_position,
+            self.ver_divider_position,
             split::Axis::Vertical,
-            Message::OnResize,
+            Message::OnVerResize,
+        );
+
+        Split::new(
+            top,
+            bottom_content,
+            self.hor_divider_position,
+            split::Axis::Horizontal,
+            Message::OnHorResize,
         )
         .into()
+    }
+
+    fn theme(&self) -> Self::Theme {
+        Theme::Light
     }
 }
