@@ -1,9 +1,9 @@
-use iced::{Alignment, Column, Container, Element, Length, Row, Sandbox, Settings, Text};
-
-use iced_aw::{
-    style::{self, badge::StyleSheet},
-    Badge,
+use iced::{
+    widget::{Column, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
 };
+
+use iced_aw::{style::BadgeStyles, Badge};
 
 const BADGE_TEXT_SIZE: u16 = 15;
 
@@ -37,7 +37,7 @@ impl Sandbox for BadgeExample {
 
     fn update(&mut self, _message: Message) {}
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
             .spacing(15)
@@ -53,12 +53,8 @@ impl Sandbox for BadgeExample {
                             .align_items(Alignment::Center)
                             .push(Text::new(name).width(Length::Fill))
                             .push(
-                                Badge::new(
-                                    Text::new(format!("{}", count))
-                                        .color(style::colors::SNOW)
-                                        .size(BADGE_TEXT_SIZE),
-                                )
-                                .style(predefined_style(i)),
+                                Badge::new(Text::new(format!("{}", count)).size(BADGE_TEXT_SIZE))
+                                    .style(predefined_style(i)),
                             ),
                     )
                 });
@@ -69,35 +65,20 @@ impl Sandbox for BadgeExample {
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Default")).style(style::badge::Default))
-                    .push(
-                        Badge::new(Text::new("Primary").color(style::colors::LIGHT))
-                            .style(style::badge::Primary),
-                    )
-                    .push(
-                        Badge::new(Text::new("Secondary").color(style::colors::LIGHT))
-                            .style(style::badge::Secondary),
-                    )
-                    .push(
-                        Badge::new(Text::new("Success").color(style::colors::LIGHT))
-                            .style(style::badge::Success),
-                    )
-                    .push(
-                        Badge::new(Text::new("Danger").color(style::colors::LIGHT))
-                            .style(style::badge::Danger),
-                    ),
+                    .push(Badge::new(Text::new("Default")))
+                    .push(Badge::new(Text::new("Primary")).style(BadgeStyles::Primary))
+                    .push(Badge::new(Text::new("Secondary")).style(BadgeStyles::Secondary))
+                    .push(Badge::new(Text::new("Success")).style(BadgeStyles::Success))
+                    .push(Badge::new(Text::new("Danger")).style(BadgeStyles::Danger)),
             )
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Warning")).style(style::badge::Warning))
-                    .push(Badge::new(Text::new("Info")).style(style::badge::Info))
-                    .push(Badge::new(Text::new("Light")).style(style::badge::Light))
-                    .push(
-                        Badge::new(Text::new("Dark").color(style::colors::LIGHT))
-                            .style(style::badge::Dark),
-                    )
-                    .push(Badge::new(Text::new("White")).style(style::badge::White)),
+                    .push(Badge::new(Text::new("Warning")).style(BadgeStyles::Warning))
+                    .push(Badge::new(Text::new("Info")).style(BadgeStyles::Info))
+                    .push(Badge::new(Text::new("Light")).style(BadgeStyles::Light))
+                    .push(Badge::new(Text::new("Dark")).style(BadgeStyles::Dark))
+                    .push(Badge::new(Text::new("White")).style(BadgeStyles::White)),
             );
 
         Container::new(
@@ -114,16 +95,16 @@ impl Sandbox for BadgeExample {
     }
 }
 
-fn predefined_style(index: usize) -> Box<dyn StyleSheet> {
+fn predefined_style(index: usize) -> BadgeStyles {
     match index {
-        0 => style::badge::Primary.into(),
-        1 => style::badge::Secondary.into(),
-        2 => style::badge::Success.into(),
-        3 => style::badge::Danger.into(),
-        4 => style::badge::Warning.into(),
-        5 => style::badge::Info.into(),
-        6 => style::badge::Light.into(),
-        7 => style::badge::Dark.into(),
-        _ => style::badge::Default.into(),
+        0 => BadgeStyles::Primary,
+        1 => BadgeStyles::Secondary,
+        2 => BadgeStyles::Success,
+        3 => BadgeStyles::Danger,
+        4 => BadgeStyles::Warning,
+        5 => BadgeStyles::Info,
+        6 => BadgeStyles::Light,
+        7 => BadgeStyles::Dark,
+        _ => BadgeStyles::Default,
     }
 }

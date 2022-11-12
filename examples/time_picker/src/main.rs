@@ -1,6 +1,8 @@
-use iced::{button, Alignment, Button, Container, Element, Length, Row, Sandbox, Settings, Text};
-
-use iced_aw::time_picker::{self, Period, Time, TimePicker};
+use iced::{
+    widget::{Button, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::{time_picker::Time, TimePicker};
 
 fn main() -> iced::Result {
     TimePickerExample::run(Settings::default())
@@ -16,8 +18,7 @@ enum Message {
 
 struct TimePickerExample {
     time: Time,
-    state: time_picker::State,
-    button_state: button::State,
+    show_picker: bool,
 }
 
 impl Sandbox for TimePickerExample {
@@ -25,9 +26,8 @@ impl Sandbox for TimePickerExample {
 
     fn new() -> Self {
         TimePickerExample {
-            time: Time::default_hm(Period::H24),
-            state: time_picker::State::now(),
-            button_state: button::State::new(),
+            time: Time::now_hm(true),
+            show_picker: false,
         }
     }
 
@@ -38,25 +38,24 @@ impl Sandbox for TimePickerExample {
     fn update(&mut self, message: Self::Message) {
         match message {
             Message::ChooseTime => {
-                self.state.reset();
-                self.state.show(true);
+                self.show_picker = true;
             }
             Message::SubmitTime(time) => {
                 self.time = time;
-                self.state.show(false);
+                self.show_picker = false;
             }
             Message::CancelTime => {
-                self.state.show(false);
+                self.show_picker = false;
             }
         }
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
-        let but = Button::new(&mut self.button_state, Text::new("Set Time"))
-            .on_press(Message::ChooseTime);
+    fn view(&self) -> Element<'_, Self::Message> {
+        let but = Button::new(Text::new("Set Time")).on_press(Message::ChooseTime);
 
         let timepicker = TimePicker::new(
-            &mut self.state,
+            self.show_picker,
+            self.time,
             but,
             Message::CancelTime,
             Message::SubmitTime,

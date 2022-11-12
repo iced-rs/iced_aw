@@ -1,9 +1,11 @@
-use iced::{window, Alignment, Container, Element, Length, Row, Sandbox, Settings, Text};
-use iced_aw::number_input::{self, NumberInput};
+use iced::{
+    widget::{Container, Row, Text},
+    window, Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::{number_input::NumberInput, style::NumberInputStyles};
 
 #[derive(Default)]
 pub struct NumberInputDemo {
-    state: number_input::State,
     value: f32,
 }
 
@@ -27,10 +29,7 @@ impl Sandbox for NumberInputDemo {
     type Message = Message;
 
     fn new() -> Self {
-        Self {
-            value: 27.0,
-            ..Self::default()
-        }
+        Self { value: 27.0 }
     }
 
     fn title(&self) -> String {
@@ -45,14 +44,12 @@ impl Sandbox for NumberInputDemo {
         }
     }
 
-    fn view(&mut self) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute =
-            NumberInput::new(&mut self.state, self.value, 255.0, Message::NumInpChanged)
-                .step(0.5)
-                .min(1.0)
-                .input_style(style::CustomTextInput)
-                .style(style::CustomNumInput);
+        let txt_minute = NumberInput::new(self.value, 255.0, Message::NumInpChanged)
+            .style(NumberInputStyles::Default)
+            .step(0.5)
+            .min(1.0);
 
         Container::new(
             Row::new()
@@ -66,58 +63,5 @@ impl Sandbox for NumberInputDemo {
         .center_x()
         .center_y()
         .into()
-    }
-}
-
-mod style {
-    use iced::{text_input, Color};
-    use iced_aw::number_input;
-
-    const BACKGROUND: Color = Color::from_rgb(238.0 / 255.0, 238.0 / 255.0, 238.0 / 255.0);
-    const FOREGROUND: Color = Color::from_rgb(224.0 / 255.0, 224.0 / 255.0, 224.0 / 255.0);
-    const HOVERED: Color = Color::from_rgb(129.0 / 255.0, 129.0 / 255.0, 129.0 / 255.0);
-    const PRIMARY: Color = Color::from_rgb(12.0 / 255.0, 46.0 / 251.0, 179.0 / 255.0);
-
-    pub struct CustomNumInput;
-    impl number_input::StyleSheet for CustomNumInput {
-        fn active(&self) -> number_input::Style {
-            number_input::Style {
-                icon_color: PRIMARY,
-                ..number_input::Style::default()
-            }
-        }
-    }
-
-    pub struct CustomTextInput;
-    impl text_input::StyleSheet for CustomTextInput {
-        fn active(&self) -> text_input::Style {
-            text_input::Style {
-                background: BACKGROUND.into(),
-                border_color: PRIMARY,
-                border_width: 1.0,
-                border_radius: 5.5,
-            }
-        }
-
-        fn focused(&self) -> text_input::Style {
-            let active = self.active();
-
-            text_input::Style {
-                background: FOREGROUND.into(),
-                ..active
-            }
-        }
-
-        fn placeholder_color(&self) -> Color {
-            HOVERED
-        }
-
-        fn selection_color(&self) -> Color {
-            HOVERED
-        }
-
-        fn value_color(&self) -> Color {
-            Color::BLACK
-        }
     }
 }

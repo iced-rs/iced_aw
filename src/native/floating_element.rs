@@ -4,9 +4,13 @@
 use iced_native::{
     event, mouse, overlay, Clipboard, Event, Layout, Length, Point, Rectangle, Shell,
 };
-use iced_pure::{widget::Tree, Element, Widget};
+use iced_native::{widget::Tree, Element, Widget};
 
-pub use crate::native::floating_button::{Anchor, Offset};
+pub mod anchor;
+pub use anchor::Anchor;
+
+pub mod offset;
+pub use offset::Offset;
 
 use super::overlay::floating_element::FloatingElementOverlay;
 
@@ -15,9 +19,9 @@ use super::overlay::floating_element::FloatingElementOverlay;
 /// # Example
 /// ```
 /// # use iced_native::renderer::Null;
-/// # use iced_pure::widget::{button, Button, Column, Text};
+/// # use iced_native::widget::{button, Button, Column, Text};
 /// #
-/// # pub type FloatingElement<'a, B, Message> = iced_aw::pure::FloatingElement<'a, B, Message, Null>;
+/// # pub type FloatingElement<'a, B, Message> = iced_aw::FloatingElement<'a, B, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,
@@ -57,12 +61,12 @@ where
     Renderer: iced_native::Renderer,
 {
     /// Creates a new [`FloatingElement`](FloatingElement) over some content,
-    /// showing the given [`Element`](iced_pure::Element).
+    /// showing the given [`Element`](iced_native::Element).
     ///
     /// It expects:
-    ///     * the underlay [`Element`](iced_pure::Element) on which this [`FloatingElement`](FloatingElement)
+    ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingElement`](FloatingElement)
     ///         will be wrapped around.
-    ///     * a function that will lazy create the [`Element`](iced_pure::Element) for the overlay.
+    ///     * a function that will lazy create the [`Element`](iced_native::Element) for the overlay.
     pub fn new<U>(underlay: U, element: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
@@ -93,7 +97,7 @@ where
         self
     }
 
-    /// Hide or unhide the [`Element`](iced_pure::Element) on the
+    /// Hide or unhide the [`Element`](iced_native::Element) on the
     /// [`FloatingElement`](FloatingElement).
     #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {
@@ -109,7 +113,7 @@ where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
 {
-    fn children(&self) -> Vec<iced_pure::widget::Tree> {
+    fn children(&self) -> Vec<iced_native::widget::Tree> {
         vec![Tree::new(&self.underlay), Tree::new(&(self.element)())]
     }
 
@@ -173,8 +177,9 @@ where
 
     fn draw(
         &self,
-        state: &iced_pure::widget::Tree,
+        state: &iced_native::widget::Tree,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -183,6 +188,7 @@ where
         self.underlay.as_widget().draw(
             &state.children[0],
             renderer,
+            theme,
             style,
             layout,
             cursor_position,

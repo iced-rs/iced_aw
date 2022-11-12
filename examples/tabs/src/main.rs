@@ -1,11 +1,10 @@
+mod login;
 use iced::{
     alignment::{Horizontal, Vertical},
-    Column, Container, Element, Font, Length, Sandbox, Settings, Text,
+    widget::{Column, Container, Text},
+    Element, Font, Length, Sandbox, Settings,
 };
-
 use iced_aw::{TabLabel, Tabs};
-
-mod login;
 use login::{LoginMessage, LoginTab};
 
 mod ferris;
@@ -16,8 +15,6 @@ use counter::{CounterMessage, CounterTab};
 
 mod settings;
 use settings::{SettingsMessage, SettingsTab, TabBarPosition};
-
-mod theme;
 
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
@@ -93,7 +90,7 @@ impl Sandbox for TabBarExample {
         }
     }
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         let position = self
             .settings_tab
             .settings()
@@ -127,7 +124,7 @@ trait Tab {
 
     fn tab_label(&self) -> TabLabel;
 
-    fn view(&mut self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         let column = Column::new()
             .spacing(20)
             .push(Text::new(self.title()).size(HEADER_SIZE))
@@ -142,5 +139,5 @@ trait Tab {
             .into()
     }
 
-    fn content(&mut self) -> Element<'_, Self::Message>;
+    fn content(&self) -> Element<'_, Self::Message>;
 }

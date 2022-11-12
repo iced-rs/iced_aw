@@ -8,10 +8,12 @@ use iced_native::{
     alignment::{Horizontal, Vertical},
     event,
     layout::{Limits, Node},
-    mouse, renderer, touch,
-    widget::{Column, Row, Text},
-    Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell,
-    Widget,
+    mouse, renderer, touch, Alignment, Clipboard, Color, Event, Font, Layout, Length, Point,
+    Rectangle, Shell,
+};
+use iced_native::{
+    widget::{Column, Row, Text, Tree},
+    Element, Widget,
 };
 
 pub mod tab_label;
@@ -38,7 +40,7 @@ const DEFAULT_SPACING: u16 = 0;
 /// # use iced_aw::{TabLabel};
 /// # use iced_native::{renderer::Null};
 /// #
-/// # pub type TabBar<Message> = iced_aw::native::TabBar<Message, Null>;
+/// # pub type TabBar<Message> = iced_aw::TabBar<Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
@@ -58,6 +60,7 @@ const DEFAULT_SPACING: u16 = 0;
 pub struct TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The currently active tab.
     active_tab: usize,
@@ -90,7 +93,7 @@ where
     /// The optional text font of the [`TabBar`](TabBar).
     text_font: Option<Font>,
     /// The style of the [`TabBar`](TabBar).
-    style_sheet: Box<dyn StyleSheet>,
+    style: <Renderer::Theme as StyleSheet>::Style,
     #[allow(clippy::missing_docs_in_private_items)]
     _renderer: PhantomData<Renderer>,
 }
@@ -98,6 +101,7 @@ where
 impl<Message, Renderer> TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -114,7 +118,7 @@ where
     }
 
     /// Similar to `new` but with a given Vector of the
-    /// [`TabLabel`](tab_label::TabLabel)s.Alignment
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s.Alignment
     ///
     /// It expects:
     ///     * the index of the currently active tab.
@@ -141,7 +145,7 @@ where
             spacing: DEFAULT_SPACING,
             icon_font: None,
             text_font: None,
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
             _renderer: PhantomData::default(),
         }
     }
@@ -205,7 +209,7 @@ where
         self
     }
 
-    /// Sets the icon size of the [`TabLabel`](tab_label::TabLabel)s of
+    /// Sets the icon size of the [`TabLabel`](crate::tab_bar::TabLabel)s of
     /// the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_size(mut self, icon_size: u16) -> Self {
@@ -213,7 +217,7 @@ where
         self
     }
 
-    /// Sets the text size of the [`TabLabel`](tab_label::TabLabel)s of the
+    /// Sets the text size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the
     /// [`TabBar`](TabBar).
     #[must_use]
     pub fn text_size(mut self, text_size: u16) -> Self {
@@ -222,7 +226,7 @@ where
     }
 
     /// Sets the size of the close icon of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn close_size(mut self, close_size: u16) -> Self {
         self.close_size = close_size;
@@ -244,7 +248,7 @@ where
     }
 
     /// Sets the font of the icons of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn icon_font(mut self, icon_font: Font) -> Self {
         self.icon_font = Some(icon_font);
@@ -252,7 +256,7 @@ where
     }
 
     /// Sets the font of the text of the
-    /// [`TabLabel`](tab_label::TabLabel)s of the [`TabBar`](TabBar).
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
     pub fn text_font(mut self, text_font: Font) -> Self {
         self.text_font = Some(text_font);
@@ -261,12 +265,12 @@ where
 
     /// Sets the style of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn style_sheet(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 
-    /// Pushes a [`TabLabel`](tab_label::TabLabel) to the [`TabBar`](TabBar).
+    /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`](TabBar).
     #[must_use]
     pub fn push(mut self, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
@@ -277,6 +281,7 @@ where
 impl<Message, Renderer> Widget<Message, Renderer> for TabBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     fn width(&self) -> Length {
         self.width
@@ -336,12 +341,13 @@ where
 
     fn on_event(
         &mut self,
+        _state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -378,6 +384,7 @@ where
 
     fn mouse_interaction(
         &self,
+        _state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
@@ -404,8 +411,10 @@ where
 
     fn draw(
         &self,
+        _state: &Tree,
         renderer: &mut Renderer,
-        _style: &iced_native::renderer::Style,
+        theme: &Renderer::Theme,
+        _style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
         _viewport: &Rectangle,
@@ -414,9 +423,9 @@ where
         let children = layout.children();
         let is_mouse_over = bounds.contains(cursor_position);
         let style_sheet = if is_mouse_over {
-            self.style_sheet.hovered(false)
+            theme.hovered(self.style, false)
         } else {
-            self.style_sheet.active(false)
+            theme.active(self.style, false)
         };
 
         renderer.fill_quad(
@@ -436,7 +445,8 @@ where
                 renderer,
                 tab,
                 layout,
-                &self.style_sheet,
+                theme,
+                self.style,
                 i == self.active_tab,
                 cursor_position,
                 self.icon_font.unwrap_or(icons::ICON_FONT),
@@ -456,19 +466,21 @@ fn draw_tab<Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,
     layout: Layout<'_>,
-    style_sheet: &Box<dyn StyleSheet>,
+    theme: &Renderer::Theme,
+    style: <Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
     cursor_position: iced_native::Point,
     icon_font: Font,
     text_font: Font,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 {
     let is_mouse_over = layout.bounds().contains(cursor_position);
     let style = if is_mouse_over {
-        style_sheet.hovered(is_selected)
+        theme.hovered(style, is_selected)
     } else {
-        style_sheet.active(is_selected)
+        theme.active(style, is_selected)
     };
 
     let bounds = layout.bounds();
@@ -601,6 +613,7 @@ fn draw_tab<Renderer>(
 impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
 {
     fn from(tab_bar: TabBar<Message, Renderer>) -> Self {

@@ -2,12 +2,12 @@
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
 use iced_native::{event, layout::Limits, overlay, Clipboard, Event, Layout, Point, Shell, Size};
-use iced_pure::{widget::Tree, Element};
+use iced_native::{widget::Tree, Element};
 
-use crate::native::floating_button::{Anchor, Offset};
+use crate::native::floating_element::{Anchor, Offset};
 
-/// The internal overlay of a [`FloatingElement`](crate::pure::FloatingElement) for
-/// rendering a [`Element`](iced_pure::Element) as an overlay.
+/// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
+/// rendering a [`Element`](iced_native::Element) as an overlay.
 #[allow(missing_debug_implementations)]
 pub struct FloatingElementOverlay<'a, Message: Clone, Renderer: iced_native::Renderer> {
     /// The state of the element.
@@ -26,7 +26,7 @@ where
     Renderer: iced_native::Renderer + 'a,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
-    /// [`Element`](iced_pure::Element).
+    /// [`Element`](iced_native::Element).
     pub fn new<B>(state: &'a mut Tree, element: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
     where
         B: Into<Element<'a, Message, Renderer>>,
@@ -124,6 +124,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -131,6 +132,7 @@ where
         self.element.as_widget().draw(
             self.state,
             renderer,
+            theme,
             style,
             layout,
             cursor_position,

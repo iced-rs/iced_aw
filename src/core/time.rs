@@ -103,7 +103,7 @@ impl Display for Time {
                 minute,
                 period,
             } => {
-                write!(f, "{:02}:{:02}{}", hour, minute, period)
+                write!(f, "{hour:02}:{minute:02}{period}")
             }
             Self::Hms {
                 hour,
@@ -111,7 +111,7 @@ impl Display for Time {
                 second,
                 period,
             } => {
-                write!(f, "{:02}:{:02}:{:02}{}", hour, minute, second, period)
+                write!(f, "{hour:02}:{minute:02}:{second:02}{period}")
             }
         }
     }

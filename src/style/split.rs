@@ -3,10 +3,11 @@
 //! *This API requires the following crate features to be activated: split*
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The optional background of the [`Split`](crate::native::split::Split).
     pub background: Option<Background>,
     /// The optional background of the first element of the [`Split`](crate::native::split::Split).
@@ -26,24 +27,31 @@ pub struct Style {
 }
 
 /// The appearance of a [`Split`](crate::native::split::Split).
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
+    type Style: Default + Copy;
     /// The normal appearance of a [`Split`](crate::native::split::Split).
-    fn active(&self) -> Style;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the [`Split`](crate::native::split::Split) is hovered.
-    fn hovered(&self) -> Style;
+    fn hovered(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the divider of the [`Split`](crate::native::split::Split) is dragged
-    fn dragged(&self) -> Style;
+    fn dragged(&self, style: Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`Split`](crate::native::split::Split).
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
+#[derive(Clone, Copy, Debug, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``Split`` Styles
+pub enum SplitStyles {
+    #[default]
+    Default,
+}
 
-impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+impl std::default::Default for Appearance {
+    fn default() -> Self {
+        Self {
             background: None,
             first_background: None,
             second_background: None,
@@ -54,35 +62,38 @@ impl StyleSheet for Default {
             divider_border_color: Color::from_rgb(0.8, 0.8, 0.8),
         }
     }
+}
 
-    fn hovered(&self) -> Style {
-        Style {
-            divider_background: Color::from_rgb(0.8, 0.8, 0.8).into(),
-            ..self.active()
+impl StyleSheet for Theme {
+    type Style = SplitStyles;
+    fn active(&self, _style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+
+        Appearance {
+            divider_background: palette.background.base.color.into(),
+            divider_border_color: palette.background.weak.color,
+            border_color: palette.background.base.color,
+            ..Appearance::default()
         }
     }
 
-    fn dragged(&self) -> Style {
-        Style {
-            divider_background: Color::from_rgb(0.7, 0.7, 0.7).into(),
-            ..self.active()
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let active = self.active(style);
+
+        Appearance {
+            divider_background: palette.background.strong.color.into(),
+            ..active
         }
     }
-}
 
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
+    fn dragged(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let active = self.active(style);
 
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
+        Appearance {
+            divider_background: palette.background.weak.color.into(),
+            ..active
+        }
     }
 }

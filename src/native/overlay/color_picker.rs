@@ -5,7 +5,8 @@ use std::collections::HashMap;
 
 use iced_graphics::{
     backend,
-    canvas::{self, LineCap, Path, Stroke},
+    triangle::Style,
+    widget::canvas::{self, LineCap, Path, Stroke},
     Backend, Renderer,
 };
 
@@ -16,20 +17,21 @@ use iced_native::{
     mouse, overlay, renderer,
     text::Renderer as _,
     touch,
-    widget::{Button, Column, Row, Text},
+    widget::{Button, Column, Row, Text, Tree},
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
     Renderer as _, Shell, Size, Vector, Widget,
 };
 
 use crate::{
+    color_picker,
     core::{
         color::{HexString, Hsv},
         overlay::Position,
     },
     graphics::icons::Icon,
-    native::{color_picker, IconText},
+    native::IconText,
     style::{
-        color_picker::{Style, StyleSheet},
+        color_picker::{Appearance, StyleSheet},
         style_state::StyleState,
     },
 };
@@ -49,29 +51,33 @@ const RGBA_STEP: i16 = 1;
 
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
 #[allow(missing_debug_implementations)]
-pub struct ColorPickerOverlay<'a, Message, B>
+pub struct ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: Clone,
     B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
 {
     /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    cancel_button: Element<'a, Message, Renderer<B>>,
+    cancel_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    submit_button: Element<'a, Message, Renderer<B>>,
+    submit_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
     on_submit: &'a dyn Fn(Color) -> Message,
     /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
     position: Point,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet + 'a>,
+    style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
+    tree: &'a mut Tree,
 }
 
-impl<'a, Message, B> ColorPickerOverlay<'a, Message, B>
+impl<'a, Message, B, Theme> ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
     /// position.
@@ -80,39 +86,31 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet + 'a>,
+        style: <Theme as StyleSheet>::Style,
+        tree: &'a mut Tree,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
-        let color_picker::State {
-            overlay_state,
-            cancel_button,
-            submit_button,
-            ..
-        } = state;
+        let color_picker::State { overlay_state } = state;
 
         ColorPickerOverlay {
             state: overlay_state,
-            cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
+            cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
-                .into(),
-            submit_button: Button::new(
-                submit_button,
-                IconText::new(Icon::Check).width(Length::Fill),
-            )
-            .width(Length::Fill)
-            .on_press(on_cancel) // Sending a fake message
-            .into(),
+                .on_press(on_cancel.clone()),
+            submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
+                .width(Length::Fill)
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style_sheet,
+            style,
+            tree,
         }
     }
 
     /// Turn this [`ColorPickerOverlay`](ColorPickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B, Theme>> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -123,7 +121,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
@@ -231,7 +229,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
@@ -390,7 +388,7 @@ where
         _layout: Layout<'_>,
         _cursor_position: Point,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<B>,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -513,15 +511,16 @@ where
     }
 }
 
-impl<'a, Message, B> iced_native::Overlay<Message, Renderer<B>>
-    for ColorPickerOverlay<'a, Message, B>
+impl<'a, Message, B, Theme> iced_native::Overlay<Message, Renderer<B, Theme>>
+    for ColorPickerOverlay<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     fn layout(
         &self,
-        renderer: &Renderer<B>,
+        renderer: &Renderer<B, Theme>,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -539,13 +538,13 @@ where
             .max_height(max_height);
 
         let divider = if bounds.width > bounds.height {
-            Row::<(), Renderer<B>>::new()
+            Row::<(), Renderer<B, Theme>>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .layout(renderer, &limits)
         } else {
-            Column::<(), Renderer<B>>::new()
+            Column::<(), Renderer<B, Theme>>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
@@ -594,7 +593,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer<B>,
+        renderer: &Renderer<B, Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -655,6 +654,7 @@ where
             .next()
             .expect("Native: Layout should have a cancel button layout for a ColorPicker");
         let cancel_button_status = self.cancel_button.on_event(
+            &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
             cursor_position,
@@ -667,6 +667,7 @@ where
             .next()
             .expect("Native: Layout should have a submit button layout for a ColorPicker");
         let submit_button_status = self.submit_button.on_event(
+            &mut self.tree.children[1],
             event,
             submit_button_layout,
             cursor_position,
@@ -699,7 +700,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer<B>,
+        renderer: &Renderer<B, Theme>,
     ) -> mouse::Interaction {
         let mut children = layout.children();
 
@@ -778,6 +779,7 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
         let cancel_mouse_interaction = self.cancel_button.mouse_interaction(
+            &self.tree.children[0],
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -788,6 +790,7 @@ where
             .next()
             .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
         let submit_mouse_interaction = self.submit_button.mouse_interaction(
+            &self.tree.children[1],
             submit_button_layout,
             cursor_position,
             viewport,
@@ -803,7 +806,8 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<B>,
+        renderer: &mut Renderer<B, Theme>,
+        theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -811,11 +815,14 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, self.style_sheet.active());
-        let _ = style_sheet.insert(StyleState::Selected, self.style_sheet.selected());
-        let _ = style_sheet.insert(StyleState::Hovered, self.style_sheet.hovered());
-        let _ = style_sheet.insert(StyleState::Focused, self.style_sheet.focused());
+        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, self.style));
+        let _ = style_sheet.insert(
+            StyleState::Selected,
+            StyleSheet::selected(theme, self.style),
+        );
+        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, self.style));
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -850,6 +857,7 @@ where
             self,
             block2_layout,
             cursor_position,
+            theme,
             style,
             &bounds,
             &style_sheet,
@@ -858,21 +866,22 @@ where
 }
 
 /// Defines the layout of the 1. block of the color picker containing the HSV part.
-fn block1_layout<'a, Message, B>(
-    _color_picker: &ColorPickerOverlay<'a, Message, B>,
-    renderer: &Renderer<B>,
+fn block1_layout<'a, Message, B, Theme>(
+    _color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
+    renderer: &Renderer<B, Theme>,
     bounds: iced_graphics::Rectangle,
     _position: Point,
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let block1_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
         .height(Length::Fill);
 
-    let mut block1_node = Column::<(), Renderer<B>>::new()
+    let mut block1_node = Column::<(), Renderer<B, Theme>>::new()
         .spacing(PADDING)
         .push(
             Row::new()
@@ -895,15 +904,16 @@ where
 }
 
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
-fn block2_layout<'a, Message, B>(
-    color_picker: &ColorPickerOverlay<'a, Message, B>,
-    renderer: &Renderer<B>,
+fn block2_layout<'a, Message, B, Theme>(
+    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
+    renderer: &Renderer<B, Theme>,
     bounds: iced_graphics::Rectangle,
     _position: Point,
 ) -> iced_native::layout::Node
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let block2_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -914,7 +924,7 @@ where
     let cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
     let hex_text_limits = block2_limits;
-    let mut hex_text = Row::<(), Renderer<B>>::new()
+    let mut hex_text = Row::<(), Renderer<B, Theme>>::new()
         .width(Length::Fill)
         .height(Length::Units(renderer.default_size() + 2 * PADDING))
         .layout(renderer, &hex_text_limits);
@@ -925,7 +935,7 @@ where
     ));
 
     // RGBA Colors
-    let mut rgba_colors = Column::<(), Renderer<B>>::new();
+    let mut rgba_colors = Column::<(), Renderer<B, Theme>>::new();
 
     for _ in 0..4 {
         rgba_colors = rgba_colors.push(
@@ -1014,15 +1024,16 @@ where
 }
 
 /// Draws the 1. block of the color picker containing the HSV part.
-fn block1<'a, Message, B>(
-    renderer: &mut Renderer<B>,
-    color_picker: &ColorPickerOverlay<'a, Message, B>,
+fn block1<'a, Message, B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
+    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
-    style_sheet: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
     B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     // ----------- Block 1 ----------------------
     let hsv_color_layout = layout;
@@ -1041,17 +1052,20 @@ fn block1<'a, Message, B>(
 }
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
-fn block2<'a, Message, B>(
-    renderer: &mut Renderer<B>,
-    color_picker: &ColorPickerOverlay<'a, Message, B>,
+#[allow(clippy::too_many_arguments)]
+fn block2<'a, Message, B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
+    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
+    theme: &Theme,
     style: &renderer::Style,
     viewport: &Rectangle,
-    style_sheet: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
     B: Backend + backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     // ----------- Block 2 ----------------------
     let mut block2_children = layout.children();
@@ -1090,7 +1104,9 @@ fn block2<'a, Message, B>(
         .expect("Graphics: Layout should have a cancel button layout for a ColorPicker");
 
     color_picker.cancel_button.draw(
+        &color_picker.tree.children[0],
         renderer,
+        theme,
         style,
         cancel_button_layout,
         cursor_position,
@@ -1102,7 +1118,9 @@ fn block2<'a, Message, B>(
         .expect("Graphics: Layout should have a submit button layout for a ColorPicker");
 
     color_picker.submit_button.draw(
+        &color_picker.tree.children[1],
         renderer,
+        theme,
         style,
         submit_button_layout,
         cursor_position,
@@ -1138,15 +1156,16 @@ fn block2<'a, Message, B>(
 
 /// Draws the HSV color area.
 #[allow(clippy::too_many_lines)]
-fn hsv_color<'a, Message, B>(
-    renderer: &mut Renderer<B>,
-    color_picker: &ColorPickerOverlay<'a, Message, B>,
+fn hsv_color<'a, Message, B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
+    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
-    style_sheet: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Appearance>,
 ) where
     Message: Clone,
     B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let mut hsv_color_children = layout.children();
     let hsv_color: Hsv = color_picker.state.color.into();
@@ -1184,12 +1203,14 @@ fn hsv_color<'a, Message, B>(
                 }
 
                 let stroke = Stroke {
-                    color: Hsv {
-                        hue: 0,
-                        saturation: 0.0,
-                        value: 1.0 - hsv_color.value,
-                    }
-                    .into(),
+                    style: Style::Solid(
+                        Hsv {
+                            hue: 0,
+                            saturation: 0.0,
+                            value: 1.0 - hsv_color.value,
+                        }
+                        .into(),
+                    ),
                     width: 3.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1203,7 +1224,7 @@ fn hsv_color<'a, Message, B>(
                         Point::new(saturation, 0.0),
                         Point::new(saturation, frame.height()),
                     ),
-                    stroke,
+                    stroke.clone(),
                 );
 
                 frame.stroke(
@@ -1212,10 +1233,12 @@ fn hsv_color<'a, Message, B>(
                 );
 
                 let stroke = Stroke {
-                    color: style_sheet
-                        .get(&sat_value_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_color,
+                    style: Style::Solid(
+                        style_sheet
+                            .get(&sat_value_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_color,
+                    ),
                     width: 2.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1257,7 +1280,7 @@ fn hsv_color<'a, Message, B>(
 
                 let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
                 let stroke = Stroke {
-                    color: hsv_color.into(),
+                    style: Style::Solid(hsv_color.into()),
                     width: 1.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1273,7 +1296,7 @@ fn hsv_color<'a, Message, B>(
             }
 
             let stroke = Stroke {
-                color: Color::BLACK,
+                style: Style::Solid(Color::BLACK),
                 width: 3.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
@@ -1287,10 +1310,12 @@ fn hsv_color<'a, Message, B>(
             );
 
             let stroke = Stroke {
-                color: style_sheet
-                    .get(&hue_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_color,
+                style: Style::Solid(
+                    style_sheet
+                        .get(&hue_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_color,
+                ),
                 width: 2.0,
                 line_cap: LineCap::Round,
                 ..Stroke::default()
@@ -1313,20 +1338,21 @@ fn hsv_color<'a, Message, B>(
 
 /// Draws the RGBA color area.
 #[allow(clippy::too_many_lines)]
-fn rgba_color<B>(
-    renderer: &mut Renderer<B>,
+fn rgba_color<B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
     layout: Layout<'_>,
     color: &Color,
     cursor_position: Point,
     style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Appearance>,
     focus: Focus,
 ) where
     B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let mut rgba_color_children = layout.children();
 
-    let f = |renderer: &mut Renderer<B>,
+    let f = |renderer: &mut Renderer<B, Theme>,
              layout: Layout,
              label: &str,
              color: Color,
@@ -1406,26 +1432,6 @@ fn rgba_color<B>(
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
                     .bar_border_color,
-            },
-            Color::TRANSPARENT,
-        );
-
-        // Focus
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border_radius: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_radius,
-                border_width: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_width,
-                border_color: style_sheet
-                    .get(&StyleState::Focused)
-                    .expect("Style Sheet not found.")
-                    .border_color,
             },
             Color::TRANSPARENT,
         );
@@ -1529,16 +1535,17 @@ fn rgba_color<B>(
 }
 
 /// Draws the hex text representation of the color.
-fn hex_text<B>(
-    renderer: &mut Renderer<B>,
+fn hex_text<B, Theme>(
+    renderer: &mut Renderer<B, Theme>,
     layout: Layout<'_>,
     color: &Color,
     cursor_position: Point,
     _style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, Style>,
+    style_sheet: &HashMap<StyleState, Appearance>,
     _focus: Focus,
 ) where
     B: Backend + backend::Text,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
 {
     let hsv: Hsv = (*color).into();
 
@@ -1598,6 +1605,17 @@ pub struct State {
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
+impl State {
+    /// Creates a new State with the given color.
+    #[must_use]
+    pub fn new(color: Color) -> Self {
+        Self {
+            color,
+            ..Self::default()
+        }
+    }
+}
+
 impl Default for State {
     fn default() -> Self {
         Self {
@@ -1608,6 +1626,95 @@ impl Default for State {
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
+    }
+}
+
+/// Just a workaround to pass the button states from the tree to the overlay
+#[allow(missing_debug_implementations)]
+pub struct ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    cancel_button: Element<'a, Message, Renderer<B, Theme>>,
+    /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    submit_button: Element<'a, Message, Renderer<B, Theme>>,
+}
+
+impl<'a, Message, B, Theme> Default for ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::text::StyleSheet,
+{
+    fn default() -> Self {
+        Self {
+            cancel_button: Button::new(IconText::new(Icon::X)).into(),
+            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+        }
+    }
+}
+
+#[allow(clippy::unimplemented)]
+impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
+    for ColorPickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    fn children(&self) -> Vec<Tree> {
+        vec![
+            Tree::new(&self.cancel_button),
+            Tree::new(&self.submit_button),
+        ]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    }
+
+    fn width(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn height(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn layout(
+        &self,
+        _renderer: &Renderer<B, Theme>,
+        _limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn draw(
+        &self,
+        _state: &Tree,
+        _renderer: &mut Renderer<B, Theme>,
+        _theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &Rectangle,
+    ) {
+        unimplemented!("This should never be reached!")
+    }
+}
+
+impl<'a, Message, B, Theme> From<ColorPickerOverlayButtons<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet,
+{
+    fn from(overlay: ColorPickerOverlayButtons<'a, Message, B, Theme>) -> Self {
+        Self::new(overlay)
     }
 }
 

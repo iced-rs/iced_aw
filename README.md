@@ -81,13 +81,13 @@ Enable this widget with the feature `date_picker`.
 
 <center>
 
-![Floating Button showcase](./images/showcase/floating_button.png)
+![Floating Element showcase](./images/showcase/floating_button.png)
 
 </center>
 
-Please take a look into our examples on how to use floating buttons.
+Please take a look into our examples on how to use floating elements.
 
-Enable this widget with the feature `floating_button`.
+Enable this widget with the feature `floating_element`.
 To enable predefined styles for buttons, enable the feature `colors`.
 
 ### Modal

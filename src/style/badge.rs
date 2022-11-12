@@ -1,12 +1,14 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
+use super::colors;
 #[cfg(not(target_arch = "wasm32"))]
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the [`Badge`](crate::native::badge::Badge).
     pub background: Background,
 
@@ -26,20 +28,20 @@ pub struct Style {
 
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
 pub trait StyleSheet {
+    ///Style for the trait to use.
+    type Style: Default + Copy;
     /// The normal appearance of a [`Badge`](crate::native::badge::Badge).
-    fn active(&self) -> Style;
+    fn active(&self, style: Self::Style) -> Appearance;
 
     /// The appearance when the [`Badge`](crate::native::badge::Badge) is hovered.
-    fn hovered(&self) -> Style;
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        self.active(style)
+    }
 }
 
-/// The default appearance of the [`Badge`](crate::native::badge::Badge).
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
-
-impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+impl std::default::Default for Appearance {
+    fn default() -> Self {
+        Self {
             background: Background::Color([0.87, 0.87, 0.87].into()),
             border_radius: None,
             border_width: 1.0,
@@ -47,223 +49,51 @@ impl StyleSheet for Default {
             text_color: Color::BLACK,
         }
     }
-
-    fn hovered(&self) -> Style {
-        self.active()
-    }
 }
 
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
+#[derive(Debug, Clone, Copy, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``Badge`` Styles
+pub enum BadgeStyles {
+    Primary,
+    Secondary,
+    Success,
+    Danger,
+    Warning,
+    Info,
+    Light,
+    Dark,
+    White,
+    #[default]
+    Default,
 }
 
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
-    }
-}
+impl StyleSheet for Theme {
+    type Style = BadgeStyles;
 
-#[cfg(feature = "colors")]
-pub use predefined::*;
-#[cfg(feature = "colors")]
-/// Predefined styles for the [`Badge`](crate::native::Badge) widget.
-mod predefined {
-    use crate::style::badge::StyleSheet;
-    use crate::style::{badge::Style, colors};
+    fn active(&self, style: Self::Style) -> Appearance {
+        let from_colors = |color: Color, text_color: Color| Appearance {
+            background: Background::Color(color),
+            border_color: Some(color),
+            text_color,
+            ..Appearance::default()
+        };
 
-    /// The appearance with the [`primary`](colors::PRIMARY) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Primary;
-
-    impl StyleSheet for Primary {
-        fn active(&self) -> super::Style {
-            Style {
-                background: colors::PRIMARY.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::PRIMARY.into(),
-                text_color: colors::WHITE,
-            }
-        }
-
-        fn hovered(&self) -> super::Style {
-            self.active()
+        match style {
+            BadgeStyles::Primary => from_colors(colors::PRIMARY, colors::WHITE),
+            BadgeStyles::Secondary => from_colors(colors::SECONDARY, colors::WHITE),
+            BadgeStyles::Success => from_colors(colors::SUCCESS, colors::WHITE),
+            BadgeStyles::Danger => from_colors(colors::DANGER, colors::WHITE),
+            BadgeStyles::Warning => from_colors(colors::WARNING, colors::BLACK),
+            BadgeStyles::Info => from_colors(colors::INFO, colors::BLACK),
+            BadgeStyles::Light => from_colors(colors::LIGHT, colors::BLACK),
+            BadgeStyles::Dark => from_colors(colors::DARK, colors::WHITE),
+            BadgeStyles::White => from_colors(colors::WHITE, colors::BLACK),
+            BadgeStyles::Default => Appearance::default(),
         }
     }
 
-    /// The appearance with the [`secondary`](colors::SECONDARY) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Secondary;
-
-    impl StyleSheet for Secondary {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::SECONDARY.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::SECONDARY.into(),
-                text_color: colors::WHITE,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`success`](colors::SUCCESS) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Success;
-
-    impl StyleSheet for Success {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::SUCCESS.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::SUCCESS.into(),
-                text_color: colors::WHITE,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`danger`](colors::DANGER) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Danger;
-
-    impl StyleSheet for Danger {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::DANGER.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::DANGER.into(),
-                text_color: colors::WHITE,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`warning`](colors::WARNING) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Warning;
-
-    impl StyleSheet for Warning {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::WARNING.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::WARNING.into(),
-                text_color: colors::BLACK,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`info`](colors::INFO) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Info;
-
-    impl StyleSheet for Info {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::INFO.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::INFO.into(),
-                text_color: colors::BLACK,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`light`](colors::LIGHT) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Light;
-
-    impl StyleSheet for Light {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::LIGHT.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::LIGHT.into(),
-                text_color: colors::BLACK,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`dark`](colors::DARK) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Dark;
-
-    impl StyleSheet for Dark {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::DARK.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::DARK.into(),
-                text_color: colors::WHITE,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
-    }
-
-    /// The appearance with the [`white`](colors::WHITE) color of a
-    /// [`Badge`](crate::native::badge::Badge).
-    #[derive(Clone, Copy, Debug)]
-    pub struct White;
-
-    impl StyleSheet for White {
-        fn active(&self) -> Style {
-            Style {
-                background: colors::WHITE.into(),
-                border_radius: None,
-                border_width: 1.0,
-                border_color: colors::WHITE.into(),
-                text_color: colors::BLACK,
-            }
-        }
-
-        fn hovered(&self) -> Style {
-            self.active()
-        }
+    fn hovered(&self, style: Self::Style) -> Appearance {
+        self.active(style)
     }
 }

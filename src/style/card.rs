@@ -2,11 +2,13 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 #[cfg(not(target_arch = "wasm32"))]
+use super::colors;
 use iced_native::{Background, Color};
+use iced_style::Theme;
 
 /// The appearance of a [`Card`](crate::native::card::Card).
 #[derive(Clone, Copy, Debug)]
-pub struct Style {
+pub struct Appearance {
     /// The background of the [`Card`](crate::native::card::Card).
     pub background: Background,
 
@@ -42,22 +44,79 @@ pub struct Style {
 }
 
 /// The appearance of a [`Card`](crate::native::card::Card).
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
+    type Style: std::default::Default + Copy;
     /// The normal appearance of a [`Card`](crate::native::card::Card).
-    fn active(&self) -> Style;
+    fn active(&self, style: Self::Style) -> Appearance;
 }
 
-/// The default appearance of a [`Card`](crate::native::card::Card).
-#[derive(Clone, Copy, Debug)]
-pub struct Default;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+/// Default Prebuilt ``Card`` Styles
+pub enum CardStyles {
+    Primary,
+    Secondary,
+    Success,
+    Danger,
+    Warning,
+    Info,
+    Light,
+    Dark,
+    White,
+    #[default]
+    Default,
+}
 
-impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style {
+impl StyleSheet for Theme {
+    type Style = CardStyles;
+
+    fn active(&self, style: Self::Style) -> Appearance {
+        let palette = self.extended_palette();
+        let foreground = self.palette();
+
+        let backing_with_text = |color: Color, text_color: Color| Appearance {
+            border_color: color,
+            head_background: color.into(),
+            head_text_color: text_color,
+            close_color: text_color,
+            background: palette.background.base.color.into(),
+            body_text_color: foreground.text,
+            foot_text_color: foreground.text,
+            ..Appearance::default()
+        };
+
+        let backing_only = |color: Color| Appearance {
+            border_color: color,
+            head_background: color.into(),
+            background: palette.background.base.color.into(),
+            body_text_color: foreground.text,
+            foot_text_color: foreground.text,
+            ..Appearance::default()
+        };
+
+        match style {
+            CardStyles::Primary => backing_with_text(colors::PRIMARY, colors::WHITE),
+            CardStyles::Secondary => backing_with_text(colors::SECONDARY, colors::WHITE),
+            CardStyles::Success => backing_with_text(colors::SUCCESS, colors::WHITE),
+            CardStyles::Danger => backing_with_text(colors::DANGER, colors::WHITE),
+            CardStyles::Warning => backing_only(colors::WARNING),
+            CardStyles::Info => backing_only(colors::INFO),
+            CardStyles::Light => backing_only(colors::LIGHT),
+            CardStyles::Dark => backing_with_text(colors::DARK, colors::WHITE),
+            CardStyles::White => backing_only(colors::WHITE),
+            CardStyles::Default => backing_only([0.87, 0.87, 0.87].into()),
+        }
+    }
+}
+
+impl std::default::Default for Appearance {
+    fn default() -> Self {
+        Self {
             background: Color::WHITE.into(),
-            border_radius: 10.0, //32.0,
+            border_radius: 10.0,
             border_width: 1.0,
-            border_color: [0.87, 0.87, 0.87].into(), //Color::BLACK.into(),
+            border_color: [0.87, 0.87, 0.87].into(),
             head_background: Background::Color([0.87, 0.87, 0.87].into()),
             head_text_color: Color::BLACK,
             body_background: Color::TRANSPARENT.into(),
@@ -65,185 +124,6 @@ impl StyleSheet for Default {
             foot_background: Color::TRANSPARENT.into(),
             foot_text_color: Color::BLACK,
             close_color: Color::BLACK,
-        }
-    }
-}
-
-#[allow(clippy::use_self)]
-impl std::default::Default for Box<dyn StyleSheet> {
-    fn default() -> Self {
-        Box::new(Default)
-    }
-}
-
-#[allow(clippy::use_self)]
-impl<T> From<T> for Box<dyn StyleSheet>
-where
-    T: 'static + StyleSheet,
-{
-    fn from(style: T) -> Self {
-        Box::new(style)
-    }
-}
-
-impl std::default::Default for Style {
-    fn default() -> Self {
-        Default.active()
-    }
-}
-
-#[cfg(feature = "colors")]
-pub use predefined::*;
-#[cfg(feature = "colors")]
-/// Predefined styles for the [`Card`](crate::native::Card) widget.
-mod predefined {
-    use crate::style::{
-        card::{Style, StyleSheet},
-        colors,
-    };
-
-    /// The appearance with the [`primary`](colors::PRIMARY) head background of
-    /// a [`Card`](crate::native::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Primary;
-
-    impl StyleSheet for Primary {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::PRIMARY,
-                head_background: colors::PRIMARY.into(),
-                head_text_color: colors::WHITE,
-                close_color: colors::WHITE,
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`secondary`](colors::SECONDARY) head background
-    /// of a [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Secondary;
-
-    impl StyleSheet for Secondary {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::SECONDARY,
-                head_background: colors::SECONDARY.into(),
-                head_text_color: colors::WHITE,
-                close_color: colors::WHITE,
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`success`](colors::SUCCESS) head background of
-    /// a [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Success;
-
-    impl StyleSheet for Success {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::SUCCESS,
-                head_background: colors::SUCCESS.into(),
-                head_text_color: colors::WHITE,
-                close_color: colors::WHITE,
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`danger`](colors::DANGER) head background of a
-    /// [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Danger;
-
-    impl StyleSheet for Danger {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::DANGER,
-                head_background: colors::DANGER.into(),
-                head_text_color: colors::WHITE,
-                close_color: colors::WHITE,
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`warning`](colors::WARNING) head background of
-    /// a [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Warning;
-
-    impl StyleSheet for Warning {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::WARNING,
-                head_background: colors::WARNING.into(),
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`info`](colors::INFO) head background of a
-    /// [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Info;
-
-    impl StyleSheet for Info {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::INFO,
-                head_background: colors::INFO.into(),
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`light`](colors::LIGHT) head background of a
-    /// [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Light;
-
-    impl StyleSheet for Light {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::LIGHT,
-                head_background: colors::LIGHT.into(),
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`dark`](colors::DARK) head background of a
-    /// [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct Dark;
-
-    impl StyleSheet for Dark {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::DARK,
-                head_background: colors::DARK.into(),
-                head_text_color: colors::WHITE,
-                close_color: colors::WHITE,
-                ..Style::default()
-            }
-        }
-    }
-
-    /// The appearance with the [`white`](colors::WHITE) head background of a
-    /// [`Card`](crate::native::card::Card).
-    #[derive(Clone, Copy, Debug)]
-    pub struct White;
-
-    impl StyleSheet for White {
-        fn active(&self) -> Style {
-            Style {
-                border_color: colors::WHITE,
-                head_background: colors::WHITE.into(),
-                ..Style::default()
-            }
         }
     }
 }

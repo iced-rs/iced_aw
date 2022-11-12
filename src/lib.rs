@@ -77,8 +77,8 @@ mod platform {
     pub use {crate::graphics::date_picker, date_picker::DatePicker};
 
     #[doc(no_inline)]
-    #[cfg(feature = "floating_button")]
-    pub use {crate::graphics::floating_button, floating_button::FloatingButton};
+    #[cfg(feature = "floating_element")]
+    pub use {crate::graphics::floating_element, floating_element::FloatingElement};
 
     #[doc(no_inline)]
     #[cfg(feature = "grid")]
@@ -125,6 +125,3 @@ mod platform {
 
 #[doc(no_inline)]
 pub use platform::*;
-
-#[cfg(feature = "pure")]
-pub mod pure;

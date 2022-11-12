@@ -1,18 +1,8 @@
-use iced::{Alignment, Column, Container, Element, Length, Sandbox, Settings, Space, Text};
-use iced_aw::selection_list::{self, SelectionList, Style, StyleSheet};
-
-#[derive(Clone, Copy, Debug)]
-pub struct CustomStyle;
-
-impl StyleSheet for CustomStyle {
-    fn style() -> Style {
-        Style {
-            width: Length::Shrink,
-            height: Length::Units(100),
-            ..Default::default()
-        }
-    }
-}
+use iced::{
+    widget::{Column, Container, Space, Text},
+    Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::selection_list::{SelectionList, SelectionListStyles};
 
 pub fn main() -> iced::Result {
     Example::run(Settings::default())
@@ -21,7 +11,6 @@ pub fn main() -> iced::Result {
 #[derive(Default)]
 struct Example {
     vec: Vec<String>,
-    selection_list: selection_list::State<String>,
     selected_language: String,
 }
 
@@ -62,14 +51,16 @@ impl Sandbox for Example {
         }
     }
 
-    fn view(&mut self) -> Element<Message> {
-        let selection_list = SelectionList::new(
-            &mut self.selection_list,
+    fn view(&self) -> Element<Message> {
+        let selection_list = SelectionList::new_with(
             &self.vec[..],
-            &Some(self.selected_language.clone()),
             Message::LanguageSelected,
-            CustomStyle::style(),
-        );
+            12,
+            5,
+            SelectionListStyles::Default,
+        )
+        .width(Length::Shrink)
+        .height(Length::Units(100));
 
         let mut content = Column::new()
             .width(Length::Fill)

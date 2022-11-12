@@ -2,11 +2,13 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use iced_native::{
-    event, layout, mouse, renderer, Alignment, Clipboard, Color, Element, Event, Layout, Length,
-    Padding, Point, Rectangle, Shell, Widget,
+    event, layout, mouse,
+    renderer::{self},
+    widget::Tree,
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
-pub use crate::style::badge::{Style, StyleSheet};
+pub use crate::style::badge::{Appearance, StyleSheet};
 
 /// The ratio of the border radius.
 const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
@@ -18,7 +20,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// # use iced_aw::style::badge;
 /// # use iced_native::{widget::Text, renderer::Null};
 /// #
-/// # pub type Badge<'a, Message> = iced_aw::native::Badge<'a, Message, Null>;
+/// # pub type Badge<'a, Message> = iced_aw::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }
@@ -26,7 +28,11 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Renderer> {
+pub struct Badge<'a, Message, Renderer>
+where
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
+{
     /// The padding of the [`Badge`].
     padding: u16,
     /// The width of the [`Badge`].
@@ -38,7 +44,7 @@ pub struct Badge<'a, Message, Renderer> {
     /// The vertical alignment of the [`Badge`](Badge).
     vertical_alignment: Alignment,
     /// The style of the [`Badge`](Badge).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style: <Renderer::Theme as StyleSheet>::Style,
     /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
     content: Element<'a, Message, Renderer>,
 }
@@ -46,6 +52,7 @@ pub struct Badge<'a, Message, Renderer> {
 impl<'a, Message, Renderer> Badge<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Badge`](Badge) with the given content.
     ///
@@ -61,7 +68,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style_sheet: std::boxed::Box::default(),
+            style: <Renderer::Theme as StyleSheet>::Style::default(),
             content: content.into(),
         }
     }
@@ -103,39 +110,26 @@ where
 
     /// Sets the style of the [`Badge`](Badge).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-/// Computes the layout of a [`Badge`](Badge).
-pub fn layout<Renderer>(
-    renderer: &Renderer,
-    limits: &layout::Limits,
-    width: Length,
-    height: Length,
-    padding: Padding,
-    horizontal_alignment: Alignment,
-    vertical_alignment: Alignment,
-    layout_content: impl FnOnce(&Renderer, &layout::Limits) -> layout::Node,
-) -> iced_native::layout::Node {
-    let limits = limits.loose().width(width).height(height).pad(padding);
-
-    let mut content = layout_content(renderer, &limits.loose());
-    let size = limits.resolve(content.size());
-
-    content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
-    content.align(horizontal_alignment, vertical_alignment, size);
-
-    layout::Node::with_children(size.pad(padding), vec![content])
-}
-
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.content)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.content));
+    }
+
     fn width(&self) -> Length {
         self.width
     }
@@ -145,28 +139,34 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
-        layout(
-            renderer,
-            limits,
-            self.width,
-            self.height,
-            self.padding.into(),
-            self.horizontal_alignment,
-            self.vertical_alignment,
-            |renderer, limits| self.content.layout(renderer, limits),
-        )
+        let padding = self.padding.into();
+        let limits = limits
+            .loose()
+            .width(self.width)
+            .height(self.height)
+            .pad(padding);
+
+        let mut content = self.content.as_widget().layout(renderer, &limits.loose());
+        let size = limits.resolve(content.size());
+
+        content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
+        content.align(self.horizontal_alignment, self.vertical_alignment, size);
+
+        layout::Node::with_children(size.pad(padding), vec![content])
     }
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        messages: &mut Shell<'_, Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        self.content.on_event(
+        self.content.as_widget_mut().on_event(
+            &mut state.children[0],
             event,
             layout
                 .children()
@@ -175,36 +175,44 @@ where
             cursor_position,
             renderer,
             clipboard,
-            messages,
+            shell,
         )
     }
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.content.as_widget().mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
         &self,
+        tree: &iced_native::widget::Tree,
         renderer: &mut Renderer,
-        _style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        theme: &Renderer::Theme,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
         let is_mouse_over = bounds.contains(cursor_position);
         let style_sheet = if is_mouse_over {
-            self.style_sheet.hovered()
+            theme.hovered(self.style)
         } else {
-            self.style_sheet.active()
+            theme.active(self.style)
         };
 
         //println!("height: {}", bounds.height);
@@ -212,7 +220,7 @@ where
         //  x
         let border_radius = style_sheet
             .border_radius
-            .unwrap_or(bounds.height as f32 / BORDER_RADIUS_RATIO);
+            .unwrap_or(bounds.height / BORDER_RADIUS_RATIO);
 
         renderer.fill_quad(
             renderer::Quad {
@@ -224,8 +232,10 @@ where
             style_sheet.background,
         );
 
-        self.content.draw(
+        self.content.as_widget().draw(
+            &tree.children[0],
             renderer,
+            theme,
             &renderer::Style {
                 text_color: style_sheet.text_color,
             },
@@ -240,10 +250,11 @@ where
 
 impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
-    Message: 'a,
+    Message: Clone + 'a,
+    Renderer: iced_native::Renderer + 'a,
+    Renderer::Theme: StyleSheet,
 {
     fn from(badge: Badge<'a, Message, Renderer>) -> Self {
-        Element::new(badge)
+        Self::new(badge)
     }
 }

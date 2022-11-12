@@ -5,10 +5,10 @@ use iced_graphics::Renderer;
 
 use crate::native::split;
 pub use crate::native::split::{Axis, State};
-pub use crate::style::split::{Style, StyleSheet};
+pub use crate::style::split::{Appearance, StyleSheet};
 
 /// A split can divide the available space by half to display two different elements.
 /// It can split horizontally or vertically.
 ///
 /// This is an alias of an `iced_native` Split with an `iced_wgpu::Renderer`.
-pub type Split<'a, Message, Backend> = split::Split<'a, Message, Renderer<Backend>>;
+pub type Split<'a, Message, Backend, Theme> = split::Split<'a, Message, Renderer<Backend, Theme>>;

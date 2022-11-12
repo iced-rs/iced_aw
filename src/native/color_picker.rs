@@ -1,28 +1,36 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-use color_picker::ColorBarDragged;
+
 use iced_graphics::{Backend, Renderer};
 use iced_native::{
-    event,
-    layout::{Limits, Node},
-    mouse, overlay, renderer,
-    widget::button,
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    event, mouse, overlay, renderer, widget::button, Clipboard, Color, Event, Layout, Length,
+    Point, Rectangle, Shell,
+};
+use iced_native::{
+    widget::{
+        tree::{self, Tag},
+        Tree,
+    },
+    Element, Widget,
 };
 
-use super::overlay::color_picker::{self, ColorPickerOverlay, Focus};
-pub use crate::style::color_picker::{Style, StyleSheet};
+pub use crate::style::color_picker::{Appearance, StyleSheet};
+
+use super::overlay::color_picker::{
+    self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
+};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::color_picker;
-/// # use iced_native::{widget::{button, Button, Text}, Color, renderer::Null};
+/// # use iced_aw::pure::color_picker;
+/// # use iced_native::{Color, renderer::Null};
+/// # use iced_pure::widget::{button, Button, Text};
 /// #
-/// # pub type ColorPicker<'a, Message> = iced_aw::native::ColorPicker<'a, Message, Null>;
+/// # pub type ColorPicker<'a, Message> = iced_aw::pure::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,
@@ -30,69 +38,81 @@ pub use crate::style::color_picker::{Style, StyleSheet};
 ///     Submit(Color),
 /// }
 ///
-/// let mut button_state = button::State::new();
-/// let mut state = color_picker::State::new();
-/// state.show(true);
-///
 /// let color_picker = ColorPicker::new(
-///     &mut state,
-///     Button::new(&mut button_state, Text::new("Pick color"))
+///     true,
+///     Color::default(),
+///     Button::new(Text::new("Pick color"))
 ///         .on_press(Message::Open),
 ///     Message::Cancel,
 ///     Message::Submit,
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ColorPicker<'a, Message, B>
+pub struct ColorPicker<'a, Message, B, Theme>
 where
     Message: Clone,
-    B: Backend,
+    B: Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + button::StyleSheet,
 {
-    /// The state of the [`ColorPicker`](ColorPicker).
-    state: &'a mut State,
+    /// Show the picker.
+    show_picker: bool,
+    /// The color to show.
+    color: Color,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer<B>>,
+    underlay: Element<'a, Message, Renderer<B, Theme>>,
     /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_cancel: Message,
     /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style_sheet: Box<dyn StyleSheet + 'a>,
+    style: <Theme as StyleSheet>::Style,
+    /// The buttons of the overlay.
+    overlay_state: Element<'a, Message, Renderer<B, Theme>>,
 }
 
-impl<'a, Message, B> ColorPicker<'a, Message, B>
+impl<'a, Message, B, Theme> ColorPicker<'a, Message, B, Theme>
 where
-    Message: Clone,
-    B: Backend,
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
     /// It expects:
-    ///     * a mutable reference to the [`ColorPicker`](ColorPicker)'s [`State`](State).
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`ColorPicker`](ColorPicker)
+    ///     * if the overlay of the color picker is visible.
+    ///     * the initial color to show.
+    ///     * the underlay [`Element`](iced_pure::Element) on which this [`ColorPicker`](ColorPicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
     ///         is pressed.
     ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
     ///         is pressed, which takes the picked [`Color`](iced_native::Color) value.
-    pub fn new<U, F>(state: &'a mut State, underlay: U, on_cancel: Message, on_submit: F) -> Self
+    pub fn new<U, F>(
+        show_picker: bool,
+        color: Color,
+        underlay: U,
+        on_cancel: Message,
+        on_submit: F,
+    ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer<B>>>,
+        U: Into<Element<'a, Message, Renderer<B, Theme>>>,
         F: 'static + Fn(Color) -> Message,
     {
         Self {
-            state,
+            show_picker,
+            color,
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style_sheet: std::boxed::Box::default(),
+            style: <Theme as StyleSheet>::Style::default(),
+            overlay_state: ColorPickerOverlayButtons::default().into(),
         }
     }
 
     /// Sets the style of the [`ColorPicker`](ColorPicker).
     #[must_use]
-    pub fn style(mut self, style_sheet: impl Into<Box<dyn StyleSheet>>) -> Self {
-        self.style_sheet = style_sheet.into();
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
         self
     }
 }
@@ -100,32 +120,17 @@ where
 /// The state of the [`ColorPicker`](ColorPicker).
 #[derive(Debug, Default)]
 pub struct State {
-    /// The visibility of the overlay.
-    pub(crate) show: bool,
     /// The state of the overlay.
     pub(crate) overlay_state: color_picker::State,
-    /// The state of the cancel button.
-    pub(crate) cancel_button: button::State,
-    /// The state of the submit button.
-    pub(crate) submit_button: button::State,
 }
 
 impl State {
     /// Creates a new [`State`](State).
     #[must_use]
-    pub fn new() -> Self {
+    pub fn new(color: Color) -> Self {
         Self {
-            show: false,
-            overlay_state: color_picker::State::default(),
-            cancel_button: button::State::new(),
-            submit_button: button::State::new(),
+            overlay_state: color_picker::State::new(color),
         }
-    }
-
-    /// Sets the visibility of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    pub fn show(&mut self, b: bool) {
-        self.overlay_state.focus = if b { Focus::Overlay } else { Focus::None };
-        self.show = b;
     }
 
     /// Resets the color of the state.
@@ -135,66 +140,117 @@ impl State {
     }
 }
 
-impl<'a, Message, B> Widget<Message, Renderer<B>> for ColorPicker<'a, Message, B>
+impl<'a, Message, B, Theme> Widget<Message, Renderer<B, Theme>>
+    for ColorPicker<'a, Message, B, Theme>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
 {
+    fn tag(&self) -> Tag {
+        Tag::of::<State>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(State::new(self.color))
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.underlay, &self.overlay_state]);
+    }
+
     fn width(&self) -> Length {
-        self.underlay.width()
+        self.underlay.as_widget().width()
     }
 
     fn height(&self) -> Length {
-        self.underlay.height()
+        self.underlay.as_widget().width()
     }
 
-    fn layout(&self, renderer: &Renderer<B>, limits: &Limits) -> Node {
-        self.underlay.layout(renderer, limits)
+    fn layout(
+        &self,
+        renderer: &Renderer<B, Theme>,
+        limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        self.underlay.as_widget().layout(renderer, limits)
     }
 
     fn on_event(
         &mut self,
+        state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer<B>,
+        renderer: &Renderer<B, Theme>,
         clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        self.underlay
-            .on_event(event, layout, cursor_position, renderer, clipboard, shell)
+        self.underlay.as_widget_mut().on_event(
+            &mut state.children[0],
+            event,
+            layout,
+            cursor_position,
+            renderer,
+            clipboard,
+            shell,
+        )
     }
 
     fn mouse_interaction(
         &self,
+        state: &Tree,
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &Rectangle,
-        renderer: &Renderer<B>,
+        renderer: &Renderer<B, Theme>,
     ) -> mouse::Interaction {
-        self.underlay
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.underlay.as_widget().mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
         &self,
-        renderer: &mut Renderer<B>,
+        state: &iced_native::widget::Tree,
+        renderer: &mut Renderer<B, Theme>,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor_position: Point,
+        viewport: &Rectangle,
     ) {
-        self.underlay
-            .draw(renderer, style, layout, cursor_position, viewport);
+        self.underlay.as_widget().draw(
+            &state.children[0],
+            renderer,
+            theme,
+            style,
+            layout,
+            cursor_position,
+            viewport,
+        );
     }
 
-    fn overlay(
-        &mut self,
+    fn overlay<'b>(
+        &'b self,
+        state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer<B>,
-    ) -> Option<overlay::Element<'_, Message, Renderer<B>>> {
-        if !self.state.show {
-            return self.underlay.overlay(layout, renderer);
+        renderer: &Renderer<B, Theme>,
+    ) -> Option<overlay::Element<'b, Message, Renderer<B, Theme>>> {
+        let picker_state: &mut State = state.state.downcast_mut();
+
+        if !self.show_picker {
+            return self
+                .underlay
+                .as_widget()
+                .overlay(&mut state.children[0], layout, renderer);
         }
 
         let bounds = layout.bounds();
@@ -202,23 +258,26 @@ where
 
         Some(
             ColorPickerOverlay::new(
-                self.state,
+                picker_state,
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                &self.style_sheet,
+                self.style,
+                &mut state.children[1],
             )
             .overlay(),
         )
     }
 }
 
-impl<'a, Message, B> From<ColorPicker<'a, Message, B>> for Element<'a, Message, Renderer<B>>
+impl<'a, Message, B, Theme> From<ColorPicker<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
 where
     Message: 'static + Clone,
     B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
 {
-    fn from(color_picker: ColorPicker<'a, Message, B>) -> Self {
+    fn from(color_picker: ColorPicker<'a, Message, B, Theme>) -> Self {
         Element::new(color_picker)
     }
 }

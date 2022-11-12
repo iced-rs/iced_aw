@@ -1,114 +1,74 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
+use iced_graphics::Vector;
 use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, widget::Container, Clipboard,
-    Color, Element, Event, Layout, Length, Point, Shell, Size,
+    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
+    Layout, Point, Shell, Size,
 };
+use iced_native::{widget::Tree, Element};
 
 use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
-pub struct ModalOverlay<'a, State, Content, Message, Renderer>
+pub struct ModalOverlay<'a, Message, Renderer>
 where
-    State: 'a,
-    Content: Fn(&'a mut State) -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
-    state: &'a mut State,
-    /// The content of the [`Overlay`](Overlay).
-    content: Content,
+    state: &'a mut Tree,
+    /// The content of the [`ModalOverlay`](ModalOverlay).
+    content: Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
-    /// The style of the [`Overlay`](Overlay).
-    style_sheet: &'a Box<dyn StyleSheet>,
+    /// The style of the [`ModalOverlay`](ModalOverlay).
+    style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<'a, State, Content, Message, Renderer> ModalOverlay<'a, State, Content, Message, Renderer>
+impl<'a, Message, Renderer> ModalOverlay<'a, Message, Renderer>
 where
-    State: 'a,
-    Content: Fn(&mut State) -> Element<'_, Message, Renderer>,
     Message: Clone,
     Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
-    pub fn new(
-        state: &'a mut State,
-        content: Content,
+    pub fn new<C>(
+        state: &'a mut Tree,
+        content: C,
         backdrop: Option<Message>,
         esc: Option<Message>,
-        style_sheet: &'a Box<dyn StyleSheet>,
-    ) -> Self {
+        style: <Renderer::Theme as StyleSheet>::Style,
+    ) -> Self
+    where
+        C: Into<Element<'a, Message, Renderer>>,
+    {
         ModalOverlay {
             state,
-            content,
+            content: content.into(),
             backdrop,
             esc,
-            style_sheet,
+            style,
         }
     }
 
     /// Turn this [`ModalOverlay`] into an overlay
     /// [`Element`](iced_native::overlay::Element).
     pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(position, Box::new(Overlay::new(self)))
-    }
-}
-
-/// The [`Overlay`](Overlay) of the [`Modal`](crate::native::Modal).
-struct Overlay<'a, Message, Renderer: iced_native::Renderer> {
-    /// The content of the [`Overlay`](Overlay).
-    content: Element<'a, Message, Renderer>,
-    /// The optional message that will be send when the user clicks on the backdrop.
-    backdrop: Option<Message>,
-    /// The optional message that will be send when the ESC key was pressed.
-    esc: Option<Message>,
-    /// The style of the [`Overlay`](Overlay).
-    style_sheet: &'a Box<dyn StyleSheet>,
-}
-
-impl<'a, Message, Renderer> Overlay<'a, Message, Renderer>
-where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
-{
-    /// Creates a new [`Overlay`](Overlay) from the given [`ModalOverlay`](ModalOverlay).
-    pub fn new<State, Content>(modal: ModalOverlay<'a, State, Content, Message, Renderer>) -> Self
-    where
-        Content: Fn(&mut State) -> Element<'_, Message, Renderer>,
-    {
-        let ModalOverlay {
-            state,
-            content,
-            backdrop,
-            esc,
-            style_sheet,
-        } = modal;
-
-        Self {
-            content: Container::new(content(state))
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x()
-                .center_y()
-                .into(),
-            backdrop,
-            esc,
-            style_sheet,
-        }
+        overlay::Element::new(position, Box::new(self))
     }
 }
 
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for Overlay<'a, Message, Renderer>
+    for ModalOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn layout(
         &self,
@@ -118,11 +78,24 @@ where
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds);
 
-        let mut content = self.content.layout(renderer, &limits);
+        let mut content = self.content.as_widget().layout(renderer, &limits);
+
+        // Center position
+        let max_size = limits.max();
+        let container_half_width = max_size.width / 2.0;
+        let container_half_height = max_size.height / 2.0;
+        let content_half_width = content.bounds().width / 2.0;
+        let content_half_height = content.bounds().height / 2.0;
+
+        let position = position
+            + Vector::new(
+                container_half_width - content_half_width,
+                container_half_height - content_half_height,
+            );
 
         content.move_to(position);
 
-        content
+        iced_native::layout::Node::with_children(max_size, vec![content])
     }
 
     fn on_event(
@@ -167,10 +140,18 @@ where
         );
 
         match esc_status.merge(backdrop_status) {
-            event::Status::Ignored => {
-                self.content
-                    .on_event(event, layout, cursor_position, renderer, clipboard, shell)
-            }
+            event::Status::Ignored => self.content.as_widget_mut().on_event(
+                self.state,
+                event,
+                layout
+                    .children()
+                    .next()
+                    .expect("Native: Layout should have a content layout."),
+                cursor_position,
+                renderer,
+                clipboard,
+                shell,
+            ),
             event::Status::Captured => event::Status::Captured,
         }
     }
@@ -182,20 +163,29 @@ where
         viewport: &iced_graphics::Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content
-            .mouse_interaction(layout, cursor_position, viewport, renderer)
+        self.content.as_widget().mouse_interaction(
+            self.state,
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a content layout."),
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
+        theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
         cursor_position: Point,
     ) {
         let bounds = layout.bounds();
 
-        let style_sheet = self.style_sheet.active();
+        let style_sheet = theme.active(self.style);
 
         // Background
         renderer.fill_quad(
@@ -208,8 +198,20 @@ where
             style_sheet.background,
         );
 
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("Native: Layout should have a content layout.");
+
         // Modal
-        self.content
-            .draw(renderer, style, layout, cursor_position, &bounds);
+        self.content.as_widget().draw(
+            self.state,
+            renderer,
+            theme,
+            style,
+            content_layout,
+            cursor_position,
+            &bounds,
+        );
     }
 }

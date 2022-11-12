@@ -4,14 +4,17 @@
 use std::collections::HashMap;
 
 use chrono::{Datelike, Local, NaiveDate};
+use iced_graphics::{Backend, Renderer};
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{self, Limits},
-    mouse, overlay, renderer, touch,
-    widget::{Button, Column, Container, Row, Text},
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell,
-    Size, Widget,
+    mouse, overlay, renderer,
+    text::Renderer as _,
+    touch,
+    widget::{Button, Column, Container, Row, Text, Tree},
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Renderer as _, Shell, Size, Widget,
 };
 
 use crate::{
@@ -19,12 +22,13 @@ use crate::{
         date::{Date, IsInMonth},
         overlay::Position,
     },
+    date_picker,
     graphics::icons::{Icon, ICON_FONT},
-    native::{date_picker, IconText},
+    native::IconText,
     style::style_state::StyleState,
 };
 
-pub use crate::style::date_picker::{Style, StyleSheet};
+pub use crate::style::date_picker::{Appearance, StyleSheet};
 
 /// The padding around the elements.
 const PADDING: u16 = 10;
@@ -37,29 +41,37 @@ const BUTTON_SPACING: u16 = 5;
 
 /// The overlay of the [`DatePicker`](crate::native::DatePicker).
 #[allow(missing_debug_implementations)]
-pub struct DatePickerOverlay<'a, Message, Renderer>
+pub struct DatePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
 {
     /// The state of the [`DatePickerOverlay`](DatePickerOverlay).
     state: &'a mut State,
     /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
-    cancel_button: Element<'a, Message, Renderer>,
+    cancel_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
-    submit_button: Element<'a, Message, Renderer>,
+    submit_button: Button<'a, Message, Renderer<B, Theme>>,
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
     on_submit: &'a dyn Fn(Date) -> Message,
     /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
     /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
-    style_sheet: &'a Box<dyn StyleSheet>,
+    style: <Theme as StyleSheet>::Style,
+    /// The reference to the tree holding the state of this overlay.
+    tree: &'a mut Tree,
 }
 
-impl<'a, Message, Renderer> DatePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B, Theme> DatePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     /// Creates a new [`DatePickerOverlay`](DatePickerOverlay) on the given
     /// position.
@@ -68,41 +80,33 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
-        style_sheet: &'a Box<dyn StyleSheet>,
+        style: <Theme as StyleSheet>::Style,
+        tree: &'a mut Tree,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
     ) -> Self {
-        let date_picker::State {
-            overlay_state,
-            cancel_button,
-            submit_button,
-            ..
-        } = state;
+        let date_picker::State { overlay_state } = state;
 
         DatePickerOverlay {
             state: overlay_state,
-            cancel_button: Button::new(cancel_button, IconText::new(Icon::X).width(Length::Fill))
+            cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
                 .width(Length::Fill)
-                .on_press(on_cancel.clone())
                 //.style(button_style.clone())
-                .into(),
-            submit_button: Button::new(
-                submit_button,
-                IconText::new(Icon::Check).width(Length::Fill),
-            )
-            .width(Length::Fill)
-            .on_press(on_cancel) // Sending a fake message
-            //.style(button_style)
-            .into(),
+                .on_press(on_cancel.clone()),
+            submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
+                .width(Length::Fill)
+                //.style(button_style)
+                .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style_sheet,
+            style,
+            tree,
         }
     }
 
     /// Turn this [`DatePickerOverlay`](DatePickerOverlay) into an overlay
     /// [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<B, Theme>> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -123,7 +127,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
@@ -214,7 +218,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
@@ -278,7 +282,7 @@ where
         _layout: Layout<'_>,
         _cursor_position: Point,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
+        _renderer: &Renderer<B, Theme>,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -352,16 +356,21 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for DatePickerOverlay<'a, Message, Renderer>
+impl<'a, Message, B, Theme> iced_native::Overlay<Message, Renderer<B, Theme>>
+    for DatePickerOverlay<'a, Message, B, Theme>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Message: 'static + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
     fn layout(
         &self,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         bounds: iced_graphics::Size,
         position: Point,
     ) -> iced_native::layout::Node {
@@ -384,17 +393,19 @@ where
         // Month/Year
         let font_size = u32::from(renderer.default_size());
 
-        let month_year = Row::<(), Renderer>::new()
+        let month_year = Row::<(), Renderer<B, Theme>>::new()
             .width(Length::Fill)
             .spacing(SPACING)
             .push(
                 Row::new()
                     .width(Length::Fill)
                     .push(
-                        Row::new() // Left Month arrow
-                            .width(Length::Units(font_size as u16))
-                            .height(Length::Fill)
-                            .max_height(font_size),
+                        Container::new(
+                            Row::new() // Left Month arrow
+                                .width(Length::Units(font_size as u16)),
+                        )
+                        .height(Length::Fill)
+                        .max_height(font_size),
                     )
                     .push(
                         // Month
@@ -404,8 +415,7 @@ where
                     )
                     .push(
                         // Right Month arrow
-                        Row::new()
-                            .width(Length::Units(font_size as u16))
+                        Container::new(Row::new().width(Length::Units(font_size as u16)))
                             .height(Length::Fill)
                             .max_height(font_size),
                     ),
@@ -414,10 +424,12 @@ where
                 Row::new()
                     .width(Length::Fill)
                     .push(
-                        Row::new() // Left Year arrow
-                            .width(Length::Units(font_size as u16))
-                            .height(Length::Fill)
-                            .max_height(font_size),
+                        Container::new(
+                            Row::new() // Left Year arrow
+                                .width(Length::Units(font_size as u16)),
+                        )
+                        .height(Length::Fill)
+                        .max_height(font_size),
                     )
                     .push(
                         // Year
@@ -427,34 +439,38 @@ where
                     )
                     .push(
                         // Right Year arrow
-                        Row::new()
-                            .width(Length::Units(font_size as u16))
+                        Container::new(Row::new().width(Length::Units(font_size as u16)))
                             .height(Length::Fill)
                             .max_height(font_size),
                     ),
             );
 
-        let days = Container::<(), Renderer>::new((0..7).into_iter().fold(
-            Column::new().height(Length::Fill),
+        let days = Container::<(), Renderer<B, Theme>>::new((0..7).into_iter().fold(
+            Column::new().width(Length::Fill).height(Length::Fill),
             |column, _y| {
-                column.push((0..7).into_iter().fold(
-                    Row::new().height(Length::Fill).padding(DAY_CELL_PADDING),
-                    |row, _x| {
-                        row.push(
-                            Row::new()
-                                .width(Length::Fill)
-                                .height(Length::Fill)
-                                .max_width(font_size)
-                                .max_height(font_size),
-                        )
-                    },
-                ))
+                column.push(
+                    (0..7).into_iter().fold(
+                        Row::new()
+                            .height(Length::Fill)
+                            .width(Length::Fill)
+                            .padding(DAY_CELL_PADDING),
+                        |row, _x| {
+                            row.push(
+                                Container::new(Row::new().width(Length::Fill).height(Length::Fill))
+                                    .width(Length::Fill)
+                                    .height(Length::Fill)
+                                    .max_height(font_size),
+                            )
+                        },
+                    ),
+                )
             },
         ))
+        .width(Length::Fill)
         .height(Length::Fill)
         .center_y();
 
-        let mut col = Column::<(), Renderer>::new()
+        let mut col = Column::<(), Renderer<B, Theme>>::new()
             .spacing(SPACING)
             .align_items(Alignment::Center)
             .push(month_year)
@@ -515,7 +531,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor_position: Point,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -567,6 +583,7 @@ where
             .expect("Native: Layout should have a cancel button layout for a DatePicker");
 
         let cancel_status = self.cancel_button.on_event(
+            &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
             cursor_position,
@@ -582,6 +599,7 @@ where
         let mut fake_messages: Vec<Message> = Vec::new();
 
         let submit_status = self.submit_button.on_event(
+            &mut self.tree.children[1],
             event,
             submit_button_layout,
             cursor_position,
@@ -605,7 +623,7 @@ where
         layout: Layout<'_>,
         cursor_position: Point,
         viewport: &iced_graphics::Rectangle,
-        renderer: &Renderer,
+        renderer: &Renderer<B, Theme>,
     ) -> mouse::Interaction {
         let mouse_interaction = mouse::Interaction::default();
 
@@ -685,6 +703,7 @@ where
             .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
         let cancel_button_mouse_interaction = self.cancel_button.mouse_interaction(
+            &self.tree.children[0],
             cancel_button_layout,
             cursor_position,
             viewport,
@@ -696,6 +715,7 @@ where
             .expect("Graphics: Layout should have a submit button layout for a DatePicker");
 
         let submit_button_mouse_interaction = self.submit_button.mouse_interaction(
+            &self.tree.children[1],
             submit_button_layout,
             cursor_position,
             viewport,
@@ -712,7 +732,8 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer,
+        renderer: &mut Renderer<B, Theme>,
+        theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
         style: &iced_native::renderer::Style,
         layout: Layout<'_>,
         cursor_position: Point,
@@ -724,11 +745,14 @@ where
             .expect("Graphics: Layout should have a date layout")
             .children();
 
-        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, self.style_sheet.active());
-        let _ = style_sheet.insert(StyleState::Selected, self.style_sheet.selected());
-        let _ = style_sheet.insert(StyleState::Hovered, self.style_sheet.hovered());
-        let _ = style_sheet.insert(StyleState::Focused, self.style_sheet.focused());
+        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
+        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, self.style));
+        let _ = style_sheet.insert(
+            StyleState::Selected,
+            StyleSheet::selected(theme, self.style),
+        );
+        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, self.style));
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -787,7 +811,9 @@ where
             .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
         self.cancel_button.draw(
+            &self.tree.children[0],
             renderer,
+            theme,
             style,
             cancel_button_layout,
             cursor_position,
@@ -799,7 +825,9 @@ where
             .expect("Graphics: Layout should have a submit button layout for a DatePicker");
 
         self.submit_button.draw(
+            &self.tree.children[1],
             renderer,
+            theme,
             style,
             submit_button_layout,
             cursor_position,
@@ -844,6 +872,17 @@ pub struct State {
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
 }
 
+impl State {
+    /// Creates a new State with the given date.
+    #[must_use]
+    pub fn new(date: NaiveDate) -> Self {
+        Self {
+            date,
+            ..Self::default()
+        }
+    }
+}
+
 impl Default for State {
     fn default() -> Self {
         Self {
@@ -851,6 +890,99 @@ impl Default for State {
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
+    }
+}
+
+/// Just a workaround to pass the button states from the tree to the overlay
+#[allow(missing_debug_implementations)]
+pub struct DatePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet,
+{
+    /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
+    cancel_button: Element<'a, Message, Renderer<B, Theme>>,
+    /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
+    submit_button: Element<'a, Message, Renderer<B, Theme>>,
+}
+
+impl<'a, Message, B, Theme> Default for DatePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend + iced_graphics::backend::Text,
+    Theme: 'a
+        + StyleSheet
+        + iced_style::button::StyleSheet
+        + iced_style::text::StyleSheet
+        + iced_style::container::StyleSheet,
+{
+    fn default() -> Self {
+        Self {
+            cancel_button: Button::new(IconText::new(Icon::X)).into(),
+            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+        }
+    }
+}
+
+#[allow(clippy::unimplemented)]
+impl<'a, Message, B, Theme> iced_native::Widget<Message, Renderer<B, Theme>>
+    for DatePickerOverlayButtons<'a, Message, B, Theme>
+where
+    Message: Clone,
+    B: Backend,
+    Theme: StyleSheet + iced_style::button::StyleSheet + iced_style::container::StyleSheet,
+{
+    fn children(&self) -> Vec<Tree> {
+        vec![
+            Tree::new(&self.cancel_button),
+            Tree::new(&self.submit_button),
+        ]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    }
+
+    fn width(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn height(&self) -> Length {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn layout(
+        &self,
+        _renderer: &Renderer<B, Theme>,
+        _limits: &iced_native::layout::Limits,
+    ) -> iced_native::layout::Node {
+        unimplemented!("This should never be reached!")
+    }
+
+    fn draw(
+        &self,
+        _state: &Tree,
+        _renderer: &mut Renderer<B, Theme>,
+        _theme: &<Renderer<B, Theme> as iced_native::Renderer>::Theme,
+        _style: &renderer::Style,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _viewport: &Rectangle,
+    ) {
+        unimplemented!("This should never be reached!")
+    }
+}
+
+impl<'a, Message, B, Theme> From<DatePickerOverlayButtons<'a, Message, B, Theme>>
+    for Element<'a, Message, Renderer<B, Theme>>
+where
+    Message: 'a + Clone,
+    B: 'a + Backend,
+    Theme: 'a + StyleSheet + iced_style::button::StyleSheet + iced_style::container::StyleSheet,
+{
+    fn from(overlay: DatePickerOverlayButtons<'a, Message, B, Theme>) -> Self {
+        Self::new(overlay)
     }
 }
 
@@ -922,7 +1054,7 @@ fn month_year<Renderer>(
     year: &str,
     cursor_position: iced_graphics::Point,
     //style: &Style,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
     focus: Focus,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
@@ -1056,7 +1188,7 @@ fn days<Renderer>(
     date: chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
     //style: &Style,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
     focus: Focus,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
@@ -1075,7 +1207,7 @@ fn days<Renderer>(
 fn day_labels<Renderer>(
     renderer: &mut Renderer,
     layout: iced_native::Layout<'_>,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
     _focus: Focus,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
@@ -1108,7 +1240,7 @@ fn day_table<Renderer>(
     children: &mut dyn Iterator<Item = iced_native::Layout<'_>>,
     date: chrono::NaiveDate,
     cursor_position: iced_graphics::Point,
-    style: &HashMap<StyleState, Style>,
+    style: &HashMap<StyleState, Appearance>,
     focus: Focus,
 ) where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
@@ -1166,7 +1298,7 @@ fn day_table<Renderer>(
             }
 
             renderer.fill_text(iced_native::text::Text {
-                content: &format!("{:02}", number), // Todo: is there some way of static format as this has a fixed size?
+                content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                 bounds: Rectangle {
                     x: bounds.center_x(),
                     y: bounds.center_y(),

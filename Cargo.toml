@@ -13,19 +13,16 @@ categories = ["gui"]
 
 [features]
 badge = []
-button = []
 card = []
 colors = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
-floating_button = ["button"]
-floating_element = ["button", "floating_button"]
+floating_element = []
 grid = []
 glow = [] # TODO
 icon_text = ["icons"]
 icons = []
 modal = []
-pure = ["iced_pure"]
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icon_text", "iced_graphics/canvas"]
@@ -38,16 +35,16 @@ default = [
     "badge",
     "card",
     "colors",
-    "date_picker",
-    "color_picker",
-    "floating_button",
+    "number_input",
+    #"date_picker",
+    #"color_picker",
     "floating_element",
+    "icon_text",
     "grid",
     "modal",
-    "pure",
     "tab_bar",
     "tabs",
-    "time_picker",
+    #"time_picker",
     "wrap",
     "selection_list",
     "split",
@@ -62,24 +59,18 @@ lazy_static = { version = "1.4.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_native]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
-version = "0.5.1"
+#rev = "8221794"
+version = "0.6.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_graphics]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
-version = "0.3.0"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_pure]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
-version = "0.2.2"
-optional = true
+#rev = "8221794"
+version = "0.4.0"
 
 [dependencies.iced_style]
 #git = "https://github.com/iced-rs/iced.git"
-#rev = "ba33e92818ec181508b4957d1eae5b2beb9ea221"
-version = "0.4.0"
+#rev = "8221794"
+version = "0.5.0"
 
 [profile.dev.package."*"]
 opt-level = 2
@@ -90,30 +81,23 @@ members = [
     "examples/card",
     "examples/color_picker",
     "examples/date_picker",
-    "examples/floating_button",
+    "examples/floating_element",
     "examples/grid",
     "examples/modal",
-    "examples/pure/badge",
-    "examples/pure/card",
-    "examples/pure/color_picker",
-    "examples/pure/date_picker",
-    "examples/pure/floating_element",
-    "examples/pure/modal",
-    "examples/pure/grid",
-    "examples/pure/split",
-    "examples/pure/tab_bar",
-    "examples/pure/tabs",
-    "examples/pure/time_picker",
     "examples/tab_bar",
     "examples/tabs",
-    #"examples/tabs_min",
     "examples/time_picker",
     "examples/wrap",
-    "examples/pure/wrap",
-    "examples/web",
     "examples/number_input",
-    "examples/pure/number_input",
     "examples/selection_list",
-    "examples/pure/selection_list",
     "examples/split",
 ]
+
+[workspace.dependencies.iced]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "8221794"
+version = "0.5.0"
+
+[workspace.dependencies.iced_aw]
+path = "./"
+default-features = false
