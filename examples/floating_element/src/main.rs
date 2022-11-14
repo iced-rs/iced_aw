@@ -1,7 +1,9 @@
+use iced::widget::button;
+use iced::widget::button::Appearance;
 use iced::{
     theme,
     widget::{Button, Column, Container, Scrollable, Text},
-    Element, Length, Sandbox, Settings,
+    Element, Length, Sandbox, Settings, Theme,
 };
 
 use iced_aw::floating_element::{self, FloatingElement};
@@ -65,7 +67,9 @@ impl Sandbox for FloatingElementExample {
                 //.style(iced_aw::style::button::Primary),
                 .on_press(Message::ButtonPressed)
                 .padding(5)
-                .style(theme::Button::Primary)
+                .style(theme::Button::Custom(Box::new(CircleButtonStyle::new(
+                    theme::Button::Primary,
+                ))))
                 .into()
             },
         )
@@ -80,5 +84,26 @@ impl Sandbox for FloatingElementExample {
             .center_x()
             .center_y()
             .into()
+    }
+}
+
+struct CircleButtonStyle {
+    theme: theme::Button,
+}
+
+impl CircleButtonStyle {
+    pub fn new(theme: theme::Button) -> Self {
+        Self { theme }
+    }
+}
+
+impl button::StyleSheet for CircleButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style) -> Appearance {
+        let mut appearance = style.active(&self.theme);
+        appearance.border_radius = 200.0;
+
+        appearance
     }
 }
