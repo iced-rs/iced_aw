@@ -11,7 +11,7 @@ use iced_native::{
     mouse, Clipboard, Event, Font, Layout, Length, Point, Rectangle, Shell, Size,
 };
 use iced_native::{
-    widget::{Row, Tree},
+    widget::{Row, Tree, Operation},
     Element, Widget,
 };
 
@@ -523,6 +523,17 @@ where
                         renderer,
                     )
                 })
+        })
+    }
+
+    fn operate(&self, tree: &mut Tree, layout: Layout<'_>, operation: &mut dyn Operation<Message>) {
+        let active_tab = self.tab_bar.get_active_tab();
+        operation.container(None, &mut |operation| {
+            self.tabs[active_tab].as_widget().operate(
+                &mut tree.children[active_tab],
+                layout.children().nth(1).expect("TabBar is 0th child, contents are 1st node"),
+                operation,
+            );
         })
     }
 }
