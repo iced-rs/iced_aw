@@ -653,12 +653,30 @@ fn draw_head<Message, Renderer>(
 {
     let mut head_children = layout.children();
     let style_sheet = theme.active(*style);
+    let bounds = layout.bounds();
+    let border_radius = style_sheet.border_radius;
 
     // Head background
     renderer.fill_quad(
         renderer::Quad {
-            bounds: layout.bounds(),
-            border_radius: style_sheet.border_radius,
+            bounds,
+            border_radius,
+            border_width: 0.0,
+            border_color: Color::TRANSPARENT,
+        },
+        style_sheet.head_background,
+    );
+
+    // cover rounded button of header
+    renderer.fill_quad(
+        renderer::Quad {
+            bounds: Rectangle {
+                x: bounds.x,
+                y: bounds.y + bounds.height - border_radius,
+                width: bounds.width,
+                height: border_radius,
+            },
+            border_radius: 0.0,
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
