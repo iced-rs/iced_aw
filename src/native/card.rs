@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: card*
 use iced_native::{
     alignment::{Horizontal, Vertical},
-    event, mouse, renderer, touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding,
+    event, mouse, renderer::{self, BorderRadius}, touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding,
     Point, Rectangle, Shell, Size,
 };
 use iced_native::{widget::Tree, Element, Widget};
@@ -462,7 +462,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet.border_radius,
+                border_radius: style_sheet.border_radius.into(),
                 border_width: style_sheet.border_width,
                 border_color: style_sheet.border_color,
             },
@@ -474,7 +474,7 @@ where
             // TODO: fill not necessary
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet.border_radius,
+                border_radius: style_sheet.border_radius.into(),
                 border_width: style_sheet.border_width,
                 border_color: style_sheet.border_color,
             },
@@ -660,7 +660,7 @@ fn draw_head<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds,
-            border_radius,
+            border_radius: BorderRadius::from(border_radius),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
@@ -676,7 +676,7 @@ fn draw_head<Message, Renderer>(
                 width: bounds.width,
                 height: border_radius,
             },
-            border_radius: 0.0,
+            border_radius: (0.0).into(),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
@@ -741,7 +741,7 @@ fn draw_body<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: 0.0,
+            border_radius: (0.0).into(),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },
@@ -785,7 +785,7 @@ fn draw_foot<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style_sheet.border_radius,
+            border_radius: style_sheet.border_radius.into(),
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         },

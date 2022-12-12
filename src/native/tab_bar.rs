@@ -431,7 +431,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: style_sheet.border_width,
                 border_color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
             },
@@ -493,7 +493,7 @@ fn draw_tab<Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds,
-            border_radius: 0.0,
+            border_radius: (0.0).into(),
             border_width: style.tab_label_border_width,
             border_color: style.tab_label_border_color,
         },

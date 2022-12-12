@@ -502,7 +502,7 @@ where
     }
 
     fn overlay<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -514,8 +514,8 @@ where
 
         layout.and_then(|layout| {
             self.tabs
-                .get(self.tab_bar.get_active_tab())
-                .map(Element::as_widget)
+                .get_mut(self.tab_bar.get_active_tab())
+                .map(Element::as_widget_mut)
                 .and_then(|w| {
                     w.overlay(
                         &mut state.children[self.tab_bar.get_active_tab()],

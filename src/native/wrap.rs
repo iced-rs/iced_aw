@@ -208,16 +208,16 @@ where
     }
 
     fn overlay<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
         self.elements
-            .iter()
+            .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
-            .find_map(|((child, state), layout)| child.as_widget().overlay(state, layout, renderer))
+            .find_map(|((child, state), layout)| child.as_widget_mut().overlay(state, layout, renderer))
     }
 
     fn mouse_interaction(
