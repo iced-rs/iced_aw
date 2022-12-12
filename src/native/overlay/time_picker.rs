@@ -848,7 +848,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet[&style_state].border_radius,
+                border_radius: style_sheet[&style_state].border_radius.into(),
                 border_width: style_sheet[&style_state].border_width,
                 border_color: style_sheet[&style_state].border_color,
             },
@@ -907,7 +907,7 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: cancel_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
                     border_width: style_sheet[&StyleState::Focused].border_width,
                     border_color: style_sheet[&StyleState::Focused].border_color,
                 },
@@ -919,7 +919,7 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: submit_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius,
+                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
                     border_width: style_sheet[&StyleState::Focused].border_width,
                     border_color: style_sheet[&StyleState::Focused].border_color,
                 },
@@ -1411,7 +1411,7 @@ fn draw_digital_clock<'a, Message, B, Theme>(
                     border_radius: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
-                        .border_radius,
+                        .border_radius.into(),
                     border_width: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
