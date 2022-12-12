@@ -254,7 +254,7 @@ where
                 bounds: layout.bounds(),
                 border_color: theme.style(self.style).border_color,
                 border_width: theme.style(self.style).border_width,
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
             },
             theme.style(self.style).background,
         );

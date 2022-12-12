@@ -1,6 +1,6 @@
 [package]
 name = "iced_aw"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"
@@ -60,12 +60,12 @@ lazy_static = { version = "1.4.0", optional = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_native]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.6.1"
+version = "0.7"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_graphics]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.4.0"
+version = "0.5.0"
 
 [dependencies.iced_style]
 #git = "https://github.com/iced-rs/iced.git"
@@ -96,7 +96,7 @@ members = [
 [workspace.dependencies.iced]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.5.0"
+version = "0.6.0"
 
 [workspace.dependencies.iced_aw]
 path = "./"

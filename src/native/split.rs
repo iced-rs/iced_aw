@@ -350,7 +350,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: theme.active(self.style).border_width,
                 border_color: theme.active(self.style).border_color,
             },
@@ -368,7 +368,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: first_layout.bounds(),
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },
@@ -402,7 +402,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: second_layout.bounds(),
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },
@@ -436,7 +436,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: divider_layout.bounds(),
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: divider_style.divider_border_width,
                 border_color: divider_style.divider_border_color,
             },
@@ -445,7 +445,7 @@ where
     }
 
     fn overlay<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -455,19 +455,19 @@ where
         let _divider_layout = children.next()?;
         let second_layout = children.next()?;
 
-        let first = &self.first;
-        let second = &self.second;
+        let first = &mut self.first;
+        let second = &mut self.second;
 
         // Not pretty but works to get two mutable references
         // https://stackoverflow.com/a/30075629
         let (first_state, second_state) = state.children.split_at_mut(1);
 
         first
-            .as_widget()
+            .as_widget_mut()
             .overlay(&mut first_state[0], first_layout, renderer)
             .or_else(|| {
                 second
-                    .as_widget()
+                    .as_widget_mut()
                     .overlay(&mut second_state[0], second_layout, renderer)
             })
     }

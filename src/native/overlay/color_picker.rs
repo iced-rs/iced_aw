@@ -5,8 +5,7 @@ use std::collections::HashMap;
 
 use iced_graphics::{
     backend,
-    triangle::Style,
-    widget::canvas::{self, LineCap, Path, Stroke},
+    widget::canvas::{self, LineCap, Path, Stroke, Style},
     Backend, Renderer,
 };
 
@@ -835,7 +834,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet[&style_state].border_radius,
+                border_radius: style_sheet[&style_state].border_radius.into(),
                 border_width: style_sheet[&style_state].border_width,
                 border_color: style_sheet[&style_state].border_color,
             },
@@ -1132,7 +1131,7 @@ fn block2<'a, Message, B, Theme>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds: cancel_button_layout.bounds(),
-                border_radius: style_sheet[&StyleState::Focused].border_radius,
+                border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
                 border_width: style_sheet[&StyleState::Focused].border_width,
                 border_color: style_sheet[&StyleState::Focused].border_color,
             },
@@ -1144,7 +1143,7 @@ fn block2<'a, Message, B, Theme>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds: submit_button_layout.bounds(),
-                border_radius: style_sheet[&StyleState::Focused].border_radius,
+                border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
                 border_width: style_sheet[&StyleState::Focused].border_width,
                 border_color: style_sheet[&StyleState::Focused].border_color,
             },
@@ -1406,7 +1405,7 @@ fn rgba_color<B, Theme>(
                 border_radius: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
-                    .bar_border_radius,
+                    .bar_border_radius.into(),
                 border_width: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
@@ -1423,7 +1422,7 @@ fn rgba_color<B, Theme>(
                 border_radius: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
-                    .bar_border_radius,
+                    .bar_border_radius.into(),
                 border_width: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
@@ -1458,7 +1457,7 @@ fn rgba_color<B, Theme>(
                     border_radius: style_sheet
                         .get(&StyleState::Focused)
                         .expect("Style Sheet not found.")
-                        .border_radius,
+                        .border_radius.into(),
                     border_width: style_sheet
                         .get(&StyleState::Focused)
                         .expect("Style Sheet not found.")
@@ -1558,7 +1557,7 @@ fn hex_text<B, Theme>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style_sheet[&hex_text_style_state].bar_border_radius,
+            border_radius: style_sheet[&hex_text_style_state].bar_border_radius.into(),
             border_width: style_sheet[&hex_text_style_state].bar_border_width,
             border_color: style_sheet[&hex_text_style_state].bar_border_color,
         },

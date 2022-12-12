@@ -191,7 +191,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: 0.0,
+                border_radius: (0.0).into(),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },

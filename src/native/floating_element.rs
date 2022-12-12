@@ -197,7 +197,7 @@ where
     }
 
     fn overlay<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -205,7 +205,7 @@ where
         if self.hidden {
             return self
                 .underlay
-                .as_widget()
+                .as_widget_mut()
                 .overlay(&mut state.children[0], layout, renderer);
         }
 

@@ -678,7 +678,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: dec_bounds,
-                border_radius: 3.0,
+                border_radius: (3.0).into(),
                 border_width: 0.,
                 border_color: Color::TRANSPARENT,
             },
@@ -707,7 +707,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: inc_bounds,
-                border_radius: 3.0,
+                border_radius: (3.0).into(),
                 border_width: 0.,
                 border_color: Color::TRANSPARENT,
             },
