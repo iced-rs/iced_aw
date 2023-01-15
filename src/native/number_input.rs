@@ -328,7 +328,13 @@ where
         Node::with_children(size, vec![content, modifier])
     }
 
-    fn operate(&self, tree: &mut Tree, layout: Layout<'_>, operation: &mut dyn Operation<Message>) {
+    fn operate(
+        &self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
         operation.container(None, &mut |operation| {
             self.content.operate(
                 &mut tree.children[0],
@@ -336,6 +342,7 @@ where
                     .children()
                     .next()
                     .expect("NumberInput inner child Textbox was not created."),
+                renderer,
                 operation,
             );
         });
