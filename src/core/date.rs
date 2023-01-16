@@ -8,6 +8,8 @@ use chrono::{Datelike, Duration, NaiveDate};
 #[cfg(not(target_arch = "wasm32"))]
 use lazy_static::lazy_static;
 
+const INVALID_DATE: &str = "invalid or out-of-range date";
+
 /// The date value
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Date {
@@ -43,7 +45,7 @@ impl Display for Date {
 #[cfg(not(target_arch = "wasm32"))]
 impl From<Date> for NaiveDate {
     fn from(date: Date) -> Self {
-        Self::from_ymd(date.year, date.month, date.day)
+        Self::from_ymd_opt(date.year, date.month, date.day).expect(INVALID_DATE)
     }
 }
 
@@ -66,7 +68,7 @@ pub fn pred_month(date: NaiveDate) -> NaiveDate {
 
     let day = date.day().min(num_days_of_month(year, month));
 
-    NaiveDate::from_ymd(year, month, day)
+    NaiveDate::from_ymd_opt(year, month, day).expect(INVALID_DATE)
 }
 
 /// Creates a date with the next month based on given date.
@@ -81,7 +83,7 @@ pub fn succ_month(date: NaiveDate) -> NaiveDate {
 
     let day = date.day().min(num_days_of_month(year, month));
 
-    NaiveDate::from_ymd(year, month, day)
+    NaiveDate::from_ymd_opt(year, month, day).expect(INVALID_DATE)
 }
 
 /// Creates a date with the previous year based on the given date.
@@ -91,7 +93,7 @@ pub fn pred_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() - 1;
     let day = date.day().min(num_days_of_month(year, date.month()));
 
-    NaiveDate::from_ymd(year, date.month(), day)
+    NaiveDate::from_ymd_opt(year, date.month(), day).expect(INVALID_DATE)
 }
 
 /// Creates a date with the next year based on the given date.
@@ -101,7 +103,7 @@ pub fn succ_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() + 1;
     let day = date.day().min(num_days_of_month(year, date.month()));
 
-    NaiveDate::from_ymd(year, date.month(), day)
+    NaiveDate::from_ymd_opt(year, date.month(), day).expect(INVALID_DATE)
 }
 
 /// Calculates a date with the previous week based on the given date.
@@ -153,14 +155,14 @@ pub enum IsInMonth {
 #[must_use]
 pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsInMonth) {
     let (x, y) = (x as isize, y as isize);
-    let first_day = NaiveDate::from_ymd(year, month, 1);
+    let first_day = NaiveDate::from_ymd_opt(year, month, 1).expect(INVALID_DATE);
     let day_of_week = first_day.weekday().num_days_from_monday() as isize;
     let day_of_week = if day_of_week == 0 { 7 } else { day_of_week };
 
     let day = (x + 7 * y) + 1 - day_of_week;
 
     if day < 1 {
-        let last_month = first_day.pred();
+        let last_month = first_day.pred_opt().expect(INVALID_DATE);
         (
             (num_days_of_month(last_month.year(), last_month.month()) as isize + day) as usize,
             IsInMonth::Previous,
@@ -220,22 +222,22 @@ lazy_static! {
     /// Gets the length of the longest month name.
     pub static ref MAX_MONTH_STR_LEN: usize = {
         let months = [
-            NaiveDate::from_ymd(0, 1, 1),
-            NaiveDate::from_ymd(0, 2, 1),
-            NaiveDate::from_ymd(0, 3, 1),
-            NaiveDate::from_ymd(0, 4, 1),
-            NaiveDate::from_ymd(0, 5, 1),
-            NaiveDate::from_ymd(0, 6, 1),
-            NaiveDate::from_ymd(0, 7, 1),
-            NaiveDate::from_ymd(0, 8, 1),
-            NaiveDate::from_ymd(0, 9, 1),
-            NaiveDate::from_ymd(0, 10, 1),
-            NaiveDate::from_ymd(0, 11, 1),
-            NaiveDate::from_ymd(0, 12, 1),
+            NaiveDate::from_ymd_opt(0, 1, 1),
+            NaiveDate::from_ymd_opt(0, 2, 1),
+            NaiveDate::from_ymd_opt(0, 3, 1),
+            NaiveDate::from_ymd_opt(0, 4, 1),
+            NaiveDate::from_ymd_opt(0, 5, 1),
+            NaiveDate::from_ymd_opt(0, 6, 1),
+            NaiveDate::from_ymd_opt(0, 7, 1),
+            NaiveDate::from_ymd_opt(0, 8, 1),
+            NaiveDate::from_ymd_opt(0, 9, 1),
+            NaiveDate::from_ymd_opt(0, 10, 1),
+            NaiveDate::from_ymd_opt(0, 11, 1),
+            NaiveDate::from_ymd_opt(0, 12, 1),
         ];
 
         let max = months.iter()
-            .map(|m| month_as_string(*m))
+            .map(|m| month_as_string(m.expect(INVALID_DATE)))
             .map(|s| s.len())
             .max().expect("There should be a maximum element");
 
@@ -247,24 +249,24 @@ lazy_static! {
     pub static ref WEEKDAY_LABELS: Vec<String> = {
         let days = [
             // Monday
-            NaiveDate::from_ymd(2020, 6, 1),
+            NaiveDate::from_ymd_opt(2020, 6, 1),
             // Tuesday
-            NaiveDate::from_ymd(2020, 6, 2),
+            NaiveDate::from_ymd_opt(2020, 6, 2),
             // Wednesday
-            NaiveDate::from_ymd(2020, 6, 3),
+            NaiveDate::from_ymd_opt(2020, 6, 3),
             // Thursday
-            NaiveDate::from_ymd(2020, 6, 4),
+            NaiveDate::from_ymd_opt(2020, 6, 4),
             // Friday
-            NaiveDate::from_ymd(2020, 6, 5),
+            NaiveDate::from_ymd_opt(2020, 6, 5),
             // Saturday
-            NaiveDate::from_ymd(2020, 6, 6),
+            NaiveDate::from_ymd_opt(2020, 6, 6),
             // Sunday
-            NaiveDate::from_ymd(2020, 6, 7),
+            NaiveDate::from_ymd_opt(2020, 6, 7),
 
         ];
 
         days.iter()
-            .map(|d| d.format("%a").to_string())
+            .map(|d| d.expect(INVALID_DATE).format("%a").to_string())
             .map(|s| s[0..2].to_owned())
             .collect()
     };
@@ -277,78 +279,82 @@ mod tests {
 
     use super::{
         is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month,
-        succ_year, IsInMonth,
+        succ_year, IsInMonth, INVALID_DATE,
     };
+
+    fn naive_date_from_ymd(year: i32, month: u32, day: u32) -> NaiveDate {
+        NaiveDate::from_ymd_opt(year, month, day).expect(INVALID_DATE)
+    }
 
     #[test]
     fn pred_month_test() {
-        let date = NaiveDate::from_ymd(2020, 5, 6);
+        let date = naive_date_from_ymd(2020, 5, 6);
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd(2020, 4, 6);
+        let expected = naive_date_from_ymd(2020, 4, 6);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2020, 1, 24);
+        let date = naive_date_from_ymd(2020, 1, 24);
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd(2019, 12, 24);
+        let expected = naive_date_from_ymd(2019, 12, 24);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2020, 3, 31);
+        let date = naive_date_from_ymd(2020, 3, 31);
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd(2020, 2, 29);
+        let expected = naive_date_from_ymd(2020, 2, 29);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_month_test() {
-        let date = NaiveDate::from_ymd(2020, 5, 6);
+        let date = naive_date_from_ymd(2020, 5, 6);
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd(2020, 6, 6);
+        let expected = naive_date_from_ymd(2020, 6, 6);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2019, 12, 24);
+        let date = naive_date_from_ymd(2019, 12, 24);
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd(2020, 1, 24);
+        let expected = naive_date_from_ymd(2020, 1, 24);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2020, 1, 31);
+        let date = naive_date_from_ymd(2020, 1, 31);
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd(2020, 2, 29);
+        let expected = naive_date_from_ymd(2020, 2, 29);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn pred_year_test() {
-        let date = NaiveDate::from_ymd(2020, 5, 6);
+        let date = naive_date_from_ymd(2020, 5, 6);
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd(2019, 5, 6);
+        let expected = naive_date_from_ymd(2019, 5, 6);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2020, 2, 29);
+        let date = naive_date_from_ymd(2020, 2, 29);
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd(2019, 2, 28);
+        let expected = naive_date_from_ymd(2019, 2, 28);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2021, 2, 28);
+        let date = naive_date_from_ymd(2021, 2, 28);
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd(2020, 2, 28);
+        let expected = naive_date_from_ymd(2020, 2, 28);
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_year_test() {
-        let date = NaiveDate::from_ymd(2020, 5, 6);
+        let date = naive_date_from_ymd(2020, 5, 6);
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd(2021, 5, 6);
+        let expected = naive_date_from_ymd(2021, 5, 6);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2020, 2, 29);
+        let date = naive_date_from_ymd(2020, 2, 29);
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd(2021, 2, 28);
+        let expected = naive_date_from_ymd(2021, 2, 28);
         assert_eq!(result, expected);
 
-        let date = NaiveDate::from_ymd(2019, 2, 28);
+        let date = naive_date_from_ymd(2019, 2, 28);
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd(2020, 2, 28);
+        let expected = naive_date_from_ymd(2020, 2, 28);
         assert_eq!(result, expected);
     }
 

@@ -166,7 +166,7 @@ impl From<Time> for chrono::NaiveTime {
             Period::Pm => (h + 12) % 24,
         };
 
-        Self::from_hms(h, m, s)
+        Self::from_hms_opt(h, m, s).expect("invalid time")
     }
 }
 
@@ -198,7 +198,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(8, 52, 17));
+        assert_eq!(naive, NaiveTime::from_hms_opt(8, 52, 17).unwrap());
 
         let time = Time::Hms {
             hour: 23,
@@ -208,7 +208,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(23, 48, 39));
+        assert_eq!(naive, NaiveTime::from_hms_opt(23, 48, 39).unwrap());
 
         let time = Time::Hms {
             hour: 8,
@@ -218,7 +218,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(8, 52, 17));
+        assert_eq!(naive, NaiveTime::from_hms_opt(8, 52, 17).unwrap());
 
         let time = Time::Hms {
             hour: 8,
@@ -228,7 +228,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(20, 52, 17));
+        assert_eq!(naive, NaiveTime::from_hms_opt(20, 52, 17).unwrap());
 
         let time = Time::Hms {
             hour: 12,
@@ -238,7 +238,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(0, 52, 17));
+        assert_eq!(naive, NaiveTime::from_hms_opt(0, 52, 17).unwrap());
 
         let time = Time::Hms {
             hour: 12,
@@ -248,7 +248,7 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(12, 52, 17));
+        assert_eq!(naive, NaiveTime::from_hms_opt(12, 52, 17).unwrap());
 
         let time = Time::Hm {
             hour: 17,
@@ -257,6 +257,6 @@ mod tests {
         };
 
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms(17, 52, 0));
+        assert_eq!(naive, NaiveTime::from_hms_opt(17, 52, 0).unwrap());
     }
 }
