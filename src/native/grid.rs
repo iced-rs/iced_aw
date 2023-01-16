@@ -13,8 +13,9 @@ use iced_native::{overlay, widget::Tree, Element, Widget};
 /// ```
 /// # use iced_native::renderer::Null;
 /// # use iced_native::widget::Text;
+/// # use iced_aw::native::grid;
 /// #
-/// # pub type Grid<'a, Message> = iced_aw::Grid<'a, Message, Null>;
+/// # pub type Grid<'a, Message> = grid::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }

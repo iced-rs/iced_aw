@@ -32,7 +32,7 @@ const DEFAULT_PADDING: u16 = 5;
 /// # Example
 /// ```
 /// # use iced_native::renderer::Null;
-/// # use iced_aw::number_input;
+/// # use iced_aw::native::number_input;
 /// #
 /// # pub type NumberInput<'a, T, Message> = number_input::NumberInput<'a, T, Message, Null>;
 /// #[derive(Debug, Clone)]
