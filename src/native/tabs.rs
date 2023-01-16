@@ -526,15 +526,22 @@ where
         })
     }
 
-    fn operate(&self, tree: &mut Tree, layout: Layout<'_>, operation: &mut dyn Operation<Message>) {
+    fn operate(
+        &self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
         let active_tab = self.tab_bar.get_active_tab();
         operation.container(None, &mut |operation| {
             self.tabs[active_tab].as_widget().operate(
                 &mut tree.children[active_tab],
                 layout.children().nth(1).expect("TabBar is 0th child, contents are 1st node"),
+                renderer,
                 operation,
             );
-        })
+        });
     }
 }
 
