@@ -3,8 +3,10 @@
 //! *This API requires the following crate features to be activated: card*
 use iced_native::{
     alignment::{Horizontal, Vertical},
-    event, mouse, renderer::{self, BorderRadius}, touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding,
-    Point, Rectangle, Shell, Size,
+    event, mouse,
+    renderer::{self, BorderRadius},
+    touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding, Point, Rectangle, Shell,
+    Size,
 };
 use iced_native::{widget::Tree, Element, Widget};
 
@@ -20,8 +22,9 @@ const DEFAULT_PADDING: f32 = 10.0;
 /// ```
 /// # use iced_native::renderer::Null;
 /// # use iced_native::widget::Text;
+/// # use iced_aw::native::card;
 /// #
-/// # pub type Card<'a, Message> = iced_aw::Card<'a, Message, Null>;
+/// # pub type Card<'a, Message> = card::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ClosingCard,

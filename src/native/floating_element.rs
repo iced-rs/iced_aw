@@ -20,8 +20,9 @@ use super::overlay::floating_element::FloatingElementOverlay;
 /// ```
 /// # use iced_native::renderer::Null;
 /// # use iced_native::widget::{button, Button, Column, Text};
+/// # use iced_aw::native::floating_element;
 /// #
-/// # pub type FloatingElement<'a, B, Message> = iced_aw::FloatingElement<'a, B, Message, Null>;
+/// # pub type FloatingElement<'a, B, Message> = floating_element::FloatingElement<'a, B, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,

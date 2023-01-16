@@ -17,10 +17,10 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 ///
 /// # Example
 /// ```
-/// # use iced_aw::style::badge;
 /// # use iced_native::{widget::Text, renderer::Null};
+/// # use iced_aw::native::badge;
 /// #
-/// # pub type Badge<'a, Message> = iced_aw::Badge<'a, Message, Null>;
+/// # pub type Badge<'a, Message> = badge::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }

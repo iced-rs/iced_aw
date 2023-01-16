@@ -15,12 +15,12 @@ pub use crate::style::modal::StyleSheet;
 ///
 /// # Example
 /// ```
-/// # use iced_aw::modal;
 /// # use iced_native::renderer::Null;
 /// # use iced_native::widget::Text;
+/// # use iced_aw::native::modal;
 /// #
 /// # pub type Modal<'a, Content, Message>
-/// #  = iced_aw::Modal<'a, Message, Content, Null>;
+/// #  = modal::Modal<'a, Message, Content, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     CloseModal,

@@ -11,7 +11,7 @@ use iced_native::{
     mouse, Clipboard, Event, Font, Layout, Length, Point, Rectangle, Shell, Size,
 };
 use iced_native::{
-    widget::{Row, Tree, Operation},
+    widget::{Operation, Row, Tree},
     Element, Widget,
 };
 
@@ -28,8 +28,9 @@ pub use tab_bar_position::TabBarPosition;
 /// # use iced_aw::{TabLabel};
 /// # use iced_native::renderer::Null;
 /// # use iced_native::widget::Text;
+/// # use iced_aw::native::tabs;
 /// #
-/// # pub type Tabs<'a, Message> = iced_aw::Tabs<'a, Message, Null>;
+/// # pub type Tabs<'a, Message> = tabs::Tabs<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
@@ -537,7 +538,10 @@ where
         operation.container(None, &mut |operation| {
             self.tabs[active_tab].as_widget().operate(
                 &mut tree.children[active_tab],
-                layout.children().nth(1).expect("TabBar is 0th child, contents are 1st node"),
+                layout
+                    .children()
+                    .nth(1)
+                    .expect("TabBar is 0th child, contents are 1st node"),
                 renderer,
                 operation,
             );

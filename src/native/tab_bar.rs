@@ -39,8 +39,9 @@ const DEFAULT_SPACING: u16 = 0;
 /// ```
 /// # use iced_aw::{TabLabel};
 /// # use iced_native::{renderer::Null};
+/// # use iced_aw::native::tab_bar;
 /// #
-/// # pub type TabBar<Message> = iced_aw::TabBar<Message, Null>;
+/// # pub type TabBar<Message> = tab_bar::TabBar<Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(usize),
