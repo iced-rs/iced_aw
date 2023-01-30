@@ -1,6 +1,5 @@
 //! Predefined color palette based on the CSS color palette
 //!
-//! *This API requires the following crate features to be activated: colors*
 //!
 //! Thanks to:
 //! * [W3 Schools](https://www.w3schools.com/cssref/css_colors.asp)
