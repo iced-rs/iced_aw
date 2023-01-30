@@ -9,7 +9,6 @@ edition = "2021"
 [dependencies]
 iced_aw = { workspace = true, features = [
     "floating_element",
-    "colors",
     "icons",
 ] }
 iced.workspace = true

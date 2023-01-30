@@ -8,6 +8,5 @@ edition = "2021"
 [dependencies]
 iced_aw = { workspace = true, features = [
     "date_picker",
-    "colors",
 ] }
 iced.workspace = true

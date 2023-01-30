@@ -37,7 +37,6 @@ iced_aw = { version = "0.2", default-features = false, features = [...] }
 Please take a look into our examples on how to use badges.
 
 Enable this widget with the feature `badge`.
-To enable predefined styles, enable the feature `colors`.
 
 ### Card
 
@@ -51,7 +50,6 @@ To enable predefined styles, enable the feature `colors`.
 Please take a look into our examples on how to use cards.
 
 Enable this widget with the feature `card`.
-To enable predefined styles, enable the feature `colors`.
 
 ### Color Picker
 
@@ -88,7 +86,6 @@ Enable this widget with the feature `date_picker`.
 Please take a look into our examples on how to use floating elements.
 
 Enable this widget with the feature `floating_element`.
-To enable predefined styles for buttons, enable the feature `colors`.
 
 ### Modal
 
@@ -104,7 +101,6 @@ Modals are useful for showing some content as an overlay on top. In combination 
 Please take a look into our examples on how to use modals.
 
 Enable this widget with the feature `modal`.
-To enable predefined styles, enable the feature `colors`.
 
 ### NumberInput
 
@@ -171,8 +167,6 @@ Quickstart features are pretty handy to start and experiment having everything l
 ### Color palette
 
 This crate adds a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
-
-Enable colors with the feature `colors`.
 
 ### Bootstrap icons
 
