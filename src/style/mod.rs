@@ -46,3 +46,6 @@ pub use selection_list::SelectionListStyles;
 pub mod split;
 #[cfg(feature = "split")]
 pub use split::SplitStyles;
+
+// #[cfg(feature = "menu")]
+pub mod menu_bar;
