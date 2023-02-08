@@ -1,7 +1,7 @@
 //! Additional widgets for the Iced GUI library.
-// #![deny(missing_docs)]
-// #![deny(missing_debug_implementations)]
-// #![deny(unused_results)]
+#![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
+#![deny(unused_results)]
 #![forbid(unsafe_code)]
 #![warn(
     clippy::pedantic,

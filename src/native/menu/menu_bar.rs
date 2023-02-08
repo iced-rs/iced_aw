@@ -49,6 +49,7 @@ impl Default for MenuBarState{
 
 /// A `MenuBar` collects `MenuTree`s and handles 
 /// all the layout, event processing and drawing
+#[allow(missing_debug_implementations)]
 pub struct MenuBar<'a, Message, Renderer>
 where
     Renderer: renderer::Renderer,
@@ -211,7 +212,7 @@ where
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
 
-        process_root_events(
+        let root_status = process_root_events(
             &mut self.menu_roots, 
             cursor_position, 
             tree, 
@@ -241,7 +242,7 @@ where
             },
             _ => (),
         }
-        Ignored
+        root_status
     }
 
     fn draw(
@@ -484,7 +485,7 @@ where
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
 
-        process_menu_events(
+        let menu_status = process_menu_events(
             &mut self.tree, 
             &mut self.menu_roots, 
             event.clone(), 
@@ -497,7 +498,7 @@ where
 
         match event {
             Mouse(CursorMoved { position }) |
-            Touch(FingerMoved { position,.. }) => process_overlay_events(self, layout, position),
+            Touch(FingerMoved { position,.. }) => process_overlay_events(self, layout, position).merge(menu_status),
             
             Mouse(ButtonPressed(Left)) |
             Touch(FingerPressed {..}) => {
@@ -518,13 +519,14 @@ where
                     state.cursor = cursor_position;
                     Captured
                 }else{
-                    Ignored
+                    menu_status
                 }
             },
-            _ => Ignored
+            _ => menu_status
         }
     }
-
+    
+    #[allow(unused_results)]
     fn draw(
         &self,
         renderer: &mut Renderer,
@@ -637,6 +639,7 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle{
     }
 }
 
+#[allow(unused_results)]
 fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     menu_roots: &mut Vec<MenuTree<'a, Message, Renderer>>,
     position: Point,
@@ -646,8 +649,7 @@ fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
-) -> event::Status{
-    use event::Status;
+) -> event::Status {
     menu_roots.iter_mut()
         .zip(&mut tree.children)
         .zip(layout.children())
@@ -662,14 +664,14 @@ fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
                 clipboard, 
                 shell
             )
-        }).fold(Status::Ignored, Status::merge)
+        }).fold(event::Status::Ignored, event::Status::merge)
 }
 
 fn init_root_menu<T, B>(
     state: &mut MenuBarState,
     root_bounds_list: T,
     position: Point,
-) -> Option<usize>
+)
 where
     T: Iterator<Item = B>,
     B: std::borrow::Borrow<Rectangle>,
@@ -678,10 +680,9 @@ where
         if rect.borrow().contains(position){
             state.active_root = Some(i);
             state.indices.push(None);
-            return Some(i);
+            return ;
         }
     }
-    return None;
 }
 
 fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
@@ -754,6 +755,7 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     // });
 }
 
+#[allow(unused_results)]
 fn process_overlay_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     menu: &mut Menu<'a, 'b, Message, Renderer>,
     layout: layout::Layout<'_>,

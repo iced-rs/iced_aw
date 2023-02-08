@@ -1,14 +1,23 @@
+//! A dummy widget that draws a quad
+//!
+//! //! *This API requires the following crate features to be activated: `quad`*
+
 use iced_native::{
     Element, Widget, renderer, 
     layout, Length, Color, Point, 
     Padding, Rectangle, 
 };
 use iced_native::widget::{Tree};
-
+/// Methods for creating inner bounds
+#[allow(missing_debug_implementations)]
 pub enum InnerBounds {
+    /// Create inner bounds ratio to the outer bounds
     Ratio(f32, f32),
+    /// Create inner bounds by padding the outer bounds
     Padding(Padding),
+    /// Create square inner bounds
     Square(f32),
+    /// Create inner bounds with a custom function
     Custom(Box<dyn Fn(Rectangle)->Rectangle>)
 }
 impl InnerBounds{
@@ -42,14 +51,23 @@ impl InnerBounds{
 }
 
 /// A dummy widget that draws a quad
+#[allow(missing_debug_implementations)]
 pub struct Quad{
+    /// Width of the quad
     pub width: Length,
+    /// Height of the quad
     pub height: Length,
+    /// Color of the quad
     pub color: Color,
+    /// Background color of the quad
     pub background: Option<Color>,
+    /// Methods for creating inner bounds
     pub inner_bounds: InnerBounds,
+    /// Border radius of the Quad
     pub border_radius: renderer::BorderRadius,
+    /// Border width of the quad
     pub border_width: f32,
+    /// Border color of the quad
     pub border_color: Color,
 }
 impl Default for Quad{

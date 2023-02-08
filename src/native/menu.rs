@@ -1,4 +1,6 @@
-//! A menu widget
+//! A [`MenuBar`] widget for displaying [`MenuTree`]s
+//!
+//! //! *This API requires the following crate features to be activated: `menu`*
 
 mod menu_tree;
 mod menu_bar;

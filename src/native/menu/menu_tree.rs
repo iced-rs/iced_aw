@@ -23,6 +23,7 @@ impl<'a, Message, Renderer> MenuTree<'a, Message, Renderer>
 where
     Renderer: renderer::Renderer,
 {
+    /// Create a new menu tree from a widget
     pub fn new(
         item: impl Into<Element<'a, Message, Renderer>>, 
     ) -> Self{
@@ -33,6 +34,7 @@ where
         }
     }
 
+    /// Create a menu tree from a widget and a vector of sub trees
     pub fn with_children(
         item: impl Into<Element<'a, Message, Renderer>>, 
         children: Vec<impl Into<MenuTree<'a, Message, Renderer>>>

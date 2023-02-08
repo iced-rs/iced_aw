@@ -43,6 +43,7 @@ pub trait StyleSheet {
 
 #[derive(Default)]
 /// The style of a menu bar and its menus
+#[allow(missing_debug_implementations)]
 pub enum MenuBarStyle{
     /// The default style.
     #[default]
