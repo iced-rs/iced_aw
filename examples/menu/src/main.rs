@@ -1,4 +1,4 @@
-use iced::widget::{ slider, checkbox, container, button, text,text_input, row, toggler, horizontal_space};
+use iced::widget::{ slider, checkbox, container, button, text,text_input, row, toggler, horizontal_space, svg};
 use iced::widget::column as col;
 use iced::{Application, Length, Color, alignment, theme, Element,};
 
@@ -258,8 +258,9 @@ fn debug_item<'a>(
 }
 
 fn color_item<'a>(
-    color: Color,
+    color: impl Into<Color>,
 ) -> MenuTree<'a, Message, iced::Renderer>{
+    let color = color.into();
     MenuTree::new(
         base_button(
             circle(color),
@@ -275,6 +276,18 @@ fn sub_menu<'a>(
     msg: Message, 
     children: Vec<MenuTree<'a, Message, iced::Renderer>>
 ) -> MenuTree<'a, Message, iced::Renderer>{
+    let handle = svg::Handle::from_path(format!(
+        "{}/caret-right-fill.svg",
+        env!("CARGO_MANIFEST_DIR")
+    ));
+    let arrow = svg(handle)
+    .width(Length::Shrink)
+    .style(theme::Svg::custom_fn(|theme|{
+        svg::Appearance{
+            color: Some(theme.extended_palette().background.base.text),
+        }
+    }));
+    
     MenuTree::with_children(
         base_button(
             row![
@@ -282,10 +295,7 @@ fn sub_menu<'a>(
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .vertical_alignment(alignment::Vertical::Center), 
-                text(" > ")
-                    .size(20)
-                    .height(Length::Fill)
-                    .vertical_alignment(alignment::Vertical::Center), 
+                arrow
             ],
             msg
         )
@@ -474,7 +484,6 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
         slider(0..=255, app.value, Message::ValueChange)
     ]);
 
-    // let tx = MenuTree::new(text("Text"));
     let txn = MenuTree::new(text_input("", &app.text, Message::TextChange));
     
     let root = MenuTree::with_children(
@@ -526,10 +535,10 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
                     toggler(Some("Dark Mode".into()), app.dark_mode, Message::ThemeChange)
                 ].padding([0, 8])
             ),
-            color_item(Color::from([0.45, 0.25, 0.57])),
-            color_item(Color::from([0.15, 0.59, 0.64])),
-            color_item(Color::from([0.76, 0.82, 0.20])),
-            color_item(Color::from([0.17, 0.27, 0.33])),
+            color_item([0.45, 0.25, 0.57]),
+            color_item([0.15, 0.59, 0.64]),
+            color_item([0.76, 0.82, 0.20]),
+            color_item([0.17, 0.27, 0.33]),
             primary,
         ]
     );
