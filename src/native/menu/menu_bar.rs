@@ -498,7 +498,9 @@ where
 
         match event {
             Mouse(CursorMoved { position }) |
-            Touch(FingerMoved { position,.. }) => process_overlay_events(self, layout, position).merge(menu_status),
+            Touch(FingerMoved { position,.. }) => {
+                process_overlay_events(self, layout, position).merge(menu_status)
+            },
             
             Mouse(ButtonPressed(Left)) |
             Touch(FingerPressed {..}) => {
@@ -777,7 +779,8 @@ where
     */
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
-    
+    if !state.open {return Ignored;}
+
     /* When overlay is running, cursor_position in any widget method will go negative
     but I still want Widget::draw() to react to cursor movement */
     state.cursor = position;
