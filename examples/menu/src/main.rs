@@ -51,9 +51,6 @@ impl Application for App{
             primary: Color::from([0.45, 0.25, 0.57]),
             ..iced::Theme::Light.palette()
         });
-        /*
-        [0.45, 0.25, 0.57]
-        */
 
         (
             Self{
@@ -148,7 +145,6 @@ impl Application for App{
 
         let top_bar_style:fn(&iced::Theme)->container::Appearance = |_theme|{
             container::Appearance{
-                // background: Some(Color::from([0.8;3]).into()),
                 background: Some(Color::TRANSPARENT.into()),
                 ..Default::default()
             }
@@ -193,11 +189,9 @@ struct ButtonStyle;
 
         fn active(&self, style: &Self::Style) -> button::Appearance {
             button::Appearance{
-                // text_color: Color::BLACK,
                 text_color: style.extended_palette().background.base.text,
                 border_radius: 4.0.into(),
                 background: Some(Color::TRANSPARENT.into()),
-                // background: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.2).into()),
                 ..Default::default()
             }
         }
@@ -206,9 +200,6 @@ struct ButtonStyle;
             let plt = style.extended_palette();
             
             button::Appearance{
-                // background: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.8).into()),
-                // background: Some(Color::TRANSPARENT.into()),
-                // border_radius: 4.0.into(),
                 background: Some(plt.primary.weak.color.into()),
                 text_color: plt.primary.weak.text,
                 ..self.active(style)
@@ -371,7 +362,7 @@ fn circle<'a>(color: Color) -> quad::Quad{
 
 
 
-fn menu_1<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
+fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
     
     let sub_5 = debug_sub_menu(
         "SUB",
@@ -523,7 +514,7 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
     );
 
     let root = MenuTree::with_children(
-        labeled_button("Controls", Message::Debug("Click Me".into())),
+        debug_button("Controls"),
         vec![
             MenuTree::new(
                 labeled_button("Flip", Message::Flip)
