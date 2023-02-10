@@ -286,17 +286,20 @@ mod tests {
     fn pred_month_test() {
         let date = NaiveDate::from_ymd_opt(2020, 5, 6).expect("Year, Month or Day doesnt Exist");
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 4, 6).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 4, 6).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2020, 1, 24).expect("Year, Month or Day doesnt Exist");
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd_opt(2019, 12, 24).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2019, 12, 24).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2020, 3, 31).expect("Year, Month or Day doesnt Exist");
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
     }
 
@@ -304,17 +307,20 @@ mod tests {
     fn succ_month_test() {
         let date = NaiveDate::from_ymd_opt(2020, 5, 6).expect("Year, Month or Day doesnt Exist");
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 6, 6).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 6, 6).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2019, 12, 24).expect("Year, Month or Day doesnt Exist");
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 1, 24).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 1, 24).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2020, 1, 31).expect("Year, Month or Day doesnt Exist");
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
     }
 
@@ -322,17 +328,20 @@ mod tests {
     fn pred_year_test() {
         let date = NaiveDate::from_ymd_opt(2020, 5, 6).expect("Year, Month or Day doesnt Exist");
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd_opt(2019, 5, 6).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2019, 5, 6).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd_opt(2019, 2, 28).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2019, 2, 28).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2021, 2, 28).expect("Year, Month or Day doesnt Exist");
         let result = pred_year(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 2, 28).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 2, 28).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
     }
 
@@ -340,17 +349,20 @@ mod tests {
     fn succ_year_test() {
         let date = NaiveDate::from_ymd_opt(2020, 5, 6).expect("Year, Month or Day doesnt Exist");
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd_opt(2021, 5, 6).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2021, 5, 6).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2020, 2, 29).expect("Year, Month or Day doesnt Exist");
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd_opt(2021, 2, 28).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2021, 2, 28).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
 
         let date = NaiveDate::from_ymd_opt(2019, 2, 28).expect("Year, Month or Day doesnt Exist");
         let result = succ_year(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 2, 28).expect("Year, Month or Day doesnt Exist");
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 2, 28).expect("Year, Month or Day doesnt Exist");
         assert_eq!(result, expected);
     }
 
