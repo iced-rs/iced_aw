@@ -434,7 +434,7 @@ where
         if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            if let keyboard::KeyCode::Tab = key_code {
+            if matches!(key_code, keyboard::KeyCode::Tab) {
                 if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous(self.state.show_seconds);
                 } else {
@@ -1411,7 +1411,8 @@ fn draw_digital_clock<'a, Message, B, Theme>(
                     border_radius: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
-                        .border_radius.into(),
+                        .border_radius
+                        .into(),
                     border_width: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")

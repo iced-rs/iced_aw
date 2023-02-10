@@ -5,8 +5,9 @@ use iced::{
 };
 use iced_aw::style::TabBarStyles;
 use iced_aw::tab_bar::TabLabel;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TabBarPosition {
+    #[default]
     Top,
     Bottom,
 }
@@ -24,14 +25,7 @@ impl From<TabBarPosition> for String {
     }
 }
 
-impl Default for TabBarPosition {
-    fn default() -> Self {
-        TabBarPosition::Top
-    }
-}
-
 //#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-
 pub struct TabSettings {
     pub tab_bar_position: Option<TabBarPosition>,
     pub tab_bar_theme: Option<TabBarStyles>,

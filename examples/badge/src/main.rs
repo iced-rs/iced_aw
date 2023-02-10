@@ -53,7 +53,7 @@ impl Sandbox for BadgeExample {
                             .align_items(Alignment::Center)
                             .push(Text::new(name).width(Length::Fill))
                             .push(
-                                Badge::new(Text::new(format!("{}", count)).size(BADGE_TEXT_SIZE))
+                                Badge::new(Text::new(format!("{count}")).size(BADGE_TEXT_SIZE))
                                     .style(predefined_style(i)),
                             ),
                     )

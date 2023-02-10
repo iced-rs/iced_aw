@@ -105,7 +105,7 @@ pub fn circle_points(distance_radius: f32, center: Point, amount: u16) -> Vec<Po
     let rotation =
         |(x, y): (f32, f32), t: f32| (x * t.cos() - y * t.sin(), x * t.sin() + y * t.cos());
 
-    let points: Vec<(f32, f32)> = (0..amount).into_iter().fold(Vec::new(), |mut v, i| {
+    let points: Vec<(f32, f32)> = (0..amount).fold(Vec::new(), |mut v, i| {
         v.push(rotation((0.0, -distance_radius), part * f32::from(i)));
         v
     });
