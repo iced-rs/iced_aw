@@ -145,7 +145,7 @@ impl State {
 
     /// Resets the date of the state to the current date.
     pub fn reset(&mut self) {
-        self.overlay_state.date = Local::now().date_naive();
+        self.overlay_state.date = Local::now().naive_local().date();
     }
 }
 

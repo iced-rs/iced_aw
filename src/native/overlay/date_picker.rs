@@ -886,7 +886,7 @@ impl State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            date: Local::now().date_naive(),
+            date: Local::now().naive_local().date(),
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
