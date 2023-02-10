@@ -82,6 +82,7 @@ members = [
     "examples/floating_element",
     "examples/grid",
     "examples/modal",
+    "examples/modal_component",
     "examples/tab_bar",
     "examples/tabs",
     "examples/time_picker",

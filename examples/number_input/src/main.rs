@@ -49,7 +49,7 @@ impl Sandbox for NumberInputDemo {
         let txt_minute = NumberInput::new(self.value, 255.0, Message::NumInpChanged)
             .style(NumberInputStyles::Default)
             .step(0.5)
-            .min(1.0);
+            .max(0.0);
 
         Container::new(
             Row::new()

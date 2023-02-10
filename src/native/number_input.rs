@@ -131,7 +131,7 @@ where
     /// Sets the minimum value of the [`NumberInput`].
     #[must_use]
     pub fn min(mut self, min: T) -> Self {
-        if min < self.bounds.1 {
+        if min <= self.bounds.1 {
             self.bounds.0 = min;
         }
         self
@@ -140,7 +140,7 @@ where
     /// Sets the maximum value of the [`NumberInput`].
     #[must_use]
     pub fn max(mut self, max: T) -> Self {
-        if max > self.bounds.0 {
+        if max >= self.bounds.0 {
             self.bounds.1 = max;
         }
         self
@@ -149,7 +149,7 @@ where
     /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
     #[must_use]
     pub fn bounds(mut self, bounds: (T, T)) -> Self {
-        if bounds.0 < bounds.1 {
+        if bounds.0 <= bounds.1 {
             self.bounds = bounds;
         }
         self
@@ -377,6 +377,10 @@ where
         let mouse_over_dec = dec_bounds.contains(cursor_position);
         let modifiers = state.state.downcast_mut::<ModifierState>();
         let child = &mut state.children[0];
+
+        if self.bounds.0 == self.bounds.1 {
+            return event::Status::Ignored;
+        }
 
         if layout.bounds().contains(cursor_position) {
             if mouse_over_inc || mouse_over_dec {
@@ -614,8 +618,8 @@ where
             .expect("fail to get decreate mod layout")
             .bounds();
         let is_mouse_over = bounds.contains(cursor_position);
-        let is_decrease_disabled = self.value <= self.bounds.0;
-        let is_increase_disabled = self.value >= self.bounds.1;
+        let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
+        let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
         let mouse_over_decrease = dec_bounds.contains(cursor_position);
         let mouse_over_increase = inc_bounds.contains(cursor_position);
 
@@ -662,8 +666,8 @@ where
             cursor_position,
             None,
         );
-        let is_decrease_disabled = self.value <= self.bounds.0;
-        let is_increase_disabled = self.value >= self.bounds.1;
+        let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
+        let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
 
         let decrease_btn_style = if is_decrease_disabled {
             theme.disabled(self.style)
