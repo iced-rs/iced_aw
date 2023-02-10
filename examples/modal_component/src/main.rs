@@ -1,10 +1,9 @@
 use iced::{
-    alignment::Horizontal,
     widget::{container, Button, Container, Row, Text},
-    Alignment, Element, Length, Sandbox, Settings,
+    Alignment, Element, Sandbox, Settings,
 };
 
-use iced_aw::{Card, Modal};
+use iced_aw::Modal;
 
 fn main() -> iced::Result {
     ModalExample::run(Settings::default())
@@ -14,8 +13,6 @@ fn main() -> iced::Result {
 enum Message {
     OpenModal,
     CloseModal,
-    CancelButtonPressed,
-    OkButtonPressed,
 }
 
 #[derive(Default)]
@@ -39,8 +36,6 @@ impl Sandbox for ModalExample {
         match message {
             Message::OpenModal => self.show_modal = true,
             Message::CloseModal => self.show_modal = false,
-            Message::CancelButtonPressed => self.show_modal = false,
-            Message::OkButtonPressed => self.show_modal = false,
         }
         self.last_message = Some(message)
     }
@@ -57,8 +52,6 @@ impl Sandbox for ModalExample {
                         Some(message) => match message {
                             Message::OpenModal => "Modal opened",
                             Message::CloseModal => "Modal closed",
-                            Message::CancelButtonPressed => "Modal canceled",
-                            Message::OkButtonPressed => "Modal accepted",
                         },
                         None => "None",
                     }

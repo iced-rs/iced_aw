@@ -74,7 +74,6 @@ impl Sandbox for RandStrings {
     fn new() -> Self {
         let mut rng = rand::thread_rng();
         let data: Vec<StrButton> = (0..45)
-            .into_iter()
             .map(|s| StrButton {
                 str: s.to_string(),
                 size: rng.gen_range(15..50),
