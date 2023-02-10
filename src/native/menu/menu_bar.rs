@@ -183,6 +183,7 @@ where
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
+        println!("bar layout");
         use super::flex;
 
         let limits = limits.width(self.width).height(self.height);
@@ -208,6 +209,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
+        println!("bar event: {event:?}");
         use event::{Event::*, Status::*};
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
@@ -231,11 +233,6 @@ where
             Touch(FingerLost {..})  => {
                 if state.indices.is_empty()
                 && layout.bounds().contains(cursor_position){
-                    init_root_menu(
-                        state, 
-                        layout.children().map(|lo| lo.bounds() ), 
-                        cursor_position
-                    );
                     state.cursor = cursor_position;
                     state.open = true;
                 }
@@ -255,6 +252,7 @@ where
         cursor_position: Point,
         viewport: &Rectangle,
     ) {
+        println!("bar draw");
         let state = tree.state.downcast_ref::<MenuBarState>();
 
         let position = if state.open
@@ -304,6 +302,7 @@ where
         layout: layout::Layout<'_>,
         _renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
+        println!("bar overlay");
         let state = tree.state.downcast_ref::<MenuBarState>();
         if !state.open { return None; }
 
@@ -370,6 +369,7 @@ where
         bounds: Size,
         _position: Point,
     ) -> layout::Node {
+        println!("overlay layout");
         /* 
         Each menu_node corresponds to a children_node, a parent_node, and a check_node
         
@@ -481,6 +481,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
+        println!("overlay event: {event:?}");
         use event::{Event::*, Status::*};
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
@@ -495,6 +496,15 @@ where
             clipboard, 
             shell
         );
+
+        {
+            let state = self.tree.state.downcast_mut::<MenuBarState>();
+            init_root_menu(
+                state, 
+                self.root_bounds_list.iter(),
+                cursor_position
+            );
+        }
 
         match event {
             Mouse(CursorMoved { position }) |
@@ -537,6 +547,7 @@ where
         layout: layout::Layout<'_>,
         cursor_position: Point,
     ) {
+        println!("overlay draw");
         let styling = theme.appearance(self.style);
 
         let state = self.tree.state.downcast_ref::<MenuBarState>();
@@ -787,7 +798,7 @@ where
 
     // init
     let Some(active_root) = state.active_root else{
-        init_root_menu(state, menu.root_bounds_list.iter(), position);
+        // init_root_menu(state, menu.root_bounds_list.iter(), position);
         return Ignored;
     };
 
