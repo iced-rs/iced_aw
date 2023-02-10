@@ -106,6 +106,7 @@ impl MenuBounds{
 
 struct MenuState{
     index: Option<usize>,
+    scroll_offset: f32,
     menu_bounds: MenuBounds,
 }
 
@@ -121,6 +122,16 @@ impl MenuBarState{
         self.menu_states.iter()
             .take_while(|ms| ms.index.is_some() )
             .map(|ms| ms.index.unwrap() )
+    }
+
+    fn get_trimmed_ref(&self) -> impl Iterator<Item = &MenuState> + '_{
+        self.menu_states.iter()
+            .take_while(|ms| ms.index.is_some())
+    }
+
+    fn get_trimmed_mut(&mut self) -> impl Iterator<Item = &mut MenuState> + '_{
+        self.menu_states.iter_mut()
+            .take_while(|ms| ms.index.is_some())
     }
 
     fn reset(&mut self){
@@ -473,7 +484,7 @@ where
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         use event::{Event::*, Status::*};
-        use mouse::{Event::*, Button::Left};
+        use mouse::{Event::*, ScrollDelta, Button::Left};
         use touch::{Event::*, };
 
         if !self.tree.state.downcast_ref::<MenuBarState>().open { return Ignored; };
@@ -498,6 +509,27 @@ where
         );
 
         match event {
+            Mouse(WheelScrolled { delta }) => {
+                let state = self.tree.state.downcast_mut::<MenuBarState>();
+
+                let delta_y = match delta{
+                    ScrollDelta::Lines { y, .. } => y * 60.0,
+                    ScrollDelta::Pixels { y, .. } => y,
+                };
+
+                // get menu
+                let last_ms = state.get_trimmed_mut().last().unwrap();
+                last_ms.scroll_offset = last_ms.scroll_offset + delta_y;
+
+                last_ms.menu_bounds.child_bounds.iter_mut()
+                .enumerate()
+                .for_each(|(i, cb)|{
+                    cb.y = (i as f32) * self.item_size.height + last_ms.scroll_offset;
+                });
+
+                Captured
+            },
+
             Mouse(CursorMoved { position }) |
             Touch(FingerMoved { position,.. }) => {
                 process_overlay_events(self, viewport, position).merge(menu_status)
@@ -707,6 +739,7 @@ where
             state.active_root = Some(i);
             state.menu_states.push(MenuState{
                 index: None,
+                scroll_offset: 0.0,
                 menu_bounds,
             });
 
@@ -858,6 +891,7 @@ where
     if !item.children.is_empty(){
         state.menu_states.push(MenuState{
             index: None,
+            scroll_offset: 0.0,
             menu_bounds: MenuBounds::new(
                 item.children.len(),
                 menu.item_size,

@@ -131,6 +131,7 @@ impl Application for App{
             menu_1(self),
             menu_2(self),
             menu_3(self),
+            menu_4(self),
         ])
             .spacing(4)
             .item_size([180.0, 25.0])
@@ -531,6 +532,76 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             color_item([0.76, 0.82, 0.20]),
             color_item([0.17, 0.27, 0.33]),
             primary,
+        ]
+    );
+
+    root
+}
+
+fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
+    
+    let root = MenuTree::with_children(
+        debug_button("Scroll"),
+        vec![
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+            
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
         ]
     );
 
