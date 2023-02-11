@@ -19,8 +19,29 @@ pub enum PathHighlight{
     MenuActive
 }
 
+/* TODO
+pub enum ItemHeight{
+    Uniform(f32),
+    Static,
+    // Flex,
+}
+
+pub enum ItemWidth{
+    Uniform(f32),
+    Static,
+}
+*/
+
+#[derive(Debug, Clone, Copy)]
+struct MenuSlice{
+    start_index: usize,
+    end_index: usize,
+    lower_bound_rel: f32,
+    upper_bound_rel: f32,
+}
+
 struct MenuBounds{
-    child_bounds: Vec<Rectangle>,
+    child_positions: Vec<f32>,
     children_bounds: Rectangle,
     parent_bounds: Rectangle,
     check_bounds: Rectangle,
@@ -39,74 +60,126 @@ impl MenuBounds{
             item_size.height * children_count as f32
         );
 
-        let (children_pos, mask) = adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
+        let (children_position, mask) = adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
         
-        let children_bounds = Rectangle::new(children_pos, children_size);
+        let children_bounds = Rectangle::new(children_position, children_size);
 
         let mut padding = [0;4];
         padding.iter_mut().enumerate().for_each(|(i, p)| {
             *p = mask[i] * bounds_expand;
         });
         
-        let child_bounds = (0..children_count).map(|i|{
-            Rectangle::new(
-                Point::new(0.0, (i as f32) * item_size.height), 
-                item_size
-            )
+        let child_positions = (0..children_count).map(|i|{
+            (i as f32) * item_size.height
         }).collect();
 
         let check_bounds = pad_rectangle(children_bounds, padding.into());
         Self{
             children_bounds,
-            child_bounds,
+            child_positions,
             parent_bounds,
             check_bounds,
         }
     }
+}
 
+struct MenuState{
+    index: Option<usize>,
+    scroll_offset: f32,
+    menu_bounds: MenuBounds,
+}
+impl MenuState{
     fn layout<'a, Message, Renderer>(
         &self, 
+        slice: MenuSlice,
+        item_size: Size,
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
     {
-        let child_nodes = self.child_bounds.iter()
-        .zip(menu_tree.children.iter())
-        .map(|(cb, mt)|{
-            let limits = layout::Limits::new(Size::ZERO, cb.size());
+        let MenuSlice{
+            start_index,
+            end_index,
+            lower_bound_rel,
+            upper_bound_rel,
+        } = slice;
+
+        let child_nodes = self.menu_bounds.child_positions[start_index..=end_index].iter()
+        .zip(menu_tree.children[start_index..=end_index].iter())
+        .map(|(cp, mt)|{
+            let mut position = *cp;
+            let mut size = item_size;
+
+            if position < lower_bound_rel
+            && (position + size.height) > lower_bound_rel{
+                size.height = position + size.height - lower_bound_rel;
+                position = lower_bound_rel;
+            }else if position <= upper_bound_rel
+            && (position + size.height) > upper_bound_rel{
+                size.height = upper_bound_rel - position;
+            }
+
+            let limits = layout::Limits::new(Size::ZERO, size);
+
             let mut node = mt.item.as_widget().layout(renderer, &limits);
-            node.move_to(cb.position());
+            node.move_to(Point::new(
+                0.0,
+                position + self.scroll_offset,
+            ));
             node
         }).collect::<Vec<_>>();
 
-        let mut node = layout::Node::with_children(self.children_bounds.size(), child_nodes);
-        node.move_to(self.children_bounds.position());
+        let mut node = layout::Node::with_children(self.menu_bounds.children_bounds.size(), child_nodes);
+        node.move_to(self.menu_bounds.children_bounds.position());
         node
     }
 
     fn layout_single<'a, Message, Renderer>(
         &self, 
         index: usize,
+        item_size: Size,
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
     {
-        let child_bounds = self.child_bounds[index];
-        let limits = layout::Limits::new(Size::ZERO, child_bounds.size());
+        let position = self.menu_bounds.child_positions[index];
+        let limits = layout::Limits::new(Size::ZERO, item_size);
+        let parent_offset = self.menu_bounds.children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
-        node.move_to(child_bounds.position() + (self.children_bounds.position() - Point::ORIGIN));
+        node.move_to(Point::new(
+            parent_offset.x,
+            parent_offset.y + position + self.scroll_offset,
+        ));
         node
     }
 
-}
+    fn slice(&self, viewport: Size, item_size: Size) -> MenuSlice{
+        let children_bounds = self.menu_bounds.children_bounds;
+        let max_index = self.menu_bounds.child_positions.len().saturating_sub(1);
+        
+        // absolute bounds
+        let lower_bound = children_bounds.y.max(0.0);
+        let upper_bound = (children_bounds.y + children_bounds.height).min(viewport.height);
 
-struct MenuState{
-    index: Option<usize>,
-    menu_bounds: MenuBounds,
+        // relative bounds
+        let lower_bound_rel = lower_bound - (children_bounds.y + self.scroll_offset);
+        let upper_bound_rel = upper_bound - (children_bounds.y + self.scroll_offset);
+
+        // index range
+        let start_index = (lower_bound_rel / item_size.height).floor() as usize;
+        let end_index = ((upper_bound_rel / item_size.height).floor() as usize).min(max_index);
+        
+        MenuSlice{
+            start_index,
+            end_index,
+            lower_bound_rel,
+            upper_bound_rel,
+        }
+    }
 }
 
 struct MenuBarState{
@@ -303,7 +376,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        use event::{Event::*, Status::*};
+        use event::{Event::*};
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
 
@@ -483,6 +556,7 @@ where
         let menu_status = process_menu_events(
             &mut self.tree, 
             &mut self.menu_roots, 
+            self.item_size,
             event.clone(), 
             cursor_position, 
             renderer, 
@@ -498,6 +572,10 @@ where
         );
 
         match event {
+            Mouse(WheelScrolled { delta }) => {
+                process_scroll_events(self, delta, viewport).merge(menu_status)
+            },
+
             Mouse(CursorMoved { position }) |
             Touch(FingerMoved { position,.. }) => {
                 process_overlay_events(self, viewport, position).merge(menu_status)
@@ -546,62 +624,8 @@ where
         
         let indices = state.get_trimmed_indices().collect::<Vec<_>>();
 
-        let draw_menu_background = |
-        r: &mut Renderer, 
-        children_bounds:Rectangle
-        |{
-            let menu_quad = renderer::Quad{
-                bounds: pad_rectangle(children_bounds, styling.background_expand.into()),
-                border_radius: styling.border_radius.into(),
-                border_width: styling.border_width,
-                border_color: styling.border_color,
-            };
-            let menu_color = styling.background;
-            r.fill_quad(menu_quad, menu_color);
-        };
-
-        let draw_path_highlight = |
-        r: &mut Renderer, 
-        active: usize, 
-        children_layout:layout::Layout
-        |{
-            let active_bounds = children_layout.children()
-                .skip(active).next().unwrap().bounds();
-            let path_quad = renderer::Quad{
-                bounds: active_bounds,
-                border_radius: styling.border_radius.into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-            };
-            let path_color = styling.path;
-            r.fill_quad(path_quad, path_color);
-        };
-
-        let draw_items = |
-        r: &mut Renderer, 
-        children_layout:layout::Layout, 
-        menu_root:&MenuTree<'a, Message, Renderer>
-        |{
-            menu_root.children.iter()
-                .zip(children_layout.children())
-                .for_each(|(mt, clo)|{
-                mt.item.as_widget().draw(
-                    &tree[mt.index], 
-                    r, 
-                    theme, 
-                    style, 
-                    clo, 
-                    cursor_position, 
-                    &children_layout.bounds()
-                );
-            });
-        };
-
         state.menu_states.iter().enumerate()
         .fold(root, |menu_root, (i, ms)|{
-            let children_node = ms.menu_bounds.layout(renderer, menu_root);
-            let children_layout = layout::Layout::new(&children_node);
-            let children_bounds = children_layout.bounds();
 
             let draw_path = match &self.path_highlight{
                 Some(ph) => match ph{
@@ -617,13 +641,62 @@ where
             };
 
             let draw_menu = |r: &mut Renderer|{
-                draw_menu_background(r, children_bounds);
+                // calc slice
+                let slice = ms.slice(layout.bounds().size(), self.item_size);
+                let start_index = slice.start_index;
+                let end_index = slice.end_index;
 
+                // calc layout
+                let children_node = ms.layout(
+                    slice,
+                    self.item_size, 
+                    r, 
+                    menu_root
+                );
+                let children_layout = layout::Layout::new(&children_node);
+                let children_bounds = children_layout.bounds();
+
+
+                // draw menu background
+                let menu_quad = renderer::Quad{
+                    bounds: pad_rectangle(children_bounds, styling.background_expand.into()),
+                    border_radius: styling.border_radius.into(),
+                    border_width: styling.border_width,
+                    border_color: styling.border_color,
+                };
+                let menu_color = styling.background;
+                r.fill_quad(menu_quad, menu_color);
+
+
+                // draw path hightlight
                 if let (true, Some(active)) = (draw_path, ms.index){
-                    draw_path_highlight(r, active, children_layout);
+                    let active_bounds = children_layout.children()
+                        .skip(active.saturating_sub(start_index)).next().unwrap().bounds();
+                    let path_quad = renderer::Quad{
+                        bounds: active_bounds,
+                        border_radius: styling.border_radius.into(),
+                        border_width: 0.0,
+                        border_color: Color::TRANSPARENT,
+                    };
+                    let path_color = styling.path;
+                    r.fill_quad(path_quad, path_color);
                 }
 
-                draw_items(r, children_layout, menu_root);
+
+                // draw item
+                menu_root.children[start_index..=end_index].iter()
+                .zip(children_layout.children())
+                .for_each(|(mt, clo)|{
+                    mt.item.as_widget().draw(
+                        &tree[mt.index], 
+                        r, 
+                        theme, 
+                        style, 
+                        clo, 
+                        cursor_position, 
+                        &children_layout.bounds()
+                    );
+                });
             };
 
             renderer.with_layer(layout.bounds(), draw_menu);
@@ -707,6 +780,7 @@ where
             state.active_root = Some(i);
             state.menu_states.push(MenuState{
                 index: None,
+                scroll_offset: 0.0,
                 menu_bounds,
             });
 
@@ -718,6 +792,7 @@ where
 fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     tree: &'b mut Tree,
     menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
+    item_size: Size,
     event: event::Event,
     cursor_position: Point,
     renderer: &Renderer,
@@ -741,10 +816,11 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     
     // get layout
     let last_ms = &state.menu_states[indices.len() - 1];
-    let child_node = last_ms.menu_bounds.layout_single(
+    let child_node = last_ms.layout_single(
         last_ms.index.unwrap(), 
+        item_size, 
         renderer, 
-        mt
+        mt,
     );
     let child_layout = layout::Layout::new(&child_node);
     
@@ -836,7 +912,7 @@ where
     // cursor is in the children part
 
     // calc new index
-    let height_diff = (position.y - last_cb.y)
+    let height_diff = (position.y - (last_cb.y + last_ms.scroll_offset))
         .clamp(0.0, last_cb.height - 0.001);
     let new_index = (height_diff / menu.item_size.height).floor() as usize;
     
@@ -844,8 +920,10 @@ where
     last_ms.index = Some(new_index);
 
     // get new item bounds
-    let item_bounds = last_mb.child_bounds[new_index] + 
-    (last_mb.children_bounds.position() - Point::ORIGIN);
+    let item_bounds = Rectangle::new(
+        Point::new(0.0, last_mb.child_positions[new_index] + last_ms.scroll_offset),
+        menu.item_size
+    ) + (last_mb.children_bounds.position() - Point::ORIGIN);
     
     // get new active item
     let active_menu_root = &menu.menu_roots[active_root];
@@ -858,6 +936,7 @@ where
     if !item.children.is_empty(){
         state.menu_states.push(MenuState{
             index: None,
+            scroll_offset: 0.0,
             menu_bounds: MenuBounds::new(
                 item.children.len(),
                 menu.item_size,
@@ -952,3 +1031,59 @@ fn adaptive_open_direction(
 
 }
 
+fn process_scroll_events<'a, 'b, Message, Renderer: renderer::Renderer>(
+    menu: &mut Menu<'a, 'b, Message, Renderer>,
+    delta: mouse::ScrollDelta,
+    viewport: Size,
+) -> event::Status
+where
+    Renderer: renderer::Renderer,
+    Renderer::Theme: StyleSheet,
+{
+    use mouse::ScrollDelta;
+    use event::Status::*;
+
+    let state = menu.tree.state.downcast_mut::<MenuBarState>();
+
+    let delta_y = match delta{
+        ScrollDelta::Lines { y, .. } => y * 60.0,
+        ScrollDelta::Pixels { y, .. } => y,
+    };
+
+    let calc_offset_bounds = |menu_state: &MenuState, viewport: Size| -> (f32,f32){
+        let children_bounds = menu_state.menu_bounds.children_bounds;
+        let max_offset = (0.0 - children_bounds.y).max(0.0);
+        let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
+        (max_offset, min_offset)
+    };
+
+    // update
+    if state.menu_states.is_empty(){
+        return Ignored;
+    }else if state.menu_states.len() == 1{
+        let last_ms = state.menu_states.last_mut().unwrap();
+        let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
+        last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
+    }else{ // >= 2
+        let max_index = state.menu_states.len() - 1;
+        let last_two = &mut state.menu_states[max_index-1..=max_index];
+        
+        if last_two[1].index.is_some(){
+            // scroll the last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport);
+            last_two[1].scroll_offset = (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
+        }else{
+            // scroll the second last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport);
+            let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
+            let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
+            last_two[0].scroll_offset = scroll_offset;
+            
+            // update the bounds of the last one
+            last_two[1].menu_bounds.parent_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.children_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.check_bounds.y += clamped_delta_y;
+        }
+    }
+    Captured
+}
