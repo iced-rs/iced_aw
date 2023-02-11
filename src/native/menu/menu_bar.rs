@@ -1,5 +1,3 @@
-use std::f32::consts::E;
-
 use iced_native::{
     Element, Widget, renderer, overlay, 
     layout, Length, Color, Point, Size, 
@@ -594,16 +592,41 @@ where
                     ScrollDelta::Pixels { y, .. } => y,
                 };
 
-                // get menu
-                let last_ms = state.get_trimmed_mut().last().unwrap();
-                let children_bounds = last_ms.menu_bounds.children_bounds;
-                
-                let max_offset = (0.0 - children_bounds.y).max(0.0);
-                let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
-                
-                // println!("max: {max_offset}, min: {min_offset}");
-                last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
-                
+                let calc_offset_bounds = |menu_state: &MenuState, viewport: Size| -> (f32,f32){
+                    let children_bounds = menu_state.menu_bounds.children_bounds;
+                    let max_offset = (0.0 - children_bounds.y).max(0.0);
+                    let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
+                    (max_offset, min_offset)
+                };
+
+                // update
+                if state.menu_states.is_empty(){
+                    return Ignored;
+                }else if state.menu_states.len() == 1{
+                    let last_ms = state.menu_states.last_mut().unwrap();
+                    let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
+                    last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
+                }else{ // >= 2
+                    let max_index = state.menu_states.len() - 1;
+                    let last_two = &mut state.menu_states[max_index-1..=max_index];
+                    
+                    if last_two[1].index.is_some(){
+                        // scroll the last one
+                        let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport);
+                        last_two[1].scroll_offset = (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
+                    }else{
+                        // scroll the second last one
+                        let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport);
+                        let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
+                        let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
+                        last_two[0].scroll_offset = scroll_offset;
+                        
+                        // update the bounds of the last one
+                        last_two[1].menu_bounds.parent_bounds.y += clamped_delta_y;
+                        last_two[1].menu_bounds.children_bounds.y += clamped_delta_y;
+                        last_two[1].menu_bounds.check_bounds.y += clamped_delta_y;
+                    }
+                }
                 Captured
             },
 
@@ -702,7 +725,7 @@ where
                 // draw path hightlight
                 if let (true, Some(active)) = (draw_path, ms.index){
                     let active_bounds = children_layout.children()
-                        .skip(active - start_index).next().unwrap().bounds();
+                        .skip(active.saturating_sub(start_index)).next().unwrap().bounds();
                     let path_quad = renderer::Quad{
                         bounds: active_bounds,
                         border_radius: styling.border_radius.into(),

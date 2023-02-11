@@ -539,6 +539,41 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
 }
 
 fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
+    let dekjdaud = debug_sub_menu(
+        "dekjdaud",
+        vec![
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+        ]
+    );
+
     let luyortp = debug_sub_menu(
         "luyortp",
         vec![
@@ -634,7 +669,7 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("ajrs"), // 28
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
-            debug_item("dekjdaud"),
+            dekjdaud,
             debug_item("ecsh"),
             debug_item("fweiu"),
             debug_item("giwe"),
