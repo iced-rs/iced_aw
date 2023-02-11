@@ -539,9 +539,8 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
 }
 
 fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
-    
-    let root = MenuTree::with_children(
-        debug_button("Scroll"),
+    let luyortp = debug_sub_menu(
+        "luyortp",
         vec![
             debug_item("ajrs"),
             debug_item("bsdfho"),
@@ -557,8 +556,67 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("luyortp"),
             debug_item("mmdyrc"),
             debug_item("nquc"),
+        ]
+    );
+
+    let jcsu = debug_sub_menu(
+        "jcsu", 
+        vec![
+            debug_item("ajrs"),
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            debug_item("jcsu"),
+            debug_item("kaljkahd"),
+            luyortp,
+            debug_item("mmdyrc"),
+            debug_item("nquc"),
+        ]
+    );
+    // let jcsu = MenuTree::with_children(
+    //     debug_button("jcsu"),
+    //     vec![
+    //         debug_item("ajrs"),
+    //         debug_item("bsdfho"),
+    //         debug_item("clkjhbf"),
+    //         debug_item("dekjdaud"),
+    //         debug_item("ecsh"),
+    //         debug_item("fweiu"),
+    //         debug_item("giwe"),
+    //         debug_item("heruyv"),
+    //         debug_item("isabe"),
+    //         debug_item("jcsu"),
+    //         debug_item("kaljkahd"),
+    //         debug_item("luyortp"),
+    //         debug_item("mmdyrc"),
+    //         nquc,
+    //     ]
+    // );
+
+    let root = MenuTree::with_children(
+        debug_button("Scroll"),
+        vec![
+            debug_item("ajrs"), // 0
+            debug_item("bsdfho"),
+            debug_item("clkjhbf"),
+            debug_item("dekjdaud"),
+            debug_item("ecsh"),
+            debug_item("fweiu"),
+            debug_item("giwe"),
+            debug_item("heruyv"),
+            debug_item("isabe"),
+            jcsu,
+            debug_item("kaljkahd"),
+            debug_item("luyortp"),
+            debug_item("mmdyrc"),
+            debug_item("nquc"), // 13
             
-            debug_item("ajrs"),
+            debug_item("ajrs"), // 14
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
             debug_item("dekjdaud"),
@@ -571,9 +629,9 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("kaljkahd"),
             debug_item("luyortp"),
             debug_item("mmdyrc"),
-            debug_item("nquc"),
+            debug_item("nquc"), // 27
 
-            debug_item("ajrs"),
+            debug_item("ajrs"), // 28
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
             debug_item("dekjdaud"),
@@ -586,9 +644,9 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("kaljkahd"),
             debug_item("luyortp"),
             debug_item("mmdyrc"),
-            debug_item("nquc"),
+            debug_item("nquc"), // 41
 
-            debug_item("ajrs"),
+            debug_item("ajrs"), // 42
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
             debug_item("dekjdaud"),
@@ -598,10 +656,10 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("heruyv"),
             debug_item("isabe"),
             debug_item("jcsu"),
-            debug_item("kaljkahd"),
+            debug_item("kaljkahd"), // 52
             debug_item("luyortp"),
             debug_item("mmdyrc"),
-            debug_item("nquc"),
+            debug_item("nquc"), // 55
         ]
     );
 
