@@ -146,10 +146,8 @@ impl MenuState{
     where
         Renderer: renderer::Renderer,
     {
-        let mut position = self.menu_bounds.child_positions[index];
-        let mut size = item_size;
-
-        let limits = layout::Limits::new(Size::ZERO, size);
+        let position = self.menu_bounds.child_positions[index];
+        let limits = layout::Limits::new(Size::ZERO, item_size);
         let parent_offset = self.menu_bounds.children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
         node.move_to(Point::new(
@@ -196,16 +194,6 @@ impl MenuBarState{
         self.menu_states.iter()
             .take_while(|ms| ms.index.is_some() )
             .map(|ms| ms.index.unwrap() )
-    }
-
-    fn get_trimmed_ref(&self) -> impl Iterator<Item = &MenuState> + '_{
-        self.menu_states.iter()
-            .take_while(|ms| ms.index.is_some())
-    }
-
-    fn get_trimmed_mut(&mut self) -> impl Iterator<Item = &mut MenuState> + '_{
-        self.menu_states.iter_mut()
-            .take_while(|ms| ms.index.is_some())
     }
 
     fn reset(&mut self){
@@ -388,7 +376,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        use event::{Event::*, Status::*};
+        use event::{Event::*};
         use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
 
@@ -558,7 +546,7 @@ where
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         use event::{Event::*, Status::*};
-        use mouse::{Event::*, ScrollDelta, Button::Left};
+        use mouse::{Event::*, Button::Left};
         use touch::{Event::*, };
 
         if !self.tree.state.downcast_ref::<MenuBarState>().open { return Ignored; };
@@ -585,49 +573,7 @@ where
 
         match event {
             Mouse(WheelScrolled { delta }) => {
-                let state = self.tree.state.downcast_mut::<MenuBarState>();
-
-                let delta_y = match delta{
-                    ScrollDelta::Lines { y, .. } => y * 60.0,
-                    ScrollDelta::Pixels { y, .. } => y,
-                };
-
-                let calc_offset_bounds = |menu_state: &MenuState, viewport: Size| -> (f32,f32){
-                    let children_bounds = menu_state.menu_bounds.children_bounds;
-                    let max_offset = (0.0 - children_bounds.y).max(0.0);
-                    let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
-                    (max_offset, min_offset)
-                };
-
-                // update
-                if state.menu_states.is_empty(){
-                    return Ignored;
-                }else if state.menu_states.len() == 1{
-                    let last_ms = state.menu_states.last_mut().unwrap();
-                    let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
-                    last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
-                }else{ // >= 2
-                    let max_index = state.menu_states.len() - 1;
-                    let last_two = &mut state.menu_states[max_index-1..=max_index];
-                    
-                    if last_two[1].index.is_some(){
-                        // scroll the last one
-                        let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport);
-                        last_two[1].scroll_offset = (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
-                    }else{
-                        // scroll the second last one
-                        let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport);
-                        let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
-                        let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
-                        last_two[0].scroll_offset = scroll_offset;
-                        
-                        // update the bounds of the last one
-                        last_two[1].menu_bounds.parent_bounds.y += clamped_delta_y;
-                        last_two[1].menu_bounds.children_bounds.y += clamped_delta_y;
-                        last_two[1].menu_bounds.check_bounds.y += clamped_delta_y;
-                    }
-                }
-                Captured
+                process_scroll_events(self, delta, viewport).merge(menu_status)
             },
 
             Mouse(CursorMoved { position }) |
@@ -974,8 +920,6 @@ where
     last_ms.index = Some(new_index);
 
     // get new item bounds
-    // let item_bounds = last_mb.child_bounds[new_index] + 
-    // (last_mb.children_bounds.position() - Point::ORIGIN);
     let item_bounds = Rectangle::new(
         Point::new(0.0, last_mb.child_positions[new_index] + last_ms.scroll_offset),
         menu.item_size
@@ -1087,3 +1031,59 @@ fn adaptive_open_direction(
 
 }
 
+fn process_scroll_events<'a, 'b, Message, Renderer: renderer::Renderer>(
+    menu: &mut Menu<'a, 'b, Message, Renderer>,
+    delta: mouse::ScrollDelta,
+    viewport: Size,
+) -> event::Status
+where
+    Renderer: renderer::Renderer,
+    Renderer::Theme: StyleSheet,
+{
+    use mouse::ScrollDelta;
+    use event::Status::*;
+
+    let state = menu.tree.state.downcast_mut::<MenuBarState>();
+
+    let delta_y = match delta{
+        ScrollDelta::Lines { y, .. } => y * 60.0,
+        ScrollDelta::Pixels { y, .. } => y,
+    };
+
+    let calc_offset_bounds = |menu_state: &MenuState, viewport: Size| -> (f32,f32){
+        let children_bounds = menu_state.menu_bounds.children_bounds;
+        let max_offset = (0.0 - children_bounds.y).max(0.0);
+        let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
+        (max_offset, min_offset)
+    };
+
+    // update
+    if state.menu_states.is_empty(){
+        return Ignored;
+    }else if state.menu_states.len() == 1{
+        let last_ms = state.menu_states.last_mut().unwrap();
+        let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
+        last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
+    }else{ // >= 2
+        let max_index = state.menu_states.len() - 1;
+        let last_two = &mut state.menu_states[max_index-1..=max_index];
+        
+        if last_two[1].index.is_some(){
+            // scroll the last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport);
+            last_two[1].scroll_offset = (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
+        }else{
+            // scroll the second last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport);
+            let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
+            let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
+            last_two[0].scroll_offset = scroll_offset;
+            
+            // update the bounds of the last one
+            last_two[1].menu_bounds.parent_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.children_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.check_bounds.y += clamped_delta_y;
+        }
+    }
+    Captured
+}
