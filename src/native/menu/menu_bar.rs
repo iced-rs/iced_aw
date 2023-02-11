@@ -767,6 +767,8 @@ where
     for (i, (&parent_bounds, mt)) in menu.root_bounds_list.iter()
     .zip(menu.menu_roots.iter())
     .enumerate(){
+        if mt.children.is_empty(){ continue; }
+        
         if parent_bounds.contains(position){
             let menu_bounds = MenuBounds::new(
                 mt.children.len(),
