@@ -68,6 +68,7 @@ impl MenuBounds{
         &self, 
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
+        scroll_offset: f32,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
@@ -77,7 +78,10 @@ impl MenuBounds{
         .map(|(cb, mt)|{
             let limits = layout::Limits::new(Size::ZERO, cb.size());
             let mut node = mt.item.as_widget().layout(renderer, &limits);
-            node.move_to(cb.position());
+            node.move_to(Point::new(
+                cb.x,
+                cb.y + scroll_offset,
+            ));
             node
         }).collect::<Vec<_>>();
 
@@ -91,14 +95,19 @@ impl MenuBounds{
         index: usize,
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
+        scroll_offset: f32,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
     {
         let child_bounds = self.child_bounds[index];
         let limits = layout::Limits::new(Size::ZERO, child_bounds.size());
+        let parent_offset = self.children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
-        node.move_to(child_bounds.position() + (self.children_bounds.position() - Point::ORIGIN));
+        node.move_to(Point::new(
+            child_bounds.x + parent_offset.x,
+            child_bounds.y + parent_offset.y + scroll_offset,
+        ));
         node
     }
 
@@ -519,13 +528,14 @@ where
 
                 // get menu
                 let last_ms = state.get_trimmed_mut().last().unwrap();
-                last_ms.scroll_offset = last_ms.scroll_offset + delta_y;
+                let children_bounds = last_ms.menu_bounds.children_bounds;
 
-                last_ms.menu_bounds.child_bounds.iter_mut()
-                .enumerate()
-                .for_each(|(i, cb)|{
-                    cb.y = (i as f32) * self.item_size.height + last_ms.scroll_offset;
-                });
+                
+                let max_offset = (0.0 - children_bounds.y).max(0.0);
+                let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
+                
+                // println!("max: {max_offset}, min: {min_offset}");
+                last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
 
                 Captured
             },
@@ -631,7 +641,7 @@ where
 
         state.menu_states.iter().enumerate()
         .fold(root, |menu_root, (i, ms)|{
-            let children_node = ms.menu_bounds.layout(renderer, menu_root);
+            let children_node = ms.menu_bounds.layout(renderer, menu_root, ms.scroll_offset);
             let children_layout = layout::Layout::new(&children_node);
             let children_bounds = children_layout.bounds();
 
@@ -777,7 +787,8 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     let child_node = last_ms.menu_bounds.layout_single(
         last_ms.index.unwrap(), 
         renderer, 
-        mt
+        mt,
+        last_ms.scroll_offset
     );
     let child_layout = layout::Layout::new(&child_node);
     
@@ -869,7 +880,7 @@ where
     // cursor is in the children part
 
     // calc new index
-    let height_diff = (position.y - last_cb.y)
+    let height_diff = (position.y - (last_cb.y + last_ms.scroll_offset))
         .clamp(0.0, last_cb.height - 0.001);
     let new_index = (height_diff / menu.item_size.height).floor() as usize;
     
