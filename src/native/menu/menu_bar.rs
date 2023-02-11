@@ -20,7 +20,7 @@ pub enum PathHighlight{
 }
 
 struct MenuBounds{
-    child_bounds: Vec<Rectangle>,
+    child_positions: Vec<f32>,
     children_bounds: Rectangle,
     parent_bounds: Rectangle,
     check_bounds: Rectangle,
@@ -39,26 +39,27 @@ impl MenuBounds{
             item_size.height * children_count as f32
         );
 
-        let (children_pos, mask) = adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
+        let (children_position, mask) = adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
         
-        let children_bounds = Rectangle::new(children_pos, children_size);
+        let children_bounds = Rectangle::new(children_position, children_size);
 
         let mut padding = [0;4];
         padding.iter_mut().enumerate().for_each(|(i, p)| {
             *p = mask[i] * bounds_expand;
         });
         
-        let child_bounds = (0..children_count).map(|i|{
-            Rectangle::new(
-                Point::new(0.0, (i as f32) * item_size.height), 
-                item_size
-            )
+        let child_positions = (0..children_count).map(|i|{
+            (i as f32) * item_size.height
+            // Rectangle::new(
+            //     Point::new(0.0, (i as f32) * item_size.height), 
+            //     item_size
+            // )
         }).collect();
 
         let check_bounds = pad_rectangle(children_bounds, padding.into());
         Self{
             children_bounds,
-            child_bounds,
+            child_positions,
             parent_bounds,
             check_bounds,
         }
@@ -66,6 +67,7 @@ impl MenuBounds{
 
     fn layout<'a, Message, Renderer>(
         &self, 
+        item_size: Size,
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
         scroll_offset: f32,
@@ -73,14 +75,14 @@ impl MenuBounds{
     where
         Renderer: renderer::Renderer,
     {
-        let child_nodes = self.child_bounds.iter()
+        let child_nodes = self.child_positions.iter()
         .zip(menu_tree.children.iter())
-        .map(|(cb, mt)|{
-            let limits = layout::Limits::new(Size::ZERO, cb.size());
+        .map(|(cp, mt)|{
+            let limits = layout::Limits::new(Size::ZERO, item_size);
             let mut node = mt.item.as_widget().layout(renderer, &limits);
             node.move_to(Point::new(
-                cb.x,
-                cb.y + scroll_offset,
+                0.0,
+                cp + scroll_offset,
             ));
             node
         }).collect::<Vec<_>>();
@@ -93,6 +95,7 @@ impl MenuBounds{
     fn layout_single<'a, Message, Renderer>(
         &self, 
         index: usize,
+        item_size: Size,
         renderer: &Renderer,
         menu_tree: &MenuTree<'a, Message, Renderer>,
         scroll_offset: f32,
@@ -100,13 +103,13 @@ impl MenuBounds{
     where
         Renderer: renderer::Renderer,
     {
-        let child_bounds = self.child_bounds[index];
-        let limits = layout::Limits::new(Size::ZERO, child_bounds.size());
+        let child_position = self.child_positions[index];
+        let limits = layout::Limits::new(Size::ZERO, item_size);
         let parent_offset = self.children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
         node.move_to(Point::new(
-            child_bounds.x + parent_offset.x,
-            child_bounds.y + parent_offset.y + scroll_offset,
+            parent_offset.x,
+            parent_offset.y + child_position + scroll_offset,
         ));
         node
     }
@@ -503,6 +506,7 @@ where
         let menu_status = process_menu_events(
             &mut self.tree, 
             &mut self.menu_roots, 
+            self.item_size,
             event.clone(), 
             cursor_position, 
             renderer, 
@@ -641,7 +645,7 @@ where
 
         state.menu_states.iter().enumerate()
         .fold(root, |menu_root, (i, ms)|{
-            let children_node = ms.menu_bounds.layout(renderer, menu_root, ms.scroll_offset);
+            let children_node = ms.menu_bounds.layout(self.item_size, renderer, menu_root, ms.scroll_offset);
             let children_layout = layout::Layout::new(&children_node);
             let children_bounds = children_layout.bounds();
 
@@ -761,6 +765,7 @@ where
 fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     tree: &'b mut Tree,
     menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
+    item_size: Size,
     event: event::Event,
     cursor_position: Point,
     renderer: &Renderer,
@@ -786,6 +791,7 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     let last_ms = &state.menu_states[indices.len() - 1];
     let child_node = last_ms.menu_bounds.layout_single(
         last_ms.index.unwrap(), 
+        item_size,
         renderer, 
         mt,
         last_ms.scroll_offset
@@ -888,8 +894,12 @@ where
     last_ms.index = Some(new_index);
 
     // get new item bounds
-    let item_bounds = last_mb.child_bounds[new_index] + 
-    (last_mb.children_bounds.position() - Point::ORIGIN);
+    // let item_bounds = last_mb.child_bounds[new_index] + 
+    // (last_mb.children_bounds.position() - Point::ORIGIN);
+    let item_bounds = Rectangle::new(
+        Point::new(0.0, last_mb.child_positions[new_index]),
+        menu.item_size
+    ) + (last_mb.children_bounds.position() - Point::ORIGIN);
     
     // get new active item
     let active_menu_root = &menu.menu_roots[active_root];
