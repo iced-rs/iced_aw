@@ -100,7 +100,6 @@ members = [
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
 version = "0.7.0"
-features = ["svg"]
 
 [workspace.dependencies.iced_aw]
 path = "./"

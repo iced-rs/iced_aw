@@ -1,4 +1,4 @@
-use iced::widget::{ slider, checkbox, container, button, text,text_input, row, toggler, horizontal_space, svg};
+use iced::widget::{ slider, vertical_slider, checkbox, pick_list, container, button, text,text_input, row, toggler, horizontal_space, svg};
 use iced::widget::column as col;
 use iced::{Application, Length, Color, alignment, theme, Element,};
 
@@ -17,9 +17,28 @@ pub fn main() -> iced::Result{
     })
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SizeOption{
+    Uniform,
+    Static,
+}
+impl SizeOption{
+    const ALL:[SizeOption;2] = [
+        SizeOption::Uniform,
+        SizeOption::Static,
+    ];
+}
+impl std::fmt::Display for SizeOption{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self{
+            Self::Uniform => "Uniform",
+            Self::Static  => "Static",
+        })
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Message{
-    None,
     Debug(String),
     ValueChange(u8),
     CheckChange(bool),
@@ -28,6 +47,7 @@ enum Message{
     Flip,
     ThemeChange(bool),
     TextChange(String),
+    SizeOption(SizeOption),
 }
 
 struct App{
@@ -39,6 +59,7 @@ struct App{
     flip: bool,
     dark_mode: bool,
     text: String,
+    size_option: SizeOption,
 }
 impl Application for App{
     type Executor = iced::executor::Default;
@@ -61,7 +82,8 @@ impl Application for App{
                 theme,
                 flip: false,
                 dark_mode:false,
-                text: "Text Input".into()
+                text: "Text Input".into(),
+                size_option: SizeOption::Static,
             },
             iced::Command::none()
         )
@@ -119,32 +141,47 @@ impl Application for App{
             Message::TextChange(s) => {
                 self.text = s.clone();
                 self.title = s;
+            },
+            Message::SizeOption(so) => {
+                self.size_option = so;
+                self.title = self.size_option.to_string();
             }
-            _ => ()
         }
         iced::Command::none()
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Renderer<Self::Theme>> {
-        
-        let mb = MenuBar::new(vec![
-            menu_1(self),
-            menu_2(self),
-            menu_3(self),
-            menu_4(self),
-        ])
-            .spacing(4)
-            // .item_width(ItemWidth::Uniform(180))
-            .item_width(ItemWidth::Static(150))
-            .item_height(ItemHeight::Uniform(25))
-            .bounds_expand(30)
-            .path_highlight(Some(PathHighlight::MenuActive))
-            ;
-        
+        let pick_size_option = pick_list(
+            &SizeOption::ALL[..], 
+            Some(self.size_option), 
+            Message::SizeOption
+        );
+
+        let mb = match self.size_option{
+            SizeOption::Uniform => {
+                MenuBar::new(vec![menu_1(self),menu_2(self),menu_3(self),menu_4(self)])
+                    .item_width(ItemWidth::Uniform(180))
+                    .item_height(ItemHeight::Uniform(25))
+            },
+            SizeOption::Static => {
+                MenuBar::new(vec![menu_1(self),menu_2(self),menu_3(self),menu_4(self),menu_5(self)])
+                    .item_width(ItemWidth::Static(180))
+                    .item_height(ItemHeight::Static(25))
+            }
+        }
+        .spacing(4)
+        .bounds_expand(30)
+        .path_highlight(Some(PathHighlight::MenuActive))
+        ;
+
         let r = row!(
-            horizontal_space(Length::Units(8)),
             mb,
-        ).padding([2,0]);
+            horizontal_space(Length::Fill),
+            pick_size_option
+        )
+        .padding([2,8])
+        .align_items(alignment::Alignment::Center)
+        ;
 
         let top_bar_style:fn(&iced::Theme)->container::Appearance = |_theme|{
             container::Appearance{
@@ -387,7 +424,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             
         ]
-    );
+    ).width(180);
     let sub_3 = debug_sub_menu(
         "More sub menus",
         vec![
@@ -410,7 +447,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    ).width(150);
+    ).width(140);
     let sub_1 = debug_sub_menu(
         "A sub menu",
         vec![
@@ -421,7 +458,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    ).width(200);
+    ).width(220);
 
     let root = MenuTree::with_children(
         debug_button("Nested Menus"),
@@ -433,7 +470,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    ).width(180);
+    ).width(110);
 
     root
 }
@@ -540,7 +577,7 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
     root
 }
 
-fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
+fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
     let dekjdaud = debug_sub_menu(
         "dekjdaud",
         vec![
@@ -679,7 +716,33 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("mmdyrc"),
             debug_item("nquc"), // 55
         ]
-    ).width(100);
+    );
+
+    root
+}
+
+fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
+    let slider_count = 3;
+    let slider_width = 30;
+    let spacing = 4;
+
+    let [r,g,b,_] = app.theme.palette().primary.into_rgba8();
+    
+    let sliders = MenuTree::new(
+        row![
+            vertical_slider(0..=255, r, move |x| Message::ColorChange( Color::from_rgb8(x, g, b) ) ).width(30),
+            vertical_slider(0..=255, g, move |x| Message::ColorChange( Color::from_rgb8(r, x, b) ) ).width(30),
+            vertical_slider(0..=255, b, move |x| Message::ColorChange( Color::from_rgb8(r, g, x) ) ).width(30),
+        ].spacing(4)
+    ).height(100);
+
+    let root = MenuTree::with_children(
+        debug_button("Static"),
+        vec![
+            labeled_separator("Primary"),
+            sliders,
+        ]
+    ).width(slider_width * slider_count + (slider_count - 1) * spacing);
 
     root
 }
