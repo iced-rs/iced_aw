@@ -6,7 +6,7 @@ use iced_native::{
 };
 use iced_native::widget::{tree, Tree, };
 use super::menu_tree::MenuTree;
-use super::menu::{PathHighlight, MenuState, Menu};
+use super::menu::{PathHighlight, MenuState, Menu, ItemWidth, ItemHeight};
 use crate::style::menu_bar::StyleSheet;
 
 
@@ -56,7 +56,8 @@ where
     spacing: u16,
     padding: Padding,
     bounds_expand: u16,
-    item_size: Size,
+    item_width: ItemWidth,
+    item_height: ItemHeight,
     path_highlight: Option<PathHighlight>,
     menu_roots: Vec<MenuTree<'a, Message, Renderer>>,
     style: <Renderer::Theme as StyleSheet>::Style,
@@ -77,7 +78,8 @@ where
             spacing: 0,
             padding: Padding::ZERO,
             bounds_expand: 15,
-            item_size: [150.0, 30.0].into(),
+            item_width: ItemWidth::Uniform(150),
+            item_height: ItemHeight::Uniform(30),
             path_highlight: Some(PathHighlight::MenuActive),
             menu_roots,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
@@ -118,9 +120,16 @@ where
         self
     }
 
-    /// Sets the [`Size`] of each menu item
-    pub fn item_size(mut self, item_size: impl Into<Size>) -> Self{
-        self.item_size = item_size.into();
+
+    /// [`ItemWidth`]
+    pub fn item_width(mut self, item_width: ItemWidth) -> Self{
+        self.item_width = item_width;
+        self
+    }
+
+    /// [`ItemHeight`]
+    pub fn item_height(mut self, item_height: ItemHeight) -> Self{
+        self.item_height = item_height;
         self
     }
 
@@ -302,12 +311,13 @@ where
             tree,
             menu_roots: &mut self.menu_roots,
             bounds_expand: self.bounds_expand,
-            item_size: self.item_size,
+            item_width: self.item_width,
+            item_height: self.item_height,
             bar_bounds: layout.bounds(),
             root_bounds_list: layout.children()
                 .map(|lo| lo.bounds())
                 .collect(),
-            path_highlight: self.path_highlight.clone(),
+            path_highlight: self.path_highlight,
             style: &self.style,
         }.overlay())
     }

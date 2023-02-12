@@ -2,7 +2,7 @@ use iced::widget::{ slider, checkbox, container, button, text,text_input, row, t
 use iced::widget::column as col;
 use iced::{Application, Length, Color, alignment, theme, Element,};
 
-use iced_aw::menu::{MenuBar, MenuTree, PathHighlight};
+use iced_aw::menu::{MenuBar, MenuTree, PathHighlight, ItemWidth, ItemHeight};
 use iced_aw::quad;
 
 pub fn main() -> iced::Result{
@@ -134,7 +134,9 @@ impl Application for App{
             menu_4(self),
         ])
             .spacing(4)
-            .item_size([180.0, 25.0])
+            // .item_width(ItemWidth::Uniform(180))
+            .item_width(ItemWidth::Static(150))
+            .item_height(ItemHeight::Uniform(25))
             .bounds_expand(30)
             .path_highlight(Some(PathHighlight::MenuActive))
             ;
@@ -408,7 +410,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    );
+    ).width(150);
     let sub_1 = debug_sub_menu(
         "A sub menu",
         vec![
@@ -419,7 +421,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    );
+    ).width(200);
 
     let root = MenuTree::with_children(
         debug_button("Nested Menus"),
@@ -431,7 +433,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("Item"),
             debug_item("Item"),
         ]
-    );
+    ).width(180);
 
     root
 }
@@ -577,7 +579,7 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
     let luyortp = debug_sub_menu(
         "luyortp",
         vec![
-            debug_item("ajrs"),
+            debug_item("ajrs"), // 0
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
             debug_item("dekjdaud"),
@@ -590,14 +592,14 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("kaljkahd"),
             debug_item("luyortp"),
             debug_item("mmdyrc"),
-            debug_item("nquc"),
+            debug_item("nquc"), // 13
         ]
     );
 
     let jcsu = debug_sub_menu(
         "jcsu", 
         vec![
-            debug_item("ajrs"),
+            debug_item("ajrs"), // 0
             debug_item("bsdfho"),
             debug_item("clkjhbf"),
             debug_item("dekjdaud"),
@@ -608,30 +610,11 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("isabe"),
             debug_item("jcsu"),
             debug_item("kaljkahd"),
-            luyortp,
+            luyortp, // 11
             debug_item("mmdyrc"),
-            debug_item("nquc"),
+            debug_item("nquc"), // 13
         ]
     );
-    // let jcsu = MenuTree::with_children(
-    //     debug_button("jcsu"),
-    //     vec![
-    //         debug_item("ajrs"),
-    //         debug_item("bsdfho"),
-    //         debug_item("clkjhbf"),
-    //         debug_item("dekjdaud"),
-    //         debug_item("ecsh"),
-    //         debug_item("fweiu"),
-    //         debug_item("giwe"),
-    //         debug_item("heruyv"),
-    //         debug_item("isabe"),
-    //         debug_item("jcsu"),
-    //         debug_item("kaljkahd"),
-    //         debug_item("luyortp"),
-    //         debug_item("mmdyrc"),
-    //         nquc,
-    //     ]
-    // );
 
     let root = MenuTree::with_children(
         debug_button("Scroll"),
@@ -645,7 +628,7 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("giwe"),
             debug_item("heruyv"),
             debug_item("isabe"),
-            jcsu,
+            jcsu, // 9
             debug_item("kaljkahd"),
             debug_item("luyortp"),
             debug_item("mmdyrc"),
@@ -696,7 +679,7 @@ fn menu_4<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer>{
             debug_item("mmdyrc"),
             debug_item("nquc"), // 55
         ]
-    );
+    ).width(100);
 
     root
 }

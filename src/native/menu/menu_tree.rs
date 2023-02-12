@@ -17,7 +17,9 @@ pub struct MenuTree<'a, Message, Renderer>{
     pub(super) index: usize,
     
     pub(super) item: Element<'a, Message, Renderer>,
-    pub(super) children: Vec<MenuTree<'a, Message, Renderer>>
+    pub(super) children: Vec<MenuTree<'a, Message, Renderer>>,
+    pub(super) width: Option<u16>,
+    pub(super) height: Option<u16>,
 }
 impl<'a, Message, Renderer> MenuTree<'a, Message, Renderer>
 where
@@ -31,6 +33,8 @@ where
             index: 0,
             item: item.into(),
             children: Vec::new(),
+            width: None,
+            height: None,
         }
     }
 
@@ -43,7 +47,21 @@ where
             index: 0,
             item: item.into(),
             children: children.into_iter().map(|item| item.into() ).collect(),
+            width: None,
+            height: None,
         }
+    }
+
+    /// Sets the width of the menu tree.
+    pub fn width(mut self, width: u16) -> Self{
+        self.width = Some(width);
+        self
+    }
+
+    /// Sets the height of the menu tree.
+    pub fn height(mut self, height: u16) -> Self{
+        self.height = Some(height);
+        self
     }
 
 

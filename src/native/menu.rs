@@ -9,5 +9,5 @@ mod flex;
 
 pub use menu_tree::MenuTree;
 pub use menu_bar::MenuBar;
-pub use menu::PathHighlight;
+pub use menu::{PathHighlight, ItemWidth, ItemHeight};
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
