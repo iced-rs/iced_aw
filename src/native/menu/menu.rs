@@ -574,7 +574,7 @@ where
     
     let Some(active_root) = state.active_root else{
         if !menu.bar_bounds.contains(position){
-            state.open = false;
+            state.reset();
         }
         return Ignored;
     };
@@ -593,8 +593,8 @@ where
         state.menu_states.pop();
     }
 
-    // get trimmed indices
-    let trimmed_indices = state.get_trimmed_indices().collect::<Vec<_>>();
+    // get indices
+    let indices = state.menu_states.iter().map(|ms| ms.index ).collect::<Vec<_>>();
 
     // update active item
     let Some(last_ms) = state.menu_states.last_mut() else{
@@ -628,10 +628,10 @@ where
     // get active menu
     let active_menu_root = &menu.menu_roots[active_root];
 
-    let active_menu = trimmed_indices[
-        0..trimmed_indices.len().saturating_sub(1)
-    ].iter().fold(active_menu_root, |mt, &i|{
-        &mt.children[i]
+    let active_menu = indices[
+        0..indices.len().saturating_sub(1)
+    ].iter().fold(active_menu_root, |mt, i|{
+        &mt.children[i.unwrap()]
     });
     
     // get new index
