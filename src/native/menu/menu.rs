@@ -573,6 +573,9 @@ where
 
     
     let Some(active_root) = state.active_root else{
+        if !menu.bar_bounds.contains(position){
+            state.open = false;
+        }
         return Ignored;
     };
 
