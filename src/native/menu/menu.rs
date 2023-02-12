@@ -12,18 +12,25 @@ use crate::style::menu_bar::StyleSheet;
 /// The width of an item
 #[derive(Debug, Clone, Copy)]
 pub enum ItemWidth{
-    /// Use uniform width for all items
+    /// Use uniform width
     Uniform(u16),
-    /// Use statically set width
+    /// Static tries to use the width value of each menu(menu tree with children), 
+    /// the widths of items(menu tree with empty children) will be the same as the menu they're in, 
+    /// if that value is None, 
+    /// the default value will be used instead, 
+    /// which is the value of the Static variant
     Static(u16),
 }
 
 /// The height of an item
 #[derive(Debug, Clone, Copy)]
 pub enum ItemHeight{
-    /// Use uniform height for all items
+    /// Use uniform height
     Uniform(u16),
-    /// Use statically set height
+    /// Static tries to use the height value of each menu tree, 
+    /// if that value is None, 
+    /// the default value will be used instead, 
+    /// which is the value of the Static variant
     Static(u16),
     // TODO: Flex,
 }
@@ -33,7 +40,7 @@ pub enum ItemHeight{
 pub enum PathHighlight{
     /// Draw the full path,
     Full,
-    /// Omit the active item
+    /// Omit the active item(the last item in the path)
     OmitActive,
     /// Omit the active item if it's not a menu
     MenuActive

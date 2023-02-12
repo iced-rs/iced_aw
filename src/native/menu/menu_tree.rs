@@ -52,13 +52,19 @@ where
         }
     }
 
-    /// Sets the width of the menu tree.
+    /// Sets the width of the menu tree. 
+    /// See [`ItemWidth`]
+    /// 
+    /// [`ItemWidth`]:super::ItemWidth
     pub fn width(mut self, width: u16) -> Self{
         self.width = Some(width);
         self
     }
 
     /// Sets the height of the menu tree.
+    /// See [`ItemHeight`]
+    /// 
+    /// /// [`ItemHeight`]:super::ItemHeight
     pub fn height(mut self, height: u16) -> Self{
         self.height = Some(height);
         self

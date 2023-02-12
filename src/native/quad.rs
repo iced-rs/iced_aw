@@ -1,6 +1,6 @@
 //! A dummy widget that draws a quad
 //!
-//! //! *This API requires the following crate features to be activated: `quad`*
+//! *This API requires the following crate features to be activated: `quad`*
 
 use iced_native::{
     Element, Widget, renderer, 
