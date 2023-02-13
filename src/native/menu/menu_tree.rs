@@ -48,7 +48,7 @@ where
         Self {
             index: 0,
             item: item.into(),
-            children: children.into_iter().map(|item| item.into()).collect(),
+            children: children.into_iter().map(Into::into).collect(),
             width: None,
             height: None,
         }
@@ -57,7 +57,7 @@ where
     /// Sets the width of the menu tree.
     /// See [`ItemWidth`]
     ///
-    /// [`ItemWidth`]:super::ItemWidth
+    /// [`ItemWidth`]:`super::ItemWidth`
     pub fn width(mut self, width: u16) -> Self {
         self.width = Some(width);
         self
@@ -66,7 +66,7 @@ where
     /// Sets the height of the menu tree.
     /// See [`ItemHeight`]
     ///
-    /// /// [`ItemHeight`]:super::ItemHeight
+    /// [`ItemHeight`]: `super::ItemHeight`
     pub fn height(mut self, height: u16) -> Self {
         self.height = Some(height);
         self

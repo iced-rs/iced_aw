@@ -47,5 +47,7 @@ pub mod split;
 #[cfg(feature = "split")]
 pub use split::SplitStyles;
 
-// #[cfg(feature = "menu")]
+#[cfg(feature = "menu")]
 pub mod menu_bar;
+#[cfg(feature = "menu")]
+pub use menu_bar::MenuBarStyle;

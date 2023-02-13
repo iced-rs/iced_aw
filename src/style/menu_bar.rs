@@ -21,12 +21,12 @@ pub struct Appearance {
 impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
-            background: Color::from([0.85; 3]),
+            background: Color::from([0.85;3]),
             border_width: 1.0,
-            border_radius: [4.0; 4],
-            border_color: Color::from([0.5; 3]),
-            background_expand: [4; 4],
-            path: Color::from([0.0, 0.0, 0.0, 0.3]),
+            border_radius: [6.0;4],
+            border_color: Color::from([0.5;3]),
+            background_expand: [6;4],
+            path: Color::from([0.3; 3]),
         }
     }
 }
@@ -40,29 +40,50 @@ pub trait StyleSheet {
     fn appearance(&self, style: &Self::Style) -> Appearance;
 }
 
-#[derive(Default)]
+
 /// The style of a menu bar and its menus
+#[derive(Default)]
 #[allow(missing_debug_implementations)]
-pub enum MenuBarStyle {
+pub enum MenuBarStyle{
     /// The default style.
     #[default]
     Default,
     /// A [`Theme`] that uses a [`Custom`] palette.
     Custom(Box<dyn StyleSheet<Style = Theme>>),
 }
-impl StyleSheet for Theme {
+
+impl From<fn(&Theme) -> Appearance> for MenuBarStyle {
+    fn from(f: fn(&Theme) -> Appearance) -> Self {
+        Self::Custom(Box::new(f))
+    }
+}
+impl StyleSheet for fn(&Theme) -> Appearance {
+    type Style = Theme;
+
+    fn appearance(&self, style: &Self::Style) -> Appearance {
+        (self)(style)
+    }
+}
+
+impl StyleSheet for Theme{
     type Style = MenuBarStyle;
 
-    fn appearance(&self, _style: &Self::Style) -> Appearance {
+    fn appearance(&self, style: &Self::Style) -> Appearance {
         let palette = self.extended_palette();
 
-        Appearance {
-            background: palette.background.base.color,
-            border_width: 1.0,
-            border_radius: [6.0; 4],
-            border_color: palette.background.weak.color,
-            background_expand: [6; 4],
-            path: palette.primary.weak.color,
+        match style{
+            MenuBarStyle::Default => {
+                Appearance{
+                    background: palette.background.base.color,
+                    border_width: 1.0,
+                    border_radius: [6.0;4],
+                    border_color: palette.background.weak.color,
+                    background_expand: [6;4],
+                    path: palette.primary.weak.color,
+                }
+            },
+            MenuBarStyle::Custom(c) => c.appearance(self)
         }
     }
 }
+

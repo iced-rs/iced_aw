@@ -69,7 +69,7 @@ where
     /// Creates a new [`MenuBar`] with the given menu roots
     pub fn new(menu_roots: Vec<MenuTree<'a, Message, Renderer>>) -> Self {
         let mut menu_roots = menu_roots;
-        menu_roots.iter_mut().for_each(|mr| mr.set_index());
+        menu_roots.iter_mut().for_each(|mt| mt.set_index());
 
         Self {
             width: Length::Shrink,
@@ -266,13 +266,7 @@ where
         if let Some(_) = self.path_highlight {
             let styling = theme.appearance(&self.style);
             if let Some(active) = state.active_root {
-                let active_bounds = layout
-                    .clone()
-                    .children()
-                    .skip(active)
-                    .next()
-                    .unwrap()
-                    .bounds();
+                let active_bounds = layout.children().nth(active).unwrap().bounds();
                 let path_quad = renderer::Quad {
                     bounds: active_bounds,
                     border_radius: styling.border_radius.into(),
@@ -340,8 +334,8 @@ where
 }
 
 #[allow(unused_results)]
-fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
-    menu_roots: &mut Vec<MenuTree<'a, Message, Renderer>>,
+fn process_root_events<'a, Message, Renderer>(
+    menu_roots: &mut [MenuTree<'a, Message, Renderer>],
     position: Point,
     tree: &mut Tree,
     event: event::Event,
@@ -349,7 +343,10 @@ fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
-) -> event::Status {
+) -> event::Status 
+where
+    Renderer: renderer::Renderer,
+{
     menu_roots
         .iter_mut()
         .zip(&mut tree.children)

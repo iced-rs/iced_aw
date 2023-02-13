@@ -388,8 +388,7 @@ where
                     if let (true, Some(active)) = (draw_path, ms.index) {
                         let active_bounds = children_layout
                             .children()
-                            .skip(active.saturating_sub(start_index))
-                            .next()
+                            .nth(active.saturating_sub(start_index))
                             .unwrap()
                             .bounds();
                         let path_quad = renderer::Quad {
@@ -454,8 +453,7 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
         return;
     }
 
-    for (i, (&parent_bounds, mt)) in menu
-        .root_bounds_list
+    for (i, (&root_bounds, mt)) in menu.root_bounds_list
         .iter()
         .zip(menu.menu_roots.iter())
         .enumerate()
@@ -464,7 +462,7 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
             continue;
         }
 
-        if parent_bounds.contains(position) {
+        if root_bounds.contains(position) {
             let menu_bounds = MenuBounds::new(
                 mt,
                 menu.item_width,
@@ -472,7 +470,7 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
                 viewport,
                 [false, true, true, false],
                 menu.bounds_expand,
-                parent_bounds,
+                root_bounds,
             );
 
             state.active_root = Some(i);
@@ -487,7 +485,7 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
     }
 }
 
-fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
+fn process_menu_events<'a, 'b, Message, Renderer>(
     tree: &'b mut Tree,
     menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
     item_height: ItemHeight,
@@ -496,7 +494,10 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
-) -> event::Status {
+) -> event::Status 
+where
+    Renderer: renderer::Renderer,
+{
     use event::Status;
 
     let state = tree.state.downcast_mut::<MenuBarState>();
@@ -534,7 +535,7 @@ fn process_menu_events<'a, 'b, Message, Renderer: renderer::Renderer>(
 }
 
 #[allow(unused_results)]
-fn process_overlay_events<'a, 'b, Message, Renderer: renderer::Renderer>(
+fn process_overlay_events<'a, 'b, Message, Renderer>(
     menu: &mut Menu<'a, 'b, Message, Renderer>,
     viewport: Size,
     position: Point,
@@ -762,7 +763,7 @@ fn adaptive_open_direction(
     ([x, y].into(), padding_mask)
 }
 
-fn process_scroll_events<'a, 'b, Message, Renderer: renderer::Renderer>(
+fn process_scroll_events<'a, 'b, Message, Renderer>(
     menu: &mut Menu<'a, 'b, Message, Renderer>,
     delta: mouse::ScrollDelta,
     viewport: Size,
