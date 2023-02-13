@@ -1,38 +1,38 @@
-use iced_native::{
-    Element, Widget, renderer, overlay, 
-    layout, Length, Color, Point, 
-    Padding, Rectangle, Alignment, event,
-    mouse, touch, Shell, Clipboard,
-};
-use iced_native::widget::{tree, Tree, };
+//! A widget that handles menu trees
+
+use super::menu::{ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
 use super::menu_tree::MenuTree;
-use super::menu::{PathHighlight, MenuState, Menu, ItemWidth, ItemHeight};
 use crate::style::menu_bar::StyleSheet;
+use iced_native::widget::{tree, Tree};
+use iced_native::{
+    event, layout, mouse, overlay, renderer, touch, Alignment, Clipboard, Color, Element, Length,
+    Padding, Point, Rectangle, Shell, Widget,
+};
 
-
-pub(super) struct MenuBarState{
+pub(super) struct MenuBarState {
     pub(super) pressed: bool,
     pub(super) cursor: Point,
     pub(super) open: bool,
     pub(super) active_root: Option<usize>,
     pub(super) menu_states: Vec<MenuState>,
 }
-impl MenuBarState{
-    pub(super) fn get_trimmed_indices(&self) -> impl Iterator<Item = usize> + '_{
-        self.menu_states.iter()
-            .take_while(|ms| ms.index.is_some() )
-            .map(|ms| ms.index.unwrap() )
+impl MenuBarState {
+    pub(super) fn get_trimmed_indices(&self) -> impl Iterator<Item = usize> + '_ {
+        self.menu_states
+            .iter()
+            .take_while(|ms| ms.index.is_some())
+            .map(|ms| ms.index.unwrap())
     }
 
-    pub(super) fn reset(&mut self){
+    pub(super) fn reset(&mut self) {
         self.open = false;
         self.active_root = None;
         self.menu_states.clear();
     }
 }
-impl Default for MenuBarState{
+impl Default for MenuBarState {
     fn default() -> Self {
-        Self{
+        Self {
             pressed: false,
             cursor: Point::new(-0.5, -0.5),
             open: false,
@@ -42,8 +42,7 @@ impl Default for MenuBarState{
     }
 }
 
-
-/// A `MenuBar` collects `MenuTree`s and handles 
+/// A `MenuBar` collects `MenuTree`s and handles
 /// all the layout, event processing and drawing
 #[allow(missing_debug_implementations)]
 pub struct MenuBar<'a, Message, Renderer>
@@ -68,11 +67,11 @@ where
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`MenuBar`] with the given menu roots
-    pub fn new(menu_roots: Vec<MenuTree<'a, Message, Renderer>>) -> Self{
+    pub fn new(menu_roots: Vec<MenuTree<'a, Message, Renderer>>) -> Self {
         let mut menu_roots = menu_roots;
-        menu_roots.iter_mut().for_each(|mr| mr.set_index() );
+        menu_roots.iter_mut().for_each(|mr| mr.set_index());
 
-        Self{
+        Self {
             width: Length::Shrink,
             height: Length::Shrink,
             spacing: 0,
@@ -105,8 +104,8 @@ where
     }
 
     /// Sets the expand value for each menu's check bounds
-    /// 
-    /// When the cursor goes outside of a menu's check bounds, 
+    ///
+    /// When the cursor goes outside of a menu's check bounds,
     /// the menu will be closed automatically, this value expands
     /// the check bounds
     pub fn bounds_expand(mut self, value: u16) -> Self {
@@ -120,32 +119,30 @@ where
         self
     }
 
-
     /// [`ItemWidth`]
-    pub fn item_width(mut self, item_width: ItemWidth) -> Self{
+    pub fn item_width(mut self, item_width: ItemWidth) -> Self {
         self.item_width = item_width;
         self
     }
 
     /// [`ItemHeight`]
-    pub fn item_height(mut self, item_height: ItemHeight) -> Self{
+    pub fn item_height(mut self, item_height: ItemHeight) -> Self {
         self.item_height = item_height;
         self
     }
 
     /// Sets the method for drawing path highlight
-    pub fn path_highlight(mut self, path_highlight: Option<PathHighlight>) -> Self{
+    pub fn path_highlight(mut self, path_highlight: Option<PathHighlight>) -> Self {
         self.path_highlight = path_highlight;
         self
     }
 
     /// Sets the style of the menu bar and its menus
-    pub fn style(mut self, style: impl Into<<Renderer::Theme as StyleSheet>::Style>) -> Self{
+    pub fn style(mut self, style: impl Into<<Renderer::Theme as StyleSheet>::Style>) -> Self {
         self.style = style.into();
         self
     }
-
-} 
+}
 impl<'a, Message, Renderer> Widget<Message, Renderer> for MenuBar<'a, Message, Renderer>
 where
     Renderer: renderer::Renderer,
@@ -158,7 +155,7 @@ where
     fn height(&self) -> Length {
         self.height
     }
-    
+
     fn state(&self) -> tree::State {
         tree::State::new(MenuBarState::default())
     }
@@ -172,26 +169,31 @@ where
                 flat tree
             ...
         */
-        
-        self.menu_roots.iter().map(|root|{
-            let mut tree = Tree::empty();
-            let flat = root.flattern().iter().map(|mt|{
-                Tree::new(mt.item.as_widget())
-            }).collect();
-            tree.children = flat;
-            tree
-        }).collect()
+
+        self.menu_roots
+            .iter()
+            .map(|root| {
+                let mut tree = Tree::empty();
+                let flat = root
+                    .flattern()
+                    .iter()
+                    .map(|mt| Tree::new(mt.item.as_widget()))
+                    .collect();
+                tree.children = flat;
+                tree
+            })
+            .collect()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         use super::flex;
 
         let limits = limits.width(self.width).height(self.height);
-        let children = self.menu_roots.iter().map(|root| &root.item ).collect::<Vec<_>>();
+        let children = self
+            .menu_roots
+            .iter()
+            .map(|root| &root.item)
+            .collect::<Vec<_>>();
         flex::resolve(
             flex::Axis::Horizontal,
             renderer,
@@ -213,33 +215,30 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        use event::{Event::*};
-        use mouse::{Event::*, Button::Left};
-        use touch::{Event::*, };
+        use event::Event::*;
+        use mouse::{Button::Left, Event::*};
+        use touch::Event::*;
 
         let root_status = process_root_events(
-            &mut self.menu_roots, 
-            cursor_position, 
-            tree, 
-            event.clone(), 
-            layout, 
-            renderer, 
-            clipboard, 
-            shell
+            &mut self.menu_roots,
+            cursor_position,
+            tree,
+            event.clone(),
+            layout,
+            renderer,
+            clipboard,
+            shell,
         );
 
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         match event {
-            Mouse(ButtonReleased(Left)) |
-            Touch(FingerLifted {..}) |
-            Touch(FingerLost {..})  => {
-                if state.menu_states.is_empty()
-                && layout.bounds().contains(cursor_position){
+            Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. }) | Touch(FingerLost { .. }) => {
+                if state.menu_states.is_empty() && layout.bounds().contains(cursor_position) {
                     state.cursor = cursor_position;
                     state.open = true;
                 }
-            },
+            }
             _ => (),
         }
         root_status
@@ -257,21 +256,24 @@ where
     ) {
         let state = tree.state.downcast_ref::<MenuBarState>();
 
-        let position = if state.open
-        && (cursor_position.x < 0.0
-        || cursor_position.y < 0.0){
+        let position = if state.open && (cursor_position.x < 0.0 || cursor_position.y < 0.0) {
             state.cursor
-        }else{
+        } else {
             cursor_position
         };
 
         // draw path highlight
-        if let Some(_) = self.path_highlight{
+        if let Some(_) = self.path_highlight {
             let styling = theme.appearance(&self.style);
-            if let Some(active) = state.active_root{
-                let active_bounds = layout.clone().children()
-                    .skip(active).next().unwrap().bounds();
-                let path_quad = renderer::Quad{
+            if let Some(active) = state.active_root {
+                let active_bounds = layout
+                    .clone()
+                    .children()
+                    .skip(active)
+                    .next()
+                    .unwrap()
+                    .bounds();
+                let path_quad = renderer::Quad {
                     bounds: active_bounds,
                     border_radius: styling.border_radius.into(),
                     border_width: 0.0,
@@ -282,20 +284,21 @@ where
             }
         }
 
-        self.menu_roots.iter()
-        .zip(&tree.children)
-        .zip(layout.children())
-        .for_each(|((root, t), lo)|{
-            root.item.as_widget().draw(
-                &t.children[root.index], 
-                renderer, 
-                theme, 
-                style, 
-                lo,
-                position,
-                viewport
-            );
-        })
+        self.menu_roots
+            .iter()
+            .zip(&tree.children)
+            .zip(layout.children())
+            .for_each(|((root, t), lo)| {
+                root.item.as_widget().draw(
+                    &t.children[root.index],
+                    renderer,
+                    theme,
+                    style,
+                    lo,
+                    position,
+                    viewport,
+                );
+            })
     }
 
     fn overlay<'b>(
@@ -305,21 +308,24 @@ where
         _renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
         let state = tree.state.downcast_ref::<MenuBarState>();
-        if !state.open { return None; }
+        if !state.open {
+            return None;
+        }
 
-        Some(Menu{
-            tree,
-            menu_roots: &mut self.menu_roots,
-            bounds_expand: self.bounds_expand,
-            item_width: self.item_width,
-            item_height: self.item_height,
-            bar_bounds: layout.bounds(),
-            root_bounds_list: layout.children()
-                .map(|lo| lo.bounds())
-                .collect(),
-            path_highlight: self.path_highlight,
-            style: &self.style,
-        }.overlay())
+        Some(
+            Menu {
+                tree,
+                menu_roots: &mut self.menu_roots,
+                bounds_expand: self.bounds_expand,
+                item_width: self.item_width,
+                item_height: self.item_height,
+                bar_bounds: layout.bounds(),
+                root_bounds_list: layout.children().map(|lo| lo.bounds()).collect(),
+                path_highlight: self.path_highlight,
+                style: &self.style,
+            }
+            .overlay(),
+        )
     }
 }
 impl<'a, Message, Renderer> From<MenuBar<'a, Message, Renderer>> for Element<'a, Message, Renderer>
@@ -344,19 +350,21 @@ fn process_root_events<'a, 'b, Message, Renderer: renderer::Renderer>(
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
 ) -> event::Status {
-    menu_roots.iter_mut()
+    menu_roots
+        .iter_mut()
         .zip(&mut tree.children)
         .zip(layout.children())
-        .map(|((root, t), lo)|{
+        .map(|((root, t), lo)| {
             // assert!(t.tag == tree::Tag::stateless());
             root.item.as_widget_mut().on_event(
-                &mut t.children[root.index], 
-                event.clone(), 
-                lo, 
-                position, 
-                renderer, 
-                clipboard, 
-                shell
+                &mut t.children[root.index],
+                event.clone(),
+                lo,
+                position,
+                renderer,
+                clipboard,
+                shell,
             )
-        }).fold(event::Status::Ignored, event::Status::merge)
+        })
+        .fold(event::Status::Ignored, event::Status::merge)
 }

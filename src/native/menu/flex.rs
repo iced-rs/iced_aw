@@ -18,7 +18,7 @@
 // limitations under the License.
 
 use iced_native::layout::{Limits, Node};
-use iced_native::{Alignment, Padding, Point, Size, Element, renderer};
+use iced_native::{renderer, Alignment, Element, Padding, Point, Size};
 
 /// The main axis of a flex layout.
 #[derive(Debug)]
@@ -95,8 +95,7 @@ where
             if cross_fill_factor == 0 {
                 let (max_width, max_height) = axis.pack(available, max_cross);
 
-                let child_limits =
-                    Limits::new(Size::ZERO, Size::new(max_width, max_height));
+                let child_limits = Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
                 let layout = child.as_widget().layout(renderer, &child_limits);
                 let size = layout.size();
@@ -208,18 +207,10 @@ where
 
         match axis {
             Axis::Horizontal => {
-                node.align(
-                    Alignment::Start,
-                    align_items,
-                    Size::new(0.0, cross),
-                );
+                node.align(Alignment::Start, align_items, Size::new(0.0, cross));
             }
             Axis::Vertical => {
-                node.align(
-                    align_items,
-                    Alignment::Start,
-                    Size::new(cross, 0.0),
-                );
+                node.align(align_items, Alignment::Start, Size::new(cross, 0.0));
             }
         }
 
