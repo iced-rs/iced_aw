@@ -121,6 +121,14 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "split")]
     pub use {crate::graphics::split, split::Split};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "menu")]
+    pub use crate::native::menu;
+
+    #[doc(no_inline)]
+    #[cfg(feature = "quad")]
+    pub use crate::native::quad;
 }
 
 #[doc(no_inline)]

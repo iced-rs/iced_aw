@@ -1,0 +1,13 @@
+[package]
+name = "menu"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+iced_aw = { workspace = true, features = [
+    "menu",
+    "quad",
+    "icon_text"
+] }
+iced = {workspace = true, features = ["svg"]}

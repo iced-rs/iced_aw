@@ -76,3 +76,9 @@ pub use time_picker::TimePicker;
 pub mod wrap;
 #[cfg(feature = "wrap")]
 pub use wrap::Wrap;
+
+#[cfg(feature = "menu")]
+pub mod menu;
+
+#[cfg(feature = "quad")]
+pub mod quad;

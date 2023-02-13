@@ -29,6 +29,8 @@ wrap = []
 number_input = ["num-traits"]
 selection_list = []
 split = []
+menu = []
+quad = []
 
 default = [
     "badge",
@@ -46,6 +48,8 @@ default = [
     "wrap",
     "selection_list",
     "split",
+    "menu",
+    "quad",
 ]
 
 [dependencies]
@@ -90,6 +94,7 @@ members = [
     "examples/number_input",
     "examples/selection_list",
     "examples/split",
+    "examples/menu"
 ]
 
 [workspace.dependencies.iced]
