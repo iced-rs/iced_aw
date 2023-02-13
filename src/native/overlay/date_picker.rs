@@ -445,11 +445,11 @@ where
                     ),
             );
 
-        let days = Container::<(), Renderer<B, Theme>>::new((0..7).into_iter().fold(
+        let days = Container::<(), Renderer<B, Theme>>::new((0..7).fold(
             Column::new().width(Length::Fill).height(Length::Fill),
             |column, _y| {
                 column.push(
-                    (0..7).into_iter().fold(
+                    (0..7).fold(
                         Row::new()
                             .height(Length::Fill)
                             .width(Length::Fill)
@@ -886,7 +886,7 @@ impl State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            date: Local::today().naive_local(),
+            date: Local::now().naive_local().date(),
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
         }
@@ -1104,7 +1104,8 @@ fn month_year<Renderer>(
                     border_radius: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
-                        .border_radius.into(),
+                        .border_radius
+                        .into(),
                     border_width: style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
@@ -1283,7 +1284,8 @@ fn day_table<Renderer>(
                         border_radius: style
                             .get(&StyleState::Focused)
                             .expect("Style Sheet not found.")
-                            .border_radius.into(),
+                            .border_radius
+                            .into(),
                         border_width: style
                             .get(&StyleState::Focused)
                             .expect("Style Sheet not found.")

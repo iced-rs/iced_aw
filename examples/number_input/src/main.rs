@@ -48,8 +48,7 @@ impl Sandbox for NumberInputDemo {
         let lb_minute = Text::new("Number Input:");
         let txt_minute = NumberInput::new(self.value, 255.0, Message::NumInpChanged)
             .style(NumberInputStyles::Default)
-            .step(0.5)
-            .min(1.0);
+            .step(0.5);
 
         Container::new(
             Row::new()

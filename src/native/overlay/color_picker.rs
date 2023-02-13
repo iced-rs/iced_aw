@@ -397,7 +397,7 @@ where
         if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            if let keyboard::KeyCode::Tab = key_code {
+            if matches!(key_code, keyboard::KeyCode::Tab) {
                 if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous();
                 } else {
@@ -1023,9 +1023,9 @@ where
 }
 
 /// Draws the 1. block of the color picker containing the HSV part.
-fn block1<'a, Message, B, Theme>(
+fn block1<Message, B, Theme>(
     renderer: &mut Renderer<B, Theme>,
-    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
+    color_picker: &ColorPickerOverlay<'_, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
     style_sheet: &HashMap<StyleState, Appearance>,
@@ -1052,9 +1052,9 @@ fn block1<'a, Message, B, Theme>(
 
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
 #[allow(clippy::too_many_arguments)]
-fn block2<'a, Message, B, Theme>(
+fn block2<Message, B, Theme>(
     renderer: &mut Renderer<B, Theme>,
-    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
+    color_picker: &ColorPickerOverlay<'_, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
     theme: &Theme,
@@ -1155,9 +1155,9 @@ fn block2<'a, Message, B, Theme>(
 
 /// Draws the HSV color area.
 #[allow(clippy::too_many_lines)]
-fn hsv_color<'a, Message, B, Theme>(
+fn hsv_color<Message, B, Theme>(
     renderer: &mut Renderer<B, Theme>,
-    color_picker: &ColorPickerOverlay<'a, Message, B, Theme>,
+    color_picker: &ColorPickerOverlay<'_, Message, B, Theme>,
     layout: Layout<'_>,
     cursor_position: Point,
     style_sheet: &HashMap<StyleState, Appearance>,
@@ -1405,7 +1405,8 @@ fn rgba_color<B, Theme>(
                 border_radius: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
-                    .bar_border_radius.into(),
+                    .bar_border_radius
+                    .into(),
                 border_width: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
@@ -1422,7 +1423,8 @@ fn rgba_color<B, Theme>(
                 border_radius: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
-                    .bar_border_radius.into(),
+                    .bar_border_radius
+                    .into(),
                 border_width: style_sheet
                     .get(&bar_style_state)
                     .expect("Style Sheet not found.")
@@ -1457,7 +1459,8 @@ fn rgba_color<B, Theme>(
                     border_radius: style_sheet
                         .get(&StyleState::Focused)
                         .expect("Style Sheet not found.")
-                        .border_radius.into(),
+                        .border_radius
+                        .into(),
                     border_width: style_sheet
                         .get(&StyleState::Focused)
                         .expect("Style Sheet not found.")

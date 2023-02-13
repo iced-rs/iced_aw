@@ -26,7 +26,7 @@ impl Sandbox for Example {
         let mut vec = Vec::with_capacity(10);
 
         for i in Language::ALL.iter() {
-            vec.push(format!("{:?}", i))
+            vec.push(format!("{i}"))
         }
 
         Self {
@@ -81,8 +81,9 @@ impl Sandbox for Example {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Language {
+    #[default]
     Rust,
     Elm,
     Ruby,
@@ -102,12 +103,6 @@ impl Language {
         Language::Javascript,
         Language::Other,
     ];
-}
-
-impl Default for Language {
-    fn default() -> Language {
-        Language::Rust
-    }
 }
 
 impl std::fmt::Display for Language {

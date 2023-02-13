@@ -217,7 +217,9 @@ where
             .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
-            .find_map(|((child, state), layout)| child.as_widget_mut().overlay(state, layout, renderer))
+            .find_map(|((child, state), layout)| {
+                child.as_widget_mut().overlay(state, layout, renderer)
+            })
     }
 
     fn mouse_interaction(
