@@ -76,7 +76,7 @@ where
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
             limits.fill().width,
-            self.text_size + (self.padding * 2.0) * self.options.len() as f32,
+            (self.text_size + self.padding * 2.0) * self.options.len() as f32,
         );
 
         Node::new(intrinsic)
@@ -100,14 +100,14 @@ where
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y) / self.text_size + (self.padding * 2.0))
+                        ((cursor_position.y - bounds.y) / (self.text_size + (self.padding * 2.0)))
                             as usize,
                     );
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y) / self.text_size + (self.padding * 2.0))
+                        ((cursor_position.y - bounds.y) / (self.text_size + (self.padding * 2.0)))
                             as usize,
                     );
 
