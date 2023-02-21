@@ -11,5 +11,5 @@ iced_aw = { workspace = true, features = [
     "card",
     "modal",
 ] }
-iced_lazy = "0.4"
+iced_lazy = "0.5"
 iced.workspace = true

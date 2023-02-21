@@ -86,7 +86,7 @@ impl Sandbox for ModalExample {
                             .on_press(Message::OkButtonPressed),
                     ),
             )
-            .max_width(300)
+            .max_width(300.0)
             //.width(Length::Shrink)
             .on_close(Message::CloseModal)
             .into()

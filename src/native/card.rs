@@ -49,9 +49,9 @@ where
     /// The height of the [`Card`](Card).
     height: Length,
     /// The maximum width of the [`Card`](Card).
-    max_width: u32,
+    max_width: f32,
     /// The maximum height of the [`Card`](Card).
-    max_height: u32,
+    max_height: f32,
     /// The padding of teh head fo the [`Card`](Card).
     padding_head: f32,
     /// The padding of the body of the [`Card`](Card).
@@ -92,8 +92,8 @@ where
         Card {
             width: Length::Fill,
             height: Length::Shrink,
-            max_width: u32::MAX,
-            max_height: u32::MAX,
+            max_width: 4_294_967_295.0,
+            max_height: 4_294_967_295.0,
             padding_head: DEFAULT_PADDING,
             padding_body: DEFAULT_PADDING,
             padding_foot: DEFAULT_PADDING,
@@ -133,14 +133,14 @@ where
 
     /// Sets the maximum width of the [`Card`](Card).
     #[must_use]
-    pub fn max_width(mut self, width: u32) -> Self {
+    pub fn max_width(mut self, width: f32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Sets the maximum height of the [`Card`](Card).
     #[must_use]
-    pub fn max_height(mut self, height: u32) -> Self {
+    pub fn max_height(mut self, height: f32) -> Self {
         self.max_height = height;
         self
     }

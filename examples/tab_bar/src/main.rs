@@ -81,7 +81,7 @@ impl Sandbox for TabBarExample {
                             Message::TabLabelInputChanged,
                         )
                         .size(22)
-                        .padding(5),
+                        .padding(5.0),
                     )
                     .push(
                         TextInput::new(
@@ -90,12 +90,12 @@ impl Sandbox for TabBarExample {
                             Message::TabContentInputChanged,
                         )
                         .size(22)
-                        .padding(5),
+                        .padding(5.0),
                     )
                     .push(Button::new(Text::new("New")).on_press(Message::NewTab))
                     .align_items(Alignment::Center)
-                    .padding(10)
-                    .spacing(5),
+                    .padding(10.0)
+                    .spacing(5.0),
             )
             .push(
                 self.tabs
@@ -108,9 +108,9 @@ impl Sandbox for TabBarExample {
                     )
                     .on_close(Message::TabClosed)
                     .tab_width(Length::Shrink)
-                    .spacing(5)
-                    .padding(5)
-                    .text_size(32),
+                    .spacing(5.0)
+                    .padding(5.0)
+                    .text_size(32.0),
             )
             .push(
                 if let Some((_, content)) = self.tabs.get(self.active_tab) {

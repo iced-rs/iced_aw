@@ -23,17 +23,17 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     /// The height of the [`Wrap`](Wrap).
     pub height: Length,
     /// The maximum width of the [`Wrap`](Wrap).
-    pub max_width: u32,
+    pub max_width: f32,
     /// The maximum height of the [`Wrap`](Wrap)
-    pub max_height: u32,
+    pub max_height: f32,
     /// The padding of each element of the [`Wrap`](Wrap).
-    pub padding: u16,
+    pub padding: f32,
     /// The spacing between each element of the [`Wrap`](Wrap).
-    pub spacing: u16,
+    pub spacing: f32,
     /// The spacing between each line of the [`Wrap`](Wrap).
-    pub line_spacing: u16,
+    pub line_spacing: f32,
     /// The minimal length of each line of the [`Wrap`](Wrap).
-    pub line_minimal_length: u32,
+    pub line_minimal_length: f32,
     #[allow(clippy::missing_docs_in_private_items)]
     _direction: PhantomData<Direction>,
 }
@@ -81,28 +81,28 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
 impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
     /// Sets the spacing of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn spacing(mut self, units: u16) -> Self {
+    pub const fn spacing(mut self, units: f32) -> Self {
         self.spacing = units;
         self
     }
 
     /// Sets the spacing of the lines of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn line_spacing(mut self, units: u16) -> Self {
+    pub const fn line_spacing(mut self, units: f32) -> Self {
         self.line_spacing = units;
         self
     }
 
     /// Sets the minimal length of the lines of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn line_minimal_length(mut self, units: u32) -> Self {
+    pub const fn line_minimal_length(mut self, units: f32) -> Self {
         self.line_minimal_length = units;
         self
     }
 
     /// Sets the padding of the elements in the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn padding(mut self, units: u16) -> Self {
+    pub const fn padding(mut self, units: f32) -> Self {
         self.padding = units;
         self
     }
@@ -123,14 +123,14 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
 
     /// Sets the maximum width of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn max_width(mut self, max_width: u32) -> Self {
+    pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
     /// Sets the maximum height of the [`Wrap`](Wrap).
     #[must_use]
-    pub const fn max_height(mut self, max_height: u32) -> Self {
+    pub const fn max_height(mut self, max_height: f32) -> Self {
         self.max_height = max_height;
         self
     }
@@ -309,12 +309,12 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
             alignment: Alignment::Start,
             width: Length::Shrink,
             height: Length::Shrink,
-            max_width: u32::MAX,
-            max_height: u32::MAX,
-            padding: 0,
-            spacing: 0,
-            line_spacing: 0,
-            line_minimal_length: 10,
+            max_width: 4_294_967_295.0,
+            max_height: 4_294_967_295.0,
+            padding: 0.0,
+            spacing: 0.0,
+            line_spacing: 0.0,
+            line_minimal_length: 10.0,
             _direction: PhantomData::default(),
         }
     }
@@ -337,8 +337,8 @@ where
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
-        let spacing = f32::from(self.spacing);
-        let line_spacing = f32::from(self.line_spacing);
+        let spacing = self.spacing;
+        let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length as f32;
         let limits = limits
@@ -349,8 +349,8 @@ where
             .max_height(self.max_height);
         let max_width = limits.max().width;
 
-        let mut curse = f32::from(padding.left);
-        let mut deep_curse = f32::from(padding.left);
+        let mut curse = padding.left;
+        let mut deep_curse = padding.left;
         let mut current_line_height = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -377,8 +377,8 @@ where
                     start = end;
                     end += 1;
                     current_line_height = line_minimal_length;
-                    node.move_to(Point::new(f32::from(padding.left), deep_curse));
-                    curse = offset_init + f32::from(padding.left);
+                    node.move_to(Point::new(padding.left, deep_curse));
+                    curse = offset_init + padding.left;
                 } else {
                     node.move_to(Point::new(curse, deep_curse));
                     curse = offset;
@@ -401,8 +401,8 @@ where
             });
         }
         let (width, height) = (
-            max_main - f32::from(padding.left),
-            deep_curse - f32::from(padding.left) + current_line_height,
+            max_main - padding.left,
+            deep_curse - padding.left + current_line_height,
         );
         let size = limits.resolve(Size::new(width, height));
 
@@ -419,8 +419,8 @@ where
     #[inline(always)]
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
-        let spacing = f32::from(self.spacing);
-        let line_spacing = f32::from(self.line_spacing);
+        let spacing = self.spacing;
+        let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length as f32;
         let limits = limits
@@ -431,8 +431,8 @@ where
             .max_height(self.max_height);
         let max_height = limits.max().height;
 
-        let mut curse = f32::from(padding.left);
-        let mut wide_curse = f32::from(padding.left);
+        let mut curse = padding.left;
+        let mut wide_curse = padding.left;
         let mut current_line_width = line_minimal_length;
         let mut max_main = curse;
         let mut align = vec![];
@@ -459,8 +459,8 @@ where
                     start = end;
                     end += 1;
                     current_line_width = line_minimal_length;
-                    node.move_to(Point::new(wide_curse, f32::from(padding.left)));
-                    curse = offset_init + f32::from(padding.left);
+                    node.move_to(Point::new(wide_curse, padding.left));
+                    curse = offset_init + padding.left;
                 } else {
                     node.move_to(Point::new(wide_curse, curse));
                     end += 1;
@@ -485,8 +485,8 @@ where
         }
 
         let (width, height) = (
-            wide_curse - f32::from(padding.left) + current_line_width,
-            max_main - f32::from(padding.left),
+            wide_curse - padding.left + current_line_width,
+            max_main - padding.left,
         );
         let size = limits.resolve(Size::new(width, height));
 

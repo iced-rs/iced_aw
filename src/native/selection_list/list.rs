@@ -31,9 +31,9 @@ where
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(T) -> Message>,
     /// The padding Width
-    pub padding: u16,
+    pub padding: f32,
     /// The Text Size
-    pub text_size: u16,
+    pub text_size: f32,
     /// Shadow Type holder for Renderer.
     pub phantomdata: PhantomData<Renderer>,
 }
@@ -76,7 +76,7 @@ where
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
             limits.fill().width,
-            f32::from(self.text_size + (self.padding * 2)) * self.options.len() as f32,
+            self.text_size + (self.padding * 2.0) * self.options.len() as f32,
         );
 
         Node::new(intrinsic)
@@ -100,16 +100,14 @@ where
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y)
-                            / f32::from(self.text_size + (self.padding * 2)))
+                        ((cursor_position.y - bounds.y) / self.text_size + (self.padding * 2.0))
                             as usize,
                     );
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y)
-                            / f32::from(self.text_size + (self.padding * 2)))
+                        ((cursor_position.y - bounds.y) / self.text_size + (self.padding * 2.0))
                             as usize,
                     );
 
@@ -166,10 +164,10 @@ where
     ) {
         use std::f32;
         let bounds = layout.bounds();
-        let option_height = self.text_size + (self.padding * 2);
+        let option_height = self.text_size + (self.padding * 2.0);
         let offset = viewport.y - bounds.y;
-        let start = (offset / f32::from(option_height)) as usize;
-        let end = ((offset + viewport.height) / f32::from(option_height)).ceil() as usize;
+        let start = (offset / option_height) as usize;
+        let end = ((offset + viewport.height) / option_height).ceil() as usize;
 
         let visible_options = &self.options[start..end.min(self.options.len())];
         let list_state = state.state.downcast_ref::<ListState>();
@@ -181,9 +179,9 @@ where
 
             let bounds = Rectangle {
                 x: bounds.x,
-                y: bounds.y + f32::from(option_height * i as u16),
+                y: bounds.y + option_height * i as f32,
                 width: bounds.width,
-                height: f32::from(self.text_size + (self.padding * 2)),
+                height: self.text_size + (self.padding * 2.0),
             };
 
             if is_selected || is_hovered {
@@ -218,7 +216,7 @@ where
                     width: f32::INFINITY,
                     ..bounds
                 },
-                size: f32::from(self.text_size),
+                size: self.text_size,
                 color: text_color,
                 font: self.font,
                 horizontal_alignment: Horizontal::Left,

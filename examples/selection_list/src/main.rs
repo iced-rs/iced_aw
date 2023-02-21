@@ -55,12 +55,12 @@ impl Sandbox for Example {
         let selection_list = SelectionList::new_with(
             &self.vec[..],
             Message::LanguageSelected,
-            12,
-            5,
+            12.0,
+            5.0,
             SelectionListStyles::Default,
         )
         .width(Length::Shrink)
-        .height(Length::Units(100));
+        .height(Length::Fixed(100.0));
 
         let mut content = Column::new()
             .width(Length::Fill)
@@ -70,7 +70,7 @@ impl Sandbox for Example {
             .push(Text::new("Which is your favorite language?"))
             .push(Text::new(format!("{:?}", self.selected_language)));
 
-        content = content.push(Space::with_height(Length::Units(600)));
+        content = content.push(Space::with_height(Length::Fixed(800.0)));
 
         Container::new(content)
             .width(Length::Fill)

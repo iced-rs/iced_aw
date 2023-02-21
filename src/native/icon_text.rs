@@ -16,7 +16,7 @@ pub struct IconText<Renderer: iced_native::text::Renderer> {
     /// The content of the [`IconText`](IconText).
     content: String,
     /// The optional size of the [`IconText`](IconText).
-    size: Option<u16>,
+    size: Option<f32>,
     /// The optional color of the [`IconText`](IconText).
     color: Option<Color>,
     /// The optional font of the [`IconText`](IconText).
@@ -51,7 +51,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
 
     /// Sets the size of the [`IconText`](IconText).
     #[must_use]
-    pub fn size(mut self, size: u16) -> Self {
+    pub fn size(mut self, size: f32) -> Self {
         self.size = Some(size);
         self
     }

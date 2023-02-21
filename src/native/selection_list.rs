@@ -37,9 +37,9 @@ where
     /// The Containers height
     height: Length,
     /// The padding Width
-    padding: u16,
+    padding: f32,
     /// The Text Size
-    text_size: u16,
+    text_size: f32,
     /// Style for Looks
     style: <Renderer::Theme as StyleSheet>::Style,
 }
@@ -66,8 +66,8 @@ where
         let container = Container::new(Scrollable::new(List {
             options: options.clone(),
             font: iced_graphics::Font::default(),
-            text_size: 12,
-            padding: 5,
+            text_size: 12.0,
+            padding: 5.0,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData::default(),
@@ -81,8 +81,8 @@ where
             container,
             width: Length::Fill,
             height: Length::Fill,
-            padding: 5,
-            text_size: 12,
+            padding: 5.0,
+            text_size: 12.0,
         }
     }
 
@@ -92,8 +92,8 @@ where
     pub fn new_with(
         options: impl Into<Cow<'a, [T]>>,
         on_selected: impl Fn(T) -> Message + 'static,
-        text_size: u16,
-        padding: u16,
+        text_size: f32,
+        padding: f32,
         style: <Renderer::Theme as StyleSheet>::Style,
     ) -> Self {
         let options = options.into();
@@ -183,7 +183,7 @@ where
                             Size::new(f32::INFINITY, f32::INFINITY),
                         );
 
-                        width.round() as u32 + u32::from(self.padding * 2)
+                        width.round() as u32 + self.padding as u32 * 2
                     })
                     .max()
                     .unwrap_or(100)
@@ -191,7 +191,7 @@ where
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width + u32::from(self.padding * 2));
+        let limits = limits.max_width(max_width as f32 + self.padding * 2.0);
 
         let content = self.container.layout(renderer, &limits);
         let size = limits.resolve(content.size());

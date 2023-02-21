@@ -25,7 +25,7 @@ pub use crate::{
 };
 
 /// The default padding
-const DEFAULT_PADDING: u16 = 5;
+const DEFAULT_PADDING: f32 = 5.0;
 
 /// A field that can only be filled with numeric type.
 ///
@@ -66,9 +66,9 @@ where
     /// The min and max value of the [`NumberInput`](NumberInput).
     bounds: (T, T),
     /// The content padding of the [`NumberInput`](NumberInput).
-    padding: u16,
+    padding: f32,
     /// The text size of the [`NumberInput`](NumberInput).
-    size: Option<u16>,
+    size: Option<f32>,
     /// The underlying element of the [`NumberInput`](NumberInput).
     content: TextInput<'a, Message, Renderer>,
     /// The on_change event of the [`NumberInput`](NumberInput).
@@ -114,7 +114,7 @@ where
             size: None,
             content: TextInput::new("", format!("{value}").as_str(), convert_to_num)
                 .padding(padding)
-                .width(Length::Units(127)),
+                .width(Length::Fixed(127.0)),
             on_change: Box::new(on_changed),
             style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
             font: iced_graphics::Font::default(),
@@ -176,7 +176,7 @@ where
 
     /// Sets the padding of the [`NumberInput`].
     #[must_use]
-    pub fn padding(mut self, units: u16) -> Self {
+    pub fn padding(mut self, units: f32) -> Self {
         self.padding = units;
         self.content = self.content.padding(units);
         self
@@ -184,7 +184,7 @@ where
 
     /// Sets the text size of the [`NumberInput`].
     #[must_use]
-    pub fn size(mut self, size: u16) -> Self {
+    pub fn size(mut self, size: f32) -> Self {
         self.size = Some(size);
         self.content = self.content.size(size);
         self
@@ -298,7 +298,7 @@ where
             .pad(padding);
         let content = self.content.layout(renderer, &limits.loose());
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
-        let icon_size = txt_size * 3 / 4;
+        let icon_size = txt_size * 3.0 / 4.0;
         let btn_mod = |c| {
             Container::<(), Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y()

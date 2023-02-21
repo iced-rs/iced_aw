@@ -23,15 +23,15 @@ use crate::{graphics::icons, style::tab_bar::StyleSheet};
 
 use std::marker::PhantomData;
 /// The default icon size.
-const DEFAULT_ICON_SIZE: u16 = 32;
+const DEFAULT_ICON_SIZE: f32 = 32.0;
 /// The default text size.
-const DEFAULT_TEXT_SIZE: u16 = 16;
+const DEFAULT_TEXT_SIZE: f32 = 16.0;
 /// The default size of the close icon.
-const DEFAULT_CLOSE_SIZE: u16 = 16;
+const DEFAULT_CLOSE_SIZE: f32 = 16.0;
 /// The default padding between the tabs.
-const DEFAULT_PADDING: u16 = 5;
+const DEFAULT_PADDING: f32 = 5.0;
 /// The default spacing around the tabs.
-const DEFAULT_SPACING: u16 = 0;
+const DEFAULT_SPACING: f32 = 0.0;
 
 /// A tab bar to show tabs.
 ///
@@ -78,17 +78,17 @@ where
     /// The width of the [`TabBar`](TabBar).
     height: Length,
     /// The maximum height of the [`TabBar`](TabBar).
-    max_height: u32,
+    max_height: f32,
     /// The icon size.
-    icon_size: u16,
+    icon_size: f32,
     /// The text size.
-    text_size: u16,
+    text_size: f32,
     /// The size of the close icon.
-    close_size: u16,
+    close_size: f32,
     /// The padding of the tabs of the [`TabBar`](TabBar).
-    padding: u16,
+    padding: f32,
     /// The spacing of the tabs of the [`TabBar`](TabBar).
-    spacing: u16,
+    spacing: f32,
     /// The optional icon font of the [`TabBar`](TabBar).
     icon_font: Option<Font>,
     /// The optional text font of the [`TabBar`](TabBar).
@@ -138,7 +138,7 @@ where
             width: Length::Fill,
             tab_width: Length::Fill,
             height: Length::Shrink,
-            max_height: u32::MAX,
+            max_height: 4_294_967_295.0,
             icon_size: DEFAULT_ICON_SIZE,
             text_size: DEFAULT_TEXT_SIZE,
             close_size: DEFAULT_CLOSE_SIZE,
@@ -205,7 +205,7 @@ where
 
     /// Sets the maximum height of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn max_height(mut self, max_height: u32) -> Self {
+    pub fn max_height(mut self, max_height: f32) -> Self {
         self.max_height = max_height;
         self
     }
@@ -213,7 +213,7 @@ where
     /// Sets the icon size of the [`TabLabel`](crate::tab_bar::TabLabel)s of
     /// the [`TabBar`](TabBar).
     #[must_use]
-    pub fn icon_size(mut self, icon_size: u16) -> Self {
+    pub fn icon_size(mut self, icon_size: f32) -> Self {
         self.icon_size = icon_size;
         self
     }
@@ -221,7 +221,7 @@ where
     /// Sets the text size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the
     /// [`TabBar`](TabBar).
     #[must_use]
-    pub fn text_size(mut self, text_size: u16) -> Self {
+    pub fn text_size(mut self, text_size: f32) -> Self {
         self.text_size = text_size;
         self
     }
@@ -229,21 +229,21 @@ where
     /// Sets the size of the close icon of the
     /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn close_size(mut self, close_size: u16) -> Self {
+    pub fn close_size(mut self, close_size: f32) -> Self {
         self.close_size = close_size;
         self
     }
 
     /// Sets the padding of the tabs of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn padding(mut self, padding: u16) -> Self {
+    pub fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
 
     /// Sets the spacing between the tabs of the [`TabBar`](TabBar).
     #[must_use]
-    pub fn spacing(mut self, spacing: u16) -> Self {
+    pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
@@ -299,8 +299,8 @@ where
                 let label = match tab_label {
                     TabLabel::Icon(_icon) => Column::new().align_items(Alignment::Center).push(
                         Row::new()
-                            .width(Length::Units(self.icon_size))
-                            .height(Length::Units(self.icon_size)),
+                            .width(Length::Fixed(self.icon_size))
+                            .height(Length::Fixed(self.icon_size)),
                     ),
                     TabLabel::Text(text) => Column::new()
                         .align_items(Alignment::Center)
@@ -309,8 +309,8 @@ where
                         .align_items(Alignment::Center)
                         .push(
                             Row::new()
-                                .width(Length::Units(self.icon_size))
-                                .height(Length::Units(self.icon_size)),
+                                .width(Length::Fixed(self.icon_size))
+                                .height(Length::Fixed(self.icon_size)),
                         )
                         .push(Text::new(text).size(self.text_size).width(self.tab_width)),
                 }
@@ -326,8 +326,8 @@ where
                 if self.on_close.is_some() {
                     label_row = label_row.push(
                         Row::new()
-                            .width(Length::Units(self.close_size))
-                            .height(Length::Units(self.close_size))
+                            .width(Length::Fixed(self.close_size))
+                            .height(Length::Fixed(self.close_size))
                             .align_items(Alignment::Center),
                     );
                 }
