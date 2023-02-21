@@ -1,6 +1,6 @@
 //! A widget that handles menu trees
 
-use super::menu::{ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
+use super::menu_inner::{ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
 use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
 use iced_native::widget::{tree, Tree};
@@ -21,7 +21,7 @@ impl MenuBarState {
         self.menu_states
             .iter()
             .take_while(|ms| ms.index.is_some())
-            .map(|ms| ms.index.unwrap())
+            .map(|ms| ms.index.expect("No indices were found in the menu state."))
     }
 
     pub(super) fn reset(&mut self) {
@@ -52,7 +52,7 @@ where
 {
     width: Length,
     height: Length,
-    spacing: u16,
+    spacing: f32,
     padding: Padding,
     bounds_expand: u16,
     item_width: ItemWidth,
@@ -67,14 +67,15 @@ where
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`MenuBar`] with the given menu roots
+    #[must_use]
     pub fn new(menu_roots: Vec<MenuTree<'a, Message, Renderer>>) -> Self {
         let mut menu_roots = menu_roots;
-        menu_roots.iter_mut().for_each(|mt| mt.set_index());
+        menu_roots.iter_mut().for_each(MenuTree::set_index);
 
         Self {
             width: Length::Shrink,
             height: Length::Shrink,
-            spacing: 0,
+            spacing: 0.0,
             padding: Padding::ZERO,
             bounds_expand: 15,
             item_width: ItemWidth::Uniform(150),
@@ -86,19 +87,22 @@ where
     }
 
     /// Sets the width of the [`MenuBar`]
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`MenuBar`]
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the spacing between menu roots
-    pub fn spacing(mut self, units: u16) -> Self {
+    #[must_use]
+    pub fn spacing(mut self, units: f32) -> Self {
         self.spacing = units;
         self
     }
@@ -108,36 +112,42 @@ where
     /// When the cursor goes outside of a menu's check bounds,
     /// the menu will be closed automatically, this value expands
     /// the check bounds
+    #[must_use]
     pub fn bounds_expand(mut self, value: u16) -> Self {
         self.bounds_expand = value;
         self
     }
 
     /// Sets the [`Padding`] of the [`MenuBar`]
+    #[must_use]
     pub fn padding<P: Into<Padding>>(mut self, padding: P) -> Self {
         self.padding = padding.into();
         self
     }
 
     /// [`ItemWidth`]
+    #[must_use]
     pub fn item_width(mut self, item_width: ItemWidth) -> Self {
         self.item_width = item_width;
         self
     }
 
     /// [`ItemHeight`]
+    #[must_use]
     pub fn item_height(mut self, item_height: ItemHeight) -> Self {
         self.item_height = item_height;
         self
     }
 
     /// Sets the method for drawing path highlight
+    #[must_use]
     pub fn path_highlight(mut self, path_highlight: Option<PathHighlight>) -> Self {
         self.path_highlight = path_highlight;
         self
     }
 
     /// Sets the style of the menu bar and its menus
+    #[must_use]
     pub fn style(mut self, style: impl Into<<Renderer::Theme as StyleSheet>::Style>) -> Self {
         self.style = style.into();
         self
@@ -195,11 +205,11 @@ where
             .map(|root| &root.item)
             .collect::<Vec<_>>();
         flex::resolve(
-            flex::Axis::Horizontal,
+            &flex::Axis::Horizontal,
             renderer,
             &limits,
             self.padding,
-            self.spacing as f32,
+            self.spacing,
             Alignment::Center,
             &children,
         )
@@ -215,15 +225,15 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        use event::Event::*;
-        use mouse::{Button::Left, Event::*};
-        use touch::Event::*;
+        use event::Event::{Mouse, Touch};
+        use mouse::{Button::Left, Event::ButtonReleased};
+        use touch::Event::{FingerLifted, FingerLost};
 
         let root_status = process_root_events(
             &mut self.menu_roots,
             cursor_position,
             tree,
-            event.clone(),
+            &event,
             layout,
             renderer,
             clipboard,
@@ -233,7 +243,7 @@ where
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         match event {
-            Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. }) | Touch(FingerLost { .. }) => {
+            Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. } | FingerLost { .. }) => {
                 if state.menu_states.is_empty() && layout.bounds().contains(cursor_position) {
                     state.cursor = cursor_position;
                     state.open = true;
@@ -263,10 +273,14 @@ where
         };
 
         // draw path highlight
-        if let Some(_) = self.path_highlight {
+        if self.path_highlight.is_some() {
             let styling = theme.appearance(&self.style);
             if let Some(active) = state.active_root {
-                let active_bounds = layout.children().nth(active).unwrap().bounds();
+                let active_bounds = layout
+                    .children()
+                    .nth(active)
+                    .expect("Active child not found in menu?")
+                    .bounds();
                 let path_quad = renderer::Quad {
                     bounds: active_bounds,
                     border_radius: styling.border_radius.into(),
@@ -292,7 +306,7 @@ where
                     position,
                     viewport,
                 );
-            })
+            });
     }
 
     fn overlay<'b>(
@@ -333,17 +347,17 @@ where
     }
 }
 
-#[allow(unused_results)]
-fn process_root_events<'a, Message, Renderer>(
-    menu_roots: &mut [MenuTree<'a, Message, Renderer>],
+#[allow(unused_results, clippy::too_many_arguments)]
+fn process_root_events<Message, Renderer>(
+    menu_roots: &mut [MenuTree<'_, Message, Renderer>],
     position: Point,
     tree: &mut Tree,
-    event: event::Event,
+    event: &event::Event,
     layout: layout::Layout<'_>,
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
-) -> event::Status 
+) -> event::Status
 where
     Renderer: renderer::Renderer,
 {

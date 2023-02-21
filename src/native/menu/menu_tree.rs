@@ -58,6 +58,7 @@ where
     /// See [`ItemWidth`]
     ///
     /// [`ItemWidth`]:`super::ItemWidth`
+    #[must_use]
     pub fn width(mut self, width: u16) -> Self {
         self.width = Some(width);
         self
@@ -67,6 +68,7 @@ where
     /// See [`ItemHeight`]
     ///
     /// [`ItemHeight`]: `super::ItemHeight`
+    #[must_use]
     pub fn height(mut self, height: u16) -> Self {
         self.height = Some(height);
         self
@@ -76,7 +78,8 @@ where
 
     /// Set the index of each item
     pub(super) fn set_index(&mut self) {
-        fn rec<'a, Message, Renderer>(mt: &mut MenuTree<'a, Message, Renderer>, count: &mut usize) {
+        /// inner counting function.
+        fn rec<Message, Renderer>(mt: &mut MenuTree<'_, Message, Renderer>, count: &mut usize) {
             // keep items under the same menu line up
             mt.children.iter_mut().for_each(|c| {
                 c.index = *count;
@@ -89,11 +92,12 @@ where
         let mut count = 0;
         self.index = count;
         count += 1;
-        rec(self, &mut count)
+        rec(self, &mut count);
     }
 
     /// Flatten the menu tree
     pub(super) fn flattern(&'a self) -> Vec<&Self> {
+        /// Inner flattening function
         fn rec<'a, Message, Renderer>(
             mt: &'a MenuTree<'a, Message, Renderer>,
             flat: &mut Vec<&MenuTree<'a, Message, Renderer>>,

@@ -104,7 +104,7 @@ impl Application for App {
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
         match message {
             Message::Debug(s) => {
-                self.title = s.clone();
+                self.title = s;
             }
             Message::ValueChange(v) => {
                 self.value = v;
@@ -176,7 +176,7 @@ impl Application for App {
             .item_width(ItemWidth::Static(180))
             .item_height(ItemHeight::Static(25)),
         }
-        .spacing(4)
+        .spacing(4.0)
         .bounds_expand(30)
         .path_highlight(Some(PathHighlight::MenuActive));
 
@@ -217,7 +217,7 @@ impl button::StyleSheet for ButtonStyle {
     fn active(&self, style: &Self::Style) -> button::Appearance {
         button::Appearance {
             text_color: style.extended_palette().background.base.text,
-            border_radius: 4.0.into(),
+            border_radius: 4.0,
             background: Some(Color::TRANSPARENT.into()),
             ..Default::default()
         }
@@ -326,7 +326,7 @@ fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
     )
 }
 
-fn labeled_separator<'a>(label: &'a str) -> MenuTree<'a, Message, iced::Renderer> {
+fn labeled_separator(label: &'_ str) -> MenuTree<'_, Message, iced::Renderer> {
     let q_1 = quad::Quad {
         color: [0.5; 3].into(),
         border_radius: 4.0.into(),
@@ -349,7 +349,7 @@ fn labeled_separator<'a>(label: &'a str) -> MenuTree<'a, Message, iced::Renderer
     ])
 }
 
-fn circle<'a>(color: Color) -> quad::Quad {
+fn circle(color: Color) -> quad::Quad {
     let radius = 10.0;
 
     quad::Quad {

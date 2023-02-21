@@ -42,7 +42,9 @@
     clippy::module_name_repetitions,
     clippy::borrowed_box,
     clippy::missing_const_for_fn,
-    clippy::too_many_lines
+    clippy::too_many_lines,
+    clippy::cast_precision_loss,
+    clippy::missing_docs_in_private_items
 )]
 
 #[cfg(not(target_arch = "wasm32"))]
