@@ -939,7 +939,7 @@ where
         + iced_style::container::StyleSheet,
 {
     let arrow_size = renderer.default_size();
-    let font_size = (1.2 * f32::from(renderer.default_size())) as u16;
+    let font_size = 1.2 * renderer.default_size();
 
     let mut digital_clock_row = Row::<(), Renderer<B, Theme>>::new()
         .align_items(Alignment::Center)

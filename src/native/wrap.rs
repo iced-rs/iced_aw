@@ -340,7 +340,7 @@ where
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
-        let line_minimal_length = self.line_minimal_length as f32;
+        let line_minimal_length = self.line_minimal_length;
         let limits = limits
             .pad(padding)
             .width(self.width)
@@ -422,7 +422,7 @@ where
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
-        let line_minimal_length = self.line_minimal_length as f32;
+        let line_minimal_length = self.line_minimal_length;
         let limits = limits
             .pad(padding)
             .width(self.width)

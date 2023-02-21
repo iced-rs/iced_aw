@@ -61,8 +61,8 @@ struct MenuBounds {
     check_bounds: Rectangle,
 }
 impl MenuBounds {
-    fn new<'a, Message, Renderer>(
-        menu_tree: &MenuTree<'a, Message, Renderer>,
+    fn new<Message, Renderer>(
+        menu_tree: &MenuTree<'_, Message, Renderer>,
         item_width: ItemWidth,
         item_height: ItemHeight,
         viewport: Size,
@@ -89,8 +89,8 @@ impl MenuBounds {
 
         let check_bounds = pad_rectangle(children_bounds, padding.into());
         Self {
-            children_bounds,
             child_positions,
+            children_bounds,
             parent_bounds,
             check_bounds,
         }
@@ -103,12 +103,12 @@ pub(super) struct MenuState {
     menu_bounds: MenuBounds,
 }
 impl MenuState {
-    fn layout<'a, Message, Renderer>(
+    fn layout<Message, Renderer>(
         &self,
         slice: MenuSlice,
         item_height: ItemHeight,
         renderer: &Renderer,
-        menu_tree: &MenuTree<'a, Message, Renderer>,
+        menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
@@ -155,12 +155,12 @@ impl MenuState {
         node
     }
 
-    fn layout_single<'a, Message, Renderer>(
+    fn layout_single<Message, Renderer>(
         &self,
         index: usize,
         item_height: ItemHeight,
         renderer: &Renderer,
-        menu_tree: &MenuTree<'a, Message, Renderer>,
+        menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> layout::Node
     where
         Renderer: renderer::Renderer,
@@ -180,11 +180,11 @@ impl MenuState {
         node
     }
 
-    fn slice<'a, Message, Renderer>(
+    fn slice<Message, Renderer>(
         &self,
         viewport: Size,
         item_height: ItemHeight,
-        menu_tree: &MenuTree<'a, Message, Renderer>,
+        menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> MenuSlice {
         let children_bounds = self.menu_bounds.children_bounds;
         let max_index = self.menu_bounds.child_positions.len().saturating_sub(1);
@@ -200,8 +200,8 @@ impl MenuState {
         // index range
         let (start_index, end_index) = match item_height {
             ItemHeight::Uniform(u) => {
-                let start_index = (lower_bound_rel / u as f32).floor() as usize;
-                let end_index = ((upper_bound_rel / u as f32).floor() as usize).min(max_index);
+                let start_index = (lower_bound_rel / f32::from(u)).floor() as usize;
+                let end_index = ((upper_bound_rel / f32::from(u)).floor() as usize).min(max_index);
                 (start_index, end_index)
             }
             ItemHeight::Static(s) => {
@@ -276,9 +276,15 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        use event::{Event::*, Status::*};
-        use mouse::{Button::Left, Event::*};
-        use touch::Event::*;
+        use event::{
+            Event::{Mouse, Touch},
+            Status::{Captured, Ignored},
+        };
+        use mouse::{
+            Button::Left,
+            Event::{ButtonPressed, ButtonReleased, CursorMoved, WheelScrolled},
+        };
+        use touch::Event::{FingerLifted, FingerMoved, FingerPressed};
 
         if !self.tree.state.downcast_ref::<MenuBarState>().open {
             return Ignored;
@@ -287,8 +293,8 @@ where
         let viewport = layout.bounds().size();
 
         let menu_status = process_menu_events(
-            &mut self.tree,
-            &mut self.menu_roots,
+            self.tree,
+            self.menu_roots,
             self.item_height,
             event.clone(),
             cursor_position,
@@ -354,14 +360,11 @@ where
             .iter()
             .enumerate()
             .fold(root, |menu_root, (i, ms)| {
-                let draw_path = match &self.path_highlight {
-                    Some(ph) => match ph {
-                        PathHighlight::Full => true,
-                        PathHighlight::OmitActive => indices.len() > 0 && i < indices.len() - 1,
-                        PathHighlight::MenuActive => i < state.menu_states.len() - 1,
-                    },
-                    None => false,
-                };
+                let draw_path = self.path_highlight.as_ref().map_or(false, |ph| match ph {
+                    PathHighlight::Full => true,
+                    PathHighlight::OmitActive => !indices.is_empty() && i < indices.len() - 1,
+                    PathHighlight::MenuActive => i < state.menu_states.len() - 1,
+                });
 
                 let draw_menu = |r: &mut Renderer| {
                     // calc slice
@@ -389,7 +392,7 @@ where
                         let active_bounds = children_layout
                             .children()
                             .nth(active.saturating_sub(start_index))
-                            .unwrap()
+                            .expect("No active children were found in menu?")
                             .bounds();
                         let path_quad = renderer::Quad {
                             bounds: active_bounds,
@@ -421,26 +424,23 @@ where
                 renderer.with_layer(layout.bounds(), draw_menu);
 
                 // only the last menu can have a None active index
-                if let Some(active) = ms.index {
-                    &menu_root.children[active]
-                } else {
-                    menu_root
-                }
+                ms.index
+                    .map_or(menu_root, |active| &menu_root.children[active])
             });
     }
 }
 
 fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     Rectangle {
-        x: rect.x - padding.left as f32,
-        y: rect.y - padding.top as f32,
-        width: rect.width + padding.horizontal() as f32,
-        height: rect.height + padding.vertical() as f32,
+        x: rect.x - padding.left,
+        y: rect.y - padding.top,
+        width: rect.width + padding.horizontal(),
+        height: rect.height + padding.vertical(),
     }
 }
 
-fn init_root_menu<'a, 'b, Message, Renderer>(
-    menu: &mut Menu<'a, 'b, Message, Renderer>,
+fn init_root_menu<Message, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Renderer>,
     position: Point,
     viewport: Size,
     bar_bounds: Rectangle,
@@ -453,7 +453,8 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
         return;
     }
 
-    for (i, (&root_bounds, mt)) in menu.root_bounds_list
+    for (i, (&root_bounds, mt)) in menu
+        .root_bounds_list
         .iter()
         .zip(menu.menu_roots.iter())
         .enumerate()
@@ -485,16 +486,17 @@ fn init_root_menu<'a, 'b, Message, Renderer>(
     }
 }
 
-fn process_menu_events<'a, 'b, Message, Renderer>(
+#[allow(clippy::too_many_arguments)]
+fn process_menu_events<'b, Message, Renderer>(
     tree: &'b mut Tree,
-    menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
+    menu_roots: &'b mut [MenuTree<'_, Message, Renderer>],
     item_height: ItemHeight,
     event: event::Event,
     cursor_position: Point,
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
-) -> event::Status 
+) -> event::Status
 where
     Renderer: renderer::Renderer,
 {
@@ -516,7 +518,12 @@ where
 
     // get layout
     let last_ms = &state.menu_states[indices.len() - 1];
-    let child_node = last_ms.layout_single(last_ms.index.unwrap(), item_height, renderer, mt);
+    let child_node = last_ms.layout_single(
+        last_ms.index.expect("missing index within menu state."),
+        item_height,
+        renderer,
+        mt,
+    );
     let child_layout = layout::Layout::new(&child_node);
 
     // widget tree
@@ -535,8 +542,8 @@ where
 }
 
 #[allow(unused_results)]
-fn process_overlay_events<'a, 'b, Message, Renderer>(
-    menu: &mut Menu<'a, 'b, Message, Renderer>,
+fn process_overlay_events<Message, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Renderer>,
     viewport: Size,
     position: Point,
 ) -> event::Status
@@ -544,7 +551,7 @@ where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    use event::Status::*;
+    use event::Status::{Captured, Ignored};
     /*
     if no active root  || pressed:
         return
@@ -590,7 +597,7 @@ where
         .collect::<Vec<_>>();
 
     // update active item
-    let Some(last_ms) = state.menu_states.last_mut() else{
+    let Some(last_menu_state) = state.menu_states.last_mut() else{
         // no menus left
         state.active_root = None;
 
@@ -603,31 +610,33 @@ where
         return Captured;
     };
 
-    let last_mb = &last_ms.menu_bounds;
-    let last_pb = last_mb.parent_bounds;
-    let last_cb = last_mb.children_bounds;
+    let last_menu_bounds = &last_menu_state.menu_bounds;
+    let last_parent_bounds = last_menu_bounds.parent_bounds;
+    let last_child_bounds = last_menu_bounds.children_bounds;
 
-    if last_pb.contains(position) {
+    if last_parent_bounds.contains(position) {
         // cursor is in the parent part
-        last_ms.index = None;
+        last_menu_state.index = None;
         return Captured;
     }
     // cursor is in the children part
 
     // calc new index
-    let height_diff =
-        (position.y - (last_cb.y + last_ms.scroll_offset)).clamp(0.0, last_cb.height - 0.001);
+    let height_diff = (position.y - (last_child_bounds.y + last_menu_state.scroll_offset))
+        .clamp(0.0, last_child_bounds.height - 0.001);
 
     // get active menu
     let active_menu_root = &menu.menu_roots[active_root];
 
     let active_menu = indices[0..indices.len().saturating_sub(1)]
         .iter()
-        .fold(active_menu_root, |mt, i| &mt.children[i.unwrap()]);
+        .fold(active_menu_root, |mt, i| {
+            &mt.children[i.expect("missing active child index in menu")]
+        });
 
     // get new index
     let new_index = match menu.item_height {
-        ItemHeight::Uniform(u) => (height_diff / (u as f32)).floor() as usize,
+        ItemHeight::Uniform(u) => (height_diff / f32::from(u)).floor() as usize,
         ItemHeight::Static(s) => {
             let max_index = active_menu.children.len() - 1;
             search_bound(
@@ -636,14 +645,14 @@ where
                 max_index,
                 s,
                 height_diff,
-                &last_mb.child_positions,
+                &last_menu_bounds.child_positions,
                 active_menu,
             )
         }
     };
 
     // set new index
-    last_ms.index = Some(new_index);
+    last_menu_state.index = Some(new_index);
 
     // get new active item
     let item = &active_menu.children[new_index];
@@ -653,12 +662,16 @@ where
         // get new item bounds
         let item_position = Point::new(
             0.0,
-            last_mb.child_positions[new_index] + last_ms.scroll_offset,
+            last_menu_bounds.child_positions[new_index] + last_menu_state.scroll_offset,
         );
-        let item_size = get_item_size(item, last_mb.children_bounds.width, menu.item_height);
+        let item_size = get_item_size(
+            item,
+            last_menu_bounds.children_bounds.width,
+            menu.item_height,
+        );
 
         let item_bounds = Rectangle::new(item_position, item_size)
-            + (last_mb.children_bounds.position() - Point::ORIGIN);
+            + (last_menu_bounds.children_bounds.position() - Point::ORIGIN);
 
         state.menu_states.push(MenuState {
             index: None,
@@ -738,7 +751,8 @@ fn adaptive_open_direction(
             padding_mask[0] = 0;
             parent_pos + parent_size
         };
-        return (value, padding_mask);
+
+        (value, padding_mask)
     };
 
     let (x, px) = calc_adaptive(
@@ -763,8 +777,8 @@ fn adaptive_open_direction(
     ([x, y].into(), padding_mask)
 }
 
-fn process_scroll_events<'a, 'b, Message, Renderer>(
-    menu: &mut Menu<'a, 'b, Message, Renderer>,
+fn process_scroll_events<Message, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Renderer>,
     delta: mouse::ScrollDelta,
     viewport: Size,
 ) -> event::Status
@@ -772,7 +786,7 @@ where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    use event::Status::*;
+    use event::Status::{Captured, Ignored};
     use mouse::ScrollDelta;
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
@@ -793,7 +807,10 @@ where
     if state.menu_states.is_empty() {
         return Ignored;
     } else if state.menu_states.len() == 1 {
-        let last_ms = state.menu_states.last_mut().unwrap();
+        let last_ms = state
+            .menu_states
+            .last_mut()
+            .expect("missing menu state item");
         let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
         last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
     } else {
@@ -822,8 +839,8 @@ where
     Captured
 }
 
-fn get_item_size<'a, Message, Renderer>(
-    menu_tree: &MenuTree<'a, Message, Renderer>,
+fn get_item_size<Message, Renderer>(
+    menu_tree: &MenuTree<'_, Message, Renderer>,
     width: f32,
     item_height: ItemHeight,
 ) -> Size
@@ -831,15 +848,15 @@ where
     Renderer: renderer::Renderer,
 {
     let height = match item_height {
-        ItemHeight::Uniform(u) => u as f32,
-        ItemHeight::Static(s) => menu_tree.height.unwrap_or(s) as f32,
+        ItemHeight::Uniform(u) => f32::from(u),
+        ItemHeight::Static(s) => f32::from(menu_tree.height.unwrap_or(s)),
     };
 
     Size::new(width, height)
 }
 
-fn get_children_size<'a, Message, Renderer>(
-    menu_tree: &MenuTree<'a, Message, Renderer>,
+fn get_children_size<Message, Renderer>(
+    menu_tree: &MenuTree<'_, Message, Renderer>,
     item_width: ItemWidth,
     item_height: ItemHeight,
 ) -> Size
@@ -847,23 +864,23 @@ where
     Renderer: renderer::Renderer,
 {
     let width = match item_width {
-        ItemWidth::Uniform(u) => u as f32,
-        ItemWidth::Static(s) => menu_tree.width.unwrap_or(s) as f32,
+        ItemWidth::Uniform(u) => f32::from(u),
+        ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
     };
 
     let height = match item_height {
-        ItemHeight::Uniform(u) => (u as f32) * (menu_tree.children.len() as f32),
+        ItemHeight::Uniform(u) => f32::from(u) * (menu_tree.children.len() as f32),
         ItemHeight::Static(s) => menu_tree
             .children
             .iter()
-            .fold(0.0, |h, mt| h + mt.height.unwrap_or(s) as f32),
+            .fold(0.0, |h, mt| h + f32::from(mt.height.unwrap_or(s))),
     };
 
     Size::new(width, height)
 }
 
-fn get_child_positions<'a, Message, Renderer>(
-    menu_tree: &MenuTree<'a, Message, Renderer>,
+fn get_child_positions<Message, Renderer>(
+    menu_tree: &MenuTree<'_, Message, Renderer>,
     item_height: ItemHeight,
 ) -> Vec<f32>
 where
@@ -873,14 +890,14 @@ where
         ItemHeight::Uniform(u) => {
             let children_count = menu_tree.children.len();
             (0..children_count)
-                .map(|i| (i as f32) * (u as f32))
+                .map(|i| (i as f32) * f32::from(u))
                 .collect()
         }
         ItemHeight::Static(s) => {
             let max_index = menu_tree.children.len() - 1;
             std::iter::once(0.0)
                 .chain(menu_tree.children[0..max_index].iter().scan(0.0, |p, mt| {
-                    *p += mt.height.unwrap_or(s) as f32;
+                    *p += f32::from(mt.height.unwrap_or(s));
                     Some(*p)
                 }))
                 .collect::<Vec<_>>()
@@ -888,14 +905,14 @@ where
     }
 }
 
-fn search_bound<'a, Message, Renderer>(
+fn search_bound<Message, Renderer>(
     default: usize,
     default_left: usize,
     default_right: usize,
     default_height: u16,
     bound: f32,
     positions: &[f32],
-    menu_tree: &MenuTree<'a, Message, Renderer>,
+    menu_tree: &MenuTree<'_, Message, Renderer>,
 ) -> usize {
     // binary search
     let mut left = default_left;
@@ -910,7 +927,7 @@ fn search_bound<'a, Message, Renderer>(
             left = m;
         }
     }
-    let height = menu_tree.children[left].height.unwrap_or(default_height) as f32;
+    let height = f32::from(menu_tree.children[left].height.unwrap_or(default_height));
     if positions[left] + height > bound {
         index = left;
     }

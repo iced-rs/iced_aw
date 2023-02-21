@@ -149,7 +149,7 @@ where
         let mut content = self.content.as_widget().layout(renderer, &limits.loose());
         let size = limits.resolve(content.size());
 
-        content.move_to(Point::new(f32::from(padding.left), f32::from(padding.top)));
+        content.move_to(Point::new(padding.left, padding.top));
         content.align(self.horizontal_alignment, self.vertical_alignment, size);
 
         layout::Node::with_children(size.pad(padding), vec![content])

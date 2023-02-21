@@ -569,13 +569,13 @@ where
 
         let (width, height) = if bounds.width > bounds.height {
             (
-                block1_node.size().width + block2_node.size().width + f32::from(SPACING), // + (2.0 * PADDING as f32),
+                block1_node.size().width + block2_node.size().width + SPACING, // + (2.0 * PADDING as f32),
                 block2_node.size().height,
             )
         } else {
             (
                 block2_node.size().width,
-                block1_node.size().height + block2_node.size().height + f32::from(SPACING),
+                block1_node.size().height + block2_node.size().height + SPACING,
             )
         };
 
@@ -894,10 +894,7 @@ where
         )
         .layout(renderer, &block1_limits);
 
-    block1_node.move_to(Point::new(
-        bounds.x + f32::from(PADDING),
-        bounds.y + f32::from(PADDING),
-    ));
+    block1_node.move_to(Point::new(bounds.x + PADDING, bounds.y + PADDING));
 
     block1_node
 }
@@ -930,7 +927,7 @@ where
 
     let block2_limits = block2_limits.shrink(Size::new(
         0.0,
-        cancel_button.bounds().height + hex_text.bounds().height + 2.0 * f32::from(SPACING),
+        cancel_button.bounds().height + hex_text.bounds().height + 2.0 * SPACING,
     ));
 
     // RGBA Colors
@@ -964,54 +961,54 @@ where
     let mut rgba_colors = rgba_colors.layout(renderer, &block2_limits);
 
     rgba_colors.move_to(Point::new(
-        rgba_colors.bounds().x + f32::from(PADDING),
-        rgba_colors.bounds().y + f32::from(PADDING),
+        rgba_colors.bounds().x + PADDING,
+        rgba_colors.bounds().y + PADDING,
     ));
 
     // Hex text
     hex_text.move_to(Point::new(
-        hex_text.bounds().x + f32::from(PADDING),
-        hex_text.bounds().y + rgba_colors.bounds().height + f32::from(PADDING) + f32::from(SPACING),
+        hex_text.bounds().x + PADDING,
+        hex_text.bounds().y + rgba_colors.bounds().height + PADDING + SPACING,
     ));
 
     // Buttons
-    let cancel_limits = block2_limits
-        .max_width(((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0));
+    let cancel_limits =
+        block2_limits.max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
     let mut cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
-    let submit_limits = block2_limits
-        .max_width(((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0));
+    let submit_limits =
+        block2_limits.max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
     let mut submit_button = color_picker.submit_button.layout(renderer, &submit_limits);
 
     cancel_button.move_to(Point::new(
-        cancel_button.bounds().x + f32::from(PADDING),
+        cancel_button.bounds().x + PADDING,
         cancel_button.bounds().y
             + rgba_colors.bounds().height
             + hex_text.bounds().height
-            + f32::from(PADDING)
-            + 2.0 * f32::from(SPACING),
+            + PADDING
+            + 2.0 * SPACING,
     ));
 
     submit_button.move_to(Point::new(
         submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
-            + f32::from(PADDING),
+            + PADDING,
         submit_button.bounds().y
             + rgba_colors.bounds().height
             + hex_text.bounds().height
-            + f32::from(PADDING)
-            + 2.0 * f32::from(SPACING),
+            + PADDING
+            + 2.0 * SPACING,
     ));
 
     let mut block2_node = Node::with_children(
         Size::new(
-            rgba_colors.bounds().width + (2.0 * f32::from(PADDING)),
+            rgba_colors.bounds().width + (2.0 * PADDING),
             rgba_colors.bounds().height
                 + hex_text.bounds().height
                 + cancel_button.bounds().height
-                + (2.0 * f32::from(PADDING))
-                + (2.0 * f32::from(SPACING)),
+                + (2.0 * PADDING)
+                + (2.0 * SPACING),
         ),
         vec![rgba_colors, hex_text, cancel_button, submit_button],
     );

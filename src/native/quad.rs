@@ -17,8 +17,9 @@ pub enum InnerBounds {
     Custom(Box<dyn Fn(Rectangle) -> Rectangle>),
 }
 impl InnerBounds {
+    /// Gets the inner bounds of the Set type.
     fn get_bounds(&self, outer_bounds: Rectangle) -> Rectangle {
-        use InnerBounds::*;
+        use InnerBounds::{Custom, Padding, Ratio, Square};
         match self {
             Ratio(w, h) => {
                 let width = w * outer_bounds.width;
@@ -33,10 +34,10 @@ impl InnerBounds {
                 }
             }
             Padding(p) => {
-                let x = outer_bounds.x + p.left as f32;
-                let y = outer_bounds.y + p.top as f32;
-                let width = outer_bounds.width - p.horizontal() as f32;
-                let height = outer_bounds.width - p.vertical() as f32;
+                let x = outer_bounds.x + p.left;
+                let y = outer_bounds.y + p.top;
+                let width = outer_bounds.width - p.horizontal();
+                let height = outer_bounds.width - p.vertical();
                 Rectangle {
                     x,
                     y,
@@ -104,7 +105,7 @@ where
     }
 
     fn height(&self) -> Length {
-        self.width
+        self.height
     }
 
     fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
@@ -131,7 +132,7 @@ where
                     border_color: self.border_color,
                 },
                 b,
-            )
+            );
         }
         renderer.fill_quad(
             renderer::Quad {
@@ -141,7 +142,7 @@ where
                 border_color: self.border_color,
             },
             self.color,
-        )
+        );
     }
 }
 impl<Message, Renderer> From<Quad> for Element<'_, Message, Renderer>

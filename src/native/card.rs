@@ -551,7 +551,7 @@ where
         .height(head.as_widget().height())
         .pad(pad);
 
-    let close_size = close_size.unwrap_or_else(|| f32::from(renderer.default_size()));
+    let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
         Some(iced_native::layout::Node::new(Size::new(

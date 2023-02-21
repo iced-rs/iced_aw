@@ -27,28 +27,32 @@ pub enum Axis {
     Horizontal,
 
     /// The vertical axis
+    #[allow(dead_code)]
     Vertical,
 }
 
 impl Axis {
+    /// Gets the main Axis
     fn main(&self, size: Size) -> f32 {
         match self {
-            Axis::Horizontal => size.width,
-            Axis::Vertical => size.height,
+            Self::Horizontal => size.width,
+            Self::Vertical => size.height,
         }
     }
 
+    /// Gets the cross Axis
     fn cross(&self, size: Size) -> f32 {
         match self {
-            Axis::Horizontal => size.height,
-            Axis::Vertical => size.width,
+            Self::Horizontal => size.height,
+            Self::Vertical => size.width,
         }
     }
 
+    /// Returns a Packed axis
     fn pack(&self, main: f32, cross: f32) -> (f32, f32) {
         match self {
-            Axis::Horizontal => (main, cross),
-            Axis::Vertical => (cross, main),
+            Self::Horizontal => (main, cross),
+            Self::Vertical => (cross, main),
         }
     }
 }
@@ -58,7 +62,7 @@ impl Axis {
 ///
 /// It returns a new layout [`Node`].
 pub fn resolve<'a, E, Message, Renderer>(
-    axis: Axis,
+    axis: &Axis,
     renderer: &Renderer,
     limits: &Limits,
     padding: Padding,
@@ -84,7 +88,7 @@ where
     if align_items == Alignment::Fill {
         let mut fill_cross = axis.cross(limits.min());
 
-        items.iter().for_each(|child| {
+        for child in items.iter() {
             let child = child.borrow();
             let cross_fill_factor = match axis {
                 Axis::Horizontal => child.as_widget().height(),
@@ -102,7 +106,7 @@ where
 
                 fill_cross = fill_cross.max(axis.cross(size));
             }
-        });
+        }
 
         cross = fill_cross;
     }
@@ -159,7 +163,7 @@ where
         .fill_factor();
 
         if fill_factor != 0 {
-            let max_main = remaining * fill_factor as f32 / fill_sum as f32;
+            let max_main = remaining * f32::from(fill_factor) / f32::from(fill_sum);
             let min_main = if max_main.is_infinite() {
                 0.0
             } else {
@@ -193,7 +197,7 @@ where
         }
     }
 
-    let pad = axis.pack(padding.left as f32, padding.top as f32);
+    let pad = axis.pack(padding.left, padding.top);
     let mut main = pad.0;
 
     for (i, node) in nodes.iter_mut().enumerate() {

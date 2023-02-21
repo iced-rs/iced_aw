@@ -53,11 +53,11 @@
 //!
 
 mod flex;
-mod menu;
 mod menu_bar;
+mod menu_inner;
 mod menu_tree;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
-pub use menu::{ItemHeight, ItemWidth, PathHighlight};
 pub use menu_bar::MenuBar;
+pub use menu_inner::{ItemHeight, ItemWidth, PathHighlight};
 pub use menu_tree::MenuTree;

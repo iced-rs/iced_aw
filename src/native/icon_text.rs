@@ -159,7 +159,7 @@ where
         renderer.fill_text(iced_native::text::Text {
             content: &self.content,
             bounds: Rectangle { x, y, ..bounds },
-            size: f32::from(self.size.unwrap_or_else(|| renderer.default_size())),
+            size: self.size.unwrap_or_else(|| renderer.default_size()),
             color: self.color.unwrap_or(style.text_color),
             font: self.font.unwrap_or(crate::graphics::icons::ICON_FONT),
             horizontal_alignment: self.horizontal_alignment,
