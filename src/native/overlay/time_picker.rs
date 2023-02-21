@@ -36,11 +36,11 @@ use iced_native::{
 pub use crate::style::time_picker::{Appearance, StyleSheet};
 
 /// The padding around the elements.
-const PADDING: u16 = 10;
+const PADDING: f32 = 10.0;
 /// The spacing between the elements.
-const SPACING: u16 = 15;
+const SPACING: f32 = 15.0;
 /// The spacing between the buttons.
-const BUTTON_SPACING: u16 = 5;
+const BUTTON_SPACING: f32 = 5.0;
 /// The percentage size of the numbers.
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
 /// The percentage size of the period.
@@ -505,8 +505,8 @@ where
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
-            .max_width(300)
-            .max_height(350);
+            .max_width(300.0)
+            .max_height(350.0);
 
         // Digital Clock
         let digital_clock_limits = limits;
@@ -518,9 +518,7 @@ where
 
         let limits = limits.shrink(Size::new(
             0.0,
-            digital_clock.bounds().height
-                + cancel_button.bounds().height
-                + 2.0 * f32::from(SPACING),
+            digital_clock.bounds().height + cancel_button.bounds().height + 2.0 * SPACING,
         ));
 
         // Clock-Canvas
@@ -530,56 +528,53 @@ where
             .layout(renderer, &limits);
 
         clock.move_to(Point::new(
-            clock.bounds().x + f32::from(PADDING),
-            clock.bounds().y + f32::from(PADDING),
+            clock.bounds().x + PADDING,
+            clock.bounds().y + PADDING,
         ));
 
         digital_clock.move_to(Point::new(
-            digital_clock.bounds().x + f32::from(PADDING),
-            digital_clock.bounds().y
-                + f32::from(PADDING)
-                + f32::from(SPACING)
-                + clock.bounds().height,
+            digital_clock.bounds().x + PADDING,
+            digital_clock.bounds().y + PADDING + SPACING + clock.bounds().height,
         ));
 
         // Buttons
-        let cancel_limits = limits
-            .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
+        let cancel_limits =
+            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
-        let submit_limits = limits
-            .max_width(((clock.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
+        let submit_limits =
+            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + f32::from(PADDING),
+            x: cancel_button.bounds().x + PADDING,
             y: cancel_button.bounds().y
                 + clock.bounds().height
-                + f32::from(PADDING)
+                + PADDING
                 + digital_clock.bounds().height
-                + 2.0 * f32::from(SPACING),
+                + 2.0 * SPACING,
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + clock.bounds().width - submit_button.bounds().width
-                + f32::from(PADDING),
+                + PADDING,
             y: submit_button.bounds().y
                 + clock.bounds().height
-                + f32::from(PADDING)
+                + PADDING
                 + digital_clock.bounds().height
-                + 2.0 * f32::from(SPACING),
+                + 2.0 * SPACING,
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
-                clock.bounds().width + (2.0 * f32::from(PADDING)),
+                clock.bounds().width + (2.0 * PADDING),
                 clock.bounds().height
                     + digital_clock.bounds().height
                     + cancel_button.bounds().height
-                    + (2.0 * f32::from(PADDING))
-                    + 2.0 * f32::from(SPACING),
+                    + (2.0 * PADDING)
+                    + 2.0 * SPACING,
             ),
             vec![clock, digital_clock, cancel_button, submit_button],
         );
@@ -969,15 +964,15 @@ where
                 .push(
                     // Up Hour arrow
                     Row::new()
-                        .width(Length::Units(arrow_size))
-                        .height(Length::Units(arrow_size)),
+                        .width(Length::Fixed(arrow_size))
+                        .height(Length::Fixed(arrow_size)),
                 )
                 .push(Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size))
                 .push(
                     // Down Hour arrow
                     Row::new()
-                        .width(Length::Units(arrow_size))
-                        .height(Length::Units(arrow_size)),
+                        .width(Length::Fixed(arrow_size))
+                        .height(Length::Fixed(arrow_size)),
                 ),
         )
         .push(
@@ -992,15 +987,15 @@ where
                 .push(
                     // Up Minute arrow
                     Row::new()
-                        .width(Length::Units(arrow_size))
-                        .height(Length::Units(arrow_size)),
+                        .width(Length::Fixed(arrow_size))
+                        .height(Length::Fixed(arrow_size)),
                 )
                 .push(Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size))
                 .push(
                     // Down Minute arrow
                     Row::new()
-                        .width(Length::Units(arrow_size))
-                        .height(Length::Units(arrow_size)),
+                        .width(Length::Fixed(arrow_size))
+                        .height(Length::Fixed(arrow_size)),
                 ),
         );
 
@@ -1018,8 +1013,8 @@ where
                     .push(
                         // Up Minute arrow
                         Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
+                            .width(Length::Fixed(arrow_size))
+                            .height(Length::Fixed(arrow_size)),
                     )
                     .push(
                         Text::new(format!("{:02}", time_picker.state.time.hour())).size(font_size),
@@ -1027,8 +1022,8 @@ where
                     .push(
                         // Down Minute arrow
                         Row::new()
-                            .width(Length::Units(arrow_size))
-                            .height(Length::Units(arrow_size)),
+                            .width(Length::Fixed(arrow_size))
+                            .height(Length::Fixed(arrow_size)),
                     ),
             );
     }

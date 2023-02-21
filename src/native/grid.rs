@@ -40,7 +40,7 @@ enum Strategy {
     /// Use `n` columns.
     Columns(usize),
     /// Try to fit as much columns that have a fixed width.
-    ColumnWidth(u16),
+    ColumnWidth(f32),
 }
 
 impl Default for Strategy {
@@ -66,7 +66,7 @@ where
     /// Creates a new empty [`Grid`](Grid).
     /// Columns will be generated to fill the given space.
     #[must_use]
-    pub fn with_column_width(column_width: u16) -> Self {
+    pub fn with_column_width(column_width: f32) -> Self {
         Self {
             strategy: Strategy::ColumnWidth(column_width),
             elements: Vec::new(),
@@ -155,8 +155,7 @@ where
             }
             // find number of columns by checking how many can fit
             Strategy::ColumnWidth(column_width) => {
-                let column_limits = limits.width(Length::Units(column_width));
-                let column_width: f32 = column_width.into();
+                let column_limits = limits.width(Length::Fixed(column_width));
                 let max_width = limits.max().width;
                 let columns = (max_width / column_width).floor() as usize;
 

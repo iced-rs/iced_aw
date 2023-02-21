@@ -14,9 +14,9 @@ fn main() -> iced::Result {
 struct RandStrings {
     vbuttons: Vec<StrButton>,
     hbuttons: Vec<StrButton>,
-    spacing: u16,
-    line_spacing: u16,
-    line_minimal_length: u32,
+    spacing: f32,
+    line_spacing: f32,
+    line_minimal_length: f32,
     align: iced::Alignment,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,16 +56,16 @@ impl Display for WrapAlign {
 #[derive(Debug, Clone)]
 struct StrButton {
     str: String,
-    size: u16,
+    size: f32,
 }
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy)]
 enum Message {
     ChangeAlign(WrapAlign),
-    ChangeSpacing(u16),
-    ChangeLineSpacing(u16),
-    ChangeMinimalLength(u32),
+    ChangeSpacing(f32),
+    ChangeLineSpacing(f32),
+    ChangeMinimalLength(f32),
 }
 
 impl Sandbox for RandStrings {
@@ -76,16 +76,16 @@ impl Sandbox for RandStrings {
         let data: Vec<StrButton> = (0..45)
             .map(|s| StrButton {
                 str: s.to_string(),
-                size: rng.gen_range(15..50),
+                size: rng.gen_range(15.0..50.0),
             })
             .collect();
         Self {
             vbuttons: data.clone(),
             hbuttons: data,
             align: iced::Alignment::Start,
-            spacing: 0,
-            line_spacing: 0,
-            line_minimal_length: 10,
+            spacing: 0.0,
+            line_spacing: 0.0,
+            line_minimal_length: 10.0,
         }
     }
 
@@ -147,13 +147,17 @@ impl Sandbox for RandStrings {
         );
         let spacing_input = Column::new()
             .push(Text::new("spacing"))
-            .push(NumberInput::new(self.spacing, 500, Message::ChangeSpacing));
+            .push(NumberInput::new(
+                self.spacing,
+                500.0,
+                Message::ChangeSpacing,
+            ));
         let line_spacing_input =
             Column::new()
                 .push(Text::new("line spacing"))
                 .push(NumberInput::new(
                     self.line_spacing,
-                    500,
+                    500.0,
                     Message::ChangeLineSpacing,
                 ));
         let line_minimal_length_input =
@@ -161,7 +165,7 @@ impl Sandbox for RandStrings {
                 .push(Text::new("line minimal length"))
                 .push(NumberInput::new(
                     self.line_minimal_length,
-                    999,
+                    999.0,
                     Message::ChangeMinimalLength,
                 ));
         let ctrls = Column::new()

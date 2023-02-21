@@ -31,13 +31,13 @@ use crate::{
 pub use crate::style::date_picker::{Appearance, StyleSheet};
 
 /// The padding around the elements.
-const PADDING: u16 = 10;
+const PADDING: f32 = 10.0;
 /// The spacing between the elements.
-const SPACING: u16 = 15;
+const SPACING: f32 = 15.0;
 /// The padding of the day cells.
-const DAY_CELL_PADDING: u16 = 7;
+const DAY_CELL_PADDING: f32 = 7.0;
 /// The spacing between the buttons.
-const BUTTON_SPACING: u16 = 5;
+const BUTTON_SPACING: f32 = 5.0;
 
 /// The overlay of the [`DatePicker`](crate::native::DatePicker).
 #[allow(missing_debug_implementations)]
@@ -378,20 +378,17 @@ where
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
-            .max_width(300)
-            .max_height(300);
+            .max_width(300.0)
+            .max_height(300.0);
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
         let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
-        let limits = limits.shrink(Size::new(
-            0.0,
-            cancel_button.bounds().height + f32::from(SPACING),
-        ));
+        let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height + SPACING));
 
         // Month/Year
-        let font_size = u32::from(renderer.default_size());
+        let font_size = renderer.default_size();
 
         let month_year = Row::<(), Renderer<B, Theme>>::new()
             .width(Length::Fill)
@@ -402,7 +399,7 @@ where
                     .push(
                         Container::new(
                             Row::new() // Left Month arrow
-                                .width(Length::Units(font_size as u16)),
+                                .width(Length::Fixed(font_size)),
                         )
                         .height(Length::Fill)
                         .max_height(font_size),
@@ -411,11 +408,11 @@ where
                         // Month
                         Text::new("")
                             .width(Length::Fill)
-                            .height(Length::Units(font_size as u16)),
+                            .height(Length::Fixed(font_size)),
                     )
                     .push(
                         // Right Month arrow
-                        Container::new(Row::new().width(Length::Units(font_size as u16)))
+                        Container::new(Row::new().width(Length::Fixed(font_size)))
                             .height(Length::Fill)
                             .max_height(font_size),
                     ),
@@ -426,7 +423,7 @@ where
                     .push(
                         Container::new(
                             Row::new() // Left Year arrow
-                                .width(Length::Units(font_size as u16)),
+                                .width(Length::Fixed(font_size)),
                         )
                         .height(Length::Fill)
                         .max_height(font_size),
@@ -435,11 +432,11 @@ where
                         // Year
                         Text::new("")
                             .width(Length::Fill)
-                            .height(Length::Units(font_size as u16)),
+                            .height(Length::Fixed(font_size)),
                     )
                     .push(
                         // Right Year arrow
-                        Container::new(Row::new().width(Length::Units(font_size as u16)))
+                        Container::new(Row::new().width(Length::Fixed(font_size)))
                             .height(Length::Fill)
                             .max_height(font_size),
                     ),
@@ -478,45 +475,36 @@ where
             .layout(renderer, &limits);
 
         col.move_to(Point::new(
-            col.bounds().x + f32::from(PADDING),
-            col.bounds().y + f32::from(PADDING),
+            col.bounds().x + PADDING,
+            col.bounds().y + PADDING,
         ));
 
         // Buttons
-        let cancel_limits = limits
-            .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
+        let cancel_limits =
+            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
         let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
 
-        let submit_limits = limits
-            .max_width(((col.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32);
+        let submit_limits =
+            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
         let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
 
         cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + f32::from(PADDING),
-            y: cancel_button.bounds().y
-                + col.bounds().height
-                + f32::from(PADDING)
-                + f32::from(SPACING),
+            x: cancel_button.bounds().x + PADDING,
+            y: cancel_button.bounds().y + col.bounds().height + PADDING + SPACING,
         });
 
         submit_button.move_to(Point {
             x: submit_button.bounds().x + col.bounds().width - submit_button.bounds().width
-                + f32::from(PADDING),
-            y: submit_button.bounds().y
-                + col.bounds().height
-                + f32::from(PADDING)
-                + f32::from(SPACING),
+                + PADDING,
+            y: submit_button.bounds().y + col.bounds().height + PADDING + SPACING,
         });
 
         let mut node = layout::Node::with_children(
             Size::new(
-                col.bounds().width + (2.0 * f32::from(PADDING)),
-                col.bounds().height
-                    + cancel_button.bounds().height
-                    + (2.0 * f32::from(PADDING))
-                    + f32::from(SPACING),
+                col.bounds().width + (2.0 * PADDING),
+                col.bounds().height + cancel_button.bounds().height + (2.0 * PADDING) + SPACING,
             ),
             vec![col, cancel_button, submit_button],
         );

@@ -35,11 +35,11 @@ use crate::{
     },
 };
 /// The padding around the elements.
-const PADDING: u16 = 10;
+const PADDING: f32 = 10.0;
 /// The spacing between the element.
-const SPACING: u16 = 15;
+const SPACING: f32 = 15.0;
 /// The spacing between the buttons.
-const BUTTON_SPACING: u16 = 5;
+const BUTTON_SPACING: f32 = 5.0;
 
 /// The step value of the keyboard change of the sat/value color values.
 const SAT_VALUE_STEP: f32 = 0.005;
@@ -524,9 +524,9 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
-            (600, 300)
+            (600.0, 300.0)
         } else {
-            (300, 600)
+            (300.0, 600.0)
         };
 
         let limits = Limits::new(Size::ZERO, bounds)
@@ -925,7 +925,7 @@ where
     let hex_text_limits = block2_limits;
     let mut hex_text = Row::<(), Renderer<B, Theme>>::new()
         .width(Length::Fill)
-        .height(Length::Units(renderer.default_size() + 2 * PADDING))
+        .height(Length::Fixed(renderer.default_size() + 2.0 * PADDING))
         .layout(renderer, &hex_text_limits);
 
     let block2_limits = block2_limits.shrink(Size::new(
@@ -975,15 +975,13 @@ where
     ));
 
     // Buttons
-    let cancel_limits = block2_limits.max_width(
-        ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
-    );
+    let cancel_limits = block2_limits
+        .max_width(((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0));
 
     let mut cancel_button = color_picker.cancel_button.layout(renderer, &cancel_limits);
 
-    let submit_limits = block2_limits.max_width(
-        ((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0) as u32,
-    );
+    let submit_limits = block2_limits
+        .max_width(((rgba_colors.bounds().width / 2.0) - f32::from(BUTTON_SPACING)).max(0.0));
 
     let mut submit_button = color_picker.submit_button.layout(renderer, &submit_limits);
 

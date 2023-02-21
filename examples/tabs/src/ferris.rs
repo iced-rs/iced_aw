@@ -8,16 +8,16 @@ use crate::{Icon, Message, Tab};
 
 #[derive(Debug, Clone)]
 pub enum FerrisMessage {
-    ImageWidthChanged(u16),
+    ImageWidthChanged(f32),
 }
 
 pub struct FerrisTab {
-    ferris_width: u16,
+    ferris_width: f32,
 }
 
 impl FerrisTab {
     pub fn new() -> Self {
-        FerrisTab { ferris_width: 100 }
+        FerrisTab { ferris_width: 100.0 }
     }
 
     pub fn update(&mut self, message: FerrisMessage) {
@@ -45,14 +45,14 @@ impl Tab for FerrisTab {
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
-                .push(Text::new(if self.ferris_width == 500 {
+                .push(Text::new(if self.ferris_width == 500.0 {
                     "Hugs!!!"
                 } else {
                     "Pull me closer!"
                 }))
                 .push(ferris(self.ferris_width))
                 .push(Slider::new(
-                    100..=500,
+                    100.0..=500.0,
                     self.ferris_width,
                     FerrisMessage::ImageWidthChanged,
                 )),
@@ -63,12 +63,12 @@ impl Tab for FerrisTab {
     }
 }
 
-fn ferris<'a>(width: u16) -> Container<'a, FerrisMessage> {
+fn ferris<'a>(width: f32) -> Container<'a, FerrisMessage> {
     Container::new(if cfg!(target_carch = "wasm32") {
         Image::new("images/ferris.png")
     } else {
         Image::new(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))
-            .width(Length::Units(width))
+            .width(Length::Fixed(width))
     })
     .width(Length::Fill)
     .center_x()
