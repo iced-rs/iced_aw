@@ -10,7 +10,7 @@ use iced_aw::quad;
 
 pub fn main() -> iced::Result {
     App::run(iced::Settings {
-        default_text_size: 15,
+        default_text_size: 15.0,
         window: iced::window::Settings {
             size: (800, 500),
             // position: iced::window::Position::Default,
@@ -469,7 +469,7 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
 
     let sld = MenuTree::new(row![
         "Slider",
-        horizontal_space(Length::Units(8)),
+        horizontal_space(Length::Fixed(8.0)),
         slider(0..=255, app.value, Message::ValueChange)
     ]);
 
