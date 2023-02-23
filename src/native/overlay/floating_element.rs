@@ -80,6 +80,22 @@ where
                 position.x - element.bounds().width - self.offset.x,
                 position.y - element.bounds().height - self.offset.y,
             )),
+            Anchor::North => element.move_to(Point::new(
+                position.x + self.offset.x - element.bounds().width / 2.0,
+                position.y + self.offset.y,
+            )),
+            Anchor::East => element.move_to(Point::new(
+                position.x - element.bounds().width - self.offset.x,
+                position.y - element.bounds().height / 2.0,
+            )),
+            Anchor::South => element.move_to(Point::new(
+                position.x + self.offset.x - element.bounds().width / 2.0,
+                position.y - element.bounds().height - self.offset.y,
+            )),
+            Anchor::West => element.move_to(Point::new(
+                position.x + self.offset.x,
+                position.y - element.bounds().height / 2.0,
+            )),
         }
 
         element

@@ -210,17 +210,22 @@ where
                 .overlay(&mut state.children[0], layout, renderer);
         }
 
-        let bounds = layout.bounds();
-        let position = match self.anchor {
-            Anchor::NorthWest => Point::new(0.0, 0.0),
-            Anchor::NorthEast => Point::new(bounds.width, 0.0),
-            Anchor::SouthWest => Point::new(0.0, bounds.height),
-            Anchor::SouthEast => Point::new(bounds.width, bounds.height),
-        };
-
-        let position = Point::new(bounds.x + position.x, bounds.y + position.y);
-
         if state.children.len() == 2 {
+            let bounds = layout.bounds();
+
+            let position = match self.anchor {
+                Anchor::NorthWest => Point::new(0.0, 0.0),
+                Anchor::NorthEast => Point::new(bounds.width, 0.0),
+                Anchor::SouthWest => Point::new(0.0, bounds.height),
+                Anchor::SouthEast => Point::new(bounds.width, bounds.height),
+                Anchor::North => Point::new(bounds.center_x(), 0.0),
+                Anchor::East => Point::new(bounds.width, bounds.center_y()),
+                Anchor::South => Point::new(bounds.center_x(), bounds.height),
+                Anchor::West => Point::new(0.0, bounds.center_y()),
+            };
+
+            let position = Point::new(bounds.x + position.x, bounds.y + position.y);
+
             Some(
                 FloatingElementOverlay::new(
                     &mut state.children[1],
