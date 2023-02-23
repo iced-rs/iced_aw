@@ -84,6 +84,7 @@ members = [
     "examples/color_picker",
     "examples/date_picker",
     "examples/floating_element",
+    "examples/floating_element_anchors",
     "examples/grid",
     "examples/modal",
     "examples/modal_component",
