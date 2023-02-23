@@ -36,7 +36,7 @@ pub enum Anchor {
     East,
 
     /// South [`Anchor`](Anchor) for positioning the
-    /// [`Button`](iced_native::widget::button::Button) on the south of the
+    /// [`Button`](iced_native::widget::button::Button) on the bottom of the
     /// underlying element.
     South,
 
