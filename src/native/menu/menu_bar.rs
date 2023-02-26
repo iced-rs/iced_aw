@@ -167,36 +167,34 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if tree.children.len() > self.menu_roots.len(){
+        if tree.children.len() > self.menu_roots.len() {
             tree.children.truncate(self.menu_roots.len())
         }
 
         tree.children
             .iter_mut()
             .zip(self.menu_roots.iter())
-            .for_each(|(t, root)|{
+            .for_each(|(t, root)| {
                 let flat = root
                     .flattern()
                     .iter()
-                    .map(|mt| mt.item.as_widget() )
+                    .map(|mt| mt.item.as_widget())
                     .collect::<Vec<_>>();
-                
+
                 t.diff_children(&flat);
             });
 
-        if tree.children.len() < self.menu_roots.len(){
-            let extended = self.menu_roots[tree.children.len()..]
-                .iter()
-                .map(|root| {
-                    let mut tree = Tree::empty();
-                    let flat = root
-                        .flattern()
-                        .iter()
-                        .map(|mt| Tree::new(mt.item.as_widget()) )
-                        .collect();
-                    tree.children = flat;
-                    tree
-                });
+        if tree.children.len() < self.menu_roots.len() {
+            let extended = self.menu_roots[tree.children.len()..].iter().map(|root| {
+                let mut tree = Tree::empty();
+                let flat = root
+                    .flattern()
+                    .iter()
+                    .map(|mt| Tree::new(mt.item.as_widget()))
+                    .collect();
+                tree.children = flat;
+                tree
+            });
             tree.children.extend(extended);
         }
     }
