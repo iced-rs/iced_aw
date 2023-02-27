@@ -161,6 +161,20 @@ Please take a look into our examples on how to use time pickers.
 Enable this widget with the feature `time_picker`.
 
 
+### Menu
+
+<center>
+
+![Menu showcase](./images/showcase/menu.gif)
+
+</center>
+
+Please take a look into our examples on how to use menus.
+
+Enable this widget with the feature `menu`.
+
+You might also want to enable the feature `quad` for drawing separators.
+
 
 ## Quickstart features
 
