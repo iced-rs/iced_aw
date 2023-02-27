@@ -168,7 +168,7 @@ where
 
     fn diff(&self, tree: &mut Tree) {
         if tree.children.len() > self.menu_roots.len() {
-            tree.children.truncate(self.menu_roots.len())
+            tree.children.truncate(self.menu_roots.len());
         }
 
         tree.children
