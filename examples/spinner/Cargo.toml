@@ -1,0 +1,14 @@
+[package]
+name = "spinner"
+version = "0.1.0"
+authors = [
+    "Iohann Rabeson <irabeson42@gmail.com>",
+]
+edition = "2021"
+publish = false
+
+[dependencies]
+iced_aw = { workspace = true, features = [
+    "spinner",
+] }
+iced.workspace = true

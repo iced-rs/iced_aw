@@ -31,6 +31,7 @@ selection_list = []
 split = []
 menu = []
 quad = []
+spinner = []
 
 default = [
     "badge",
@@ -95,7 +96,8 @@ members = [
     "examples/number_input",
     "examples/selection_list",
     "examples/split",
-    "examples/menu"
+    "examples/menu",
+    "examples/spinner"
 ]
 
 [workspace.dependencies.iced]

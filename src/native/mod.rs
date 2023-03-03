@@ -82,3 +82,9 @@ pub mod menu;
 
 #[cfg(feature = "quad")]
 pub mod quad;
+
+#[cfg(feature = "spinner")]
+pub mod spinner;
+
+#[cfg(feature = "spinner")]
+pub use spinner::Spinner;

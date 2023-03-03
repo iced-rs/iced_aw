@@ -78,3 +78,8 @@ pub use selection_list::SelectionList;
 pub mod split;
 #[cfg(feature = "split")]
 pub use split::Split;
+
+#[cfg(feature = "spinner")]
+pub mod spinner;
+#[cfg(feature = "spinner")]
+pub use spinner::Spinner;
