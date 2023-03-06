@@ -5,7 +5,7 @@ use iced::widget::{
 };
 use iced::{alignment, theme, Application, Color, Element, Length};
 
-use iced_aw::menu::{ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight};
+use iced_aw::menu::{CloseCondition, ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight};
 use iced_aw::quad;
 
 pub fn main() -> iced::Result {
@@ -178,7 +178,12 @@ impl Application for App {
         }
         .spacing(4.0)
         .bounds_expand(30)
-        .path_highlight(Some(PathHighlight::MenuActive));
+        .path_highlight(Some(PathHighlight::MenuActive))
+        .close_condition(CloseCondition {
+            leave: true,
+            click_outside: false,
+            click_inside: false,
+        });
 
         let r = row!(mb, horizontal_space(Length::Fill), pick_size_option)
             .padding([2, 8])

@@ -1,6 +1,6 @@
 //! A widget that handles menu trees
 
-use super::menu_inner::{ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
+use super::menu_inner::{CloseCondition, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
 use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
 use iced_native::widget::{tree, Tree};
@@ -55,6 +55,7 @@ where
     spacing: f32,
     padding: Padding,
     bounds_expand: u16,
+    close_condition: CloseCondition,
     item_width: ItemWidth,
     item_height: ItemHeight,
     path_highlight: Option<PathHighlight>,
@@ -78,6 +79,11 @@ where
             spacing: 0.0,
             padding: Padding::ZERO,
             bounds_expand: 15,
+            close_condition: CloseCondition {
+                leave: true,
+                click_outside: true,
+                click_inside: true,
+            },
             item_width: ItemWidth::Uniform(150),
             item_height: ItemHeight::Uniform(30),
             path_highlight: Some(PathHighlight::MenuActive),
@@ -122,6 +128,13 @@ where
     #[must_use]
     pub fn padding<P: Into<Padding>>(mut self, padding: P) -> Self {
         self.padding = padding.into();
+        self
+    }
+
+    /// [`CloseCondition`]
+    #[must_use]
+    pub fn close_condition(mut self, close_condition: CloseCondition) -> Self {
+        self.close_condition = close_condition;
         self
     }
 
@@ -358,6 +371,7 @@ where
                 tree,
                 menu_roots: &mut self.menu_roots,
                 bounds_expand: self.bounds_expand,
+                close_condition: self.close_condition,
                 item_width: self.item_width,
                 item_height: self.item_height,
                 bar_bounds: layout.bounds(),
