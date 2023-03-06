@@ -316,15 +316,15 @@ where
                 process_scroll_events(self, delta, viewport).merge(menu_status)
             }
 
-            Mouse(CursorMoved { position }) | Touch(FingerMoved { position, .. }) => {
-                process_overlay_events(self, viewport, position).merge(menu_status)
-            }
-
             Mouse(ButtonPressed(Left)) | Touch(FingerPressed { .. }) => {
                 let state = self.tree.state.downcast_mut::<MenuBarState>();
                 state.pressed = true;
                 state.cursor = cursor_position;
                 Captured
+            }
+
+            Mouse(CursorMoved { position }) | Touch(FingerMoved { position, .. }) => {
+                process_overlay_events(self, viewport, position).merge(menu_status)
             }
 
             Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. }) => {
@@ -355,6 +355,7 @@ where
                     menu_status
                 }
             }
+            
             _ => menu_status,
         }
     }
@@ -587,20 +588,20 @@ where
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
 
-    /* When overlay is running, cursor_position in any widget method will go negative
-    but I still want Widget::draw() to react to cursor movement */
-    state.cursor = position;
-
     let Some(active_root) = state.active_root else{
         if !menu.bar_bounds.contains(position){
             state.reset();
         }
         return Ignored;
     };
-
+    
     if state.pressed {
         return Ignored;
     }
+
+    /* When overlay is running, cursor_position in any widget method will go negative
+    but I still want Widget::draw() to react to cursor movement */
+    state.cursor = position;
 
     // remove invalid menus
     let mut prev_bounds = std::iter::once(menu.bar_bounds)
