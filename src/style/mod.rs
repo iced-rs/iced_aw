@@ -51,3 +51,8 @@ pub use split::SplitStyles;
 pub mod menu_bar;
 #[cfg(feature = "menu")]
 pub use menu_bar::MenuBarStyle;
+
+#[cfg(feature = "spinner")]
+pub mod spinner;
+#[cfg(feature = "spinner")]
+pub use spinner::SpinnerStyle;

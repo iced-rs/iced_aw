@@ -131,6 +131,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "quad")]
     pub use crate::native::quad;
+
+    #[doc(no_inline)]
+    #[cfg(feature = "spinner")]
+    pub use {crate::graphics::spinner, spinner::Spinner};
 }
 
 #[doc(no_inline)]
