@@ -355,7 +355,7 @@ where
                     menu_status
                 }
             }
-            
+
             _ => menu_status,
         }
     }
@@ -594,7 +594,7 @@ where
         }
         return Ignored;
     };
-    
+
     if state.pressed {
         return Ignored;
     }
