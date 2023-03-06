@@ -9,6 +9,19 @@ use iced_native::{
     Shell, Size,
 };
 
+/// The condition of when to close a menu
+#[derive(Debug, Clone, Copy)]
+pub struct CloseCondition {
+    /// Close menus when the cursor moves outside the check bounds
+    pub leave: bool,
+
+    /// Close menus when the cursor clicks outside the check bounds
+    pub click_outside: bool,
+
+    /// Close menus when the cursor clicks inside the check bounds
+    pub click_inside: bool,
+}
+
 /// The width of an item
 #[derive(Debug, Clone, Copy)]
 pub enum ItemWidth {
@@ -74,20 +87,12 @@ impl MenuBounds {
         Renderer: renderer::Renderer,
     {
         let children_size = get_children_size(menu_tree, item_width, item_height);
-
-        let (children_position, mask) =
+        let children_position =
             adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
-
         let children_bounds = Rectangle::new(children_position, children_size);
-
-        let mut padding = [0; 4];
-        padding.iter_mut().enumerate().for_each(|(i, p)| {
-            *p = mask[i] * bounds_expand;
-        });
-
         let child_positions = get_child_positions(menu_tree, item_height);
+        let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
 
-        let check_bounds = pad_rectangle(children_bounds, padding.into());
         Self {
             child_positions,
             children_bounds,
@@ -241,6 +246,7 @@ where
     pub(super) tree: &'b mut Tree,
     pub(super) menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
     pub(super) bounds_expand: u16,
+    pub(super) close_condition: CloseCondition,
     pub(super) item_width: ItemWidth,
     pub(super) item_height: ItemHeight,
     pub(super) bar_bounds: Rectangle,
@@ -317,6 +323,7 @@ where
             Mouse(ButtonPressed(Left)) | Touch(FingerPressed { .. }) => {
                 let state = self.tree.state.downcast_mut::<MenuBarState>();
                 state.pressed = true;
+                state.cursor = cursor_position;
                 Captured
             }
 
@@ -324,9 +331,25 @@ where
                 let state = self.tree.state.downcast_mut::<MenuBarState>();
                 state.pressed = false;
 
+                if state.cursor.distance(cursor_position) < 2.0 {
+                    let is_inside = state
+                        .menu_states
+                        .iter()
+                        .any(|ms| ms.menu_bounds.check_bounds.contains(cursor_position));
+
+                    if self.close_condition.click_inside && is_inside {
+                        state.reset();
+                        return Captured;
+                    }
+
+                    if self.close_condition.click_outside && !is_inside {
+                        state.reset();
+                        return Captured;
+                    }
+                }
+
                 if self.bar_bounds.contains(cursor_position) {
                     state.reset();
-                    state.cursor = cursor_position;
                     Captured
                 } else {
                     menu_status
@@ -553,10 +576,10 @@ where
 {
     use event::Status::{Captured, Ignored};
     /*
-    if no active root  || pressed:
+    if no active root || pressed:
         return
     else:
-        remove invalid menu
+        remove invalid menus
         update active item
         if active item is a menu:
             add menu
@@ -580,13 +603,38 @@ where
     }
 
     // remove invalid menus
-    for i in (0..state.menu_states.len()).rev() {
-        let mb = &state.menu_states[i].menu_bounds;
+    let mut prev_bounds = std::iter::once(menu.bar_bounds)
+        .chain(
+            state.menu_states[..state.menu_states.len().saturating_sub(1)]
+                .iter()
+                .map(|ms| ms.menu_bounds.children_bounds),
+        )
+        .collect::<Vec<_>>();
 
-        if mb.parent_bounds.contains(position) || mb.check_bounds.contains(position) {
-            break;
+    if menu.close_condition.leave {
+        for i in (0..state.menu_states.len()).rev() {
+            let mb = &state.menu_states[i].menu_bounds;
+
+            if (mb.parent_bounds.contains(position) || mb.check_bounds.contains(position))
+                && prev_bounds.iter().all(|pvb| !pvb.contains(position))
+            {
+                break;
+            }
+            prev_bounds.pop();
+            state.menu_states.pop();
         }
-        state.menu_states.pop();
+    } else {
+        for i in (0..state.menu_states.len()).rev() {
+            let mb = &state.menu_states[i].menu_bounds;
+
+            if mb.parent_bounds.contains(position)
+                || prev_bounds.iter().all(|pvb| !pvb.contains(position))
+            {
+                break;
+            }
+            prev_bounds.pop();
+            state.menu_states.pop();
+        }
     }
 
     // get indices
@@ -613,9 +661,13 @@ where
     let last_menu_bounds = &last_menu_state.menu_bounds;
     let last_parent_bounds = last_menu_bounds.parent_bounds;
     let last_child_bounds = last_menu_bounds.children_bounds;
+    let last_check_bounds = last_menu_bounds.check_bounds;
 
-    if last_parent_bounds.contains(position) {
-        // cursor is in the parent part
+    if last_parent_bounds.contains(position)
+    // cursor is in the parent part
+    || !last_check_bounds.contains(position)
+    // cursor is outside
+    {
         last_menu_state.index = None;
         return Captured;
     }
@@ -625,7 +677,6 @@ where
     let height_diff = (position.y - (last_child_bounds.y + last_menu_state.scroll_offset))
         .clamp(0.0, last_child_bounds.height - 0.001);
 
-    // get active menu
     let active_menu_root = &menu.menu_roots[active_root];
 
     let active_menu = indices[0..indices.len().saturating_sub(1)]
@@ -634,7 +685,6 @@ where
             &mt.children[i.expect("missing active child index in menu")]
         });
 
-    // get new index
     let new_index = match menu.item_height {
         ItemHeight::Uniform(u) => (height_diff / f32::from(u)).floor() as usize,
         ItemHeight::Static(s) => {
@@ -696,7 +746,7 @@ fn adaptive_open_direction(
     children_size: Size,
     bounds: Size,
     setttings: [bool; 4],
-) -> (Point, [u16; 4]) {
+) -> Point {
     /*
     Imagine there're two sticks, parent and child
     parent: o-----o
@@ -728,34 +778,27 @@ fn adaptive_open_direction(
     let [horizontal, vertical, horizontal_overlap, vertical_overlap] = setttings;
 
     let calc_adaptive = |parent_pos, parent_size, child_size, max_size, on, overlap| {
-        let mut padding_mask = [1, 1];
-
         if on {
             let space_left = parent_pos;
             let space_right = max_size - parent_pos - parent_size;
 
             if space_left > space_right && child_size > space_right {
-                let value = if overlap {
+                return if overlap {
                     parent_pos - child_size + parent_size
                 } else {
-                    padding_mask[1] = 0;
                     parent_pos - child_size
                 };
-                return (value, padding_mask);
             }
         }
 
-        let value = if overlap {
+        if overlap {
             parent_pos
         } else {
-            padding_mask[0] = 0;
             parent_pos + parent_size
-        };
-
-        (value, padding_mask)
+        }
     };
 
-    let (x, px) = calc_adaptive(
+    let x = calc_adaptive(
         parent_bounds.x,
         parent_bounds.width,
         children_size.width,
@@ -763,7 +806,7 @@ fn adaptive_open_direction(
         horizontal,
         horizontal_overlap,
     );
-    let (y, py) = calc_adaptive(
+    let y = calc_adaptive(
         parent_bounds.y,
         parent_bounds.height,
         children_size.height,
@@ -772,9 +815,7 @@ fn adaptive_open_direction(
         vertical_overlap,
     );
 
-    let padding_mask = [py[0], px[1], py[1], px[0]];
-
-    ([x, y].into(), padding_mask)
+    [x, y].into()
 }
 
 fn process_scroll_events<Message, Renderer>(
@@ -807,10 +848,7 @@ where
     if state.menu_states.is_empty() {
         return Ignored;
     } else if state.menu_states.len() == 1 {
-        let last_ms = state
-            .menu_states
-            .last_mut()
-            .expect("missing menu state item");
+        let last_ms = &mut state.menu_states[0];
         let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
         last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
     } else {

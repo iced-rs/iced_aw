@@ -59,5 +59,5 @@ mod menu_tree;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
 pub use menu_bar::MenuBar;
-pub use menu_inner::{ItemHeight, ItemWidth, PathHighlight};
+pub use menu_inner::{CloseCondition, ItemHeight, ItemWidth, PathHighlight};
 pub use menu_tree::MenuTree;
