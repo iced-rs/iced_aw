@@ -8,6 +8,7 @@ use iced_native::widget::Tree;
 use iced_native::{renderer, Layout, Widget};
 use iced_native::{window, Clipboard, Color, Element, Event, Length, Point, Rectangle, Shell};
 use iced_native::{Size, Vector};
+use std::marker::PhantomData;
 use std::time::{Duration, Instant};
 
 use crate::style::spinner::StyleSheet;
@@ -25,8 +26,10 @@ where
     height: Length,
     /// The rate of the [`Spinner`](Spinner).
     rate: Duration,
-    /// The style of the [`Spinner`](Spinner).
-    style: <Renderer::Theme as StyleSheet>::Style,
+    /// The radius of the spinning circle.
+    circle_radius: f32,
+    #[allow(missing_docs)]
+    renderer: PhantomData<Renderer>,
 }
 
 impl<Renderer> Default for Spinner<Renderer>
@@ -39,7 +42,8 @@ where
             width: Length::Fixed(20.0),
             height: Length::Fixed(20.0),
             rate: Duration::from_secs_f32(1.0),
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            circle_radius: 2.0,
+            renderer: PhantomData::default(),
         }
     }
 }
@@ -63,6 +67,12 @@ where
     /// Sets the height of the [`Spinner`](Spinner).
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
+        self
+    }
+
+    /// Sets the circle radius of the spinning circle.
+    pub fn circle_radius(mut self, radius: f32) -> Self {
+        self.circle_radius = radius;
         self
     }
 }
@@ -124,8 +134,8 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
-        _style: &Style,
+        _theme: &Renderer::Theme,
+        style: &Style,
         layout: Layout<'_>,
         _cursor_position: Point,
         _viewport: &Rectangle,
@@ -141,22 +151,16 @@ where
         } else {
             bounds.height
         } / 2.0;
-        let appearance = theme.active(self.style);
         let state = state.state.downcast_ref::<SpinnerState>();
         let center = bounds.center();
-        let distance_from_center = size - appearance.padding - appearance.circle_radius;
+        let distance_from_center = size - self.circle_radius;
         let (y, x) = (state.t * std::f32::consts::PI * 2.0).sin_cos();
         let position = Vector::new(
-            center.x + x * distance_from_center - appearance.circle_radius,
-            center.y + y * distance_from_center - appearance.circle_radius,
+            center.x + x * distance_from_center - self.circle_radius,
+            center.y + y * distance_from_center - self.circle_radius,
         );
 
-        fill_circle(
-            renderer,
-            position,
-            appearance.circle_radius,
-            appearance.circle_color,
-        );
+        fill_circle(renderer, position, self.circle_radius, style.text_color);
     }
 
     fn tag(&self) -> Tag {

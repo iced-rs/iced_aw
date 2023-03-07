@@ -2,40 +2,35 @@
 //!
 //! *This API requires the following crate features to be activated: spinner*
 
-use iced_native::Color;
 use iced_style::Theme;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[allow(missing_docs)]
-pub struct SpinnerStyle;
+/// The style of a [`Spinner`](crate::native::spinner::Spinner).
+#[derive(Default)]
+#[allow(missing_debug_implementations)]
+pub enum SpinnerStyle {
+    /// The default style
+    #[default]
+    Default,
+    /// Custom style
+    Custom(Box<dyn StyleSheet<Style = Theme>>),
+}
 
 /// The appearance of a [`Spinner`](crate::native::spinner::Spinner).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
-    /// The radius of the spinning circle.
-    pub circle_radius: f32,
-    /// The color of the spinning circle.
-    pub circle_color: Color,
-    /// The padding of the spinning circle.
-    pub padding: f32,
-}
+pub struct Appearance {}
 
 /// A set of rules that dictate the style of a [`Spinner`](crate::native::spinner::Spinner).
 pub trait StyleSheet {
     /// Style for the trait to use.
-    type Style: Default + Copy;
+    type Style: Default;
     /// The normal appearance of a [`Spinner`](crate::native::spinner::Spinner).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn appearance(&self, style: &Self::Style) -> Appearance;
 }
 
 impl StyleSheet for Theme {
     type Style = SpinnerStyle;
 
-    fn active(&self, _style: Self::Style) -> Appearance {
-        Appearance {
-            circle_color: self.palette().text,
-            circle_radius: 2.0,
-            padding: 0.0,
-        }
+    fn appearance(&self, _style: &Self::Style) -> Appearance {
+        Appearance {}
     }
 }
