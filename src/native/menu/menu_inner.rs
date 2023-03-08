@@ -59,7 +59,7 @@ pub enum PathHighlight {
     MenuActive,
 }
 
-/// X+ goes right and Y+ goes down, vice versa
+/// X+ goes right and Y+ goes down
 #[derive(Debug, Clone, Copy)]
 pub(super) enum Direction {
     Positive,
@@ -69,12 +69,15 @@ pub(super) enum Direction {
 /// Adaptive open direction
 #[derive(Debug)]
 struct Aod {
+    // whether or not to use aod
     horizontal: bool,
     vertical: bool,
 
+    // whether or not to use overlap
     horizontal_overlap: bool,
     vertical_overlap: bool,
 
+    // default direction
     horizontal_direction: Direction,
     vertical_direction: Direction,
 }
