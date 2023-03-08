@@ -1,6 +1,8 @@
 //! A widget that handles menu trees
 
-use super::menu_inner::{CloseCondition, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight};
+use super::menu_inner::{
+    CloseCondition, Direction, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight,
+};
 use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
 use iced_native::widget::{tree, Tree};
@@ -14,6 +16,8 @@ pub(super) struct MenuBarState {
     pub(super) cursor: Point,
     pub(super) open: bool,
     pub(super) active_root: Option<usize>,
+    pub(super) horizontal_direction: Direction,
+    pub(super) vertical_direction: Direction,
     pub(super) menu_states: Vec<MenuState>,
 }
 impl MenuBarState {
@@ -37,6 +41,8 @@ impl Default for MenuBarState {
             cursor: Point::new(-0.5, -0.5),
             open: false,
             active_root: None,
+            horizontal_direction: Direction::Positive,
+            vertical_direction: Direction::Positive,
             menu_states: Vec::new(),
         }
     }

@@ -59,6 +59,135 @@ pub enum PathHighlight {
     MenuActive,
 }
 
+/// X+ goes right and Y+ goes down
+#[derive(Debug, Clone, Copy)]
+pub(super) enum Direction {
+    Positive,
+    Negative,
+}
+
+/// Adaptive open direction
+#[derive(Debug)]
+struct Aod {
+    // whether or not to use aod
+    horizontal: bool,
+    vertical: bool,
+
+    // whether or not to use overlap
+    horizontal_overlap: bool,
+    vertical_overlap: bool,
+
+    // default direction
+    horizontal_direction: Direction,
+    vertical_direction: Direction,
+}
+impl Aod {
+    fn adaptive(
+        parent_pos: f32,
+        parent_size: f32,
+        child_size: f32,
+        max_size: f32,
+        on: bool,
+        overlap: bool,
+        direction: Direction,
+    ) -> f32 {
+        /*
+        Imagine there're two sticks, parent and child
+        parent: o-----o
+        child:  o----------o
+
+        Now we align the child to the parent in one dimension
+        There are 4 possibilities:
+
+        1. to the right
+                    o-----oo----------o
+
+        2. to the right but allow overlaping
+                    o-----o
+                    o----------o
+
+        3. to the left
+        o----------oo-----o
+
+        4. to the left but allow overlaping
+                    o-----o
+               o----------o
+
+        The child goes to the default direction by default,
+        if the space on the default direction runs out it goes to the the other,
+        whether to use overlap is the caller's decision
+
+        This can be applied to any direction
+        */
+
+        match direction {
+            Direction::Positive => {
+                let space_negative = parent_pos;
+                let space_positive = max_size - parent_pos - parent_size;
+
+                if overlap {
+                    let overshoot = child_size - parent_size;
+                    if on && space_negative > space_positive && overshoot > space_positive {
+                        parent_pos - overshoot
+                    } else {
+                        parent_pos
+                    }
+                } else {
+                    let overshoot = child_size;
+                    if on && space_negative > space_positive && overshoot > space_positive {
+                        parent_pos - overshoot
+                    } else {
+                        parent_pos + parent_size
+                    }
+                }
+            }
+            Direction::Negative => {
+                let space_positive = parent_pos;
+                let space_negative = max_size - parent_pos - parent_size;
+
+                if overlap {
+                    let overshoot = child_size - parent_size;
+                    if on && space_negative > space_positive && overshoot > space_positive {
+                        parent_pos
+                    } else {
+                        parent_pos - overshoot
+                    }
+                } else {
+                    let overshoot = child_size;
+                    if on && space_negative > space_positive && overshoot > space_positive {
+                        parent_pos + parent_size
+                    } else {
+                        parent_pos - overshoot
+                    }
+                }
+            }
+        }
+    }
+
+    fn point(&self, parent_bounds: Rectangle, children_size: Size, bounds: Size) -> Point {
+        let x = Self::adaptive(
+            parent_bounds.x,
+            parent_bounds.width,
+            children_size.width,
+            bounds.width,
+            self.horizontal,
+            self.horizontal_overlap,
+            self.horizontal_direction,
+        );
+        let y = Self::adaptive(
+            parent_bounds.y,
+            parent_bounds.height,
+            children_size.height,
+            bounds.height,
+            self.vertical,
+            self.vertical_overlap,
+            self.vertical_direction,
+        );
+
+        [x, y].into()
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct MenuSlice {
     start_index: usize,
@@ -79,7 +208,7 @@ impl MenuBounds {
         item_width: ItemWidth,
         item_height: ItemHeight,
         viewport: Size,
-        aod_settings: [bool; 4],
+        aod: Aod,
         bounds_expand: u16,
         parent_bounds: Rectangle,
     ) -> Self
@@ -87,8 +216,7 @@ impl MenuBounds {
         Renderer: renderer::Renderer,
     {
         let children_size = get_children_size(menu_tree, item_width, item_height);
-        let children_position =
-            adaptive_open_direction(parent_bounds, children_size, viewport, aod_settings);
+        let children_position = aod.point(parent_bounds, children_size, viewport);
         let children_bounds = Rectangle::new(children_position, children_size);
         let child_positions = get_child_positions(menu_tree, item_height);
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
@@ -390,6 +518,13 @@ where
                     PathHighlight::MenuActive => i < state.menu_states.len() - 1,
                 });
 
+                // react only to the last menu
+                let cursor_position = if i == state.menu_states.len() - 1 {
+                    cursor_position
+                } else {
+                    [-1.0; 2].into()
+                };
+
                 let draw_menu = |r: &mut Renderer| {
                     // calc slice
                     let slice = ms.slice(layout.bounds().size(), self.item_height, menu_root);
@@ -488,12 +623,30 @@ fn init_root_menu<Message, Renderer>(
         }
 
         if root_bounds.contains(position) {
+            let view_center = viewport.width * 0.5;
+            let rb_center = root_bounds.center_x();
+
+            state.horizontal_direction = if rb_center > view_center {
+                Direction::Negative
+            } else {
+                Direction::Positive
+            };
+
+            let aod = Aod {
+                horizontal: true,
+                vertical: true,
+                horizontal_overlap: true,
+                vertical_overlap: false,
+                horizontal_direction: state.horizontal_direction,
+                vertical_direction: state.vertical_direction,
+            };
+
             let menu_bounds = MenuBounds::new(
                 mt,
                 menu.item_width,
                 menu.item_height,
                 viewport,
-                [false, true, true, false],
+                aod,
                 menu.bounds_expand,
                 root_bounds,
             );
@@ -616,8 +769,10 @@ where
         for i in (0..state.menu_states.len()).rev() {
             let mb = &state.menu_states[i].menu_bounds;
 
-            if (mb.parent_bounds.contains(position) || mb.check_bounds.contains(position))
-                && prev_bounds.iter().all(|pvb| !pvb.contains(position))
+            if mb.parent_bounds.contains(position)
+                || mb.children_bounds.contains(position)
+                || (mb.check_bounds.contains(position)
+                    && prev_bounds.iter().all(|pvb| !pvb.contains(position)))
             {
                 break;
             }
@@ -629,6 +784,7 @@ where
             let mb = &state.menu_states[i].menu_bounds;
 
             if mb.parent_bounds.contains(position)
+                || mb.children_bounds.contains(position)
                 || prev_bounds.iter().all(|pvb| !pvb.contains(position))
             {
                 break;
@@ -661,12 +817,11 @@ where
 
     let last_menu_bounds = &last_menu_state.menu_bounds;
     let last_parent_bounds = last_menu_bounds.parent_bounds;
-    let last_child_bounds = last_menu_bounds.children_bounds;
-    let last_check_bounds = last_menu_bounds.check_bounds;
+    let last_children_bounds = last_menu_bounds.children_bounds;
 
     if last_parent_bounds.contains(position)
     // cursor is in the parent part
-    || !last_check_bounds.contains(position)
+    || !last_children_bounds.contains(position)
     // cursor is outside
     {
         last_menu_state.index = None;
@@ -675,8 +830,8 @@ where
     // cursor is in the children part
 
     // calc new index
-    let height_diff = (position.y - (last_child_bounds.y + last_menu_state.scroll_offset))
-        .clamp(0.0, last_child_bounds.height - 0.001);
+    let height_diff = (position.y - (last_children_bounds.y + last_menu_state.scroll_offset))
+        .clamp(0.0, last_children_bounds.height - 0.001);
 
     let active_menu_root = &menu.menu_roots[active_root];
 
@@ -710,7 +865,6 @@ where
 
     // add new menu if the new item is a menu
     if !item.children.is_empty() {
-        // get new item bounds
         let item_position = Point::new(
             0.0,
             last_menu_bounds.child_positions[new_index] + last_menu_state.scroll_offset,
@@ -724,6 +878,15 @@ where
         let item_bounds = Rectangle::new(item_position, item_size)
             + (last_menu_bounds.children_bounds.position() - Point::ORIGIN);
 
+        let aod = Aod {
+            horizontal: true,
+            vertical: true,
+            horizontal_overlap: false,
+            vertical_overlap: true,
+            horizontal_direction: state.horizontal_direction,
+            vertical_direction: state.vertical_direction,
+        };
+
         state.menu_states.push(MenuState {
             index: None,
             scroll_offset: 0.0,
@@ -732,7 +895,7 @@ where
                 menu.item_width,
                 menu.item_height,
                 viewport,
-                [true, true, false, true],
+                aod,
                 menu.bounds_expand,
                 item_bounds,
             ),
@@ -740,83 +903,6 @@ where
     }
 
     Captured
-}
-
-fn adaptive_open_direction(
-    parent_bounds: Rectangle,
-    children_size: Size,
-    bounds: Size,
-    setttings: [bool; 4],
-) -> Point {
-    /*
-    Imagine there're two sticks, parent and child
-    parent: o-----o
-    child:  o----------o
-
-    Now we align the child to the parent in one dimension
-    There are 4 possibilities:
-
-    1. to the right
-                o-----oo----------o
-
-    2. to the right but allow overlaping
-                o-----o
-                o----------o
-
-    3. to the left
-    o----------oo-----o
-
-    4. to the left but allow overlaping
-                o-----o
-           o----------o
-
-    The child goes to the right by default, if the right space runs out
-    it goes to the left, whether to use overlap is the caller's decision
-
-    This can be applied to any direction
-    */
-
-    let [horizontal, vertical, horizontal_overlap, vertical_overlap] = setttings;
-
-    let calc_adaptive = |parent_pos, parent_size, child_size, max_size, on, overlap| {
-        if on {
-            let space_left = parent_pos;
-            let space_right = max_size - parent_pos - parent_size;
-
-            if space_left > space_right && child_size > space_right {
-                return if overlap {
-                    parent_pos - child_size + parent_size
-                } else {
-                    parent_pos - child_size
-                };
-            }
-        }
-
-        if overlap {
-            parent_pos
-        } else {
-            parent_pos + parent_size
-        }
-    };
-
-    let x = calc_adaptive(
-        parent_bounds.x,
-        parent_bounds.width,
-        children_size.width,
-        bounds.width,
-        horizontal,
-        horizontal_overlap,
-    );
-    let y = calc_adaptive(
-        parent_bounds.y,
-        parent_bounds.height,
-        children_size.height,
-        bounds.height,
-        vertical,
-        vertical_overlap,
-    );
-
-    [x, y].into()
 }
 
 fn process_scroll_events<Message, Renderer>(
