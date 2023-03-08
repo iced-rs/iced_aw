@@ -48,7 +48,8 @@ enum Message {
     CheckChange(bool),
     ToggleChange(bool),
     ColorChange(Color),
-    Flip,
+    FlipHorizontal,
+    FlipVertical,
     ThemeChange(bool),
     TextChange(String),
     SizeOption(SizeOption),
@@ -60,7 +61,8 @@ struct App {
     check: bool,
     toggle: bool,
     theme: iced::Theme,
-    flip: bool,
+    flip_h: bool,
+    flip_v: bool,
     dark_mode: bool,
     text: String,
     size_option: SizeOption,
@@ -84,7 +86,8 @@ impl Application for App {
                 check: false,
                 toggle: false,
                 theme,
-                flip: false,
+                flip_h: false,
+                flip_v: false,
                 dark_mode: false,
                 text: "Text Input".into(),
                 size_option: SizeOption::Static,
@@ -125,7 +128,8 @@ impl Application for App {
                 });
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
             }
-            Message::Flip => self.flip = !self.flip,
+            Message::FlipHorizontal => self.flip_h = !self.flip_h,
+            Message::FlipVertical => self.flip_v = !self.flip_v,
             Message::ThemeChange(b) => {
                 self.dark_mode = b;
                 let primary = self.theme.palette().primary;
@@ -185,9 +189,13 @@ impl Application for App {
             click_inside: false,
         });
 
-        let r = row!(mb, horizontal_space(Length::Fill), pick_size_option)
-            .padding([2, 8])
-            .align_items(alignment::Alignment::Center);
+        let r = if self.flip_h {
+            row!(pick_size_option, horizontal_space(Length::Fill), mb,)
+        } else {
+            row!(mb, horizontal_space(Length::Fill), pick_size_option)
+        }
+        .padding([2, 8])
+        .align_items(alignment::Alignment::Center);
 
         let top_bar_style: fn(&iced::Theme) -> container::Appearance =
             |_theme| container::Appearance {
@@ -205,7 +213,7 @@ impl Application for App {
             .height(Length::Fill)
             .style(back_style);
 
-        let c = if self.flip {
+        let c = if self.flip_v {
             col![back, top_bar,]
         } else {
             col![top_bar, back,]
@@ -526,10 +534,16 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
         debug_button("Controls"),
         vec![
             MenuTree::new(
-                labeled_button("Flip", Message::Flip)
+                labeled_button("Flip Horizontal", Message::FlipHorizontal)
                     .width(Length::Fill)
                     .height(Length::Fill),
             ),
+            MenuTree::new(
+                labeled_button("Flip Vertical", Message::FlipVertical)
+                    .width(Length::Fill)
+                    .height(Length::Fill),
+            ),
+            separator(),
             MenuTree::new(
                 row![toggler(
                     Some("Dark Mode".into()),
