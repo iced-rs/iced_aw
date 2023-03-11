@@ -474,7 +474,8 @@ where
 
         match event {
             Mouse(WheelScrolled { delta }) => {
-                process_scroll_events(self, delta, viewport_size, overlay_offset).merge(menu_status)
+                process_scroll_events(self, delta, overlay_cursor, viewport_size, overlay_offset)
+                    .merge(menu_status)
             }
 
             Mouse(ButtonPressed(Left)) | Touch(FingerPressed { .. }) => {
@@ -967,6 +968,7 @@ where
 fn process_scroll_events<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
     delta: mouse::ScrollDelta,
+    overlay_cursor: Point,
     viewport_size: Size,
     overlay_offset: Vector,
 ) -> event::Status
@@ -999,6 +1001,11 @@ where
         return Ignored;
     } else if state.menu_states.len() == 1 {
         let last_ms = &mut state.menu_states[0];
+
+        if !last_ms.menu_bounds.children_bounds.contains(overlay_cursor) {
+            return Captured;
+        }
+
         let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport_size);
         last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
     } else {
@@ -1007,11 +1014,27 @@ where
         let last_two = &mut state.menu_states[max_index - 1..=max_index];
 
         if last_two[1].index.is_some() {
+            if !last_two[1]
+                .menu_bounds
+                .children_bounds
+                .contains(overlay_cursor)
+            {
+                return Captured;
+            }
+
             // scroll the last one
             let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport_size);
             last_two[1].scroll_offset =
                 (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
         } else {
+            if !last_two[0]
+                .menu_bounds
+                .children_bounds
+                .contains(overlay_cursor)
+            {
+                return Captured;
+            }
+
             // scroll the second last one
             let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport_size);
             let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
