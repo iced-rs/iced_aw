@@ -542,15 +542,15 @@ where
         layout: layout::Layout<'_>,
         view_cursor: Point,
     ) {
+        let state = self.tree.state.downcast_ref::<MenuBarState>();
+        let Some(active_root) = state.active_root else{ return; };
+
         let viewport = layout.bounds();
         let viewport_size = viewport.size();
         let overlay_offset = Point::ORIGIN - viewport.position();
         let render_bounds = Rectangle::new(Point::ORIGIN, viewport.size());
 
         let styling = theme.appearance(self.style);
-
-        let state = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(active_root) = state.active_root else{ return; };
 
         let tree = &self.tree.children[active_root].children;
         let root = &self.menu_roots[active_root];
