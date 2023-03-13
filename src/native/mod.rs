@@ -22,6 +22,12 @@ pub mod color_picker;
 #[cfg(feature = "color_picker")]
 pub use color_picker::ColorPicker;
 
+#[cfg(feature = "cupertino")]
+/// Cupertino-style widgets
+pub mod cupertino;
+#[cfg(feature = "cupertino")]
+pub use crate::native::cupertino::cupertino_spinner::CupertinoSpinner;
+
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
 #[cfg(feature = "date_picker")]
@@ -88,3 +94,4 @@ pub mod spinner;
 
 #[cfg(feature = "spinner")]
 pub use spinner::Spinner;
+
