@@ -16,6 +16,7 @@ badge = []
 card = []
 date_picker = ["chrono", "lazy_static", "icon_text"]
 color_picker = ["icon_text", "iced_graphics/canvas"]
+cupertino = ["iced_graphics/canvas", "time"]
 floating_element = []
 grid = []
 glow = [] # TODO
@@ -55,6 +56,7 @@ default = [
 
 [dependencies]
 num-traits = { version = "0.2.15", optional = true }
+time = { version = "0.3.5", features = ["local-offset"], optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 chrono = { version = "0.4.23", optional = true }
@@ -83,6 +85,7 @@ members = [
     "examples/badge",
     "examples/card",
     "examples/color_picker",
+    "examples/cupertino/cupertino_spinner",
     "examples/date_picker",
     "examples/floating_element",
     "examples/floating_element_anchors",
@@ -108,3 +111,4 @@ version = "0.8.0"
 [workspace.dependencies.iced_aw]
 path = "./"
 default-features = false
+

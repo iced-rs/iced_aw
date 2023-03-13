@@ -1,0 +1,12 @@
+[package]
+name    = "cupertino-spinner"
+version = "0.1.0"
+authors = ["Brett Byler <bbyler@protonmail.com>"]
+edition = "2021"
+publish = false
+
+[dependencies]
+iced = { version = "0.8.0", features = ["canvas", "debug", "tokio"] }
+iced_aw = { path = "../../../", features = ["cupertino"] }
+tokio = { version = "1.26.0", features = ["time"] }
+

@@ -1,10 +1,7 @@
 use iced::widget::button;
 use iced::widget::button::Appearance;
-use iced::{
-    theme,
-    widget::{Button, Column, Container, Scrollable, Text},
-    Element, Length, Sandbox, Settings, Theme,
-};
+use iced::{theme, Element, Length, Sandbox, Settings, Theme,
+           widget::{Button, Column, Container, Scrollable, Text}};
 
 use iced_aw::floating_element::{self, FloatingElement};
 use iced_aw::{Icon, ICON_FONT};
@@ -72,10 +69,9 @@ impl Sandbox for FloatingElementExample {
                 ))))
                 .into()
             },
-        )
-        .anchor(floating_element::Anchor::SouthEast)
-        .offset(20.0)
-        .hide(false);
+        ).anchor(floating_element::Anchor::SouthEast)
+            .offset(20.0)
+            .hide(false);
 
         Container::new(content)
             .width(Length::Fill)

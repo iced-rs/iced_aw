@@ -1,8 +1,5 @@
-use iced::{
-    alignment::{Horizontal, Vertical},
-    widget::{Button, Column, Container, Row, Text, TextInput},
-    Alignment, Element, Length,
-};
+use iced::{Alignment, Element, Length, alignment::{Horizontal, Vertical},
+           widget::{Button, Column, Container, Row, Text, TextInput}};
 use iced_aw::tab_bar::TabLabel;
 
 use crate::{Icon, Message, Tab};
@@ -77,22 +74,19 @@ impl Tab for LoginTab {
                         .push(
                             Button::new(
                                 Text::new("Clear").horizontal_alignment(Horizontal::Center),
-                            )
-                            .width(Length::Fill)
-                            .on_press(LoginMessage::ClearPressed),
+                            ).width(Length::Fill)
+                                .on_press(LoginMessage::ClearPressed),
                         )
                         .push(
                             Button::new(
                                 Text::new("Login").horizontal_alignment(Horizontal::Center),
-                            )
-                            .width(Length::Fill)
-                            .on_press(LoginMessage::LoginPressed),
+                            ).width(Length::Fill)
+                                .on_press(LoginMessage::LoginPressed),
                         ),
                 ),
-        )
-        .align_x(Horizontal::Center)
-        .align_y(Vertical::Center)
-        .into();
+        ).align_x(Horizontal::Center)
+            .align_y(Vertical::Center)
+            .into();
 
         content.map(Message::Login)
     }

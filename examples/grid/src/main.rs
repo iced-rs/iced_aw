@@ -1,8 +1,5 @@
-use iced::{
-    theme,
-    widget::{Button, Column, Container, Scrollable, Text},
-    Alignment, Color, Element, Length, Sandbox, Settings,
-};
+use iced::{theme, Alignment, Color, Element, Length, Sandbox, Settings,
+           widget::{Button, Column, Container, Scrollable, Text}};
 
 use iced_aw::Grid;
 

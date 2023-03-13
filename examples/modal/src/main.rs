@@ -1,8 +1,5 @@
-use iced::{
-    alignment::Horizontal,
-    widget::{Button, Container, Row, Text},
-    Alignment, Element, Length, Sandbox, Settings,
-};
+use iced::{Alignment, Element, Length, Sandbox, Settings, alignment::Horizontal,
+           widget::{Button, Container, Row, Text}};
 
 use iced_aw::{Card, Modal};
 
@@ -90,9 +87,8 @@ impl Sandbox for ModalExample {
             //.width(Length::Shrink)
             .on_close(Message::CloseModal)
             .into()
-        })
-        .backdrop(Message::CloseModal)
-        .on_esc(Message::CloseModal)
-        .into()
+        }).backdrop(Message::CloseModal)
+            .on_esc(Message::CloseModal)
+            .into()
     }
 }

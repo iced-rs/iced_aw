@@ -1,8 +1,5 @@
-use iced::{
-    widget::{Button, Container, Row, Text},
-    Alignment, Element, Length, Sandbox, Settings,
-};
-use iced_aw::{time_picker::Time, TimePicker};
+use iced::{Alignment, Element, Length, Sandbox, Settings, widget::{Button, Container, Row, Text}};
+use iced_aw::{TimePicker, time_picker::Time};
 
 fn main() -> iced::Result {
     TimePickerExample::run(Settings::default())

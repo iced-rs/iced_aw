@@ -1,8 +1,5 @@
 use iced::widget::PickList;
-use iced::{
-    widget::{column, container},
-    Application, Command, Element, Length, Settings, Theme,
-};
+use iced::{Application, Command, Element, Length, Settings, Theme, widget::{column, container}};
 use iced_aw::Spinner;
 use std::fmt::{Display, Formatter};
 
@@ -19,12 +16,8 @@ enum ThemeSelection {
 impl Display for ThemeSelection {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ThemeSelection::Dark => {
-                write!(f, "Dark")
-            }
-            ThemeSelection::Light => {
-                write!(f, "Light")
-            }
+            ThemeSelection::Dark => write!(f, "Dark"),
+            ThemeSelection::Light => write!(f, "Light"),
         }
     }
 }
@@ -77,8 +70,7 @@ impl Application for SpinnerExample {
                 Some(self.theme),
                 Message::ThemeChanged
             ),
-        ]
-        .into()
+        ].into()
     }
 
     fn theme(&self) -> Self::Theme {
