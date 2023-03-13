@@ -1002,7 +1002,7 @@ where
     } else if state.menu_states.len() == 1 {
         let last_ms = &mut state.menu_states[0];
 
-        if !last_ms.menu_bounds.children_bounds.contains(overlay_cursor) {
+        if last_ms.index.is_none() {
             return Captured;
         }
 
@@ -1014,14 +1014,6 @@ where
         let last_two = &mut state.menu_states[max_index - 1..=max_index];
 
         if last_two[1].index.is_some() {
-            if !last_two[1]
-                .menu_bounds
-                .children_bounds
-                .contains(overlay_cursor)
-            {
-                return Captured;
-            }
-
             // scroll the last one
             let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport_size);
             last_two[1].scroll_offset =
