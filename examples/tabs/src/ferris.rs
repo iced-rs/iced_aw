@@ -1,7 +1,4 @@
-use iced::{
-    widget::{Column, Container, Image, Slider, Text},
-    Alignment, Element, Length,
-};
+use iced::{Alignment, Element, Length, widget::{Column, Container, Image, Slider, Text}};
 use iced_aw::tab_bar::TabLabel;
 
 use crate::{Icon, Message, Tab};
@@ -58,8 +55,7 @@ impl Tab for FerrisTab {
                     self.ferris_width,
                     FerrisMessage::ImageWidthChanged,
                 )),
-        )
-        .into();
+        ).into();
 
         content.map(Message::Ferris)
     }
@@ -71,7 +67,6 @@ fn ferris<'a>(width: f32) -> Container<'a, FerrisMessage> {
     } else {
         Image::new(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))
             .width(Length::Fixed(width))
-    })
-    .width(Length::Fill)
-    .center_x()
+    }).width(Length::Fill)
+        .center_x()
 }

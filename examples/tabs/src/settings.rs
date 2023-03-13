@@ -1,14 +1,10 @@
 use crate::{Icon, Message, Tab};
-use iced::{
-    widget::{Column, Container, Radio, Text},
-    Element,
-};
+use iced::{Element, widget::{Column, Container, Radio, Text}};
 use iced_aw::style::TabBarStyles;
 use iced_aw::tab_bar::TabLabel;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TabBarPosition {
-    #[default]
-    Top,
+    #[default] Top,
     Bottom,
 }
 
@@ -96,8 +92,7 @@ impl Tab for SettingsTab {
                                 position,
                                 self.settings().tab_bar_position,
                                 SettingsMessage::PositionSelected,
-                            )
-                            .size(16),
+                            ).size(16),
                         )
                     },
                 ))
@@ -110,13 +105,11 @@ impl Tab for SettingsTab {
                                 predefined_style(id),
                                 self.settings().tab_bar_theme,
                                 SettingsMessage::ThemeSelected,
-                            )
-                            .size(16),
+                            ).size(16),
                         )
                     }),
                 ),
-        )
-        .into();
+        ).into();
 
         content.map(Message::Settings)
     }

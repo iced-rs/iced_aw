@@ -1,8 +1,5 @@
-use iced::{
-    widget::{Button, Container, Row, Text},
-    Alignment, Element, Length, Sandbox, Settings,
-};
-use iced_aw::{date_picker::Date, DatePicker};
+use iced::{Alignment, Element, Length, Sandbox, Settings, widget::{Button, Container, Row, Text}};
+use iced_aw::{DatePicker, date_picker::Date};
 
 fn main() -> iced::Result {
     DatePickerExample::run(Settings::default())

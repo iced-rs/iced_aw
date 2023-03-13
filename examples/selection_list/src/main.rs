@@ -1,7 +1,4 @@
-use iced::{
-    widget::{Column, Container, Space, Text},
-    Alignment, Element, Length, Sandbox, Settings,
-};
+use iced::{Alignment, Element, Length, Sandbox, Settings, widget::{Column, Container, Space, Text}};
 use iced_aw::selection_list::{SelectionList, SelectionListStyles};
 
 pub fn main() -> iced::Result {
@@ -58,9 +55,8 @@ impl Sandbox for Example {
             12.0,
             5.0,
             SelectionListStyles::Default,
-        )
-        .width(Length::Shrink)
-        .height(Length::Fixed(100.0));
+        ).width(Length::Shrink)
+            .height(Length::Fixed(100.0));
 
         let mut content = Column::new()
             .width(Length::Fill)
@@ -83,8 +79,7 @@ impl Sandbox for Example {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Language {
-    #[default]
-    Rust,
+    #[default] Rust,
     Elm,
     Ruby,
     Haskell,

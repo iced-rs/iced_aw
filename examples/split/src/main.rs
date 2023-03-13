@@ -1,7 +1,4 @@
-use iced::{
-    widget::{Container, Text},
-    Application, Command, Element, Length, Settings, Theme,
-};
+use iced::{Application, Command, Element, Length, Settings, Theme, widget::{Container, Text}};
 use iced_aw::{split, Split};
 
 fn main() -> iced::Result {
@@ -81,8 +78,7 @@ impl Application for SplitPaneExample {
             self.hor_divider_position,
             split::Axis::Horizontal,
             Message::OnHorResize,
-        )
-        .into()
+        ).into()
     }
 
     fn theme(&self) -> Self::Theme {

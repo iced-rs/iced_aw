@@ -1,7 +1,4 @@
-use iced::{
-    widget::{Button, Column, Container, Row, Text},
-    Alignment, Element,
-};
+use iced::{Alignment, Element, widget::{Button, Column, Container, Row, Text}};
 use iced_aw::tab_bar::TabLabel;
 
 use crate::{Icon, Message, Tab};
@@ -57,8 +54,7 @@ impl Tab for CounterTab {
                             Button::new(Text::new("Increase")).on_press(CounterMessage::Increase),
                         ),
                 ),
-        )
-        .into();
+        ).into();
 
         content.map(Message::Counter)
     }
