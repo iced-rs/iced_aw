@@ -39,17 +39,8 @@ impl Application for Switch {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::LeftSwitchChanged(value) => {
-                println!("App detected new value for left switch: {}", value);
-
-                *self = Switch::LeftSwitchChanged(value);
-            },
-
-            Message::RightSwitchChanged(value) => {
-                println!("App detected new value for right switch: {}", value);
-
-                *self = Switch::RightSwitchChanged(value);
-            }
+            Message::LeftSwitchChanged(value)  => *self = Switch::LeftSwitchChanged(value),
+            Message::RightSwitchChanged(value) => *self = Switch::RightSwitchChanged(value),
         }
 
         Command::none()
