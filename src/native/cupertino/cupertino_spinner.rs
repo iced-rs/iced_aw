@@ -60,17 +60,20 @@ impl Default for CupertinoSpinner {
 
 impl CupertinoSpinner {
     /// Creates a new [`CupertinoSpinner`] widget.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the width of the [`CupertinoSpinner`](CupertinoSpinner).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`CupertinoSpinner`](CupertinoSpinner).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
@@ -79,6 +82,7 @@ impl CupertinoSpinner {
     /// Sets the radius of the [`CupertinoSpinner`](CupertinoSpinner).
     /// NOTE: While you _can_ tweak the radius, the scale may be all out of whack if not using a
     /// number close to the default of `20.0`.
+    #[must_use]
     pub fn radius(mut self, radius: f32) -> Self {
         self.radius = radius;
         self
@@ -116,16 +120,16 @@ where B: Backend {
             let radius = self.radius;
             let width  = radius / 5.0;
 
-            let mut hands: Vec<(Path, _)> = vec!();
+            let mut hands: Vec<(Path, _)> = vec![];
 
-            for i in 0..HAND_COUNT {
+            for alpha in &ALPHAS {
                 hands.push((
                     Path::line(Point::new(0.0, radius / 3.0), Point::new(0.0, radius / 1.5)),
                     move || -> Stroke {
                         // The `60.0` is to shift the original black to dark grey //
                         gen_stroke(
                             width,
-                            Color::from_rgba(0.0, 0.0, 0.0, ALPHAS[i] as f32 / (60.0 + 147.0))
+                            Color::from_rgba(0.0, 0.0, 0.0, f32::from(*alpha) / (60.0 + 147.0))
                         )
                     },
                 ))
@@ -161,7 +165,7 @@ where B: Backend {
             now: time::OffsetDateTime::now_local().unwrap_or_else(
                 |_| time::OffsetDateTime::now_utc()
             ),
-            spinner: Default::default(),
+            spinner: Cache::default(),
         })
     }
 
@@ -212,7 +216,7 @@ fn gen_stroke(width: f32, color: Color) -> Stroke<'static> {
 const K: f32 = PI * 2.0;
 
 fn hand_rotation(n: u16, total: u16) -> f32 {
-    let turns = n as f32 / total as f32;
+    let turns = f32::from(n) / f32::from(total);
 
     K * turns
 }

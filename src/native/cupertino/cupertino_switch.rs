@@ -208,7 +208,7 @@ where B: Backend, Message: Clone {
             if self.value {
                 frame.fill_rectangle(
                     Point::ORIGIN,
-                    Size { width: width, height: height },
+                    Size { width, height },
                     Fill::from(self.active_colour),
                 );
 
@@ -233,7 +233,7 @@ where B: Backend, Message: Clone {
             } else {
                 frame.fill_rectangle(
                     Point::ORIGIN,
-                    Size { width: width, height: height },
+                    Size { width, height },
                     Fill::from(self.track_colour),
                 );
 
@@ -276,10 +276,10 @@ where B: Backend, Message: Clone {
     fn state(&self) -> State {
         State::new(SwitchState {
             animation_frame: 0,
-            bounds:          Default::default(),
+            bounds:          Rectangle::default(),
             prev_value:      self.value,
             published:       false,
-            switch:          Default::default(),
+            switch:          Cache::default(),
             toggle_staged:   false,
         })
     }
