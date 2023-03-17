@@ -86,6 +86,7 @@ members = [
     "examples/card",
     "examples/color_picker",
     "examples/cupertino/cupertino_spinner",
+    "examples/cupertino/cupertino_switch",
     "examples/date_picker",
     "examples/floating_element",
     "examples/floating_element_anchors",
