@@ -1,0 +1,11 @@
+[package]
+name    = "cupertino-button"
+version = "0.1.0"
+authors = ["Brett Byler <bbyler@protonmail.com>"]
+edition = "2021"
+publish = false
+
+[dependencies]
+iced = { version = "0.8.0", features = [] }
+iced_aw = { path = "../../../", features = ["cupertino"] }
+
