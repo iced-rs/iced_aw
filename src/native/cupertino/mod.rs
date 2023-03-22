@@ -1,7 +1,7 @@
-// /// Use a Cupertino-style alert.
-// ///
-// /// *This API requires the following crate features to be activated: `cupertino`*
-// pub mod cupertino_alert;
+/// Use a Cupertino-style alert.
+///
+/// *This API requires the following crate features to be activated: `cupertino`*
+pub mod cupertino_alert;
 
 /// Use a Cupertino-style button.
 ///

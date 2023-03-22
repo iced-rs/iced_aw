@@ -33,6 +33,12 @@ where
     on_pressed: Option<Message>,
     is_filled:  bool,
     body:       Element<'a, Message, Renderer>,
+
+    /// `colour` is an option here because there is already logic to set the colour
+    /// depending on if the button is enabled/disabled. But if the button causes a
+    /// "destructive" behavior (e.g. a delete action), allow the user to override the
+    /// colour to e.g. red.
+    colour: Option<Color>,
 }
 
 impl<'a, Message, Renderer> Default for CupertinoButton<'a, Message, Renderer>
@@ -48,6 +54,7 @@ where
             on_pressed: None,
             is_filled:  false,
             body:       Text::new("Hello").font(SF_UI_ROUNDED).into(),
+            colour:     None,
         }
     }
 }
@@ -91,6 +98,12 @@ where
         let as_text = body.into().font(SF_UI_ROUNDED);
 
         self.body = Element::from(as_text);
+        self
+    }
+
+    /// Sets the `colour` of the [`CupertinoButton`](CupertinoButton).
+    pub fn colour(mut self, colour: Option<Color>) -> Self {
+        self.colour = colour;
         self
     }
 }
@@ -159,7 +172,9 @@ where
 
         new_style.clone_from(style);
 
-        if self.is_filled && self.on_pressed.is_some() {
+        if self.colour.is_some() {
+            new_style.text_color = self.colour.unwrap();
+        } else if self.is_filled && self.on_pressed.is_some() {
             new_style.text_color = Color::WHITE;
         } else if !self.is_filled && self.on_pressed.is_some() {
             new_style.text_color = system_blue(1.0);
