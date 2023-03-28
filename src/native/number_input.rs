@@ -411,149 +411,6 @@ where
                 event_status
             } else {
                 match event {
-                    Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                        if child
-                            .state
-                            .downcast_mut::<widget::text_input::State>()
-                            .is_focused()
-                            && c.is_numeric() =>
-                    {
-                        let mut new_val = self.value.to_string();
-                        match child
-                            .state
-                            .downcast_mut::<widget::text_input::State>()
-                            .cursor()
-                            .state(&Value::new(&new_val))
-                        {
-                            cursor::State::Index(idx) => {
-                                if T::zero().eq(&self.value) {
-                                    new_val = c.to_string();
-                                } else {
-                                    new_val.insert(idx, c);
-                                }
-                            }
-                            cursor::State::Selection { start, end } => {
-                                if (0..new_val.len()).contains(&start)
-                                    && (0..new_val.len()).contains(&end)
-                                {
-                                    new_val.replace_range(
-                                        if start > end { end..start } else { start..end },
-                                        &c.to_string(),
-                                    );
-                                }
-                            }
-                        }
-
-                        match T::from_str(&new_val) {
-                            Ok(val) => {
-                                if (self.bounds.0..=self.bounds.1).contains(&val) {
-                                    self.value = val;
-                                    shell.publish((self.on_change)(self.value));
-                                    self.content.on_event(
-                                        child,
-                                        event.clone(),
-                                        content,
-                                        cursor_position,
-                                        renderer,
-                                        clipboard,
-                                        shell,
-                                    )
-                                } else {
-                                    event::Status::Ignored
-                                }
-                            }
-                            Err(_) => event::Status::Ignored,
-                        }
-                    }
-                    Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
-                        if child
-                            .state
-                            .downcast_mut::<widget::text_input::State>()
-                            .is_focused() =>
-                    {
-                        match key_code {
-                            keyboard::KeyCode::Up => {
-                                self.increase_val(shell);
-                                event::Status::Captured
-                            }
-                            keyboard::KeyCode::Down => {
-                                self.decrease_val(shell);
-                                event::Status::Captured
-                            }
-                            keyboard::KeyCode::Backspace => {
-                                if T::zero().eq(&self.value) {
-                                    event::Status::Ignored
-                                } else {
-                                    let mut new_val = self.value.to_string();
-                                    match child
-                                        .state
-                                        .downcast_mut::<widget::text_input::State>()
-                                        .cursor()
-                                        .state(&Value::new(&new_val))
-                                    {
-                                        cursor::State::Index(idx) => {
-                                            if idx >= 1 && idx <= new_val.len() {
-                                                if new_val.len() == 1 {
-                                                    new_val = if self.bounds.0 > T::zero() {
-                                                        self.bounds.0
-                                                    } else {
-                                                        T::zero()
-                                                    }
-                                                    .to_string();
-                                                } else {
-                                                    let _ = new_val.remove(idx - 1);
-                                                }
-                                            }
-                                        }
-                                        cursor::State::Selection { start, end } => {
-                                            if (0..new_val.len()).contains(&start)
-                                                && (0..new_val.len()).contains(&end)
-                                            {
-                                                new_val.replace_range(
-                                                    if start > end {
-                                                        end..start
-                                                    } else {
-                                                        start..end
-                                                    },
-                                                    "",
-                                                );
-                                            }
-                                        }
-                                    }
-
-                                    match T::from_str(&new_val) {
-                                        Ok(val) => {
-                                            if (self.bounds.0..=self.bounds.1).contains(&val) {
-                                                self.value = val;
-                                                shell.publish((self.on_change)(self.value));
-                                                self.content.on_event(
-                                                    child,
-                                                    event.clone(),
-                                                    content,
-                                                    cursor_position,
-                                                    renderer,
-                                                    clipboard,
-                                                    shell,
-                                                )
-                                            } else {
-                                                event::Status::Ignored
-                                            }
-                                        }
-                                        Err(_) => event::Status::Ignored,
-                                    }
-                                }
-                            }
-                            _ => self.content.on_event(
-                                child,
-                                event.clone(),
-                                content,
-                                cursor_position,
-                                renderer,
-                                clipboard,
-                                shell,
-                            ),
-                        }
-                    }
                     // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                         let negative = match delta {
@@ -580,7 +437,145 @@ where
             }
         } else {
             match event {
-                Event::Keyboard(_) => event::Status::Ignored,
+                Event::Keyboard(keyboard::Event::CharacterReceived(c))
+                    if child
+                        .state
+                        .downcast_mut::<widget::text_input::State>()
+                        .is_focused()
+                        && c.is_numeric() =>
+                {
+                    let mut new_val = self.value.to_string();
+                    match child
+                        .state
+                        .downcast_mut::<widget::text_input::State>()
+                        .cursor()
+                        .state(&Value::new(&new_val))
+                    {
+                        cursor::State::Index(idx) => {
+                            if T::zero().eq(&self.value) {
+                                new_val = c.to_string();
+                            } else {
+                                new_val.insert(idx, c);
+                            }
+                        }
+                        cursor::State::Selection { start, end } => {
+                            if (0..new_val.len()).contains(&start)
+                                && (0..new_val.len()).contains(&end)
+                            {
+                                new_val.replace_range(
+                                    if start > end { end..start } else { start..end },
+                                    &c.to_string(),
+                                );
+                            }
+                        }
+                    }
+
+                    match T::from_str(&new_val) {
+                        Ok(val) => {
+                            if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                self.value = val;
+                                shell.publish((self.on_change)(self.value));
+                                self.content.on_event(
+                                    child,
+                                    event.clone(),
+                                    content,
+                                    cursor_position,
+                                    renderer,
+                                    clipboard,
+                                    shell,
+                                )
+                            } else {
+                                event::Status::Ignored
+                            }
+                        }
+                        Err(_) => event::Status::Ignored,
+                    }
+                }
+                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
+                    if child
+                        .state
+                        .downcast_mut::<widget::text_input::State>()
+                        .is_focused() =>
+                {
+                    match key_code {
+                        keyboard::KeyCode::Up => {
+                            self.increase_val(shell);
+                            event::Status::Captured
+                        }
+                        keyboard::KeyCode::Down => {
+                            self.decrease_val(shell);
+                            event::Status::Captured
+                        }
+                        keyboard::KeyCode::Backspace => {
+                            if T::zero().eq(&self.value) {
+                                event::Status::Ignored
+                            } else {
+                                let mut new_val = self.value.to_string();
+                                match child
+                                    .state
+                                    .downcast_mut::<widget::text_input::State>()
+                                    .cursor()
+                                    .state(&Value::new(&new_val))
+                                {
+                                    cursor::State::Index(idx) => {
+                                        if idx >= 1 && idx <= new_val.len() {
+                                            if new_val.len() == 1 {
+                                                new_val = if self.bounds.0 > T::zero() {
+                                                    self.bounds.0
+                                                } else {
+                                                    T::zero()
+                                                }
+                                                .to_string();
+                                            } else {
+                                                let _ = new_val.remove(idx - 1);
+                                            }
+                                        }
+                                    }
+                                    cursor::State::Selection { start, end } => {
+                                        if (0..new_val.len()).contains(&start)
+                                            && (0..new_val.len()).contains(&end)
+                                        {
+                                            new_val.replace_range(
+                                                if start > end { end..start } else { start..end },
+                                                "",
+                                            );
+                                        }
+                                    }
+                                }
+
+                                match T::from_str(&new_val) {
+                                    Ok(val) => {
+                                        if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                            self.value = val;
+                                            shell.publish((self.on_change)(self.value));
+                                            self.content.on_event(
+                                                child,
+                                                event.clone(),
+                                                content,
+                                                cursor_position,
+                                                renderer,
+                                                clipboard,
+                                                shell,
+                                            )
+                                        } else {
+                                            event::Status::Ignored
+                                        }
+                                    }
+                                    Err(_) => event::Status::Ignored,
+                                }
+                            }
+                        }
+                        _ => self.content.on_event(
+                            child,
+                            event.clone(),
+                            content,
+                            cursor_position,
+                            renderer,
+                            clipboard,
+                            shell,
+                        ),
+                    }
+                }
                 _ => self.content.on_event(
                     child,
                     event,
