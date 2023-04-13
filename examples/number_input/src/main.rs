@@ -1,4 +1,7 @@
-use iced::{window, Alignment, Element, Length, Sandbox, Settings, widget::{Container, Row, Text}};
+use iced::{
+    widget::{Container, Row, Text},
+    window, Alignment, Element, Length, Sandbox, Settings,
+};
 use iced_aw::{number_input::NumberInput, style::NumberInputStyles};
 
 #[derive(Default)]
@@ -53,10 +56,11 @@ impl Sandbox for NumberInputDemo {
                 .align_items(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
-        ).width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .center_y()
+        .into()
     }
 }

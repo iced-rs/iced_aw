@@ -112,7 +112,8 @@ where
             bounds: (T::zero(), max),
             padding,
             size: None,
-            content: TextInput::new("", format!("{value}").as_str(), convert_to_num)
+            content: TextInput::new("", format!("{value}").as_str())
+                .on_input(convert_to_num)
                 .padding(padding)
                 .width(Length::Fixed(127.0)),
             on_change: Box::new(on_changed),

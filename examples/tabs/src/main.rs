@@ -1,6 +1,9 @@
 mod login;
-use iced::{Element, Font, Length, Sandbox, Settings, alignment::{Horizontal, Vertical},
-           widget::{Column, Container, Text}};
+use iced::{
+    alignment::{Horizontal, Vertical},
+    widget::{Column, Container, Text},
+    Element, Font, Length, Sandbox, Settings,
+};
 use iced_aw::{TabLabel, Tabs};
 use login::{LoginMessage, LoginTab};
 
@@ -88,11 +91,13 @@ impl Sandbox for TabBarExample {
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let position = self.settings_tab
+        let position = self
+            .settings_tab
             .settings()
             .tab_bar_position
             .unwrap_or_default();
-        let theme = self.settings_tab
+        let theme = self
+            .settings_tab
             .settings()
             .tab_bar_theme
             .unwrap_or_default();

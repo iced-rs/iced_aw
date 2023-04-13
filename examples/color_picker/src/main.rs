@@ -1,5 +1,7 @@
-use iced::{Alignment, Color, Element, Length, Sandbox, Settings,
-           widget::{Button, Container, Row, Text}};
+use iced::{
+    widget::{Button, Container, Row, Text},
+    Alignment, Color, Element, Length, Sandbox, Settings,
+};
 
 use iced_aw::ColorPicker;
 

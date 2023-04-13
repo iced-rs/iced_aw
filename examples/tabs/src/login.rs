@@ -1,5 +1,8 @@
-use iced::{Alignment, Element, Length, alignment::{Horizontal, Vertical},
-           widget::{Button, Column, Container, Row, Text, TextInput}};
+use iced::{
+    alignment::{Horizontal, Vertical},
+    widget::{Button, Column, Container, Row, Text, TextInput},
+    Alignment, Element, Length,
+};
 use iced_aw::tab_bar::TabLabel;
 
 use crate::{Icon, Message, Tab};
@@ -58,12 +61,14 @@ impl Tab for LoginTab {
                 .padding(20)
                 .spacing(16)
                 .push(
-                    TextInput::new("Username", &self.username, LoginMessage::UsernameChanged)
+                    TextInput::new("Username", &self.username)
+                        .on_input(LoginMessage::UsernameChanged)
                         .padding(10)
                         .size(32),
                 )
                 .push(
-                    TextInput::new("Password", &self.password, LoginMessage::PasswordChanged)
+                    TextInput::new("Password", &self.password)
+                        .on_input(LoginMessage::PasswordChanged)
                         .padding(10)
                         .size(32)
                         .password(),
@@ -74,19 +79,22 @@ impl Tab for LoginTab {
                         .push(
                             Button::new(
                                 Text::new("Clear").horizontal_alignment(Horizontal::Center),
-                            ).width(Length::Fill)
-                                .on_press(LoginMessage::ClearPressed),
+                            )
+                            .width(Length::Fill)
+                            .on_press(LoginMessage::ClearPressed),
                         )
                         .push(
                             Button::new(
                                 Text::new("Login").horizontal_alignment(Horizontal::Center),
-                            ).width(Length::Fill)
-                                .on_press(LoginMessage::LoginPressed),
+                            )
+                            .width(Length::Fill)
+                            .on_press(LoginMessage::LoginPressed),
                         ),
                 ),
-        ).align_x(Horizontal::Center)
-            .align_y(Vertical::Center)
-            .into();
+        )
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Center)
+        .into();
 
         content.map(Message::Login)
     }

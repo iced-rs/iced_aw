@@ -1,5 +1,7 @@
-use iced::{Alignment, Element, Sandbox, Settings,
-           widget::{container, Button, Container, Row, Text}};
+use iced::{
+    widget::{container, Button, Container, Row, Text},
+    Alignment, Element, Sandbox, Settings,
+};
 
 use iced_aw::Modal;
 
@@ -58,14 +60,18 @@ impl Sandbox for ModalExample {
 
         Modal::new(self.show_modal, content, || {
             container(my_component::MyComponent).into()
-        }).backdrop(Message::CloseModal)
-            .on_esc(Message::CloseModal)
-            .into()
+        })
+        .backdrop(Message::CloseModal)
+        .on_esc(Message::CloseModal)
+        .into()
     }
 }
 
 mod my_component {
-    use iced::{Element, widget::{container, row, text}};
+    use iced::{
+        widget::{container, row, text},
+        Element,
+    };
     use iced_lazy::{self, Component};
 
     pub struct MyComponent;

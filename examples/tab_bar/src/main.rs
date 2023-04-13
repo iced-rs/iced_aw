@@ -1,5 +1,7 @@
-use iced::{Alignment, Element, Length, Sandbox, Settings,
-           widget::{Button, Column, Row, Text, TextInput}};
+use iced::{
+    widget::{Button, Column, Row, Text, TextInput},
+    Alignment, Element, Length, Sandbox, Settings,
+};
 use iced_aw::{TabBar, TabLabel};
 
 fn main() -> iced::Result {
@@ -73,19 +75,15 @@ impl Sandbox for TabBarExample {
             .push(
                 Row::new()
                     .push(
-                        TextInput::new(
-                            "Tab label",
-                            &self.new_tab_label,
-                            Message::TabLabelInputChanged,
-                        ).size(22)
+                        TextInput::new("Tab label", &self.new_tab_label)
+                            .on_input(Message::TabLabelInputChanged)
+                            .size(22)
                             .padding(5.0),
                     )
                     .push(
-                        TextInput::new(
-                            "Tab content",
-                            &self.new_tab_content,
-                            Message::TabContentInputChanged,
-                        ).size(22)
+                        TextInput::new("Tab content", &self.new_tab_content)
+                            .on_input(Message::TabContentInputChanged)
+                            .size(22)
                             .padding(5.0),
                     )
                     .push(Button::new(Text::new("New")).on_press(Message::NewTab))
@@ -113,7 +111,8 @@ impl Sandbox for TabBarExample {
                     Text::new(content)
                 } else {
                     Text::new("Please create a new tab")
-                }.size(25),
+                }
+                .size(25),
             )
             .into()
     }
