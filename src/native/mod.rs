@@ -94,4 +94,3 @@ pub mod spinner;
 
 #[cfg(feature = "spinner")]
 pub use spinner::Spinner;
-

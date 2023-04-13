@@ -1,6 +1,8 @@
-use iced::{Element, Length, Sandbox, Settings,
-           widget::{Button, Column, Container, Scrollable, Text}};
-use iced_aw::{Card, style::CardStyles};
+use iced::{
+    widget::{Button, Column, Container, Scrollable, Text},
+    Element, Length, Sandbox, Settings,
+};
+use iced_aw::{style::CardStyles, Card};
 
 fn main() -> iced::Result {
     CardExample::run(Settings::default())

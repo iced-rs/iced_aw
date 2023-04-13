@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use iced::{Element, Sandbox, Settings, widget::{Button, Column, Container, PickList, Row, Text}};
+use iced::{
+    widget::{Button, Column, Container, PickList, Row, Text},
+    Element, Sandbox, Settings,
+};
 use iced_aw::{NumberInput, Wrap};
 use rand::Rng;
 
@@ -121,7 +124,8 @@ impl Sandbox for RandStrings {
                 .spacing(self.spacing)
                 .line_spacing(self.line_spacing)
                 .line_minimal_length(self.line_minimal_length),
-        ).width(iced::Length::FillPortion(5));
+        )
+        .width(iced::Length::FillPortion(5));
         let horizontal = Container::new(
             hbuttons
                 .iter()
@@ -133,7 +137,8 @@ impl Sandbox for RandStrings {
                 .spacing(self.spacing)
                 .line_spacing(self.line_spacing)
                 .line_minimal_length(self.line_minimal_length),
-        ).width(iced::Length::FillPortion(5));
+        )
+        .width(iced::Length::FillPortion(5));
         let align_picklist = PickList::new(
             vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
             Some(self.align.into()),
@@ -146,16 +151,22 @@ impl Sandbox for RandStrings {
                 500.0,
                 Message::ChangeSpacing,
             ));
-        let line_spacing_input = Column::new().push(Text::new("line spacing")).push(
-            NumberInput::new(self.line_spacing, 500.0, Message::ChangeLineSpacing),
-        );
-        let line_minimal_length_input = Column::new().push(Text::new("line minimal length")).push(
-            NumberInput::new(
-                self.line_minimal_length,
-                999.0,
-                Message::ChangeMinimalLength,
-            ),
-        );
+        let line_spacing_input =
+            Column::new()
+                .push(Text::new("line spacing"))
+                .push(NumberInput::new(
+                    self.line_spacing,
+                    500.0,
+                    Message::ChangeLineSpacing,
+                ));
+        let line_minimal_length_input =
+            Column::new()
+                .push(Text::new("line minimal length"))
+                .push(NumberInput::new(
+                    self.line_minimal_length,
+                    999.0,
+                    Message::ChangeMinimalLength,
+                ));
         let ctrls = Column::new()
             .push(align_picklist)
             .push(spacing_input)

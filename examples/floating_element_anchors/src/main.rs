@@ -1,6 +1,6 @@
 use iced::widget::{button, container, text};
 use iced::{Element, Length, Sandbox, Settings};
-use iced_aw::{FloatingElement, floating_element::Anchor};
+use iced_aw::{floating_element::Anchor, FloatingElement};
 
 fn main() -> iced::Result {
     FloatingElementAnchorsExample::run(Settings::default())

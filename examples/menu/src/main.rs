@@ -1,6 +1,8 @@
 use iced::widget::column as col;
-use iced::widget::{button, checkbox, container, horizontal_space, pick_list, row, slider, svg,
-                   text, text_input, toggler, vertical_slider};
+use iced::widget::{
+    button, checkbox, container, horizontal_space, pick_list, row, slider, svg, text, text_input,
+    toggler, vertical_slider,
+};
 use iced::{alignment, theme, Application, Color, Element, Length};
 
 use iced_aw::menu::{CloseCondition, ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight};
@@ -174,23 +176,26 @@ impl Application for App {
                 menu_3(self),
                 menu_4(self),
                 menu_5(self),
-            ]).item_width(ItemWidth::Static(180))
-                .item_height(ItemHeight::Static(25)),
-        }.spacing(4.0)
-            .bounds_expand(30)
-            .path_highlight(Some(PathHighlight::MenuActive))
-            .close_condition(CloseCondition {
-                leave: true,
-                click_outside: false,
-                click_inside: false,
-            });
+            ])
+            .item_width(ItemWidth::Static(180))
+            .item_height(ItemHeight::Static(25)),
+        }
+        .spacing(4.0)
+        .bounds_expand(30)
+        .path_highlight(Some(PathHighlight::MenuActive))
+        .close_condition(CloseCondition {
+            leave: true,
+            click_outside: false,
+            click_inside: false,
+        });
 
         let r = if self.flip_h {
             row!(pick_size_option, horizontal_space(Length::Fill), mb,)
         } else {
             row!(mb, horizontal_space(Length::Fill), pick_size_option)
-        }.padding([2, 8])
-            .align_items(alignment::Alignment::Center);
+        }
+        .padding([2, 8])
+        .align_items(alignment::Alignment::Center);
 
         let top_bar_style: fn(&iced::Theme) -> container::Appearance =
             |_theme| container::Appearance {
@@ -300,8 +305,9 @@ fn sub_menu<'a>(
                 arrow
             ],
             msg,
-        ).width(Length::Fill)
-            .height(Length::Fill),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill),
         children,
     )
 }
@@ -386,7 +392,8 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             debug_item("Item"),
             debug_item("Item"),
         ],
-    ).width(180);
+    )
+    .width(180);
     let sub_3 = debug_sub_menu(
         "More sub menus",
         vec![
@@ -409,7 +416,8 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             debug_item("Item"),
             debug_item("Item"),
         ],
-    ).width(140);
+    )
+    .width(140);
     let sub_1 = debug_sub_menu(
         "A sub menu",
         vec![
@@ -420,7 +428,8 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             debug_item("Item"),
             debug_item("Item"),
         ],
-    ).width(220);
+    )
+    .width(220);
 
     let root = MenuTree::with_children(
         debug_button("Nested Menus"),
@@ -432,7 +441,8 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             debug_item("Item"),
             debug_item("Item"),
         ],
-    ).width(110);
+    )
+    .width(110);
 
     root
 }
@@ -443,9 +453,10 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             Some("Or as a sub menu item".to_string()),
             app.toggle,
             Message::ToggleChange,
-        )).padding([0, 8])
-            .height(Length::Fill)
-            .align_y(alignment::Vertical::Center),
+        ))
+        .padding([0, 8])
+        .height(Length::Fill)
+        .align_y(alignment::Vertical::Center),
         vec![
             debug_item("Item"),
             debug_item("Item"),
@@ -460,9 +471,10 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
                 .width(Length::Fill)
                 .height(Length::Fill)
                 .vertical_alignment(alignment::Vertical::Center),
-        ).width(Length::Fill)
-            .height(Length::Fill)
-            .on_press(Message::Debug("Button".into())),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .on_press(Message::Debug("Button".into())),
     );
 
     let cb =
@@ -533,13 +545,12 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
             ),
             separator(),
             MenuTree::new(
-                row![
-                    toggler(
-                        Some("Dark Mode".into()),
-                        app.dark_mode,
-                        Message::ThemeChange
-                    )
-                ].padding([0, 8]),
+                row![toggler(
+                    Some("Dark Mode".into()),
+                    app.dark_mode,
+                    Message::ThemeChange
+                )]
+                .padding([0, 8]),
             ),
             color_item([0.45, 0.25, 0.57]),
             color_item([0.15, 0.59, 0.64]),
@@ -701,22 +712,28 @@ fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
 
     let sliders = MenuTree::new(
         row![
-            vertical_slider(0..=255, r, move |x| Message::ColorChange(
-                Color::from_rgb8(x, g, b)
-            )).width(30),
-            vertical_slider(0..=255, g, move |x| Message::ColorChange(
-                Color::from_rgb8(r, x, b)
-            )).width(30),
-            vertical_slider(0..=255, b, move |x| Message::ColorChange(
-                Color::from_rgb8(r, g, x)
-            )).width(30),
-        ].spacing(4),
-    ).height(100);
+            vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
+                x, g, b
+            )))
+            .width(30),
+            vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
+                r, x, b
+            )))
+            .width(30),
+            vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
+                r, g, x
+            )))
+            .width(30),
+        ]
+        .spacing(4),
+    )
+    .height(100);
 
     let root = MenuTree::with_children(
         debug_button("Static"),
         vec![labeled_separator("Primary"), sliders],
-    ).width(slider_width * slider_count + (slider_count - 1) * spacing);
+    )
+    .width(slider_width * slider_count + (slider_count - 1) * spacing);
 
     root
 }
