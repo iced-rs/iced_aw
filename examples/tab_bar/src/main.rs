@@ -76,16 +76,18 @@ impl Sandbox for TabBarExample {
                         TextInput::new(
                             "Tab label",
                             &self.new_tab_label,
-                            Message::TabLabelInputChanged,
-                        ).size(22)
+                           
+                        )
+                        .on_input( Message::TabLabelInputChanged)
+                        .size(22)
                             .padding(5.0),
                     )
                     .push(
                         TextInput::new(
                             "Tab content",
                             &self.new_tab_content,
-                            Message::TabContentInputChanged,
-                        ).size(22)
+                           
+                        ).on_input( Message::TabContentInputChanged,).size(22)
                             .padding(5.0),
                     )
                     .push(Button::new(Text::new("New")).on_press(Message::NewTab))

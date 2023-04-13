@@ -28,7 +28,6 @@ impl From<iced::Alignment> for WrapAlign {
             iced::Alignment::Start => Self::Start,
             iced::Alignment::Center => Self::Center,
             iced::Alignment::End => Self::End,
-            iced::Alignment::Fill => panic!("Does not Exist for wrap align"),
         }
     }
 }

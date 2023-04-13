@@ -85,7 +85,7 @@ where
     let mut nodes: Vec<Node> = Vec::with_capacity(items.len());
     nodes.resize(items.len(), Node::default());
 
-    if align_items == Alignment::Fill {
+    if align_items == Alignment::Center {
         let mut fill_cross = axis.cross(limits.min());
 
         for child in items.iter() {
@@ -120,13 +120,13 @@ where
         .fill_factor();
 
         if fill_factor == 0 {
-            let (min_width, min_height) = if align_items == Alignment::Fill {
+            let (min_width, min_height) = if align_items == Alignment::Center {
                 axis.pack(0.0, cross)
             } else {
                 axis.pack(0.0, 0.0)
             };
 
-            let (max_width, max_height) = if align_items == Alignment::Fill {
+            let (max_width, max_height) = if align_items == Alignment::Center {
                 axis.pack(available, cross)
             } else {
                 axis.pack(available, max_cross)
@@ -142,7 +142,7 @@ where
 
             available -= axis.main(size);
 
-            if align_items != Alignment::Fill {
+            if align_items != Alignment::Center {
                 cross = cross.max(axis.cross(size));
             }
 
@@ -170,13 +170,13 @@ where
                 max_main
             };
 
-            let (min_width, min_height) = if align_items == Alignment::Fill {
+            let (min_width, min_height) = if align_items == Alignment::Center {
                 axis.pack(min_main, cross)
             } else {
                 axis.pack(min_main, axis.cross(limits.min()))
             };
 
-            let (max_width, max_height) = if align_items == Alignment::Fill {
+            let (max_width, max_height) = if align_items == Alignment::Center {
                 axis.pack(max_main, cross)
             } else {
                 axis.pack(max_main, max_cross)
@@ -189,7 +189,7 @@ where
 
             let layout = child.as_widget().layout(renderer, &child_limits);
 
-            if align_items != Alignment::Fill {
+            if align_items != Alignment::Center {
                 cross = cross.max(axis.cross(layout.size()));
             }
 

@@ -58,12 +58,14 @@ impl Tab for LoginTab {
                 .padding(20)
                 .spacing(16)
                 .push(
-                    TextInput::new("Username", &self.username, LoginMessage::UsernameChanged)
+                    TextInput::new("Username", &self.username, )
+                    .on_input(LoginMessage::UsernameChanged)
                         .padding(10)
                         .size(32),
                 )
                 .push(
-                    TextInput::new("Password", &self.password, LoginMessage::PasswordChanged)
+                    TextInput::new("Password", &self.password, )
+                    .on_input(LoginMessage::PasswordChanged)
                         .padding(10)
                         .size(32)
                         .password(),

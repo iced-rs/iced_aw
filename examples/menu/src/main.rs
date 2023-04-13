@@ -474,7 +474,7 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
         slider(0..=255, app.value, Message::ValueChange)
     ]);
 
-    let txn = MenuTree::new(text_input("", &app.text, Message::TextChange));
+    let txn = MenuTree::new(text_input("", &app.text).on_input(Message::TextChange));
 
     let root = MenuTree::with_children(
         debug_button("Widgets"),
