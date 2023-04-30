@@ -58,7 +58,7 @@ impl Sandbox for ColorPickerExample {
     fn view(&self) -> Element<'_, Self::Message> {
         let but = Button::new(Text::new("Set Color")).on_press(Message::ChooseColor);
 
-        let datepicker = ColorPicker::new(
+        let color_picker= ColorPicker::new(
             self.show_picker,
             self.color,
             but,
@@ -69,7 +69,7 @@ impl Sandbox for ColorPickerExample {
         let row = Row::new()
             .align_items(Alignment::Center)
             .spacing(10)
-            .push(datepicker)
+            .push(color_picker)
             .push(Text::new(format!("Color: {:?}", self.color)));
 
         Container::new(row)
