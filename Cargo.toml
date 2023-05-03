@@ -5,7 +5,7 @@ authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"
 license = "MIT"
-repository = "https://github.com/kaiden42/iced_aw"
+repository = "https://github.com/iced-rs/iced_aw"
 # TODO documentation
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
