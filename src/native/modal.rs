@@ -219,11 +219,13 @@ where
 
         let bounds = layout.bounds();
         let position = Point::new(bounds.x, bounds.y);
+        let content = (self.content)();
+        content.as_widget().diff(&mut state.children[1]);
 
         Some(
             ModalOverlay::new(
                 &mut state.children[1],
-                (self.content)(),
+                content,
                 self.backdrop.clone(),
                 self.esc.clone(),
                 self.style,
