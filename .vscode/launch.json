@@ -277,6 +277,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'split scroller'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=split_scroller",
+                    "--package=split_scroller"
+                ],
+                "filter": {
+                    "name": "split_scroller",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'menu'",
             "cargo": {
                 "args": [

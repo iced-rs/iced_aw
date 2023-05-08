@@ -99,6 +99,7 @@ members = [
     "examples/number_input",
     "examples/selection_list",
     "examples/split",
+    "examples/split_scroller",
     "examples/menu",
     "examples/spinner"
 ]
