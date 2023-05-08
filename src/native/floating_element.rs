@@ -4,7 +4,10 @@
 use iced_native::{
     event, mouse, overlay, Clipboard, Event, Layout, Length, Point, Rectangle, Shell,
 };
-use iced_native::{widget::Tree, Element, Widget};
+use iced_native::{
+    widget::{Operation, Tree},
+    Element, Widget,
+};
 
 pub mod anchor;
 pub use anchor::Anchor;
@@ -195,6 +198,18 @@ where
             cursor_position,
             viewport,
         );
+    }
+
+    fn operate<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        self.underlay
+            .as_widget()
+            .operate(&mut state.children[0], layout, renderer, operation);
     }
 
     fn overlay<'b>(

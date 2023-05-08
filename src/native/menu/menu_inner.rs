@@ -68,6 +68,7 @@ pub(super) enum Direction {
 
 /// Adaptive open direction
 #[derive(Debug)]
+#[allow(clippy::struct_excessive_bools)]
 struct Aod {
     // whether or not to use aod
     horizontal: bool,
@@ -209,6 +210,7 @@ struct MenuBounds {
     check_bounds: Rectangle,
 }
 impl MenuBounds {
+    #[allow(clippy::too_many_arguments)]
     fn new<Message, Renderer>(
         menu_tree: &MenuTree<'_, Message, Renderer>,
         item_width: ItemWidth,

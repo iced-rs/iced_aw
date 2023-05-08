@@ -54,23 +54,27 @@ where
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Spinner`] widget.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the width of the [`Spinner`](Spinner).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`Spinner`](Spinner).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the circle radius of the spinning circle.
+    #[must_use]
     pub fn circle_radius(mut self, radius: f32) -> Self {
         self.circle_radius = radius;
         self
@@ -108,7 +112,7 @@ fn fill_circle(
     );
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
+impl<  Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
 where
     Renderer: iced_native::Renderer,
     Renderer::Theme: StyleSheet,

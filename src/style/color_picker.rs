@@ -73,15 +73,11 @@ impl StyleSheet for Theme {
     }
 
     fn selected(&self, style: Self::Style) -> Appearance {
-        Appearance {
-            ..self.active(style)
-        }
+        self.active(style)
     }
 
     fn hovered(&self, style: Self::Style) -> Appearance {
-        Appearance {
-            ..self.active(style)
-        }
+        self.active(style)
     }
 
     fn focused(&self, style: Self::Style) -> Appearance {

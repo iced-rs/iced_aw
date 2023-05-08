@@ -5,9 +5,11 @@
 use iced_native::{
     event,
     layout::{Limits, Node},
-    mouse, Alignment, Clipboard, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
+    mouse,
+    widget::{tree::Tree, Operation},
+    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
+    Widget,
 };
-use iced_native::{widget::tree::Tree, Element, Widget};
 
 use std::marker::PhantomData;
 
@@ -272,6 +274,25 @@ where
                 cursor_position,
                 viewport,
             );
+        }
+    }
+
+    fn operate(
+        &self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        for ((element, state), layout) in self
+            .elements
+            .iter()
+            .zip(&mut state.children)
+            .zip(layout.children())
+        {
+            element
+                .as_widget()
+                .operate(state, layout, renderer, operation);
         }
     }
 }

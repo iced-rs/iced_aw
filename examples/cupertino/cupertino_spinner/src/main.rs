@@ -29,9 +29,9 @@ impl State {
     async fn load() -> Result<State, ()> {
         println!("Doing stuff...");
         tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-        return Ok(Self {
+        Ok(Self {
             hello: "Loaded!".to_string(),
-        });
+        })
     }
 }
 
@@ -53,16 +53,10 @@ impl Application for Spinner {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        match self {
-            Spinner::Loading => match message {
-                Message::Loaded(Ok(state)) => {
-                    *self = Spinner::Loaded(State { hello: state.hello });
-                }
-
-                _ => (),
-            },
-
-            _ => (),
+        if let Spinner::Loading = self {
+            if let Message::Loaded(Ok(state)) = message {
+                *self = Spinner::Loaded(State { hello: state.hello });
+            }
         }
 
         Command::none()

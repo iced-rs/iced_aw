@@ -5,10 +5,11 @@ use iced_native::{
     alignment::{Horizontal, Vertical},
     event, mouse,
     renderer::{self, BorderRadius},
-    touch, Alignment, Clipboard, Color, Event, Layout, Length, Padding, Point, Rectangle, Shell,
-    Size,
+    touch,
+    widget::{Operation, Tree},
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell,
+    Size, Widget,
 };
-use iced_native::{widget::Tree, Element, Widget};
 
 use crate::graphics::icons::Icon;
 pub use crate::style::card::{Appearance, StyleSheet};
@@ -445,6 +446,32 @@ where
                         )
                     }),
             )
+    }
+
+    fn operate<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        let mut children = layout.children();
+        let head_layout = children.next().expect("Missing Head Layout");
+        let body_layout = children.next().expect("Missing Body Layout");
+        let foot_layout = children.next().expect("Missing Footer Layout");
+
+        self.head
+            .as_widget()
+            .operate(&mut state.children[0], head_layout, renderer, operation);
+        self.body
+            .as_widget()
+            .operate(&mut state.children[1], body_layout, renderer, operation);
+
+        if let Some(footer) = &self.foot {
+            footer
+                .as_widget()
+                .operate(&mut state.children[2], foot_layout, renderer, operation);
+        };
     }
 
     fn draw(

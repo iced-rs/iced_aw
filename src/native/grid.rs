@@ -4,7 +4,11 @@
 use iced_native::{
     event, layout::Node, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
-use iced_native::{overlay, widget::Tree, Element, Widget};
+use iced_native::{
+    overlay,
+    widget::{Operation, Tree},
+    Element, Widget,
+};
 
 /// A container that distributes its contents in a grid.
 ///
@@ -222,6 +226,25 @@ where
             .fold(mouse::Interaction::default(), |interaction, next| {
                 interaction.max(next)
             })
+    }
+
+    fn operate(
+        &self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        for ((element, state), layout) in self
+            .elements
+            .iter()
+            .zip(&mut state.children)
+            .zip(layout.children())
+        {
+            element
+                .as_widget()
+                .operate(state, layout, renderer, operation);
+        }
     }
 
     fn draw(

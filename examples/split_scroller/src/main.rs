@@ -37,7 +37,7 @@ impl Application for MyApp {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::RouterMessage(router_msg) => {
-                return self.router.update(router_msg).map(Message::RouterMessage);
+                self.router.update(router_msg).map(Message::RouterMessage)
             }
         }
 
@@ -63,8 +63,8 @@ mod router {
 
     #[derive(Debug, Clone)]
     pub enum Message {
-        SplittedMessage(splitted::Message),
-        DemoMessage(demo::Message),
+        Splitted(splitted::Message),
+        Demo(demo::Message),
         GoToDemo,
         GoToSplitted,
     }
@@ -111,14 +111,14 @@ mod router {
                 Message::GoToSplitted => {
                     self.next_state(ViewState::splitted());
                 }
-                Message::SplittedMessage(msg) => {
+                Message::Splitted(msg) => {
                     if let ViewState::Splitted { state } = &mut self.state {
-                        return state.update(msg).map(Message::SplittedMessage);
+                        return state.update(msg).map(Message::Splitted);
                     }
                 }
-                Message::DemoMessage(demo_msg) => {
+                Message::Demo(demo_msg) => {
                     if let ViewState::Demo { state } = &mut self.state {
-                        return state.update(demo_msg).map(Message::DemoMessage);
+                        return state.update(demo_msg).map(Message::Demo);
                     }
                 }
             }
@@ -145,8 +145,8 @@ mod router {
         }
         pub fn view(&self) -> Element<Message> {
             match self {
-                Self::Splitted { state } => state.view().map(Message::SplittedMessage),
-                Self::Demo { state } => state.view().map(Message::DemoMessage),
+                Self::Splitted { state } => state.view().map(Message::Splitted),
+                Self::Demo { state } => state.view().map(Message::Demo),
             }
         }
     }
