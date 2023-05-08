@@ -25,6 +25,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'cupertino-spinner'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=cupertino-spinner",
+                    "--package=cupertino-spinner"
+                ],
+                "filter": {
+                    "name": "cupertino-spinner",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'card'",
             "cargo": {
                 "args": [
