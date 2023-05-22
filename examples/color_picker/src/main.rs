@@ -58,7 +58,7 @@ impl Sandbox for ColorPickerExample {
     fn view(&self) -> Element<'_, Self::Message> {
         let but = Button::new(Text::new("Set Color")).on_press(Message::ChooseColor);
 
-        let color_picker= ColorPicker::new(
+        let color_picker = ColorPicker::new(
             self.show_picker,
             self.color,
             but,

@@ -112,7 +112,7 @@ fn fill_circle(
     );
 }
 
-impl<  Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
+impl<Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
 where
     Renderer: iced_native::Renderer,
     Renderer::Theme: StyleSheet,
