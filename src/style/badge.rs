@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use super::colors;
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 use iced_style::Theme;
 

@@ -1,7 +1,7 @@
 //! Selection List
 //!
 //! *This API requires the following crate features to be activated: `selection_list`*
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 use iced_style::Theme;
 

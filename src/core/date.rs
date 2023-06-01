@@ -3,9 +3,9 @@
 use std::fmt::Display;
 
 use chrono::Local;
-#[cfg(not(target_arch = "wasm32"))]
+
 use chrono::{Datelike, Duration, NaiveDate};
-#[cfg(not(target_arch = "wasm32"))]
+
 use lazy_static::lazy_static;
 
 /// The date value
@@ -40,7 +40,6 @@ impl Display for Date {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 impl From<Date> for NaiveDate {
     fn from(date: Date) -> Self {
         Self::from_ymd_opt(date.year, date.month, date.day)
@@ -48,7 +47,6 @@ impl From<Date> for NaiveDate {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 impl From<NaiveDate> for Date {
     fn from(date: NaiveDate) -> Self {
         Self::from_ymd(date.year(), date.month(), date.day())
@@ -56,7 +54,7 @@ impl From<NaiveDate> for Date {
 }
 
 /// Creates a date with the previous month based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn pred_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 1 {
@@ -71,7 +69,7 @@ pub fn pred_month(date: NaiveDate) -> NaiveDate {
 }
 
 /// Creates a date with the next month based on given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn succ_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 12 {
@@ -86,7 +84,7 @@ pub fn succ_month(date: NaiveDate) -> NaiveDate {
 }
 
 /// Creates a date with the previous year based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn pred_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() - 1;
@@ -96,7 +94,7 @@ pub fn pred_year(date: NaiveDate) -> NaiveDate {
 }
 
 /// Creates a date with the next year based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn succ_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() + 1;
@@ -106,28 +104,28 @@ pub fn succ_year(date: NaiveDate) -> NaiveDate {
 }
 
 /// Calculates a date with the previous week based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn pred_week(date: NaiveDate) -> NaiveDate {
     date - Duration::days(7)
 }
 
 /// Calculates a date with the next week based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn succ_week(date: NaiveDate) -> NaiveDate {
     date + Duration::days(7)
 }
 
 /// Calculates a date with the previous day based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn pred_day(date: NaiveDate) -> NaiveDate {
     date - Duration::days(1)
 }
 
 /// Calculates a date with the next day based on the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn succ_day(date: NaiveDate) -> NaiveDate {
     date + Duration::days(1)
@@ -135,7 +133,7 @@ pub fn succ_day(date: NaiveDate) -> NaiveDate {
 
 /// Specifies if the calculated day lays in the previous, same or next month of
 /// the date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum IsInMonth {
     /// The day lays in the previous month.
@@ -150,7 +148,7 @@ pub enum IsInMonth {
 
 /// Calculates the day number at the given position in the calendar table based
 /// on the given year and month.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsInMonth) {
     let (x, y) = (x as isize, y as isize);
@@ -178,7 +176,7 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsI
 }
 
 /// Checks if the given year is a leap year.
-#[cfg(not(target_arch = "wasm32"))]
+
 const fn is_leap_year(year: i32) -> bool {
     let mod4 = year % 4 == 0;
     let mod100 = year % 100 == 0;
@@ -188,7 +186,7 @@ const fn is_leap_year(year: i32) -> bool {
 }
 
 /// Gets the number of days the given month in the year has.
-#[cfg(not(target_arch = "wasm32"))]
+
 const fn num_days_of_month(year: i32, month: u32) -> u32 {
     match month {
         4 | 6 | 9 | 11 => 30,
@@ -204,20 +202,19 @@ const fn num_days_of_month(year: i32, month: u32) -> u32 {
 }
 
 /// Gets the string representation of the year of the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn year_as_string(date: NaiveDate) -> String {
     date.format("%Y").to_string()
 }
 
 /// Gets the string representation of the month of the given date.
-#[cfg(not(target_arch = "wasm32"))]
+
 #[must_use]
 pub fn month_as_string(date: NaiveDate) -> String {
     date.format("%B").to_string()
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 lazy_static! {
     /// Gets the length of the longest month name.
     pub static ref MAX_MONTH_STR_LEN: usize = {
@@ -273,7 +270,7 @@ lazy_static! {
 }
 
 #[cfg(test)]
-#[cfg(not(target_arch = "wasm32"))]
+
 mod tests {
     use chrono::NaiveDate;
 

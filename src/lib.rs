@@ -47,15 +47,13 @@
     clippy::missing_docs_in_private_items
 )]
 
-#[cfg(not(target_arch = "wasm32"))]
 pub mod graphics;
-#[cfg(not(target_arch = "wasm32"))]
+
 pub mod native;
 
 pub mod core;
 pub mod style;
 
-#[cfg(not(target_arch = "wasm32"))]
 /// Exports for all platforms that are not WASM32.
 mod platform {
     #[doc(no_inline)]

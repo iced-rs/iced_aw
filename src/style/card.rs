@@ -1,7 +1,7 @@
 //! Displays a [`Card`](crate::native::Card).
 //!
 //! *This API requires the following crate features to be activated: card*
-#[cfg(not(target_arch = "wasm32"))]
+
 use super::colors;
 use iced_native::{Background, Color};
 use iced_style::Theme;

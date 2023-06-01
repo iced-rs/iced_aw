@@ -1,7 +1,7 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 use iced_style::Theme;
 

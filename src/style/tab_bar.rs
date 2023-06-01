@@ -5,7 +5,7 @@
 //! to use the [`Tabs`](crate::native::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 use iced_style::Theme;
 

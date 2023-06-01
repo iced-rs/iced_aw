@@ -142,7 +142,6 @@ impl Display for Period {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 impl From<Time> for chrono::NaiveTime {
     fn from(time: Time) -> Self {
         let (h, m, s, p) = match time {
@@ -182,7 +181,7 @@ impl From<chrono::NaiveTime> for Time {
 }
 
 #[cfg(test)]
-#[cfg(not(target_arch = "wasm32"))]
+
 mod tests {
     use chrono::NaiveTime;
 

@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
 use iced_native::Theme;
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
