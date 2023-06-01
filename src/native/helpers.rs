@@ -2,12 +2,15 @@
 //!
 //!
 
+#[cfg(any(feature = "grid", feature = "menu", feature = "badge", feature = "color_picker", feature = "date_picker", feature = "floating_element", feature = "modal"))]
 use iced_native::Element;
+#[cfg(feature = "color_picker")]
 use iced_style::Color;
 
 /// Creates a [`Grid`] with the given children.
 ///
 /// [`Grid`]: iced_aw::Grid
+#[cfg(feature = "grid")]
 #[macro_export]
 macro_rules! grid {
     () => (
@@ -21,6 +24,7 @@ macro_rules! grid {
 /// Creates a [`MenuTree`] with the given children.
 ///
 /// [`MenuTree`]: iced_aw::MenuTree
+#[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_tree {
     ($x:expr) => (
@@ -34,6 +38,7 @@ macro_rules! menu_tree {
 /// Creates a [`MenuBar`] with the given children.
 ///
 /// [`MenuBar`]: iced_aw::MenuBar
+#[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_bar {
     () => (
@@ -172,4 +177,48 @@ where
     Renderer: iced_native::text::Renderer,
 {
     crate::IconText::new(label)
+}
+
+#[cfg(feature = "modal")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn modal<'a, Content, Message, Renderer>(
+    show_modal: bool,
+    underlay: impl Into<Element<'a, Message, Renderer>>,
+    content: Content,
+) -> crate::Modal<'a, Content, Message, Renderer>
+where
+    Content: Fn() -> Element<'a, Message, Renderer>,
+    Message: Clone,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: crate::style::modal::StyleSheet,
+{
+    crate::Modal::new(show_modal, underlay, content)
+}
+
+#[cfg(feature = "number_input")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn number_input<'a, T, Message, Renderer, F>(
+    value: T,
+    max: T,
+    on_changed: F,
+) -> crate::NumberInput<'a, T, Message, Renderer>
+where
+    Message: Clone,
+    Renderer: iced_native::text::Renderer<Font = iced_graphics::Font>,
+    Renderer::Theme: crate::style::number_input::StyleSheet
+        + iced_style::text_input::StyleSheet
+        + iced_style::container::StyleSheet
+        + iced_style::text::StyleSheet,
+    F: 'static + Fn(T) -> Message + Copy,
+    T: 'static
+        + num_traits::Num
+        + num_traits::NumAssignOps
+        + PartialOrd
+        + std::fmt::Display
+        + std::str::FromStr
+        + Copy,
+{
+    crate::NumberInput::new(value, max, on_changed)
 }
