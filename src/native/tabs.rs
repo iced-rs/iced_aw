@@ -30,13 +30,20 @@ pub use tab_bar_position::TabBarPosition;
 /// # use iced_native::widget::Text;
 /// # use iced_aw::native::tabs;
 /// #
-/// # pub type Tabs<'a, Message> = tabs::Tabs<'a, Message, Null>;
+/// # pub type Tabs<'a, Message> = tabs::Tabs<'a, Message, TabId, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
-///     TabSelected(usize),
+///     TabSelected(TabId),
 /// }
 ///
-/// let active_tab = 0;
+/// #[derive(Debug, Clone)]
+/// enum TabId {
+///    One,
+///    Two,
+///    Three,
+/// }
+///
+/// let active_tab = TabId::One;
 ///
 /// let tabs = Tabs::new(
 ///     active_tab,
@@ -48,13 +55,13 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, Renderer>
+pub struct Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
-    tab_bar: TabBar<Message, Renderer>,
+    tab_bar: TabBar<Message, TabId, Renderer>,
     /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Renderer>>,
     /// The position of the [`TabBar`](crate::native::TabBar).
@@ -65,7 +72,7 @@ where
     height: Length,
 }
 
-impl<'a, Message, Renderer> Tabs<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
@@ -78,9 +85,9 @@ where
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn new<F>(active_tab: usize, on_select: F) -> Self
+    pub fn new<F>(active_tab: TabId, on_select: F) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
         Self::with_tabs(active_tab, Vec::new(), on_select)
     }
@@ -95,12 +102,12 @@ where
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(
-        active_tab: usize,
+        active_tab: TabId,
         tabs: Vec<(TabLabel, Element<'a, Message, Renderer>)>,
         on_select: F,
     ) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
         let mut tab_labels = Vec::with_capacity(tabs.len());
         let mut elements = Vec::with_capacity(tabs.len());
@@ -126,7 +133,7 @@ where
     #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
         self.tab_bar = self.tab_bar.on_close(on_close);
         self
@@ -256,7 +263,7 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
@@ -549,13 +556,13 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Tabs<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> From<Tabs<'a, Message, TabId, Renderer>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
 {
-    fn from(tabs: Tabs<'a, Message, Renderer>) -> Self {
+    fn from(tabs: Tabs<'a, Message, TabId, Renderer>) -> Self {
         Element::new(tabs)
     }
 }
