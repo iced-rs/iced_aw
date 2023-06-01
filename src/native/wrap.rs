@@ -336,7 +336,7 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
             spacing: 0.0,
             line_spacing: 0.0,
             line_minimal_length: 10.0,
-            _direction: PhantomData::default(),
+            _direction: PhantomData,
         }
     }
 }

@@ -70,7 +70,7 @@ where
             padding: 5.0,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             on_selected: Box::new(on_selected),
-            phantomdata: PhantomData::default(),
+            phantomdata: PhantomData,
         }))
         .padding(1);
 
@@ -104,7 +104,7 @@ where
             padding,
             style,
             on_selected: Box::new(on_selected),
-            phantomdata: PhantomData::default(),
+            phantomdata: PhantomData,
         }))
         .padding(1);
 

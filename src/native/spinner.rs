@@ -43,7 +43,7 @@ where
             height: Length::Fixed(20.0),
             rate: Duration::from_secs_f32(1.0),
             circle_radius: 2.0,
-            renderer: PhantomData::default(),
+            renderer: PhantomData,
         }
     }
 }

@@ -147,7 +147,7 @@ where
             icon_font: None,
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
-            _renderer: PhantomData::default(),
+            _renderer: PhantomData,
         }
     }
 
