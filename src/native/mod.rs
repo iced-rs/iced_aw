@@ -1,5 +1,8 @@
 //! Stateless, pure widgets for iced
 
+pub mod helpers;
+pub use helpers::*;
+
 pub mod overlay;
 
 #[cfg(feature = "badge")]
@@ -46,7 +49,7 @@ pub use floating_element::FloatingElement;
 #[cfg(feature = "grid")]
 pub mod grid;
 #[cfg(feature = "grid")]
-pub use grid::Grid;
+pub use grid::{Grid, Strategy};
 
 #[cfg(feature = "icon_text")]
 pub mod icon_text;

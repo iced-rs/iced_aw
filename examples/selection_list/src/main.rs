@@ -2,7 +2,7 @@ use iced::{
     widget::{Column, Container, Space, Text},
     Alignment, Element, Length, Sandbox, Settings,
 };
-use iced_aw::selection_list::{SelectionList, SelectionListStyles};
+use iced_aw::{selection_list::SelectionList, SelectionListStyles};
 
 pub fn main() -> iced::Result {
     Example::run(Settings::default())

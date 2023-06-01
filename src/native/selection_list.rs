@@ -1,6 +1,6 @@
 //! Display a dropdown list of selectable values.
 pub mod list;
-use crate::selection_list::StyleSheet;
+use crate::style::selection_list::StyleSheet;
 
 use iced_native::{
     event,
