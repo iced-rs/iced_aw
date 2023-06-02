@@ -43,8 +43,10 @@ pub use tab_bar_position::TabBarPosition;
 ///    Three,
 /// }
 ///
+/// let active_tab = TabId::One;
+///
 /// let tabs = Tabs::new(
-///     TabId::One,
+///     active_tab,
 ///     Message::TabSelected,
 /// )
 /// .push(TabId::One, TabLabel::Text(String::from("One")), Text::new(String::from("One")))
@@ -86,7 +88,7 @@ where
     /// It expects:
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
-    ///         It takes the identifier of the selected tab.
+    ///         It takes the index of the selected tab.
     pub fn new<F>(active_tab: TabId, on_select: F) -> Self
     where
         F: 'static + Fn(TabId) -> Message,
