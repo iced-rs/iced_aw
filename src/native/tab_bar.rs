@@ -4,6 +4,7 @@
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
+use std::fmt::Debug;
 use iced_native::{
     alignment::{Horizontal, Vertical},
     event,
@@ -111,7 +112,7 @@ impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet,
-    TabId: Eq + Clone
+    TabId: Eq + Clone + Debug
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -119,8 +120,8 @@ where
     /// It expects:
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
-    ///         It takes the index of the selected tab.
-    pub fn new<F>(active_tab: TabId, on_select: F) -> Self
+    ///         It takes the identifier of the selected tab.
+    pub fn new<F>(active_tab: TabId, on_select: F) -> Result<Self>
     where
         F: 'static + Fn(TabId) -> Message,
     {
@@ -132,14 +133,15 @@ where
     ///
     /// It expects:
     ///     * the index of the currently active tab.
-    ///     * a vector containing the [`TabLabel`](TabLabel)s of the [`TabBar`](TabBar).
+    ///     * a vector containing the [`TabLabel`](TabLabel)s of the [`TabBar`](TabBar) and it's indices.
     ///     * the function that will be called if a tab is selected by the user.
-    ///         It takes the index of the selected tab.
-    pub fn width_tab_labels<F>(active_tab: TabId, tab_labels: Vec<(TabId, TabLabel)>, on_select: F) -> Self
+    ///         It takes the identifier of the selected tab.
+    pub fn width_tab_labels<F>(active_tab: TabId, tab_labels: Vec<(TabId, TabLabel)>, on_select: F) -> Result<Self>
     where
         F: 'static + Fn(TabId) -> Message,
     {
-        Self {
+        tab_labels
+        Ok(Self {
             active_tab: tab_labels.iter().position(|(id, _)| *id == active_tab).unwrap_or(0),
             tab_indices: tab_labels.iter().map(|(id, _)| id.clone()).collect(),
             tab_labels: tab_labels.into_iter().map(|(_, label)| label).collect(),
@@ -158,7 +160,7 @@ where
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             _renderer: PhantomData,
-        }
+        })
     }
 
     /// Gets the index of the currently active tab on the [`TabBar`](TabBar).
@@ -294,11 +296,17 @@ where
     }
 
     /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`](TabBar).
-    #[must_use]
-    pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
-        self.tab_labels.push(tab_label);
-        self.tab_indices.push(id);
-        self
+    pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Result<Self> {
+        if self.tab_indices.contains(&id) {
+            Err(format!(
+                "TabBar already contains a tab with id: {:?}",
+                id
+            ))
+        } else {
+            self.tab_labels.push(tab_label);
+            self.tab_indices.push(id);
+            Ok(self)
+        }
     }
 }
 
@@ -646,3 +654,9 @@ where
         Element::new(tab_bar)
     }
 }
+
+enum TabBarError {
+    IndexExistsAlready,
+}
+
+type Result<T> = std::result::Result<T, String>;
