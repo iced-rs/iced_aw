@@ -42,7 +42,10 @@ impl Sandbox for TabBarExample {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::TabSelected(index) => self.active_tab = index,
+            Message::TabSelected(index) => {
+                println!("Tab selected: {}", index);
+                self.active_tab = index
+            },
             Message::TabClosed(index) => {
                 self.tabs.remove(index);
                 println!("active tab before: {}", self.active_tab);
@@ -97,7 +100,10 @@ impl Sandbox for TabBarExample {
                     .fold(
                         TabBar::new(self.active_tab, Message::TabSelected),
                         |tab_bar, (tab_label, _)| {
-                            tab_bar.push(TabLabel::Text(tab_label.to_owned()))
+                            // manually create a new index for the new tab
+                            // starting from 0, when there is no tab created yet
+                            let new_idx = tab_bar.get_tab_count();
+                            tab_bar.push(new_idx, TabLabel::Text(tab_label.to_owned()))
                         },
                     )
                     .on_close(Message::TabClosed)
