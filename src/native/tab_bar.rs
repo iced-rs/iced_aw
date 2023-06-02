@@ -41,7 +41,7 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// # use iced_native::{renderer::Null};
 /// # use iced_aw::native::tab_bar;
 /// #
-/// # pub type TabBar<Message> = tab_bar::TabBar<Message, u32, Null>;
+/// # pub type TabBar<Message> = tab_bar::TabBar<Message, TabId, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(TabId),
@@ -69,7 +69,7 @@ where
     Renderer::Theme: StyleSheet,
     TabId: Eq + Clone
 {
-    /// The index and identifier of the currently active tab.
+    /// The index of the currently active tab.
     active_tab: usize,
     /// The vector containing the labels of the tabs.
     tab_labels: Vec<TabLabel>,
