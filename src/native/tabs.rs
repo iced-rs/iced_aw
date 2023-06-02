@@ -49,9 +49,9 @@ pub use tab_bar_position::TabBarPosition;
 ///     active_tab,
 ///     Message::TabSelected,
 /// )
-/// .push(TabLabel::Text(String::from("One")), Text::new(String::from("One")))
-/// .push(TabLabel::Text(String::from("Two")), Text::new(String::from("Two")))
-/// .push(TabLabel::Text(String::from("Three")), Text::new(String::from("Three")));
+/// .push(TabId::One, TabLabel::Text(String::from("One")), Text::new(String::from("One")))
+/// .push(TabId::Two, TabLabel::Text(String::from("Two")), Text::new(String::from("Two")))
+/// .push(TabId::Three, TabLabel::Text(String::from("Three")), Text::new(String::from("Three")));
 /// ```
 ///
 #[allow(missing_debug_implementations)]
@@ -59,11 +59,14 @@ pub struct Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
+    TabId: Eq + Clone
 {
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, TabId, Renderer>,
     /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Renderer>>,
+    /// The vector containing the indices of the tabs.
+    indices: Vec<TabId>,
     /// The position of the [`TabBar`](crate::native::TabBar).
     tab_bar_position: TabBarPosition,
     /// the width of the [`Tabs`](Tabs).
@@ -76,6 +79,7 @@ impl<'a, Message, TabId, Renderer> Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    TabId: Eq + Clone,
 {
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
     /// and a specified message which will be send when a tab is selected by
@@ -103,7 +107,7 @@ where
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(
         active_tab: TabId,
-        tabs: Vec<(TabLabel, Element<'a, Message, Renderer>)>,
+        tabs: Vec<(TabId, TabLabel, Element<'a, Message, Renderer>)>,
         on_select: F,
     ) -> Self
     where
@@ -111,15 +115,18 @@ where
     {
         let mut tab_labels = Vec::with_capacity(tabs.len());
         let mut elements = Vec::with_capacity(tabs.len());
+        let mut indices = Vec::with_capacity(tabs.len());
 
-        for (tab_label, element) in tabs {
-            tab_labels.push(tab_label);
+        for (id,tab_label,  element) in tabs {
+            tab_labels.push((id.clone(), tab_label));
+            indices.push(id);
             elements.push(element);
         }
 
         Tabs {
             tab_bar: TabBar::width_tab_labels(active_tab, tab_labels, on_select),
             tabs: elements,
+            indices,
             tab_bar_position: TabBarPosition::Top,
             width: Length::Fill,
             height: Length::Fill,
@@ -253,12 +260,13 @@ where
     /// Pushes a [`TabLabel`](super::tab_bar::TabLabel) along with the tabs
     /// content to the [`Tabs`](Tabs).
     #[must_use]
-    pub fn push<E>(mut self, tab_label: TabLabel, element: E) -> Self
+    pub fn push<E>(mut self, id: TabId, tab_label: TabLabel, element: E) -> Self
     where
         E: Into<Element<'a, Message, Renderer>>,
     {
-        self.tab_bar = self.tab_bar.push(tab_label);
+        self.tab_bar = self.tab_bar.push(id.clone(), tab_label);
         self.tabs.push(element.into());
+        self.indices.push(id);
         self
     }
 }
@@ -267,6 +275,7 @@ impl<'a, Message, TabId, Renderer> Widget<Message, Renderer> for Tabs<'a, Messag
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    TabId: Eq + Clone,
 {
     fn children(&self) -> Vec<Tree> {
         self.tabs.iter().map(Tree::new).collect()
@@ -295,7 +304,7 @@ where
             .width(self.width)
             .height(self.height);
 
-        let mut tab_content_node = self.tabs.get(self.tab_bar.get_active_tab()).map_or_else(
+        let mut tab_content_node = self.tabs.get(self.tab_bar.get_active_tab_idx()).map_or_else(
             || {
                 Row::<Message, Renderer>::new()
                     .width(Length::Fill)
@@ -376,12 +385,12 @@ where
             clipboard,
             shell,
         );
-
-        let status_element = self.tabs.get_mut(self.tab_bar.get_active_tab()).map_or(
+        let idx = self.tab_bar.get_active_tab_idx();
+        let status_element = self.tabs.get_mut(idx).map_or(
             event::Status::Ignored,
             |element| {
                 element.as_widget_mut().on_event(
-                    &mut state.children[self.tab_bar.get_active_tab()],
+                    &mut state.children[idx],
                     event,
                     tab_content_layout,
                     cursor_position,
@@ -437,10 +446,10 @@ where
                 .next()
                 .expect("Graphics: There should be a TabBar at the bottom position"),
         };
-
-        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+        let idx = self.tab_bar.get_active_tab_idx();
+        if let Some(element) = self.tabs.get(idx) {
             let new_mouse_interaction = element.as_widget().mouse_interaction(
-                &state.children[self.tab_bar.get_active_tab()],
+                &state.children[idx],
                 tab_content_layout,
                 cursor_position,
                 viewport,
@@ -496,9 +505,10 @@ where
                 .expect("Graphics: There should be a TabBar at the bottom position"),
         };
 
-        if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab()) {
+        let idx = self.tab_bar.get_active_tab_idx();
+        if let Some(element) = self.tabs.get(idx) {
             element.as_widget().draw(
-                &state.children[self.tab_bar.get_active_tab()],
+                &state.children[idx],
                 renderer,
                 theme,
                 style,
@@ -521,12 +531,13 @@ where
         };
 
         layout.and_then(|layout| {
+            let idx = self.tab_bar.get_active_tab_idx();
             self.tabs
-                .get_mut(self.tab_bar.get_active_tab())
+                .get_mut(idx)
                 .map(Element::as_widget_mut)
                 .and_then(|w| {
                     w.overlay(
-                        &mut state.children[self.tab_bar.get_active_tab()],
+                        &mut state.children[idx],
                         layout,
                         renderer,
                     )
@@ -541,7 +552,7 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<Message>,
     ) {
-        let active_tab = self.tab_bar.get_active_tab();
+        let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, &mut |operation| {
             self.tabs[active_tab].as_widget().operate(
                 &mut tree.children[active_tab],
@@ -561,6 +572,7 @@ where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
+    TabId: 'a + Eq + Clone,
 {
     fn from(tabs: Tabs<'a, Message, TabId, Renderer>) -> Self {
         Element::new(tabs)
