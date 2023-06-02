@@ -2,7 +2,7 @@ use iced::{
     widget::{Button, Container, Row, Text},
     Alignment, Element, Length, Sandbox, Settings,
 };
-use iced_aw::{date_picker::Date, DatePicker};
+use iced_aw::{date_picker::Date, helpers::date_picker};
 
 fn main() -> iced::Result {
     DatePickerExample::run(Settings::default())
@@ -54,7 +54,7 @@ impl Sandbox for DatePickerExample {
     fn view(&self) -> Element<'_, Self::Message> {
         let but = Button::new(Text::new("Set Date")).on_press(Message::ChooseDate);
 
-        let datepicker = DatePicker::new(
+        let datepicker = date_picker(
             self.show_picker,
             self.date,
             but,

@@ -6,8 +6,8 @@ use iced::{
     Element, Length, Sandbox, Settings, Theme,
 };
 
-use iced_aw::floating_element::{self, FloatingElement};
-use iced_aw::{Icon, ICON_FONT};
+use iced_aw::floating_element::{Anchor};
+use iced_aw::{helpers::floating_element, Icon, ICON_FONT};
 
 fn main() -> iced::Result {
     FloatingElementExample::run(Settings::default())
@@ -49,7 +49,7 @@ impl Sandbox for FloatingElementExample {
         );
         let scrollable_content = Scrollable::new(scrollable_content);
 
-        let content = FloatingElement::new(
+        let content = floating_element(
             Container::new(scrollable_content)
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -73,7 +73,7 @@ impl Sandbox for FloatingElementExample {
                 .into()
             },
         )
-        .anchor(floating_element::Anchor::SouthEast)
+        .anchor(Anchor::SouthEast)
         .offset(20.0)
         .hide(false);
 
