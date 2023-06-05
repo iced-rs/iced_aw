@@ -47,16 +47,23 @@ fn main() -> iced::Result {
 }
 
 struct TabBarExample {
-    active_tab: usize,
+    active_tab: TabId,
     login_tab: LoginTab,
     ferris_tab: FerrisTab,
     counter_tab: CounterTab,
     settings_tab: SettingsTab,
 }
+#[derive(Clone, PartialEq, Eq, Debug)]
+enum TabId {
+    Login,
+    Ferris,
+    Counter,
+    Settings,
+}
 
 #[derive(Clone, Debug)]
 enum Message {
-    TabSelected(usize),
+    TabSelected(TabId),
     Login(LoginMessage),
     Ferris(FerrisMessage),
     Counter(CounterMessage),
@@ -68,7 +75,7 @@ impl Sandbox for TabBarExample {
 
     fn new() -> Self {
         TabBarExample {
-            active_tab: 0,
+            active_tab: TabId::Login,
             login_tab: LoginTab::new(),
             ferris_tab: FerrisTab::new(),
             counter_tab: CounterTab::new(),
@@ -102,11 +109,12 @@ impl Sandbox for TabBarExample {
             .tab_bar_theme
             .unwrap_or_default();
 
-        Tabs::new(self.active_tab, Message::TabSelected)
-            .push(self.login_tab.tab_label(), self.login_tab.view())
-            .push(self.ferris_tab.tab_label(), self.ferris_tab.view())
-            .push(self.counter_tab.tab_label(), self.counter_tab.view())
-            .push(self.settings_tab.tab_label(), self.settings_tab.view())
+        Tabs::new(Message::TabSelected)
+            .push(TabId::Login, self.login_tab.tab_label(), self.login_tab.view())
+            .push(TabId::Ferris, self.ferris_tab.tab_label(), self.ferris_tab.view())
+            .push(TabId::Counter, self.counter_tab.tab_label(), self.counter_tab.view())
+            .push(TabId::Settings, self.settings_tab.tab_label(), self.settings_tab.view())
+            .set_active_tab(&self.active_tab)
             .tab_bar_style(theme)
             .icon_font(ICON_FONT)
             .tab_bar_position(match position {
