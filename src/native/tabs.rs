@@ -43,15 +43,11 @@ pub use tab_bar_position::TabBarPosition;
 ///    Three,
 /// }
 ///
-/// let active_tab = TabId::One;
-///
-/// let tabs = Tabs::new(
-///     active_tab,
-///     Message::TabSelected,
-/// )
+/// let tabs = Tabs::new(Message::TabSelected)
 /// .push(TabId::One, TabLabel::Text(String::from("One")), Text::new(String::from("One")))
 /// .push(TabId::Two, TabLabel::Text(String::from("Two")), Text::new(String::from("Two")))
-/// .push(TabId::Three, TabLabel::Text(String::from("Three")), Text::new(String::from("Three")));
+/// .push(TabId::Three, TabLabel::Text(String::from("Three")), Text::new(String::from("Three")))
+/// .set_active_tab(&TabId::Two);
 /// ```
 ///
 #[allow(missing_debug_implementations)]
@@ -89,11 +85,11 @@ where
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn new<F>(active_tab: TabId, on_select: F) -> Self
+    pub fn new<F>(on_select: F) -> Self
     where
         F: 'static + Fn(TabId) -> Message,
     {
-        Self::with_tabs(active_tab, Vec::new(), on_select)
+        Self::with_tabs(Vec::new(), on_select)
     }
 
     /// Similar to `new` but with a given Vector of the
@@ -106,7 +102,6 @@ where
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(
-        active_tab: TabId,
         tabs: Vec<(TabId, TabLabel, Element<'a, Message, Renderer>)>,
         on_select: F,
     ) -> Self
@@ -124,7 +119,7 @@ where
         }
 
         Tabs {
-            tab_bar: TabBar::width_tab_labels(active_tab, tab_labels, on_select),
+            tab_bar: TabBar::with_tab_labels(tab_labels, on_select),
             tabs: elements,
             indices,
             tab_bar_position: TabBarPosition::Top,
@@ -267,6 +262,13 @@ where
         self.tab_bar = self.tab_bar.push(id.clone(), tab_label);
         self.tabs.push(element.into());
         self.indices.push(id);
+        self
+    }
+
+    /// Sets the active tab of the [`Tabs`](Tabs) using the TabId.
+    #[must_use]
+    pub fn set_active_tab(mut self, id: &TabId) -> Self {
+        self.tab_bar = self.tab_bar.set_active_tab(id);
         self
     }
 }

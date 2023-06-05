@@ -98,12 +98,12 @@ impl Sandbox for TabBarExample {
                 self.tabs
                     .iter()
                     .fold(
-                        TabBar::new(self.active_tab, Message::TabSelected),
+                        TabBar::new(Message::TabSelected),
                         |tab_bar, (tab_label, _)| {
                             // manually create a new index for the new tab
                             // starting from 0, when there is no tab created yet
-                            let new_idx = tab_bar.get_tab_count();
-                            tab_bar.push(new_idx, TabLabel::Text(tab_label.to_owned()))
+                            let idx = tab_bar.size();
+                            tab_bar.push(idx, TabLabel::Text(tab_label.to_owned()))
                         },
                     )
                     .on_close(Message::TabClosed)

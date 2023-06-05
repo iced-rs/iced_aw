@@ -109,11 +109,12 @@ impl Sandbox for TabBarExample {
             .tab_bar_theme
             .unwrap_or_default();
 
-        Tabs::new(self.active_tab.clone(), Message::TabSelected)
+        Tabs::new(Message::TabSelected)
             .push(TabId::Login, self.login_tab.tab_label(), self.login_tab.view())
             .push(TabId::Ferris, self.ferris_tab.tab_label(), self.ferris_tab.view())
             .push(TabId::Counter, self.counter_tab.tab_label(), self.counter_tab.view())
             .push(TabId::Settings, self.settings_tab.tab_label(), self.settings_tab.view())
+            .set_active_tab(&self.active_tab)
             .tab_bar_style(theme)
             .icon_font(ICON_FONT)
             .tab_bar_position(match position {

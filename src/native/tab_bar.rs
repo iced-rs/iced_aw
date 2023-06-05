@@ -55,12 +55,12 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// }
 ///
 /// let tab_bar = TabBar::new(
-///     TabId::One,
 ///     Message::TabSelected,
 /// )
 /// .push(TabId::One, TabLabel::Text(String::from("One")))
 /// .push(TabId::Two, TabLabel::Text(String::from("Two")))
-/// .push(TabId::Three, TabLabel::Text(String::from("Three")));
+/// .push(TabId::Three, TabLabel::Text(String::from("Three")))
+/// .set_active_tab(&TabId::One);
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct TabBar<Message, TabId, Renderer>
@@ -120,11 +120,11 @@ where
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn new<F>(active_tab: TabId, on_select: F) -> Self
+    pub fn new<F>(on_select: F) -> Self
     where
         F: 'static + Fn(TabId) -> Message,
     {
-        Self::width_tab_labels(active_tab, Vec::new(), on_select)
+        Self::with_tab_labels(Vec::new(), on_select)
     }
 
     /// Similar to `new` but with a given Vector of the
@@ -135,12 +135,12 @@ where
     ///     * a vector containing the [`TabLabel`](TabLabel)s of the [`TabBar`](TabBar).
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn width_tab_labels<F>(active_tab: TabId, tab_labels: Vec<(TabId, TabLabel)>, on_select: F) -> Self
+    pub fn with_tab_labels<F>(tab_labels: Vec<(TabId, TabLabel)>, on_select: F) -> Self
     where
         F: 'static + Fn(TabId) -> Message,
     {
         Self {
-            active_tab: tab_labels.iter().position(|(id, _)| *id == active_tab).unwrap_or(0),
+            active_tab: 0,
             tab_indices: tab_labels.iter().map(|(id, _)| id.clone()).collect(),
             tab_labels: tab_labels.into_iter().map(|(_, label)| label).collect(),
             on_select: Box::new(on_select),
@@ -169,13 +169,13 @@ where
 
     /// Gets the id of the currently active tab on the [`TabBar`](TabBar).
     #[must_use]
-    pub fn get_active_tab_id(&self) -> &TabId {
-        self.tab_indices.get(self.active_tab).unwrap()
+    pub fn get_active_tab_id(&self) -> Option<&TabId> {
+        self.tab_indices.get(self.active_tab)
     }
 
     /// Gets the amount of tabs on the [`TabBar`](TabBar).
     #[must_use]
-    pub fn get_tab_count(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.tab_indices.len()
     }
 
@@ -298,6 +298,18 @@ where
     pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self.tab_indices.push(id);
+        self
+    }
+
+    /// Sets up the active tab on the [`TabBar`](TabBar).
+    #[must_use]
+    pub fn set_active_tab(mut self, active_tab: &TabId) -> Self {
+        self.active_tab = if let Some(a) = self
+            .tab_indices
+            .iter()
+            .position(|id| id == active_tab) {
+            a
+        } else { 0 };
         self
     }
 }
