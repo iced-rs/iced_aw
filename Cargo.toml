@@ -33,6 +33,7 @@ split = []
 menu = []
 quad = []
 spinner = []
+context_menu = []
 
 default = [
     "badge",
@@ -52,6 +53,7 @@ default = [
     "split",
     "menu",
     "quad",
+    "context_menu"
 ]
 
 [dependencies]
@@ -101,7 +103,8 @@ members = [
     "examples/split",
     "examples/split_scroller",
     "examples/menu",
-    "examples/spinner"
+    "examples/spinner",
+    "examples/context_menu"
 ]
 
 [workspace.dependencies.iced]
