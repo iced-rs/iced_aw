@@ -2,7 +2,15 @@
 //!
 //!
 
-#[cfg(any(feature = "grid", feature = "menu", feature = "badge", feature = "color_picker", feature = "date_picker", feature = "floating_element", feature = "modal"))]
+#[cfg(any(
+    feature = "grid",
+    feature = "menu",
+    feature = "badge",
+    feature = "color_picker",
+    feature = "date_picker",
+    feature = "floating_element",
+    feature = "modal"
+))]
 use iced_native::Element;
 #[cfg(feature = "color_picker")]
 use iced_style::Color;

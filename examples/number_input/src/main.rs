@@ -2,7 +2,7 @@ use iced::{
     widget::{Container, Row, Text},
     window, Alignment, Element, Length, Sandbox, Settings,
 };
-use iced_aw::{number_input,  style::NumberInputStyles};
+use iced_aw::{number_input, style::NumberInputStyles};
 
 #[derive(Default)]
 pub struct NumberInputDemo {

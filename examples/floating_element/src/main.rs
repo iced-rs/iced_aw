@@ -6,7 +6,7 @@ use iced::{
     Element, Length, Sandbox, Settings, Theme,
 };
 
-use iced_aw::floating_element::{Anchor};
+use iced_aw::floating_element::Anchor;
 use iced_aw::{helpers::floating_element, Icon, ICON_FONT};
 
 fn main() -> iced::Result {
