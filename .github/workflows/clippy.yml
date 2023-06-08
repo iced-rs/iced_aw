@@ -2,10 +2,9 @@ name: Clippy
 on: [push, pull_request]
 jobs:
   all:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [stable, nightly]
     steps:
       - uses: hecrj/setup-rust-action@v1
