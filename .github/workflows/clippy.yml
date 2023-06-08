@@ -2,10 +2,15 @@ name: Clippy
 on: [push, pull_request]
 jobs:
   all:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable, nightly]
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:
+          rust-version: ${{ matrix.rust }}
           components: clippy
       - uses: actions/checkout@master
       - name: Lint with clippy
