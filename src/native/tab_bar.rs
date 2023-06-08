@@ -67,7 +67,7 @@ pub struct TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
-    TabId: Eq + Clone
+    TabId: Eq + Clone,
 {
     /// The index of the currently active tab.
     active_tab: usize,
@@ -111,7 +111,7 @@ impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet,
-    TabId: Eq + Clone
+    TabId: Eq + Clone,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -304,12 +304,11 @@ where
     /// Sets up the active tab on the [`TabBar`](TabBar).
     #[must_use]
     pub fn set_active_tab(mut self, active_tab: &TabId) -> Self {
-        self.active_tab = if let Some(a) = self
-            .tab_indices
-            .iter()
-            .position(|id| id == active_tab) {
+        self.active_tab = if let Some(a) = self.tab_indices.iter().position(|id| id == active_tab) {
             a
-        } else { 0 };
+        } else {
+            0
+        };
         self
     }
 }
@@ -318,7 +317,7 @@ impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, Tab
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
-    TabId: Eq + Clone
+    TabId: Eq + Clone,
 {
     fn width(&self) -> Length {
         self.width
@@ -647,12 +646,13 @@ fn draw_tab<Renderer>(
     };
 }
 
-impl<'a, Message, TabId, Renderer> From<TabBar<Message, TabId, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> From<TabBar<Message, TabId, Renderer>>
+    for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
-    TabId: 'a + Eq + Clone
+    TabId: 'a + Eq + Clone,
 {
     fn from(tab_bar: TabBar<Message, TabId, Renderer>) -> Self {
         Element::new(tab_bar)

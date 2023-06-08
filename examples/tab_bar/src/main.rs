@@ -45,7 +45,7 @@ impl Sandbox for TabBarExample {
             Message::TabSelected(index) => {
                 println!("Tab selected: {}", index);
                 self.active_tab = index
-            },
+            }
             Message::TabClosed(index) => {
                 self.tabs.remove(index);
                 println!("active tab before: {}", self.active_tab);
