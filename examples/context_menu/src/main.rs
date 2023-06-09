@@ -1,5 +1,5 @@
 use iced::{
-    widget::{container, Button, Container, Row, Text},
+    widget::{container, column, Button, Container, Row, Text},
     Alignment, Element, Sandbox, Settings,
 };
 
@@ -10,14 +10,16 @@ fn main() -> iced::Result {
 }
 
 #[derive(Clone, Debug)]
-enum Message {
-    OpenModal,
-    CloseModal,
+pub enum Message {
+    ButtonClicked,
+    Choice1,
+    Choice2,
+    Choice3,
+    Choice4,
 }
 
 #[derive(Default)]
 struct ContextMenuExample {
-    show_modal: bool,
     last_message: Option<Message>,
 }
 
@@ -33,11 +35,7 @@ impl Sandbox for ContextMenuExample {
     }
 
     fn update(&mut self, message: Self::Message) {
-        match message {
-            Message::OpenModal => self.show_modal = true,
-            Message::CloseModal => self.show_modal = false,
-        }
-        self.last_message = Some(message)
+        self.last_message = Some(message);
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
@@ -45,13 +43,16 @@ impl Sandbox for ContextMenuExample {
             Row::new()
                 .spacing(10)
                 .align_items(Alignment::Center)
-                .push(Button::new(Text::new("Open modal!")).on_press(Message::OpenModal))
+                .push(Button::new(Text::new("I'm a special button!")).on_press(Message::ButtonClicked))
                 .push(Text::new(format!(
                     "Last message: {}",
                     match self.last_message.as_ref() {
                         Some(message) => match message {
-                            Message::OpenModal => "Modal opened",
-                            Message::CloseModal => "Modal closed",
+                            Message::ButtonClicked => "button clicked",
+                            Message::Choice1 => "choice 1",
+                            Message::Choice2 => "choice 2",
+                            Message::Choice3 => "choice 3",
+                            Message::Choice4 => "choice 4",
                         },
                         None => "None",
                     }
@@ -59,42 +60,16 @@ impl Sandbox for ContextMenuExample {
         );
 
         ContextMenu::new(content, || {
-            container(my_component::MyComponent).into()
+            column( vec![
+                iced::widget::button("Choice 1").on_press(Message::Choice1).into(),
+                iced::widget::button("Choice 2").on_press(Message::Choice2).into(),
+                iced::widget::button("Choice 3").on_press(Message::Choice3).into(),
+                iced::widget::button("Choice 4").on_press(Message::Choice4).into(),
+            ]
+            ).into()
         })
-        .backdrop(Message::CloseModal)
-        .on_esc(Message::CloseModal)
         .into()
     }
 }
 
-mod my_component {
-    use iced::{
-        widget::{container, row, text},
-        Element,
-    };
-    use iced_lazy::{self, Component};
 
-    pub struct MyComponent;
-
-    impl<Message> Component<Message, iced::Renderer> for MyComponent {
-        type State = ();
-        type Event = ();
-
-        fn update(&mut self, _state: &mut Self::State, _event: Self::Event) -> Option<Message> {
-            None
-        }
-
-        fn view(&self, _state: &Self::State) -> Element<Self::Event, iced::Renderer> {
-            container(row![text("Hello there")]).into()
-        }
-    }
-
-    impl<'a, Message> From<MyComponent> for Element<'a, Message, iced::Renderer>
-    where
-        Message: 'a,
-    {
-        fn from(my_component: MyComponent) -> Self {
-            iced_lazy::component(my_component)
-        }
-    }
-}
