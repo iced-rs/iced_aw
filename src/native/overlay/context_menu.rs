@@ -23,10 +23,6 @@ where
     tree: &'a mut Tree,
     /// The content of the [`ModalOverlay`](ModalOverlay).
     content: Element<'a, Message, Renderer>,
-    /// The optional message that will be send when the user clicks on the backdrop.
-    backdrop: Option<Message>,
-    /// The optional message that will be send when the ESC key was pressed.
-    esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
 
@@ -43,8 +39,6 @@ where
     pub(crate) fn new<C>(
         tree: &'a mut Tree,
         content: C,
-        backdrop: Option<Message>,
-        esc: Option<Message>,
         style: <Renderer::Theme as StyleSheet>::Style,
         state: &'a mut context_menu::State
     ) -> Self
@@ -54,8 +48,6 @@ where
         ContextMenuOverlay {
             tree,
             content: content.into(),
-            backdrop,
-            esc,
             style,
             state,
         }
@@ -112,39 +104,37 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        // TODO clean this up
-        let esc_status = self
-            .esc
-            .as_ref()
-            .map_or(event::Status::Ignored, |esc| match event {
-                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                    if key_code == keyboard::KeyCode::Escape {
-                        self.state.show = false;
-                        event::Status::Captured
-                    } else {
-                        event::Status::Ignored
-                    }
-                }
-                _ => event::Status::Ignored,
-            });
 
-        let backdrop_status = self.backdrop.as_ref().zip(layout.children().next()).map_or(
-            event::Status::Ignored,
-            |(backdrop, layout)| match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+        //println!("on_event  !");
+        
+        let status = match event {
+            Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
+                if key_code == keyboard::KeyCode::Escape {
+                    self.state.show = false;
+                    println!("exit!");
+                    event::Status::Captured
+                } else {
+                    event::Status::Ignored
+                }
+            }
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     if layout.bounds().contains(cursor_position) {
+                        println!("ignore in bound!");
+
                         event::Status::Ignored
                     } else {
                         self.state.show = false;
+                        println!("exit!");
                         event::Status::Captured
                     }
                 }
-                _ => event::Status::Ignored,
-            },
-        );
+            _ => event::Status::Ignored,
+        };
 
-        match esc_status.merge(backdrop_status) {
+      
+
+        match status {
             event::Status::Ignored => self.content.as_widget_mut().on_event(
                 self.tree,
                 event,

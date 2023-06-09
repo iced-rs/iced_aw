@@ -11,7 +11,7 @@ use crate::native::overlay::ContextMenuOverlay;
 
 pub use crate::style::context_menu::StyleSheet;
 
-use super::overlay;
+
 
 /// A modal content as an overlay.
 ///
@@ -50,10 +50,6 @@ where
     underlay: Element<'a, Message, Renderer>,
     /// The content of teh [`ModalOverlay`](ModalOverlay).
     content: Content,
-    /// The optional message that will be send when the user clicked on the backdrop.
-    backdrop: Option<Message>,
-    /// The optional message that will be send when the ESC key was pressed.
-    esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
 }
@@ -83,29 +79,11 @@ where
         ContextMenu {
             underlay: underlay.into(),
             content,
-            backdrop: None,
-            esc: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
 
-    /// Sets the message that will be produced when the backdrop of the
-    /// [`Modal`](Modal) is clicked.
-    #[must_use]
-    pub fn backdrop(mut self, message: Message) -> Self {
-        self.backdrop = Some(message);
-        self
-    }
 
-    /// Sets the message that will be produced when the Escape Key is
-    /// pressed when the modal is open.
-    ///
-    /// This can be used to close the modal on ESC.
-    #[must_use]
-    pub fn on_esc(mut self, message: Message) -> Self {
-        self.esc = Some(message);
-        self
-    }
 
     /// Sets the style of the [`Modal`](Modal).
     #[must_use]
@@ -202,8 +180,6 @@ where
         renderer: &Renderer,
     ) -> mouse::Interaction {
 
-
-
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
@@ -262,8 +238,6 @@ where
             ContextMenuOverlay::new(
                 &mut state.children[1],
                 content,
-                self.backdrop.clone(),
-                self.esc.clone(),
                 self.style,
                 s,
             )
