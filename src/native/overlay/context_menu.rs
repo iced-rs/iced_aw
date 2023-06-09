@@ -8,6 +8,7 @@ use iced_native::{
 };
 use iced_native::{widget::Tree, Element};
 
+use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 
 /// The overlay of the modal.
@@ -19,7 +20,7 @@ where
     Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
-    state: &'a mut Tree,
+    tree: &'a mut Tree,
     /// The content of the [`ModalOverlay`](ModalOverlay).
     content: Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
@@ -28,6 +29,8 @@ where
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
+
+    state: &'a mut context_menu::State
 }
 
 impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
@@ -37,22 +40,24 @@ where
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
-    pub fn new<C>(
-        state: &'a mut Tree,
+    pub(crate) fn new<C>(
+        tree: &'a mut Tree,
         content: C,
         backdrop: Option<Message>,
         esc: Option<Message>,
         style: <Renderer::Theme as StyleSheet>::Style,
+        state: &'a mut context_menu::State
     ) -> Self
     where
         C: Into<Element<'a, Message, Renderer>>,
     {
         ContextMenuOverlay {
-            state,
+            tree,
             content: content.into(),
             backdrop,
             esc,
             style,
+            state,
         }
     }
 
@@ -114,7 +119,7 @@ where
             .map_or(event::Status::Ignored, |esc| match event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
                     if key_code == keyboard::KeyCode::Escape {
-                        shell.publish(esc.to_owned());
+                        self.state.show = false;
                         event::Status::Captured
                     } else {
                         event::Status::Ignored
@@ -131,7 +136,7 @@ where
                     if layout.bounds().contains(cursor_position) {
                         event::Status::Ignored
                     } else {
-                        shell.publish(backdrop.to_owned());
+                        self.state.show = false;
                         event::Status::Captured
                     }
                 }
@@ -141,7 +146,7 @@ where
 
         match esc_status.merge(backdrop_status) {
             event::Status::Ignored => self.content.as_widget_mut().on_event(
-                self.state,
+                self.tree,
                 event,
                 layout
                     .children()
@@ -164,7 +169,7 @@ where
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
-            self.state,
+            self.tree,
             layout
                 .children()
                 .next()
@@ -205,7 +210,7 @@ where
 
         // Modal
         self.content.as_widget().draw(
-            self.state,
+            self.tree,
             renderer,
             theme,
             style,

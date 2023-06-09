@@ -2,14 +2,16 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_native::{
-    event, mouse,
-    widget::{Operation, Tree},
+    event, mouse::{self, Button},
+    widget::{Operation, Tree, tree},
     Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
 use crate::native::overlay::ContextMenuOverlay;
 
 pub use crate::style::context_menu::StyleSheet;
+
+use super::overlay;
 
 /// A modal content as an overlay.
 ///
@@ -44,8 +46,6 @@ where
     Renderer: iced_native::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Show the modal.
-    show_modal: bool,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The content of teh [`ModalOverlay`](ModalOverlay).
@@ -76,12 +76,11 @@ where
     ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
     ///         will be wrapped around.
     ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
-    pub fn new<U>(show_modal: bool, underlay: U, content: Content) -> Self
+    pub fn new<U>(underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
     {
         ContextMenu {
-            show_modal,
             underlay: underlay.into(),
             content,
             backdrop: None,
@@ -140,6 +139,8 @@ where
         self.underlay.as_widget().height()
     }
 
+    
+
     fn layout(
         &self,
         renderer: &Renderer,
@@ -158,6 +159,19 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
+
+
+        if let Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) = event {
+            let bounds = layout.bounds();
+
+            if bounds.contains(cursor_position) {
+                let s: &mut State = state.state.downcast_mut();
+                s.show = !s.show;
+                return event::Status::Captured;
+            }
+        }
+
+
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
             event,
@@ -169,6 +183,16 @@ where
         )
     }
 
+    fn state(&self) -> tree::State {
+        tree::State::new(State::new())
+    }
+
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<State>()
+    }
+
+
+
     fn mouse_interaction(
         &self,
         state: &Tree,
@@ -177,6 +201,9 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
+
+
+
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
@@ -213,7 +240,13 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
-        if !self.show_modal {
+
+        
+        let s: &mut State = state.state.downcast_mut();
+
+       
+
+        if !s.show {
             return self
                 .underlay
                 .as_widget_mut()
@@ -232,6 +265,7 @@ where
                 self.backdrop.clone(),
                 self.esc.clone(),
                 self.style,
+                s,
             )
             .overlay(position),
         )
@@ -244,7 +278,9 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<Message>,
     ) {
-        if self.show_modal {
+        let s: &mut State = state.state.downcast_mut();
+
+        if s.show    {
             let content = (self.content)();
             content.as_widget().diff(&mut state.children[1]);
 
@@ -273,40 +309,17 @@ where
 }
 /// The state of the modal.
 #[derive(Debug, Default)]
-pub struct State<S> {
+pub(crate) struct State{
     /// The visibility of the [`Modal`](Modal) overlay.
-    show: bool,
-    /// The state of the content of the [`Modal`](Modal) overlay.
-    state: S,
+    pub show: bool,
 }
 
-impl<S> State<S> {
+impl State {
     /// Creates a new [`State`](State) containing the given state data.
-    pub const fn new(s: S) -> Self {
+    pub const fn new() -> Self {
         Self {
             show: false,
-            state: s,
         }
     }
 
-    /// Setting this to true shows the modal (the modal is open), false means
-    /// the modal is hidden (closed).
-    pub fn show(&mut self, b: bool) {
-        self.show = b;
-    }
-
-    /// See if this modal will be shown or not.
-    pub const fn is_shown(&self) -> bool {
-        self.show
-    }
-
-    /// Get a mutable reference to the inner state data.
-    pub fn inner_mut(&mut self) -> &mut S {
-        &mut self.state
-    }
-
-    /// Get a reference to the inner state data.
-    pub const fn inner(&self) -> &S {
-        &self.state
-    }
 }

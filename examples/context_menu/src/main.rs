@@ -58,7 +58,7 @@ impl Sandbox for ContextMenuExample {
                 ))),
         );
 
-        ContextMenu::new(self.show_modal, content, || {
+        ContextMenu::new(content, || {
             container(my_component::MyComponent).into()
         })
         .backdrop(Message::CloseModal)
