@@ -46,7 +46,7 @@ impl StyleSheet for Theme {
 
         Appearance {
             background: Color {
-                a: palette.background.base.color.a * 0.5,
+                a: 0f32,
                 ..palette.background.base.color
             }
             .into(),
