@@ -7,6 +7,7 @@ use iced_native::{
     Layout, Point, Shell, Size,
 };
 use iced_native::{widget::Tree, Element};
+use iced_native::event::Status;
 
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
@@ -121,7 +122,8 @@ where
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     if layout.bounds().contains(cursor_position) {
                         println!("ignore in bound!");
-
+                        println!("cursor_position: {:?}", cursor_position);
+                        println!("layout.bounds(): {:?}", layout.bounds());
                         event::Status::Ignored
                     } else {
                         self.state.show = false;
