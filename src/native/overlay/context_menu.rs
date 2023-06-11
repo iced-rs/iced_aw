@@ -55,7 +55,7 @@ where
     }
 
     /// Turn this [`ModalOverlay`] into an overlay
-    /// [`Element`](iced_native::overlay::Element).
+    /// [`Element`](overlay::Element).
     pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(position, Box::new(self))
     }
@@ -71,7 +71,7 @@ where
     fn layout(
         &self,
         renderer: &Renderer,
-        bounds: iced_graphics::Size,
+        bounds: Size,
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds);
@@ -104,40 +104,37 @@ where
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> event::Status {
+    ) -> Status {
 
-        //println!("on_event  !");
-        
-        let status = match event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                if key_code == keyboard::KeyCode::Escape {
-                    self.state.show = false;
-                    println!("exit!");
-                    event::Status::Captured
-                } else {
-                    event::Status::Ignored
-                }
-            }
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if layout.bounds().contains(cursor_position) {
-                        println!("ignore in bound!");
-                        println!("cursor_position: {:?}", cursor_position);
-                        println!("layout.bounds(): {:?}", layout.bounds());
-                        event::Status::Ignored
-                    } else {
+        // i kept child because we will need it if we want to adapt menu here
+        let status =  if let Some(child) = layout.children().next() {
+            match event {
+                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
+                    if key_code == keyboard::KeyCode::Escape {
                         self.state.show = false;
-                        println!("exit!");
-                        event::Status::Captured
+                        Status::Captured
+                    } else {
+                        Status::Ignored
                     }
                 }
-            _ => event::Status::Ignored,
+
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                    self.state.show = false;
+                    Status::Captured
+                }
+                _ => Status::Ignored
+
+            }
+        } else {
+            Status::Ignored
         };
 
       
 
         match status {
-            event::Status::Ignored => self.content.as_widget_mut().on_event(
+            Status::Ignored => self.content.as_widget_mut().on_event(
                 self.tree,
                 event,
                 layout
@@ -149,7 +146,7 @@ where
                 clipboard,
                 shell,
             ),
-            event::Status::Captured => event::Status::Captured,
+            Status::Captured => Status::Captured,
         }
     }
 
@@ -176,8 +173,8 @@ where
         &self,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
+        style: &renderer::Style,
+        layout: Layout<'_>,
         cursor_position: Point,
     ) {
         let bounds = layout.bounds();
