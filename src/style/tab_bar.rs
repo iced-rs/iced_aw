@@ -74,6 +74,7 @@ impl Default for Appearance {
 pub enum TabBarStyles {
     #[default]
     Default,
+    Dark,
     Red,
     Blue,
     Green,
@@ -84,6 +85,7 @@ impl From<TabBarStyles> for String {
     fn from(style: TabBarStyles) -> Self {
         Self::from(match style {
             TabBarStyles::Default => "Default",
+            TabBarStyles::Dark => "Dark",
             TabBarStyles::Red => "Red",
             TabBarStyles::Blue => "Blue",
             TabBarStyles::Green => "Green",
@@ -105,6 +107,16 @@ impl StyleSheet for Theme {
                 } else {
                     Background::Color([0.87, 0.87, 0.87].into())
                 };
+            }
+            TabBarStyles::Dark => {
+                appearance.tab_label_background = if is_active {
+                    Background::Color([0.1, 0.1, 0.1].into())
+                } else {
+                    Background::Color([0.13, 0.13, 0.13].into())
+                };
+                appearance.tab_label_border_color = [0.3, 0.3, 0.3].into();
+                appearance.icon_color = Color::WHITE;
+                appearance.text_color = Color::WHITE;
             }
             TabBarStyles::Red => {
                 let text_color = if is_active {
@@ -172,6 +184,10 @@ impl StyleSheet for Theme {
         match style {
             TabBarStyles::Default => Appearance {
                 tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
+                ..self.active(style, is_active)
+            },
+            TabBarStyles::Dark => Appearance {
+                tab_label_background: Background::Color([0.1, 0.1, 0.1].into()),
                 ..self.active(style, is_active)
             },
             TabBarStyles::Red => Appearance {
