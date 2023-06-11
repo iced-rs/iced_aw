@@ -96,79 +96,6 @@ where
         iced_native::layout::Node::with_children(max_size, vec![content])
     }
 
-    fn on_event(
-        &mut self,
-        event: Event,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
-    ) -> Status {
-
-        // i kept child because we will need it if we want to adapt menu here
-        let status =  if let Some(child) = layout.children().next() {
-            match event {
-                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                    if key_code == keyboard::KeyCode::Escape {
-                        self.state.show = false;
-                        Status::Captured
-                    } else {
-                        Status::Ignored
-                    }
-                }
-
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    self.state.show = false;
-                    Status::Captured
-                }
-                _ => Status::Ignored
-
-            }
-        } else {
-            Status::Ignored
-        };
-
-      
-
-        match status {
-            Status::Ignored => self.content.as_widget_mut().on_event(
-                self.tree,
-                event,
-                layout
-                    .children()
-                    .next()
-                    .expect("Native: Layout should have a content layout."),
-                cursor_position,
-                renderer,
-                clipboard,
-                shell,
-            ),
-            Status::Captured => Status::Captured,
-        }
-    }
-
-    fn mouse_interaction(
-        &self,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
-        renderer: &Renderer,
-    ) -> mouse::Interaction {
-        self.content.as_widget().mouse_interaction(
-            self.tree,
-            layout
-                .children()
-                .next()
-                .expect("Native: Layout should have a content layout."),
-            cursor_position,
-            viewport,
-            renderer,
-        )
-    }
-
     fn draw(
         &self,
         renderer: &mut Renderer,
@@ -207,5 +134,79 @@ where
             cursor_position,
             &bounds,
         );
+    }
+
+    #[allow(unused_variables)]
+    fn on_event(
+        &mut self,
+        event: Event,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<Message>,
+    ) -> Status {
+
+        // i kept child because we will need it if we want to adapt menu here
+        let status =  if let Some(child) = layout.children().next() {
+            match event {
+                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
+                    if key_code == keyboard::KeyCode::Escape {
+                        self.state.show = false;
+                        Status::Captured
+                    } else {
+                        Status::Ignored
+                    }
+                }
+
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                    self.state.show = false;
+                    Status::Captured
+                }
+                _ => Status::Ignored
+
+            }
+        } else {
+            Status::Ignored
+        };
+
+
+
+        match status {
+            Status::Ignored => self.content.as_widget_mut().on_event(
+                self.tree,
+                event,
+                layout
+                    .children()
+                    .next()
+                    .expect("Native: Layout should have a content layout."),
+                cursor_position,
+                renderer,
+                clipboard,
+                shell,
+            ),
+            Status::Captured => Status::Captured,
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &iced_graphics::Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.content.as_widget().mouse_interaction(
+            self.tree,
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a content layout."),
+            cursor_position,
+            viewport,
+            renderer,
+        )
     }
 }

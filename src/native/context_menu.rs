@@ -69,9 +69,9 @@ where
     ///
     /// It expects:
     ///     * if the overlay of the date picker is visible.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
+    ///     * the underlay [`Element`](Element) on which this [`Modal`](Modal)
     ///         will be wrapped around.
-    ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
+    ///     * the content [`Element`](Element) of the [`Modal`](Modal).
     pub fn new<U>(underlay: U, content: Content) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
@@ -101,14 +101,6 @@ where
     Renderer: 'a + iced_native::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn children(&self) -> Vec<iced_native::widget::Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.content)()]);
-    }
-
     fn width(&self) -> Length {
         self.underlay.as_widget().width()
     }
@@ -117,14 +109,74 @@ where
         self.underlay.as_widget().height()
     }
 
-    
-
     fn layout(
         &self,
         renderer: &Renderer,
         limits: &iced_native::layout::Limits,
     ) -> iced_native::layout::Node {
         self.underlay.as_widget().layout(renderer, limits)
+    }
+
+    fn draw(
+        &self,
+        state: &Tree,
+        renderer: &mut Renderer,
+        theme: &Renderer::Theme,
+        style: &iced_native::renderer::Style,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        viewport: &Rectangle,
+    ) {
+        self.underlay.as_widget().draw(
+            &state.children[0],
+            renderer,
+            theme,
+            style,
+            layout,
+            cursor_position,
+            viewport,
+        );
+    }
+
+
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<State>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(State::new())
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.underlay, &(self.content)()]);
+    }
+
+
+    fn operate<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        let s: &mut State = state.state.downcast_mut();
+
+        if s.show    {
+            let content = (self.content)();
+            content.as_widget().diff(&mut state.children[1]);
+
+            content
+                .as_widget()
+                .operate(&mut state.children[1], layout, renderer, operation);
+        } else {
+            self.underlay
+                .as_widget()
+                .operate(&mut state.children[0], layout, renderer, operation);
+        }
     }
 
     fn on_event(
@@ -161,16 +213,6 @@ where
         )
     }
 
-    fn state(&self) -> tree::State {
-        tree::State::new(State::new())
-    }
-
-    fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<State>()
-    }
-
-
-
     fn mouse_interaction(
         &self,
         state: &Tree,
@@ -189,27 +231,6 @@ where
         )
     }
 
-    fn draw(
-        &self,
-        state: &iced_native::widget::Tree,
-        renderer: &mut Renderer,
-        theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
-        layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &Rectangle,
-    ) {
-        self.underlay.as_widget().draw(
-            &state.children[0],
-            renderer,
-            theme,
-            style,
-            layout,
-            cursor_position,
-            viewport,
-        );
-    }
-
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
@@ -217,10 +238,10 @@ where
         renderer: &Renderer,
     ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
 
-        
+
         let s: &mut State = state.state.downcast_mut();
 
-       
+
 
         if !s.show {
             return self
@@ -243,29 +264,6 @@ where
             )
             .overlay(position),
         )
-    }
-
-    fn operate<'b>(
-        &'b self,
-        state: &'b mut Tree,
-        layout: Layout<'_>,
-        renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
-    ) {
-        let s: &mut State = state.state.downcast_mut();
-
-        if s.show    {
-            let content = (self.content)();
-            content.as_widget().diff(&mut state.children[1]);
-
-            content
-                .as_widget()
-                .operate(&mut state.children[1], layout, renderer, operation);
-        } else {
-            self.underlay
-                .as_widget()
-                .operate(&mut state.children[0], layout, renderer, operation);
-        }
     }
 }
 
