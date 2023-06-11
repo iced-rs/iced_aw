@@ -2,14 +2,13 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use iced_graphics::Color;
-
 use iced_native::Background;
 use iced_style::Theme;
 
-/// The appearance of a [`Modal`](crate::native::Modal).
+/// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
-    /// The backgronud of the [`Modal`](crate::native::Modal).
+    /// The backgronud of the [`ContextMenu`](crate::native::ContextMenu).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,
@@ -22,15 +21,16 @@ impl Default for Appearance {
         }
     }
 }
-/// The appearance of a [`Modal`](crate::native::Modal).
+
+/// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
 pub trait StyleSheet {
     ///Style for the trait to use.
     type Style: Default + Copy;
-    /// The normal appearance of a [`Modal`](crate::native::Modal).
+    /// The normal appearance of a [`ContextMenu`](crate::native::ContextMenu).
     fn active(&self, style: Self::Style) -> Appearance;
 }
 
-/// The default appearance of a [`Modal`](crate::native::Modal).
+/// The default appearance of a [`ContextMenu`](crate::native::ContextMenu).
 #[derive(Clone, Copy, Debug, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub enum ContextMenuStyle {
@@ -49,7 +49,7 @@ impl StyleSheet for Theme {
                 a: 0f32,
                 ..palette.background.base.color
             }
-            .into(),
+                .into(),
         }
     }
 }

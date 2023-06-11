@@ -1,49 +1,49 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
-//! *This API requires the following crate features to be activated: modal*
+//! *This API requires the following crate features to be activated: context_menu*
 use iced_native::{
-    keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
-    Layout, Point, Shell, Size,
+    Clipboard, Color, Event, keyboard, Layout, layout::Limits, mouse, overlay, Point,
+    renderer, Shell, Size, touch,
 };
-use iced_native::{widget::Tree, Element};
+use iced_native::{Element, widget::Tree};
 use iced_native::event::Status;
 
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 
-/// The overlay of the modal.
+/// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
 pub struct ContextMenuOverlay<'a, Message, Renderer>
-where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
-    Renderer::Theme: StyleSheet,
+    where
+        Message: 'a + Clone,
+        Renderer: 'a + iced_native::Renderer,
+        Renderer::Theme: StyleSheet,
 {
-    /// The state of the [`ModalOverlay`](ModalOverlay).
+    /// The state of the [`ContextMenuOverlay`](ContextMenuOverlay).
     tree: &'a mut Tree,
-    /// The content of the [`ModalOverlay`](ModalOverlay).
+    /// The content of the [`ContextMenuOverlay`](ContextMenuOverlay).
     content: Element<'a, Message, Renderer>,
-    /// The style of the [`ModalOverlay`](ModalOverlay).
+    /// The style of the [`ContextMenuOverlay`](ContextMenuOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
-
-    state: &'a mut context_menu::State
+    /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`](ContextMenuOverlay).
+    state: &'a mut context_menu::State,
 }
 
 impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
-where
-    Message: Clone,
-    Renderer: iced_native::Renderer,
-    Renderer::Theme: StyleSheet,
+    where
+        Message: Clone,
+        Renderer: iced_native::Renderer,
+        Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`ModalOverlay`](ModalOverlay).
+    /// Creates a new [`ContextMenuOverlay`](ContextMenuOverlay).
     pub(crate) fn new<C>(
         tree: &'a mut Tree,
         content: C,
         style: <Renderer::Theme as StyleSheet>::Style,
-        state: &'a mut context_menu::State
+        state: &'a mut context_menu::State,
     ) -> Self
-    where
-        C: Into<Element<'a, Message, Renderer>>,
+        where
+            C: Into<Element<'a, Message, Renderer>>,
     {
         ContextMenuOverlay {
             tree,
@@ -53,7 +53,7 @@ where
         }
     }
 
-    /// Turn this [`ModalOverlay`] into an overlay
+    /// Turn this [`ContextMenuOverlay`] into an overlay
     /// [`Element`](overlay::Element).
     pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(position, Box::new(self))
@@ -61,11 +61,11 @@ where
 }
 
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for ContextMenuOverlay<'a, Message, Renderer>
-where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
-    Renderer::Theme: StyleSheet,
+for ContextMenuOverlay<'a, Message, Renderer>
+    where
+        Message: 'a + Clone,
+        Renderer: 'a + iced_native::Renderer,
+        Renderer::Theme: StyleSheet,
 {
     fn layout(
         &self,
@@ -131,7 +131,6 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> Status {
-
         let layout_children = layout.children().next().expect("Native: Layout should have a content layout.");
 
         let status = match event {
@@ -146,7 +145,7 @@ where
 
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
-            | Event::Touch(touch::Event::FingerPressed { .. })=> {
+            | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if layout_children.bounds().contains(cursor_position) {
                     Status::Ignored
                 } else {

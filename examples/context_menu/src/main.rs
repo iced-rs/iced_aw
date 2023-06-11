@@ -1,6 +1,6 @@
 use iced::{
-    widget::{column, Button, Container, Row, Text},
-    Alignment, Element, Sandbox, Settings,
+    Alignment,
+    Element, Sandbox, Settings, widget::{Button, column, Container, Row, Text},
 };
 
 use iced_aw::ContextMenu;
@@ -35,8 +35,6 @@ impl Sandbox for ContextMenuExample {
     }
 
     fn update(&mut self, message: Self::Message) {
-        println!("Update: {:?}", message);
-
         self.last_message = Some(message);
     }
 
@@ -63,7 +61,7 @@ impl Sandbox for ContextMenuExample {
                     }
                 ))));
 
-       ContextMenu::new(underlay, || {
+        ContextMenu::new(underlay, || {
             column(vec![
                 iced::widget::button("Choice 1")
                     .on_press(Message::Choice1)
