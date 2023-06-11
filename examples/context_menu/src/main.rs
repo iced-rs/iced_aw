@@ -2,7 +2,10 @@ use iced::{
     widget::{column, Button, Container, Row, Text},
     Alignment, Element, Length, Sandbox, Settings,
 };
+use iced::alignment::Horizontal;
 
+use iced::theme;
+use iced::widget::text;
 use iced_aw::ContextMenu;
 
 fn main() -> iced::Result {
@@ -31,20 +34,22 @@ impl Sandbox for ContextMenuExample {
     }
 
     fn title(&self) -> String {
-        String::from("Modal example")
+        String::from("ContextMenu example")
     }
 
     fn update(&mut self, message: Self::Message) {
+        println!("Update: {:?}", message);
+
         self.last_message = Some(message);
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let underlay = Container::new(
-            Row::new()
+        let underlay =
+            Container::new(Row::new()
                 .spacing(10)
                 .align_items(Alignment::Center)
                 .push(
-                    Button::new(Text::new("I'm a special button!"))
+                    Button::new(Text::new("right click me!"))
                         .on_press(Message::ButtonClicked),
                 )
                 .push(Text::new(format!(
@@ -59,10 +64,9 @@ impl Sandbox for ContextMenuExample {
                         },
                         None => "None",
                     }
-                ))),
-        );
+                ))));
 
-        ContextMenu::new(underlay, || {
+       ContextMenu::new(underlay, || {
             column(vec![
                 iced::widget::button("Choice 1")
                     .on_press(Message::Choice1)
@@ -76,11 +80,7 @@ impl Sandbox for ContextMenuExample {
                 iced::widget::button("Choice 4")
                     .on_press(Message::Choice4)
                     .into(),
-            ])
-            .width(Length::Shrink)
-            .height(Length::Shrink)
-            .into()
-        })
-        .into()
+            ]).into()
+        }).into()
     }
 }

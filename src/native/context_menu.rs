@@ -196,6 +196,7 @@ where
 
             if bounds.contains(cursor_position) {
                 let s: &mut State = state.state.downcast_mut();
+                s.cursor_position = cursor_position;
                 s.show = !s.show;
                 return event::Status::Captured;
             }
@@ -250,8 +251,7 @@ where
                 .overlay(&mut state.children[0], layout, renderer);
         }
 
-        let bounds = layout.bounds();
-        let position = Point::new(bounds.x, bounds.y);
+        let position = s.cursor_position.clone();
         let content = (self.content)();
         content.as_widget().diff(&mut state.children[1]);
 
@@ -284,6 +284,7 @@ where
 pub(crate) struct State{
     /// The visibility of the [`Modal`](Modal) overlay.
     pub show: bool,
+    pub cursor_position: Point,
 }
 
 impl State {
@@ -291,6 +292,7 @@ impl State {
     pub const fn new() -> Self {
         Self {
             show: false,
+            cursor_position: Point::ORIGIN
         }
     }
 

@@ -328,5 +328,23 @@
             "args": [],
             "cwd": "${workspaceFolder}"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'context_menu'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=context_menu",
+                    "--package=context_menu"
+                ],
+                "filter": {
+                    "name": "context_menu",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
     ]
 }

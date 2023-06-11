@@ -1,9 +1,8 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_graphics::Vector;
 use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
+    keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
     Layout, Point, Shell, Size,
 };
 use iced_native::{widget::Tree, Element};
@@ -75,22 +74,9 @@ where
         position: Point,
     ) -> iced_native::layout::Node {
         let limits = Limits::new(Size::ZERO, bounds);
+        let max_size = limits.max();
 
         let mut content = self.content.as_widget().layout(renderer, &limits);
-
-        // Center position
-        let max_size = limits.max();
-        let container_half_width = max_size.width / 2.0;
-        let container_half_height = max_size.height / 2.0;
-        let content_half_width = content.bounds().width / 2.0;
-        let content_half_height = content.bounds().height / 2.0;
-
-        let position = position
-            + Vector::new(
-                container_half_width - content_half_width,
-                container_half_height - content_half_height,
-            );
-
         content.move_to(position);
 
         iced_native::layout::Node::with_children(max_size, vec![content])
@@ -147,7 +133,6 @@ where
         shell: &mut Shell<Message>,
     ) -> Status {
 
-        // i kept child because we will need it if we want to adapt menu here
         let status =  if let Some(child) = layout.children().next() {
             match event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
@@ -163,7 +148,12 @@ where
                 | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     self.state.show = false;
-                    Status::Captured
+
+                    if child.bounds().contains(cursor_position) {
+                        Status::Ignored // ignore this if there are buttons inside overlay
+                    } else {
+                        Status::Captured
+                    }
                 }
                 _ => Status::Ignored
 
@@ -172,9 +162,9 @@ where
             Status::Ignored
         };
 
+        //println!("status: {:?}", status);
 
-
-        match status {
+        let s = match status {
             Status::Ignored => self.content.as_widget_mut().on_event(
                 self.tree,
                 event,
@@ -188,7 +178,9 @@ where
                 shell,
             ),
             Status::Captured => Status::Captured,
-        }
+        };
+        println!("{:?}", s);
+        s
     }
 
     fn mouse_interaction(
