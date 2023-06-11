@@ -122,7 +122,6 @@ where
         );
     }
 
-    #[allow(unused_variables)]
     fn on_event(
         &mut self,
         event: Event,
@@ -133,54 +132,55 @@ where
         shell: &mut Shell<Message>,
     ) -> Status {
 
-        let status =  if let Some(child) = layout.children().next() {
-            match event {
-                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                    if key_code == keyboard::KeyCode::Escape {
-                        self.state.show = false;
-                        Status::Captured
-                    } else {
-                        Status::Ignored
-                    }
-                }
+        let layout_children = layout.children().next().expect("Native: Layout should have a content layout.");
 
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => {
+        let status = match event {
+            Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
+                if key_code == keyboard::KeyCode::Escape {
                     self.state.show = false;
-
-                    if child.bounds().contains(cursor_position) {
-                        Status::Ignored // ignore this if there are buttons inside overlay
-                    } else {
-                        Status::Captured
-                    }
+                    Status::Captured
+                } else {
+                    Status::Ignored
                 }
-                _ => Status::Ignored
-
             }
-        } else {
-            Status::Ignored
+
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+            | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
+            | Event::Touch(touch::Event::FingerPressed { .. })=> {
+                if layout_children.bounds().contains(cursor_position) {
+                    Status::Ignored
+                } else {
+                    self.state.show = false;
+                    Status::Captured
+                }
+            }
+
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                // close when released because because button send message on release
+                self.state.show = false;
+                if layout_children.bounds().contains(cursor_position) {
+                    Status::Ignored
+                } else {
+                    Status::Captured
+                }
+            }
+
+            _ => Status::Ignored
         };
 
-        //println!("status: {:?}", status);
 
-        let s = match status {
+        match status {
             Status::Ignored => self.content.as_widget_mut().on_event(
                 self.tree,
                 event,
-                layout
-                    .children()
-                    .next()
-                    .expect("Native: Layout should have a content layout."),
+                layout_children,
                 cursor_position,
                 renderer,
                 clipboard,
                 shell,
             ),
             Status::Captured => Status::Captured,
-        };
-        println!("{:?}", s);
-        s
+        }
     }
 
     fn mouse_interaction(

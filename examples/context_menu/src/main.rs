@@ -1,11 +1,8 @@
 use iced::{
     widget::{column, Button, Container, Row, Text},
-    Alignment, Element, Length, Sandbox, Settings,
+    Alignment, Element, Sandbox, Settings,
 };
-use iced::alignment::Horizontal;
 
-use iced::theme;
-use iced::widget::text;
 use iced_aw::ContextMenu;
 
 fn main() -> iced::Result {
