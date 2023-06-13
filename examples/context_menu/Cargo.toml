@@ -10,5 +10,4 @@ edition = "2021"
 iced_aw = { workspace = true, features = [
     "context_menu",
 ] }
-iced_lazy = "0.6"
 iced.workspace = true

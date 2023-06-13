@@ -1,6 +1,6 @@
 use iced::{
-    Alignment,
-    Element, Sandbox, Settings, widget::{Button, column, Container, Row, Text},
+    widget::{column, Button, Container, Row, Text},
+    Alignment, Element, Sandbox, Settings,
 };
 
 use iced_aw::ContextMenu;
@@ -39,14 +39,11 @@ impl Sandbox for ContextMenuExample {
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let underlay =
-            Container::new(Row::new()
+        let underlay = Container::new(
+            Row::new()
                 .spacing(10)
                 .align_items(Alignment::Center)
-                .push(
-                    Button::new(Text::new("right click me!"))
-                        .on_press(Message::ButtonClicked),
-                )
+                .push(Button::new(Text::new("right click me!")).on_press(Message::ButtonClicked))
                 .push(Text::new(format!(
                     "Last message: {}",
                     match self.last_message.as_ref() {
@@ -59,7 +56,8 @@ impl Sandbox for ContextMenuExample {
                         },
                         None => "None",
                     }
-                ))));
+                ))),
+        );
 
         ContextMenu::new(underlay, || {
             column(vec![
@@ -75,7 +73,9 @@ impl Sandbox for ContextMenuExample {
                 iced::widget::button("Choice 4")
                     .on_press(Message::Choice4)
                     .into(),
-            ]).into()
-        }).into()
+            ])
+            .into()
+        })
+        .into()
     }
 }
