@@ -157,7 +157,9 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "context_menu")]
-    pub use {crate::native::context_menu, crate::style::ContextMenuStyle, context_menu::ContextMenu};
+    pub use {
+        crate::native::context_menu, crate::style::ContextMenuStyle, context_menu::ContextMenu,
+    };
 }
 
 #[doc(no_inline)]

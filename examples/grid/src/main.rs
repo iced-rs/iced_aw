@@ -46,7 +46,8 @@ impl Sandbox for GridExample {
         let mut grid = grid!(
             Text::new("Column 1").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))),
             Text::new("Column 2").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))),
-        ).strategy(iced_aw::Strategy::Columns(2));
+        )
+        .strategy(iced_aw::Strategy::Columns(2));
 
         // Add elements to the grid
         for i in 0..self.element_index {

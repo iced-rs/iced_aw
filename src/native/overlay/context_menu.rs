@@ -1,23 +1,22 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: context_menu*
-use iced_native::{
-    Clipboard, Color, Event, keyboard, Layout, layout::Limits, mouse, overlay, Point,
-    renderer, Shell, Size, touch,
-};
-use iced_native::{Element, widget::Tree};
-use iced_native::event::Status;
-
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
+use iced_native::event::Status;
+use iced_native::{
+    keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event, Layout,
+    Point, Shell, Size,
+};
+use iced_native::{widget::Tree, Element};
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
 pub struct ContextMenuOverlay<'a, Message, Renderer>
-    where
-        Message: 'a + Clone,
-        Renderer: 'a + iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+where
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ContextMenuOverlay`](ContextMenuOverlay).
     tree: &'a mut Tree,
@@ -30,10 +29,10 @@ pub struct ContextMenuOverlay<'a, Message, Renderer>
 }
 
 impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
-    where
-        Message: Clone,
-        Renderer: iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+where
+    Message: Clone,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenuOverlay`](ContextMenuOverlay).
     pub(crate) fn new<C>(
@@ -42,8 +41,8 @@ impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
         style: <Renderer::Theme as StyleSheet>::Style,
         state: &'a mut context_menu::State,
     ) -> Self
-        where
-            C: Into<Element<'a, Message, Renderer>>,
+    where
+        C: Into<Element<'a, Message, Renderer>>,
     {
         ContextMenuOverlay {
             tree,
@@ -61,11 +60,11 @@ impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
 }
 
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-for ContextMenuOverlay<'a, Message, Renderer>
-    where
-        Message: 'a + Clone,
-        Renderer: 'a + iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+    for ContextMenuOverlay<'a, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn layout(
         &self,
@@ -131,7 +130,10 @@ for ContextMenuOverlay<'a, Message, Renderer>
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> Status {
-        let layout_children = layout.children().next().expect("Native: Layout should have a content layout.");
+        let layout_children = layout
+            .children()
+            .next()
+            .expect("Native: Layout should have a content layout.");
 
         let status = match event {
             Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
@@ -164,9 +166,8 @@ for ContextMenuOverlay<'a, Message, Renderer>
                 }
             }
 
-            _ => Status::Ignored
+            _ => Status::Ignored,
         };
-
 
         match status {
             Status::Ignored => self.content.as_widget_mut().on_event(

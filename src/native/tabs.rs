@@ -55,7 +55,7 @@ pub struct Tabs<'a, Message, TabId, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
-    TabId: Eq + Clone
+    TabId: Eq + Clone,
 {
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
     tab_bar: TabBar<Message, TabId, Renderer>,
@@ -112,7 +112,7 @@ where
         let mut elements = Vec::with_capacity(tabs.len());
         let mut indices = Vec::with_capacity(tabs.len());
 
-        for (id,tab_label,  element) in tabs {
+        for (id, tab_label, element) in tabs {
             tab_labels.push((id.clone(), tab_label));
             indices.push(id);
             elements.push(element);
@@ -306,15 +306,18 @@ where
             .width(self.width)
             .height(self.height);
 
-        let mut tab_content_node = self.tabs.get(self.tab_bar.get_active_tab_idx()).map_or_else(
-            || {
-                Row::<Message, Renderer>::new()
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .layout(renderer, &tab_content_limits)
-            },
-            |element| element.as_widget().layout(renderer, &tab_content_limits),
-        );
+        let mut tab_content_node = self
+            .tabs
+            .get(self.tab_bar.get_active_tab_idx())
+            .map_or_else(
+                || {
+                    Row::<Message, Renderer>::new()
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .layout(renderer, &tab_content_limits)
+                },
+                |element| element.as_widget().layout(renderer, &tab_content_limits),
+            );
 
         tab_bar_node.move_to(Point::new(
             tab_bar_node.bounds().x,
@@ -388,9 +391,10 @@ where
             shell,
         );
         let idx = self.tab_bar.get_active_tab_idx();
-        let status_element = self.tabs.get_mut(idx).map_or(
-            event::Status::Ignored,
-            |element| {
+        let status_element = self
+            .tabs
+            .get_mut(idx)
+            .map_or(event::Status::Ignored, |element| {
                 element.as_widget_mut().on_event(
                     &mut state.children[idx],
                     event,
@@ -400,8 +404,7 @@ where
                     clipboard,
                     shell,
                 )
-            },
-        );
+            });
 
         status_tab_bar.merge(status_element)
     }
@@ -537,13 +540,7 @@ where
             self.tabs
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
-                .and_then(|w| {
-                    w.overlay(
-                        &mut state.children[idx],
-                        layout,
-                        renderer,
-                    )
-                })
+                .and_then(|w| w.overlay(&mut state.children[idx], layout, renderer))
         })
     }
 
@@ -569,7 +566,8 @@ where
     }
 }
 
-impl<'a, Message, TabId, Renderer> From<Tabs<'a, Message, TabId, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> From<Tabs<'a, Message, TabId, Renderer>>
+    for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,

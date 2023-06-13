@@ -49,7 +49,7 @@ impl StyleSheet for Theme {
                 a: 0f32,
                 ..palette.background.base.color
             }
-                .into(),
+            .into(),
         }
     }
 }

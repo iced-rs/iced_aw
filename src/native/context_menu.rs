@@ -1,9 +1,10 @@
 //! A context menu for showing actions on right click.
 //!
 use iced_native::{
-    Clipboard, Element,
     event,
-    Event, Layout, Length, mouse::{self, Button}, Point, Rectangle, Shell, widget::{Operation, Tree, tree}, Widget,
+    mouse::{self, Button},
+    widget::{tree, Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
 use crate::native::overlay::ContextMenuOverlay;
@@ -35,11 +36,11 @@ pub use crate::style::context_menu::StyleSheet;
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct ContextMenu<'a, Overlay, Message, Renderer>
-    where
-        Overlay: Fn() -> Element<'a, Message, Renderer>,
-        Message: Clone,
-        Renderer: iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+where
+    Overlay: Fn() -> Element<'a, Message, Renderer>,
+    Message: Clone,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
@@ -50,11 +51,11 @@ pub struct ContextMenu<'a, Overlay, Message, Renderer>
 }
 
 impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
-    where
-        Overlay: Fn() -> Element<'a, Message, Renderer>,
-        Message: Clone,
-        Renderer: iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+where
+    Overlay: Fn() -> Element<'a, Message, Renderer>,
+    Message: Clone,
+    Renderer: iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenu`](ContextMenu)
     ///
@@ -62,8 +63,8 @@ impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
     ///
     /// `overlay`: The content of [`ContextMenuOverlay`](ContextMenuOverlay) which will be displayed when `underlay` is clicked.
     pub fn new<U>(underlay: U, overlay: Overlay) -> Self
-        where
-            U: Into<Element<'a, Message, Renderer>>,
+    where
+        U: Into<Element<'a, Message, Renderer>>,
     {
         ContextMenu {
             underlay: underlay.into(),
@@ -71,7 +72,6 @@ impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
             style: <Renderer::Theme as StyleSheet>::Style::default(),
         }
     }
-
 
     /// Sets the style of the [`ContextMenu`](ContextMenu).
     #[must_use]
@@ -82,12 +82,12 @@ impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
 }
 
 impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
-for ContextMenu<'a, Content, Message, Renderer>
-    where
-        Content: 'a + Fn() -> Element<'a, Message, Renderer>,
-        Message: 'a + Clone,
-        Renderer: 'a + iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+    for ContextMenu<'a, Content, Message, Renderer>
+where
+    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn width(&self) -> Length {
         self.underlay.as_widget().width()
@@ -126,7 +126,6 @@ for ContextMenu<'a, Content, Message, Renderer>
         );
     }
 
-
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<State>()
     }
@@ -142,7 +141,6 @@ for ContextMenu<'a, Content, Message, Renderer>
     fn diff(&self, tree: &mut Tree) {
         tree.diff_children(&[&self.underlay, &(self.overlay)()]);
     }
-
 
     fn operate<'b>(
         &'b self,
@@ -188,7 +186,6 @@ for ContextMenu<'a, Content, Message, Renderer>
             }
         }
 
-
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
             event,
@@ -225,7 +222,6 @@ for ContextMenu<'a, Content, Message, Renderer>
     ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
         let s: &mut State = state.state.downcast_mut();
 
-
         if !s.show {
             return self
                 .underlay
@@ -238,24 +234,19 @@ for ContextMenu<'a, Content, Message, Renderer>
         content.as_widget().diff(&mut state.children[1]);
 
         Some(
-            ContextMenuOverlay::new(
-                &mut state.children[1],
-                content,
-                self.style,
-                s,
-            )
+            ContextMenuOverlay::new(&mut state.children[1], content, self.style, s)
                 .overlay(position),
         )
     }
 }
 
 impl<'a, Content, Message, Renderer> From<ContextMenu<'a, Content, Message, Renderer>>
-for Element<'a, Message, Renderer>
-    where
-        Content: 'a + Fn() -> Element<'a, Message, Renderer>,
-        Message: 'a + Clone,
-        Renderer: 'a + iced_native::Renderer,
-        Renderer::Theme: StyleSheet,
+    for Element<'a, Message, Renderer>
+where
+    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Message: 'a + Clone,
+    Renderer: 'a + iced_native::Renderer,
+    Renderer::Theme: StyleSheet,
 {
     fn from(modal: ContextMenu<'a, Content, Message, Renderer>) -> Self {
         Element::new(modal)
