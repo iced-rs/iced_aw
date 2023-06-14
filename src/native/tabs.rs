@@ -15,7 +15,7 @@ use iced_native::{
     Element, Widget,
 };
 
-use crate::{native::TabBar, style::tab_bar::StyleSheet, TabLabel};
+use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
@@ -265,7 +265,7 @@ where
         self
     }
 
-    /// Sets the active tab of the [`Tabs`](Tabs) using the TabId.
+    /// Sets the active tab of the [`Tabs`](Tabs) using the ``TabId``.
     #[must_use]
     pub fn set_active_tab(mut self, id: &TabId) -> Self {
         self.tab_bar = self.tab_bar.set_active_tab(id);

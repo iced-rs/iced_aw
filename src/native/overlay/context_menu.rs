@@ -1,6 +1,6 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
-//! *This API requires the following crate features to be activated: context_menu*
+//! *This API requires the following crate features to be activated: ``context_menu``*
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 use iced_native::event::Status;
@@ -145,8 +145,9 @@ where
                 }
             }
 
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-            | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Right))
+            Event::Mouse(mouse::Event::ButtonPressed(
+                mouse::Button::Left | mouse::Button::Right,
+            ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if layout_children.bounds().contains(cursor_position) {
                     Status::Ignored

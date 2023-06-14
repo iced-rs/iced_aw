@@ -304,11 +304,11 @@ where
     /// Sets up the active tab on the [`TabBar`](TabBar).
     #[must_use]
     pub fn set_active_tab(mut self, active_tab: &TabId) -> Self {
-        self.active_tab = if let Some(a) = self.tab_indices.iter().position(|id| id == active_tab) {
-            a
-        } else {
-            0
-        };
+        self.active_tab = self
+            .tab_indices
+            .iter()
+            .position(|id| id == active_tab)
+            .map_or(0, |a| a);
         self
     }
 }

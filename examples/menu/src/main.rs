@@ -5,7 +5,7 @@ use iced::widget::{
 };
 use iced::{alignment, theme, Application, Color, Element, Length};
 
-use iced_aw::menu::{CloseCondition, ItemHeight, ItemWidth, MenuTree, PathHighlight};
+use iced_aw::menu::{menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight};
 use iced_aw::quad;
 use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
 

@@ -2,15 +2,7 @@
 //!
 //!
 
-#[cfg(any(
-    feature = "grid",
-    feature = "menu",
-    feature = "badge",
-    feature = "color_picker",
-    feature = "date_picker",
-    feature = "floating_element",
-    feature = "modal"
-))]
+#[allow(unused_imports)]
 use iced_native::Element;
 #[cfg(feature = "color_picker")]
 use iced_style::Color;
@@ -36,10 +28,10 @@ macro_rules! grid {
 #[macro_export]
 macro_rules! menu_tree {
     ($x:expr) => (
-        $crate::MenuTree::new($x)
+        $crate::menu::menu_tree::MenuTree::new($x)
     );
     ($x:expr, $($y:expr),+ $(,)?) => (
-        $crate::MenuTree::with_children($x, vec![$($y),+])
+        $crate::menu::menu_tree::MenuTree::with_children($x, vec![$($y),+])
     );
 }
 
@@ -50,10 +42,10 @@ macro_rules! menu_tree {
 #[macro_export]
 macro_rules! menu_bar {
     () => (
-        $crate::MenuBar::new(vec![])
+        $crate::menu::menu_bar::MenuBar::new(vec![])
     );
     ($($x:expr),+ $(,)?) => (
-        $crate::MenuBar::new(vec![$($x),+])
+        $crate::menu::menu_bar::MenuBar::new(vec![$($x),+])
     );
 }
 
@@ -61,13 +53,13 @@ macro_rules! menu_bar {
 /// Shortcut helper to create a Card Widget.
 #[must_use]
 pub fn menu_bar<Message, Renderer>(
-    menu_roots: Vec<crate::MenuTree<Message, Renderer>>,
-) -> crate::MenuBar<Message, Renderer>
+    menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
+) -> crate::menu::menu_bar::MenuBar<Message, Renderer>
 where
     Renderer: iced_native::Renderer,
     Renderer::Theme: crate::style::menu_bar::StyleSheet,
 {
-    crate::MenuBar::new(menu_roots)
+    crate::menu::menu_bar::MenuBar::new(menu_roots)
 }
 
 #[cfg(feature = "menu")]
@@ -75,12 +67,12 @@ where
 #[must_use]
 pub fn menu_tree<'a, Message, Renderer>(
     item: impl Into<Element<'a, Message, Renderer>>,
-    children: Vec<impl Into<crate::MenuTree<'a, Message, Renderer>>>,
-) -> crate::MenuTree<'a, Message, Renderer>
+    children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Renderer>>>,
+) -> crate::menu::menu_tree::MenuTree<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
 {
-    crate::MenuTree::with_children(item, children)
+    crate::menu::menu_tree::MenuTree::with_children(item, children)
 }
 
 #[cfg(feature = "badge")]

@@ -175,7 +175,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
-        if let Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) = event {
+        if event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) {
             let bounds = layout.bounds();
 
             if bounds.contains(cursor_position) {
@@ -229,7 +229,7 @@ where
                 .overlay(&mut state.children[0], layout, renderer);
         }
 
-        let position = s.cursor_position.clone();
+        let position = s.cursor_position;
         let content = (self.overlay)();
         content.as_widget().diff(&mut state.children[1]);
 
@@ -253,7 +253,7 @@ where
     }
 }
 
-/// The state of the context_menu.
+/// The state of the ``context_menu``.
 #[derive(Debug, Default)]
 pub(crate) struct State {
     /// The visibility of the [`ContextMenu`](ContextMenu) overlay.
