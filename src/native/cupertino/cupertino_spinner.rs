@@ -131,14 +131,14 @@ where
 
             let mut hands: Vec<(Path, _)> = vec![];
 
-            for i in ALPHAS {
+            for alpha in &ALPHAS {
                 hands.push((
                     Path::line(Point::new(0.0, radius / 3.0), Point::new(0.0, radius / 1.5)),
                     move || -> Stroke {
                         // The `60.0` is to shift the original black to dark grey //
                         gen_stroke(
                             width,
-                            Color::from_rgba(0.0, 0.0, 0.0, f32::from(i) / (60.0 + 147.0)),
+                            Color::from_rgba(0.0, 0.0, 0.0, f32::from(*alpha) / (60.0 + 147.0))
                         )
                     },
                 ));
@@ -173,8 +173,9 @@ where
 
     fn state(&self) -> State {
         State::new(SpinnerState {
-            now: time::OffsetDateTime::now_local()
-                .unwrap_or_else(|_| time::OffsetDateTime::now_utc()),
+            now: time::OffsetDateTime::now_local().unwrap_or_else(
+                |_| time::OffsetDateTime::now_utc()
+            ),
             spinner: Cache::default(),
         })
     }
