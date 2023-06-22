@@ -1,5 +1,5 @@
 [package]
-name = "modal_component"
+name = "split_scroller"
 version = "0.1.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>"]
 edition = "2021"
@@ -7,9 +7,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced_aw = { workspace = true, features = [
-    "card",
-    "modal",
-] }
-iced_lazy = "0.6"
+iced_aw = { workspace = true, features = ["split"] }
 iced.workspace = true
+once_cell = "1.17.1"

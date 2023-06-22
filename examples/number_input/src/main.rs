@@ -1,5 +1,8 @@
-use iced::{window, Alignment, Element, Length, Sandbox, Settings, widget::{Container, Row, Text}};
-use iced_aw::{number_input::NumberInput, style::NumberInputStyles};
+use iced::{
+    widget::{Container, Row, Text},
+    window, Alignment, Element, Length, Sandbox, Settings,
+};
+use iced_aw::{number_input, style::NumberInputStyles};
 
 #[derive(Default)]
 pub struct NumberInputDemo {
@@ -43,7 +46,7 @@ impl Sandbox for NumberInputDemo {
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = NumberInput::new(self.value, 255.0, Message::NumInpChanged)
+        let txt_minute = number_input(self.value, 255.0, Message::NumInpChanged)
             .style(NumberInputStyles::Default)
             .step(0.5);
 
@@ -53,10 +56,11 @@ impl Sandbox for NumberInputDemo {
                 .align_items(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
-        ).width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .center_y()
+        .into()
     }
 }

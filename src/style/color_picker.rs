@@ -1,7 +1,7 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-#[cfg(not(target_arch = "wasm32"))]
+
 use iced_native::{Background, Color};
 use iced_style::Theme;
 
@@ -73,15 +73,11 @@ impl StyleSheet for Theme {
     }
 
     fn selected(&self, style: Self::Style) -> Appearance {
-        Appearance {
-            ..self.active(style)
-        }
+        self.active(style)
     }
 
     fn hovered(&self, style: Self::Style) -> Appearance {
-        Appearance {
-            ..self.active(style)
-        }
+        self.active(style)
     }
 
     fn focused(&self, style: Self::Style) -> Appearance {

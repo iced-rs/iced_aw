@@ -1,11 +1,11 @@
 [package]
 name = "iced_aw"
-version = "0.4.1"
-authors = ["Kaiden42 <gitlab@tinysn.com>"]
+version = "0.5.2"
+authors = ["Kaiden42 <gitlab@tinysn.com>", "Andrew Wheeler <genusistimelord@gmail.com>"]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"
 license = "MIT"
-repository = "https://github.com/kaiden42/iced_aw"
+repository = "https://github.com/iced-rs/iced_aw"
 # TODO documentation
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
@@ -33,6 +33,7 @@ split = []
 menu = []
 quad = []
 spinner = []
+context_menu = []
 
 default = [
     "badge",
@@ -52,30 +53,31 @@ default = [
     "split",
     "menu",
     "quad",
+    "context_menu"
 ]
 
 [dependencies]
 num-traits = { version = "0.2.15", optional = true }
 time = { version = "0.3.5", features = ["local-offset"], optional = true }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 chrono = { version = "0.4.23", optional = true }
 lazy_static = { version = "1.4.0", optional = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_native]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "8221794"
-version = "0.9.1"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.iced_graphics]
+
+[dependencies.iced_native]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.7.0"
+version = "0.10.1"
+
+[dependencies.iced_graphics]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "8221794"
+version = "0.8.0"
 
 [dependencies.iced_style]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.7.0"
+version = "0.8.0"
 
 [profile.dev.package."*"]
 opt-level = 2
@@ -103,14 +105,16 @@ members = [
     "examples/number_input",
     "examples/selection_list",
     "examples/split",
+    "examples/split_scroller",
     "examples/menu",
-    "examples/spinner"
+    "examples/spinner",
+    "examples/context_menu"
 ]
 
 [workspace.dependencies.iced]
 #git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
-version = "0.8.0"
+version = "0.9.0"
 
 [workspace.dependencies.iced_aw]
 path = "./"

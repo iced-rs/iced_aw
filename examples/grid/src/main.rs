@@ -1,7 +1,10 @@
-use iced::{theme, Alignment, Color, Element, Length, Sandbox, Settings,
-           widget::{Button, Column, Container, Scrollable, Text}};
+use iced::{
+    theme,
+    widget::{Button, Column, Container, Scrollable, Text},
+    Alignment, Color, Element, Length, Sandbox, Settings,
+};
 
-use iced_aw::Grid;
+use iced_aw::grid;
 
 // Number of columns for the grid
 const COLUMNS: usize = 2;
@@ -40,9 +43,11 @@ impl Sandbox for GridExample {
 
     fn view(&self) -> Element<'_, self::Message> {
         // Creates a grid with two columns
-        let mut grid = Grid::with_columns(COLUMNS)
-            .push(Text::new("Column 1").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))))
-            .push(Text::new("Column 2").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))));
+        let mut grid = grid!(
+            Text::new("Column 1").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))),
+            Text::new("Column 2").style(theme::Text::Color(Color::from_rgb8(255, 0, 0))),
+        )
+        .strategy(iced_aw::Strategy::Columns(2));
 
         // Add elements to the grid
         for i in 0..self.element_index {

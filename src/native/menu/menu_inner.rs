@@ -6,7 +6,7 @@ use crate::style::menu_bar::StyleSheet;
 use iced_native::widget::Tree;
 use iced_native::{
     event, layout, mouse, overlay, renderer, touch, Clipboard, Color, Padding, Point, Rectangle,
-    Shell, Size,
+    Shell, Size, Vector,
 };
 
 /// The condition of when to close a menu
@@ -68,6 +68,7 @@ pub(super) enum Direction {
 
 /// Adaptive open direction
 #[derive(Debug)]
+#[allow(clippy::struct_excessive_bools)]
 struct Aod {
     // whether or not to use aod
     horizontal: bool,
@@ -164,12 +165,12 @@ impl Aod {
         }
     }
 
-    fn point(&self, parent_bounds: Rectangle, children_size: Size, bounds: Size) -> Point {
+    fn point(&self, parent_bounds: Rectangle, children_size: Size, viewport_size: Size) -> Point {
         let x = Self::adaptive(
             parent_bounds.x,
             parent_bounds.width,
             children_size.width,
-            bounds.width,
+            viewport_size.width,
             self.horizontal,
             self.horizontal_overlap,
             self.horizontal_direction,
@@ -178,7 +179,7 @@ impl Aod {
             parent_bounds.y,
             parent_bounds.height,
             children_size.height,
-            bounds.height,
+            viewport_size.height,
             self.vertical,
             self.vertical_overlap,
             self.vertical_direction,
@@ -188,6 +189,11 @@ impl Aod {
     }
 }
 
+/// A part of a menu where items are displayed.
+///
+/// When the bounds of a menu exceed the viewport,
+/// only items inside the viewport will be displayed,
+/// when scrolling happens, this should be updated
 #[derive(Debug, Clone, Copy)]
 struct MenuSlice {
     start_index: usize,
@@ -196,6 +202,7 @@ struct MenuSlice {
     upper_bound_rel: f32,
 }
 
+/// Menu bounds in overlay space
 struct MenuBounds {
     child_positions: Vec<f32>,
     children_bounds: Rectangle,
@@ -203,12 +210,14 @@ struct MenuBounds {
     check_bounds: Rectangle,
 }
 impl MenuBounds {
+    #[allow(clippy::too_many_arguments)]
     fn new<Message, Renderer>(
         menu_tree: &MenuTree<'_, Message, Renderer>,
         item_width: ItemWidth,
         item_height: ItemHeight,
-        viewport: Size,
-        aod: Aod,
+        viewport_size: Size,
+        overlay_offset: Vector,
+        aod: &Aod,
         bounds_expand: u16,
         parent_bounds: Rectangle,
     ) -> Self
@@ -216,7 +225,14 @@ impl MenuBounds {
         Renderer: renderer::Renderer,
     {
         let children_size = get_children_size(menu_tree, item_width, item_height);
-        let children_position = aod.point(parent_bounds, children_size, viewport);
+
+        // viewport space parent bounds
+        let view_parent_bounds = parent_bounds + overlay_offset;
+
+        // overlay space children position
+        let children_position =
+            aod.point(view_parent_bounds, children_size, viewport_size) - overlay_offset;
+
         let children_bounds = Rectangle::new(children_position, children_size);
         let child_positions = get_child_positions(menu_tree, item_height);
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
@@ -238,6 +254,7 @@ pub(super) struct MenuState {
 impl MenuState {
     fn layout<Message, Renderer>(
         &self,
+        overlay_offset: Vector,
         slice: MenuSlice,
         item_height: ItemHeight,
         renderer: &Renderer,
@@ -258,7 +275,9 @@ impl MenuState {
             self.menu_bounds.child_positions.len()
         );
 
-        let children_bounds = self.menu_bounds.children_bounds;
+        // viewport space children bounds
+        let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
+
         let child_nodes = self.menu_bounds.child_positions[start_index..=end_index]
             .iter()
             .zip(menu_tree.children[start_index..=end_index].iter())
@@ -282,14 +301,14 @@ impl MenuState {
             })
             .collect::<Vec<_>>();
 
-        let mut node =
-            layout::Node::with_children(self.menu_bounds.children_bounds.size(), child_nodes);
-        node.move_to(self.menu_bounds.children_bounds.position());
+        let mut node = layout::Node::with_children(children_bounds.size(), child_nodes);
+        node.move_to(children_bounds.position());
         node
     }
 
     fn layout_single<Message, Renderer>(
         &self,
+        overlay_offset: Vector,
         index: usize,
         item_height: ItemHeight,
         renderer: &Renderer,
@@ -298,13 +317,15 @@ impl MenuState {
     where
         Renderer: renderer::Renderer,
     {
-        let children_bounds = self.menu_bounds.children_bounds;
+        // viewport space children bounds
+        let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
+
         let position = self.menu_bounds.child_positions[index];
         let limits = layout::Limits::new(
             Size::ZERO,
             get_item_size(menu_tree, children_bounds.width, item_height),
         );
-        let parent_offset = self.menu_bounds.children_bounds.position() - Point::ORIGIN;
+        let parent_offset = children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
         node.move_to(Point::new(
             parent_offset.x,
@@ -315,18 +336,21 @@ impl MenuState {
 
     fn slice<Message, Renderer>(
         &self,
-        viewport: Size,
+        viewport_size: Size,
+        overlay_offset: Vector,
         item_height: ItemHeight,
         menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> MenuSlice {
-        let children_bounds = self.menu_bounds.children_bounds;
+        // viewport space children bounds
+        let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
+
         let max_index = self.menu_bounds.child_positions.len().saturating_sub(1);
 
-        // absolute bounds
+        // viewport space absolute bounds
         let lower_bound = children_bounds.y.max(0.0);
-        let upper_bound = (children_bounds.y + children_bounds.height).min(viewport.height);
+        let upper_bound = (children_bounds.y + children_bounds.height).min(viewport_size.height);
 
-        // relative bounds
+        // menu space relative bounds
         let lower_bound_rel = lower_bound - (children_bounds.y + self.scroll_offset);
         let upper_bound_rel = upper_bound - (children_bounds.y + self.scroll_offset);
 
@@ -397,15 +421,16 @@ where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, _renderer: &Renderer, bounds: Size, _position: Point) -> layout::Node {
-        layout::Node::new(bounds)
+    fn layout(&self, _renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+        // overlay space viewport rectangle
+        layout::Node::new(bounds).translate(Point::ORIGIN - position)
     }
 
     fn on_event(
         &mut self,
         event: event::Event,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        view_cursor: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -424,46 +449,67 @@ where
             return Ignored;
         };
 
-        let viewport = layout.bounds().size();
+        let viewport = layout.bounds();
+        let viewport_size = viewport.size();
+        let overlay_offset = Point::ORIGIN - viewport.position();
+        let overlay_cursor = view_cursor - overlay_offset;
 
         let menu_status = process_menu_events(
             self.tree,
             self.menu_roots,
             self.item_height,
             event.clone(),
-            cursor_position,
+            view_cursor,
             renderer,
             clipboard,
             shell,
+            overlay_offset,
         );
 
-        init_root_menu(self, cursor_position, viewport, self.bar_bounds);
+        init_root_menu(
+            self,
+            overlay_cursor,
+            viewport_size,
+            overlay_offset,
+            self.bar_bounds,
+        );
 
         match event {
             Mouse(WheelScrolled { delta }) => {
-                process_scroll_events(self, delta, viewport).merge(menu_status)
+                process_scroll_events(self, delta, overlay_cursor, viewport_size, overlay_offset)
+                    .merge(menu_status)
             }
 
             Mouse(ButtonPressed(Left)) | Touch(FingerPressed { .. }) => {
                 let state = self.tree.state.downcast_mut::<MenuBarState>();
                 state.pressed = true;
-                state.cursor = cursor_position;
+                state.view_cursor = view_cursor;
                 Captured
             }
 
             Mouse(CursorMoved { position }) | Touch(FingerMoved { position, .. }) => {
-                process_overlay_events(self, viewport, position).merge(menu_status)
+                let view_cursor = position;
+                let overlay_cursor = view_cursor - overlay_offset;
+                process_overlay_events(
+                    self,
+                    viewport_size,
+                    overlay_offset,
+                    view_cursor,
+                    overlay_cursor,
+                )
+                .merge(menu_status)
             }
 
             Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. }) => {
                 let state = self.tree.state.downcast_mut::<MenuBarState>();
                 state.pressed = false;
 
-                if state.cursor.distance(cursor_position) < 2.0 {
+                // process close condition
+                if state.view_cursor.distance(view_cursor) < 2.0 {
                     let is_inside = state
                         .menu_states
                         .iter()
-                        .any(|ms| ms.menu_bounds.check_bounds.contains(cursor_position));
+                        .any(|ms| ms.menu_bounds.check_bounds.contains(overlay_cursor));
 
                     if self.close_condition.click_inside && is_inside {
                         state.reset();
@@ -476,7 +522,8 @@ where
                     }
                 }
 
-                if self.bar_bounds.contains(cursor_position) {
+                // close all menus when clicking inside the menu bar
+                if self.bar_bounds.contains(overlay_cursor) {
                     state.reset();
                     Captured
                 } else {
@@ -495,12 +542,17 @@ where
         theme: &Renderer::Theme,
         style: &renderer::Style,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        view_cursor: Point,
     ) {
-        let styling = theme.appearance(self.style);
-
         let state = self.tree.state.downcast_ref::<MenuBarState>();
         let Some(active_root) = state.active_root else{ return; };
+
+        let viewport = layout.bounds();
+        let viewport_size = viewport.size();
+        let overlay_offset = Point::ORIGIN - viewport.position();
+        let render_bounds = Rectangle::new(Point::ORIGIN, viewport.size());
+
+        let styling = theme.appearance(self.style);
 
         let tree = &self.tree.children[active_root].children;
         let root = &self.menu_roots[active_root];
@@ -519,20 +571,22 @@ where
                 });
 
                 // react only to the last menu
-                let cursor_position = if i == state.menu_states.len() - 1 {
-                    cursor_position
+                let view_cursor = if i == state.menu_states.len() - 1 {
+                    view_cursor
                 } else {
                     [-1.0; 2].into()
                 };
 
                 let draw_menu = |r: &mut Renderer| {
                     // calc slice
-                    let slice = ms.slice(layout.bounds().size(), self.item_height, menu_root);
+                    let slice =
+                        ms.slice(viewport_size, overlay_offset, self.item_height, menu_root);
                     let start_index = slice.start_index;
                     let end_index = slice.end_index;
 
                     // calc layout
-                    let children_node = ms.layout(slice, self.item_height, r, menu_root);
+                    let children_node =
+                        ms.layout(overlay_offset, slice, self.item_height, r, menu_root);
                     let children_layout = layout::Layout::new(&children_node);
                     let children_bounds = children_layout.bounds();
 
@@ -574,13 +628,13 @@ where
                                 theme,
                                 style,
                                 clo,
-                                cursor_position,
+                                view_cursor,
                                 &children_layout.bounds(),
                             );
                         });
                 };
 
-                renderer.with_layer(layout.bounds(), draw_menu);
+                renderer.with_layer(render_bounds, draw_menu);
 
                 // only the last menu can have a None active index
                 ms.index
@@ -600,15 +654,16 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
 
 fn init_root_menu<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
-    position: Point,
-    viewport: Size,
+    overlay_cursor: Point,
+    viewport_size: Size,
+    overlay_offset: Vector,
     bar_bounds: Rectangle,
 ) where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
 {
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
-    if !(state.menu_states.is_empty() && bar_bounds.contains(position)) {
+    if !(state.menu_states.is_empty() && bar_bounds.contains(overlay_cursor)) {
         return;
     }
 
@@ -622,8 +677,8 @@ fn init_root_menu<Message, Renderer>(
             continue;
         }
 
-        if root_bounds.contains(position) {
-            let view_center = viewport.width * 0.5;
+        if root_bounds.contains(overlay_cursor) {
+            let view_center = viewport_size.width * 0.5;
             let rb_center = root_bounds.center_x();
 
             state.horizontal_direction = if rb_center > view_center {
@@ -645,8 +700,9 @@ fn init_root_menu<Message, Renderer>(
                 mt,
                 menu.item_width,
                 menu.item_height,
-                viewport,
-                aod,
+                viewport_size,
+                overlay_offset,
+                &aod,
                 menu.bounds_expand,
                 root_bounds,
             );
@@ -669,10 +725,11 @@ fn process_menu_events<'b, Message, Renderer>(
     menu_roots: &'b mut [MenuTree<'_, Message, Renderer>],
     item_height: ItemHeight,
     event: event::Event,
-    cursor_position: Point,
+    view_cursor: Point,
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
+    overlay_offset: Vector,
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
@@ -696,6 +753,7 @@ where
     // get layout
     let last_ms = &state.menu_states[indices.len() - 1];
     let child_node = last_ms.layout_single(
+        overlay_offset,
         last_ms.index.expect("missing index within menu state."),
         item_height,
         renderer,
@@ -711,7 +769,7 @@ where
         tree,
         event,
         child_layout,
-        cursor_position,
+        view_cursor,
         renderer,
         clipboard,
         shell,
@@ -721,8 +779,10 @@ where
 #[allow(unused_results)]
 fn process_overlay_events<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
-    viewport: Size,
-    position: Point,
+    viewport_size: Size,
+    overlay_offset: Vector,
+    view_cursor: Point,
+    overlay_cursor: Point,
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
@@ -733,16 +793,16 @@ where
     if no active root || pressed:
         return
     else:
-        remove invalid menus
+        remove invalid menus // overlay space
         update active item
         if active item is a menu:
-            add menu
+            add menu // viewport space
     */
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
 
     let Some(active_root) = state.active_root else{
-        if !menu.bar_bounds.contains(position){
+        if !menu.bar_bounds.contains(overlay_cursor){
             state.reset();
         }
         return Ignored;
@@ -754,9 +814,9 @@ where
 
     /* When overlay is running, cursor_position in any widget method will go negative
     but I still want Widget::draw() to react to cursor movement */
-    state.cursor = position;
+    state.view_cursor = view_cursor;
 
-    // remove invalid menus
+    // * remove invalid menus
     let mut prev_bounds = std::iter::once(menu.bar_bounds)
         .chain(
             state.menu_states[..state.menu_states.len().saturating_sub(1)]
@@ -769,10 +829,10 @@ where
         for i in (0..state.menu_states.len()).rev() {
             let mb = &state.menu_states[i].menu_bounds;
 
-            if mb.parent_bounds.contains(position)
-                || mb.children_bounds.contains(position)
-                || (mb.check_bounds.contains(position)
-                    && prev_bounds.iter().all(|pvb| !pvb.contains(position)))
+            if mb.parent_bounds.contains(overlay_cursor)
+                || mb.children_bounds.contains(overlay_cursor)
+                || (mb.check_bounds.contains(overlay_cursor)
+                    && prev_bounds.iter().all(|pvb| !pvb.contains(overlay_cursor)))
             {
                 break;
             }
@@ -783,9 +843,9 @@ where
         for i in (0..state.menu_states.len()).rev() {
             let mb = &state.menu_states[i].menu_bounds;
 
-            if mb.parent_bounds.contains(position)
-                || mb.children_bounds.contains(position)
-                || prev_bounds.iter().all(|pvb| !pvb.contains(position))
+            if mb.parent_bounds.contains(overlay_cursor)
+                || mb.children_bounds.contains(overlay_cursor)
+                || prev_bounds.iter().all(|pvb| !pvb.contains(overlay_cursor))
             {
                 break;
             }
@@ -801,7 +861,7 @@ where
         .map(|ms| ms.index)
         .collect::<Vec<_>>();
 
-    // update active item
+    // * update active item
     let Some(last_menu_state) = state.menu_states.last_mut() else{
         // no menus left
         state.active_root = None;
@@ -809,7 +869,7 @@ where
         // keep state.open when the cursor is still inside the menu bar
         // this allows the overlay to keep drawing when the cursor is
         // moving aroung the menu bar
-        if !menu.bar_bounds.contains(position){
+        if !menu.bar_bounds.contains(overlay_cursor){
             state.open = false;
         }
         return Captured;
@@ -819,9 +879,9 @@ where
     let last_parent_bounds = last_menu_bounds.parent_bounds;
     let last_children_bounds = last_menu_bounds.children_bounds;
 
-    if last_parent_bounds.contains(position)
+    if last_parent_bounds.contains(overlay_cursor)
     // cursor is in the parent part
-    || !last_children_bounds.contains(position)
+    || !last_children_bounds.contains(overlay_cursor)
     // cursor is outside
     {
         last_menu_state.index = None;
@@ -830,7 +890,7 @@ where
     // cursor is in the children part
 
     // calc new index
-    let height_diff = (position.y - (last_children_bounds.y + last_menu_state.scroll_offset))
+    let height_diff = (overlay_cursor.y - (last_children_bounds.y + last_menu_state.scroll_offset))
         .clamp(0.0, last_children_bounds.height - 0.001);
 
     let active_menu_root = &menu.menu_roots[active_root];
@@ -863,7 +923,7 @@ where
     // get new active item
     let item = &active_menu.children[new_index];
 
-    // add new menu if the new item is a menu
+    // * add new menu if the new item is a menu
     if !item.children.is_empty() {
         let item_position = Point::new(
             0.0,
@@ -875,6 +935,7 @@ where
             menu.item_height,
         );
 
+        // overlay space item bounds
         let item_bounds = Rectangle::new(item_position, item_size)
             + (last_menu_bounds.children_bounds.position() - Point::ORIGIN);
 
@@ -894,8 +955,9 @@ where
                 item,
                 menu.item_width,
                 menu.item_height,
-                viewport,
-                aod,
+                viewport_size,
+                overlay_offset,
+                &aod,
                 menu.bounds_expand,
                 item_bounds,
             ),
@@ -908,7 +970,9 @@ where
 fn process_scroll_events<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
     delta: mouse::ScrollDelta,
-    viewport: Size,
+    overlay_cursor: Point,
+    viewport_size: Size,
+    overlay_offset: Vector,
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
@@ -924,10 +988,13 @@ where
         ScrollDelta::Pixels { y, .. } => y,
     };
 
-    let calc_offset_bounds = |menu_state: &MenuState, viewport: Size| -> (f32, f32) {
-        let children_bounds = menu_state.menu_bounds.children_bounds;
+    let calc_offset_bounds = |menu_state: &MenuState, viewport_size: Size| -> (f32, f32) {
+        // viewport space children bounds
+        let children_bounds = menu_state.menu_bounds.children_bounds + overlay_offset;
+
         let max_offset = (0.0 - children_bounds.y).max(0.0);
-        let min_offset = (viewport.height - (children_bounds.y + children_bounds.height)).min(0.0);
+        let min_offset =
+            (viewport_size.height - (children_bounds.y + children_bounds.height)).min(0.0);
         (max_offset, min_offset)
     };
 
@@ -936,7 +1003,12 @@ where
         return Ignored;
     } else if state.menu_states.len() == 1 {
         let last_ms = &mut state.menu_states[0];
-        let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport);
+
+        if last_ms.index.is_none() {
+            return Captured;
+        }
+
+        let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport_size);
         last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
     } else {
         // >= 2
@@ -945,12 +1017,20 @@ where
 
         if last_two[1].index.is_some() {
             // scroll the last one
-            let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport);
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport_size);
             last_two[1].scroll_offset =
                 (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
         } else {
+            if !last_two[0]
+                .menu_bounds
+                .children_bounds
+                .contains(overlay_cursor)
+            {
+                return Captured;
+            }
+
             // scroll the second last one
-            let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport);
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport_size);
             let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
             let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
             last_two[0].scroll_offset = scroll_offset;

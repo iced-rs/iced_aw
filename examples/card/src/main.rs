@@ -1,6 +1,8 @@
-use iced::{Element, Length, Sandbox, Settings,
-           widget::{Button, Column, Container, Scrollable, Text}};
-use iced_aw::{Card, style::CardStyles};
+use iced::{
+    widget::{Button, Column, Container, Scrollable, Text},
+    Element, Length, Sandbox, Settings,
+};
+use iced_aw::{helpers::card, style::CardStyles};
 
 fn main() -> iced::Result {
     CardExample::run(Settings::default())
@@ -37,7 +39,7 @@ impl Sandbox for CardExample {
 
     fn view(&self) -> Element<'_, self::Message> {
         let element: Element<'_, Message> = if self.card_open {
-            Card::new(
+            card(
                 Text::new("Head"),
                 Column::new()
                     //.push(Text::new("Body").size(42))

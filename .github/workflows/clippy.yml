@@ -3,9 +3,13 @@ on: [push, pull_request]
 jobs:
   all:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, nightly]
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:
+          rust-version: ${{ matrix.rust }}
           components: clippy
       - uses: actions/checkout@master
       - name: Lint with clippy

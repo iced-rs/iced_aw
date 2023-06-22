@@ -41,36 +41,44 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// # use iced_native::{renderer::Null};
 /// # use iced_aw::native::tab_bar;
 /// #
-/// # pub type TabBar<Message> = tab_bar::TabBar<Message, Null>;
+/// # pub type TabBar<Message> = tab_bar::TabBar<Message, TabId, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
-///     TabSelected(usize),
+///     TabSelected(TabId),
 /// }
 ///
-/// let active_tab = 0;
+/// #[derive(PartialEq, Hash)]
+/// enum TabId {
+///    One,
+///    Two,
+///    Three,
+/// }
 ///
 /// let tab_bar = TabBar::new(
-///     active_tab,
 ///     Message::TabSelected,
 /// )
-/// .push(TabLabel::Text(String::from("One")))
-/// .push(TabLabel::Text(String::from("Two")))
-/// .push(TabLabel::Text(String::from("Three")));
+/// .push(TabId::One, TabLabel::Text(String::from("One")))
+/// .push(TabId::Two, TabLabel::Text(String::from("Two")))
+/// .push(TabId::Three, TabLabel::Text(String::from("Three")))
+/// .set_active_tab(&TabId::One);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TabBar<Message, Renderer>
+pub struct TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
+    TabId: Eq + Clone,
 {
-    /// The currently active tab.
+    /// The index of the currently active tab.
     active_tab: usize,
     /// The vector containing the labels of the tabs.
     tab_labels: Vec<TabLabel>,
+    /// The vector containing the indices of the tabs.
+    tab_indices: Vec<TabId>,
     /// The function that produces the message when a tab is selected.
-    on_select: Box<dyn Fn(usize) -> Message>,
+    on_select: Box<dyn Fn(TabId) -> Message>,
     /// The function that produces the message when the close icon was pressed.
-    on_close: Option<Box<dyn Fn(usize) -> Message>>,
+    on_close: Option<Box<dyn Fn(TabId) -> Message>>,
     /// The width of the [`TabBar`](TabBar).
     width: Length,
     /// The width of the tabs of the [`TabBar`](TabBar).
@@ -99,10 +107,11 @@ where
     _renderer: PhantomData<Renderer>,
 }
 
-impl<Message, Renderer> TabBar<Message, Renderer>
+impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet,
+    TabId: Eq + Clone,
 {
     /// Creates a new [`TabBar`](TabBar) with the index of the selected tab and a
     /// specified message which will be send when a tab is selected by the user.
@@ -111,11 +120,11 @@ where
     ///     * the index of the currently active tab.
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn new<F>(active_tab: usize, on_select: F) -> Self
+    pub fn new<F>(on_select: F) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
-        Self::width_tab_labels(active_tab, Vec::new(), on_select)
+        Self::with_tab_labels(Vec::new(), on_select)
     }
 
     /// Similar to `new` but with a given Vector of the
@@ -126,13 +135,14 @@ where
     ///     * a vector containing the [`TabLabel`](TabLabel)s of the [`TabBar`](TabBar).
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn width_tab_labels<F>(active_tab: usize, tab_labels: Vec<TabLabel>, on_select: F) -> Self
+    pub fn with_tab_labels<F>(tab_labels: Vec<(TabId, TabLabel)>, on_select: F) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
         Self {
-            active_tab,
-            tab_labels,
+            active_tab: 0,
+            tab_indices: tab_labels.iter().map(|(id, _)| id.clone()).collect(),
+            tab_labels: tab_labels.into_iter().map(|(_, label)| label).collect(),
             on_select: Box::new(on_select),
             on_close: None,
             width: Length::Fill,
@@ -147,14 +157,26 @@ where
             icon_font: None,
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
-            _renderer: PhantomData::default(),
+            _renderer: PhantomData,
         }
     }
 
     /// Gets the index of the currently active tab on the [`TabBar`](TabBar).
     #[must_use]
-    pub fn get_active_tab(&self) -> usize {
+    pub fn get_active_tab_idx(&self) -> usize {
         self.active_tab
+    }
+
+    /// Gets the id of the currently active tab on the [`TabBar`](TabBar).
+    #[must_use]
+    pub fn get_active_tab_id(&self) -> Option<&TabId> {
+        self.tab_indices.get(self.active_tab)
+    }
+
+    /// Gets the amount of tabs on the [`TabBar`](TabBar).
+    #[must_use]
+    pub fn size(&self) -> usize {
+        self.tab_indices.len()
     }
 
     /// Sets the message that will be produced when the close icon of a tab
@@ -164,7 +186,7 @@ where
     #[must_use]
     pub fn on_close<F>(mut self, on_close: F) -> Self
     where
-        F: 'static + Fn(usize) -> Message,
+        F: 'static + Fn(TabId) -> Message,
     {
         self.on_close = Some(Box::new(on_close));
         self
@@ -273,16 +295,29 @@ where
 
     /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`](TabBar).
     #[must_use]
-    pub fn push(mut self, tab_label: TabLabel) -> Self {
+    pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
+        self.tab_indices.push(id);
+        self
+    }
+
+    /// Sets up the active tab on the [`TabBar`](TabBar).
+    #[must_use]
+    pub fn set_active_tab(mut self, active_tab: &TabId) -> Self {
+        self.active_tab = self
+            .tab_indices
+            .iter()
+            .position(|id| id == active_tab)
+            .map_or(0, |a| a);
         self
     }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for TabBar<Message, Renderer>
+impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
 where
     Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    TabId: Eq + Clone,
 {
     fn width(&self) -> Length {
         self.width
@@ -370,8 +405,8 @@ where
                                     cross_layout.bounds().contains(cursor_position)
                                 })
                                 .map_or_else(
-                                    || (self.on_select)(new_selected),
-                                    |on_close| (on_close)(new_selected),
+                                    || (self.on_select)(self.tab_indices[new_selected].clone()),
+                                    |on_close| (on_close)(self.tab_indices[new_selected].clone()),
                                 ),
                         );
                         return event::Status::Captured;
@@ -448,7 +483,7 @@ where
                 layout,
                 theme,
                 self.style,
-                i == self.active_tab,
+                i == self.get_active_tab_idx(),
                 cursor_position,
                 self.icon_font.unwrap_or(icons::ICON_FONT),
                 self.text_font.unwrap_or_default(),
@@ -611,13 +646,15 @@ fn draw_tab<Renderer>(
     };
 }
 
-impl<'a, Message, Renderer> From<TabBar<Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Renderer> From<TabBar<Message, TabId, Renderer>>
+    for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
     Message: 'a,
+    TabId: 'a + Eq + Clone,
 {
-    fn from(tab_bar: TabBar<Message, Renderer>) -> Self {
+    fn from(tab_bar: TabBar<Message, TabId, Renderer>) -> Self {
         Element::new(tab_bar)
     }
 }

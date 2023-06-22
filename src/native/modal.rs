@@ -1,8 +1,11 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_native::{event, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell};
-use iced_native::{widget::Tree, Element, Widget};
+use iced_native::{
+    event, mouse,
+    widget::{Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+};
 
 use super::overlay::modal::ModalOverlay;
 
@@ -219,17 +222,40 @@ where
 
         let bounds = layout.bounds();
         let position = Point::new(bounds.x, bounds.y);
+        let content = (self.content)();
+        content.as_widget().diff(&mut state.children[1]);
 
         Some(
             ModalOverlay::new(
                 &mut state.children[1],
-                (self.content)(),
+                content,
                 self.backdrop.clone(),
                 self.esc.clone(),
                 self.style,
             )
             .overlay(position),
         )
+    }
+
+    fn operate<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        if self.show_modal {
+            let content = (self.content)();
+            content.as_widget().diff(&mut state.children[1]);
+
+            content
+                .as_widget()
+                .operate(&mut state.children[1], layout, renderer, operation);
+        } else {
+            self.underlay
+                .as_widget()
+                .operate(&mut state.children[0], layout, renderer, operation);
+        }
     }
 }
 

@@ -1,7 +1,9 @@
-use iced::{Alignment, Color, Element, Length, Sandbox, Settings,
-           widget::{Button, Container, Row, Text}};
+use iced::{
+    widget::{Button, Container, Row, Text},
+    Alignment, Color, Element, Length, Sandbox, Settings,
+};
 
-use iced_aw::ColorPicker;
+use iced_aw::helpers::color_picker;
 
 fn main() -> iced::Result {
     ColorPickerExample::run(Settings::default())
@@ -56,7 +58,7 @@ impl Sandbox for ColorPickerExample {
     fn view(&self) -> Element<'_, Self::Message> {
         let but = Button::new(Text::new("Set Color")).on_press(Message::ChooseColor);
 
-        let datepicker = ColorPicker::new(
+        let color_picker = color_picker(
             self.show_picker,
             self.color,
             but,
@@ -67,7 +69,7 @@ impl Sandbox for ColorPickerExample {
         let row = Row::new()
             .align_items(Alignment::Center)
             .spacing(10)
-            .push(datepicker)
+            .push(color_picker)
             .push(Text::new(format!("Color: {:?}", self.color)));
 
         Container::new(row)

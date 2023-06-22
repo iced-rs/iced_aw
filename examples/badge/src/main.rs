@@ -1,6 +1,9 @@
-use iced::{Alignment, Element, Length, Sandbox, Settings, widget::{Column, Container, Row, Text}};
+use iced::{
+    widget::{Column, Container, Row, Text},
+    Alignment, Element, Length, Sandbox, Settings,
+};
 
-use iced_aw::{Badge, style::BadgeStyles};
+use iced_aw::{helpers::badge, style::BadgeStyles};
 
 const BADGE_TEXT_SIZE: u16 = 15;
 
@@ -40,20 +43,21 @@ impl Sandbox for BadgeExample {
             .spacing(15)
             .max_width(300);
 
-        let content_messages = self.messages.iter().enumerate().fold(
-            content,
-            |col, (i, (name, count))| {
-                col.push(
-                    Row::new()
-                        .align_items(Alignment::Center)
-                        .push(Text::new(name).width(Length::Fill))
-                        .push(
-                            Badge::new(Text::new(format!("{count}")).size(BADGE_TEXT_SIZE))
-                                .style(predefined_style(i)),
-                        ),
-                )
-            },
-        );
+        let content_messages =
+            self.messages
+                .iter()
+                .enumerate()
+                .fold(content, |col, (i, (name, count))| {
+                    col.push(
+                        Row::new()
+                            .align_items(Alignment::Center)
+                            .push(Text::new(name).width(Length::Fill))
+                            .push(
+                                badge(Text::new(format!("{count}")).size(BADGE_TEXT_SIZE))
+                                    .style(predefined_style(i)),
+                            ),
+                    )
+                });
 
         let content_all = Column::new()
             .spacing(10)
@@ -61,20 +65,20 @@ impl Sandbox for BadgeExample {
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Default")))
-                    .push(Badge::new(Text::new("Primary")).style(BadgeStyles::Primary))
-                    .push(Badge::new(Text::new("Secondary")).style(BadgeStyles::Secondary))
-                    .push(Badge::new(Text::new("Success")).style(BadgeStyles::Success))
-                    .push(Badge::new(Text::new("Danger")).style(BadgeStyles::Danger)),
+                    .push(badge(Text::new("Default")))
+                    .push(badge(Text::new("Primary")).style(BadgeStyles::Primary))
+                    .push(badge(Text::new("Secondary")).style(BadgeStyles::Secondary))
+                    .push(badge(Text::new("Success")).style(BadgeStyles::Success))
+                    .push(badge(Text::new("Danger")).style(BadgeStyles::Danger)),
             )
             .push(
                 Row::new()
                     .spacing(10)
-                    .push(Badge::new(Text::new("Warning")).style(BadgeStyles::Warning))
-                    .push(Badge::new(Text::new("Info")).style(BadgeStyles::Info))
-                    .push(Badge::new(Text::new("Light")).style(BadgeStyles::Light))
-                    .push(Badge::new(Text::new("Dark")).style(BadgeStyles::Dark))
-                    .push(Badge::new(Text::new("White")).style(BadgeStyles::White)),
+                    .push(badge(Text::new("Warning")).style(BadgeStyles::Warning))
+                    .push(badge(Text::new("Info")).style(BadgeStyles::Info))
+                    .push(badge(Text::new("Light")).style(BadgeStyles::Light))
+                    .push(badge(Text::new("Dark")).style(BadgeStyles::Dark))
+                    .push(badge(Text::new("White")).style(BadgeStyles::White)),
             );
 
         Container::new(
@@ -82,11 +86,12 @@ impl Sandbox for BadgeExample {
                 .spacing(40)
                 .push(content_messages)
                 .push(content_all),
-        ).width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .center_y()
+        .into()
     }
 }
 

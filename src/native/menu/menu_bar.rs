@@ -13,7 +13,7 @@ use iced_native::{
 
 pub(super) struct MenuBarState {
     pub(super) pressed: bool,
-    pub(super) cursor: Point,
+    pub(super) view_cursor: Point,
     pub(super) open: bool,
     pub(super) active_root: Option<usize>,
     pub(super) horizontal_direction: Direction,
@@ -38,7 +38,7 @@ impl Default for MenuBarState {
     fn default() -> Self {
         Self {
             pressed: false,
-            cursor: Point::new(-0.5, -0.5),
+            view_cursor: Point::new(-0.5, -0.5),
             open: false,
             active_root: None,
             horizontal_direction: Direction::Positive,
@@ -272,7 +272,7 @@ where
         tree: &mut Tree,
         event: event::Event,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        view_cursor: Point,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -283,7 +283,7 @@ where
 
         let root_status = process_root_events(
             &mut self.menu_roots,
-            cursor_position,
+            view_cursor,
             tree,
             &event,
             layout,
@@ -296,8 +296,8 @@ where
 
         match event {
             Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. } | FingerLost { .. }) => {
-                if state.menu_states.is_empty() && layout.bounds().contains(cursor_position) {
-                    state.cursor = cursor_position;
+                if state.menu_states.is_empty() && layout.bounds().contains(view_cursor) {
+                    state.view_cursor = view_cursor;
                     state.open = true;
                 }
             }
@@ -313,15 +313,15 @@ where
         theme: &<Renderer as renderer::Renderer>::Theme,
         style: &renderer::Style,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        view_cursor: Point,
         viewport: &Rectangle,
     ) {
         let state = tree.state.downcast_ref::<MenuBarState>();
 
-        let position = if state.open && (cursor_position.x < 0.0 || cursor_position.y < 0.0) {
-            state.cursor
+        let position = if state.open && (view_cursor.x < 0.0 || view_cursor.y < 0.0) {
+            state.view_cursor
         } else {
-            cursor_position
+            view_cursor
         };
 
         // draw path highlight
@@ -403,7 +403,7 @@ where
 #[allow(unused_results, clippy::too_many_arguments)]
 fn process_root_events<Message, Renderer>(
     menu_roots: &mut [MenuTree<'_, Message, Renderer>],
-    position: Point,
+    view_cursor: Point,
     tree: &mut Tree,
     event: &event::Event,
     layout: layout::Layout<'_>,
@@ -424,7 +424,7 @@ where
                 &mut t.children[root.index],
                 event.clone(),
                 lo,
-                position,
+                view_cursor,
                 renderer,
                 clipboard,
                 shell,

@@ -1,5 +1,7 @@
-use iced::{Alignment, Element, Length, Sandbox, Settings,
-           widget::{Button, Column, Row, Text, TextInput}};
+use iced::{
+    widget::{Button, Column, Row, Text, TextInput},
+    Alignment, Element, Length, Sandbox, Settings,
+};
 use iced_aw::{TabBar, TabLabel};
 
 fn main() -> iced::Result {
@@ -40,7 +42,10 @@ impl Sandbox for TabBarExample {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::TabSelected(index) => self.active_tab = index,
+            Message::TabSelected(index) => {
+                println!("Tab selected: {}", index);
+                self.active_tab = index
+            }
             Message::TabClosed(index) => {
                 self.tabs.remove(index);
                 println!("active tab before: {}", self.active_tab);
@@ -73,19 +78,15 @@ impl Sandbox for TabBarExample {
             .push(
                 Row::new()
                     .push(
-                        TextInput::new(
-                            "Tab label",
-                            &self.new_tab_label,
-                            Message::TabLabelInputChanged,
-                        ).size(22)
+                        TextInput::new("Tab label", &self.new_tab_label)
+                            .on_input(Message::TabLabelInputChanged)
+                            .size(22)
                             .padding(5.0),
                     )
                     .push(
-                        TextInput::new(
-                            "Tab content",
-                            &self.new_tab_content,
-                            Message::TabContentInputChanged,
-                        ).size(22)
+                        TextInput::new("Tab content", &self.new_tab_content)
+                            .on_input(Message::TabContentInputChanged)
+                            .size(22)
                             .padding(5.0),
                     )
                     .push(Button::new(Text::new("New")).on_press(Message::NewTab))
@@ -97,9 +98,12 @@ impl Sandbox for TabBarExample {
                 self.tabs
                     .iter()
                     .fold(
-                        TabBar::new(self.active_tab, Message::TabSelected),
+                        TabBar::new(Message::TabSelected),
                         |tab_bar, (tab_label, _)| {
-                            tab_bar.push(TabLabel::Text(tab_label.to_owned()))
+                            // manually create a new index for the new tab
+                            // starting from 0, when there is no tab created yet
+                            let idx = tab_bar.size();
+                            tab_bar.push(idx, TabLabel::Text(tab_label.to_owned()))
                         },
                     )
                     .on_close(Message::TabClosed)
@@ -113,7 +117,8 @@ impl Sandbox for TabBarExample {
                     Text::new(content)
                 } else {
                     Text::new("Please create a new tab")
-                }.size(25),
+                }
+                .size(25),
             )
             .into()
     }

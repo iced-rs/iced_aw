@@ -112,7 +112,8 @@ where
             bounds: (T::zero(), max),
             padding,
             size: None,
-            content: TextInput::new("", format!("{value}").as_str(), convert_to_num)
+            content: TextInput::new("", format!("{value}").as_str())
+                .on_input(convert_to_num)
                 .padding(padding)
                 .width(Length::Fixed(127.0)),
             on_change: Box::new(on_changed),
@@ -283,7 +284,7 @@ where
     }
 
     fn width(&self) -> Length {
-        Length::Shrink
+        Length::Fill
     }
 
     fn height(&self) -> Length {
@@ -298,7 +299,7 @@ where
             .pad(padding);
         let content = self.content.layout(renderer, &limits.loose());
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
-        let icon_size = txt_size * 3.0 / 4.0;
+        let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
             Container::<(), Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y()
@@ -324,6 +325,7 @@ where
             content.size().height.max(modifier.size().height),
         );
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
+
         let size = limits.resolve(intrinsic);
         Node::with_children(size, vec![content, modifier])
     }

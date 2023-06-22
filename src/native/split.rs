@@ -7,7 +7,7 @@ use iced_native::{
 use iced_native::{
     widget::{
         tree::{self, Tag},
-        Container, Row, Tree,
+        Container, Operation, Row, Tree,
     },
     Element, Widget,
 };
@@ -443,6 +443,28 @@ where
             },
             divider_style.divider_background,
         );
+    }
+
+    fn operate<'b>(
+        &'b self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        let mut children = layout.children();
+        let first_layout = children.next().expect("Missing Split First window");
+        let _divider_layout = children.next().expect("Missing Split Divider");
+        let second_layout = children.next().expect("Missing Split Second window");
+
+        let (first_state, second_state) = state.children.split_at_mut(1);
+
+        self.first
+            .as_widget()
+            .operate(&mut first_state[0], first_layout, renderer, operation);
+        self.second
+            .as_widget()
+            .operate(&mut second_state[0], second_layout, renderer, operation);
     }
 
     fn overlay<'b>(

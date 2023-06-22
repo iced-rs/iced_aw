@@ -4,7 +4,11 @@
 use iced_native::{
     event, layout::Node, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
-use iced_native::{overlay, widget::Tree, Element, Widget};
+use iced_native::{
+    overlay,
+    widget::{Operation, Tree},
+    Element, Widget,
+};
 
 /// A container that distributes its contents in a grid.
 ///
@@ -36,7 +40,8 @@ pub struct Grid<'a, Message, Renderer> {
 }
 
 /// The [`Strategy`](Strategy) of how to distribute the columns of the [`Grid`](Grid).
-enum Strategy {
+#[derive(Debug)]
+pub enum Strategy {
     /// Use `n` columns.
     Columns(usize),
     /// Try to fit as much columns that have a fixed width.
@@ -53,6 +58,23 @@ impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
 where
     Renderer: iced_native::Renderer,
 {
+    /// Creates a [`Grid`](Grid) with ``Strategy::Columns(1)``
+    /// Use ``strategy()`` to update the Strategy.
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Creates a [`Grid`](Grid) with given elements and ``Strategy::Columns(1)``
+    /// Use ``strategy()`` to update the Strategy.
+    #[must_use]
+    pub fn with_children(children: Vec<Element<'a, Message, Renderer>>) -> Self {
+        Self {
+            strategy: Strategy::default(),
+            elements: children,
+        }
+    }
+
     /// Creates a new empty [`Grid`](Grid).
     /// Elements will be laid out in a specific amount of columns.
     #[must_use]
@@ -73,6 +95,14 @@ where
         }
     }
 
+    /// Sets the [`Grid`](Grid) Strategy.
+    /// Default is ``Strategy::Columns(1)``.
+    #[must_use]
+    pub fn strategy(mut self, strategy: Strategy) -> Self {
+        self.strategy = strategy;
+        self
+    }
+
     /// Adds an [`Element`](Element) to the [`Grid`](Grid).
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
@@ -89,6 +119,18 @@ where
         E: Into<Element<'a, Message, Renderer>>,
     {
         self.elements.push(element.into());
+    }
+}
+
+impl<'a, Message, Renderer> Default for Grid<'a, Message, Renderer>
+where
+    Renderer: iced_native::Renderer,
+{
+    fn default() -> Self {
+        Self {
+            strategy: Strategy::default(),
+            elements: Vec::new(),
+        }
     }
 }
 
@@ -222,6 +264,25 @@ where
             .fold(mouse::Interaction::default(), |interaction, next| {
                 interaction.max(next)
             })
+    }
+
+    fn operate(
+        &self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        for ((element, state), layout) in self
+            .elements
+            .iter()
+            .zip(&mut state.children)
+            .zip(layout.children())
+        {
+            element
+                .as_widget()
+                .operate(state, layout, renderer, operation);
+        }
     }
 
     fn draw(

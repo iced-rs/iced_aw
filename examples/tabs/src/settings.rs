@@ -1,10 +1,14 @@
 use crate::{Icon, Message, Tab};
-use iced::{Element, widget::{Column, Container, Radio, Text}};
+use iced::{
+    widget::{Column, Container, Radio, Text},
+    Element,
+};
 use iced_aw::style::TabBarStyles;
 use iced_aw::tab_bar::TabLabel;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TabBarPosition {
-    #[default] Top,
+    #[default]
+    Top,
     Bottom,
 }
 
@@ -92,24 +96,27 @@ impl Tab for SettingsTab {
                                 position,
                                 self.settings().tab_bar_position,
                                 SettingsMessage::PositionSelected,
-                            ).size(16),
+                            )
+                            .size(16),
                         )
                     },
                 ))
                 .push(Text::new("TabBar color:").size(20))
                 .push(
-                    (0..5).fold(Column::new().padding(10).spacing(10), |column, id| {
+                    (0..6).fold(Column::new().padding(10).spacing(10), |column, id| {
                         column.push(
                             Radio::new(
                                 predefined_style(id),
                                 predefined_style(id),
                                 self.settings().tab_bar_theme,
                                 SettingsMessage::ThemeSelected,
-                            ).size(16),
+                            )
+                            .size(16),
                         )
                     }),
                 ),
-        ).into();
+        )
+        .into();
 
         content.map(Message::Settings)
     }
@@ -118,10 +125,11 @@ impl Tab for SettingsTab {
 fn predefined_style(index: usize) -> TabBarStyles {
     match index {
         0 => TabBarStyles::Default,
-        1 => TabBarStyles::Red,
-        2 => TabBarStyles::Blue,
-        3 => TabBarStyles::Green,
-        4 => TabBarStyles::Purple,
+        1 => TabBarStyles::Dark,
+        2 => TabBarStyles::Red,
+        3 => TabBarStyles::Blue,
+        4 => TabBarStyles::Green,
+        5 => TabBarStyles::Purple,
         _ => TabBarStyles::Default,
     }
 }

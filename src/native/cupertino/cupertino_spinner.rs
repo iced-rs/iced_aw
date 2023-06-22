@@ -2,19 +2,22 @@ use iced_graphics::{Backend, Renderer};
 use iced_native::event::Status;
 use iced_native::layout::{Limits, Node};
 use iced_native::renderer::Style;
-use iced_native::widget::{tree::{State, Tag}, Tree};
-
-use iced_native::{
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Size, Shell,
-    Vector, Widget, window,
+use iced_native::widget::{
+    tree::{State, Tag},
+    Tree,
 };
 
-use iced_graphics::widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke,};
+use iced_native::{
+    window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
+    Vector, Widget,
+};
+
+use iced_graphics::widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke};
 
 use std::f32::consts::PI;
 
-const HAND_COUNT: usize    = 8;
-const ALPHAS:     [u16; 8] = [47, 47, 47, 47, 72, 97, 122, 147];
+const HAND_COUNT: usize = 8;
+const ALPHAS: [u16; 8] = [47, 47, 47, 47, 72, 97, 122, 147];
 
 /**
  * `CupertinoSpinner`
@@ -38,22 +41,22 @@ const ALPHAS:     [u16; 8] = [47, 47, 47, 47, 72, 97, 122, 147];
 #[allow(missing_debug_implementations)]
 #[derive(Debug)]
 pub struct CupertinoSpinner {
-    width:  Length,
+    width: Length,
     height: Length,
     radius: f32,
 }
 
 struct SpinnerState {
-    now:     time::OffsetDateTime,
+    now: time::OffsetDateTime,
     spinner: Cache,
 }
 
 impl Default for CupertinoSpinner {
     fn default() -> Self {
         Self {
-            width:   Length::Fixed(20.0),
-            height:  Length::Fixed(20.0),
-            radius:  20.0,
+            width: Length::Fixed(20.0),
+            height: Length::Fixed(20.0),
+            radius: 20.0,
         }
     }
 }
@@ -89,36 +92,42 @@ impl CupertinoSpinner {
     }
 }
 
-impl<'a, Message, B, T> Widget<Message, Renderer<B, T>>
-for CupertinoSpinner
-where B: Backend {
-    fn width(&self)  -> Length { self.width }
-    fn height(&self) -> Length { self.height }
+impl<Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSpinner
+where
+    B: Backend,
+{
+    fn width(&self) -> Length {
+        self.width
+    }
+    fn height(&self) -> Length {
+        self.height
+    }
 
     fn layout(&self, _renderer: &Renderer<B, T>, limits: &Limits) -> Node {
-        Node::new(limits
-            .width(self.width)
-            .height(self.height)
-            .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
+        Node::new(
+            limits
+                .width(self.width)
+                .height(self.height)
+                .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
         )
     }
 
     fn draw(
         &self,
-        state:            &Tree,
-        renderer:         &mut Renderer<B, T>,
-        _theme:           &T,
-        _style:           &Style,
-        layout:           Layout<'_>,
+        state: &Tree,
+        renderer: &mut Renderer<B, T>,
+        _theme: &T,
+        _style: &Style,
+        layout: Layout<'_>,
         _cursor_position: Point,
-        _viewport:        &Rectangle,
+        _viewport: &Rectangle,
     ) {
         let state: &SpinnerState = state.state.downcast_ref::<SpinnerState>();
 
         let spinner: Geometry = state.spinner.draw(layout.bounds().size(), |frame| {
             let center = frame.center();
             let radius = self.radius;
-            let width  = radius / 5.0;
+            let width = radius / 5.0;
 
             let mut hands: Vec<(Path, _)> = vec![];
 
@@ -132,7 +141,7 @@ where B: Backend {
                             Color::from_rgba(0.0, 0.0, 0.0, f32::from(*alpha) / (60.0 + 147.0))
                         )
                     },
-                ))
+                ));
             }
 
             frame.translate(Vector::new(center.x, center.y));
@@ -148,7 +157,7 @@ where B: Backend {
 
                     frame.stroke(
                         &hands[i].0,
-                        hands[((HAND_COUNT - i - 1) + new_index) % 8].1()
+                        hands[((HAND_COUNT - i - 1) + new_index) % 8].1(),
                     );
                 }
             });
@@ -158,7 +167,9 @@ where B: Backend {
         renderer.draw_primitive(spinner.into_primitive());
     }
 
-    fn tag(&self) -> Tag { Tag::of::<SpinnerState>() }
+    fn tag(&self) -> Tag {
+        Tag::of::<SpinnerState>()
+    }
 
     fn state(&self) -> State {
         State::new(SpinnerState {
@@ -170,47 +181,47 @@ where B: Backend {
     }
 
     fn on_event(
-       &mut self,
-       state:            &mut Tree,
-       event:            Event,
-       _layout:          Layout<'_>,
-       _cursor_position: Point,
-       _renderer:        &Renderer<B, T>,
-       _clipboard:       &mut dyn Clipboard,
-       shell:            &mut Shell<'_, Message>,
+        &mut self,
+        state: &mut Tree,
+        event: Event,
+        _layout: Layout<'_>,
+        _cursor_position: Point,
+        _renderer: &Renderer<B, T>,
+        _clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
     ) -> Status {
         let state: &mut SpinnerState = state.state.downcast_mut::<SpinnerState>();
 
         if let Event::Window(window::Event::RedrawRequested(_now)) = &event {
             // if is_visible(&bounds) {
-            state.now = time::OffsetDateTime::now_local().unwrap_or_else(
-                |_| time::OffsetDateTime::now_utc()
-            );
+            state.now = time::OffsetDateTime::now_local()
+                .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
 
             state.spinner.clear();
             shell.request_redraw(window::RedrawRequest::NextFrame);
             return Status::Captured;
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 }
 
-impl<'a, Message, B, T> From<CupertinoSpinner>
-for Element<'a, Message, Renderer<B, T>>
-where B: Backend {
+impl<'a, Message, B, T> From<CupertinoSpinner> for Element<'a, Message, Renderer<B, T>>
+where
+    B: Backend,
+{
     fn from(spinner: CupertinoSpinner) -> Self {
         Self::new(spinner)
     }
 }
 
 fn gen_stroke(width: f32, color: Color) -> Stroke<'static> {
-    return Stroke {
+    Stroke {
         width,
         style: stroke::Style::Solid(color),
         line_cap: LineCap::Round,
         ..Stroke::default()
-    };
+    }
 }
 
 const K: f32 = PI * 2.0;
@@ -220,4 +231,3 @@ fn hand_rotation(n: u16, total: u16) -> f32 {
 
     K * turns
 }
-
