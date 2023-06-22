@@ -9,7 +9,7 @@ use crate::native::floating_element::{Anchor, Offset};
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_native::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, Message: Clone, Renderer: iced_native::Renderer> {
+pub struct FloatingElementOverlay<'a, Message, Renderer: iced_native::Renderer> {
     /// The state of the element.
     state: &'a mut Tree,
     /// The floating element
@@ -22,7 +22,7 @@ pub struct FloatingElementOverlay<'a, Message: Clone, Renderer: iced_native::Ren
 
 impl<'a, Message, Renderer> FloatingElementOverlay<'a, Message, Renderer>
 where
-    Message: Clone + 'a,
+    Message: 'a,
     Renderer: iced_native::Renderer + 'a,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
@@ -51,7 +51,7 @@ where
 impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
     for FloatingElementOverlay<'a, Message, Renderer>
 where
-    Message: Clone + 'a,
+    Message: 'a,
     Renderer: iced_native::Renderer + 'a,
 {
     fn layout(

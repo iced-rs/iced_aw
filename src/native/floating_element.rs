@@ -43,7 +43,6 @@ use super::overlay::floating_element::FloatingElementOverlay;
 pub struct FloatingElement<'a, B, Message, Renderer>
 where
     B: Fn() -> Element<'a, Message, Renderer>,
-    Message: Clone,
     Renderer: iced_native::Renderer,
 {
     /// The anchor of the element.
@@ -61,7 +60,6 @@ where
 impl<'a, B, Message, Renderer> FloatingElement<'a, B, Message, Renderer>
 where
     B: Fn() -> Element<'a, Message, Renderer>,
-    Message: Clone,
     Renderer: iced_native::Renderer,
 {
     /// Creates a new [`FloatingElement`](FloatingElement) over some content,
@@ -114,7 +112,7 @@ impl<'a, B, Message, Renderer> Widget<Message, Renderer>
     for FloatingElement<'a, B, Message, Renderer>
 where
     B: Fn() -> Element<'a, Message, Renderer>,
-    Message: 'a + Clone,
+    Message: 'a,
     Renderer: 'a + iced_native::Renderer,
 {
     fn children(&self) -> Vec<iced_native::widget::Tree> {
@@ -260,7 +258,7 @@ impl<'a, B, Message, Renderer> From<FloatingElement<'a, B, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     B: 'a + Fn() -> Element<'a, Message, Renderer>,
-    Message: 'a + Clone,
+    Message: 'a,
     Renderer: 'a + iced_native::Renderer,
 {
     fn from(floating_element: FloatingElement<'a, B, Message, Renderer>) -> Self {
