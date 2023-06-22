@@ -1,5 +1,5 @@
-use iced::{alignment, Application, Color, Command, Element, executor, Length, Settings, Theme};
 use iced::widget::{column, container, row, text};
+use iced::{alignment, executor, Application, Color, Command, Element, Length, Settings, Theme};
 use iced_aw::native::cupertino::cupertino_switch::CupertinoSwitch;
 
 pub fn main() -> iced::Result {
@@ -105,4 +105,3 @@ impl Application for Switch {
         Theme::Light
     }
 }
-

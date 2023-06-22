@@ -1,6 +1,7 @@
 use iced::{
-    alignment, Application, Command, Element, executor, Length, Renderer, Settings, Theme,
+    alignment, executor,
     widget::{column, container, text, Text},
+    Application, Command, Element, Length, Renderer, Settings, Theme,
 };
 
 use iced_aw::native::cupertino::cupertino_button::CupertinoButton;
@@ -116,4 +117,3 @@ impl Application for ButtonApp {
         Theme::Light
     }
 }
-

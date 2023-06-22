@@ -27,4 +27,3 @@ pub mod cupertino_switch;
 ///
 /// *This API requires the following crate features to be activated: `cupertino`*
 pub mod fonts;
-

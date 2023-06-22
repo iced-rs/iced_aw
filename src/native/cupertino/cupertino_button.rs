@@ -1,7 +1,12 @@
 use iced_native::{
-    application::StyleSheet, Clipboard, Color, Element, Event, event::Status, Font, Layout,
-    layout::{Limits, Node}, Length, mouse, Point, Rectangle, renderer::{Quad, Style}, Size, Shell,
-    touch, Widget, widget::{Text, Tree},
+    application::StyleSheet,
+    event::Status,
+    layout::{Limits, Node},
+    mouse,
+    renderer::{Quad, Style},
+    touch,
+    widget::{Text, Tree},
+    Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 // INTERNAL //
@@ -26,13 +31,13 @@ use crate::native::cupertino::fonts::SF_UI_ROUNDED;
 #[allow(missing_debug_implementations)]
 pub struct CupertinoButton<'a, Message, Renderer>
 where
-    Message:         Clone,
-    Renderer:        iced_native::Renderer,
+    Message: Clone,
+    Renderer: iced_native::Renderer,
     Renderer::Theme: StyleSheet,
 {
     on_pressed: Option<Message>,
-    is_filled:  bool,
-    body:       Element<'a, Message, Renderer>,
+    is_filled: bool,
+    body: Element<'a, Message, Renderer>,
 
     /// `colour` is an option here because there is already logic to set the colour
     /// depending on if the button is enabled/disabled. But if the button causes a
@@ -43,8 +48,8 @@ where
 
 impl<'a, Message, Renderer> Default for CupertinoButton<'a, Message, Renderer>
 where
-    Message:         Clone,
-    Renderer:        iced_native::Renderer + iced_native::text::Renderer + 'a,
+    Message: Clone,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
     Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
 
     <Renderer as iced_native::text::Renderer>::Font: From<Font>,
@@ -52,20 +57,20 @@ where
     fn default() -> Self {
         Self {
             on_pressed: None,
-            is_filled:  false,
-            body:       Text::new("Hello").font(SF_UI_ROUNDED).into(),
-            colour:     None,
+            is_filled: false,
+            body: Text::new("Hello").font(SF_UI_ROUNDED).into(),
+            colour: None,
         }
     }
 }
 
 impl<'a, Message, Renderer> CupertinoButton<'a, Message, Renderer>
 where
-    Message:         Clone,
-    Renderer:        iced_native::Renderer + iced_native::text::Renderer + 'a,
+    Message: Clone,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
     Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
 
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>
+    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
 {
     /// Creates a new [`CupertinoButton`] widget.
     #[must_use]
@@ -111,33 +116,32 @@ where
 const VERTICAL_PADDING: f32 = 14.0;
 // const HORIZONTAL_PADDING: f32 = 64.0;
 
-impl<'a, Message, Renderer> Widget<Message, Renderer>
-for CupertinoButton<'a, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for CupertinoButton<'a, Message, Renderer>
 where
-    Message:         Clone,
-    Renderer:        iced_native::Renderer + iced_native::text::Renderer,
+    Message: Clone,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn width(&self)  -> Length { self.body.as_widget().width() }
-    fn height(&self) -> Length { self.body.as_widget().height() }
+    fn width(&self) -> Length {
+        self.body.as_widget().width()
+    }
+    fn height(&self) -> Length {
+        self.body.as_widget().height()
+    }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits:   &Limits,
-    ) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         return self.body.as_widget().layout(renderer, limits);
     }
 
     fn draw(
         &self,
-        state:           &Tree,
-        renderer:        &mut Renderer,
-        theme:           &Renderer::Theme,
-        style:           &Style,
-        layout:          Layout<'_>,
+        state: &Tree,
+        renderer: &mut Renderer,
+        theme: &Renderer::Theme,
+        style: &Style,
+        layout: Layout<'_>,
         cursor_position: Point,
-        viewport:        &Rectangle,
+        viewport: &Rectangle,
     ) {
         if self.is_filled {
             let colour: Color = if self.on_pressed.is_none() {
@@ -147,24 +151,27 @@ where
             };
 
             let bounds: Rectangle = layout.bounds();
-            let center: Point     = bounds.center();
+            let center: Point = bounds.center();
 
             let rectangle: Rectangle = Rectangle::new(
-                Point { x: bounds.x, y: center.y - 3.0 * VERTICAL_PADDING },
+                Point {
+                    x: bounds.x,
+                    y: center.y - 3.0 * VERTICAL_PADDING,
+                },
                 Size {
-                    width:  bounds.width,
-                    height: bounds.height + VERTICAL_PADDING
+                    width: bounds.width,
+                    height: bounds.height + VERTICAL_PADDING,
                 },
             );
 
             renderer.fill_quad(
                 Quad {
-                    bounds:        rectangle,
+                    bounds: rectangle,
                     border_radius: [16.0, 16.0, 16.0, 16.0].into(),
-                    border_width:  5.0,
-                    border_color:  Color::TRANSPARENT,
+                    border_width: 5.0,
+                    border_color: Color::TRANSPARENT,
                 },
-                iced_graphics::Background::Color(colour)
+                iced_graphics::Background::Color(colour),
             );
         }
 
@@ -196,14 +203,14 @@ where
     }
 
     fn on_event(
-       &mut self,
-       _state:          &mut Tree,
-       event:           Event,
-       layout:          Layout<'_>,
-       cursor_position: Point,
-       _renderer:       &Renderer,
-       _clipboard:      &mut dyn Clipboard,
-       shell:           &mut Shell<'_, Message>,
+        &mut self,
+        _state: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
+        cursor_position: Point,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
     ) -> Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -211,21 +218,20 @@ where
                 let bounds: Rectangle = layout.bounds();
 
                 if self.on_pressed.as_ref().is_some() {
-                    let hit_x: bool = ((bounds.x + 10.0)..(bounds.x + bounds.width))
-                        .contains(&cursor_position.x);
+                    let hit_x: bool =
+                        ((bounds.x + 10.0)..(bounds.x + bounds.width)).contains(&cursor_position.x);
 
-                    let hit_y: bool = (
-                        (bounds.y - 14.0)..(bounds.y + bounds.height - 10.0)
-                    ).contains(&cursor_position.y);
+                    let hit_y: bool = ((bounds.y - 14.0)..(bounds.y + bounds.height - 10.0))
+                        .contains(&cursor_position.y);
 
                     if hit_x && hit_y {
                         shell.publish(self.on_pressed.clone().unwrap());
                         return Status::Captured;
                     }
                 }
-            },
+            }
 
-            _ => {},
+            _ => {}
         }
 
         return Status::Ignored;
@@ -233,14 +239,13 @@ where
 }
 
 impl<'a, Message, Renderer> From<CupertinoButton<'a, Message, Renderer>>
-for Element<'a, Message, Renderer>
+    for Element<'a, Message, Renderer>
 where
-    Message:         Clone + 'a,
-    Renderer:        iced_native::Renderer + iced_native::text::Renderer + 'a,
+    Message: Clone + 'a,
+    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
     Renderer::Theme: StyleSheet,
 {
     fn from(alert: CupertinoButton<'a, Message, Renderer>) -> Self {
         Self::new(alert)
     }
 }
-

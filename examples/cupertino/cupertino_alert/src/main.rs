@@ -1,5 +1,5 @@
-use iced::{alignment, Application, Command, Element, executor, Length, Settings, Theme};
 use iced::widget::{column, container, Text};
+use iced::{alignment, executor, Application, Command, Element, Length, Settings, Theme};
 use iced_aw::native::cupertino::cupertino_alert::{CupertinoAlert, CupertinoDialogAction};
 use iced_aw::native::cupertino::cupertino_button::CupertinoButton;
 use iced_aw::native::cupertino::cupertino_colours::system_red;
@@ -139,4 +139,3 @@ impl Application for Alert {
         Theme::Light
     }
 }
-
