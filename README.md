@@ -30,11 +30,10 @@ iced_aw = { version = "0.5", default-features = false, features = [...] }
 
 ### Badge
 
-<center>
-
-![Badge showcase](./images/showcase/badge.png)
-
-</center>
+<div align="center">
+  
+  ![Badge showcase](./images/showcase/badge.png)
+</div>
 
 Please take a look into our examples on how to use badges.
 
@@ -42,12 +41,10 @@ Enable this widget with the feature `badge`.
 
 ### Card
 
-<center>
-
+<div align="center">
+  
 ![Card showcase](./images/showcase/card.png)
-
-</center>
-
+</div>
 
 Please take a look into our examples on how to use cards.
 
@@ -55,11 +52,10 @@ Enable this widget with the feature `card`.
 
 ### Color Picker
 
-<center>
+<div align="center">
 
 ![Color Picker showcase](./images/showcase/color_picker.png)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use color pickers.
 
@@ -67,11 +63,10 @@ Enable this widget with the feature `color_picker`.
 
 ### Date Picker
 
-<center>
-
-![Modal showcase](./images/showcase/date_picker.png)
-
-</center>
+<div align="center">
+  
+  ![Modal showcase](./images/showcase/date_picker.png)
+</div>
 
 Please take a look into our examples on how to use date pickers.
 
@@ -79,11 +74,10 @@ Enable this widget with the feature `date_picker`.
 
 ### Floating Action Button
 
-<center>
+<div align="center">
 
 ![Floating Element showcase](./images/showcase/floating_button.png)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use floating elements.
 
@@ -93,11 +87,10 @@ Enable this widget with the feature `floating_element`.
 
 Modals are useful for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
 
-<center>
+<div align="center">
 
 ![Modal showcase](./images/showcase/modal.png)
-
-</center>
+</div>
 
 
 Please take a look into our examples on how to use modals.
@@ -108,11 +101,10 @@ Enable this widget with the feature `modal`.
 
 Just like TextInput, but only for numbers.
 
-<center>
+<div align="center">
 
 ![NumberInput showcase](./images/showcase/number_input.png)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use number inputs.
 
@@ -124,11 +116,10 @@ Enable this widget with the feature `number_input`.
 
 A split divides the available space to display two different elements.
 
-<center>
+<div align="center">
 
 ![Split showcase](./images/showcase/split_example.gif)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use Splits.
 
@@ -138,11 +129,10 @@ Enable Splits with the feature `split`.
 
 ### TabBar and Tabs
 
-<center>
+<div align="center">
 
 ![Tabs showcase](./images/showcase/tabs_example.gif)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use TabBars and Tabs.
 
@@ -150,11 +140,10 @@ Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
 
 ### Time Picker
 
-<center>
+<div align="center">
 
 ![Modal showcase](./images/showcase/time_picker.png)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use time pickers.
 
@@ -163,11 +152,10 @@ Enable this widget with the feature `time_picker`.
 
 ### Menu
 
-<center>
+<div align="center">
 
 ![Menu showcase](./images/showcase/menu.gif)
-
-</center>
+</div>
 
 Please take a look into our examples on how to use menus.
 
