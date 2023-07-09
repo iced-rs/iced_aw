@@ -169,7 +169,6 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
 where
-    Message: Clone,
     Renderer: 'a + iced_native::Renderer,
     Renderer::Theme: StyleSheet,
 {
@@ -638,7 +637,7 @@ where
 
 impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Message: 'a + Clone,
+    Message: 'a,
     Renderer: 'a + iced_native::Renderer,
     Renderer::Theme: StyleSheet,
 {
