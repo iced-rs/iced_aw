@@ -1,10 +1,14 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_native::{
-    event, mouse,
+use iced_widget::core::{
+    self,
+    event, layout,
+    mouse::{self, Cursor},
+    renderer, 
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+     Clipboard, Color, Element, Event, Layout, Length,  Point,
+    Rectangle, Shell,  Widget,overlay
 };
 
 use super::overlay::modal::ModalOverlay;
@@ -18,7 +22,7 @@ pub use crate::style::modal::StyleSheet;
 ///
 /// # Example
 /// ```
-/// # use iced_native::renderer::Null;
+/// # use core::Renderer::Null;
 /// # use iced_native::widget::Text;
 /// # use iced_aw::native::modal;
 /// #
@@ -37,11 +41,11 @@ pub use crate::style::modal::StyleSheet;
 /// .backdrop(Message::CloseModal);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Modal<'a, Content, Message, Renderer>
+pub struct Modal<'a, Content, Message, Renderer = crate::Renderer>
 where
     Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Show the modal.
@@ -62,7 +66,7 @@ impl<'a, Content, Message, Renderer> Modal<'a, Content, Message, Renderer>
 where
     Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Modal`](Modal) wrapping the underlying element to
@@ -121,10 +125,10 @@ impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
 where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn children(&self) -> Vec<iced_native::widget::Tree> {
+    fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
     }
 
@@ -140,11 +144,7 @@ where
         self.underlay.as_widget().height()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 
@@ -153,7 +153,7 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -162,7 +162,7 @@ where
             &mut state.children[0],
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
@@ -173,14 +173,14 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -188,12 +188,12 @@ where
 
     fn draw(
         &self,
-        state: &iced_native::widget::Tree,
+        state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         self.underlay.as_widget().draw(
@@ -202,7 +202,7 @@ where
             theme,
             style,
             layout,
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -212,7 +212,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Renderer>> {
         if !self.show_modal {
             return self
                 .underlay
@@ -264,7 +264,7 @@ impl<'a, Content, Message, Renderer> From<Modal<'a, Content, Message, Renderer>>
 where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn from(modal: Modal<'a, Content, Message, Renderer>) -> Self {

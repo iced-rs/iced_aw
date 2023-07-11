@@ -1,5 +1,5 @@
 //! The default icon font of the widgets of this library.
-use iced_graphics::Font;
+use iced_widget::core::Font;
 
 #[cfg(feature = "icons")]
 mod bootstrap;
@@ -13,10 +13,10 @@ pub use required::*;
 
 /// The default icon font.
 #[cfg(feature = "icons")]
-pub const ICON_FONT: Font = iced_native::Font::External {
+/*pub const ICON_FONT: Font = iced_native::Font::External {
     name: "Icons",
     bytes: include_bytes!("./fonts/bootstrap-icons.ttf"),
-};
+};*/
 
 /// The default icon font.
 #[cfg(not(feature = "icons"))]

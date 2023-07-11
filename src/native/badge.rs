@@ -1,10 +1,12 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use iced_native::{
-    event, layout, mouse,
-    renderer::{self},
-    widget::Tree,
+use iced_widget::core::{
+    self,
+    event, layout,
+    mouse::{self, Cursor},
+    renderer,
+    widget::tree::Tree,
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
@@ -28,9 +30,9 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Renderer>
+pub struct Badge<'a, Message, Renderer = crate::Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The padding of the [`Badge`].
@@ -51,7 +53,7 @@ where
 
 impl<'a, Message, Renderer> Badge<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Badge`](Badge) with the given content.
@@ -119,7 +121,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -160,7 +162,7 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -172,7 +174,7 @@ where
                 .children()
                 .next()
                 .expect("Native: Layout should have a children layout for a badge."),
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
@@ -183,14 +185,14 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
             &state.children[0],
             layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -198,17 +200,17 @@ where
 
     fn draw(
         &self,
-        tree: &iced_native::widget::Tree,
+        tree: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
-        let is_mouse_over = bounds.contains(cursor_position);
+        let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let style_sheet = if is_mouse_over {
             theme.hovered(self.style)
         } else {
@@ -242,7 +244,7 @@ where
             children
                 .next()
                 .expect("Graphics: Layout should have a children layout for Badge"),
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -250,8 +252,8 @@ where
 
 impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Message: Clone + 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Message: 'a + Clone,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn from(badge: Badge<'a, Message, Renderer>) -> Self {

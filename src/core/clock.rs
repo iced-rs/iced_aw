@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use iced_graphics::Point;
+use iced_widget::core::Point;
 
 /// The size of the period on the clock based on the clock's size.
 pub const PERIOD_PERCENTAGE: f32 = 0.1;

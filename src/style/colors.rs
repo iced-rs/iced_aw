@@ -5,7 +5,7 @@
 //! * [W3 Schools](https://www.w3schools.com/cssref/css_colors.asp)
 //! * [Corecoding](https://corecoding.com/utilities/rgb-or-hex-to-float.php)
 
-use iced_native::Color;
+use iced_widget::core::Color;
 
 /// Primary <span style="color:dodgerblue">Color</span>.
 pub const PRIMARY: Color = DODGER_BLUE;

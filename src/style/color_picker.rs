@@ -2,8 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
 
-use iced_native::{Background, Color};
-use iced_style::Theme;
+use iced_widget::{core::{Background, Color}, style::Theme};
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 #[derive(Clone, Copy, Debug)]

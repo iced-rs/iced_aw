@@ -54,17 +54,18 @@ pub mod native;
 pub mod core;
 pub mod style;
 
-pub use iced_native::Element;
+pub use iced_widget::core::Element;
+use iced_widget::{renderer, style as iced_style};
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
-    #[doc(no_inline)]
-    #[cfg(feature = "icons")]
-    pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
+    // #[doc(no_inline)]
+    // #[cfg(feature = "icons")]
+    //pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
 
-    #[doc(no_inline)]
-    #[cfg(feature = "icon_text")]
-    pub use {crate::native::icon_text, crate::native::icon_text::IconText};
+    //#[doc(no_inline)]
+    //#[cfg(feature = "icon_text")]
+    //pub use {crate::native::icon_text, crate::native::icon_text::IconText};
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
@@ -164,3 +165,5 @@ mod platform {
 
 #[doc(no_inline)]
 pub use platform::*;
+
+type Renderer<Theme = iced_style::Theme> = renderer::Renderer<Theme>;

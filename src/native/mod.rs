@@ -1,6 +1,5 @@
 //! Stateless, pure widgets for iced
-use iced_graphics::Renderer;
-
+//use iced_widget::{renderer, style};
 pub mod helpers;
 pub use helpers::*;
 
@@ -10,7 +9,7 @@ pub mod overlay;
 pub mod badge;
 #[cfg(feature = "badge")]
 /// A badge for color highlighting small information.
-pub type Badge<'a, Message, Backend, Theme> = badge::Badge<'a, Message, Renderer<Backend, Theme>>;
+pub type Badge<'a, Message, Renderer> = badge::Badge<'a, Message, Renderer>;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;
@@ -23,7 +22,7 @@ pub type NumberInput<'a, T, Message, Backend, Theme> =
 pub mod card;
 #[cfg(feature = "card")]
 /// A card consisting of a head, body and optional foot.
-pub type Card<'a, Message, Backend, Theme> = card::Card<'a, Message, Renderer<Backend, Theme>>;
+pub type Card<'a, Message, Renderer> = card::Card<'a, Message, Renderer>;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;
@@ -61,22 +60,21 @@ pub type FloatingElement<'a, B, Message, Backend, Theme> =
 pub mod grid;
 #[cfg(feature = "grid")]
 /// A container that distributes its contents in a grid.
-pub type Grid<'a, Message, Backend, Theme> = grid::Grid<'a, Message, Renderer<Backend, Theme>>;
+pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
 #[cfg(feature = "grid")]
 pub use grid::Strategy;
 
-#[cfg(feature = "icon_text")]
+/*#[cfg(feature = "icon_text")]
 pub mod icon_text;
 #[cfg(feature = "icon_text")]
 /// Text widget with icon font.
 pub type IconText<Backend, Theme> = crate::native::icon_text::IconText<Renderer<Backend, Theme>>;
-
+*/
 #[cfg(feature = "modal")]
 pub mod modal;
 #[cfg(feature = "modal")]
 /// A modal content as an overlay.
-pub type Modal<'a, Content, Message, Backend, Theme> =
-    modal::Modal<'a, Content, Message, Renderer<Backend, Theme>>;
+pub type Modal<'a, Content, Message, Renderer> = modal::Modal<'a, Content, Message, Renderer>;
 
 #[cfg(feature = "split")]
 pub mod split;

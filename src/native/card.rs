@@ -1,14 +1,16 @@
 //! Displays a [`Card`](Card).
 //!
 //! *This API requires the following crate features to be activated: card*
-use iced_native::{
+
+use iced_widget::core::{
+    self,
     alignment::{Horizontal, Vertical},
-    event, mouse,
-    renderer::{self, BorderRadius},
-    touch,
+    event, layout,
+    mouse::{self, Cursor},
+    renderer, touch,
     widget::{Operation, Tree},
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell,
-    Size, Widget,
+    Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shell, Size, Widget,
 };
 
 use crate::graphics::icons::Icon;
@@ -21,7 +23,7 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// # Example
 /// ```
-/// # use iced_native::renderer::Null;
+/// # use core::Renderer::Null;
 /// # use iced_native::widget::Text;
 /// # use iced_aw::native::card;
 /// #
@@ -40,9 +42,9 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Renderer>
+pub struct Card<'a, Message, Renderer = crate::Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The width of the [`Card`](Card).
@@ -75,7 +77,7 @@ where
 
 impl<'a, Message, Renderer> Card<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Card`](Card) containing the given head and body.
@@ -207,7 +209,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -239,11 +241,7 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
@@ -266,7 +264,7 @@ where
         let mut foot_node = self
             .foot
             .as_ref()
-            .map_or_else(iced_native::layout::Node::default, |foot| {
+            .map_or_else(layout::Node::default, |foot| {
                 foot_node(renderer, &limits, foot, self.padding_foot, self.width)
             });
 
@@ -275,7 +273,7 @@ where
             foot_node.bounds().y + head_node.bounds().height + body_node.bounds().height,
         ));
 
-        iced_native::layout::Node::with_children(
+        layout::Node::with_children(
             Size::new(
                 body_node.size().width,
                 head_node.size().height + body_node.size().height + foot_node.size().height,
@@ -289,7 +287,7 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -306,7 +304,7 @@ where
             head_children
                 .next()
                 .expect("Native: Layout should have a head content layout"),
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
@@ -322,7 +320,11 @@ where
                         .clone()
                         // TODO: `let` expressions in this position are experimental
                         // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
-                        .filter(|_| close_layout.bounds().contains(cursor_position))
+                        .filter(|_| {
+                            close_layout
+                                .bounds()
+                                .contains(cursor.position().unwrap_or_default())
+                        })
                         .map_or(event::Status::Ignored, |on_close| {
                             shell.publish(on_close);
                             event::Status::Captured
@@ -341,7 +343,7 @@ where
             body_children
                 .next()
                 .expect("Native: Layout should have a body content layout"),
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
@@ -358,7 +360,7 @@ where
                 foot_children
                     .next()
                     .expect("Native: Layout should have a foot content layout"),
-                cursor_position,
+                cursor,
                 renderer,
                 clipboard,
                 shell,
@@ -375,7 +377,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -393,7 +395,7 @@ where
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
             let bounds = layout.bounds();
-            bounds.contains(cursor_position)
+            bounds.contains(cursor.position().unwrap_or_default())
         });
 
         let mouse_interaction = if is_mouse_over_close {
@@ -416,7 +418,7 @@ where
             .max(self.head.as_widget().mouse_interaction(
                 &state.children[0],
                 head,
-                cursor_position,
+                cursor,
                 viewport,
                 renderer,
             ))
@@ -426,7 +428,7 @@ where
                     body_children
                         .next()
                         .expect("Native: Layout should have a body content layout"),
-                    cursor_position,
+                    cursor,
                     viewport,
                     renderer,
                 ),
@@ -440,7 +442,7 @@ where
                             foot_children
                                 .next()
                                 .expect("Native: Layout should have a foot content layout"),
-                            cursor_position,
+                            cursor,
                             viewport,
                             renderer,
                         )
@@ -481,7 +483,7 @@ where
         theme: &Renderer::Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
@@ -520,7 +522,7 @@ where
             renderer,
             &self.head,
             head_layout,
-            cursor_position,
+            cursor,
             viewport,
             theme,
             &self.style,
@@ -535,7 +537,7 @@ where
             renderer,
             &self.body,
             body_layout,
-            cursor_position,
+            cursor,
             viewport,
             theme,
             &self.style,
@@ -550,7 +552,7 @@ where
             renderer,
             &self.foot,
             foot_layout,
-            cursor_position,
+            cursor,
             viewport,
             theme,
             &self.style,
@@ -561,15 +563,15 @@ where
 /// Calculates the layout of the head.
 fn head_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &iced_native::layout::Limits,
+    limits: &layout::Limits,
     head: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
     on_close: bool,
     close_size: Option<f32>,
-) -> iced_native::layout::Node
+) -> layout::Node
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer,
 {
     let pad = Padding::from(padding as u16);
     let mut limits = limits
@@ -581,9 +583,7 @@ where
     let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
-        Some(iced_native::layout::Node::new(Size::new(
-            close_size, close_size,
-        )))
+        Some(layout::Node::new(Size::new(close_size, close_size)))
     } else {
         None
     };
@@ -601,7 +601,7 @@ where
         node.align(Alignment::End, Alignment::Center, node.size());
     }
 
-    iced_native::layout::Node::with_children(
+    layout::Node::with_children(
         size.pad(pad),
         match close {
             Some(node) => vec![head, node],
@@ -613,13 +613,13 @@ where
 /// Calculates the layout of the body.
 fn body_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &iced_native::layout::Limits,
+    limits: &layout::Limits,
     body: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
-) -> iced_native::layout::Node
+) -> layout::Node
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     let pad = Padding::from(padding as u16);
     let limits = limits
@@ -635,19 +635,19 @@ where
     body.move_to(Point::new(padding, padding));
     body.align(Alignment::Start, Alignment::Start, size);
 
-    iced_native::layout::Node::with_children(size.pad(pad), vec![body])
+    layout::Node::with_children(size.pad(pad), vec![body])
 }
 
 /// Calculates the layout of the foot.
 fn foot_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &iced_native::layout::Limits,
+    limits: &layout::Limits,
     foot: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
-) -> iced_native::layout::Node
+) -> layout::Node
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     let pad = Padding::from(padding as u16);
     let limits = limits
@@ -663,7 +663,7 @@ where
     foot.move_to(Point::new(padding, padding));
     foot.align(Alignment::Start, Alignment::Center, size);
 
-    iced_native::layout::Node::with_children(size.pad(pad), vec![foot])
+    layout::Node::with_children(size.pad(pad), vec![foot])
 }
 
 /// Draws the head of the card.
@@ -673,12 +673,12 @@ fn draw_head<Message, Renderer>(
     renderer: &mut Renderer,
     head: &Element<'_, Message, Renderer>,
     layout: Layout<'_>,
-    cursor_position: Point,
+    cursor: Cursor,
     viewport: &Rectangle,
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
     let mut head_children = layout.children();
@@ -723,28 +723,28 @@ fn draw_head<Message, Renderer>(
         head_children
             .next()
             .expect("Graphics: Layout should have a head content layout"),
-        cursor_position,
+        cursor,
         viewport,
     );
 
-    let mut buffer = [0; 4];
-
     if let Some(close_layout) = head_children.next() {
         let close_bounds = close_layout.bounds();
-        let is_mouse_over_close = close_bounds.contains(cursor_position);
+        let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
 
-        renderer.fill_text(iced_native::text::Text {
-            content: char::from(Icon::X).encode_utf8(&mut buffer),
+        renderer.fill_text(core::text::Text {
+            content: "x",
             bounds: Rectangle {
                 x: close_bounds.center_x(),
                 y: close_bounds.center_y(),
                 ..close_bounds
             },
-            size: close_layout.bounds().height + if is_mouse_over_close { 5.0 } else { 0.0 },
+            size: close_layout.bounds().height + if is_mouse_over_close { 0.5 } else { 0.0 },
             color: style_sheet.close_color,
-            font: crate::graphics::icons::ICON_FONT,
+            font: renderer.default_font(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            line_height: iced_widget::text::LineHeight::default(),
+            shaping: iced_widget::text::Shaping::Advanced,
         });
     }
 }
@@ -756,12 +756,12 @@ fn draw_body<Message, Renderer>(
     renderer: &mut Renderer,
     body: &Element<'_, Message, Renderer>,
     layout: Layout<'_>,
-    cursor_position: Point,
+    cursor: Cursor,
     viewport: &Rectangle,
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
     let mut body_children = layout.children();
@@ -788,7 +788,7 @@ fn draw_body<Message, Renderer>(
         body_children
             .next()
             .expect("Graphics: Layout should have a body content layout"),
-        cursor_position,
+        cursor,
         viewport,
     );
 }
@@ -800,12 +800,12 @@ fn draw_foot<Message, Renderer>(
     renderer: &mut Renderer,
     foot: &Option<Element<'_, Message, Renderer>>,
     layout: Layout<'_>,
-    cursor_position: Point,
+    cursor: Cursor,
     viewport: &Rectangle,
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
@@ -833,7 +833,7 @@ fn draw_foot<Message, Renderer>(
             foot_children
                 .next()
                 .expect("Graphics: Layout should have a foot content layout"),
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -841,7 +841,7 @@ fn draw_foot<Message, Renderer>(
 
 impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
     Message: Clone + 'a,
 {

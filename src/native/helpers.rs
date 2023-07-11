@@ -3,9 +3,7 @@
 //!
 
 #[allow(unused_imports)]
-use iced_native::Element;
-#[cfg(feature = "color_picker")]
-use iced_style::Color;
+use iced_widget::core::{self, Color, Element};
 
 /// Creates a [`Grid`] with the given children.
 ///
@@ -81,7 +79,7 @@ pub fn badge<'a, Message, Renderer>(
     content: impl Into<Element<'a, Message, Renderer>>,
 ) -> crate::Badge<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::badge::StyleSheet,
 {
     crate::Badge::new(content)
@@ -94,7 +92,7 @@ pub fn card<'a, Message, Renderer>(
     body: impl Into<Element<'a, Message, Renderer>>,
 ) -> crate::Card<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::card::StyleSheet,
 {
     crate::Card::new(head, body)
@@ -102,20 +100,20 @@ where
 
 #[cfg(feature = "color_picker")]
 /// Shortcut helper to create a ``ColorPicker`` Widget.
-pub fn color_picker<'a, Message, B, Theme, F>(
+pub fn color_picker<'a, Message, Renderer, F>(
     show_picker: bool,
     color: Color,
-    underlay: impl Into<Element<'a, Message, iced_graphics::Renderer<B, Theme>>>,
+    underlay: impl Into<Element<'a, Message, Renderer>>,
     on_cancel: Message,
     on_submit: F,
-) -> crate::ColorPicker<'a, Message, B, Theme>
+) -> crate::ColorPicker<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    B: 'a + iced_graphics::Backend + iced_graphics::backend::Text,
-    Theme: 'a
+    Renderer: 'a + iced_widget::graphics::geometry::Renderer + iced_widget::core::text::Renderer,
+    Renderer::Theme: 'a
         + crate::style::color_picker::StyleSheet
-        + iced_style::button::StyleSheet
-        + iced_style::text::StyleSheet,
+        + iced_widget::button::StyleSheet
+        + iced_widget::text::StyleSheet,
     F: 'static + Fn(Color) -> Message,
 {
     crate::ColorPicker::new(show_picker, color, underlay, on_cancel, on_submit)
@@ -164,20 +162,20 @@ pub fn grid<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
 ) -> crate::Grid<Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     crate::Grid::with_children(children)
 }
-
+/*
 #[cfg(feature = "icon_text")]
 /// Shortcut helper to create a Card Widget.
 #[must_use]
 pub fn icon_text<Renderer>(label: impl Into<String>) -> crate::IconText<Renderer>
 where
-    Renderer: iced_native::text::Renderer,
+    Renderer: iced_widget::core::text::Renderer,
 {
     crate::IconText::new(label)
-}
+}*/
 
 #[cfg(feature = "modal")]
 /// Shortcut helper to create a Card Widget.
@@ -190,7 +188,7 @@ pub fn modal<'a, Content, Message, Renderer>(
 where
     Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::modal::StyleSheet,
 {
     crate::Modal::new(show_modal, underlay, content)

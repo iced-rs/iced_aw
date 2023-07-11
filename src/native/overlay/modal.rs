@@ -1,12 +1,16 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_graphics::Vector;
-use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
-    Layout, Point, Shell, Size,
+use iced_widget::core::{
+    self,
+    alignment::{Horizontal, Vertical},
+    event, keyboard, layout,
+    mouse::{self, Cursor},
+    overlay, renderer, touch,
+    widget::{Operation, Tree},
+    Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
+    Point, Rectangle, Shell, Size, Vector, Widget,
 };
-use iced_native::{widget::Tree, Element};
 
 use crate::style::modal::StyleSheet;
 
@@ -15,7 +19,7 @@ use crate::style::modal::StyleSheet;
 pub struct ModalOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
@@ -33,7 +37,7 @@ where
 impl<'a, Message, Renderer> ModalOverlay<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
@@ -63,20 +67,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for ModalOverlay<'a, Message, Renderer>
+impl<'a, Message, Renderer> Overlay<Message, Renderer> for ModalOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        bounds: iced_graphics::Size,
-        position: Point,
-    ) -> iced_native::layout::Node {
-        let limits = Limits::new(Size::ZERO, bounds);
+    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+        let limits = layout::Limits::new(Size::ZERO, bounds);
 
         let mut content = self.content.as_widget().layout(renderer, &limits);
 
@@ -95,14 +93,14 @@ where
 
         content.move_to(position);
 
-        iced_native::layout::Node::with_children(max_size, vec![content])
+        layout::Node::with_children(max_size, vec![content])
     }
 
     fn on_event(
         &mut self,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
@@ -128,7 +126,7 @@ where
             |(backdrop, layout)| match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if layout.bounds().contains(cursor_position) {
+                    if layout.bounds().contains(cursor.position().unwrap_or_default()) {
                         event::Status::Ignored
                     } else {
                         shell.publish(backdrop.to_owned());
@@ -147,7 +145,7 @@ where
                     .children()
                     .next()
                     .expect("Native: Layout should have a content layout."),
-                cursor_position,
+                cursor,
                 renderer,
                 clipboard,
                 shell,
@@ -159,8 +157,8 @@ where
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor: Cursor,
+        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
@@ -169,7 +167,7 @@ where
                 .children()
                 .next()
                 .expect("Native: Layout should have a content layout."),
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -179,9 +177,9 @@ where
         &self,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: Point,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: Cursor,
     ) {
         let bounds = layout.bounds();
 
@@ -210,7 +208,7 @@ where
             theme,
             style,
             content_layout,
-            cursor_position,
+            cursor,
             &bounds,
         );
     }
