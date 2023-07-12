@@ -2,15 +2,18 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 
-use iced_widget::core::{
-    self,
-    alignment::{Horizontal, Vertical},
-    event, layout,
-    mouse::{self, Cursor},
-    renderer, touch,
-    widget::{Operation, Tree},
-    Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shell, Size, Widget,
+use iced_widget::{
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        event, layout,
+        mouse::{self, Cursor},
+        renderer, touch,
+        widget::{Operation, Tree},
+        Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+        Rectangle, Shell, Size, Widget,
+    },
+    text::LineHeight,
 };
 
 use crate::graphics::icons::Icon;
@@ -736,14 +739,15 @@ fn draw_head<Message, Renderer>(
             bounds: Rectangle {
                 x: close_bounds.center_x(),
                 y: close_bounds.center_y(),
+                height: close_bounds.height,
                 ..close_bounds
             },
-            size: close_layout.bounds().height + if is_mouse_over_close { 0.5 } else { 0.0 },
+            size: close_bounds.height + if is_mouse_over_close { 1.0 } else { 0.0 },
             color: style_sheet.close_color,
             font: renderer.default_font(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            line_height: iced_widget::text::LineHeight::default(),
+            line_height: LineHeight::Relative(0.5),
             shaping: iced_widget::text::Shaping::Advanced,
         });
     }
