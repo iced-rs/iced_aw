@@ -257,33 +257,33 @@ where
     <Renderer as iced_native::text::Renderer>::Font: From<Font>,
 {
     fn width(&self) -> Length {
-        if !self.is_hidden {
-            self.width
-        } else {
+        if self.is_hidden {
             Length::Fixed(0.0)
+        } else {
+            self.width
         }
     }
 
     fn height(&self) -> Length {
-        if !self.is_hidden {
-            self.height
-        } else {
+        if self.is_hidden {
             Length::Fixed(0.0)
+        } else {
+            self.height
         }
     }
 
     fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
         Node::new(
             limits
-                .width(if !self.is_hidden {
+                .width(if self.is_hidden {
+                    Length::Fixed(0.0)
+                } else {
                     self.width
-                } else {
-                    Length::Fixed(0.0)
                 })
-                .height(if !self.is_hidden {
-                    self.height
-                } else {
+                .height(if self.is_hidden {
                     Length::Fixed(0.0)
+                } else {
+                    self.height
                 })
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
         )
