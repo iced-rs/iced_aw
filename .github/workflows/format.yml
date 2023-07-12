@@ -3,13 +3,10 @@ on: [push, pull_request]
 jobs:
   all:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust: [stable, nightly]
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:
-          rust-version: ${{ matrix.rust }}
+          rust-version: stable
           components: rustfmt
       - uses: actions/checkout@master
       - name: Check format
