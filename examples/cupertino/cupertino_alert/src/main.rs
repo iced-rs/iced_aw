@@ -69,10 +69,7 @@ impl Application for Alert {
     }
 
     fn view(&self) -> Element<Message> {
-        let modal_hidden: bool = match self {
-            Alert::ShowModal => false,
-            _                => true,
-        };
+        let modal_hidden = !matches!(self, Alert::ShowModal);
 
         match self {
             Alert::CancelEvent  => println!("Received click for the cancel button"),
