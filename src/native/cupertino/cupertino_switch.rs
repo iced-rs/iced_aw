@@ -167,7 +167,7 @@ where
     }
 }
 
-impl<'a, Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSwitch<Message>
+impl<Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSwitch<Message>
 where
     B: Backend,
     Message: Clone,
