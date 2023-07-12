@@ -386,7 +386,12 @@ where
                     state.animation_frame = 0;
 
                     if self.on_changed.as_ref().is_some() {
-                        shell.publish((self.on_changed.as_ref().unwrap())(!self.value));
+                        shell.publish((self
+                            .on_changed
+                            .as_ref()
+                            .expect("Unable to retrieve the changed message"))(
+                            !self.value
+                        ));
 
                         state.prev_value = self.value;
                         state.published = true;

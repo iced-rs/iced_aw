@@ -180,7 +180,7 @@ where
         new_style.clone_from(style);
 
         if self.colour.is_some() {
-            new_style.text_color = self.colour.unwrap();
+            new_style.text_color = self.colour.expect("Unable to retrieve the text colour");
         } else if self.is_filled && self.on_pressed.is_some() {
             new_style.text_color = Color::WHITE;
         } else if !self.is_filled && self.on_pressed.is_some() {
@@ -225,7 +225,11 @@ where
                         .contains(&cursor_position.y);
 
                     if hit_x && hit_y {
-                        shell.publish(self.on_pressed.clone().unwrap());
+                        shell.publish(
+                            self.on_pressed
+                                .clone()
+                                .expect("Unable to retrieve the pressed message"),
+                        );
                         return Status::Captured;
                     }
                 }

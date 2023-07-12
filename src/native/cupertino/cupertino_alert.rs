@@ -546,7 +546,12 @@ where
 
                         if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
                         {
-                            shell.publish(self.actions[0].on_pressed.clone().unwrap());
+                            shell.publish(
+                                self.actions[0]
+                                    .on_pressed
+                                    .clone()
+                                    .expect("Unable to retrieve the left button click message"),
+                            );
                         }
                     }
 
@@ -559,7 +564,12 @@ where
 
                         if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
                         {
-                            shell.publish(self.actions[1].on_pressed.clone().unwrap());
+                            shell.publish(
+                                self.actions[1]
+                                    .on_pressed
+                                    .clone()
+                                    .expect("Unable to retrieve the right button click message"),
+                            );
                         }
                     }
                 }
@@ -571,7 +581,11 @@ where
 
                 if !hit_x.contains(&cursor_position.x) || !hit_y.contains(&cursor_position.y) {
                     if self.backdrop.is_some() {
-                        shell.publish(self.backdrop.clone().unwrap());
+                        shell.publish(
+                            self.backdrop
+                                .clone()
+                                .expect("Unable to retrieve the backdrop message"),
+                        );
                     }
 
                     // Default behaviour: hide the modal after clicking on the backdrop //
@@ -583,7 +597,11 @@ where
                 if key_code == keyboard::KeyCode::Escape && self.on_escape.is_some() {
                     self.is_hidden = true;
 
-                    shell.publish(self.on_escape.clone().unwrap());
+                    shell.publish(
+                        self.on_escape
+                            .clone()
+                            .expect("Unable to retrieve the escape message"),
+                    );
                     return Status::Captured;
                 }
             }
