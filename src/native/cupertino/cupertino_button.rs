@@ -107,6 +107,7 @@ where
     }
 
     /// Sets the `colour` of the [`CupertinoButton`](CupertinoButton).
+    #[must_use]
     pub fn colour(mut self, colour: Option<Color>) -> Self {
         self.colour = colour;
         self
@@ -180,7 +181,7 @@ where
         new_style.clone_from(style);
 
         if self.colour.is_some() {
-            new_style.text_color = self.colour.unwrap();
+            new_style.text_color = self.colour.expect("Unable to retrieve the text colour");
         } else if self.is_filled && self.on_pressed.is_some() {
             new_style.text_color = Color::WHITE;
         } else if !self.is_filled && self.on_pressed.is_some() {
@@ -199,7 +200,7 @@ where
             layout,
             cursor_position,
             viewport,
-        )
+        );
     }
 
     fn on_event(
@@ -225,7 +226,11 @@ where
                         .contains(&cursor_position.y);
 
                     if hit_x && hit_y {
-                        shell.publish(self.on_pressed.clone().unwrap());
+                        shell.publish(
+                            self.on_pressed
+                                .clone()
+                                .expect("Unable to retrieve the pressed message"),
+                        );
                         return Status::Captured;
                     }
                 }
@@ -234,7 +239,7 @@ where
             _ => {}
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 }
 

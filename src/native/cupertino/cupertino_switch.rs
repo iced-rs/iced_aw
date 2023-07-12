@@ -167,7 +167,7 @@ where
     }
 }
 
-impl<'a, Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSwitch<Message>
+impl<Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSwitch<Message>
 where
     B: Backend,
     Message: Clone,
@@ -180,12 +180,12 @@ where
     }
 
     fn layout(&self, _renderer: &Renderer<B, T>, limits: &Limits) -> Node {
-        return Node::new(
+        Node::new(
             limits
                 .width(self.width)
                 .height(self.height)
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        );
+        )
     }
 
     fn draw(
@@ -386,7 +386,12 @@ where
                     state.animation_frame = 0;
 
                     if self.on_changed.as_ref().is_some() {
-                        shell.publish((self.on_changed.as_ref().unwrap())(!self.value));
+                        shell.publish((self
+                            .on_changed
+                            .as_ref()
+                            .expect("Unable to retrieve the changed message"))(
+                            !self.value
+                        ));
 
                         state.prev_value = self.value;
                         state.published = true;
@@ -399,7 +404,7 @@ where
             _ => {}
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 
     fn overlay<'b>(
@@ -412,7 +417,7 @@ where
 
         state.bounds = layout.bounds();
 
-        return None;
+        None
     }
 }
 

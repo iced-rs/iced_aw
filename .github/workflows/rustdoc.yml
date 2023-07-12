@@ -15,18 +15,13 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: hecrj/setup-rust-action@v1
         with:
-          toolchain: nightly
-          profile: minimal
-          override: true
+          rust-version: stable
           components: rustfmt, rust-src
       - uses: Swatinem/rust-cache@v1
       - name: Build Documentation
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --all --no-deps
+        run: cargo doc --all --no-deps
       - name: Add index.html
         run: echo '<meta http-equiv=refresh content=0;url=iced_aw/index.html>' > target/doc/index.html
       - name: Deploy Documentation
