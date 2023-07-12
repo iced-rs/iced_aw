@@ -22,7 +22,7 @@ enum Message {
 }
 
 // `cargo fmt` becomes unreadable for this example, so switching off //
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 impl Application for Switch {
     type Executor = executor::Default;
     type Message  = Message;
