@@ -30,7 +30,7 @@ enum Message {
     ShowModal,
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod constants {
     pub static PRIMARY_TEXT:   &'static str = "Allow \"Maps\" to access your location while using the app?";
     pub static SECONDARY_TEXT: &'static str = "Your current location will be displayed on the map and used for directions, nearby search results, and estimated travel times. ";
@@ -41,7 +41,7 @@ mod constants {
 use constants::*;
 
 // `cargo fmt` becomes unreadable for this example, so switching off //
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 impl Application for Alert {
     type Executor = executor::Default;
     type Message  = Message;
