@@ -32,10 +32,10 @@ enum Message {
 
 #[rustfmt::skip]
 mod constants {
-    pub static PRIMARY_TEXT:   &'static str = "Allow \"Maps\" to access your location while using the app?";
-    pub static SECONDARY_TEXT: &'static str = "Your current location will be displayed on the map and used for directions, nearby search results, and estimated travel times. ";
-    pub static ALLOW:          &'static str = "Allow";
-    pub static DONT_ALLOW:     &'static str = "Don't Allow";
+    pub static PRIMARY_TEXT:   &str = "Allow \"Maps\" to access your location while using the app?";
+    pub static SECONDARY_TEXT: &str = "Your current location will be displayed on the map and used for directions, nearby search results, and estimated travel times. ";
+    pub static ALLOW:          &str = "Allow";
+    pub static DONT_ALLOW:     &str = "Don't Allow";
 }
 
 use constants::*;
