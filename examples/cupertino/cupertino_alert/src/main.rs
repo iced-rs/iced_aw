@@ -30,18 +30,18 @@ enum Message {
     ShowModal,
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 mod constants {
-    pub static PRIMARY_TEXT:   &'static str = "Allow \"Maps\" to access your location while using the app?";
-    pub static SECONDARY_TEXT: &'static str = "Your current location will be displayed on the map and used for directions, nearby search results, and estimated travel times. ";
-    pub static ALLOW:          &'static str = "Allow";
-    pub static DONT_ALLOW:     &'static str = "Don't Allow";
+    pub static PRIMARY_TEXT:   &str = "Allow \"Maps\" to access your location while using the app?";
+    pub static SECONDARY_TEXT: &str = "Your current location will be displayed on the map and used for directions, nearby search results, and estimated travel times. ";
+    pub static ALLOW:          &str = "Allow";
+    pub static DONT_ALLOW:     &str = "Don't Allow";
 }
 
 use constants::*;
 
 // `cargo fmt` becomes unreadable for this example, so switching off //
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 impl Application for Alert {
     type Executor = executor::Default;
     type Message  = Message;
@@ -69,10 +69,7 @@ impl Application for Alert {
     }
 
     fn view(&self) -> Element<Message> {
-        let modal_hidden: bool = match self {
-            Alert::ShowModal => false,
-            _                => true,
-        };
+        let modal_hidden = !matches!(self, Alert::ShowModal);
 
         match self {
             Alert::CancelEvent  => println!("Received click for the cancel button"),
