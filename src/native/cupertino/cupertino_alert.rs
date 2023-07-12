@@ -244,7 +244,7 @@ where
     {
         let as_text_element = element.into().font(SF_UI_ROUNDED);
 
-        return Element::from(as_text_element);
+        Element::from(as_text_element)
     }
 }
 
@@ -273,7 +273,7 @@ where
     }
 
     fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
-        return Node::new(
+        Node::new(
             limits
                 .width(if !self.is_hidden {
                     self.width
@@ -286,7 +286,7 @@ where
                     Length::Fixed(0.0)
                 })
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        );
+        )
     }
 
     fn draw(
@@ -589,7 +589,7 @@ where
             _ => return Status::Ignored,
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 }
 

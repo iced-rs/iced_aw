@@ -180,12 +180,12 @@ where
     }
 
     fn layout(&self, _renderer: &Renderer<B, T>, limits: &Limits) -> Node {
-        return Node::new(
+        Node::new(
             limits
                 .width(self.width)
                 .height(self.height)
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        );
+        )
     }
 
     fn draw(
@@ -399,7 +399,7 @@ where
             _ => {}
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 
     fn overlay<'b>(
@@ -412,7 +412,7 @@ where
 
         state.bounds = layout.bounds();
 
-        return None;
+        None
     }
 }
 

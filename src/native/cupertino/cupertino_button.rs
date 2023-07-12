@@ -234,7 +234,7 @@ where
             _ => {}
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 }
 
