@@ -613,6 +613,7 @@ where
     }
 }
 
+#[allow(clippy::type_repetition_in_bounds)]
 impl<'a, Message, Renderer: 'a> From<CupertinoAlert<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
