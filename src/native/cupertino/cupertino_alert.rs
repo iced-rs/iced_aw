@@ -1,3 +1,5 @@
+#![allow(clippy::todo)]
+
 use iced_native::{
     alignment,
     event::Status,
