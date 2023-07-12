@@ -1,3 +1,5 @@
+#![allow(clippy::todo)]
+
 use iced_native::{
     alignment,
     event::Status,
@@ -158,8 +160,8 @@ where
             width: Length::Fixed(400.0),
             height: Length::Fixed(200.0),
             is_hidden: true,
-            title: "Title".to_string(),
-            content: "Content".to_string(),
+            title: "Title".to_owned(),
+            content: "Content".to_owned(),
             actions: vec![],
             backdrop: None,
             on_escape: None,
@@ -244,7 +246,7 @@ where
     {
         let as_text_element = element.into().font(SF_UI_ROUNDED);
 
-        return Element::from(as_text_element);
+        Element::from(as_text_element)
     }
 }
 
@@ -257,36 +259,36 @@ where
     <Renderer as iced_native::text::Renderer>::Font: From<Font>,
 {
     fn width(&self) -> Length {
-        if !self.is_hidden {
-            self.width
-        } else {
+        if self.is_hidden {
             Length::Fixed(0.0)
+        } else {
+            self.width
         }
     }
 
     fn height(&self) -> Length {
-        if !self.is_hidden {
-            self.height
-        } else {
+        if self.is_hidden {
             Length::Fixed(0.0)
+        } else {
+            self.height
         }
     }
 
     fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
-        return Node::new(
+        Node::new(
             limits
-                .width(if !self.is_hidden {
+                .width(if self.is_hidden {
+                    Length::Fixed(0.0)
+                } else {
                     self.width
-                } else {
-                    Length::Fixed(0.0)
                 })
-                .height(if !self.is_hidden {
-                    self.height
-                } else {
+                .height(if self.is_hidden {
                     Length::Fixed(0.0)
+                } else {
+                    self.height
                 })
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        );
+        )
     }
 
     fn draw(
@@ -544,7 +546,12 @@ where
 
                         if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
                         {
-                            shell.publish(self.actions[0].on_pressed.clone().unwrap());
+                            shell.publish(
+                                self.actions[0]
+                                    .on_pressed
+                                    .clone()
+                                    .expect("Unable to retrieve the left button click message"),
+                            );
                         }
                     }
 
@@ -557,7 +564,12 @@ where
 
                         if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
                         {
-                            shell.publish(self.actions[1].on_pressed.clone().unwrap());
+                            shell.publish(
+                                self.actions[1]
+                                    .on_pressed
+                                    .clone()
+                                    .expect("Unable to retrieve the right button click message"),
+                            );
                         }
                     }
                 }
@@ -569,7 +581,11 @@ where
 
                 if !hit_x.contains(&cursor_position.x) || !hit_y.contains(&cursor_position.y) {
                     if self.backdrop.is_some() {
-                        shell.publish(self.backdrop.clone().unwrap());
+                        shell.publish(
+                            self.backdrop
+                                .clone()
+                                .expect("Unable to retrieve the backdrop message"),
+                        );
                     }
 
                     // Default behaviour: hide the modal after clicking on the backdrop //
@@ -581,20 +597,23 @@ where
                 if key_code == keyboard::KeyCode::Escape && self.on_escape.is_some() {
                     self.is_hidden = true;
 
-                    shell.publish(self.on_escape.clone().unwrap());
+                    shell.publish(
+                        self.on_escape
+                            .clone()
+                            .expect("Unable to retrieve the escape message"),
+                    );
                     return Status::Captured;
-                } else {
-                    return Status::Ignored;
                 }
             }
 
             _ => return Status::Ignored,
         }
 
-        return Status::Ignored;
+        Status::Ignored
     }
 }
 
+#[allow(clippy::type_repetition_in_bounds)]
 impl<'a, Message, Renderer: 'a> From<CupertinoAlert<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
