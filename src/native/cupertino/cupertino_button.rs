@@ -200,7 +200,7 @@ where
             layout,
             cursor_position,
             viewport,
-        )
+        );
     }
 
     fn on_event(
