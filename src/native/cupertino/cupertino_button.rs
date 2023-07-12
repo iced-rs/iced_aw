@@ -107,6 +107,7 @@ where
     }
 
     /// Sets the `colour` of the [`CupertinoButton`](CupertinoButton).
+    #[must_use]
     pub fn colour(mut self, colour: Option<Color>) -> Self {
         self.colour = colour;
         self
