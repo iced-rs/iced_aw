@@ -583,8 +583,6 @@ where
 
                     shell.publish(self.on_escape.clone().unwrap());
                     return Status::Captured;
-                } else {
-                    return Status::Ignored;
                 }
             }
 
