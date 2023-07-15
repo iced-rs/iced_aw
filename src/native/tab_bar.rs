@@ -18,6 +18,7 @@ use iced_native::{
 
 pub mod tab_label;
 pub use tab_label::TabLabel;
+pub use crate::style::tab_bar::Appearance;
 
 use crate::{graphics::icons, style::tab_bar::StyleSheet};
 
