@@ -10,4 +10,4 @@ jobs:
           components: clippy
       - uses: actions/checkout@master
       - name: Lint with clippy
-        run: cargo clippy --all
+        run: cargo clippy --all -- -D warnings --verbose
