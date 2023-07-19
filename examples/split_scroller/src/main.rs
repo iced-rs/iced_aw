@@ -208,7 +208,6 @@ mod router {
 }
 
 mod demo {
-    use iced::advanced::graphics::core::BorderRadius;
     use iced::widget::scrollable::{Properties, Scrollbar, Scroller};
     use iced::widget::{
         button, column, container, horizontal_space, progress_bar, radio, row, scrollable, slider,
@@ -507,12 +506,12 @@ mod demo {
         fn hovered_horizontal(&self, style: &Self::Style, _is_mouse_over: bool) -> Scrollbar {
             Scrollbar {
                 background: style.active(&theme::Scrollable::default()).background,
-                border_radius: BorderRadius::default(),
+                border_radius: 0.0.into(),
                 border_width: 0.0,
                 border_color: Default::default(),
                 scroller: Scroller {
                     color: Color::from_rgb8(250, 85, 134),
-                    border_radius: BorderRadius::default(),
+                    border_radius: 0.0.into(),
                     border_width: 0.0,
                     border_color: Default::default(),
                 },
@@ -529,7 +528,7 @@ mod demo {
             progress_bar::Appearance {
                 background: style.extended_palette().background.strong.color.into(),
                 bar: Color::from_rgb8(250, 85, 134).into(),
-                border_radius: BorderRadius::default(),
+                border_radius: 0.0.into(),
             }
         }
     }

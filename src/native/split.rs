@@ -4,22 +4,17 @@
 use iced_widget::{
     container,
     core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard, layout,
+        self, event, layout,
         mouse::{self, Cursor},
         renderer, touch,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-        Rectangle, Shell, Size, Widget,
+        Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
+        Widget,
     },
-    style, text,
-    text::LineHeight,
-    text_input::{self, cursor, Value},
-    Column, Container, Row, Text, TextInput,
+    Container, Row,
 };
 
 pub use crate::style::split::{Appearance, StyleSheet};

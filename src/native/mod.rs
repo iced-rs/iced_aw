@@ -53,8 +53,8 @@ pub use selection_list::List;
 pub mod floating_element;
 #[cfg(feature = "floating_element")]
 /// A floating element floating over some content.
-pub type FloatingElement<'a, B, Message, Backend, Theme> =
-    floating_element::FloatingElement<'a, B, Message, Renderer<Backend, Theme>>;
+pub type FloatingElement<'a, B, Message, Renderer> =
+    floating_element::FloatingElement<'a, B, Message, Renderer>;
 
 #[cfg(feature = "grid")]
 pub mod grid;

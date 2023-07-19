@@ -149,7 +149,7 @@ pub fn floating_element<'a, Message, Renderer, B>(
 ) -> crate::FloatingElement<'a, B, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     B: Fn() -> Element<'a, Message, Renderer>,
 {
     crate::FloatingElement::new(underlay, element)

@@ -1,15 +1,21 @@
 //! Use a floating element to overlay a element over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
-use iced_native::{event, layout::Limits, overlay, Clipboard, Event, Layout, Point, Shell, Size};
-use iced_native::{widget::Tree, Element};
+
+use iced_widget::core::{
+    self, event, layout,
+    mouse::{self, Cursor},
+    overlay, renderer,
+    widget::Tree,
+    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
+};
 
 use crate::native::floating_element::{Anchor, Offset};
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
-/// rendering a [`Element`](iced_native::Element) as an overlay.
+/// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, Message, Renderer: iced_native::Renderer> {
+pub struct FloatingElementOverlay<'a, Message, Renderer: core::Renderer> {
     /// The state of the element.
     state: &'a mut Tree,
     /// The floating element
@@ -23,10 +29,10 @@ pub struct FloatingElementOverlay<'a, Message, Renderer: iced_native::Renderer> 
 impl<'a, Message, Renderer> FloatingElementOverlay<'a, Message, Renderer>
 where
     Message: 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
-    /// [`Element`](iced_native::Element).
+    /// [`Element`](iced_widget::core::Element).
     pub fn new<B>(state: &'a mut Tree, element: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
     where
         B: Into<Element<'a, Message, Renderer>>,
@@ -40,7 +46,7 @@ where
     }
 
     /// Turns the [`FloatingElementOverlay`](FloatingElementOverlay) into an
-    /// overlay [`Element`](iced_native::overlay::Element) at the given target
+    /// overlay [`Element`](iced_widget::core::Element) at the given target
     /// position.
     #[must_use]
     pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
@@ -48,19 +54,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
+impl<'a, Message, Renderer> core::Overlay<Message, Renderer>
     for FloatingElementOverlay<'a, Message, Renderer>
 where
     Message: 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
 {
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-    ) -> iced_native::layout::Node {
-        let limits = Limits::new(Size::ZERO, bounds);
+    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+        let limits = layout::Limits::new(Size::ZERO, bounds);
         let mut element = self.element.as_widget().layout(renderer, &limits);
 
         match self.anchor {
@@ -105,7 +106,7 @@ where
         &mut self,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
@@ -114,36 +115,33 @@ where
             self.state,
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            &layout.bounds(),
         )
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor: Cursor,
+        viewport: &Rectangle,
         renderer: &Renderer,
-    ) -> iced_native::mouse::Interaction {
-        self.element.as_widget().mouse_interaction(
-            self.state,
-            layout,
-            cursor_position,
-            viewport,
-            renderer,
-        )
+    ) -> mouse::Interaction {
+        self.element
+            .as_widget()
+            .mouse_interaction(self.state, layout, cursor, viewport, renderer)
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
     ) {
         self.element.as_widget().draw(
             self.state,
@@ -151,7 +149,7 @@ where
             theme,
             style,
             layout,
-            cursor_position,
+            cursor,
             &layout.bounds(),
         );
     }
