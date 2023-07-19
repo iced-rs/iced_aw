@@ -219,6 +219,7 @@ where
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let children_status = self
             .elements
@@ -234,6 +235,7 @@ where
                     renderer,
                     clipboard,
                     shell,
+                    viewport,
                 )
             });
 

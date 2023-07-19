@@ -105,6 +105,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
+        let viewport = layout.bounds();
         // TODO clean this up
         let esc_status = self
             .esc
@@ -126,7 +127,10 @@ where
             |(backdrop, layout)| match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if layout.bounds().contains(cursor.position().unwrap_or_default()) {
+                    if layout
+                        .bounds()
+                        .contains(cursor.position().unwrap_or_default())
+                    {
                         event::Status::Ignored
                     } else {
                         shell.publish(backdrop.to_owned());
@@ -149,6 +153,7 @@ where
                 renderer,
                 clipboard,
                 shell,
+                &viewport,
             ),
             event::Status::Captured => event::Status::Captured,
         }

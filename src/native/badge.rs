@@ -2,8 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use iced_widget::core::{
-    self,
-    event, layout,
+    self, event, layout,
     mouse::{self, Cursor},
     renderer,
     widget::tree::Tree,
@@ -166,6 +165,7 @@ where
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.content.as_widget_mut().on_event(
             &mut state.children[0],
@@ -178,6 +178,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 

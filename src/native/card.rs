@@ -16,7 +16,7 @@ use iced_widget::{
     text::LineHeight,
 };
 
-use crate::graphics::icons::Icon;
+use crate::graphics::icons::{Icon, ICON_FONT};
 pub use crate::style::card::{Appearance, StyleSheet};
 
 /// The default padding of a [`Card`](Card).
@@ -212,7 +212,7 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer + core::text::Renderer,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -294,6 +294,7 @@ where
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -311,6 +312,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         );
 
         let close_status = head_children
@@ -350,6 +352,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         );
 
         let foot_layout = children
@@ -367,6 +370,7 @@ where
                 renderer,
                 clipboard,
                 shell,
+                viewport,
             )
         });
 
@@ -574,7 +578,7 @@ fn head_node<Message, Renderer>(
     close_size: Option<f32>,
 ) -> layout::Node
 where
-    Renderer: core::Renderer + core::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
 {
     let pad = Padding::from(padding as u16);
     let mut limits = limits
@@ -681,7 +685,7 @@ fn draw_head<Message, Renderer>(
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: core::Renderer + core::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
 {
     let mut head_children = layout.children();
@@ -735,7 +739,7 @@ fn draw_head<Message, Renderer>(
         let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
 
         renderer.fill_text(core::text::Text {
-            content: "x",
+            content: &Icon::X.to_string(),
             bounds: Rectangle {
                 x: close_bounds.center_x(),
                 y: close_bounds.center_y(),
@@ -744,7 +748,7 @@ fn draw_head<Message, Renderer>(
             },
             size: close_bounds.height + if is_mouse_over_close { 1.0 } else { 0.0 },
             color: style_sheet.close_color,
-            font: renderer.default_font(),
+            font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: LineHeight::Relative(0.5),
@@ -765,7 +769,7 @@ fn draw_body<Message, Renderer>(
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: core::Renderer + core::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
 {
     let mut body_children = layout.children();
@@ -809,7 +813,7 @@ fn draw_foot<Message, Renderer>(
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
 ) where
-    Renderer: core::Renderer + core::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
@@ -845,7 +849,7 @@ fn draw_foot<Message, Renderer>(
 
 impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
     Message: Clone + 'a,
 {

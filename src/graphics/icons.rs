@@ -13,17 +13,18 @@ pub use required::*;
 
 /// The default icon font.
 #[cfg(feature = "icons")]
-/*pub const ICON_FONT: Font = iced_native::Font::External {
-    name: "Icons",
-    bytes: include_bytes!("./fonts/bootstrap-icons.ttf"),
-};*/
+pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
 
 /// The default icon font.
 #[cfg(not(feature = "icons"))]
-pub const ICON_FONT: Font = iced_native::Font::External {
-    name: "Icons",
-    bytes: include_bytes!("./fonts/required-icons.ttf"),
-};
+pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");
+
+#[cfg(feature = "icons")]
+pub const ICON_FONT: Font = Font::with_name("bootstrap-icons");
+
+/// The default icon font.
+#[cfg(not(feature = "icons"))]
+pub const ICON_FONT: Font = Font::with_name("required-icons");
 
 impl From<Icon> for char {
     fn from(icon: Icon) -> Self {

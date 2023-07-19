@@ -97,7 +97,7 @@ members = [
     #"examples/floating_element_anchors",
     "examples/grid",
     "examples/modal",
-    "examples/modal_component",
+    #"examples/modal_component",
     #"examples/tab_bar",
     #"examples/tabs",
     #"examples/time_picker",

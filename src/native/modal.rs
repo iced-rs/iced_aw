@@ -2,13 +2,11 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self,
-    event, layout,
+    self, event, layout,
     mouse::{self, Cursor},
-    renderer, 
+    overlay, renderer,
     widget::{Operation, Tree},
-     Clipboard, Color, Element, Event, Layout, Length,  Point,
-    Rectangle, Shell,  Widget,overlay
+    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
 use super::overlay::modal::ModalOverlay;
@@ -157,6 +155,7 @@ where
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
@@ -166,6 +165,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
