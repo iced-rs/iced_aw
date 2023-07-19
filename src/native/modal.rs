@@ -6,7 +6,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
 
 use super::overlay::modal::ModalOverlay;

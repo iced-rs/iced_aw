@@ -1,26 +1,32 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
-
-use iced_native::{
-    alignment::{Horizontal, Vertical},
-    event, keyboard,
-    layout::{Limits, Node},
-    mouse, renderer,
-    widget::{
-        self, container, text,
-        text_input::{self, cursor, Value},
-        tree::{self, Tree},
-        Column, Container, Operation, Row, Text, TextInput,
+use iced_widget::{
+    container,
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        event, keyboard, layout,
+        mouse::{self, Cursor},
+        renderer,
+        widget::{
+            tree::{State, Tag},
+            Operation, Tree,
+        },
+        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding,
+        Rectangle, Shell, Size, Widget,
     },
-    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shell, Size, Widget,
+    style, text,
+    text::LineHeight,
+    text_input::{self, cursor, Value},
+    Column, Container, Row, Text, TextInput,
 };
+
 use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
-    graphics::icons::Icon,
+    graphics::icons::{Icon, ICON_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 
@@ -51,9 +57,9 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Renderer>
+pub struct NumberInput<'a, T, Message, Renderer = crate::Renderer>
 where
-    Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::text::Renderer<Font = core::Font>,
     Renderer::Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
@@ -83,7 +89,7 @@ impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::text::Renderer<Font = core::Font>,
     Renderer::Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
@@ -118,7 +124,7 @@ where
                 .width(Length::Fixed(127.0)),
             on_change: Box::new(on_changed),
             style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
-            font: iced_graphics::Font::default(),
+            font: Renderer::Font::default(),
         }
     }
 
@@ -213,7 +219,7 @@ where
     #[must_use]
     pub fn input_style(
         mut self,
-        style: impl Into<<Renderer::Theme as iced_style::text_input::StyleSheet>::Style>,
+        style: impl Into<<Renderer::Theme as style::text_input::StyleSheet>::Style>,
     ) -> Self {
         self.content = self.content.style(style);
         self
@@ -250,17 +256,17 @@ impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, 
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
         + text::StyleSheet,
 {
-    fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<ModifierState>()
+    fn tag(&self) -> Tag {
+        Tag::of::<ModifierState>()
     }
-    fn state(&self) -> tree::State {
-        tree::State::new(ModifierState::default())
+    fn state(&self) -> State {
+        State::new(ModifierState::default())
     }
 
     fn children(&self) -> Vec<Tree> {
@@ -291,7 +297,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
@@ -327,7 +333,7 @@ where
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
 
         let size = limits.resolve(intrinsic);
-        Node::with_children(size, vec![content, modifier])
+        layout::Node::with_children(size, vec![content, modifier])
     }
 
     fn operate(
@@ -356,10 +362,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let mut children = layout.children();
         let content = children.next().expect("fail to get content layout");
@@ -375,8 +382,8 @@ where
             .next()
             .expect("fail to get decreate mod layout")
             .bounds();
-        let mouse_over_inc = inc_bounds.contains(cursor_position);
-        let mouse_over_dec = dec_bounds.contains(cursor_position);
+        let mouse_over_inc = inc_bounds.contains(cursor.position().unwrap_or_default());
+        let mouse_over_dec = dec_bounds.contains(cursor.position().unwrap_or_default());
         let modifiers = state.state.downcast_mut::<ModifierState>();
         let child = &mut state.children[0];
 
@@ -384,7 +391,10 @@ where
             return event::Status::Ignored;
         }
 
-        if layout.bounds().contains(cursor_position) {
+        if layout
+            .bounds()
+            .contains(cursor.position().unwrap_or_default())
+        {
             if mouse_over_inc || mouse_over_dec {
                 let mut event_status = event::Status::Captured;
                 match event {
@@ -414,16 +424,13 @@ where
             } else {
                 match event {
                     Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                        if child
-                            .state
-                            .downcast_mut::<widget::text_input::State>()
-                            .is_focused()
+                        if child.state.downcast_mut::<text_input::State>().is_focused()
                             && c.is_numeric() =>
                     {
                         let mut new_val = self.value.to_string();
                         match child
                             .state
-                            .downcast_mut::<widget::text_input::State>()
+                            .downcast_mut::<text_input::State>()
                             .cursor()
                             .state(&Value::new(&new_val))
                         {
@@ -455,10 +462,11 @@ where
                                         child,
                                         event.clone(),
                                         content,
-                                        cursor_position,
+                                        cursor,
                                         renderer,
                                         clipboard,
                                         shell,
+                                        viewport,
                                     )
                                 } else {
                                     event::Status::Ignored
@@ -468,10 +476,7 @@ where
                         }
                     }
                     Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
-                        if child
-                            .state
-                            .downcast_mut::<widget::text_input::State>()
-                            .is_focused() =>
+                        if child.state.downcast_mut::<text_input::State>().is_focused() =>
                     {
                         match key_code {
                             keyboard::KeyCode::Up => {
@@ -489,7 +494,7 @@ where
                                     let mut new_val = self.value.to_string();
                                     match child
                                         .state
-                                        .downcast_mut::<widget::text_input::State>()
+                                        .downcast_mut::<text_input::State>()
                                         .cursor()
                                         .state(&Value::new(&new_val))
                                     {
@@ -532,10 +537,11 @@ where
                                                     child,
                                                     event.clone(),
                                                     content,
-                                                    cursor_position,
+                                                    cursor,
                                                     renderer,
                                                     clipboard,
                                                     shell,
+                                                    viewport,
                                                 )
                                             } else {
                                                 event::Status::Ignored
@@ -549,10 +555,11 @@ where
                                 child,
                                 event.clone(),
                                 content,
-                                cursor_position,
+                                cursor,
                                 renderer,
                                 clipboard,
                                 shell,
+                                viewport,
                             ),
                         }
                     }
@@ -570,13 +577,7 @@ where
                         event::Status::Captured
                     }
                     _ => self.content.on_event(
-                        child,
-                        event,
-                        content,
-                        cursor_position,
-                        renderer,
-                        clipboard,
-                        shell,
+                        child, event, content, cursor, renderer, clipboard, shell, viewport,
                     ),
                 }
             }
@@ -584,13 +585,7 @@ where
             match event {
                 Event::Keyboard(_) => event::Status::Ignored,
                 _ => self.content.on_event(
-                    child,
-                    event,
-                    content,
-                    cursor_position,
-                    renderer,
-                    clipboard,
-                    shell,
+                    child, event, content, cursor, renderer, clipboard, shell, viewport,
                 ),
             }
         }
@@ -600,7 +595,7 @@ where
         &self,
         _state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -619,11 +614,11 @@ where
             .next()
             .expect("fail to get decreate mod layout")
             .bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
+        let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
         let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
-        let mouse_over_decrease = dec_bounds.contains(cursor_position);
-        let mouse_over_increase = inc_bounds.contains(cursor_position);
+        let mouse_over_decrease = dec_bounds.contains(cursor.position().unwrap_or_default());
+        let mouse_over_increase = inc_bounds.contains(cursor.position().unwrap_or_default());
 
         if (mouse_over_decrease && !is_decrease_disabled)
             || (mouse_over_increase && !is_increase_disabled)
@@ -641,10 +636,10 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        _style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: iced_graphics::Point,
-        _viewport: &iced_graphics::Rectangle,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: Cursor,
+        _viewport: &Rectangle,
     ) {
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
@@ -665,7 +660,7 @@ where
             renderer,
             theme,
             content_layout,
-            cursor_position,
+            cursor,
             None,
         );
         let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
@@ -702,7 +697,7 @@ where
 
         let mut buffer = [0; 4];
 
-        renderer.fill_text(iced_native::text::Text {
+        renderer.fill_text(core::text::Text {
             content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: dec_bounds.center_x(),
@@ -711,9 +706,11 @@ where
             },
             size: dec_bounds.height,
             color: decrease_btn_style.icon_color,
-            font: crate::graphics::icons::ICON_FONT,
+            font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            line_height: LineHeight::Relative(1.3),
+            shaping: iced_widget::text::Shaping::Advanced,
         });
 
         // increase button section
@@ -729,7 +726,7 @@ where
                 .unwrap_or(Background::Color(Color::TRANSPARENT)),
         );
 
-        renderer.fill_text(iced_native::text::Text {
+        renderer.fill_text(core::text::Text {
             content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: inc_bounds.center_x(),
@@ -738,9 +735,11 @@ where
             },
             size: inc_bounds.height,
             color: increase_btn_style.icon_color,
-            font: crate::graphics::icons::ICON_FONT,
+            font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            line_height: LineHeight::Relative(1.3),
+            shaping: iced_widget::text::Shaping::Advanced,
         });
     }
 }
@@ -759,7 +758,7 @@ impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet

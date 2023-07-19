@@ -11,14 +11,15 @@ mod required;
 #[cfg(not(feature = "icons"))]
 pub use required::*;
 
-/// The default icon font.
+/// The default icon font bytes for loading the font into iced.
 #[cfg(feature = "icons")]
 pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
 
-/// The default icon font.
+/// The default icon font bytes for loading the font into iced.
 #[cfg(not(feature = "icons"))]
 pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");
 
+/// The default icon font.
 #[cfg(feature = "icons")]
 pub const ICON_FONT: Font = Font::with_name("bootstrap-icons");
 

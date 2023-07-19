@@ -4,15 +4,23 @@
 //! icons font as a default font. Maybe I'll find a better way in the future.
 //!
 //! //! *This API requires the following crate features to be activated: `icon_text`*
-use iced_native::{
-    alignment::{Horizontal, Vertical},
-    Color, Length, Rectangle, Size,
+use iced_widget::{
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        layout,
+        mouse::Cursor,
+        renderer,
+        widget::Tree,
+        Color, Element, Layout, Length, Rectangle, Widget,
+    },
+    text::LineHeight,
 };
-use iced_native::{Element, Widget};
 
+use crate::graphics::icons::ICON_FONT;
 /// Text widget with icon font.
 #[allow(missing_debug_implementations)]
-pub struct IconText<Renderer: iced_native::text::Renderer> {
+pub struct IconText<Renderer: core::text::Renderer<Font = core::Font> = crate::Renderer> {
     /// The content of the [`IconText`](IconText).
     content: String,
     /// The optional size of the [`IconText`](IconText).
@@ -31,7 +39,7 @@ pub struct IconText<Renderer: iced_native::text::Renderer> {
     vertical_alignment: Vertical,
 }
 
-impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
+impl<Renderer: core::text::Renderer<Font = core::Font>> IconText<Renderer> {
     /// Creates a new [`IconText`](IconText) with the given icon label.
     ///
     /// It expects:
@@ -56,14 +64,14 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`Color`](iced_native::Color) of the [`IconText`](IconText).
+    /// Sets the [`Color`](core::Color) of the [`IconText`](IconText).
     #[must_use]
     pub fn color<C: Into<Color>>(mut self, color: C) -> Self {
         self.color = Some(color.into());
         self
     }
 
-    /// Sets the [`Font`](iced_native::Font) of the [`IconText`](IconText).
+    /// Sets the [`Font`](core::Font) of the [`IconText`](IconText).
     #[must_use]
     pub fn font(mut self, font: impl Into<Renderer::Font>) -> Self {
         self.font = Some(font.into());
@@ -84,7 +92,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`Horizontal `](iced_native::alignment::Horizontal )
+    /// Sets the [`Horizontal `](core::alignment::Horizontal )
     /// of the [`IconText`](IconText).
     #[must_use]
     pub fn horizontal_alignment(mut self, alignment: Horizontal) -> Self {
@@ -92,7 +100,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
         self
     }
 
-    /// Sets the [`Vertical `](iced_native::alignment::Vertical )
+    /// Sets the [`Vertical `](core::alignment::Vertical )
     /// of the [`IconText`](IconText).
     #[must_use]
     pub fn vertical_alignment(mut self, alignment: Vertical) -> Self {
@@ -103,7 +111,7 @@ impl<Renderer: iced_native::text::Renderer> IconText<Renderer> {
 
 impl<Message, Renderer> Widget<Message, Renderer> for IconText<Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
 {
     fn width(&self) -> Length {
         self.width
@@ -113,33 +121,35 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         let limits = limits.width(self.width).height(self.height);
 
         let size = self.size.unwrap_or_else(|| renderer.default_size());
 
         let bounds = limits.max();
 
-        let (width, height) =
-            renderer.measure(&self.content, size, self.font.unwrap_or_default(), bounds);
+        let size = renderer.measure(
+            &self.content,
+            size,
+            LineHeight::Relative(1.3),
+            self.font.unwrap_or_default(),
+            bounds,
+            iced_widget::text::Shaping::Advanced,
+        );
 
-        let size = limits.resolve(Size::new(width, height));
+        let size = limits.resolve(size);
 
-        iced_native::layout::Node::new(size)
+        layout::Node::new(size)
     }
 
     fn draw(
         &self,
-        _state: &iced_native::widget::Tree,
+        _state: &Tree,
         renderer: &mut Renderer,
         _theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        _cursor_position: iced_graphics::Point,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
@@ -156,28 +166,30 @@ where
             Vertical::Bottom => bounds.y + bounds.height,
         };
 
-        renderer.fill_text(iced_native::text::Text {
+        renderer.fill_text(core::text::Text {
             content: &self.content,
             bounds: Rectangle { x, y, ..bounds },
             size: self.size.unwrap_or_else(|| renderer.default_size()),
             color: self.color.unwrap_or(style.text_color),
-            font: self.font.unwrap_or(crate::graphics::icons::ICON_FONT),
+            font: self.font.unwrap_or(ICON_FONT),
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
+            line_height: LineHeight::Relative(1.2),
+            shaping: iced_widget::text::Shaping::Advanced,
         });
     }
 }
 
 impl<'a, Message, Renderer> From<IconText<Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font> + 'a,
 {
     fn from(icon: IconText<Renderer>) -> Element<'a, Message, Renderer> {
         Element::new(icon)
     }
 }
 
-impl<Renderer: iced_native::text::Renderer<Font = iced_native::Font>> Clone for IconText<Renderer> {
+impl<Renderer: core::text::Renderer<Font = core::Font>> Clone for IconText<Renderer> {
     fn clone(&self) -> Self {
         Self {
             content: self.content.clone(),

@@ -2,14 +2,11 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self,
-    alignment::{Horizontal, Vertical},
-    event, keyboard, layout,
+    self, event, keyboard, layout,
     mouse::{self, Cursor},
     overlay, renderer, touch,
-    widget::{Operation, Tree},
-    Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-    Point, Rectangle, Shell, Size, Vector, Widget,
+    widget::Tree,
+    Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size, Vector,
 };
 
 use crate::style::modal::StyleSheet;

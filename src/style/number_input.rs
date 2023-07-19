@@ -2,8 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: `number_input`*
 
-use iced_native::{Background, Color};
-use iced_style::theme::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
@@ -44,6 +46,7 @@ pub trait StyleSheet {
                     a: color.a * 0.5,
                     ..color
                 }),
+                Background::Gradient(grad) => Background::Gradient(grad),
             }),
             icon_color: Color {
                 a: active.icon_color.a * 0.5,
@@ -87,6 +90,7 @@ impl StyleSheet for Theme {
                     a: color.a * 0.5,
                     ..color
                 }),
+                Background::Gradient(grad) => Background::Gradient(grad),
             }),
             icon_color: Color {
                 a: active.icon_color.a * 0.5,

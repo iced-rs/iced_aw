@@ -1,17 +1,27 @@
 use iced::{
-    widget::{Container, Row, Text},
-    window, Alignment, Element, Length, Sandbox, Settings,
+    alignment, font,
+    theme::Theme,
+    widget::{container, text, Container, Row, Text},
+    window, Alignment, Application, Command, Element, Length, Settings,
 };
 use iced_aw::{number_input, style::NumberInputStyles};
 
-#[derive(Default)]
-pub struct NumberInputDemo {
+#[derive(Debug)]
+enum NumberInputDemo {
+    Loading,
+    Loaded(State),
+}
+
+#[derive(Default, Debug)]
+pub struct State {
     value: f32,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     NumInpChanged(f32),
+    Loaded(Result<(), String>),
+    FontLoaded(Result<(), font::Error>),
 }
 
 fn main() -> iced::Result {
@@ -25,42 +35,78 @@ fn main() -> iced::Result {
     })
 }
 
-impl Sandbox for NumberInputDemo {
-    type Message = Message;
+async fn load() -> Result<(), String> {
+    Ok(())
+}
 
-    fn new() -> Self {
-        Self { value: 27.0 }
+impl Application for NumberInputDemo {
+    type Message = Message;
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (NumberInputDemo, Command<Message>) {
+        (
+            NumberInputDemo::Loading,
+            Command::batch(vec![
+                font::load(iced_aw::graphics::icons::ICON_FONT_BYTES).map(Message::FontLoaded),
+                Command::perform(load(), Message::Loaded),
+            ]),
+        )
     }
 
     fn title(&self) -> String {
         String::from("Number Input Demo")
     }
 
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::NumInpChanged(val) => {
-                self.value = val;
+    fn update(&mut self, message: self::Message) -> Command<Message> {
+        match self {
+            NumberInputDemo::Loading => {
+                if let Message::Loaded(_) = message {
+                    *self = NumberInputDemo::Loaded(State { value: 27.0 })
+                }
+            }
+            NumberInputDemo::Loaded(State { value }) => {
+                if let Message::NumInpChanged(val) = message {
+                    *value = val;
+                }
             }
         }
+
+        Command::none()
     }
 
     fn view(&self) -> Element<Message> {
-        let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(self.value, 255.0, Message::NumInpChanged)
-            .style(NumberInputStyles::Default)
-            .step(0.5);
+        match self {
+            NumberInputDemo::Loading => container(
+                text("Loading...")
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .size(50),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_y()
+            .center_x()
+            .into(),
+            NumberInputDemo::Loaded(State { value }) => {
+                let lb_minute = Text::new("Number Input:");
+                let txt_minute = number_input(*value, 255.0, Message::NumInpChanged)
+                    .style(NumberInputStyles::Default)
+                    .step(0.5);
 
-        Container::new(
-            Row::new()
-                .spacing(10)
-                .align_items(Alignment::Center)
-                .push(lb_minute)
-                .push(txt_minute),
-        )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x()
-        .center_y()
-        .into()
+                Container::new(
+                    Row::new()
+                        .spacing(10)
+                        .align_items(Alignment::Center)
+                        .push(lb_minute)
+                        .push(txt_minute),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x()
+                .center_y()
+                .into()
+            }
+        }
     }
 }

@@ -166,16 +166,16 @@ where
 {
     crate::Grid::with_children(children)
 }
-/*
+
 #[cfg(feature = "icon_text")]
 /// Shortcut helper to create a Card Widget.
 #[must_use]
 pub fn icon_text<Renderer>(label: impl Into<String>) -> crate::IconText<Renderer>
 where
-    Renderer: iced_widget::core::text::Renderer,
+    Renderer: core::text::Renderer<Font = core::Font>,
 {
     crate::IconText::new(label)
-}*/
+}
 
 #[cfg(feature = "modal")]
 /// Shortcut helper to create a Card Widget.
@@ -204,11 +204,11 @@ pub fn number_input<'a, T, Message, Renderer, F>(
 ) -> crate::NumberInput<'a, T, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::text::Renderer<Font = iced_graphics::Font>,
+    Renderer: core::text::Renderer<Font = core::Font>,
     Renderer::Theme: crate::style::number_input::StyleSheet
-        + iced_style::text_input::StyleSheet
-        + iced_style::container::StyleSheet
-        + iced_style::text::StyleSheet,
+        + iced_widget::text_input::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::text::StyleSheet,
     F: 'static + Fn(T) -> Message + Copy,
     T: 'static
         + num_traits::Num

@@ -15,8 +15,8 @@ pub type Badge<'a, Message, Renderer> = badge::Badge<'a, Message, Renderer>;
 pub mod number_input;
 #[cfg(feature = "number_input")]
 /// A field that can only be filled with numeric type.
-pub type NumberInput<'a, T, Message, Backend, Theme> =
-    number_input::NumberInput<'a, T, Message, Renderer<Backend, Theme>>;
+pub type NumberInput<'a, T, Message, Renderer> =
+    number_input::NumberInput<'a, T, Message, Renderer>;
 
 #[cfg(feature = "card")]
 pub mod card;
@@ -64,12 +64,12 @@ pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
 #[cfg(feature = "grid")]
 pub use grid::Strategy;
 
-/*#[cfg(feature = "icon_text")]
+#[cfg(feature = "icon_text")]
 pub mod icon_text;
 #[cfg(feature = "icon_text")]
 /// Text widget with icon font.
-pub type IconText<Backend, Theme> = crate::native::icon_text::IconText<Renderer<Backend, Theme>>;
-*/
+pub type IconText<Renderer> = crate::native::icon_text::IconText<Renderer>;
+
 #[cfg(feature = "modal")]
 pub mod modal;
 #[cfg(feature = "modal")]
