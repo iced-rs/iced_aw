@@ -50,7 +50,7 @@ default = [
     #"time_picker",
     #"wrap",
     #"selection_list",
-    #"split",
+    "split",
     #"menu",
     #"quad",
     #"context_menu"
@@ -104,8 +104,8 @@ members = [
     #"examples/wrap",
     "examples/number_input",
     #"examples/selection_list",
-    #"examples/split",
-    #"examples/split_scroller",
+    "examples/split",
+    "examples/split_scroller",
     #"examples/menu",
     #"examples/spinner",
     #"examples/context_menu"
@@ -115,6 +115,7 @@ members = [
 git = "https://github.com/iced-rs/iced.git"
 #rev = "8221794"
 version = "0.9.0"
+features = ["advanced"]
 
 [workspace.dependencies.iced_aw]
 path = "./"

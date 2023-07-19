@@ -80,7 +80,7 @@ pub type Modal<'a, Content, Message, Renderer> = modal::Modal<'a, Content, Messa
 pub mod split;
 #[cfg(feature = "split")]
 /// A split can divide the available space by half to display two different elements.
-pub type Split<'a, Message, Backend, Theme> = split::Split<'a, Message, Renderer<Backend, Theme>>;
+pub type Split<'a, Message, Renderer> = split::Split<'a, Message, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
