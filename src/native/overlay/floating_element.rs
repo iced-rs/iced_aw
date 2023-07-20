@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
+    BorderRadius, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size,
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -15,50 +15,42 @@ use crate::native::floating_element::{Anchor, Offset};
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, Message, Renderer: core::Renderer> {
+pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     /// The state of the element.
-    state: &'a mut Tree,
+    state: &'b mut Tree,
     /// The floating element
-    element: Element<'a, Message, Renderer>,
+    element: &'b mut Element<'a, Message, Renderer>,
     /// The anchor of the element.
-    anchor: &'a Anchor,
+    anchor: &'b Anchor,
     /// The offset of the element.
-    offset: &'a Offset,
+    offset: &'b Offset,
 }
 
-impl<'a, Message, Renderer> FloatingElementOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a,
-    Renderer: core::Renderer + 'a,
+    Renderer: core::Renderer,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
     /// [`Element`](iced_widget::core::Element).
-    pub fn new<B>(state: &'a mut Tree, element: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
-    where
-        B: Into<Element<'a, Message, Renderer>>,
-    {
+    pub fn new(
+        state: &'b mut Tree,
+        element: &'b mut Element<'a, Message, Renderer>,
+        anchor: &'b Anchor,
+        offset: &'b Offset,
+    ) -> Self {
         FloatingElementOverlay {
             state,
-            element: element.into(),
+            element,
             anchor,
             offset,
         }
     }
-
-    /// Turns the [`FloatingElementOverlay`](FloatingElementOverlay) into an
-    /// overlay [`Element`](iced_widget::core::Element) at the given target
-    /// position.
-    #[must_use]
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(position, Box::new(self))
-    }
 }
 
-impl<'a, Message, Renderer> core::Overlay<Message, Renderer>
-    for FloatingElementOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
+    for FloatingElementOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a,
-    Renderer: core::Renderer + 'a,
+    Renderer: core::Renderer,
 {
     fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
@@ -143,14 +135,38 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
     ) {
-        self.element.as_widget().draw(
-            self.state,
-            renderer,
-            theme,
-            style,
-            layout,
-            cursor,
-            &layout.bounds(),
+        let bounds = layout.bounds();
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: Rectangle {
+                    x: 0.0,
+                    y: 0.0,
+                    width: 800.0,
+                    height: 800.0,
+                },
+                border_radius: BorderRadius::default(),
+                border_width: 0.0,
+                border_color: Color::BLACK,
+            },
+            Color {
+                a: 0.80,
+                ..Color::BLACK
+            },
         );
+
+        self.element
+            .as_widget()
+            .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
+    }
+
+    fn overlay<'c>(
+        &'c mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'c, Message, Renderer>> {
+        self.element
+            .as_widget_mut()
+            .overlay(self.state, layout, renderer)
     }
 }

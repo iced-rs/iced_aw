@@ -101,21 +101,20 @@ impl Application for FloatingElementExample {
                         .max_width(400)
                         .max_height(600)
                         .style(theme::Container::Box),
-                    || {
-                        Button::new(
-                            Text::new("+")
-                                .width(Length::Shrink)
-                                .height(Length::Shrink)
-                                .size(30),
-                        )
-                        //.style(iced_aw::style::button::Primary),
-                        .on_press(Message::ButtonPressed)
-                        .padding(5)
-                        .style(theme::Button::Custom(Box::new(CircleButtonStyle::new(
-                            theme::Button::Primary,
-                        ))))
-                        .into()
-                    },
+                    Button::new(
+                        Text::new(Icon::Plus.to_string())
+                            .width(Length::Shrink)
+                            .height(Length::Shrink)
+                            .font(ICON_FONT)
+                            .size(39)
+                            .line_height(0.2)
+                            .shaping(text::Shaping::Advanced),
+                    )
+                    .on_press(Message::ButtonPressed)
+                    .padding(5)
+                    .style(theme::Button::Custom(Box::new(
+                        CircleButtonStyle::new(theme::Button::Primary),
+                    ))),
                 )
                 .anchor(Anchor::SouthEast)
                 .offset(20.0)

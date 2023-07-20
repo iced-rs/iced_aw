@@ -41,9 +41,8 @@ use super::overlay::floating_element::FloatingElementOverlay;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingElement<'a, B, Message, Renderer = crate::Renderer>
+pub struct FloatingElement<'a, Message, Renderer = crate::Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
     Renderer: core::Renderer,
 {
     /// The anchor of the element.
@@ -55,12 +54,11 @@ where
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The floating element of the [`FloatingElementOverlay`](FloatingElementOverlay).
-    element: B,
+    element: Element<'a, Message, Renderer>,
 }
 
-impl<'a, B, Message, Renderer> FloatingElement<'a, B, Message, Renderer>
+impl<'a, Message, Renderer> FloatingElement<'a, Message, Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
     Renderer: core::Renderer,
 {
     /// Creates a new [`FloatingElement`](FloatingElement) over some content,
@@ -70,16 +68,17 @@ where
     ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingElement`](FloatingElement)
     ///         will be wrapped around.
     ///     * a function that will lazy create the [`Element`](iced_native::Element) for the overlay.
-    pub fn new<U>(underlay: U, element: B) -> Self
+    pub fn new<U, B>(underlay: U, element: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
+        B: Into<Element<'a, Message, Renderer>>,
     {
         FloatingElement {
             anchor: Anchor::SouthEast,
             offset: 5.0.into(),
             hidden: false,
             underlay: underlay.into(),
-            element,
+            element: element.into(),
         }
     }
 
@@ -109,19 +108,17 @@ where
     }
 }
 
-impl<'a, B, Message, Renderer> Widget<Message, Renderer>
-    for FloatingElement<'a, B, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for FloatingElement<'a, Message, Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
     Message: 'a,
-    Renderer: 'a + core::Renderer,
+    Renderer: core::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.element)())]
+        vec![Tree::new(&self.underlay), Tree::new(&self.element)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.element)()]);
+        tree.diff_children(&[&self.underlay, &self.element]);
     }
 
     fn width(&self) -> Length {
@@ -238,29 +235,28 @@ where
 
             let position = Point::new(bounds.x + position.x, bounds.y + position.y);
 
-            Some(
-                FloatingElementOverlay::new(
+            Some(overlay::Element::new(
+                position,
+                Box::new(FloatingElementOverlay::new(
                     &mut state.children[1],
-                    (self.element)(),
+                    &mut self.element,
                     &self.anchor,
                     &self.offset,
-                )
-                .overlay(position),
-            )
+                )),
+            ))
         } else {
             None
         }
     }
 }
 
-impl<'a, B, Message, Renderer> From<FloatingElement<'a, B, Message, Renderer>>
+impl<'a, Message, Renderer> From<FloatingElement<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    B: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a,
     Renderer: 'a + core::Renderer,
 {
-    fn from(floating_element: FloatingElement<'a, B, Message, Renderer>) -> Self {
+    fn from(floating_element: FloatingElement<'a, Message, Renderer>) -> Self {
         Element::new(floating_element)
     }
 }

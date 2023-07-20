@@ -143,14 +143,13 @@ where
 
 #[cfg(feature = "floating_element")]
 /// Shortcut helper to create a Card Widget.
-pub fn floating_element<'a, Message, Renderer, B>(
+pub fn floating_element<'a, Message, Renderer>(
     underlay: impl Into<Element<'a, Message, Renderer>>,
-    element: B,
-) -> crate::FloatingElement<'a, B, Message, Renderer>
+    element: impl Into<Element<'a, Message, Renderer>>,
+) -> crate::FloatingElement<'a, Message, Renderer>
 where
     Message: 'a + Clone,
     Renderer: core::Renderer,
-    B: Fn() -> Element<'a, Message, Renderer>,
 {
     crate::FloatingElement::new(underlay, element)
 }
