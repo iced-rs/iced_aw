@@ -65,7 +65,7 @@ impl Sandbox for FloatingElementAnchorsExample {
             .center_y()
             .padding(8);
 
-        FloatingElement::new(content, || text("Content").into())
+        FloatingElement::new(content, text("Content"))
             .anchor(current_anchor)
             .hide(false)
             .into()

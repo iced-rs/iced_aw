@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector,
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -24,6 +24,8 @@ pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     anchor: &'b Anchor,
     /// The offset of the element.
     offset: &'b Offset,
+    /// Size of the layout,
+    size: Size,
 }
 
 impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
@@ -37,12 +39,14 @@ where
         element: &'b mut Element<'a, Message, Renderer>,
         anchor: &'b Anchor,
         offset: &'b Offset,
+        size: Size,
     ) -> Self {
         FloatingElementOverlay {
             state,
             element,
             anchor,
             offset,
+            size,
         }
     }
 }
@@ -55,44 +59,73 @@ where
     fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
         let mut element = self.element.as_widget().layout(renderer, &limits);
-        let max_size = limits.max();
 
-        match self.anchor {
-            Anchor::NorthWest => element.move_to(Point::new(
-                position.x + self.offset.x,
-                position.y + self.offset.y,
-            )),
-            Anchor::NorthEast => element.move_to(Point::new(
+        let size = match self.anchor {
+            Anchor::NorthWest | Anchor::North => Size::new(
+                position.x + self.offset.x + element.bounds().width,
+                position.y + self.offset.y + element.bounds().height,
+            ),
+            Anchor::NorthEast => 
+            Size::new(
+                position.x - self.offset.x,
+                position.y + self.offset.y + element.bounds().height,
+            ),
+            Anchor::SouthWest | Anchor::South => 
+            Size::new(
+                position.x + self.offset.x + element.bounds().width,
+                position.y - self.offset.y,
+            ),
+            Anchor::SouthEast => 
+            Size::new(
+                position.x - self.offset.x,
+                position.y - self.offset.y,
+            ),
+            Anchor::East => Size::new(
+                position.x - self.offset.x,
+                position.y,
+            ),
+            Anchor::West => Size::new(
+                position.x + self.offset.x + element.bounds().width,
+                position.y,
+            ),
+        };
+
+        let position = match self.anchor {
+            Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
+            Anchor::NorthEast => Point::new(
                 position.x - element.bounds().width - self.offset.x,
                 position.y + self.offset.y,
-            )),
-            Anchor::SouthWest => element.move_to(Point::new(
+            ),
+            Anchor::SouthWest => Point::new(
                 position.x + self.offset.x,
                 position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::SouthEast => element.move_to(Point::new(
+            ),
+            Anchor::SouthEast => Point::new(
                 position.x - element.bounds().width - self.offset.x,
                 position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::North => element.move_to(Point::new(
+            ),
+            Anchor::North => Point::new(
                 position.x + self.offset.x - element.bounds().width / 2.0,
                 position.y + self.offset.y,
-            )),
-            Anchor::East => element.move_to(Point::new(
+            ),
+            Anchor::East => Point::new(
                 position.x - element.bounds().width - self.offset.x,
                 position.y - element.bounds().height / 2.0,
-            )),
-            Anchor::South => element.move_to(Point::new(
+            ),
+            Anchor::South => Point::new(
                 position.x + self.offset.x - element.bounds().width / 2.0,
                 position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::West => element.move_to(Point::new(
+            ),
+            Anchor::West => Point::new(
                 position.x + self.offset.x,
                 position.y - element.bounds().height / 2.0,
-            )),
-        }
+            ),
+        };
 
-        layout::Node::with_children(max_size, vec![element])
+        //element.move_to(position);
+        let mut node = layout::Node::with_children(size, vec![element]);
+        node.move_to(position);
+        node
     }
 
     fn on_event(
@@ -104,7 +137,6 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        let bounds = layout.bounds();
         self.element.as_widget_mut().on_event(
             self.state,
             event,
@@ -116,7 +148,7 @@ where
             renderer,
             clipboard,
             shell,
-            &bounds,
+            &layout.bounds(),
         )
     }
 

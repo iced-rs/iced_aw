@@ -751,7 +751,7 @@ fn draw_head<Message, Renderer>(
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            line_height: LineHeight::Relative(0.5),
+            line_height: LineHeight::Relative(1.3),
             shaping: iced_widget::text::Shaping::Advanced,
         });
     }

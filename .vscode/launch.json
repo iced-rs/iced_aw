@@ -115,6 +115,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'floating_element_anchors'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=floating_element_anchors",
+                    "--package=floating_element_anchors"
+                ],
+                "filter": {
+                    "name": "floating_element_anchors",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'grid'",
             "cargo": {
                 "args": [
