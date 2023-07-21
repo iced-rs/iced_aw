@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector,
+    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size, 
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -24,8 +24,6 @@ pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     anchor: &'b Anchor,
     /// The offset of the element.
     offset: &'b Offset,
-    /// Size of the layout,
-    size: Size,
 }
 
 impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
@@ -39,14 +37,12 @@ where
         element: &'b mut Element<'a, Message, Renderer>,
         anchor: &'b Anchor,
         offset: &'b Offset,
-        size: Size,
     ) -> Self {
         FloatingElementOverlay {
             state,
             element,
             anchor,
             offset,
-            size,
         }
     }
 }
@@ -58,7 +54,7 @@ where
 {
     fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
-        let mut element = self.element.as_widget().layout(renderer, &limits);
+        let element = self.element.as_widget().layout(renderer, &limits);
 
         let size = match self.anchor {
             Anchor::NorthWest | Anchor::North => Size::new(
@@ -82,11 +78,11 @@ where
             ),
             Anchor::East => Size::new(
                 position.x - self.offset.x,
-                position.y,
+                position.y + element.bounds().height / 2.0,
             ),
             Anchor::West => Size::new(
                 position.x + self.offset.x + element.bounds().width,
-                position.y,
+                position.y + element.bounds().height / 2.0,
             ),
         };
 

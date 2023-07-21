@@ -59,7 +59,7 @@ impl Application for FloatingElementExample {
         match self {
             FloatingElementExample::Loading => {
                 if let Message::Loaded(_) = message {
-                    *self = FloatingElementExample::Loaded(State { lines: Vec::new() })
+                    *self = FloatingElementExample::Loaded(State { lines: (0..3000).into_iter().map(|_| "This is a newly added line.".into()).collect() })
                 }
             }
             FloatingElementExample::Loaded(State { lines }) => {
@@ -88,11 +88,11 @@ impl Application for FloatingElementExample {
                 let scrollable_content = lines.iter().enumerate().fold(
                     Column::new()
                         .width(Length::Fill)
-                        .height(Length::Fill)
+                        .height(Length::Shrink)
                         .padding(10),
                     |scroll, (i, line)| scroll.push(Text::new(format!("{}. {}", i + 1, line))),
                 );
-                let scrollable_content = Scrollable::new(scrollable_content);
+                let scrollable_content = Scrollable::new(scrollable_content).height(Length::Fill);
 
                 let content = floating_element(
                     Container::new(scrollable_content)

@@ -242,7 +242,6 @@ where
                     &mut self.element,
                     &self.anchor,
                     &self.offset,
-                    layout.bounds().size(),
                 )),
             ))
         } else {
