@@ -103,11 +103,9 @@ impl Application for FloatingElementExample {
                         .style(theme::Container::Box),
                     Button::new(
                         Text::new(Icon::Plus.to_string())
-                            .width(Length::Shrink)
-                            .height(Length::Shrink)
                             .font(ICON_FONT)
-                            .size(39)
-                            .line_height(0.2)
+                            .size(35)
+                            .line_height(1.0)
                             .shaping(text::Shaping::Advanced),
                     )
                     .on_press(Message::ButtonPressed)
@@ -147,7 +145,7 @@ impl button::StyleSheet for CircleButtonStyle {
 
     fn active(&self, style: &Self::Style) -> Appearance {
         let mut appearance = style.active(&self.theme);
-        appearance.border_radius = 200.0.into();
+        appearance.border_radius = 25.0.into();
 
         appearance
     }

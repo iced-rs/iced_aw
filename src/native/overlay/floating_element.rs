@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    BorderRadius, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size,
+    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -55,6 +55,7 @@ where
     fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
         let mut element = self.element.as_widget().layout(renderer, &limits);
+        let max_size = limits.max();
 
         match self.anchor {
             Anchor::NorthWest => element.move_to(Point::new(
@@ -91,7 +92,7 @@ where
             )),
         }
 
-        element
+        layout::Node::with_children(max_size, vec![element])
     }
 
     fn on_event(
@@ -103,15 +104,19 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
+        let bounds = layout.bounds();
         self.element.as_widget_mut().on_event(
             self.state,
             event,
-            layout,
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a content layout."),
             cursor,
             renderer,
             clipboard,
             shell,
-            &layout.bounds(),
+            &bounds,
         )
     }
 
@@ -122,9 +127,16 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.element
-            .as_widget()
-            .mouse_interaction(self.state, layout, cursor, viewport, renderer)
+        self.element.as_widget().mouse_interaction(
+            self.state,
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a content layout."),
+            cursor,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
@@ -136,28 +148,18 @@ where
         cursor: Cursor,
     ) {
         let bounds = layout.bounds();
-
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: Rectangle {
-                    x: 0.0,
-                    y: 0.0,
-                    width: 800.0,
-                    height: 800.0,
-                },
-                border_radius: BorderRadius::default(),
-                border_width: 0.0,
-                border_color: Color::BLACK,
-            },
-            Color {
-                a: 0.80,
-                ..Color::BLACK
-            },
+        self.element.as_widget().draw(
+            self.state,
+            renderer,
+            theme,
+            style,
+            layout
+                .children()
+                .next()
+                .expect("Native: Layout should have a content layout."),
+            cursor,
+            &bounds,
         );
-
-        self.element
-            .as_widget()
-            .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
     }
 
     fn overlay<'c>(
@@ -167,6 +169,6 @@ where
     ) -> Option<overlay::Element<'c, Message, Renderer>> {
         self.element
             .as_widget_mut()
-            .overlay(self.state, layout, renderer)
+            .overlay(self.state, layout.children().next()?, renderer)
     }
 }
