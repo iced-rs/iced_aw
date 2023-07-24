@@ -222,18 +222,18 @@ where
         if state.children.len() == 2 {
             let bounds = layout.bounds();
 
-            let position = match self.anchor {
+            let offset = match self.anchor {
                 Anchor::NorthWest => Point::new(0.0, 0.0),
                 Anchor::NorthEast => Point::new(bounds.width, 0.0),
                 Anchor::SouthWest => Point::new(0.0, bounds.height),
                 Anchor::SouthEast => Point::new(bounds.width, bounds.height),
-                Anchor::North => Point::new(bounds.center_x(), 0.0),
-                Anchor::East => Point::new(bounds.width, bounds.center_y()),
-                Anchor::South => Point::new(bounds.center_x(), bounds.height),
-                Anchor::West => Point::new(0.0, bounds.center_y()),
+                Anchor::North => Point::new(bounds.width / 2.0, 0.0),
+                Anchor::East => Point::new(bounds.width, bounds.height / 2.0),
+                Anchor::South => Point::new(bounds.width / 2.0, bounds.height),
+                Anchor::West => Point::new(0.0, bounds.height / 2.0),
             };
 
-            let position = Point::new(bounds.x + position.x, bounds.y + position.y);
+            let position = Point::new(bounds.x + offset.x, bounds.y + offset.y);
 
             Some(overlay::Element::new(
                 position,

@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size, 
+    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -61,21 +61,15 @@ where
                 position.x + self.offset.x + element.bounds().width,
                 position.y + self.offset.y + element.bounds().height,
             ),
-            Anchor::NorthEast => 
-            Size::new(
+            Anchor::NorthEast => Size::new(
                 position.x - self.offset.x,
                 position.y + self.offset.y + element.bounds().height,
             ),
-            Anchor::SouthWest | Anchor::South => 
-            Size::new(
+            Anchor::SouthWest | Anchor::South => Size::new(
                 position.x + self.offset.x + element.bounds().width,
                 position.y - self.offset.y,
             ),
-            Anchor::SouthEast => 
-            Size::new(
-                position.x - self.offset.x,
-                position.y - self.offset.y,
-            ),
+            Anchor::SouthEast => Size::new(position.x - self.offset.x, position.y - self.offset.y),
             Anchor::East => Size::new(
                 position.x - self.offset.x,
                 position.y + element.bounds().height / 2.0,
