@@ -105,9 +105,7 @@ impl Application for ModalExample {
                         ))),
                 );
 
-                Modal::new(state.show_modal, content, || {
-                    container(my_component::MyComponent).into()
-                })
+                Modal::new(state.show_modal, content, container(my_component::MyComponent))
                 .backdrop(Message::CloseModal)
                 .on_esc(Message::CloseModal)
                 .into()

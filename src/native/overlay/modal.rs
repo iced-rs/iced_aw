@@ -4,7 +4,7 @@
 use iced_widget::core::{
     self, event, keyboard, layout,
     mouse::{self, Cursor},
-    overlay, renderer, touch,
+    renderer, touch,
     widget::Tree,
     Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size, Vector,
 };
@@ -13,16 +13,16 @@ use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
-pub struct ModalOverlay<'a, Message, Renderer>
+pub struct ModalOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Message: Clone,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
-    state: &'a mut Tree,
+    state: &'b mut Tree,
     /// The content of the [`ModalOverlay`](ModalOverlay).
-    content: Element<'a, Message, Renderer>,
+    content: &'b mut Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
@@ -31,43 +31,35 @@ where
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<'a, Message, Renderer> ModalOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> ModalOverlay<'a, 'b, Message, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
-    pub fn new<C>(
-        state: &'a mut Tree,
-        content: C,
+    pub fn new(
+        state: &'b mut Tree,
+        content: &'b mut Element<'a, Message, Renderer>,
         backdrop: Option<Message>,
         esc: Option<Message>,
         style: <Renderer::Theme as StyleSheet>::Style,
-    ) -> Self
-    where
-        C: Into<Element<'a, Message, Renderer>>,
-    {
+    ) -> Self {
         ModalOverlay {
             state,
-            content: content.into(),
+            content,
             backdrop,
             esc,
             style,
         }
     }
-
-    /// Turn this [`ModalOverlay`] into an overlay
-    /// [`Element`](iced_native::overlay::Element).
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(position, Box::new(self))
-    }
 }
 
-impl<'a, Message, Renderer> Overlay<Message, Renderer> for ModalOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> Overlay<Message, Renderer>
+    for ModalOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Message: Clone,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {

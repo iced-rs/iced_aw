@@ -22,26 +22,25 @@ pub use crate::style::modal::StyleSheet;
 /// ```
 /// # use core::Renderer::Null;
 /// # use iced_native::widget::Text;
-/// # use iced_aw::native::modal;
+/// # use iced_aw::native::{ modal};
 /// #
-/// # pub type Modal<'a, Content, Message>
-/// #  = modal::Modal<'a, Message, Content, Null>;
+/// # pub type Modal<'a, Message>
+/// #  = modal::Modal<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     CloseModal,
 /// }
 ///
 /// let modal = Modal::new(
-///     true,
+///     false,
 ///     Text::new("Underlay"),
 ///     || Text::new("Overlay").into()
 /// )
 /// .backdrop(Message::CloseModal);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Modal<'a, Content, Message, Renderer = crate::Renderer>
+pub struct Modal<'a, Message, Renderer = crate::Renderer>
 where
-    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
@@ -51,7 +50,7 @@ where
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The content of teh [`ModalOverlay`](ModalOverlay).
-    content: Content,
+    content: Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
@@ -60,9 +59,8 @@ where
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<'a, Content, Message, Renderer> Modal<'a, Content, Message, Renderer>
+impl<'a, Message, Renderer> Modal<'a, Message, Renderer>
 where
-    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
@@ -78,14 +76,15 @@ where
     ///     * the underlay [`Element`](iced_native::Element) on which this [`Modal`](Modal)
     ///         will be wrapped around.
     ///     * the content [`Element`](iced_native::Element) of the [`Modal`](Modal).
-    pub fn new<U>(show_modal: bool, underlay: U, content: Content) -> Self
+    pub fn new<U, C>(show_modal: bool, underlay: U, content: C) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
+        C: Into<Element<'a, Message, Renderer>>,
     {
         Modal {
             show_modal,
             underlay: underlay.into(),
-            content,
+            content: content.into(),
             backdrop: None,
             esc: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
@@ -118,20 +117,18 @@ where
     }
 }
 
-impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
-    for Modal<'a, Content, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for Modal<'a, Message, Renderer>
 where
-    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
-    Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Message: Clone,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.content)())]
+        vec![Tree::new(&self.underlay), Tree::new(&self.content)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.content)()]);
+        tree.diff_children(&[&self.underlay, &self.content]);
     }
 
     fn width(&self) -> Length {
@@ -157,16 +154,20 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
-            &mut state.children[0],
-            event,
-            layout,
-            cursor,
-            renderer,
-            clipboard,
-            shell,
-            viewport,
-        )
+        if !self.show_modal {
+            return self.underlay.as_widget_mut().on_event(
+                &mut state.children[0],
+                event,
+                layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            );
+        }
+
+        event::Status::Ignored
     }
 
     fn mouse_interaction(
@@ -177,13 +178,17 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.underlay.as_widget().mouse_interaction(
-            &state.children[0],
-            layout,
-            cursor,
-            viewport,
-            renderer,
-        )
+        if !self.show_modal {
+            return self.underlay.as_widget().mouse_interaction(
+                &state.children[0],
+                layout,
+                cursor,
+                viewport,
+                renderer,
+            );
+        }
+
+        mouse::Interaction::default()
     }
 
     fn draw(
@@ -213,28 +218,26 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
-        if !self.show_modal {
-            return self
-                .underlay
+        if self.show_modal {
+            let bounds = layout.bounds();
+            let position = Point::new(bounds.x, bounds.y);
+            self.content.as_widget().diff(&mut state.children[1]);
+
+            Some(overlay::Element::new(
+                position,
+                Box::new(ModalOverlay::new(
+                    &mut state.children[1],
+                    &mut self.content,
+                    self.backdrop.clone(),
+                    self.esc.clone(),
+                    self.style,
+                )),
+            ))
+        } else {
+            self.underlay
                 .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer);
+                .overlay(&mut state.children[0], layout, renderer)
         }
-
-        let bounds = layout.bounds();
-        let position = Point::new(bounds.x, bounds.y);
-        let content = (self.content)();
-        content.as_widget().diff(&mut state.children[1]);
-
-        Some(
-            ModalOverlay::new(
-                &mut state.children[1],
-                content,
-                self.backdrop.clone(),
-                self.esc.clone(),
-                self.style,
-            )
-            .overlay(position),
-        )
     }
 
     fn operate<'b>(
@@ -245,10 +248,9 @@ where
         operation: &mut dyn Operation<Message>,
     ) {
         if self.show_modal {
-            let content = (self.content)();
-            content.as_widget().diff(&mut state.children[1]);
+            self.content.as_widget().diff(&mut state.children[1]);
 
-            content
+            self.content
                 .as_widget()
                 .operate(&mut state.children[1], layout, renderer, operation);
         } else {
@@ -259,18 +261,17 @@ where
     }
 }
 
-impl<'a, Content, Message, Renderer> From<Modal<'a, Content, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<Modal<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn from(modal: Modal<'a, Content, Message, Renderer>) -> Self {
+    fn from(modal: Modal<'a, Message, Renderer>) -> Self {
         Element::new(modal)
     }
 }
+
 /// The state of the modal.
 #[derive(Debug, Default)]
 pub struct State<S> {

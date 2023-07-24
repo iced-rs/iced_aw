@@ -74,7 +74,7 @@ pub type IconText<Renderer> = crate::native::icon_text::IconText<Renderer>;
 pub mod modal;
 #[cfg(feature = "modal")]
 /// A modal content as an overlay.
-pub type Modal<'a, Content, Message, Renderer> = modal::Modal<'a, Content, Message, Renderer>;
+pub type Modal<'a, Message, Renderer> = modal::Modal<'a, Message, Renderer>;
 
 #[cfg(feature = "split")]
 pub mod split;

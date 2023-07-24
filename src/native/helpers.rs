@@ -179,13 +179,12 @@ where
 #[cfg(feature = "modal")]
 /// Shortcut helper to create a Card Widget.
 #[must_use]
-pub fn modal<'a, Content, Message, Renderer>(
+pub fn modal<'a, Message, Renderer>(
     show_modal: bool,
     underlay: impl Into<Element<'a, Message, Renderer>>,
-    content: Content,
-) -> crate::Modal<'a, Content, Message, Renderer>
+    content: impl Into<Element<'a, Message, Renderer>>,
+) -> crate::Modal<'a, Message, Renderer>
 where
-    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
     Renderer: core::Renderer,
     Renderer::Theme: crate::style::modal::StyleSheet,
