@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Widget,
 };
 
 pub mod anchor;
@@ -222,26 +222,14 @@ where
         if state.children.len() == 2 {
             let bounds = layout.bounds();
 
-            let offset = match self.anchor {
-                Anchor::NorthWest => Point::new(0.0, 0.0),
-                Anchor::NorthEast => Point::new(bounds.width, 0.0),
-                Anchor::SouthWest => Point::new(0.0, bounds.height),
-                Anchor::SouthEast => Point::new(bounds.width, bounds.height),
-                Anchor::North => Point::new(bounds.width / 2.0, 0.0),
-                Anchor::East => Point::new(bounds.width, bounds.height / 2.0),
-                Anchor::South => Point::new(bounds.width / 2.0, bounds.height),
-                Anchor::West => Point::new(0.0, bounds.height / 2.0),
-            };
-
-            let position = Point::new(bounds.x + offset.x, bounds.y + offset.y);
-
             Some(overlay::Element::new(
-                position,
+                bounds.position(),
                 Box::new(FloatingElementOverlay::new(
                     &mut state.children[1],
                     &mut self.element,
                     &self.anchor,
                     &self.offset,
+                    bounds,
                 )),
             ))
         } else {

@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Point, Rectangle, Shell, Size,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -24,6 +24,8 @@ pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     anchor: &'b Anchor,
     /// The offset of the element.
     offset: &'b Offset,
+    /// The bounds of the underlay element.
+    underlay_bounds: Rectangle,
 }
 
 impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
@@ -37,12 +39,14 @@ where
         element: &'b mut Element<'a, Message, Renderer>,
         anchor: &'b Anchor,
         offset: &'b Offset,
+        underlay_bounds: Rectangle,
     ) -> Self {
         FloatingElementOverlay {
             state,
             element,
             anchor,
             offset,
+            underlay_bounds,
         }
     }
 }
@@ -52,68 +56,49 @@ impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
-        let limits = layout::Limits::new(Size::ZERO, bounds);
-        let element = self.element.as_widget().layout(renderer, &limits);
-
-        let size = match self.anchor {
-            Anchor::NorthWest | Anchor::North => Size::new(
-                position.x + self.offset.x + element.bounds().width,
-                position.y + self.offset.y + element.bounds().height,
-            ),
-            Anchor::NorthEast => Size::new(
-                position.x - self.offset.x,
-                position.y + self.offset.y + element.bounds().height,
-            ),
-            Anchor::SouthWest | Anchor::South => Size::new(
-                position.x + self.offset.x + element.bounds().width,
-                position.y - self.offset.y,
-            ),
-            Anchor::SouthEast => Size::new(position.x - self.offset.x, position.y - self.offset.y),
-            Anchor::East => Size::new(
-                position.x - self.offset.x,
-                position.y + element.bounds().height / 2.0,
-            ),
-            Anchor::West => Size::new(
-                position.x + self.offset.x + element.bounds().width,
-                position.y + element.bounds().height / 2.0,
-            ),
-        };
+    fn layout(&self, renderer: &Renderer, _bounds: Size, position: Point) -> layout::Node {
+        // Constrain overlay to fit inside the underlay's bounds
+        let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
+            .width(Length::Fill)
+            .height(Length::Fill);
+        let mut node = self.element.as_widget().layout(renderer, &limits);
 
         let position = match self.anchor {
             Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
             Anchor::NorthEast => Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y + self.offset.y,
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                 position.y + self.offset.y,
             ),
             Anchor::SouthWest => Point::new(
                 position.x + self.offset.x,
-                position.y - element.bounds().height - self.offset.y,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::SouthEast => Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y - element.bounds().height - self.offset.y,
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::North => Point::new(
-                position.x + self.offset.x - element.bounds().width / 2.0,
+                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                    + self.offset.x,
                 position.y + self.offset.y,
             ),
             Anchor::East => Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y - element.bounds().height / 2.0,
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+               position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                   + self.offset.y,
             ),
             Anchor::South => Point::new(
-                position.x + self.offset.x - element.bounds().width / 2.0,
-                position.y - element.bounds().height - self.offset.y,
+                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                    + self.offset.x,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::West => Point::new(
                 position.x + self.offset.x,
-                position.y - element.bounds().height / 2.0,
+                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                   + self.offset.y,
             ),
         };
 
-        //element.move_to(position);
-        let mut node = layout::Node::with_children(size, vec![element]);
         node.move_to(position);
         node
     }
@@ -130,10 +115,7 @@ where
         self.element.as_widget_mut().on_event(
             self.state,
             event,
-            layout
-                .children()
-                .next()
-                .expect("Native: Layout should have a content layout."),
+            layout,
             cursor,
             renderer,
             clipboard,
@@ -151,10 +133,7 @@ where
     ) -> mouse::Interaction {
         self.element.as_widget().mouse_interaction(
             self.state,
-            layout
-                .children()
-                .next()
-                .expect("Native: Layout should have a content layout."),
+            layout,
             cursor,
             viewport,
             renderer,
@@ -175,10 +154,7 @@ where
             renderer,
             theme,
             style,
-            layout
-                .children()
-                .next()
-                .expect("Native: Layout should have a content layout."),
+            layout,
             cursor,
             &bounds,
         );
@@ -191,6 +167,6 @@ where
     ) -> Option<overlay::Element<'c, Message, Renderer>> {
         self.element
             .as_widget_mut()
-            .overlay(self.state, layout.children().next()?, renderer)
+            .overlay(self.state, layout, renderer)
     }
 }
