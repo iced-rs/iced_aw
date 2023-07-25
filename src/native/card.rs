@@ -589,8 +589,8 @@ where
 
     let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
-        limits = limits.shrink(Size::new(close_size, 0.0));
-        Some(layout::Node::new(Size::new(close_size, close_size)))
+        limits = limits.shrink(Size::new(close_size, 1.0));
+        Some(layout::Node::new(Size::new(close_size, close_size + 1.0)))
     } else {
         None
     };
