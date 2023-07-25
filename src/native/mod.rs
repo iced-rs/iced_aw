@@ -44,8 +44,8 @@ pub use date_picker::DatePicker;
 pub mod selection_list;
 #[cfg(feature = "selection_list")]
 /// A widget for selecting a single value from a dynamic scrollable list of options.
-pub type SelectionList<'a, T, Message, Backend, Theme> =
-    selection_list::SelectionList<'a, T, Message, Renderer<Backend, Theme>>;
+pub type SelectionList<'a, T, Message, Renderer> =
+    selection_list::SelectionList<'a, T, Message, Renderer>;
 #[cfg(feature = "selection_list")]
 pub use selection_list::List;
 

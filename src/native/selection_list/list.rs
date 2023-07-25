@@ -1,24 +1,36 @@
 //! Build and show dropdown `ListMenus`.
+use std::{
+    borrow::Cow,
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+    marker::PhantomData,
+};
+
 use crate::selection_list::StyleSheet;
 
-use iced_native::{
-    alignment::{Horizontal, Vertical},
-    event,
-    layout::{Limits, Node},
-    mouse, renderer, touch, Clipboard, Color, Event, Layout, Length, Point, Rectangle, Shell, Size,
+use iced_widget::{
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        event, layout,
+        mouse::{self, Cursor},
+        renderer, touch,
+        widget::{
+            tree::{State, Tag},
+            Tree,
+        },
+        Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+    },
+    text::LineHeight,
 };
-use std::borrow::Cow;
-use std::marker::PhantomData;
-
-use iced_native::widget::tree::{self, Tree};
-use iced_native::{Element, Widget};
 
 /// The Private [`List`] Handles the Actual list rendering.
 #[allow(missing_debug_implementations)]
 pub struct List<'a, T: 'a, Message, Renderer>
 where
+    T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
     /// Options pointer to hold all rendered strings
@@ -29,11 +41,13 @@ where
     /// Style for Font colors and Box hover colors.
     pub style: <Renderer::Theme as StyleSheet>::Style,
     /// Function Pointer On Select to call on Mouse button press.
-    pub on_selected: Box<dyn Fn(T) -> Message>,
+    pub on_selected: Box<dyn Fn((usize, T)) -> Message>,
     /// The padding Width
     pub padding: f32,
     /// The Text Size
     pub text_size: f32,
+    /// Set the Selected ID manually.
+    pub selected: Option<usize>,
     /// Shadow Type holder for Renderer.
     pub phantomdata: PhantomData<Renderer>,
 }
@@ -44,21 +58,47 @@ pub struct ListState {
     /// Statehood of hovered_option
     pub hovered_option: Option<usize>,
     /// The index in the list of options of the last chosen Item Clicked for Processing
-    pub last_selected_index: Option<usize>,
+    pub last_selected_index: Option<(usize, u64)>,
 }
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
-    T: Clone + ToString,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    T: Clone + ToString + Eq + Hash,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
-    fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<ListState>()
+    fn tag(&self) -> Tag {
+        Tag::of::<ListState>()
     }
 
-    fn state(&self) -> tree::State {
-        tree::State::new(ListState::default())
+    fn state(&self) -> State {
+        State::new(ListState::default())
+    }
+
+    fn diff(&self, state: &mut Tree) {
+        let list_state = state.state.downcast_mut::<ListState>();
+
+        if let Some(id) = self.selected {
+            if let Some(option) = self.options.get(id) {
+                let mut hasher = DefaultHasher::new();
+                option.hash(&mut hasher);
+
+                list_state.last_selected_index = Some((id, hasher.finish()));
+            } else {
+                list_state.last_selected_index = None;
+            }
+        } else if let Some((id, hash)) = list_state.last_selected_index {
+            if let Some(option) = self.options.get(id) {
+                let mut hasher = DefaultHasher::new();
+                option.hash(&mut hasher);
+
+                if hash != hasher.finish() {
+                    list_state.last_selected_index = None;
+                }
+            } else {
+                list_state.last_selected_index = None;
+            }
+        }
     }
 
     fn width(&self) -> Length {
@@ -69,7 +109,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
@@ -79,7 +119,7 @@ where
             (self.text_size + self.padding * 2.0) * self.options.len() as f32,
         );
 
-        Node::new(intrinsic)
+        layout::Node::new(intrinsic)
     }
 
     fn on_event(
@@ -87,40 +127,44 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
+        _viewport: &Rectangle,
     ) -> event::Status {
         let bounds = layout.bounds();
         let mut status = event::Status::Ignored;
         let list_state = state.state.downcast_mut::<ListState>();
+        let cursor = cursor.position().unwrap_or_default();
 
-        if bounds.contains(cursor_position) {
+        if bounds.contains(cursor) {
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y) / (self.text_size + (self.padding * 2.0)))
-                            as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + (self.padding * 2.0))) as usize,
                     );
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor_position.y - bounds.y) / (self.text_size + (self.padding * 2.0)))
-                            as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + (self.padding * 2.0))) as usize,
                     );
 
                     if let Some(index) = list_state.hovered_option {
-                        list_state.last_selected_index = Some(index);
+                        if let Some(option) = self.options.get(index) {
+                            let mut hasher = DefaultHasher::new();
+                            option.hash(&mut hasher);
+                            list_state.last_selected_index = Some((index, hasher.finish()));
+                        }
                     }
 
                     status =
                         list_state
                             .last_selected_index
                             .map_or(event::Status::Ignored, |last| {
-                                if let Some(option) = self.options.get(last) {
-                                    shell.publish((self.on_selected)(option.clone()));
+                                if let Some(option) = self.options.get(last.0) {
+                                    shell.publish((self.on_selected)((last.0, option.clone())));
                                     event::Status::Captured
                                 } else {
                                     event::Status::Ignored
@@ -138,14 +182,13 @@ where
         &self,
         _state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
         let bounds = layout.bounds();
-        let is_mouse_over = bounds.contains(cursor_position);
 
-        if is_mouse_over {
+        if bounds.contains(cursor.position().unwrap_or_default()) {
             mouse::Interaction::Pointer
         } else {
             mouse::Interaction::default()
@@ -157,12 +200,13 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        _style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        _cursor_position: iced_graphics::Point,
-        viewport: &iced_graphics::Rectangle,
+        _style: &renderer::Style,
+        layout: Layout<'_>,
+        _cursor: Cursor,
+        viewport: &Rectangle,
     ) {
         use std::f32;
+
         let bounds = layout.bounds();
         let option_height = self.text_size + (self.padding * 2.0);
         let offset = viewport.y - bounds.y;
@@ -174,7 +218,10 @@ where
 
         for (i, option) in visible_options.iter().enumerate() {
             let i = start + i;
-            let is_selected = list_state.last_selected_index == Some(i);
+            let is_selected = list_state
+                .last_selected_index
+                .map(|u| u.0 == i)
+                .unwrap_or_default();
             let is_hovered = list_state.hovered_option == Some(i);
 
             let bounds = Rectangle {
@@ -208,7 +255,7 @@ where
                 theme.style(self.style).text_color
             };
 
-            renderer.fill_text(iced_native::text::Text {
+            renderer.fill_text(core::text::Text {
                 content: &option.to_string(),
                 bounds: Rectangle {
                     x: bounds.x,
@@ -221,6 +268,8 @@ where
                 font: self.font,
                 horizontal_alignment: Horizontal::Left,
                 vertical_alignment: Vertical::Center,
+                line_height: LineHeight::default(),
+                shaping: iced_widget::text::Shaping::Advanced,
             });
         }
     }
@@ -229,9 +278,9 @@ where
 impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    T: ToString + Clone,
+    T: Clone + ToString + Eq + Hash,
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
     fn from(list: List<'a, T, Message, Renderer>) -> Element<'a, Message, Renderer> {
