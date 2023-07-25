@@ -59,7 +59,11 @@ impl Application for FloatingElementExample {
         match self {
             FloatingElementExample::Loading => {
                 if let Message::Loaded(_) = message {
-                    *self = FloatingElementExample::Loaded(State { lines: (0..3000).map(|_| "This is a newly added line.".into()).collect() })
+                    *self = FloatingElementExample::Loaded(State {
+                        lines: (0..3000)
+                            .map(|_| "This is a newly added line.".into())
+                            .collect(),
+                    })
                 }
             }
             FloatingElementExample::Loaded(State { lines }) => {

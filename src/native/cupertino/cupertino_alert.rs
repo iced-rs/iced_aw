@@ -334,8 +334,12 @@ where
                 );
 
                 // Dialog Box //
-                let Length::Fixed(width)  = self.width  else { todo!() };
-                let Length::Fixed(height) = self.height else { todo!() };
+                let Length::Fixed(width) = self.width else {
+                    todo!()
+                };
+                let Length::Fixed(height) = self.height else {
+                    todo!()
+                };
 
                 // The `center` puts the top-left corner of the rectangle in the origin, so shift the
                 // rectangle up and to the left. The `height` calculation may seem strange, but
@@ -407,10 +411,18 @@ where
                     let child_1 = self.actions[0].child.as_widget();
                     let child_2 = self.actions[1].child.as_widget();
 
-                    let Length::Fixed(child_1_width)  = child_1.width()  else { todo!() };
-                    let Length::Fixed(child_1_height) = child_1.height() else { todo!() };
-                    let Length::Fixed(child_2_width)  = child_2.width()  else { todo!() };
-                    let Length::Fixed(child_2_height) = child_2.height() else { todo!() };
+                    let Length::Fixed(child_1_width) = child_1.width() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_1_height) = child_1.height() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_2_width) = child_2.width() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_2_height) = child_2.height() else {
+                        todo!()
+                    };
 
                     let mut bottom_left: Node = Node::new(Size {
                         width: child_1_width,

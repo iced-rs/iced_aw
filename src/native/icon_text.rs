@@ -8,7 +8,7 @@ use iced_widget::{
     core::{
         self,
         alignment::{Horizontal, Vertical},
-        layout,
+        layout::{Limits, Node},
         mouse::Cursor,
         renderer,
         widget::Tree,
@@ -121,7 +121,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.width(self.width).height(self.height);
 
         let size = self.size.unwrap_or_else(|| renderer.default_size());
@@ -139,7 +139,7 @@ where
 
         let size = limits.resolve(size);
 
-        layout::Node::new(size)
+        Node::new(size)
     }
 
     fn draw(

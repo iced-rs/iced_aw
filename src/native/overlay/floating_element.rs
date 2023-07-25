@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
 
 use crate::native::floating_element::{Anchor, Offset};
@@ -67,7 +67,7 @@ where
             Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
             Anchor::NorthEast => Point::new(
                 position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-                 position.y + self.offset.y,
+                position.y + self.offset.y,
             ),
             Anchor::SouthWest => Point::new(
                 position.x + self.offset.x,
@@ -84,8 +84,8 @@ where
             ),
             Anchor::East => Point::new(
                 position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-               position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
-                   + self.offset.y,
+                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                    + self.offset.y,
             ),
             Anchor::South => Point::new(
                 position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
@@ -95,7 +95,7 @@ where
             Anchor::West => Point::new(
                 position.x + self.offset.x,
                 position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
-                   + self.offset.y,
+                    + self.offset.y,
             ),
         };
 
@@ -131,13 +131,9 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.element.as_widget().mouse_interaction(
-            self.state,
-            layout,
-            cursor,
-            viewport,
-            renderer,
-        )
+        self.element
+            .as_widget()
+            .mouse_interaction(self.state, layout, cursor, viewport, renderer)
     }
 
     fn draw(
@@ -149,15 +145,9 @@ where
         cursor: Cursor,
     ) {
         let bounds = layout.bounds();
-        self.element.as_widget().draw(
-            self.state,
-            renderer,
-            theme,
-            style,
-            layout,
-            cursor,
-            &bounds,
-        );
+        self.element
+            .as_widget()
+            .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
     }
 
     fn overlay<'c>(

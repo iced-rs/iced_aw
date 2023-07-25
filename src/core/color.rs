@@ -99,7 +99,7 @@ impl From<Hsv> for Color {
 
 #[cfg(test)]
 mod tests {
-    use iced_graphics::Color;
+    use iced_widget::core::Color;
 
     use super::Hsv;
 

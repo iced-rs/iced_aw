@@ -130,17 +130,16 @@ where
 
 #[cfg(feature = "color_picker")]
 /// Shortcut helper to create a ``ColorPicker`` Widget.
-pub fn color_picker<'a, Message, Renderer, F>(
+pub fn color_picker<'a, Message, Theme, F>(
     show_picker: bool,
     color: Color,
-    underlay: impl Into<Element<'a, Message, Renderer>>,
+    underlay: impl Into<Element<'a, Message, iced_widget::renderer::Renderer<Theme>>>,
     on_cancel: Message,
     on_submit: F,
-) -> crate::ColorPicker<'a, Message, Renderer>
+) -> crate::ColorPicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_widget::graphics::geometry::Renderer + iced_widget::core::text::Renderer,
-    Renderer::Theme: 'a
+    Theme: 'a
         + crate::style::color_picker::StyleSheet
         + iced_widget::button::StyleSheet
         + iced_widget::text::StyleSheet,

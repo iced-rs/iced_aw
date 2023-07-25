@@ -7,7 +7,7 @@
 use iced_widget::{
     core::{
         self,
-        alignment::{Horizontal, Vertical},
+        alignment::{self, Horizontal, Vertical},
         event, layout,
         mouse::{self, Cursor},
         renderer, touch,
@@ -341,9 +341,14 @@ where
                             .width(Length::Fixed(self.icon_size))
                             .height(Length::Fixed(self.icon_size)),
                     ),
-                    TabLabel::Text(text) => Column::new()
-                        .align_items(Alignment::Center)
-                        .push(Text::new(text).size(self.text_size).width(self.tab_width)),
+                    TabLabel::Text(text) => Column::new().align_items(Alignment::Center).push(
+                        Text::new(text)
+                            .size(self.text_size)
+                            .width(self.tab_width)
+                            .font(self.text_font.unwrap_or_default())
+                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .vertical_alignment(alignment::Vertical::Center),
+                    ),
                     TabLabel::IconText(_icon, text) => Column::new()
                         .align_items(Alignment::Center)
                         .push(
@@ -351,7 +356,12 @@ where
                                 .width(Length::Fixed(self.icon_size))
                                 .height(Length::Fixed(self.icon_size)),
                         )
-                        .push(Text::new(text).size(self.text_size).width(self.tab_width)),
+                        .push(
+                            Text::new(text)
+                                .size(self.text_size)
+                                .width(self.tab_width)
+                                .font(self.text_font.unwrap_or_default()),
+                        ),
                 }
                 .width(self.tab_width)
                 .height(self.height);
@@ -559,11 +569,8 @@ fn draw_tab<Renderer>(
                 .expect("Graphics: Layout should have an icon layout for an Icon")
                 .bounds();
 
-            let mut buffer = [0; 4];
-            let icon = icon.encode_utf8(&mut buffer);
-
             renderer.fill_text(core::text::Text {
-                content: icon,
+                content: &icon.to_string(),
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
                     y: icon_bounds.center_y(),
@@ -610,11 +617,8 @@ fn draw_tab<Renderer>(
                 .expect("Graphics: Layout should have a text layout for an IconText")
                 .bounds();
 
-            let mut buffer = [0; 4];
-            let icon = icon.encode_utf8(&mut buffer);
-
             renderer.fill_text(core::text::Text {
-                content: icon,
+                content: &icon.to_string(),
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
                     y: icon_bounds.center_y(),
@@ -651,17 +655,14 @@ fn draw_tab<Renderer>(
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cross_bounds.contains(cursor.position().unwrap_or_default());
 
-        let mut buffer = [0; 4];
-        let icon = icons::icon_to_char(icons::Icon::X).encode_utf8(&mut buffer);
-
         renderer.fill_text(core::text::Text {
-            content: icon,
+            content: &icons::icon_to_char(icons::Icon::X).to_string(),
             bounds: Rectangle {
                 x: cross_bounds.center_x(),
                 y: cross_bounds.center_y(),
                 ..cross_bounds
             },
-            size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
+            size: cross_bounds.height + if is_mouse_over_cross { 1.0 } else { 0.0 },
             color: style.icon_color,
             font: icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,

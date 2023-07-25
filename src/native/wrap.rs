@@ -2,7 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 use iced_widget::core::{
-    self, event, layout,
+    self, event,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::{Operation, Tree},
@@ -176,7 +177,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.inner_layout(renderer, limits)
     }
 
@@ -337,7 +338,7 @@ where
     Renderer: core::Renderer,
 {
     /// A inner layout of the [`Wrap`](Wrap).
-    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node;
+    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
@@ -347,7 +348,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -368,11 +369,11 @@ where
         let mut align = vec![];
         let mut start = 0;
         let mut end = 0;
-        let mut nodes: Vec<layout::Node> = self
+        let mut nodes: Vec<Node> = self
             .elements
             .iter()
             .map(|elem| {
-                let node_limit = layout::Limits::new(
+                let node_limit = Limits::new(
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
@@ -418,7 +419,7 @@ where
         );
         let size = limits.resolve(Size::new(width, height));
 
-        layout::Node::with_children(size.pad(padding), nodes)
+        Node::with_children(size.pad(padding), nodes)
     }
 }
 
@@ -429,7 +430,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -450,11 +451,11 @@ where
         let mut align = vec![];
         let mut start = 0;
         let mut end = 0;
-        let mut nodes: Vec<layout::Node> = self
+        let mut nodes: Vec<Node> = self
             .elements
             .iter()
             .map(|elem| {
-                let node_limit = layout::Limits::new(
+                let node_limit = Limits::new(
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
@@ -502,7 +503,7 @@ where
         );
         let size = limits.resolve(Size::new(width, height));
 
-        layout::Node::with_children(size.pad(padding), nodes)
+        Node::with_children(size.pad(padding), nodes)
     }
 }
 

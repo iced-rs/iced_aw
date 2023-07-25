@@ -3,8 +3,11 @@
 //! *This API requires the following crate features to be activated: `quad`*
 
 use iced_widget::core::{
-    layout, mouse::Cursor, renderer, widget::Tree, Color, Element, Length, Padding, Rectangle,
-    Widget,
+    layout::{Limits, Node},
+    mouse::Cursor,
+    renderer,
+    widget::Tree,
+    Color, Element, Layout, Length, Padding, Rectangle, Widget,
 };
 
 /// Methods for creating inner bounds
@@ -112,9 +115,9 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.width(self.width).height(self.height);
-        layout::Node::new(limits.max())
+        Node::new(limits.max())
     }
 
     fn draw(
@@ -123,7 +126,7 @@ where
         renderer: &mut Renderer,
         _theme: &<Renderer as renderer::Renderer>::Theme,
         _style: &renderer::Style,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         _cursor: Cursor,
         _viewport: &Rectangle,
     ) {

@@ -4,21 +4,18 @@
 
 use iced_widget::{
     button,
-    canvas::{self, LineCap, Path, Stroke, Style},
     core::{
-        alignment::{Horizontal, Vertical},
-        event, keyboard,
-        layout::{self, Limits, Node},
+        event,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
-        overlay, renderer, text, touch,
+        overlay, renderer,
         widget::{
             self,
             tree::{self, Tag, Tree},
         },
-        Alignment, Clipboard, Color, Element, Event, Font, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Shell, Size, Vector, Widget,
+        Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
     },
-    graphics, Button, Column, Row, Text,
+    renderer::Renderer,
 };
 
 pub use crate::style::color_picker::{Appearance, StyleSheet};
@@ -54,33 +51,31 @@ use super::overlay::color_picker::{
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ColorPicker<'a, Message, Renderer = crate::Renderer>
+pub struct ColorPicker<'a, Message, Theme = iced_widget::style::Theme>
 where
     Message: Clone,
-    Renderer: graphics::geometry::Renderer,
-    Renderer::Theme: StyleSheet + button::StyleSheet,
+    Theme: StyleSheet + button::StyleSheet,
 {
     /// Show the picker.
     show_picker: bool,
     /// The color to show.
     color: Color,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer>,
+    underlay: Element<'a, Message, Renderer<Theme>>,
     /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_cancel: Message,
     /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
-    overlay_state: Element<'a, Message, Renderer>,
+    overlay_state: Element<'a, Message, Renderer<Theme>>,
 }
 
-impl<'a, Message, Renderer> ColorPicker<'a, Message, Renderer>
+impl<'a, Message, Theme> ColorPicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Renderer: 'a + graphics::geometry::Renderer + text::Renderer,
-    Renderer::Theme: 'a + StyleSheet + button::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
     /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
     ///
@@ -101,7 +96,7 @@ where
         on_submit: F,
     ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer>>,
+        U: Into<Element<'a, Message, Renderer<Theme>>>,
         F: 'static + Fn(Color) -> Message,
     {
         Self {
@@ -110,14 +105,14 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             overlay_state: ColorPickerOverlayButtons::default().into(),
         }
     }
 
     /// Sets the style of the [`ColorPicker`](ColorPicker).
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
@@ -146,11 +141,10 @@ impl State {
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for ColorPicker<'a, Message, Renderer>
+impl<'a, Message, Theme> Widget<Message, Renderer<Theme>> for ColorPicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Renderer: 'a + graphics::geometry::Renderer + text::Renderer,
-    Renderer::Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -176,7 +170,7 @@ where
         self.underlay.as_widget().width()
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 
@@ -186,9 +180,10 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer,
+        renderer: &Renderer<Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
@@ -198,6 +193,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
@@ -207,7 +203,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer,
+        renderer: &Renderer<Theme>,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
@@ -221,8 +217,8 @@ where
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        renderer: &mut Renderer<Theme>,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -243,8 +239,8 @@ where
         &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+        renderer: &Renderer<Theme>,
+    ) -> Option<overlay::Element<'b, Message, Renderer<Theme>>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -271,14 +267,13 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<ColorPicker<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme> From<ColorPicker<'a, Message, Theme>>
+    for Element<'a, Message, Renderer<Theme>>
 where
     Message: 'static + Clone,
-    Renderer: 'a + graphics::geometry::Renderer + text::Renderer,
-    Renderer::Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
-    fn from(color_picker: ColorPicker<'a, Message, Renderer>) -> Self {
+    fn from(color_picker: ColorPicker<'a, Message, Theme>) -> Self {
         Element::new(color_picker)
     }
 }

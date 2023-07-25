@@ -545,7 +545,9 @@ where
         view_cursor: Point,
     ) {
         let state = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(active_root) = state.active_root else{ return; };
+        let Some(active_root) = state.active_root else {
+            return;
+        };
 
         let viewport = layout.bounds();
         let viewport_size = viewport.size();
@@ -737,7 +739,9 @@ where
     use event::Status;
 
     let state = tree.state.downcast_mut::<MenuBarState>();
-    let Some(active_root) = state.active_root else { return Status::Ignored; };
+    let Some(active_root) = state.active_root else {
+        return Status::Ignored;
+    };
 
     let indices = state.get_trimmed_indices().collect::<Vec<_>>();
 
@@ -801,8 +805,8 @@ where
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
 
-    let Some(active_root) = state.active_root else{
-        if !menu.bar_bounds.contains(overlay_cursor){
+    let Some(active_root) = state.active_root else {
+        if !menu.bar_bounds.contains(overlay_cursor) {
             state.reset();
         }
         return Ignored;
@@ -862,14 +866,14 @@ where
         .collect::<Vec<_>>();
 
     // * update active item
-    let Some(last_menu_state) = state.menu_states.last_mut() else{
+    let Some(last_menu_state) = state.menu_states.last_mut() else {
         // no menus left
         state.active_root = None;
 
         // keep state.open when the cursor is still inside the menu bar
         // this allows the overlay to keep drawing when the cursor is
         // moving aroung the menu bar
-        if !menu.bar_bounds.contains(overlay_cursor){
+        if !menu.bar_bounds.contains(overlay_cursor) {
             state.open = false;
         }
         return Captured;

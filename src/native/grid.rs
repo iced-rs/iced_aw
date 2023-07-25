@@ -2,7 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `grid`*
 use iced_widget::core::{
-    self, event, layout,
+    self, event,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
@@ -153,16 +154,16 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         if self.elements.is_empty() {
-            return layout::Node::new(Size::ZERO);
+            return Node::new(Size::ZERO);
         }
 
         match self.strategy {
             // find out how wide a column is by finding the widest cell in it
             Strategy::Columns(columns) => {
                 if columns == 0 {
-                    return layout::Node::new(Size::ZERO);
+                    return Node::new(Size::ZERO);
                 }
 
                 let mut layouts = Vec::with_capacity(self.elements.len());
@@ -318,9 +319,9 @@ where
 fn build_grid(
     columns: usize,
     column_aligns: impl Iterator<Item = f32> + Clone,
-    layouts: impl Iterator<Item = layout::Node> + ExactSizeIterator,
+    layouts: impl Iterator<Item = Node> + ExactSizeIterator,
     grid_width: f32,
-) -> layout::Node {
+) -> Node {
     let mut nodes = Vec::with_capacity(layouts.len());
     let mut grid_height = 0.;
     let mut row_height = 0.;
@@ -338,7 +339,7 @@ fn build_grid(
 
     grid_height += row_height;
 
-    layout::Node::with_children(Size::new(grid_width, grid_height), nodes)
+    Node::with_children(Size::new(grid_width, grid_height), nodes)
 }
 
 impl<'a, Message, Renderer> From<Grid<'a, Message, Renderer>> for Element<'a, Message, Renderer>

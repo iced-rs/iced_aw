@@ -4,7 +4,8 @@
 use iced_widget::{
     container,
     core::{
-        self, event, layout,
+        self, event,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer, touch,
         widget::{
@@ -201,7 +202,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let space = Row::<Message, Renderer>::new()
             .width(Length::Fill)
             .height(Length::Fill)
@@ -518,9 +519,9 @@ where
 fn horizontal_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
-    limits: &layout::Limits,
-    space: &layout::Node,
-) -> layout::Node
+    limits: &Limits,
+    space: &Node,
+) -> Node
 where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
@@ -528,14 +529,14 @@ where
     if space.bounds().height
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
-        return layout::Node::with_children(
+        return Node::with_children(
             space.bounds().size(),
             vec![
                 split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().height)),
                 ),
-                layout::Node::new(Size::new(space.bounds().height, split.spacing)),
+                Node::new(Size::new(space.bounds().height, split.spacing)),
                 split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().width)),
@@ -567,7 +568,7 @@ where
         space.bounds().y + split.padding,
     ));
 
-    let mut divider = layout::Node::new(Size::new(space.bounds().width, split.spacing));
+    let mut divider = Node::new(Size::new(space.bounds().width, split.spacing));
     divider.move_to(Point::new(space.bounds().x, f32::from(divider_position)));
 
     let second_limits = limits
@@ -580,16 +581,16 @@ where
         space.bounds().y + f32::from(divider_position) + split.spacing + split.padding,
     ));
 
-    layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
+    Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
 /// Do a vertical split.
 fn vertical_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
-    limits: &layout::Limits,
-    space: &layout::Node,
-) -> layout::Node
+    limits: &Limits,
+    space: &Node,
+) -> Node
 where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
@@ -597,14 +598,14 @@ where
     if space.bounds().width
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
-        return layout::Node::with_children(
+        return Node::with_children(
             space.bounds().size(),
             vec![
                 split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
                 ),
-                layout::Node::new(Size::new(split.spacing, space.bounds().height)),
+                Node::new(Size::new(split.spacing, space.bounds().height)),
                 split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
@@ -636,7 +637,7 @@ where
         space.bounds().y + split.padding,
     ));
 
-    let mut divider = layout::Node::new(Size::new(split.spacing, space.bounds().height));
+    let mut divider = Node::new(Size::new(split.spacing, space.bounds().height));
     divider.move_to(Point::new(f32::from(divider_position), space.bounds().y));
 
     let second_limits = limits
@@ -649,7 +650,7 @@ where
         space.bounds().y + split.padding,
     ));
 
-    layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
+    Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
 impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>

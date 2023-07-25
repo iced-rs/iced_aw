@@ -2,7 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use iced_widget::core::{
-    self, event, layout,
+    self, event,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::tree::Tree,
@@ -139,7 +140,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = self.padding.into();
         let limits = limits
             .loose()
@@ -153,7 +154,7 @@ where
         content.move_to(Point::new(padding.left, padding.top));
         content.align(self.horizontal_alignment, self.vertical_alignment, size);
 
-        layout::Node::with_children(size.pad(padding), vec![content])
+        Node::with_children(size.pad(padding), vec![content])
     }
 
     fn on_event(

@@ -2,7 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self, event, layout,
+    self, event,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
@@ -139,7 +140,7 @@ where
         self.underlay.as_widget().height()
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 

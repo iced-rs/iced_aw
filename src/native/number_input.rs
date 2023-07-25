@@ -6,7 +6,8 @@ use iced_widget::{
     core::{
         self,
         alignment::{Horizontal, Vertical},
-        event, keyboard, layout,
+        event, keyboard,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer,
         widget::{
@@ -297,7 +298,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
@@ -333,7 +334,7 @@ where
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
 
         let size = limits.resolve(intrinsic);
-        layout::Node::with_children(size, vec![content, modifier])
+        Node::with_children(size, vec![content, modifier])
     }
 
     fn operate(

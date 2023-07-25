@@ -6,7 +6,8 @@ use iced_widget::{
     core::{
         self,
         alignment::{Horizontal, Vertical},
-        event, layout,
+        event,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer, touch,
         widget::{Operation, Tree},
@@ -244,7 +245,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
@@ -264,19 +265,16 @@ where
             body_node.bounds().y + head_node.bounds().height,
         ));
 
-        let mut foot_node = self
-            .foot
-            .as_ref()
-            .map_or_else(layout::Node::default, |foot| {
-                foot_node(renderer, &limits, foot, self.padding_foot, self.width)
-            });
+        let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
+            foot_node(renderer, &limits, foot, self.padding_foot, self.width)
+        });
 
         foot_node.move_to(Point::new(
             foot_node.bounds().x,
             foot_node.bounds().y + head_node.bounds().height + body_node.bounds().height,
         ));
 
-        layout::Node::with_children(
+        Node::with_children(
             Size::new(
                 body_node.size().width,
                 head_node.size().height + body_node.size().height + foot_node.size().height,
@@ -570,13 +568,13 @@ where
 /// Calculates the layout of the head.
 fn head_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &layout::Limits,
+    limits: &Limits,
     head: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
     on_close: bool,
     close_size: Option<f32>,
-) -> layout::Node
+) -> Node
 where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
 {
@@ -590,7 +588,7 @@ where
     let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 1.0));
-        Some(layout::Node::new(Size::new(close_size, close_size + 1.0)))
+        Some(Node::new(Size::new(close_size, close_size + 1.0)))
     } else {
         None
     };
@@ -608,7 +606,7 @@ where
         node.align(Alignment::End, Alignment::Center, node.size());
     }
 
-    layout::Node::with_children(
+    Node::with_children(
         size.pad(pad),
         match close {
             Some(node) => vec![head, node],
@@ -620,11 +618,11 @@ where
 /// Calculates the layout of the body.
 fn body_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &layout::Limits,
+    limits: &Limits,
     body: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
-) -> layout::Node
+) -> Node
 where
     Renderer: core::Renderer,
 {
@@ -642,17 +640,17 @@ where
     body.move_to(Point::new(padding, padding));
     body.align(Alignment::Start, Alignment::Start, size);
 
-    layout::Node::with_children(size.pad(pad), vec![body])
+    Node::with_children(size.pad(pad), vec![body])
 }
 
 /// Calculates the layout of the foot.
 fn foot_node<Message, Renderer>(
     renderer: &Renderer,
-    limits: &layout::Limits,
+    limits: &Limits,
     foot: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
-) -> layout::Node
+) -> Node
 where
     Renderer: core::Renderer,
 {
@@ -670,7 +668,7 @@ where
     foot.move_to(Point::new(padding, padding));
     foot.align(Alignment::Start, Alignment::Center, size);
 
-    layout::Node::with_children(size.pad(pad), vec![foot])
+    Node::with_children(size.pad(pad), vec![foot])
 }
 
 /// Draws the head of the card.

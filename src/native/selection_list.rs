@@ -5,7 +5,8 @@ use crate::style::selection_list::StyleSheet;
 use iced_widget::{
     container,
     core::{
-        self, event, layout,
+        self, event,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer,
         widget::Tree,
@@ -173,7 +174,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
 
         let limits = limits.width(self.width).height(self.height);
@@ -205,7 +206,7 @@ where
 
         let content = self.container.layout(renderer, &limits);
         let size = limits.resolve(content.size());
-        layout::Node::with_children(size, vec![content])
+        Node::with_children(size, vec![content])
     }
 
     fn on_event(
