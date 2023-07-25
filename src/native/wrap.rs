@@ -1,12 +1,11 @@
 //! A widget that displays its children in multiple horizontal or vertical runs.
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
-
-use iced_native::{
-    event,
-    layout::{Limits, Node},
-    mouse,
-    widget::{tree::Tree, Operation},
+use iced_widget::core::{
+    self, event, layout,
+    mouse::{self, Cursor},
+    renderer,
+    widget::{Operation, Tree},
     Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
     Widget,
 };
@@ -15,7 +14,7 @@ use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct Wrap<'a, Message, Renderer, Direction> {
+pub struct Wrap<'a, Message, Direction, Renderer = crate::Renderer> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Renderer>>,
     /// The alignment of the [`Wrap`](Wrap).
@@ -40,7 +39,7 @@ pub struct Wrap<'a, Message, Renderer, Direction> {
     _direction: PhantomData<Direction>,
 }
 
-impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
+impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
     /// Creates an empty horizontal [`Wrap`](Wrap).
     #[must_use]
     pub fn new() -> Self {
@@ -60,7 +59,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Horizontal> {
     }
 }
 
-impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
+impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
     /// Creates an empty vertical [`Wrap`](Wrap).
     #[must_use]
     pub fn new_vertical() -> Self {
@@ -80,7 +79,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, Renderer, direction::Vertical> {
     }
 }
 
-impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
+impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Direction, Renderer> {
     /// Sets the spacing of the [`Wrap`](Wrap).
     #[must_use]
     pub const fn spacing(mut self, units: f32) -> Self {
@@ -156,10 +155,10 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Renderer, Direction> {
 }
 
 impl<'a, Message, Renderer, Direction> Widget<Message, Renderer>
-    for Wrap<'a, Message, Renderer, Direction>
+    for Wrap<'a, Message, Direction, Renderer>
 where
     Self: WrapLayout<Renderer>,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         self.elements.iter().map(Tree::new).collect()
@@ -177,7 +176,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         self.inner_layout(renderer, limits)
     }
 
@@ -186,10 +185,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.elements
             .iter_mut()
@@ -200,10 +200,11 @@ where
                     state,
                     event.clone(),
                     layout,
-                    cursor_position,
+                    cursor,
                     renderer,
                     clipboard,
                     shell,
+                    viewport,
                 )
             })
             .fold(event::Status::Ignored, event::Status::merge)
@@ -214,7 +215,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
         self.elements
             .iter_mut()
             .zip(&mut state.children)
@@ -228,7 +229,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -237,13 +238,9 @@ where
             .zip(&state.children)
             .zip(layout.children())
             .map(|((child, state), layout)| {
-                child.as_widget().mouse_interaction(
-                    state,
-                    layout,
-                    cursor_position,
-                    viewport,
-                    renderer,
-                )
+                child
+                    .as_widget()
+                    .mouse_interaction(state, layout, cursor, viewport, renderer)
             })
             .max()
             .unwrap_or_default()
@@ -253,10 +250,10 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        theme: &<Renderer as renderer::Renderer>::Theme,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         for ((child, state), layout) in self
@@ -265,15 +262,9 @@ where
             .zip(&state.children)
             .zip(layout.children())
         {
-            child.as_widget().draw(
-                state,
-                renderer,
-                theme,
-                style,
-                layout,
-                cursor_position,
-                viewport,
-            );
+            child
+                .as_widget()
+                .draw(state, renderer, theme, style, layout, cursor, viewport);
         }
     }
 
@@ -297,33 +288,33 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Vertical>>
+impl<'a, Message, Renderer> From<Wrap<'a, Message, direction::Vertical, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Message: 'a,
 {
     fn from(
-        wrap: Wrap<'a, Message, Renderer, direction::Vertical>,
+        wrap: Wrap<'a, Message, direction::Vertical, Renderer>,
     ) -> Element<'a, Message, Renderer> {
         Element::new(wrap)
     }
 }
 
-impl<'a, Message, Renderer> From<Wrap<'a, Message, Renderer, direction::Horizontal>>
+impl<'a, Message, Renderer> From<Wrap<'a, Message, direction::Horizontal, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Message: 'a,
 {
     fn from(
-        wrap: Wrap<'a, Message, Renderer, direction::Horizontal>,
+        wrap: Wrap<'a, Message, direction::Horizontal, Renderer>,
     ) -> Element<'a, Message, Renderer> {
         Element::new(wrap)
     }
 }
 
-impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, Direction> {
+impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Direction, Renderer> {
     fn default() -> Self {
         Self {
             elements: vec![],
@@ -343,20 +334,20 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Renderer, D
 /// A inner layout of the [`Wrap`](Wrap).
 pub trait WrapLayout<Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     /// A inner layout of the [`Wrap`](Wrap).
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
+    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
-    for Wrap<'a, Message, Renderer, direction::Horizontal>
+    for Wrap<'a, Message, direction::Horizontal, Renderer>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -377,11 +368,11 @@ where
         let mut align = vec![];
         let mut start = 0;
         let mut end = 0;
-        let mut nodes: Vec<Node> = self
+        let mut nodes: Vec<layout::Node> = self
             .elements
             .iter()
             .map(|elem| {
-                let node_limit = Limits::new(
+                let node_limit = layout::Limits::new(
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
@@ -427,18 +418,18 @@ where
         );
         let size = limits.resolve(Size::new(width, height));
 
-        Node::with_children(size.pad(padding), nodes)
+        layout::Node::with_children(size.pad(padding), nodes)
     }
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
-    for Wrap<'a, Message, Renderer, direction::Vertical>
+    for Wrap<'a, Message, direction::Vertical, Renderer>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -459,11 +450,11 @@ where
         let mut align = vec![];
         let mut start = 0;
         let mut end = 0;
-        let mut nodes: Vec<Node> = self
+        let mut nodes: Vec<layout::Node> = self
             .elements
             .iter()
             .map(|elem| {
-                let node_limit = Limits::new(
+                let node_limit = layout::Limits::new(
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
@@ -511,7 +502,7 @@ where
         );
         let size = limits.resolve(Size::new(width, height));
 
-        Node::with_children(size.pad(padding), nodes)
+        layout::Node::with_children(size.pad(padding), nodes)
     }
 }
 

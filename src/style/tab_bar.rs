@@ -6,8 +6,10 @@
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
-use iced_native::{Background, Color};
-use iced_style::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]

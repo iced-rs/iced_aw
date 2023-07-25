@@ -86,8 +86,7 @@ pub type Split<'a, Message, Renderer> = split::Split<'a, Message, Renderer>;
 pub mod tab_bar;
 #[cfg(feature = "tab_bar")]
 /// A tab bar to show tabs.
-pub type TabBar<Message, TabId, Backend, Theme> =
-    tab_bar::TabBar<Message, TabId, Renderer<Backend, Theme>>;
+pub type TabBar<Message, TabId, Renderer> = tab_bar::TabBar<Message, TabId, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub use tab_bar::TabLabel;

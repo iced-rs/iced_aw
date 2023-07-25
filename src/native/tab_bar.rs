@@ -4,16 +4,19 @@
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
-use iced_native::{
-    alignment::{Horizontal, Vertical},
-    event,
-    layout::{Limits, Node},
-    mouse, renderer, touch, Alignment, Clipboard, Color, Event, Font, Layout, Length, Point,
-    Rectangle, Shell,
-};
-use iced_native::{
-    widget::{Column, Row, Text, Tree},
-    Element, Widget,
+use iced_widget::{
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        event, layout,
+        mouse::{self, Cursor},
+        renderer, touch,
+        widget::Tree,
+        Alignment, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Widget,
+    },
+    runtime::Font,
+    text::{self, LineHeight},
+    Column, Row, Text,
 };
 
 pub mod tab_label;
@@ -64,9 +67,9 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// .set_active_tab(&TabId::One);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TabBar<Message, TabId, Renderer>
+pub struct TabBar<Message, TabId, Renderer = crate::Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
     TabId: Eq + Clone,
 {
@@ -110,7 +113,7 @@ where
 
 impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
     TabId: Eq + Clone,
 {
@@ -316,8 +319,8 @@ where
 
 impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     fn width(&self) -> Length {
@@ -328,7 +331,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
         self.tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
@@ -381,18 +384,26 @@ where
         _state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        _viewport: &Rectangle,
     ) -> event::Status {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if layout.bounds().contains(cursor_position) {
+                if layout
+                    .bounds()
+                    .contains(cursor.position().unwrap_or_default())
+                {
                     let tabs_map: Vec<bool> = layout
                         .children()
-                        .map(|layout| layout.bounds().contains(cursor_position))
+                        .map(|layout| {
+                            layout
+                                .bounds()
+                                .contains(cursor.position().unwrap_or_default())
+                        })
                         .collect();
 
                     if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
@@ -403,7 +414,7 @@ where
                                     let tab_layout = layout.children().nth(new_selected).expect("Native: Layout should have a tab layout at the selected index");
                                     let cross_layout = tab_layout.children().nth(1).expect("Native: Layout should have a close layout");
 
-                                    cross_layout.bounds().contains(cursor_position)
+                                    cross_layout.bounds().contains(cursor.position().unwrap_or_default())
                                 })
                                 .map_or_else(
                                     || (self.on_select)(self.tab_indices[new_selected].clone()),
@@ -423,7 +434,7 @@ where
         &self,
         _state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -431,7 +442,9 @@ where
         let mut mouse_interaction = mouse::Interaction::default();
 
         for layout in children {
-            let is_mouse_over = layout.bounds().contains(cursor_position);
+            let is_mouse_over = layout
+                .bounds()
+                .contains(cursor.position().unwrap_or_default());
             let new_mouse_interaction = if is_mouse_over {
                 mouse::Interaction::Pointer
             } else {
@@ -453,12 +466,12 @@ where
         theme: &Renderer::Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let children = layout.children();
-        let is_mouse_over = bounds.contains(cursor_position);
+        let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let style_sheet = if is_mouse_over {
             theme.hovered(self.style, false)
         } else {
@@ -485,7 +498,7 @@ where
                 theme,
                 self.style,
                 i == self.get_active_tab_idx(),
-                cursor_position,
+                cursor,
                 self.icon_font.unwrap_or(icons::ICON_FONT),
                 self.text_font.unwrap_or_default(),
             );
@@ -506,14 +519,16 @@ fn draw_tab<Renderer>(
     theme: &Renderer::Theme,
     style: <Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
-    cursor_position: iced_native::Point,
+    cursor: Cursor,
     icon_font: Font,
     text_font: Font,
 ) where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
 {
-    let is_mouse_over = layout.bounds().contains(cursor_position);
+    let is_mouse_over = layout
+        .bounds()
+        .contains(cursor.position().unwrap_or_default());
     let style = if is_mouse_over {
         theme.hovered(style, is_selected)
     } else {
@@ -547,18 +562,20 @@ fn draw_tab<Renderer>(
             let mut buffer = [0; 4];
             let icon = icon.encode_utf8(&mut buffer);
 
-            renderer.fill_text(iced_native::text::Text {
+            renderer.fill_text(core::text::Text {
                 content: icon,
-                font: icon_font,
-                size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
                     y: icon_bounds.center_y(),
                     ..icon_bounds
                 },
+                size: icon_bounds.height,
                 color: style.icon_color,
+                font: icon_font,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             });
         }
         TabLabel::Text(text) => {
@@ -567,18 +584,20 @@ fn draw_tab<Renderer>(
                 .expect("Graphics: Layout should have a text layout for a Text")
                 .bounds();
 
-            renderer.fill_text(iced_native::text::Text {
+            renderer.fill_text(core::text::Text {
                 content: &text[..],
-                font: text_font,
-                size: text_bounds.height,
                 bounds: Rectangle {
                     x: text_bounds.center_x(),
                     y: text_bounds.center_y(),
                     ..text_bounds
                 },
+                size: text_bounds.height,
                 color: style.text_color,
+                font: text_font,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             });
         }
         TabLabel::IconText(icon, text) => {
@@ -594,55 +613,61 @@ fn draw_tab<Renderer>(
             let mut buffer = [0; 4];
             let icon = icon.encode_utf8(&mut buffer);
 
-            renderer.fill_text(iced_native::text::Text {
+            renderer.fill_text(core::text::Text {
                 content: icon,
-                font: icon_font,
-                size: icon_bounds.height,
                 bounds: Rectangle {
                     x: icon_bounds.center_x(),
                     y: icon_bounds.center_y(),
                     ..icon_bounds
                 },
+                size: icon_bounds.height,
                 color: style.icon_color,
+                font: icon_font,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             });
 
-            renderer.fill_text(iced_native::text::Text {
+            renderer.fill_text(core::text::Text {
                 content: &text[..],
-                font: text_font,
-                size: text_bounds.height,
                 bounds: Rectangle {
                     x: text_bounds.center_x(),
                     y: text_bounds.center_y(),
                     ..text_bounds
                 },
+                size: text_bounds.height,
                 color: style.text_color,
+                font: text_font,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             });
         }
     };
 
     if let Some(cross_layout) = children.next() {
         let cross_bounds = cross_layout.bounds();
-        let is_mouse_over_cross = cross_bounds.contains(cursor_position);
+        let is_mouse_over_cross = cross_bounds.contains(cursor.position().unwrap_or_default());
 
         let mut buffer = [0; 4];
         let icon = icons::icon_to_char(icons::Icon::X).encode_utf8(&mut buffer);
 
-        renderer.fill_text(iced_native::text::Text {
+        renderer.fill_text(core::text::Text {
             content: icon,
-            font: icons::ICON_FONT,
-            size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
             bounds: Rectangle {
                 x: cross_bounds.center_x(),
                 y: cross_bounds.center_y(),
                 ..cross_bounds
             },
+            size: cross_bounds.height + if is_mouse_over_cross { 5.0 } else { 0.0 },
             color: style.icon_color,
+            font: icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
+            line_height: LineHeight::Relative(1.3),
+            shaping: iced_widget::text::Shaping::Advanced,
         });
     };
 }
@@ -650,8 +675,8 @@ fn draw_tab<Renderer>(
 impl<'a, Message, TabId, Renderer> From<TabBar<Message, TabId, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,
 {

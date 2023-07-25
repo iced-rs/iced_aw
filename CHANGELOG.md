@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Selection List now will clear Selected if a new Item is added to the same ID location as the last and its Hash is different.
 - Manual Override Will always be used over the internal selected if set to Some(). if the # doesnt Exist it Defaults Selected to None.
+- Added Helper functions for Widgets.
 
 ### Changed
 - Breaking Selection List now Takes in Font and Manual Selected override on new_with.

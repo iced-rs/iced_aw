@@ -4,6 +4,8 @@
 
 #[allow(unused_imports)]
 use iced_widget::core::{self, Color, Element};
+#[allow(unused_imports)]
+use std::{borrow::Cow, hash::Hash};
 
 /// Creates a [`Grid`] with the given children.
 ///
@@ -16,6 +18,34 @@ macro_rules! grid {
     );
     ($($x:expr),+ $(,)?) => (
         $crate::Grid::with_children(vec![$($crate::Element::from($x)),+])
+    );
+}
+
+/// Creates a Horizontal [`Wrap`] with the given children.
+///
+/// [`Wrap`]: iced_aw::Wrap
+#[cfg(feature = "wrap")]
+#[macro_export]
+macro_rules! wrap_horizontal {
+    () => (
+        $crate::wrap::new()
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::Grid::with_elements(vec![$($crate::Element::from($x)),+])
+    );
+}
+
+/// Creates a Horizontal [`Wrap`] with the given children.
+///
+/// [`Wrap`]: iced_aw::Wrap
+#[cfg(feature = "wrap")]
+#[macro_export]
+macro_rules! wrap_vertical {
+    () => (
+        $crate::wrap::new_vertical()
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::wrap::with_elements_vertical(vec![$($crate::Element::from($x)),+])
     );
 }
 
@@ -155,7 +185,7 @@ where
 }
 
 #[cfg(feature = "grid")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a Grid Widget.
 #[must_use]
 pub fn grid<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
@@ -164,6 +194,30 @@ where
     Renderer: core::Renderer,
 {
     crate::Grid::with_children(children)
+}
+
+#[cfg(feature = "wrap")]
+/// Shortcut helper to create a Wrap Widget.
+#[must_use]
+pub fn wrap_horizontal<Message, Renderer>(
+    children: Vec<Element<Message, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Horizontal, Renderer>
+where
+    Renderer: core::Renderer,
+{
+    crate::Wrap::with_elements(children)
+}
+
+#[cfg(feature = "wrap")]
+/// Shortcut helper to create a Wrap Widget.
+#[must_use]
+pub fn wrap_vertical<Message, Renderer>(
+    children: Vec<Element<Message, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Vertical, Renderer>
+where
+    Renderer: core::Renderer,
+{
+    crate::Wrap::with_elements_vertical(children)
 }
 
 #[cfg(feature = "icon_text")]
@@ -217,4 +271,55 @@ where
         + Copy,
 {
     crate::NumberInput::new(value, max, on_changed)
+}
+
+#[cfg(feature = "selection_list")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn selection_list_with<'a, T, Message, Renderer>(
+    options: impl Into<Cow<'a, [T]>>,
+    on_selected: impl Fn((usize, T)) -> Message + 'static,
+    text_size: f32,
+    padding: f32,
+    style: <Renderer::Theme as crate::style::selection_list::StyleSheet>::Style,
+    selected: Option<usize>,
+    font: iced_widget::runtime::Font,
+) -> crate::SelectionList<'a, T, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: crate::style::selection_list::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::scrollable::StyleSheet,
+    T: Clone + ToString + Eq + Hash,
+    [T]: ToOwned<Owned = Vec<T>>,
+{
+    crate::SelectionList::new_with(
+        options,
+        on_selected,
+        text_size,
+        padding,
+        style,
+        selected,
+        font,
+    )
+}
+
+#[cfg(feature = "selection_list")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn selection_list<'a, T, Message, Renderer>(
+    options: impl Into<Cow<'a, [T]>>,
+    on_selected: impl Fn((usize, T)) -> Message + 'static,
+) -> crate::SelectionList<'a, T, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: crate::style::selection_list::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::scrollable::StyleSheet,
+    T: Clone + ToString + Eq + Hash,
+    [T]: ToOwned<Owned = Vec<T>>,
+{
+    crate::SelectionList::new(options, on_selected)
 }

@@ -2,8 +2,11 @@
 //!
 //! *This API requires the following crate features to be activated: `quad`*
 
-use iced_native::widget::Tree;
-use iced_native::{layout, renderer, Color, Element, Length, Padding, Point, Rectangle, Widget};
+use iced_widget::core::{
+    layout, mouse::Cursor, renderer, widget::Tree, Color, Element, Length, Padding, Rectangle,
+    Widget,
+};
+
 /// Methods for creating inner bounds
 #[allow(missing_debug_implementations)]
 pub enum InnerBounds {
@@ -76,7 +79,7 @@ pub struct Quad {
     /// Methods for creating inner bounds
     pub inner_bounds: InnerBounds,
     /// Border radius of the Quad
-    pub border_radius: renderer::BorderRadius,
+    pub border_radius: [f32; 4],
     /// Border width of the quad
     pub border_width: f32,
     /// Border color of the quad
@@ -90,12 +93,13 @@ impl Default for Quad {
             color: Color::from([0.5; 3]),
             background: None,
             inner_bounds: InnerBounds::Ratio(0.5, 0.5),
-            border_radius: 0.0.into(),
+            border_radius: [0.0, 0.0, 0.0, 0.0],
             border_width: 0.0,
             border_color: Color::TRANSPARENT,
         }
     }
 }
+
 impl<Message, Renderer> Widget<Message, Renderer> for Quad
 where
     Renderer: renderer::Renderer,
@@ -120,14 +124,14 @@ where
         _theme: &<Renderer as renderer::Renderer>::Theme,
         _style: &renderer::Style,
         layout: layout::Layout<'_>,
-        _cursor_position: Point,
+        _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         if let Some(b) = self.background {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_radius: self.border_radius,
+                    border_radius: self.border_radius.into(),
                     border_width: self.border_width,
                     border_color: self.border_color,
                 },
@@ -137,7 +141,7 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: self.inner_bounds.get_bounds(layout.bounds()),
-                border_radius: self.border_radius,
+                border_radius: self.border_radius.into(),
                 border_width: self.border_width,
                 border_color: self.border_color,
             },

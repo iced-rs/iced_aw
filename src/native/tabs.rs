@@ -5,14 +5,26 @@
 //! the content of the tabs.
 //!
 //! *This API requires the following crate features to be activated: tabs*
-use iced_native::{
-    event,
-    layout::{Limits, Node},
-    mouse, Clipboard, Event, Font, Layout, Length, Point, Rectangle, Shell, Size,
-};
-use iced_native::{
-    widget::{Operation, Row, Tree},
-    Element, Widget,
+
+use iced_widget::{
+    container,
+    core::{
+        self,
+        alignment::{Horizontal, Vertical},
+        event, keyboard, layout,
+        mouse::{self, Cursor},
+        renderer,
+        widget::{
+            tree::{State, Tag},
+            Operation, Tree,
+        },
+        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding,
+        Rectangle, Shell, Size, Widget,
+    },
+    style, text,
+    text::LineHeight,
+    text_input::{self, cursor, Value},
+    Column, Container, Row, Text, TextInput,
 };
 
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
