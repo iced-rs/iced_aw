@@ -150,21 +150,20 @@ where
 
 #[cfg(feature = "date_picker")]
 /// Shortcut helper to create a ``ColorPicker`` Widget.
-pub fn date_picker<'a, Message, B, Theme, F>(
+pub fn date_picker<'a, Message, Theme, F>(
     show_picker: bool,
     date: impl Into<crate::core::date::Date>,
-    underlay: impl Into<Element<'a, Message, iced_graphics::Renderer<B, Theme>>>,
+    underlay: impl Into<Element<'a, Message, iced_widget::renderer::Renderer<Theme>>>,
     on_cancel: Message,
     on_submit: F,
-) -> crate::DatePicker<'a, Message, B, Theme>
+) -> crate::DatePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    B: 'a + iced_graphics::Backend + iced_graphics::backend::Text,
     Theme: 'a
         + crate::style::date_picker::StyleSheet
-        + iced_style::button::StyleSheet
-        + iced_style::text::StyleSheet
-        + iced_style::container::StyleSheet,
+        + iced_widget::button::StyleSheet
+        + iced_widget::text::StyleSheet
+        + iced_widget::container::StyleSheet,
     F: 'static + Fn(crate::core::date::Date) -> Message,
 {
     crate::DatePicker::new(show_picker, date, underlay, on_cancel, on_submit)

@@ -1,13 +1,19 @@
 //! A spinner to suggest something is loading.
 
-use iced_native::event::Status;
-use iced_native::layout::{Limits, Node};
-use iced_native::renderer::Style;
-use iced_native::widget::tree::{State, Tag};
-use iced_native::widget::Tree;
-use iced_native::{renderer, Layout, Widget};
-use iced_native::{window, Clipboard, Color, Element, Event, Length, Point, Rectangle, Shell};
-use iced_native::{Size, Vector};
+use iced_widget::core::{
+    self,
+    event::Status,
+    layout::{Limits, Node},
+    mouse::Cursor,
+    renderer,
+    widget::{
+        tree::{State, Tag},
+        Tree,
+    },
+    window, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector,
+    Widget,
+};
+
 use std::marker::PhantomData;
 use std::time::{Duration, Instant};
 
@@ -15,9 +21,9 @@ use crate::style::spinner::StyleSheet;
 
 /// A spinner widget, a circle spinning around the center of the widget.
 #[allow(missing_debug_implementations)]
-pub struct Spinner<Renderer>
+pub struct Spinner<Renderer = crate::Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The width of the [`Spinner`](Spinner).
@@ -34,7 +40,7 @@ where
 
 impl<Renderer> Default for Spinner<Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn default() -> Self {
@@ -50,7 +56,7 @@ where
 
 impl<Renderer> Spinner<Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`Spinner`] widget.
@@ -90,12 +96,7 @@ fn is_visible(bounds: &Rectangle) -> bool {
     bounds.width > 0.0 && bounds.height > 0.0
 }
 
-fn fill_circle(
-    renderer: &mut impl iced_native::Renderer,
-    position: Vector,
-    radius: f32,
-    color: Color,
-) {
+fn fill_circle(renderer: &mut impl core::Renderer, position: Vector, radius: f32, color: Color) {
     renderer.fill_quad(
         renderer::Quad {
             bounds: Rectangle {
@@ -114,7 +115,7 @@ fn fill_circle(
 
 impl<Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn width(&self) -> Length {
@@ -139,9 +140,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         _theme: &Renderer::Theme,
-        style: &Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        _cursor_position: Point,
+        _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
@@ -183,10 +184,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        _cursor_position: Point,
+        _cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        _viewport: &Rectangle,
     ) -> Status {
         const FRAMES_PER_SECOND: u64 = 60;
 
@@ -223,7 +225,7 @@ where
 
 impl<'a, Message, Renderer> From<Spinner<Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
     Renderer::Theme: StyleSheet,
 {
     fn from(spinner: Spinner<Renderer>) -> Self {

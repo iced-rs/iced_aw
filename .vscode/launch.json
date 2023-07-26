@@ -364,5 +364,23 @@
             "args": [],
             "cwd": "${workspaceFolder}"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'spinner'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=spinner",
+                    "--package=spinner"
+                ],
+                "filter": {
+                    "name": "spinner",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
     ]
 }
