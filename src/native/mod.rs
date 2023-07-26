@@ -95,8 +95,7 @@ pub use tab_bar::TabLabel;
 pub mod tabs;
 #[cfg(feature = "tabs")]
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
-pub type Tabs<'a, Message, TabId, Backend, Theme> =
-    tabs::Tabs<'a, Message, TabId, Renderer<Backend, Theme>>;
+pub type Tabs<'a, Message, TabId, Renderer> = tabs::Tabs<'a, Message, TabId, Renderer>;
 
 #[cfg(feature = "tabs")]
 pub use tabs::TabBarPosition;
@@ -129,5 +128,5 @@ pub type Spinner<Backend, Theme> = spinner::Spinner<Renderer<Backend, Theme>>;
 pub mod context_menu;
 #[cfg(feature = "context_menu")]
 /// A context menu
-pub type ContextMenu<'a, Overlay, Message, Backend, Theme> =
-    context_menu::ContextMenu<'a, Overlay, Message, Renderer<Backend, Theme>>;
+pub type ContextMenu<'a, Overlay, Message, Renderer> =
+    context_menu::ContextMenu<'a, Overlay, Message, Renderer>;

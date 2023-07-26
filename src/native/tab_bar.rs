@@ -336,10 +336,17 @@ where
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let label = match tab_label {
-                    TabLabel::Icon(_icon) => Column::new().align_items(Alignment::Center).push(
+                    TabLabel::Icon(icon) => Column::new().align_items(Alignment::Center).push(
                         Row::new()
-                            .width(Length::Fixed(self.icon_size))
-                            .height(Length::Fixed(self.icon_size)),
+                            .width(Length::Shrink)
+                            .height(Length::Shrink)
+                            .push(
+                                Text::new(icon.to_string())
+                                    .size(self.icon_size)
+                                    .font(self.icon_font.unwrap_or_default())
+                                    .horizontal_alignment(alignment::Horizontal::Center)
+                                    .vertical_alignment(alignment::Vertical::Center),
+                            ),
                     ),
                     TabLabel::Text(text) => Column::new().align_items(Alignment::Center).push(
                         Text::new(text)
@@ -349,12 +356,19 @@ where
                             .horizontal_alignment(alignment::Horizontal::Center)
                             .vertical_alignment(alignment::Vertical::Center),
                     ),
-                    TabLabel::IconText(_icon, text) => Column::new()
+                    TabLabel::IconText(icon, text) => Column::new()
                         .align_items(Alignment::Center)
                         .push(
                             Row::new()
-                                .width(Length::Fixed(self.icon_size))
-                                .height(Length::Fixed(self.icon_size)),
+                                .width(Length::Shrink)
+                                .height(Length::Shrink)
+                                .push(
+                                    Text::new(icon.to_string())
+                                        .size(self.icon_size)
+                                        .font(self.icon_font.unwrap_or_default())
+                                        .horizontal_alignment(alignment::Horizontal::Center)
+                                        .vertical_alignment(alignment::Vertical::Center),
+                                ),
                         )
                         .push(
                             Text::new(text)

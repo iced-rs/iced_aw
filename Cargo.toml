@@ -46,14 +46,16 @@ default = [
     "grid",
     "modal",
     "tab_bar",
-    #"tabs",
+    "tabs",
     "time_picker",
     "wrap",
     "selection_list",
     "split",
     #"menu",
     "quad",
-    #"context_menu"
+    "context_menu",
+    #"spinner",
+    #"cupertino",
 ]
 
 [dependencies]
@@ -99,7 +101,7 @@ members = [
     "examples/modal",
     "examples/modal_component",
     "examples/tab_bar",
-    #"examples/tabs",
+    "examples/tabs",
     "examples/time_picker",
     "examples/wrap",
     "examples/number_input",
@@ -108,7 +110,7 @@ members = [
     "examples/split_scroller",
     #"examples/menu",
     #"examples/spinner",
-    #"examples/context_menu"
+    "examples/context_menu"
 ]
 
 [workspace.dependencies.iced]

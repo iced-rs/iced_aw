@@ -6,7 +6,6 @@ use iced_widget::{
     style::Theme,
 };
 
-
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {

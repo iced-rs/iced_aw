@@ -7,24 +7,16 @@
 //! *This API requires the following crate features to be activated: tabs*
 
 use iced_widget::{
-    container,
     core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard, layout,
+        self, event,
+        layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer,
-        widget::{
-            tree::{State, Tag},
-            Operation, Tree,
-        },
-        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding,
-        Rectangle, Shell, Size, Widget,
+        widget::{Operation, Tree},
+        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
     },
-    style, text,
-    text::LineHeight,
-    text_input::{self, cursor, Value},
-    Column, Container, Row, Text, TextInput,
+    runtime::Font,
+    text, Row,
 };
 
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
@@ -63,9 +55,9 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Renderer>
+pub struct Tabs<'a, Message, TabId, Renderer = crate::Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer,
+    Renderer: 'a + core::Renderer + core::text::Renderer,
     Renderer::Theme: StyleSheet,
     TabId: Eq + Clone,
 {
@@ -85,8 +77,8 @@ where
 
 impl<'a, Message, TabId, Renderer> Tabs<'a, Message, TabId, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
@@ -287,8 +279,8 @@ where
 
 impl<'a, Message, TabId, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, TabId, Renderer>
 where
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     fn children(&self) -> Vec<Tree> {
@@ -366,10 +358,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
@@ -397,10 +390,11 @@ where
             &mut Tree::empty(),
             event.clone(),
             tab_bar_layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         );
         let idx = self.tab_bar.get_active_tab_idx();
         let status_element = self
@@ -411,10 +405,11 @@ where
                     &mut state.children[idx],
                     event,
                     tab_content_layout,
-                    cursor_position,
+                    cursor,
                     renderer,
                     clipboard,
                     shell,
+                    viewport,
                 )
             });
 
@@ -425,7 +420,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -444,7 +439,7 @@ where
         let new_mouse_interaction = self.tab_bar.mouse_interaction(
             &Tree::empty(),
             tab_bar_layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         );
@@ -468,7 +463,7 @@ where
             let new_mouse_interaction = element.as_widget().mouse_interaction(
                 &state.children[idx],
                 tab_content_layout,
-                cursor_position,
+                cursor,
                 viewport,
                 renderer,
             );
@@ -486,9 +481,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         let mut children = layout.children();
@@ -507,7 +502,7 @@ where
             theme,
             style,
             tab_bar_layout,
-            cursor_position,
+            cursor,
             viewport,
         );
 
@@ -530,7 +525,7 @@ where
                 theme,
                 style,
                 tab_content_layout,
-                cursor_position,
+                cursor,
                 viewport,
             );
         }
@@ -541,7 +536,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout.children().nth(1),
             TabBarPosition::Bottom => layout.children().next(),
@@ -581,8 +576,8 @@ where
 impl<'a, Message, TabId, Renderer> From<Tabs<'a, Message, TabId, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::text::StyleSheet,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,
 {
