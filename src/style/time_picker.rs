@@ -1,9 +1,11 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use iced_native::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
-use iced_native::{Background, Color};
 
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
 #[derive(Clone, Copy, Debug)]

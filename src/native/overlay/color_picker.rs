@@ -1386,11 +1386,11 @@ fn rgba_color<Theme>(
                 y: label_layout.bounds().center_y(),
                 ..label_layout.bounds()
             },
-            size: label_layout.bounds().height,
+            size: renderer.default_size(),
             font: crate::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(label_layout.bounds().height),
+            line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Advanced,
             color: style.text_color,
         });
@@ -1451,15 +1451,15 @@ fn rgba_color<Theme>(
         renderer.fill_text(Text {
             content: &format!("{}", (255.0 * value) as u8),
             bounds: Rectangle {
-                x: label_layout.bounds().center_x(),
-                y: label_layout.bounds().center_y(),
-                ..label_layout.bounds()
+                x: value_layout.bounds().center_x(),
+                y: value_layout.bounds().center_y(),
+                ..value_layout.bounds()
             },
-            size: value_layout.bounds().height,
+            size: renderer.default_size(),
             font: renderer.default_font(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            line_height: value_layout.bounds().height.into(),
+            line_height: iced_widget::text::LineHeight::Relative(1.3),
             shaping: iced_widget::text::Shaping::Advanced,
             color: style.text_color,
         });
@@ -1585,7 +1585,7 @@ fn hex_text<Theme>(
             y: layout.bounds().center_y(),
             ..layout.bounds()
         },
-        size: layout.bounds().height * 0.7,
+        size: renderer.default_size(),
         color: Color {
             a: 1.0,
             ..Hsv {
@@ -1598,8 +1598,8 @@ fn hex_text<Theme>(
         font: renderer.default_font(),
         horizontal_alignment: Horizontal::Center,
         vertical_alignment: Vertical::Center,
-        line_height: (layout.bounds().height * 0.7).into(),
-        shaping: iced_widget::text::Shaping::Advanced,
+        line_height: iced_widget::text::LineHeight::Relative(1.3),
+        shaping: iced_widget::text::Shaping::Basic,
     });
 }
 

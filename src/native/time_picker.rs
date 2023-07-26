@@ -2,13 +2,20 @@
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
 use chrono::Local;
-use iced_graphics::{Backend, Renderer};
-use iced_native::widget::button;
-use iced_native::widget::tree::{self, Tag};
-use iced_native::widget::Tree;
-use iced_native::{event, mouse, Clipboard, Event, Layout, Point, Rectangle};
-use iced_native::{overlay, Shell};
-use iced_native::{Element, Widget};
+
+use iced_widget::{
+    button, container,
+    core::{
+        event,
+        layout::{Limits, Node},
+        mouse::{self, Cursor},
+        overlay, renderer,
+        widget::tree::{self, Tag, Tree},
+        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    },
+    renderer::Renderer,
+    text,
+};
 
 use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButtons};
 
@@ -43,10 +50,9 @@ pub use crate::style::time_picker::{Appearance, StyleSheet};
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TimePicker<'a, Message, B, Theme>
+pub struct TimePicker<'a, Message, Theme>
 where
     Message: Clone,
-    B: Backend + iced_graphics::backend::Text,
     Theme: StyleSheet + button::StyleSheet,
 {
     /// Show the picker.
@@ -54,7 +60,7 @@ where
     /// The time to show.
     time: Time,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer<B, Theme>>,
+    underlay: Element<'a, Message, Renderer<Theme>>,
     /// The message that is send if the cancel button of the [`TimePickerOverlay`](TimePickerOverlay) is pressed.
     on_cancel: Message,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`](TimePickerOverlay) is pressed.
@@ -62,18 +68,17 @@ where
     /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
-    overlay_state: Element<'a, Message, Renderer<B, Theme>>,
+    overlay_state: Element<'a, Message, Renderer<Theme>>,
     /// Toggle the use of the 24h clock of the [`TimePickerOverlay`](TimePickerOverlay).
     use_24h: bool,
     /// Toggle the use of the seconds of the [`TimePickerOverlay`](TimePickerOverlay).
     show_seconds: bool,
 }
 
-impl<'a, Message, B, Theme> TimePicker<'a, Message, B, Theme>
+impl<'a, Message, Theme> TimePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: 'a + StyleSheet + button::StyleSheet + iced_style::text::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet,
 {
     /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
     ///
@@ -94,7 +99,7 @@ where
         on_submit: F,
     ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer<B, Theme>>>,
+        U: Into<Element<'a, Message, Renderer<Theme>>>,
         F: 'static + Fn(Time) -> Message,
     {
         Self {
@@ -165,21 +170,16 @@ impl State {
     }
 }
 
-impl<'a, Message, B, Theme> Widget<Message, Renderer<B, Theme>>
-    for TimePicker<'a, Message, B, Theme>
+impl<'a, Message, Theme> Widget<Message, Renderer<Theme>> for TimePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: StyleSheet
-        + button::StyleSheet
-        + iced_style::text::StyleSheet
-        + iced_style::container::StyleSheet,
+    Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn tag(&self) -> iced_native::widget::tree::Tag {
+    fn tag(&self) -> Tag {
         Tag::of::<State>()
     }
 
-    fn state(&self) -> iced_native::widget::tree::State {
+    fn state(&self) -> tree::State {
         tree::State::new(State::new(self.time))
     }
 
@@ -191,19 +191,15 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn width(&self) -> iced_native::Length {
+    fn width(&self) -> Length {
         self.underlay.as_widget().width()
     }
 
-    fn height(&self) -> iced_native::Length {
+    fn height(&self) -> Length {
         self.underlay.as_widget().height()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer<B, Theme>,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 
@@ -212,19 +208,21 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
-        renderer: &Renderer<B, Theme>,
+        cursor: Cursor,
+        renderer: &Renderer<Theme>,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
@@ -232,14 +230,14 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<B, Theme>,
+        renderer: &Renderer<Theme>,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -247,12 +245,12 @@ where
 
     fn draw(
         &self,
-        state: &iced_native::widget::Tree,
-        renderer: &mut Renderer<B, Theme>,
+        state: &Tree,
+        renderer: &mut Renderer<Theme>,
         theme: &Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         self.underlay.as_widget().draw(
@@ -261,7 +259,7 @@ where
             theme,
             style,
             layout,
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -270,8 +268,8 @@ where
         &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer<B, Theme>,
-    ) -> Option<overlay::Element<'b, Message, Renderer<B, Theme>>> {
+        renderer: &Renderer<Theme>,
+    ) -> Option<overlay::Element<'b, Message, Renderer<Theme>>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -298,18 +296,13 @@ where
     }
 }
 
-impl<'a, Message, B, Theme> From<TimePicker<'a, Message, B, Theme>>
-    for Element<'a, Message, Renderer<B, Theme>>
+impl<'a, Message, Theme> From<TimePicker<'a, Message, Theme>>
+    for Element<'a, Message, Renderer<Theme>>
 where
     Message: 'static + Clone,
-    B: 'a + Backend + iced_graphics::backend::Text,
-    Theme: 'a
-        + StyleSheet
-        + iced_style::button::StyleSheet
-        + iced_style::text::StyleSheet
-        + iced_style::container::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn from(time_picker: TimePicker<'a, Message, B, Theme>) -> Self {
+    fn from(time_picker: TimePicker<'a, Message, Theme>) -> Self {
         Element::new(time_picker)
     }
 }

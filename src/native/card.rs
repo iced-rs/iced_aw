@@ -531,6 +531,7 @@ where
             viewport,
             theme,
             &self.style,
+            self.close_size,
         );
 
         // ----------- Body ----------------------
@@ -587,8 +588,8 @@ where
 
     let close_size = close_size.unwrap_or_else(|| renderer.default_size());
     let mut close = if on_close {
-        limits = limits.shrink(Size::new(close_size, 1.0));
-        Some(Node::new(Size::new(close_size, close_size + 1.0)))
+        limits = limits.shrink(Size::new(close_size, 0.0));
+        Some(Node::new(Size::new(close_size + 1.0, close_size + 1.0)))
     } else {
         None
     };
@@ -682,6 +683,7 @@ fn draw_head<Message, Renderer>(
     viewport: &Rectangle,
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
+    close_size: Option<f32>,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
     Renderer::Theme: StyleSheet,
@@ -744,7 +746,8 @@ fn draw_head<Message, Renderer>(
                 height: close_bounds.height,
                 ..close_bounds
             },
-            size: close_bounds.height + if is_mouse_over_close { 1.0 } else { 0.0 },
+            size: close_size.unwrap_or_else(|| renderer.default_size())
+                + if is_mouse_over_close { 1.0 } else { 0.0 },
             color: style_sheet.close_color,
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,

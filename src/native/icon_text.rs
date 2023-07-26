@@ -174,7 +174,7 @@ where
             font: self.font.unwrap_or(ICON_FONT),
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: self.vertical_alignment,
-            line_height: LineHeight::Relative(1.2),
+            line_height: LineHeight::Relative(1.3),
             shaping: iced_widget::text::Shaping::Advanced,
         });
     }

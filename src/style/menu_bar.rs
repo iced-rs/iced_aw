@@ -1,6 +1,5 @@
 //! Change the appearance of menu bars and their menus.
-use iced_native::Color;
-use iced_style::Theme;
+use iced_widget::{core::Color, style::Theme};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]

@@ -375,8 +375,8 @@ where
                 if self.on_close.is_some() {
                     label_row = label_row.push(
                         Row::new()
-                            .width(Length::Fixed(self.close_size))
-                            .height(Length::Fixed(self.close_size))
+                            .width(Length::Fixed(self.close_size + 1.0))
+                            .height(Length::Fixed(self.close_size + 1.0))
                             .align_items(Alignment::Center),
                     );
                 }
@@ -509,8 +509,9 @@ where
                 self.style,
                 i == self.get_active_tab_idx(),
                 cursor,
-                self.icon_font.unwrap_or(icons::ICON_FONT),
-                self.text_font.unwrap_or_default(),
+                (self.icon_font.unwrap_or(icons::ICON_FONT), self.icon_size),
+                (self.text_font.unwrap_or_default(), self.text_size),
+                self.close_size,
             );
         }
     }
@@ -530,8 +531,9 @@ fn draw_tab<Renderer>(
     style: <Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
     cursor: Cursor,
-    icon_font: Font,
-    text_font: Font,
+    icon_data: (Font, f32),
+    text_data: (Font, f32),
+    close_size: f32,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet + text::StyleSheet,
@@ -576,9 +578,9 @@ fn draw_tab<Renderer>(
                     y: icon_bounds.center_y(),
                     ..icon_bounds
                 },
-                size: icon_bounds.height,
+                size: icon_data.1,
                 color: style.icon_color,
-                font: icon_font,
+                font: icon_data.0,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -598,9 +600,9 @@ fn draw_tab<Renderer>(
                     y: text_bounds.center_y(),
                     ..text_bounds
                 },
-                size: text_bounds.height,
+                size: text_data.1,
                 color: style.text_color,
-                font: text_font,
+                font: text_data.0,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -624,9 +626,9 @@ fn draw_tab<Renderer>(
                     y: icon_bounds.center_y(),
                     ..icon_bounds
                 },
-                size: icon_bounds.height,
+                size: icon_data.1,
                 color: style.icon_color,
-                font: icon_font,
+                font: icon_data.0,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -640,9 +642,9 @@ fn draw_tab<Renderer>(
                     y: text_bounds.center_y(),
                     ..text_bounds
                 },
-                size: text_bounds.height,
+                size: text_data.1,
                 color: style.text_color,
-                font: text_font,
+                font: text_data.0,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -653,7 +655,7 @@ fn draw_tab<Renderer>(
 
     if let Some(cross_layout) = children.next() {
         let cross_bounds = cross_layout.bounds();
-        let is_mouse_over_cross = cross_bounds.contains(cursor.position().unwrap_or_default());
+        let is_mouse_over_cross = cursor.is_over(cross_bounds);
 
         renderer.fill_text(core::text::Text {
             content: &icons::icon_to_char(icons::Icon::X).to_string(),
@@ -662,13 +664,13 @@ fn draw_tab<Renderer>(
                 y: cross_bounds.center_y(),
                 ..cross_bounds
             },
-            size: cross_bounds.height + if is_mouse_over_cross { 1.0 } else { 0.0 },
+            size: close_size + if is_mouse_over_cross { 1.0 } else { 0.0 },
             color: style.icon_color,
             font: icons::ICON_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Advanced,
+            shaping: iced_widget::text::Shaping::Basic,
         });
     };
 }

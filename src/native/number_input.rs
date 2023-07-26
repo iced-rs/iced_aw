@@ -306,6 +306,7 @@ where
             .pad(padding);
         let content = self.content.layout(renderer, &limits.loose());
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
+
         let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
             Container::<(), Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
@@ -683,6 +684,10 @@ where
             theme.active(self.style)
         };
 
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
+
+        let icon_size = txt_size * 2.5 / 4.0;
+
         // decrease button section
         renderer.fill_quad(
             renderer::Quad {
@@ -705,7 +710,7 @@ where
                 y: dec_bounds.center_y(),
                 ..dec_bounds
             },
-            size: dec_bounds.height,
+            size: icon_size,
             color: decrease_btn_style.icon_color,
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
@@ -734,7 +739,7 @@ where
                 y: inc_bounds.center_y(),
                 ..inc_bounds
             },
-            size: inc_bounds.height,
+            size: icon_size,
             color: increase_btn_style.icon_color,
             font: ICON_FONT,
             horizontal_alignment: Horizontal::Center,
