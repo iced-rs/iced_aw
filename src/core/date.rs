@@ -53,8 +53,9 @@ impl From<NaiveDate> for Date {
     }
 }
 
+/// # Panics
 /// Creates a date with the previous month based on the given date.
-
+/// panics if year, month or day doesnt exist.
 #[must_use]
 pub fn pred_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 1 {
@@ -68,8 +69,9 @@ pub fn pred_month(date: NaiveDate) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("Year, Month or Day doesnt Exist")
 }
 
+/// # Panics
 /// Creates a date with the next month based on given date.
-
+/// panics if year, month or day doesnt exist.
 #[must_use]
 pub fn succ_month(date: NaiveDate) -> NaiveDate {
     let (year, month) = if date.month() == 12 {
@@ -83,7 +85,9 @@ pub fn succ_month(date: NaiveDate) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("Year, Month or Day doesnt Exist")
 }
 
+/// # Panics
 /// Creates a date with the previous year based on the given date.
+// panics if year, month or day doesnt exist.
 
 #[must_use]
 pub fn pred_year(date: NaiveDate) -> NaiveDate {
@@ -93,7 +97,9 @@ pub fn pred_year(date: NaiveDate) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, date.month(), day).expect("Year, Month or Day doesnt Exist")
 }
 
+/// # Panics
 /// Creates a date with the next year based on the given date.
+// panics if year, month or day doesnt exist.
 
 #[must_use]
 pub fn succ_year(date: NaiveDate) -> NaiveDate {
@@ -146,9 +152,10 @@ pub enum IsInMonth {
     Next,
 }
 
+/// # Panics
 /// Calculates the day number at the given position in the calendar table based
 /// on the given year and month.
-
+/// panics if year, month or day does not exist.
 #[must_use]
 pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsInMonth) {
     let (x, y) = (x as isize, y as isize);

@@ -84,7 +84,7 @@ pub fn menu_bar<Message, Renderer>(
     menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
 ) -> crate::menu::menu_bar::MenuBar<Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::menu_bar::StyleSheet,
 {
     crate::menu::menu_bar::MenuBar::new(menu_roots)
@@ -98,7 +98,7 @@ pub fn menu_tree<'a, Message, Renderer>(
     children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Renderer>>>,
 ) -> crate::menu::menu_tree::MenuTree<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     crate::menu::menu_tree::MenuTree::with_children(item, children)
 }

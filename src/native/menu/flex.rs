@@ -17,8 +17,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use iced_native::layout::{Limits, Node};
-use iced_native::{renderer, Alignment, Element, Padding, Point, Size};
+use iced_widget::core::{
+    layout::{Limits, Node},
+    renderer, Alignment, Element, Padding, Point, Size,
+};
 
 /// The main axis of a flex layout.
 #[derive(Debug)]
@@ -88,7 +90,7 @@ where
     if align_items == Alignment::Center {
         let mut fill_cross = axis.cross(limits.min());
 
-        for child in items.iter() {
+        for child in items {
             let child = child.borrow();
             let cross_fill_factor = match axis {
                 Axis::Horizontal => child.as_widget().height(),

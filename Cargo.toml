@@ -51,7 +51,7 @@ default = [
     "wrap",
     "selection_list",
     "split",
-    #"menu",
+    "menu",
     "quad",
     "context_menu",
     "spinner",
@@ -108,7 +108,7 @@ members = [
     "examples/selection_list",
     "examples/split",
     "examples/split_scroller",
-    #"examples/menu",
+    "examples/menu",
     "examples/spinner",
     "examples/context_menu"
 ]

@@ -231,7 +231,7 @@ impl button::StyleSheet for ButtonStyle {
     fn active(&self, style: &Self::Style) -> button::Appearance {
         button::Appearance {
             text_color: style.extended_palette().background.base.text,
-            border_radius: 4.0,
+            border_radius: [4.0; 4].into(),
             background: Some(Color::TRANSPARENT.into()),
             ..Default::default()
         }
@@ -323,7 +323,7 @@ fn debug_sub_menu<'a>(
 fn separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
     menu_tree!(quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: 4.0.into(),
+        border_radius: [4.0; 4].into(),
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     })
@@ -341,13 +341,13 @@ fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
 fn labeled_separator(label: &'_ str) -> MenuTree<'_, Message, iced::Renderer> {
     let q_1 = quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: 4.0.into(),
+        border_radius: [4.0; 4].into(),
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
     let q_2 = quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: 4.0.into(),
+        border_radius: [4.0; 4].into(),
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
@@ -367,7 +367,7 @@ fn circle(color: Color) -> quad::Quad {
     quad::Quad {
         color,
         inner_bounds: quad::InnerBounds::Square(radius * 2.0),
-        border_radius: radius.into(),
+        border_radius: [radius; 4].into(),
         ..Default::default()
     }
 }

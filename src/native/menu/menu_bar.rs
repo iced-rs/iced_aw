@@ -5,15 +5,19 @@ use super::menu_inner::{
 };
 use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
-use iced_native::widget::{tree, Tree};
-use iced_native::{
-    event, layout, mouse, overlay, renderer, touch, Alignment, Clipboard, Color, Element, Length,
-    Padding, Point, Rectangle, Shell, Widget,
+
+use iced_widget::core::{
+    event,
+    layout::{Limits, Node},
+    mouse::{self, Cursor},
+    overlay, renderer, touch,
+    widget::{tree, Tree},
+    Alignment, Clipboard, Color, Element, Layout, Length, Padding, Rectangle, Shell, Widget,
 };
 
 pub(super) struct MenuBarState {
     pub(super) pressed: bool,
-    pub(super) view_cursor: Point,
+    pub(super) view_cursor: Cursor,
     pub(super) open: bool,
     pub(super) active_root: Option<usize>,
     pub(super) horizontal_direction: Direction,
@@ -38,7 +42,7 @@ impl Default for MenuBarState {
     fn default() -> Self {
         Self {
             pressed: false,
-            view_cursor: Point::new(-0.5, -0.5),
+            view_cursor: Cursor::Available([-0.5, -0.5].into()),
             open: false,
             active_root: None,
             horizontal_direction: Direction::Positive,
@@ -51,7 +55,7 @@ impl Default for MenuBarState {
 /// A `MenuBar` collects `MenuTree`s and handles
 /// all the layout, event processing and drawing
 #[allow(missing_debug_implementations)]
-pub struct MenuBar<'a, Message, Renderer>
+pub struct MenuBar<'a, Message, Renderer = crate::Renderer>
 where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
@@ -247,7 +251,7 @@ where
             .collect()
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         use super::flex;
 
         let limits = limits.width(self.width).height(self.height);
@@ -271,11 +275,12 @@ where
         &mut self,
         tree: &mut Tree,
         event: event::Event,
-        layout: layout::Layout<'_>,
-        view_cursor: Point,
+        layout: Layout<'_>,
+        view_cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         use event::Event::{Mouse, Touch};
         use mouse::{Button::Left, Event::ButtonReleased};
@@ -290,13 +295,14 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         );
 
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         match event {
             Mouse(ButtonReleased(Left)) | Touch(FingerLifted { .. } | FingerLost { .. }) => {
-                if state.menu_states.is_empty() && layout.bounds().contains(view_cursor) {
+                if state.menu_states.is_empty() && view_cursor.is_over(layout.bounds()) {
                     state.view_cursor = view_cursor;
                     state.open = true;
                 }
@@ -312,13 +318,13 @@ where
         renderer: &mut Renderer,
         theme: &<Renderer as renderer::Renderer>::Theme,
         style: &renderer::Style,
-        layout: layout::Layout<'_>,
-        view_cursor: Point,
+        layout: Layout<'_>,
+        view_cursor: Cursor,
         viewport: &Rectangle,
     ) {
         let state = tree.state.downcast_ref::<MenuBarState>();
-
-        let position = if state.open && (view_cursor.x < 0.0 || view_cursor.y < 0.0) {
+        let cursor_pos = view_cursor.position().unwrap_or_default();
+        let position = if state.open && (cursor_pos.x < 0.0 || cursor_pos.y < 0.0) {
             state.view_cursor
         } else {
             view_cursor
@@ -364,7 +370,7 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         _renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
         let state = tree.state.downcast_ref::<MenuBarState>();
@@ -403,13 +409,14 @@ where
 #[allow(unused_results, clippy::too_many_arguments)]
 fn process_root_events<Message, Renderer>(
     menu_roots: &mut [MenuTree<'_, Message, Renderer>],
-    view_cursor: Point,
+    view_cursor: Cursor,
     tree: &mut Tree,
     event: &event::Event,
-    layout: layout::Layout<'_>,
+    layout: Layout<'_>,
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
+    viewport: &Rectangle,
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
@@ -428,6 +435,7 @@ where
                 renderer,
                 clipboard,
                 shell,
+                viewport,
             )
         })
         .fold(event::Status::Ignored, event::Status::merge)
