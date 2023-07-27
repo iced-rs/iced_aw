@@ -1,20 +1,17 @@
-use iced_graphics::{Backend, Renderer};
-
-use iced_native::{
-    event::Status,
-    layout::{Limits, Node},
-    mouse,
-    renderer::Style,
-    touch,
-    widget::{
-        tree::{State, Tag},
-        Tree,
+use iced_widget::{
+    canvas::{Cache, Fill, Geometry, Path},
+    core::{
+        event,
+        layout::{Limits, Node},
+        mouse::{self, Cursor},
+        overlay, renderer, touch,
+        widget::tree::{State, Tag, Tree},
+        window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Renderer as _,
+        Shell, Size, Vector, Widget,
     },
-    window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
-    Vector, Widget,
+    graphics::geometry::Renderer as _,
+    renderer::Renderer,
 };
-
-use iced_graphics::widget::canvas::{fill::Fill, Cache, Geometry, Path};
 
 // INTERNAL //
 use crate::native::cupertino::cupertino_colours::{secondary_system_fill, system_green};
@@ -167,9 +164,8 @@ where
     }
 }
 
-impl<Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSwitch<Message>
+impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSwitch<Message>
 where
-    B: Backend,
     Message: Clone,
 {
     fn width(&self) -> Length {
@@ -179,7 +175,7 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer<B, T>, limits: &Limits) -> Node {
+    fn layout(&self, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
@@ -191,11 +187,11 @@ where
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<B, T>,
-        _theme: &T,
-        _style: &Style,
+        renderer: &mut Renderer<Theme>,
+        _theme: &Theme,
+        _style: &renderer::Style,
         layout: Layout<'_>,
-        _cursor_position: Point,
+        _cursor: Cursor,
         viewport: &Rectangle,
     ) {
         let state: &SwitchState = state.state.downcast_ref::<SwitchState>();
@@ -211,6 +207,7 @@ where
         let bounds: Rectangle = layout.bounds();
 
         let switch: Geometry = state.switch.draw(
+            renderer,
             Size {
                 width: viewport.width,
                 height: viewport.height,
@@ -317,7 +314,10 @@ where
         // });
         //
 
-        renderer.draw_primitive(switch.into_primitive());
+        let translation = Vector::new(0.0, 0.0);
+        renderer.with_translation(translation, |renderer| {
+            renderer.draw(vec![switch]);
+        });
     }
 
     fn tag(&self) -> Tag {
@@ -340,11 +340,12 @@ where
         state: &mut Tree,
         event: Event,
         _layout: Layout<'_>,
-        cursor_position: Point,
-        _renderer: &Renderer<B, T>,
+        cursor: Cursor,
+        _renderer: &Renderer<Theme>,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-    ) -> Status {
+        _viewport: &Rectangle,
+    ) -> event::Status {
         let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
 
         match event {
@@ -369,17 +370,18 @@ where
                     shell.request_redraw(window::RedrawRequest::NextFrame);
                 }
 
-                return Status::Captured;
+                return event::Status::Captured;
             }
 
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                let cur_pos = cursor.position().unwrap_or_default();
                 // TODO: Make these calculations not hard-coded //
-                let hit_x: bool = ((state.bounds.x + 50.0)..(state.bounds.x + 125.0))
-                    .contains(&cursor_position.x);
+                let hit_x: bool =
+                    ((state.bounds.x + 50.0)..(state.bounds.x + 125.0)).contains(&cur_pos.x);
 
-                let hit_y: bool = ((state.bounds.y + 70.0)..(state.bounds.y + 100.0))
-                    .contains(&cursor_position.y);
+                let hit_y: bool =
+                    ((state.bounds.y + 70.0)..(state.bounds.y + 100.0)).contains(&cur_pos.y);
 
                 if hit_x && hit_y {
                     state.toggle_staged = true;
@@ -397,22 +399,22 @@ where
                         state.published = true;
                     }
 
-                    return Status::Captured;
+                    return event::Status::Captured;
                 }
             }
 
             _ => {}
         }
 
-        Status::Ignored
+        event::Status::Ignored
     }
 
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        _renderer: &Renderer<B, T>,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer<B, T>>> {
+        _renderer: &Renderer<Theme>,
+    ) -> Option<overlay::Element<'b, Message, Renderer<Theme>>> {
         let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
 
         state.bounds = layout.bounds();
@@ -421,9 +423,8 @@ where
     }
 }
 
-impl<'a, Message, B, T> From<CupertinoSwitch<Message>> for Element<'a, Message, Renderer<B, T>>
+impl<'a, Message, Theme> From<CupertinoSwitch<Message>> for Element<'a, Message, Renderer<Theme>>
 where
-    B: Backend,
     Message: Clone + 'a,
 {
     fn from(switch: CupertinoSwitch<Message>) -> Self {

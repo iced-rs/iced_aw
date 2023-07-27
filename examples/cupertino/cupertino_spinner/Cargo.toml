@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-iced = { workspace = true, features = ["canvas", "debug", "tokio"] }
+iced.workspace = true
 iced_aw = { path = "../../../", features = ["cupertino"] }
-tokio = { version = "1.27.0", features = ["time"] }
+tokio = { version = "1.29.1", features = ["time"] }
 

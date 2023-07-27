@@ -1,5 +1,5 @@
 use iced::widget::{column, container, Text};
-use iced::{alignment, executor, Application, Command, Element, Length, Settings, Theme};
+use iced::{alignment, executor, font, Application, Command, Element, Length, Settings, Theme};
 use iced_aw::native::cupertino::cupertino_alert::{CupertinoAlert, CupertinoDialogAction};
 use iced_aw::native::cupertino::cupertino_button::CupertinoButton;
 use iced_aw::native::cupertino::cupertino_colours::system_red;
@@ -28,6 +28,8 @@ enum Message {
     ConfirmEvent,
     DialogEscape,
     ShowModal,
+    Loaded(Result<(), String>),
+    FontLoaded(Result<(), font::Error>),
 }
 
 #[rustfmt::skip]
@@ -40,6 +42,10 @@ mod constants {
 
 use constants::*;
 
+async fn load() -> Result<(), String> {
+    Ok(())
+}
+
 // `cargo fmt` becomes unreadable for this example, so switching off //
 #[rustfmt::skip]
 impl Application for Alert {
@@ -49,7 +55,10 @@ impl Application for Alert {
     type Flags    = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        (Alert::Loading, Command::none())
+        (Alert::Loading, Command::batch(vec![
+            font::load(iced_aw::graphics::SF_UI_ROUNDED_BYTES).map(Message::FontLoaded),
+            Command::perform(load(), Message::Loaded),
+        ]))
     }
 
     fn title(&self) -> String {
@@ -63,6 +72,7 @@ impl Application for Alert {
             Message::ConfirmEvent    => *self = Alert::ConfirmEvent,
             Message::DialogEscape    => *self = Alert::DialogEscape,
             Message::ShowModal       => *self = Alert::ShowModal,
+            _ => {}
         }
 
         Command::none()
@@ -117,7 +127,7 @@ impl Application for Alert {
             CupertinoButton::new()
                 .body(Text::new("Click to show the CupertinoAlertDialog")
                     .size(24.0)
-                    .width(Length::Fixed(200.0))
+                    .width(Length::Shrink)
                     .height(Length::Fixed(75.0))
                     .horizontal_alignment(alignment::Horizontal::Center)
                 )

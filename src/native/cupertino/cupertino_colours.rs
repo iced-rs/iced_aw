@@ -1,4 +1,4 @@
-use iced_native::Color;
+use iced_widget::core::Color;
 
 /// <https://flutter.github.io/assets-for-api-docs/assets/cupertino/cupertino_system_colors_1.png>
 /// <https://flutter.github.io/assets-for-api-docs/assets/cupertino/cupertino_system_colors_2.png>

@@ -1,5 +1,5 @@
 use iced::{
-    alignment, executor,
+    alignment, executor, font,
     widget::{column, container, text, Text},
     Application, Command, Element, Length, Renderer, Settings, Theme,
 };
@@ -23,6 +23,12 @@ enum ButtonApp {
 enum Message {
     EnabledButtonClicked,
     EnabledFilledButtonClicked,
+    Loaded(Result<(), String>),
+    FontLoaded(Result<(), font::Error>),
+}
+
+async fn load() -> Result<(), String> {
+    Ok(())
 }
 
 // `cargo fmt` becomes unreadable for this example, so switching off //
@@ -34,7 +40,10 @@ impl Application for ButtonApp {
     type Flags    = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        (ButtonApp::Loading, Command::none())
+        (ButtonApp::Loading, Command::batch(vec![
+            font::load(iced_aw::graphics::SF_UI_ROUNDED_BYTES).map(Message::FontLoaded),
+            Command::perform(load(), Message::Loaded),
+        ]))
     }
 
     fn title(&self) -> String {
@@ -52,6 +61,7 @@ impl Application for ButtonApp {
                 println!("You clicked the filled enabled button!");
                 *self = ButtonApp::EnabledFilledButtonClicked;
             },
+            _ => {}
         }
 
         Command::none()

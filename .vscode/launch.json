@@ -43,6 +43,60 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'cupertino-button'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=cupertino-button",
+                    "--package=cupertino-button"
+                ],
+                "filter": {
+                    "name": "cupertino-button",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'cupertino-switch'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=cupertino-switch",
+                    "--package=cupertino-switch"
+                ],
+                "filter": {
+                    "name": "cupertino-switch",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'cupertino-alert'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=cupertino-alert",
+                    "--package=cupertino-alert"
+                ],
+                "filter": {
+                    "name": "cupertino-alert",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'card'",
             "cargo": {
                 "args": [

@@ -169,7 +169,7 @@ impl Application for App {
             SizeOption::Uniform => {
                 menu_bar!(menu_1(self), menu_2(self), menu_3(self), menu_4(self))
                     .item_width(ItemWidth::Uniform(180))
-                    .item_height(ItemHeight::Uniform(25))
+                    .item_height(ItemHeight::Uniform(30))
             }
             SizeOption::Static => menu_bar!(
                 menu_1(self),
@@ -179,7 +179,7 @@ impl Application for App {
                 menu_5(self),
             )
             .item_width(ItemWidth::Static(180))
-            .item_height(ItemHeight::Static(25)),
+            .item_height(ItemHeight::Static(30)),
         }
         .spacing(4.0)
         .bounds_expand(30)
@@ -323,7 +323,7 @@ fn debug_sub_menu<'a>(
 fn separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
     menu_tree!(quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: [4.0; 4].into(),
+        border_radius: [4.0; 4],
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     })
@@ -341,13 +341,13 @@ fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
 fn labeled_separator(label: &'_ str) -> MenuTree<'_, Message, iced::Renderer> {
     let q_1 = quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: [4.0; 4].into(),
+        border_radius: [4.0; 4],
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
     let q_2 = quad::Quad {
         color: [0.5; 3].into(),
-        border_radius: [4.0; 4].into(),
+        border_radius: [4.0; 4],
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
@@ -367,7 +367,7 @@ fn circle(color: Color) -> quad::Quad {
     quad::Quad {
         color,
         inner_bounds: quad::InnerBounds::Square(radius * 2.0),
-        border_radius: [radius; 4].into(),
+        border_radius: [radius; 4],
         ..Default::default()
     }
 }
