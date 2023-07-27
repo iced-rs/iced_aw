@@ -3,9 +3,9 @@
 //!
 
 #[allow(unused_imports)]
-use iced_native::Element;
-#[cfg(feature = "color_picker")]
-use iced_style::Color;
+use iced_widget::core::{self, Color, Element};
+#[allow(unused_imports)]
+use std::{borrow::Cow, hash::Hash};
 
 /// Creates a [`Grid`] with the given children.
 ///
@@ -18,6 +18,34 @@ macro_rules! grid {
     );
     ($($x:expr),+ $(,)?) => (
         $crate::Grid::with_children(vec![$($crate::Element::from($x)),+])
+    );
+}
+
+/// Creates a Horizontal [`Wrap`] with the given children.
+///
+/// [`Wrap`]: iced_aw::Wrap
+#[cfg(feature = "wrap")]
+#[macro_export]
+macro_rules! wrap_horizontal {
+    () => (
+        $crate::wrap::new()
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::Grid::with_elements(vec![$($crate::Element::from($x)),+])
+    );
+}
+
+/// Creates a Horizontal [`Wrap`] with the given children.
+///
+/// [`Wrap`]: iced_aw::Wrap
+#[cfg(feature = "wrap")]
+#[macro_export]
+macro_rules! wrap_vertical {
+    () => (
+        $crate::wrap::new_vertical()
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::wrap::with_elements_vertical(vec![$($crate::Element::from($x)),+])
     );
 }
 
@@ -56,7 +84,7 @@ pub fn menu_bar<Message, Renderer>(
     menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
 ) -> crate::menu::menu_bar::MenuBar<Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::menu_bar::StyleSheet,
 {
     crate::menu::menu_bar::MenuBar::new(menu_roots)
@@ -70,7 +98,7 @@ pub fn menu_tree<'a, Message, Renderer>(
     children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Renderer>>>,
 ) -> crate::menu::menu_tree::MenuTree<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     crate::menu::menu_tree::MenuTree::with_children(item, children)
 }
@@ -81,7 +109,7 @@ pub fn badge<'a, Message, Renderer>(
     content: impl Into<Element<'a, Message, Renderer>>,
 ) -> crate::Badge<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::badge::StyleSheet,
 {
     crate::Badge::new(content)
@@ -94,7 +122,7 @@ pub fn card<'a, Message, Renderer>(
     body: impl Into<Element<'a, Message, Renderer>>,
 ) -> crate::Card<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::card::StyleSheet,
 {
     crate::Card::new(head, body)
@@ -102,20 +130,19 @@ where
 
 #[cfg(feature = "color_picker")]
 /// Shortcut helper to create a ``ColorPicker`` Widget.
-pub fn color_picker<'a, Message, B, Theme, F>(
+pub fn color_picker<'a, Message, Theme, F>(
     show_picker: bool,
     color: Color,
-    underlay: impl Into<Element<'a, Message, iced_graphics::Renderer<B, Theme>>>,
+    underlay: impl Into<Element<'a, Message, iced_widget::renderer::Renderer<Theme>>>,
     on_cancel: Message,
     on_submit: F,
-) -> crate::ColorPicker<'a, Message, B, Theme>
+) -> crate::ColorPicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    B: 'a + iced_graphics::Backend + iced_graphics::backend::Text,
     Theme: 'a
         + crate::style::color_picker::StyleSheet
-        + iced_style::button::StyleSheet
-        + iced_style::text::StyleSheet,
+        + iced_widget::button::StyleSheet
+        + iced_widget::text::StyleSheet,
     F: 'static + Fn(Color) -> Message,
 {
     crate::ColorPicker::new(show_picker, color, underlay, on_cancel, on_submit)
@@ -123,21 +150,20 @@ where
 
 #[cfg(feature = "date_picker")]
 /// Shortcut helper to create a ``ColorPicker`` Widget.
-pub fn date_picker<'a, Message, B, Theme, F>(
+pub fn date_picker<'a, Message, Theme, F>(
     show_picker: bool,
     date: impl Into<crate::core::date::Date>,
-    underlay: impl Into<Element<'a, Message, iced_graphics::Renderer<B, Theme>>>,
+    underlay: impl Into<Element<'a, Message, iced_widget::renderer::Renderer<Theme>>>,
     on_cancel: Message,
     on_submit: F,
-) -> crate::DatePicker<'a, Message, B, Theme>
+) -> crate::DatePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    B: 'a + iced_graphics::Backend + iced_graphics::backend::Text,
     Theme: 'a
         + crate::style::date_picker::StyleSheet
-        + iced_style::button::StyleSheet
-        + iced_style::text::StyleSheet
-        + iced_style::container::StyleSheet,
+        + iced_widget::button::StyleSheet
+        + iced_widget::text::StyleSheet
+        + iced_widget::container::StyleSheet,
     F: 'static + Fn(crate::core::date::Date) -> Message,
 {
     crate::DatePicker::new(show_picker, date, underlay, on_cancel, on_submit)
@@ -145,28 +171,51 @@ where
 
 #[cfg(feature = "floating_element")]
 /// Shortcut helper to create a Card Widget.
-pub fn floating_element<'a, Message, Renderer, B>(
+pub fn floating_element<'a, Message, Renderer>(
     underlay: impl Into<Element<'a, Message, Renderer>>,
-    element: B,
-) -> crate::FloatingElement<'a, B, Message, Renderer>
+    element: impl Into<Element<'a, Message, Renderer>>,
+) -> crate::FloatingElement<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: iced_native::Renderer,
-    B: Fn() -> Element<'a, Message, Renderer>,
+    Renderer: core::Renderer,
 {
     crate::FloatingElement::new(underlay, element)
 }
 
 #[cfg(feature = "grid")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a Grid Widget.
 #[must_use]
 pub fn grid<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
 ) -> crate::Grid<Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     crate::Grid::with_children(children)
+}
+
+#[cfg(feature = "wrap")]
+/// Shortcut helper to create a Wrap Widget.
+#[must_use]
+pub fn wrap_horizontal<Message, Renderer>(
+    children: Vec<Element<Message, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Horizontal, Renderer>
+where
+    Renderer: core::Renderer,
+{
+    crate::Wrap::with_elements(children)
+}
+
+#[cfg(feature = "wrap")]
+/// Shortcut helper to create a Wrap Widget.
+#[must_use]
+pub fn wrap_vertical<Message, Renderer>(
+    children: Vec<Element<Message, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Vertical, Renderer>
+where
+    Renderer: core::Renderer,
+{
+    crate::Wrap::with_elements_vertical(children)
 }
 
 #[cfg(feature = "icon_text")]
@@ -174,7 +223,7 @@ where
 #[must_use]
 pub fn icon_text<Renderer>(label: impl Into<String>) -> crate::IconText<Renderer>
 where
-    Renderer: iced_native::text::Renderer,
+    Renderer: core::text::Renderer<Font = core::Font>,
 {
     crate::IconText::new(label)
 }
@@ -182,15 +231,14 @@ where
 #[cfg(feature = "modal")]
 /// Shortcut helper to create a Card Widget.
 #[must_use]
-pub fn modal<'a, Content, Message, Renderer>(
+pub fn modal<'a, Message, Renderer>(
     show_modal: bool,
     underlay: impl Into<Element<'a, Message, Renderer>>,
-    content: Content,
-) -> crate::Modal<'a, Content, Message, Renderer>
+    content: impl Into<Element<'a, Message, Renderer>>,
+) -> crate::Modal<'a, Message, Renderer>
 where
-    Content: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: crate::style::modal::StyleSheet,
 {
     crate::Modal::new(show_modal, underlay, content)
@@ -206,11 +254,11 @@ pub fn number_input<'a, T, Message, Renderer, F>(
 ) -> crate::NumberInput<'a, T, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::text::Renderer<Font = iced_graphics::Font>,
+    Renderer: core::text::Renderer<Font = core::Font>,
     Renderer::Theme: crate::style::number_input::StyleSheet
-        + iced_style::text_input::StyleSheet
-        + iced_style::container::StyleSheet
-        + iced_style::text::StyleSheet,
+        + iced_widget::text_input::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::text::StyleSheet,
     F: 'static + Fn(T) -> Message + Copy,
     T: 'static
         + num_traits::Num
@@ -221,4 +269,55 @@ where
         + Copy,
 {
     crate::NumberInput::new(value, max, on_changed)
+}
+
+#[cfg(feature = "selection_list")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn selection_list_with<'a, T, Message, Renderer>(
+    options: impl Into<Cow<'a, [T]>>,
+    on_selected: impl Fn((usize, T)) -> Message + 'static,
+    text_size: f32,
+    padding: f32,
+    style: <Renderer::Theme as crate::style::selection_list::StyleSheet>::Style,
+    selected: Option<usize>,
+    font: iced_widget::runtime::Font,
+) -> crate::SelectionList<'a, T, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: crate::style::selection_list::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::scrollable::StyleSheet,
+    T: Clone + ToString + Eq + Hash,
+    [T]: ToOwned<Owned = Vec<T>>,
+{
+    crate::SelectionList::new_with(
+        options,
+        on_selected,
+        text_size,
+        padding,
+        style,
+        selected,
+        font,
+    )
+}
+
+#[cfg(feature = "selection_list")]
+/// Shortcut helper to create a Card Widget.
+#[must_use]
+pub fn selection_list<'a, T, Message, Renderer>(
+    options: impl Into<Cow<'a, [T]>>,
+    on_selected: impl Fn((usize, T)) -> Message + 'static,
+) -> crate::SelectionList<'a, T, Message, Renderer>
+where
+    Message: 'a + Clone,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: crate::style::selection_list::StyleSheet
+        + iced_widget::container::StyleSheet
+        + iced_widget::scrollable::StyleSheet,
+    T: Clone + ToString + Eq + Hash,
+    [T]: ToOwned<Owned = Vec<T>>,
+{
+    crate::SelectionList::new(options, on_selected)
 }

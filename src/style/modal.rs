@@ -1,10 +1,10 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use iced_graphics::Color;
-
-use iced_native::Background;
-use iced_style::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[derive(Clone, Copy, Debug)]

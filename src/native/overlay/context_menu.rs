@@ -3,19 +3,24 @@
 //! *This API requires the following crate features to be activated: ``context_menu``*
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
-use iced_native::event::Status;
-use iced_native::{
-    keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event, Layout,
-    Point, Shell, Size,
+
+use iced_widget::core::{
+    self,
+    event::Status,
+    keyboard,
+    layout::{Limits, Node},
+    mouse::{self, Cursor},
+    overlay, renderer, touch,
+    widget::tree::Tree,
+    Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size,
 };
-use iced_native::{widget::Tree, Element};
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<'a, Message, Renderer>
+pub struct ContextMenuOverlay<'a, Message, Renderer = crate::Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ContextMenuOverlay`](ContextMenuOverlay).
@@ -31,7 +36,7 @@ where
 impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenuOverlay`](ContextMenuOverlay).
@@ -59,26 +64,21 @@ where
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
+impl<'a, Message, Renderer> overlay::Overlay<Message, Renderer>
     for ContextMenuOverlay<'a, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
         let max_size = limits.max();
 
         let mut content = self.content.as_widget().layout(renderer, &limits);
         content.move_to(position);
 
-        iced_native::layout::Node::with_children(max_size, vec![content])
+        Node::with_children(max_size, vec![content])
     }
 
     fn draw(
@@ -87,7 +87,7 @@ where
         theme: &Renderer::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
     ) {
         let bounds = layout.bounds();
 
@@ -116,7 +116,7 @@ where
             theme,
             style,
             content_layout,
-            cursor_position,
+            cursor,
             &bounds,
         );
     }
@@ -125,7 +125,7 @@ where
         &mut self,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
@@ -149,7 +149,7 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if layout_children.bounds().contains(cursor_position) {
+                if cursor.is_over(layout_children.bounds()) {
                     Status::Ignored
                 } else {
                     self.state.show = false;
@@ -160,7 +160,7 @@ where
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
-                if layout_children.bounds().contains(cursor_position) {
+                if cursor.is_over(layout_children.bounds()) {
                     Status::Ignored
                 } else {
                     Status::Captured
@@ -175,10 +175,11 @@ where
                 self.tree,
                 event,
                 layout_children,
-                cursor_position,
+                cursor,
                 renderer,
                 clipboard,
                 shell,
+                &layout.bounds(),
             ),
             Status::Captured => Status::Captured,
         }
@@ -187,8 +188,8 @@ where
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor: Cursor,
+        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
@@ -197,7 +198,7 @@ where
                 .children()
                 .next()
                 .expect("Native: Layout should have a content layout."),
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )

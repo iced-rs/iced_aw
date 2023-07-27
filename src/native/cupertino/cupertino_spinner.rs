@@ -1,18 +1,17 @@
-use iced_graphics::{Backend, Renderer};
-use iced_native::event::Status;
-use iced_native::layout::{Limits, Node};
-use iced_native::renderer::Style;
-use iced_native::widget::{
-    tree::{State, Tag},
-    Tree,
+use iced_widget::{
+    canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke},
+    core::{
+        event,
+        layout::{Limits, Node},
+        mouse::Cursor,
+        renderer,
+        widget::tree::{State, Tag, Tree},
+        window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Renderer as _,
+        Shell, Size, Vector, Widget,
+    },
+    graphics::geometry::Renderer as _,
+    renderer::Renderer,
 };
-
-use iced_native::{
-    window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
-    Vector, Widget,
-};
-
-use iced_graphics::widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke};
 
 use std::f32::consts::PI;
 
@@ -92,10 +91,7 @@ impl CupertinoSpinner {
     }
 }
 
-impl<Message, B, T> Widget<Message, Renderer<B, T>> for CupertinoSpinner
-where
-    B: Backend,
-{
+impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
     fn width(&self) -> Length {
         self.width
     }
@@ -103,7 +99,7 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer<B, T>, limits: &Limits) -> Node {
+    fn layout(&self, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
@@ -115,56 +111,61 @@ where
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<B, T>,
-        _theme: &T,
-        _style: &Style,
+        renderer: &mut Renderer<Theme>,
+        _theme: &Theme,
+        _style: &renderer::Style,
         layout: Layout<'_>,
-        _cursor_position: Point,
+        _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         let state: &SpinnerState = state.state.downcast_ref::<SpinnerState>();
 
-        let spinner: Geometry = state.spinner.draw(layout.bounds().size(), |frame| {
-            let center = frame.center();
-            let radius = self.radius;
-            let width = radius / 5.0;
+        let spinner: Geometry = state
+            .spinner
+            .draw(renderer, layout.bounds().size(), |frame| {
+                let center = frame.center();
+                let radius = self.radius;
+                let width = radius / 5.0;
 
-            let mut hands: Vec<(Path, _)> = vec![];
+                let mut hands: Vec<(Path, _)> = vec![];
 
-            for alpha in &ALPHAS {
-                hands.push((
-                    Path::line(Point::new(0.0, radius / 3.0), Point::new(0.0, radius / 1.5)),
-                    move || -> Stroke {
-                        // The `60.0` is to shift the original black to dark grey //
-                        gen_stroke(
-                            width,
-                            Color::from_rgba(0.0, 0.0, 0.0, f32::from(*alpha) / (60.0 + 147.0)),
-                        )
-                    },
-                ));
-            }
-
-            frame.translate(Vector::new(center.x, center.y));
-
-            // Populate the spinner with 8 hands and make them spin! //
-            // The `(HAND_COUNT - i - 1)` block is to make the spinning
-            // clockwise. For counterclockwise, leave it at `i`.
-            frame.with_save(|frame| {
-                let new_index: usize = (state.now.millisecond() / 125 % 8) as usize;
-
-                for i in 0..HAND_COUNT {
-                    frame.rotate(hand_rotation(45, 360));
-
-                    frame.stroke(
-                        &hands[i].0,
-                        hands[((HAND_COUNT - i - 1) + new_index) % 8].1(),
-                    );
+                for alpha in &ALPHAS {
+                    hands.push((
+                        Path::line(Point::new(0.0, radius / 3.0), Point::new(0.0, radius / 1.5)),
+                        move || -> Stroke {
+                            // The `60.0` is to shift the original black to dark grey //
+                            gen_stroke(
+                                width,
+                                Color::from_rgba(0.0, 0.0, 0.0, f32::from(*alpha) / (60.0 + 147.0)),
+                            )
+                        },
+                    ));
                 }
-            });
-            //
-        });
 
-        renderer.draw_primitive(spinner.into_primitive());
+                frame.translate(Vector::new(center.x, center.y));
+
+                // Populate the spinner with 8 hands and make them spin! //
+                // The `(HAND_COUNT - i - 1)` block is to make the spinning
+                // clockwise. For counterclockwise, leave it at `i`.
+                frame.with_save(|frame| {
+                    let new_index: usize = (state.now.millisecond() / 125 % 8) as usize;
+
+                    for i in 0..HAND_COUNT {
+                        frame.rotate(hand_rotation(45, 360));
+
+                        frame.stroke(
+                            &hands[i].0,
+                            hands[((HAND_COUNT - i - 1) + new_index) % 8].1(),
+                        );
+                    }
+                });
+                //
+            });
+
+        let translation = Vector::new(0.0, 0.0);
+        renderer.with_translation(translation, |renderer| {
+            renderer.draw(vec![spinner]);
+        });
     }
 
     fn tag(&self) -> Tag {
@@ -184,11 +185,12 @@ where
         state: &mut Tree,
         event: Event,
         _layout: Layout<'_>,
-        _cursor_position: Point,
-        _renderer: &Renderer<B, T>,
+        _cursor: Cursor,
+        _renderer: &Renderer<Theme>,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-    ) -> Status {
+        _viewport: &Rectangle,
+    ) -> event::Status {
         let state: &mut SpinnerState = state.state.downcast_mut::<SpinnerState>();
 
         if let Event::Window(window::Event::RedrawRequested(_now)) = &event {
@@ -198,17 +200,14 @@ where
 
             state.spinner.clear();
             shell.request_redraw(window::RedrawRequest::NextFrame);
-            return Status::Captured;
+            return event::Status::Captured;
         }
 
-        Status::Ignored
+        event::Status::Ignored
     }
 }
 
-impl<'a, Message, B, T> From<CupertinoSpinner> for Element<'a, Message, Renderer<B, T>>
-where
-    B: Backend,
-{
+impl<'a, Message, Theme> From<CupertinoSpinner> for Element<'a, Message, Renderer<Theme>> {
     fn from(spinner: CupertinoSpinner) -> Self {
         Self::new(spinner)
     }

@@ -1,6 +1,5 @@
 //! Stateless, pure widgets for iced
-use iced_graphics::Renderer;
-
+//use iced_widget::{renderer, style};
 pub mod helpers;
 pub use helpers::*;
 
@@ -10,20 +9,20 @@ pub mod overlay;
 pub mod badge;
 #[cfg(feature = "badge")]
 /// A badge for color highlighting small information.
-pub type Badge<'a, Message, Backend, Theme> = badge::Badge<'a, Message, Renderer<Backend, Theme>>;
+pub type Badge<'a, Message, Renderer> = badge::Badge<'a, Message, Renderer>;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;
 #[cfg(feature = "number_input")]
 /// A field that can only be filled with numeric type.
-pub type NumberInput<'a, T, Message, Backend, Theme> =
-    number_input::NumberInput<'a, T, Message, Renderer<Backend, Theme>>;
+pub type NumberInput<'a, T, Message, Renderer> =
+    number_input::NumberInput<'a, T, Message, Renderer>;
 
 #[cfg(feature = "card")]
 pub mod card;
 #[cfg(feature = "card")]
 /// A card consisting of a head, body and optional foot.
-pub type Card<'a, Message, Backend, Theme> = card::Card<'a, Message, Renderer<Backend, Theme>>;
+pub type Card<'a, Message, Renderer> = card::Card<'a, Message, Renderer>;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;
@@ -45,8 +44,8 @@ pub use date_picker::DatePicker;
 pub mod selection_list;
 #[cfg(feature = "selection_list")]
 /// A widget for selecting a single value from a dynamic scrollable list of options.
-pub type SelectionList<'a, T, Message, Backend, Theme> =
-    selection_list::SelectionList<'a, T, Message, Renderer<Backend, Theme>>;
+pub type SelectionList<'a, T, Message, Renderer> =
+    selection_list::SelectionList<'a, T, Message, Renderer>;
 #[cfg(feature = "selection_list")]
 pub use selection_list::List;
 
@@ -54,14 +53,14 @@ pub use selection_list::List;
 pub mod floating_element;
 #[cfg(feature = "floating_element")]
 /// A floating element floating over some content.
-pub type FloatingElement<'a, B, Message, Backend, Theme> =
-    floating_element::FloatingElement<'a, B, Message, Renderer<Backend, Theme>>;
+pub type FloatingElement<'a, Message, Renderer> =
+    floating_element::FloatingElement<'a, Message, Renderer>;
 
 #[cfg(feature = "grid")]
 pub mod grid;
 #[cfg(feature = "grid")]
 /// A container that distributes its contents in a grid.
-pub type Grid<'a, Message, Backend, Theme> = grid::Grid<'a, Message, Renderer<Backend, Theme>>;
+pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
 #[cfg(feature = "grid")]
 pub use grid::Strategy;
 
@@ -69,27 +68,25 @@ pub use grid::Strategy;
 pub mod icon_text;
 #[cfg(feature = "icon_text")]
 /// Text widget with icon font.
-pub type IconText<Backend, Theme> = crate::native::icon_text::IconText<Renderer<Backend, Theme>>;
+pub type IconText<Renderer> = crate::native::icon_text::IconText<Renderer>;
 
 #[cfg(feature = "modal")]
 pub mod modal;
 #[cfg(feature = "modal")]
 /// A modal content as an overlay.
-pub type Modal<'a, Content, Message, Backend, Theme> =
-    modal::Modal<'a, Content, Message, Renderer<Backend, Theme>>;
+pub type Modal<'a, Message, Renderer> = modal::Modal<'a, Message, Renderer>;
 
 #[cfg(feature = "split")]
 pub mod split;
 #[cfg(feature = "split")]
 /// A split can divide the available space by half to display two different elements.
-pub type Split<'a, Message, Backend, Theme> = split::Split<'a, Message, Renderer<Backend, Theme>>;
+pub type Split<'a, Message, Renderer> = split::Split<'a, Message, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
 #[cfg(feature = "tab_bar")]
 /// A tab bar to show tabs.
-pub type TabBar<Message, TabId, Backend, Theme> =
-    tab_bar::TabBar<Message, TabId, Renderer<Backend, Theme>>;
+pub type TabBar<Message, TabId, Renderer> = tab_bar::TabBar<Message, TabId, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub use tab_bar::TabLabel;
@@ -98,8 +95,7 @@ pub use tab_bar::TabLabel;
 pub mod tabs;
 #[cfg(feature = "tabs")]
 /// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
-pub type Tabs<'a, Message, TabId, Backend, Theme> =
-    tabs::Tabs<'a, Message, TabId, Renderer<Backend, Theme>>;
+pub type Tabs<'a, Message, TabId, Renderer> = tabs::Tabs<'a, Message, TabId, Renderer>;
 
 #[cfg(feature = "tabs")]
 pub use tabs::TabBarPosition;
@@ -126,11 +122,11 @@ pub mod spinner;
 
 #[cfg(feature = "spinner")]
 /// A spinner widget, a circle spinning around the center of the widget.
-pub type Spinner<Backend, Theme> = spinner::Spinner<Renderer<Backend, Theme>>;
+pub type Spinner<Renderer> = spinner::Spinner<Renderer>;
 
 #[cfg(feature = "context_menu")]
 pub mod context_menu;
 #[cfg(feature = "context_menu")]
 /// A context menu
-pub type ContextMenu<'a, Overlay, Message, Backend, Theme> =
-    context_menu::ContextMenu<'a, Overlay, Message, Renderer<Backend, Theme>>;
+pub type ContextMenu<'a, Overlay, Message, Renderer> =
+    context_menu::ContextMenu<'a, Overlay, Message, Renderer>;

@@ -1,13 +1,13 @@
 //! Use a grid as an input element for creating grids.
 //!
 //! *This API requires the following crate features to be activated: `grid`*
-use iced_native::{
-    event, layout::Node, mouse, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
-};
-use iced_native::{
-    overlay,
+use iced_widget::core::{
+    self, event,
+    layout::{Limits, Node},
+    mouse::{self, Cursor},
+    overlay, renderer,
     widget::{Operation, Tree},
-    Element, Widget,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
 };
 
 /// A container that distributes its contents in a grid.
@@ -32,7 +32,7 @@ use iced_native::{
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Grid<'a, Message, Renderer> {
+pub struct Grid<'a, Message, Renderer = crate::Renderer> {
     /// The distribution [`Strategy`](Strategy) of the [`Grid`](Grid).
     strategy: Strategy,
     /// The elements in the [`Grid`](Grid).
@@ -56,7 +56,7 @@ impl Default for Strategy {
 
 impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     /// Creates a [`Grid`](Grid) with ``Strategy::Columns(1)``
     /// Use ``strategy()`` to update the Strategy.
@@ -124,7 +124,7 @@ where
 
 impl<'a, Message, Renderer> Default for Grid<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     fn default() -> Self {
         Self {
@@ -136,7 +136,7 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         self.elements.iter().map(Tree::new).collect()
@@ -154,11 +154,7 @@ where
         Length::Shrink
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         if self.elements.is_empty() {
             return Node::new(Size::ZERO);
         }
@@ -220,10 +216,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let children_status = self
             .elements
@@ -235,10 +232,11 @@ where
                     state,
                     event.clone(),
                     layout,
-                    cursor_position,
+                    cursor,
                     renderer,
                     clipboard,
                     shell,
+                    viewport,
                 )
             });
 
@@ -249,7 +247,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -259,7 +257,7 @@ where
             .zip(layout.children())
             .map(|((e, state), layout)| {
                 e.as_widget()
-                    .mouse_interaction(state, layout, cursor_position, viewport, renderer)
+                    .mouse_interaction(state, layout, cursor, viewport, renderer)
             })
             .fold(mouse::Interaction::default(), |interaction, next| {
                 interaction.max(next)
@@ -287,12 +285,12 @@ where
 
     fn draw(
         &self,
-        state: &iced_native::widget::Tree,
+        state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         for ((element, state), layout) in self
@@ -301,15 +299,9 @@ where
             .zip(&state.children)
             .zip(layout.children())
         {
-            element.as_widget().draw(
-                state,
-                renderer,
-                theme,
-                style,
-                layout,
-                cursor_position,
-                viewport,
-            );
+            element
+                .as_widget()
+                .draw(state, renderer, theme, style, layout, cursor, viewport);
         }
     }
 
@@ -352,7 +344,7 @@ fn build_grid(
 
 impl<'a, Message, Renderer> From<Grid<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer + 'a,
     Message: 'static,
 {
     fn from(grid: Grid<'a, Message, Renderer>) -> Element<'a, Message, Renderer> {

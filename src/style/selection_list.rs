@@ -2,8 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: `selection_list`*
 
-use iced_native::{Background, Color};
-use iced_style::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
 /// The appearance of a menu.
 #[derive(Debug, Clone, Copy)]

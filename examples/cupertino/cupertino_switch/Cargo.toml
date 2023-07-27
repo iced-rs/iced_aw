@@ -6,6 +6,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-iced = { version = "0.9.0", features = [] }
+iced.workspace = true
 iced_aw = { path = "../../../", features = ["cupertino"] }
 

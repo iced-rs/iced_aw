@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use iced_graphics::Point;
+use iced_widget::core::Point;
 
 /// The size of the period on the clock based on the clock's size.
 pub const PERIOD_PERCENTAGE: f32 = 0.1;
@@ -61,8 +61,10 @@ pub enum NearestRadius {
     Second,
 }
 
+/// # Panics
 /// Determining the nearest radius to the position of the cursor position based
 /// on the distance to the center.
+/// Will panic if distance vec can not compare a and b
 #[must_use]
 pub fn nearest_radius(
     radii: &[(f32, NearestRadius)],
@@ -81,8 +83,10 @@ pub fn nearest_radius(
     distance_vec[0].1.clone()
 }
 
+/// # Panics
 /// Determines the nearest point with the smallest distance to the cursor
 /// position. The index of the point is returned.
+/// Will panic if distance vec can not compare a and b
 #[must_use]
 pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
     let mut distance_vec: Vec<(usize, f32)> = points
@@ -120,7 +124,7 @@ pub fn circle_points(distance_radius: f32, center: Point, amount: u16) -> Vec<Po
 
 #[cfg(test)]
 mod tests {
-    use iced_graphics::{Point, Vector};
+    use iced_widget::core::{Point, Vector};
 
     use super::{circle_points, nearest_point, nearest_radius, NearestRadius};
 

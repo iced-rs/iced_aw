@@ -59,9 +59,7 @@ pub mod menu_tree;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
 /// A `MenuBar` collects `MenuTree`s and handles
-pub type MenuBar<'a, Message, Backend, Theme> =
-    menu_bar::MenuBar<'a, Message, iced_graphics::Renderer<Backend, Theme>>;
+pub type MenuBar<'a, Message, Renderer> = menu_bar::MenuBar<'a, Message, Renderer>;
 pub use menu_inner::{CloseCondition, ItemHeight, ItemWidth, PathHighlight};
 /// Nested menu is essentially a tree of items, a menu is a collection of items
-pub type MenuTree<'a, Message, Backend, Theme> =
-    menu_tree::MenuTree<'a, Message, iced_graphics::Renderer<Backend, Theme>>;
+pub type MenuTree<'a, Message, Renderer> = menu_tree::MenuTree<'a, Message, Renderer>;

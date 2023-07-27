@@ -2,29 +2,35 @@
 pub mod list;
 use crate::style::selection_list::StyleSheet;
 
-use iced_native::{
-    event,
-    layout::{Limits, Node},
-    mouse, renderer, Clipboard, Event, Layout, Length, Point, Rectangle, Shell, Size,
+use iced_widget::{
+    container,
+    core::{
+        self, event,
+        layout::{Limits, Node},
+        mouse::{self, Cursor},
+        renderer,
+        widget::Tree,
+        Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+    },
+    runtime::Font,
+    scrollable, text,
+    text::LineHeight,
+    Container, Scrollable,
 };
 
-use iced_native::widget::tree::Tree;
-use iced_native::widget::{Container, Scrollable};
-use iced_native::{Element, Widget};
-
 pub use list::List;
-use std::borrow::Cow;
 use std::marker::PhantomData;
+use std::{borrow::Cow, hash::Hash};
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
 #[allow(clippy::type_repetition_in_bounds)]
-pub struct SelectionList<'a, T, Message, Renderer>
+pub struct SelectionList<'a, T, Message, Renderer = crate::Renderer>
 where
-    T: Clone + ToString,
+    T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::container::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + container::StyleSheet,
 {
     /// Container for Rendering List.
     container: Container<'a, Message, Renderer>,
@@ -48,10 +54,9 @@ where
 impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme:
-        StyleSheet + iced_style::container::StyleSheet + iced_style::scrollable::StyleSheet,
-    T: Clone + ToString + Eq,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + container::StyleSheet + scrollable::StyleSheet,
+    T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     /// Creates a new [`SelectionList`] with the given list of `options`,
@@ -60,23 +65,24 @@ where
     /// to set those.
     pub fn new(
         options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn(T) -> Message + 'static,
+        on_selected: impl Fn((usize, T)) -> Message + 'static,
     ) -> Self {
         let options = options.into();
         let container = Container::new(Scrollable::new(List {
             options: options.clone(),
-            font: iced_graphics::Font::default(),
+            font: Font::default(),
             text_size: 12.0,
             padding: 5.0,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             on_selected: Box::new(on_selected),
+            selected: None,
             phantomdata: PhantomData,
         }))
         .padding(1);
 
         Self {
             options,
-            font: iced_graphics::Font::default(),
+            font: Font::default(),
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             container,
             width: Length::Fill,
@@ -88,21 +94,24 @@ where
 
     /// Creates a new [`SelectionList`] with the given list of `options`,
     /// the current selected value, the message to produce when an option is
-    /// selected, the `style`, `text_size` and `padding`.
+    /// selected, the `style`, `text_size`, `padding` and `font`.
     pub fn new_with(
         options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn(T) -> Message + 'static,
+        on_selected: impl Fn((usize, T)) -> Message + 'static,
         text_size: f32,
         padding: f32,
         style: <Renderer::Theme as StyleSheet>::Style,
+        selected: Option<usize>,
+        font: Font,
     ) -> Self {
         let options = options.into();
         let container = Container::new(Scrollable::new(List {
             options: options.clone(),
-            font: iced_graphics::Font::default(),
+            font,
             text_size,
             padding,
             style,
+            selected,
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData,
         }))
@@ -110,7 +119,7 @@ where
 
         Self {
             options,
-            font: iced_graphics::Font::default(),
+            font,
             style,
             container,
             width: Length::Fill,
@@ -144,10 +153,10 @@ where
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SelectionList<'a, T, Message, Renderer>
 where
-    T: 'a + Clone + ToString + Eq,
+    T: 'a + Clone + ToString + Eq + Hash,
     Message: 'static,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font> + 'a,
-    Renderer::Theme: StyleSheet + iced_style::container::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer<Font = core::Font> + 'a,
+    Renderer::Theme: StyleSheet + container::StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.container as &dyn Widget<_, _>)]
@@ -176,14 +185,16 @@ where
 
                 labels
                     .map(|label| {
-                        let (width, _) = renderer.measure(
+                        let size = renderer.measure(
                             &label,
                             self.text_size,
+                            LineHeight::default(),
                             self.font,
                             Size::new(f32::INFINITY, f32::INFINITY),
+                            text::Shaping::Advanced,
                         );
 
-                        width.round() as u32 + self.padding as u32 * 2
+                        size.width.round() as u32 + self.padding as u32 * 2
                     })
                     .max()
                     .unwrap_or(100)
@@ -203,10 +214,11 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.container.on_event(
             &mut state.children[0],
@@ -215,10 +227,11 @@ where
                 .children()
                 .next()
                 .expect("Scrollable Child Missing in Selection List"),
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
@@ -226,17 +239,12 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.container.mouse_interaction(
-            &state.children[0],
-            layout,
-            cursor_position,
-            viewport,
-            renderer,
-        )
+        self.container
+            .mouse_interaction(&state.children[0], layout, cursor, viewport, renderer)
     }
 
     fn draw(
@@ -244,9 +252,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _viewport: &Rectangle,
     ) {
         renderer.fill_quad(
@@ -268,7 +276,7 @@ where
                 .children()
                 .next()
                 .expect("Scrollable Child Missing in Selection List"),
-            cursor_position,
+            cursor,
             &layout.bounds(),
         );
     }
@@ -277,10 +285,10 @@ where
 impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq,
+    T: Clone + ToString + Eq + Hash,
     Message: 'static,
-    Renderer: 'a + iced_native::Renderer + iced_native::text::Renderer<Font = iced_native::Font>,
-    Renderer::Theme: StyleSheet + iced_style::container::StyleSheet,
+    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer::Theme: StyleSheet + container::StyleSheet,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Renderer>) -> Self {
         Element::new(selection_list)

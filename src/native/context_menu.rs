@@ -1,8 +1,10 @@
 //! A context menu for showing actions on right click.
 //!
-use iced_native::{
-    event,
-    mouse::{self, Button},
+use iced_widget::core::{
+    self, event,
+    layout::{Limits, Node},
+    mouse::{self, Button, Cursor},
+    overlay, renderer,
     widget::{tree, Operation, Tree},
     Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
@@ -35,11 +37,11 @@ pub use crate::style::context_menu::StyleSheet;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ContextMenu<'a, Overlay, Message, Renderer>
+pub struct ContextMenu<'a, Overlay, Message, Renderer = crate::Renderer>
 where
     Overlay: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The underlying element.
@@ -54,7 +56,7 @@ impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
 where
     Overlay: Fn() -> Element<'a, Message, Renderer>,
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenu`](ContextMenu)
@@ -86,7 +88,7 @@ impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
 where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn width(&self) -> Length {
@@ -97,11 +99,7 @@ where
         self.underlay.as_widget().height()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 
@@ -110,9 +108,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         self.underlay.as_widget().draw(
@@ -121,7 +119,7 @@ where
             theme,
             style,
             layout,
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -170,17 +168,18 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         if event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) {
             let bounds = layout.bounds();
 
-            if bounds.contains(cursor_position) {
+            if cursor.is_over(bounds) {
                 let s: &mut State = state.state.downcast_mut();
-                s.cursor_position = cursor_position;
+                s.cursor_position = cursor.position().unwrap_or_default();
                 s.show = !s.show;
                 return event::Status::Captured;
             }
@@ -190,10 +189,11 @@ where
             &mut state.children[0],
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
@@ -201,14 +201,14 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -219,7 +219,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Renderer>> {
         let s: &mut State = state.state.downcast_mut();
 
         if !s.show {
@@ -245,7 +245,7 @@ impl<'a, Content, Message, Renderer> From<ContextMenu<'a, Content, Message, Rend
 where
     Content: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn from(modal: ContextMenu<'a, Content, Message, Renderer>) -> Self {

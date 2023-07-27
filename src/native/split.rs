@@ -1,15 +1,21 @@
 //! Use a split to split the available space in two parts to display two different elements.
 //!
 //! *This API requires the following crate features to be activated: split*
-use iced_native::{
-    mouse, renderer, touch, Color, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
-};
-use iced_native::{
-    widget::{
-        tree::{self, Tag},
-        Container, Operation, Row, Tree,
+use iced_widget::{
+    container,
+    core::{
+        self, event,
+        layout::{Limits, Node},
+        mouse::{self, Cursor},
+        renderer, touch,
+        widget::{
+            tree::{State, Tag},
+            Operation, Tree,
+        },
+        Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
+        Widget,
     },
-    Element, Widget,
+    Container, Row,
 };
 
 pub use crate::style::split::{Appearance, StyleSheet};
@@ -38,7 +44,7 @@ pub use crate::style::split::{Appearance, StyleSheet};
 #[allow(missing_debug_implementations)]
 pub struct Split<'a, Message, Renderer>
 where
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The first element of the [`Split`](Split).
@@ -71,8 +77,8 @@ where
 impl<'a, Message, Renderer> Split<'a, Message, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer,
-    Renderer::Theme: StyleSheet + iced_style::container::StyleSheet,
+    Renderer: 'a + core::Renderer,
+    Renderer::Theme: StyleSheet + container::StyleSheet,
 {
     /// Creates a new [`Split`](Split).
     ///
@@ -169,15 +175,15 @@ where
 
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn tag(&self) -> Tag {
-        Tag::of::<State>()
+        Tag::of::<SplitState>()
     }
 
-    fn state(&self) -> tree::State {
-        tree::State::new(State::new())
+    fn state(&self) -> State {
+        State::new(SplitState::new())
     }
 
     fn children(&self) -> Vec<Tree> {
@@ -196,11 +202,7 @@ where
         self.height
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         let space = Row::<Message, Renderer>::new()
             .width(Length::Fill)
             .height(Length::Fill)
@@ -217,12 +219,13 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn iced_native::Clipboard,
+        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-    ) -> iced_native::event::Status {
-        let split_state: &mut State = state.state.downcast_mut();
+        viewport: &Rectangle,
+    ) -> event::Status {
+        let split_state: &mut SplitState = state.state.downcast_mut();
         let mut children = layout.children();
 
         let first_layout = children
@@ -232,10 +235,11 @@ where
             &mut state.children[0],
             event.clone(),
             first_layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         );
 
         let divider_layout = children
@@ -244,7 +248,10 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if divider_layout.bounds().contains(cursor_position) {
+                if divider_layout
+                    .bounds()
+                    .contains(cursor.position().unwrap_or_default())
+                {
                     split_state.dragging = true;
                 }
             }
@@ -278,10 +285,11 @@ where
             &mut state.children[1],
             event,
             second_layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         );
 
         first_status.merge(second_status)
@@ -291,7 +299,7 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
@@ -302,14 +310,17 @@ where
         let first_mouse_interaction = self.first.as_widget().mouse_interaction(
             &state.children[0],
             first_layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         );
         let divider_layout = children
             .next()
             .expect("Graphics: Layout should have a divider layout");
-        let divider_mouse_interaction = if divider_layout.bounds().contains(cursor_position) {
+        let divider_mouse_interaction = if divider_layout
+            .bounds()
+            .contains(cursor.position().unwrap_or_default())
+        {
             match self.axis {
                 Axis::Horizontal => mouse::Interaction::ResizingVertically,
                 Axis::Vertical => mouse::Interaction::ResizingHorizontally,
@@ -323,7 +334,7 @@ where
         let second_mouse_interaction = self.second.as_widget().mouse_interaction(
             &state.children[1],
             second_layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         );
@@ -339,10 +350,10 @@ where
         theme: &Renderer::Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
-        let split_state: &State = state.state.downcast_ref();
+        let split_state: &SplitState = state.state.downcast_ref();
         // TODO: clipping!
         let mut children = layout.children();
 
@@ -372,7 +383,10 @@ where
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },
-            if first_layout.bounds().contains(cursor_position) {
+            if first_layout
+                .bounds()
+                .contains(cursor.position().unwrap_or_default())
+            {
                 theme.hovered(self.style).first_background
             } else {
                 theme.active(self.style).first_background
@@ -386,7 +400,7 @@ where
             theme,
             style,
             first_layout,
-            cursor_position,
+            cursor,
             viewport,
         );
 
@@ -406,7 +420,10 @@ where
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             },
-            if second_layout.bounds().contains(cursor_position) {
+            if second_layout
+                .bounds()
+                .contains(cursor.position().unwrap_or_default())
+            {
                 theme.hovered(self.style).second_background
             } else {
                 theme.active(self.style).second_background
@@ -420,14 +437,17 @@ where
             theme,
             style,
             second_layout,
-            cursor_position,
+            cursor,
             viewport,
         );
 
         // Divider
         let divider_style = if split_state.dragging {
             theme.dragged(self.style)
-        } else if divider_layout.bounds().contains(cursor_position) {
+        } else if divider_layout
+            .bounds()
+            .contains(cursor.position().unwrap_or_default())
+        {
             theme.hovered(self.style)
         } else {
             theme.active(self.style)
@@ -471,7 +491,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<iced_native::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
         let _divider_layout = children.next()?;
@@ -499,24 +519,24 @@ where
 fn horizontal_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
-    limits: &iced_native::layout::Limits,
-    space: &iced_native::layout::Node,
-) -> iced_native::layout::Node
+    limits: &Limits,
+    space: &Node,
+) -> Node
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     if space.bounds().height
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
-        return iced_native::layout::Node::with_children(
+        return Node::with_children(
             space.bounds().size(),
             vec![
                 split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().height)),
                 ),
-                iced_native::layout::Node::new(Size::new(space.bounds().height, split.spacing)),
+                Node::new(Size::new(space.bounds().height, split.spacing)),
                 split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(0.0, space.bounds().width)),
@@ -548,8 +568,7 @@ where
         space.bounds().y + split.padding,
     ));
 
-    let mut divider =
-        iced_native::layout::Node::new(Size::new(space.bounds().width, split.spacing));
+    let mut divider = Node::new(Size::new(space.bounds().width, split.spacing));
     divider.move_to(Point::new(space.bounds().x, f32::from(divider_position)));
 
     let second_limits = limits
@@ -562,31 +581,31 @@ where
         space.bounds().y + f32::from(divider_position) + split.spacing + split.padding,
     ));
 
-    iced_native::layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
+    Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
 /// Do a vertical split.
 fn vertical_split<'a, Message, Renderer>(
     split: &Split<'a, Message, Renderer>,
     renderer: &Renderer,
-    limits: &iced_native::layout::Limits,
-    space: &iced_native::layout::Node,
-) -> iced_native::layout::Node
+    limits: &Limits,
+    space: &Node,
+) -> Node
 where
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     if space.bounds().width
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
     {
-        return iced_native::layout::Node::with_children(
+        return Node::with_children(
             space.bounds().size(),
             vec![
                 split.first.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
                 ),
-                iced_native::layout::Node::new(Size::new(split.spacing, space.bounds().height)),
+                Node::new(Size::new(split.spacing, space.bounds().height)),
                 split.second.as_widget().layout(
                     renderer,
                     &limits.clone().shrink(Size::new(space.bounds().width, 0.0)),
@@ -618,8 +637,7 @@ where
         space.bounds().y + split.padding,
     ));
 
-    let mut divider =
-        iced_native::layout::Node::new(Size::new(split.spacing, space.bounds().height));
+    let mut divider = Node::new(Size::new(split.spacing, space.bounds().height));
     divider.move_to(Point::new(f32::from(divider_position), space.bounds().y));
 
     let second_limits = limits
@@ -632,13 +650,13 @@ where
         space.bounds().y + split.padding,
     ));
 
-    iced_native::layout::Node::with_children(space.bounds().size(), vec![first, divider, second])
+    Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
 impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     fn from(split_pane: Split<'a, Message, Renderer>) -> Self {
@@ -648,12 +666,12 @@ where
 
 /// The state of a [`Split`](Split).
 #[derive(Clone, Debug, Default)]
-pub struct State {
+pub struct SplitState {
     /// If the divider is dragged by the user.
     dragging: bool,
 }
 
-impl State {
+impl SplitState {
     /// Creates a new [`State`](State) for a [`Split`](Split).
     ///
     /// It expects:

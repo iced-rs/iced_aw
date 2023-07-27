@@ -1,5 +1,5 @@
 //! Helper functions for overlays
-use iced_native::{Point, Size};
+use iced_widget::core::{layout, Point, Size};
 
 /// Trait containing functions for positioning of nodes.
 pub trait Position {
@@ -8,7 +8,7 @@ pub trait Position {
     fn center_and_bounce(&mut self, position: Point, bounds: Size);
 }
 
-impl Position for iced_native::layout::Node {
+impl Position for layout::Node {
     fn center_and_bounce(&mut self, position: Point, bounds: Size) {
         self.move_to(Point::new(
             (position.x - self.size().width / 2.0).max(0.0),

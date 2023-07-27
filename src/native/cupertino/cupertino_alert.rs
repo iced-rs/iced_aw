@@ -1,22 +1,27 @@
 #![allow(clippy::todo)]
 
-use iced_native::{
-    alignment,
-    event::Status,
-    keyboard,
-    layout::{Limits, Node},
-    mouse,
-    renderer::{Quad, Style},
-    touch,
-    widget::{Text, Tree},
-    Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+use iced_widget::{
+    core::{
+        self,
+        alignment::Horizontal,
+        event, keyboard,
+        layout::{Limits, Node},
+        mouse::{self, Cursor},
+        renderer::{self, Quad},
+        touch,
+        widget::Tree,
+        Background, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle,
+        Shell, Size, Widget,
+    },
+    style::application,
+    text, Text,
 };
 
 use std::ops::Range;
 
 // INTERNAL //
+use crate::graphics::SF_UI_ROUNDED;
 use crate::native::cupertino::cupertino_colours::secondary_system_fill;
-use crate::native::cupertino::fonts::SF_UI_ROUNDED;
 //
 
 /**
@@ -37,8 +42,8 @@ use crate::native::cupertino::fonts::SF_UI_ROUNDED;
 pub struct CupertinoDialogAction<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     on_pressed: Option<Message>,
 
@@ -53,8 +58,8 @@ where
 impl<'a, Message, Renderer> Default for CupertinoDialogAction<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     fn default() -> Self {
         Self {
@@ -68,8 +73,8 @@ where
 impl<'a, Message, Renderer> CupertinoDialogAction<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
+    Renderer: core::Renderer + core::text::Renderer + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     /// Creates a new [`CupertinoDialogAction`] widget.
     #[must_use]
@@ -126,10 +131,8 @@ where
 pub struct CupertinoAlert<'a, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
-
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     width: Length,
     height: Length,
@@ -150,10 +153,8 @@ where
 impl<'a, Message, Renderer> Default for CupertinoAlert<'a, Message, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
-
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     fn default() -> Self {
         Self {
@@ -172,10 +173,8 @@ where
 impl<'a, Message, Renderer> CupertinoAlert<'a, Message, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
-
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     /// Creates a new [`CupertinoAlert`] widget.
     #[must_use]
@@ -253,10 +252,8 @@ where
 impl<'a, Message, Renderer> Widget<Message, Renderer> for CupertinoAlert<'a, Message, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
-
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     fn width(&self) -> Length {
         if self.is_hidden {
@@ -296,9 +293,9 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         // Technically, only 2 actions are supported at the moment... //
@@ -330,12 +327,16 @@ where
                         border_width: 0.0,
                         border_color: Color::TRANSPARENT,
                     },
-                    iced_graphics::Background::Color(secondary_system_fill()),
+                    Background::Color(secondary_system_fill()),
                 );
 
                 // Dialog Box //
-                let Length::Fixed(width)  = self.width  else { todo!() };
-                let Length::Fixed(height) = self.height else { todo!() };
+                let Length::Fixed(width) = self.width else {
+                    todo!()
+                };
+                let Length::Fixed(height) = self.height else {
+                    todo!()
+                };
 
                 // The `center` puts the top-left corner of the rectangle in the origin, so shift the
                 // rectangle up and to the left. The `height` calculation may seem strange, but
@@ -355,7 +356,7 @@ where
                         border_width: 0.0,
                         border_color: Color::WHITE,
                     },
-                    iced_graphics::Background::Color(Color::WHITE),
+                    Background::Color(Color::WHITE),
                 );
 
                 // Bottom Section //
@@ -378,7 +379,7 @@ where
                         border_width: 0.0,
                         border_color: secondary_system_fill(),
                     },
-                    iced_graphics::Background::Color(secondary_system_fill()),
+                    Background::Color(secondary_system_fill()),
                 );
 
                 // Vertical Bar //
@@ -400,17 +401,25 @@ where
                         border_width: 0.0,
                         border_color: secondary_system_fill(),
                     },
-                    iced_graphics::Background::Color(secondary_system_fill()),
+                    Background::Color(secondary_system_fill()),
                 );
 
                 if self.actions.len() == 2 {
                     let child_1 = self.actions[0].child.as_widget();
                     let child_2 = self.actions[1].child.as_widget();
 
-                    let Length::Fixed(child_1_width)  = child_1.width()  else { todo!() };
-                    let Length::Fixed(child_1_height) = child_1.height() else { todo!() };
-                    let Length::Fixed(child_2_width)  = child_2.width()  else { todo!() };
-                    let Length::Fixed(child_2_height) = child_2.height() else { todo!() };
+                    let Length::Fixed(child_1_width) = child_1.width() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_1_height) = child_1.height() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_2_width) = child_2.width() else {
+                        todo!()
+                    };
+                    let Length::Fixed(child_2_height) = child_2.height() else {
+                        todo!()
+                    };
 
                     let mut bottom_left: Node = Node::new(Size {
                         width: child_1_width,
@@ -438,7 +447,7 @@ where
                         theme,
                         style,
                         Layout::new(&bottom_left),
-                        cursor_position,
+                        cursor,
                         viewport,
                     );
 
@@ -448,7 +457,7 @@ where
                         theme,
                         style,
                         Layout::new(&bottom_right),
-                        cursor_position,
+                        cursor,
                         viewport,
                     );
                 }
@@ -474,8 +483,7 @@ where
 
                 let title: Element<'a, Message, Renderer> =
                     CupertinoAlert::<'a, Message, Renderer>::_text_with_font(
-                        Text::new(self.title.clone())
-                            .horizontal_alignment(alignment::Horizontal::Center),
+                        Text::new(self.title.clone()).horizontal_alignment(Horizontal::Center),
                     );
 
                 title.as_widget().draw(
@@ -484,14 +492,13 @@ where
                     theme,
                     style,
                     Layout::new(&title_node),
-                    cursor_position,
+                    cursor,
                     viewport,
                 );
 
                 let content: Element<'a, Message, Renderer> =
                     CupertinoAlert::<'a, Message, Renderer>::_text_with_font(
-                        Text::new(self.content.clone())
-                            .horizontal_alignment(alignment::Horizontal::Center),
+                        Text::new(self.content.clone()).horizontal_alignment(Horizontal::Center),
                     );
 
                 content.as_widget().draw(
@@ -500,7 +507,7 @@ where
                     theme,
                     style,
                     Layout::new(&content_node),
-                    cursor_position,
+                    cursor,
                     viewport,
                 );
             };
@@ -514,11 +521,13 @@ where
         _state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-    ) -> Status {
+        _viewport: &Rectangle,
+    ) -> event::Status {
+        let cur_pos = cursor.position().unwrap_or_default();
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -527,7 +536,7 @@ where
                 // If either of the bounds width/height are 0, exit early; this means the modal
                 // is changing from hidden to visible
                 if bounds.width == 0.0 || bounds.height == 0.0 {
-                    return Status::Ignored;
+                    return event::Status::Ignored;
                 }
 
                 // TODO: Handle the case when there is only 1 button, for whatever reason... //
@@ -544,8 +553,7 @@ where
                         let hit_y: Range<f32> = (bounds.y + bounds.height / 2.0 + 10.0)
                             ..(bounds.y + bounds.height / 2.0 + 30.0);
 
-                        if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
-                        {
+                        if hit_x.contains(&cur_pos.x) && hit_y.contains(&cur_pos.y) {
                             shell.publish(
                                 self.actions[0]
                                     .on_pressed
@@ -562,8 +570,7 @@ where
                         let hit_y: Range<f32> = (bounds.y + bounds.height / 2.0 + 10.0)
                             ..(bounds.y + bounds.height / 2.0 + 30.0);
 
-                        if hit_x.contains(&cursor_position.x) && hit_y.contains(&cursor_position.y)
-                        {
+                        if hit_x.contains(&cur_pos.x) && hit_y.contains(&cur_pos.y) {
                             shell.publish(
                                 self.actions[1]
                                     .on_pressed
@@ -579,7 +586,7 @@ where
                 let hit_y: Range<f32> =
                     (bounds.y - bounds.height / 4.0)..(bounds.y + bounds.height * 0.85);
 
-                if !hit_x.contains(&cursor_position.x) || !hit_y.contains(&cursor_position.y) {
+                if !hit_x.contains(&cur_pos.x) || !hit_y.contains(&cur_pos.y) {
                     if self.backdrop.is_some() {
                         shell.publish(
                             self.backdrop
@@ -602,14 +609,14 @@ where
                             .clone()
                             .expect("Unable to retrieve the escape message"),
                     );
-                    return Status::Captured;
+                    return event::Status::Captured;
                 }
             }
 
-            _ => return Status::Ignored,
+            _ => return event::Status::Ignored,
         }
 
-        Status::Ignored
+        event::Status::Ignored
     }
 }
 
@@ -618,10 +625,8 @@ impl<'a, Message, Renderer: 'a> From<CupertinoAlert<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced_native::Renderer + iced_native::text::Renderer + 'a,
-    Renderer::Theme: iced_native::application::StyleSheet + iced_style::text::StyleSheet,
-
-    <Renderer as iced_native::text::Renderer>::Font: From<Font>,
+    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer::Theme: application::StyleSheet + text::StyleSheet,
 {
     fn from(alert: CupertinoAlert<'a, Message, Renderer>) -> Self {
         Self::new(alert)

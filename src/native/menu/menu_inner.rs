@@ -3,10 +3,14 @@
 use super::menu_bar::MenuBarState;
 use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
-use iced_native::widget::Tree;
-use iced_native::{
-    event, layout, mouse, overlay, renderer, touch, Clipboard, Color, Padding, Point, Rectangle,
-    Shell, Size, Vector,
+
+use iced_widget::core::{
+    event,
+    layout::{Limits, Node},
+    mouse::{self, Cursor},
+    overlay, renderer, touch,
+    widget::Tree,
+    Clipboard, Color, Layout, Padding, Point, Rectangle, Shell, Size, Vector,
 };
 
 /// The condition of when to close a menu
@@ -259,7 +263,7 @@ impl MenuState {
         item_height: ItemHeight,
         renderer: &Renderer,
         menu_tree: &MenuTree<'_, Message, Renderer>,
-    ) -> layout::Node
+    ) -> Node
     where
         Renderer: renderer::Renderer,
     {
@@ -293,7 +297,7 @@ impl MenuState {
                     size.height = upper_bound_rel - position;
                 }
 
-                let limits = layout::Limits::new(Size::ZERO, size);
+                let limits = Limits::new(Size::ZERO, size);
 
                 let mut node = mt.item.as_widget().layout(renderer, &limits);
                 node.move_to(Point::new(0.0, position + self.scroll_offset));
@@ -301,7 +305,7 @@ impl MenuState {
             })
             .collect::<Vec<_>>();
 
-        let mut node = layout::Node::with_children(children_bounds.size(), child_nodes);
+        let mut node = Node::with_children(children_bounds.size(), child_nodes);
         node.move_to(children_bounds.position());
         node
     }
@@ -313,7 +317,7 @@ impl MenuState {
         item_height: ItemHeight,
         renderer: &Renderer,
         menu_tree: &MenuTree<'_, Message, Renderer>,
-    ) -> layout::Node
+    ) -> Node
     where
         Renderer: renderer::Renderer,
     {
@@ -321,7 +325,7 @@ impl MenuState {
         let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
 
         let position = self.menu_bounds.child_positions[index];
-        let limits = layout::Limits::new(
+        let limits = Limits::new(
             Size::ZERO,
             get_item_size(menu_tree, children_bounds.width, item_height),
         );
@@ -421,16 +425,16 @@ where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, _renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+    fn layout(&self, _renderer: &Renderer, bounds: Size, position: Point) -> Node {
         // overlay space viewport rectangle
-        layout::Node::new(bounds).translate(Point::ORIGIN - position)
+        Node::new(bounds).translate(Point::ORIGIN - position)
     }
 
     fn on_event(
         &mut self,
         event: event::Event,
-        layout: layout::Layout<'_>,
-        view_cursor: Point,
+        layout: Layout<'_>,
+        view_cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -452,7 +456,7 @@ where
         let viewport = layout.bounds();
         let viewport_size = viewport.size();
         let overlay_offset = Point::ORIGIN - viewport.position();
-        let overlay_cursor = view_cursor - overlay_offset;
+        let overlay_cursor = view_cursor.position().unwrap_or_default() - overlay_offset;
 
         let menu_status = process_menu_events(
             self.tree,
@@ -488,8 +492,8 @@ where
             }
 
             Mouse(CursorMoved { position }) | Touch(FingerMoved { position, .. }) => {
-                let view_cursor = position;
-                let overlay_cursor = view_cursor - overlay_offset;
+                let view_cursor = Cursor::Available(position);
+                let overlay_cursor = view_cursor.position().unwrap_or_default() - overlay_offset;
                 process_overlay_events(
                     self,
                     viewport_size,
@@ -505,7 +509,13 @@ where
                 state.pressed = false;
 
                 // process close condition
-                if state.view_cursor.distance(view_cursor) < 2.0 {
+                if state
+                    .view_cursor
+                    .position()
+                    .unwrap_or_default()
+                    .distance(view_cursor.position().unwrap_or_default())
+                    < 2.0
+                {
                     let is_inside = state
                         .menu_states
                         .iter()
@@ -541,11 +551,13 @@ where
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
         style: &renderer::Style,
-        layout: layout::Layout<'_>,
-        view_cursor: Point,
+        layout: Layout<'_>,
+        view_cursor: Cursor,
     ) {
         let state = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(active_root) = state.active_root else{ return; };
+        let Some(active_root) = state.active_root else {
+            return;
+        };
 
         let viewport = layout.bounds();
         let viewport_size = viewport.size();
@@ -574,7 +586,7 @@ where
                 let view_cursor = if i == state.menu_states.len() - 1 {
                     view_cursor
                 } else {
-                    [-1.0; 2].into()
+                    Cursor::Available([-1.0; 2].into())
                 };
 
                 let draw_menu = |r: &mut Renderer| {
@@ -587,7 +599,7 @@ where
                     // calc layout
                     let children_node =
                         ms.layout(overlay_offset, slice, self.item_height, r, menu_root);
-                    let children_layout = layout::Layout::new(&children_node);
+                    let children_layout = Layout::new(&children_node);
                     let children_bounds = children_layout.bounds();
 
                     // draw menu background
@@ -725,7 +737,7 @@ fn process_menu_events<'b, Message, Renderer>(
     menu_roots: &'b mut [MenuTree<'_, Message, Renderer>],
     item_height: ItemHeight,
     event: event::Event,
-    view_cursor: Point,
+    view_cursor: Cursor,
     renderer: &Renderer,
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
@@ -737,7 +749,9 @@ where
     use event::Status;
 
     let state = tree.state.downcast_mut::<MenuBarState>();
-    let Some(active_root) = state.active_root else { return Status::Ignored; };
+    let Some(active_root) = state.active_root else {
+        return Status::Ignored;
+    };
 
     let indices = state.get_trimmed_indices().collect::<Vec<_>>();
 
@@ -759,7 +773,7 @@ where
         renderer,
         mt,
     );
-    let child_layout = layout::Layout::new(&child_node);
+    let child_layout = Layout::new(&child_node);
 
     // widget tree
     let tree = &mut tree.children[active_root].children[mt.index];
@@ -773,6 +787,7 @@ where
         renderer,
         clipboard,
         shell,
+        &Rectangle::default(),
     )
 }
 
@@ -781,7 +796,7 @@ fn process_overlay_events<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
     viewport_size: Size,
     overlay_offset: Vector,
-    view_cursor: Point,
+    view_cursor: Cursor,
     overlay_cursor: Point,
 ) -> event::Status
 where
@@ -801,8 +816,8 @@ where
 
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
 
-    let Some(active_root) = state.active_root else{
-        if !menu.bar_bounds.contains(overlay_cursor){
+    let Some(active_root) = state.active_root else {
+        if !menu.bar_bounds.contains(overlay_cursor) {
             state.reset();
         }
         return Ignored;
@@ -862,14 +877,14 @@ where
         .collect::<Vec<_>>();
 
     // * update active item
-    let Some(last_menu_state) = state.menu_states.last_mut() else{
+    let Some(last_menu_state) = state.menu_states.last_mut() else {
         // no menus left
         state.active_root = None;
 
         // keep state.open when the cursor is still inside the menu bar
         // this allows the overlay to keep drawing when the cursor is
         // moving aroung the menu bar
-        if !menu.bar_bounds.contains(overlay_cursor){
+        if !menu.bar_bounds.contains(overlay_cursor) {
             state.open = false;
         }
         return Captured;

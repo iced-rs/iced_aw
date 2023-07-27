@@ -2,8 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: split*
 
-use iced_native::{Background, Color};
-use iced_style::Theme;
+use iced_widget::{
+    core::{Background, Color},
+    style::Theme,
+};
 
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[derive(Clone, Copy, Debug)]

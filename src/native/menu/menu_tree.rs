@@ -1,7 +1,6 @@
 //! A tree structure for constructing a hierarchical menu
 
-use iced_native::{renderer, Element};
-
+use iced_widget::core::{renderer, Element};
 /// Nested menu is essentially a tree of items, a menu is a collection of items
 /// a menu itself can also be an item of another menu.
 ///
@@ -11,7 +10,7 @@ use iced_native::{renderer, Element};
 /// but there's no need to explicitly distinguish them here, if a menu tree
 /// has children, it's a menu, otherwise it's an item
 #[allow(missing_debug_implementations)]
-pub struct MenuTree<'a, Message, Renderer> {
+pub struct MenuTree<'a, Message, Renderer = crate::Renderer> {
     /// The menu tree will be flatten into a vector to build a linear widget tree,
     /// the `index` field is the index of the item in that vector
     pub(super) index: usize,

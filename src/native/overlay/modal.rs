@@ -1,27 +1,28 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_graphics::Vector;
-use iced_native::{
-    event, keyboard, layout::Limits, mouse, overlay, renderer, touch, Clipboard, Color, Event,
-    Layout, Point, Shell, Size,
+use iced_widget::core::{
+    self, event, keyboard, layout,
+    mouse::{self, Cursor},
+    renderer, touch,
+    widget::Tree,
+    Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size, Vector,
 };
-use iced_native::{widget::Tree, Element};
 
 use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
-pub struct ModalOverlay<'a, Message, Renderer>
+pub struct ModalOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Message: Clone,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
-    state: &'a mut Tree,
+    state: &'b mut Tree,
     /// The content of the [`ModalOverlay`](ModalOverlay).
-    content: Element<'a, Message, Renderer>,
+    content: &'b mut Element<'a, Message, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
@@ -30,53 +31,39 @@ where
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
-impl<'a, Message, Renderer> ModalOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> ModalOverlay<'a, 'b, Message, Renderer>
 where
     Message: Clone,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
-    pub fn new<C>(
-        state: &'a mut Tree,
-        content: C,
+    pub fn new(
+        state: &'b mut Tree,
+        content: &'b mut Element<'a, Message, Renderer>,
         backdrop: Option<Message>,
         esc: Option<Message>,
         style: <Renderer::Theme as StyleSheet>::Style,
-    ) -> Self
-    where
-        C: Into<Element<'a, Message, Renderer>>,
-    {
+    ) -> Self {
         ModalOverlay {
             state,
-            content: content.into(),
+            content,
             backdrop,
             esc,
             style,
         }
     }
-
-    /// Turn this [`ModalOverlay`] into an overlay
-    /// [`Element`](iced_native::overlay::Element).
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(position, Box::new(self))
-    }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for ModalOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> Overlay<Message, Renderer>
+    for ModalOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a + Clone,
-    Renderer: 'a + iced_native::Renderer,
+    Message: Clone,
+    Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        bounds: iced_graphics::Size,
-        position: Point,
-    ) -> iced_native::layout::Node {
-        let limits = Limits::new(Size::ZERO, bounds);
+    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+        let limits = layout::Limits::new(Size::ZERO, bounds);
 
         let mut content = self.content.as_widget().layout(renderer, &limits);
 
@@ -95,18 +82,19 @@ where
 
         content.move_to(position);
 
-        iced_native::layout::Node::with_children(max_size, vec![content])
+        layout::Node::with_children(max_size, vec![content])
     }
 
     fn on_event(
         &mut self,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
+        let viewport = layout.bounds();
         // TODO clean this up
         let esc_status = self
             .esc
@@ -128,7 +116,10 @@ where
             |(backdrop, layout)| match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if layout.bounds().contains(cursor_position) {
+                    if layout
+                        .bounds()
+                        .contains(cursor.position().unwrap_or_default())
+                    {
                         event::Status::Ignored
                     } else {
                         shell.publish(backdrop.to_owned());
@@ -147,10 +138,11 @@ where
                     .children()
                     .next()
                     .expect("Native: Layout should have a content layout."),
-                cursor_position,
+                cursor,
                 renderer,
                 clipboard,
                 shell,
+                &viewport,
             ),
             event::Status::Captured => event::Status::Captured,
         }
@@ -159,8 +151,8 @@ where
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor: Cursor,
+        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
@@ -169,7 +161,7 @@ where
                 .children()
                 .next()
                 .expect("Native: Layout should have a content layout."),
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -179,9 +171,9 @@ where
         &self,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
-        layout: iced_native::Layout<'_>,
-        cursor_position: Point,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: Cursor,
     ) {
         let bounds = layout.bounds();
 
@@ -210,7 +202,7 @@ where
             theme,
             style,
             content_layout,
-            cursor_position,
+            cursor,
             &bounds,
         );
     }

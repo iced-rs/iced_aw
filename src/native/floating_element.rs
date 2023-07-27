@@ -1,12 +1,14 @@
 //! Use a floating element to overlay an element over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
-use iced_native::{
-    event, mouse, overlay, Clipboard, Event, Layout, Length, Point, Rectangle, Shell,
-};
-use iced_native::{
+
+use iced_widget::core::{
+    self, event,
+    layout::{Limits, Node},
+    mouse::{self, Cursor},
+    overlay, renderer,
     widget::{Operation, Tree},
-    Element, Widget,
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Widget,
 };
 
 pub mod anchor;
@@ -21,11 +23,11 @@ use super::overlay::floating_element::FloatingElementOverlay;
 ///
 /// # Example
 /// ```
-/// # use iced_native::renderer::Null;
-/// # use iced_native::widget::{button, Button, Column, Text};
+/// # use iced_widget::graphics::renderer::Null;
+/// # use iced_widget::{button, Button, Column, Text};
 /// # use iced_aw::native::floating_element;
 /// #
-/// # pub type FloatingElement<'a, B, Message> = floating_element::FloatingElement<'a, B, Message, Null>;
+/// # pub type FloatingElement<'a, B, Message> = floating_element::FloatingElement<'a, B, Message>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,
@@ -40,10 +42,9 @@ use super::overlay::floating_element::FloatingElementOverlay;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingElement<'a, B, Message, Renderer>
+pub struct FloatingElement<'a, Message, Renderer = crate::Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     /// The anchor of the element.
     anchor: Anchor,
@@ -54,13 +55,12 @@ where
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The floating element of the [`FloatingElementOverlay`](FloatingElementOverlay).
-    element: B,
+    element: Element<'a, Message, Renderer>,
 }
 
-impl<'a, B, Message, Renderer> FloatingElement<'a, B, Message, Renderer>
+impl<'a, Message, Renderer> FloatingElement<'a, Message, Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
-    Renderer: iced_native::Renderer,
+    Renderer: core::Renderer,
 {
     /// Creates a new [`FloatingElement`](FloatingElement) over some content,
     /// showing the given [`Element`](iced_native::Element).
@@ -69,16 +69,17 @@ where
     ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingElement`](FloatingElement)
     ///         will be wrapped around.
     ///     * a function that will lazy create the [`Element`](iced_native::Element) for the overlay.
-    pub fn new<U>(underlay: U, element: B) -> Self
+    pub fn new<U, B>(underlay: U, element: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
+        B: Into<Element<'a, Message, Renderer>>,
     {
         FloatingElement {
             anchor: Anchor::SouthEast,
             offset: 5.0.into(),
             hidden: false,
             underlay: underlay.into(),
-            element,
+            element: element.into(),
         }
     }
 
@@ -108,19 +109,17 @@ where
     }
 }
 
-impl<'a, B, Message, Renderer> Widget<Message, Renderer>
-    for FloatingElement<'a, B, Message, Renderer>
+impl<'a, Message, Renderer> Widget<Message, Renderer> for FloatingElement<'a, Message, Renderer>
 where
-    B: Fn() -> Element<'a, Message, Renderer>,
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: core::Renderer,
 {
-    fn children(&self) -> Vec<iced_native::widget::Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.element)())]
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.underlay), Tree::new(&self.element)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.element)()]);
+        tree.diff_children(&[&self.underlay, &self.element]);
     }
 
     fn width(&self) -> Length {
@@ -131,11 +130,7 @@ where
         self.underlay.as_widget().height()
     }
 
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        limits: &iced_native::layout::Limits,
-    ) -> iced_native::layout::Node {
+    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay.as_widget().layout(renderer, limits)
     }
 
@@ -144,19 +139,21 @@ where
         state: &mut Tree,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         self.underlay.as_widget_mut().on_event(
             &mut state.children[0],
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            viewport,
         )
     }
 
@@ -164,14 +161,14 @@ where
         &self,
         state: &Tree,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
             layout,
-            cursor_position,
+            cursor,
             viewport,
             renderer,
         )
@@ -179,12 +176,12 @@ where
 
     fn draw(
         &self,
-        state: &iced_native::widget::Tree,
+        state: &Tree,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         viewport: &Rectangle,
     ) {
         self.underlay.as_widget().draw(
@@ -193,7 +190,7 @@ where
             theme,
             style,
             layout,
-            cursor_position,
+            cursor,
             viewport,
         );
     }
@@ -226,42 +223,29 @@ where
         if state.children.len() == 2 {
             let bounds = layout.bounds();
 
-            let position = match self.anchor {
-                Anchor::NorthWest => Point::new(0.0, 0.0),
-                Anchor::NorthEast => Point::new(bounds.width, 0.0),
-                Anchor::SouthWest => Point::new(0.0, bounds.height),
-                Anchor::SouthEast => Point::new(bounds.width, bounds.height),
-                Anchor::North => Point::new(bounds.center_x(), 0.0),
-                Anchor::East => Point::new(bounds.width, bounds.center_y()),
-                Anchor::South => Point::new(bounds.center_x(), bounds.height),
-                Anchor::West => Point::new(0.0, bounds.center_y()),
-            };
-
-            let position = Point::new(bounds.x + position.x, bounds.y + position.y);
-
-            Some(
-                FloatingElementOverlay::new(
+            Some(overlay::Element::new(
+                bounds.position(),
+                Box::new(FloatingElementOverlay::new(
                     &mut state.children[1],
-                    (self.element)(),
+                    &mut self.element,
                     &self.anchor,
                     &self.offset,
-                )
-                .overlay(position),
-            )
+                    bounds,
+                )),
+            ))
         } else {
             None
         }
     }
 }
 
-impl<'a, B, Message, Renderer> From<FloatingElement<'a, B, Message, Renderer>>
+impl<'a, Message, Renderer> From<FloatingElement<'a, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    B: 'a + Fn() -> Element<'a, Message, Renderer>,
     Message: 'a,
-    Renderer: 'a + iced_native::Renderer,
+    Renderer: 'a + core::Renderer,
 {
-    fn from(floating_element: FloatingElement<'a, B, Message, Renderer>) -> Self {
+    fn from(floating_element: FloatingElement<'a, Message, Renderer>) -> Self {
         Element::new(floating_element)
     }
 }

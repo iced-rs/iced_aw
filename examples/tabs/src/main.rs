@@ -1,8 +1,9 @@
 mod login;
 use iced::{
-    alignment::{Horizontal, Vertical},
-    widget::{Column, Container, Text},
-    Element, Font, Length, Sandbox, Settings,
+    alignment::{self, Horizontal, Vertical},
+    font,
+    widget::{container, text, Column, Container, Text},
+    Application, Command, Element, Font, Length, Settings, Theme,
 };
 use iced_aw::{TabLabel, Tabs};
 use login::{LoginMessage, LoginTab};
@@ -18,11 +19,8 @@ use settings::{SettingsMessage, SettingsTab, TabBarPosition};
 
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
-
-const ICON_FONT: Font = iced::Font::External {
-    name: "Icons",
-    bytes: include_bytes!("../fonts/icons.ttf"),
-};
+const ICON_FONT_BYTES: &[u8] = include_bytes!("../fonts/icons.ttf");
+const ICON_FONT: Font = Font::with_name("icons");
 
 enum Icon {
     User,
@@ -46,7 +44,12 @@ fn main() -> iced::Result {
     TabBarExample::run(Settings::default())
 }
 
-struct TabBarExample {
+enum TabBarExample {
+    Loading,
+    Loaded(State),
+}
+
+struct State {
     active_tab: TabId,
     login_tab: LoginTab,
     ferris_tab: FerrisTab,
@@ -68,76 +71,115 @@ enum Message {
     Ferris(FerrisMessage),
     Counter(CounterMessage),
     Settings(SettingsMessage),
+    Loaded(Result<(), String>),
+    FontLoaded(Result<(), font::Error>),
 }
 
-impl Sandbox for TabBarExample {
-    type Message = Message;
+async fn load() -> Result<(), String> {
+    Ok(())
+}
 
-    fn new() -> Self {
-        TabBarExample {
-            active_tab: TabId::Login,
-            login_tab: LoginTab::new(),
-            ferris_tab: FerrisTab::new(),
-            counter_tab: CounterTab::new(),
-            settings_tab: SettingsTab::new(),
-        }
+impl Application for TabBarExample {
+    type Message = Message;
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (TabBarExample, Command<Message>) {
+        (
+            TabBarExample::Loading,
+            Command::batch(vec![
+                font::load(ICON_FONT_BYTES).map(Message::FontLoaded),
+                Command::perform(load(), Message::Loaded),
+            ]),
+        )
     }
 
     fn title(&self) -> String {
         String::from("TabBar Example")
     }
 
-    fn update(&mut self, message: Self::Message) {
-        match message {
-            Message::TabSelected(selected) => self.active_tab = selected,
-            Message::Login(message) => self.login_tab.update(message),
-            Message::Ferris(message) => self.ferris_tab.update(message),
-            Message::Counter(message) => self.counter_tab.update(message),
-            Message::Settings(message) => self.settings_tab.update(message),
+    fn update(&mut self, message: Self::Message) -> Command<Message> {
+        match self {
+            TabBarExample::Loading => {
+                if let Message::Loaded(_) = message {
+                    *self = TabBarExample::Loaded(State {
+                        active_tab: TabId::Login,
+                        login_tab: LoginTab::new(),
+                        ferris_tab: FerrisTab::new(),
+                        counter_tab: CounterTab::new(),
+                        settings_tab: SettingsTab::new(),
+                    })
+                }
+            }
+            TabBarExample::Loaded(state) => match message {
+                Message::TabSelected(selected) => state.active_tab = selected,
+                Message::Login(message) => state.login_tab.update(message),
+                Message::Ferris(message) => state.ferris_tab.update(message),
+                Message::Counter(message) => state.counter_tab.update(message),
+                Message::Settings(message) => state.settings_tab.update(message),
+                _ => {}
+            },
         }
+
+        Command::none()
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let position = self
-            .settings_tab
-            .settings()
-            .tab_bar_position
-            .unwrap_or_default();
-        let theme = self
-            .settings_tab
-            .settings()
-            .tab_bar_theme
-            .unwrap_or_default();
+        match self {
+            TabBarExample::Loading => container(
+                text("Loading...")
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .size(50),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_y()
+            .center_x()
+            .into(),
+            TabBarExample::Loaded(state) => {
+                let position = state
+                    .settings_tab
+                    .settings()
+                    .tab_bar_position
+                    .unwrap_or_default();
+                let theme = state
+                    .settings_tab
+                    .settings()
+                    .tab_bar_theme
+                    .unwrap_or_default();
 
-        Tabs::new(Message::TabSelected)
-            .push(
-                TabId::Login,
-                self.login_tab.tab_label(),
-                self.login_tab.view(),
-            )
-            .push(
-                TabId::Ferris,
-                self.ferris_tab.tab_label(),
-                self.ferris_tab.view(),
-            )
-            .push(
-                TabId::Counter,
-                self.counter_tab.tab_label(),
-                self.counter_tab.view(),
-            )
-            .push(
-                TabId::Settings,
-                self.settings_tab.tab_label(),
-                self.settings_tab.view(),
-            )
-            .set_active_tab(&self.active_tab)
-            .tab_bar_style(theme)
-            .icon_font(ICON_FONT)
-            .tab_bar_position(match position {
-                TabBarPosition::Top => iced_aw::TabBarPosition::Top,
-                TabBarPosition::Bottom => iced_aw::TabBarPosition::Bottom,
-            })
-            .into()
+                Tabs::new(Message::TabSelected)
+                    .push(
+                        TabId::Login,
+                        state.login_tab.tab_label(),
+                        state.login_tab.view(),
+                    )
+                    .push(
+                        TabId::Ferris,
+                        state.ferris_tab.tab_label(),
+                        state.ferris_tab.view(),
+                    )
+                    .push(
+                        TabId::Counter,
+                        state.counter_tab.tab_label(),
+                        state.counter_tab.view(),
+                    )
+                    .push(
+                        TabId::Settings,
+                        state.settings_tab.tab_label(),
+                        state.settings_tab.view(),
+                    )
+                    .set_active_tab(&state.active_tab)
+                    .tab_bar_style(theme)
+                    .icon_font(ICON_FONT)
+                    .tab_bar_position(match position {
+                        TabBarPosition::Top => iced_aw::TabBarPosition::Top,
+                        TabBarPosition::Bottom => iced_aw::TabBarPosition::Bottom,
+                    })
+                    .into()
+            }
+        }
     }
 }
 

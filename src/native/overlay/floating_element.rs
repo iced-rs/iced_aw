@@ -1,111 +1,113 @@
 //! Use a floating element to overlay a element over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
-use iced_native::{event, layout::Limits, overlay, Clipboard, Event, Layout, Point, Shell, Size};
-use iced_native::{widget::Tree, Element};
+
+use iced_widget::core::{
+    self, event, layout,
+    mouse::{self, Cursor},
+    overlay, renderer,
+    widget::Tree,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
+};
 
 use crate::native::floating_element::{Anchor, Offset};
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
-/// rendering a [`Element`](iced_native::Element) as an overlay.
+/// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, Message, Renderer: iced_native::Renderer> {
+pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     /// The state of the element.
-    state: &'a mut Tree,
+    state: &'b mut Tree,
     /// The floating element
-    element: Element<'a, Message, Renderer>,
+    element: &'b mut Element<'a, Message, Renderer>,
     /// The anchor of the element.
-    anchor: &'a Anchor,
+    anchor: &'b Anchor,
     /// The offset of the element.
-    offset: &'a Offset,
+    offset: &'b Offset,
+    /// The bounds of the underlay element.
+    underlay_bounds: Rectangle,
 }
 
-impl<'a, Message, Renderer> FloatingElementOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
-    /// [`Element`](iced_native::Element).
-    pub fn new<B>(state: &'a mut Tree, element: B, anchor: &'a Anchor, offset: &'a Offset) -> Self
-    where
-        B: Into<Element<'a, Message, Renderer>>,
-    {
+    /// [`Element`](iced_widget::core::Element).
+    pub fn new(
+        state: &'b mut Tree,
+        element: &'b mut Element<'a, Message, Renderer>,
+        anchor: &'b Anchor,
+        offset: &'b Offset,
+        underlay_bounds: Rectangle,
+    ) -> Self {
         FloatingElementOverlay {
             state,
-            element: element.into(),
+            element,
             anchor,
             offset,
+            underlay_bounds,
         }
-    }
-
-    /// Turns the [`FloatingElementOverlay`](FloatingElementOverlay) into an
-    /// overlay [`Element`](iced_native::overlay::Element) at the given target
-    /// position.
-    #[must_use]
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
-        overlay::Element::new(position, Box::new(self))
     }
 }
 
-impl<'a, Message, Renderer> iced_native::Overlay<Message, Renderer>
-    for FloatingElementOverlay<'a, Message, Renderer>
+impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
+    for FloatingElementOverlay<'a, 'b, Message, Renderer>
 where
-    Message: 'a,
-    Renderer: iced_native::Renderer + 'a,
+    Renderer: core::Renderer,
 {
-    fn layout(
-        &self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-    ) -> iced_native::layout::Node {
-        let limits = Limits::new(Size::ZERO, bounds);
-        let mut element = self.element.as_widget().layout(renderer, &limits);
+    fn layout(&self, renderer: &Renderer, _bounds: Size, position: Point) -> layout::Node {
+        // Constrain overlay to fit inside the underlay's bounds
+        let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
+            .width(Length::Fill)
+            .height(Length::Fill);
+        let mut node = self.element.as_widget().layout(renderer, &limits);
 
-        match self.anchor {
-            Anchor::NorthWest => element.move_to(Point::new(
-                position.x + self.offset.x,
+        let position = match self.anchor {
+            Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
+            Anchor::NorthEast => Point::new(
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
                 position.y + self.offset.y,
-            )),
-            Anchor::NorthEast => element.move_to(Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y + self.offset.y,
-            )),
-            Anchor::SouthWest => element.move_to(Point::new(
+            ),
+            Anchor::SouthWest => Point::new(
                 position.x + self.offset.x,
-                position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::SouthEast => element.move_to(Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::North => element.move_to(Point::new(
-                position.x + self.offset.x - element.bounds().width / 2.0,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+            ),
+            Anchor::SouthEast => Point::new(
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+            ),
+            Anchor::North => Point::new(
+                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                    + self.offset.x,
                 position.y + self.offset.y,
-            )),
-            Anchor::East => element.move_to(Point::new(
-                position.x - element.bounds().width - self.offset.x,
-                position.y - element.bounds().height / 2.0,
-            )),
-            Anchor::South => element.move_to(Point::new(
-                position.x + self.offset.x - element.bounds().width / 2.0,
-                position.y - element.bounds().height - self.offset.y,
-            )),
-            Anchor::West => element.move_to(Point::new(
+            ),
+            Anchor::East => Point::new(
+                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                    + self.offset.y,
+            ),
+            Anchor::South => Point::new(
+                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                    + self.offset.x,
+                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+            ),
+            Anchor::West => Point::new(
                 position.x + self.offset.x,
-                position.y - element.bounds().height / 2.0,
-            )),
-        }
+                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                    + self.offset.y,
+            ),
+        };
 
-        element
+        node.move_to(position);
+        node
     }
 
     fn on_event(
         &mut self,
         event: Event,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
@@ -114,45 +116,47 @@ where
             self.state,
             event,
             layout,
-            cursor_position,
+            cursor,
             renderer,
             clipboard,
             shell,
+            &layout.bounds(),
         )
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor_position: Point,
-        viewport: &iced_graphics::Rectangle,
+        cursor: Cursor,
+        viewport: &Rectangle,
         renderer: &Renderer,
-    ) -> iced_native::mouse::Interaction {
-        self.element.as_widget().mouse_interaction(
-            self.state,
-            layout,
-            cursor_position,
-            viewport,
-            renderer,
-        )
+    ) -> mouse::Interaction {
+        self.element
+            .as_widget()
+            .mouse_interaction(self.state, layout, cursor, viewport, renderer)
     }
 
     fn draw(
         &self,
         renderer: &mut Renderer,
         theme: &Renderer::Theme,
-        style: &iced_native::renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
-        cursor_position: Point,
+        cursor: Cursor,
     ) {
-        self.element.as_widget().draw(
-            self.state,
-            renderer,
-            theme,
-            style,
-            layout,
-            cursor_position,
-            &layout.bounds(),
-        );
+        let bounds = layout.bounds();
+        self.element
+            .as_widget()
+            .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
+    }
+
+    fn overlay<'c>(
+        &'c mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'c, Message, Renderer>> {
+        self.element
+            .as_widget_mut()
+            .overlay(self.state, layout, renderer)
     }
 }

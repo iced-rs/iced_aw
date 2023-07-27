@@ -1,5 +1,5 @@
 //! The default icon font of the widgets of this library.
-use iced_graphics::Font;
+use iced_widget::core::Font;
 
 #[cfg(feature = "icons")]
 mod bootstrap;
@@ -11,19 +11,21 @@ mod required;
 #[cfg(not(feature = "icons"))]
 pub use required::*;
 
+/// The default icon font bytes for loading the font into iced.
+#[cfg(feature = "icons")]
+pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
+
+/// The default icon font bytes for loading the font into iced.
+#[cfg(not(feature = "icons"))]
+pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");
+
 /// The default icon font.
 #[cfg(feature = "icons")]
-pub const ICON_FONT: Font = iced_native::Font::External {
-    name: "Icons",
-    bytes: include_bytes!("./fonts/bootstrap-icons.ttf"),
-};
+pub const ICON_FONT: Font = Font::with_name("bootstrap-icons");
 
 /// The default icon font.
 #[cfg(not(feature = "icons"))]
-pub const ICON_FONT: Font = iced_native::Font::External {
-    name: "Icons",
-    bytes: include_bytes!("./fonts/required-icons.ttf"),
-};
+pub const ICON_FONT: Font = Font::with_name("required-icons");
 
 impl From<Icon> for char {
     fn from(icon: Icon) -> Self {
