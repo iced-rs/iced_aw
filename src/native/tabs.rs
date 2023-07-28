@@ -559,7 +559,7 @@ where
         operation: &mut dyn Operation<Message>,
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
-        operation.container(None, &mut |operation| {
+        operation.container(None, layout.bounds(), &mut |operation| {
             self.tabs[active_tab].as_widget().operate(
                 &mut tree.children[active_tab],
                 layout

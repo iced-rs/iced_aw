@@ -169,7 +169,7 @@ impl Application for App {
             SizeOption::Uniform => {
                 menu_bar!(menu_1(self), menu_2(self), menu_3(self), menu_4(self))
                     .item_width(ItemWidth::Uniform(180))
-                    .item_height(ItemHeight::Uniform(30))
+                    .item_height(ItemHeight::Uniform(25))
             }
             SizeOption::Static => menu_bar!(
                 menu_1(self),
@@ -179,7 +179,7 @@ impl Application for App {
                 menu_5(self),
             )
             .item_width(ItemWidth::Static(180))
-            .item_height(ItemHeight::Static(30)),
+            .item_height(ItemHeight::Static(25)),
         }
         .spacing(4.0)
         .bounds_expand(30)
