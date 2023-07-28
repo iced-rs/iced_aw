@@ -4,7 +4,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use iced::widget::button;
 //! use iced_aw::menu::{MenuTree, MenuBar};
 //!

@@ -6,7 +6,7 @@ use chrono::Local;
 
 use chrono::{Datelike, Duration, NaiveDate};
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 /// The date value
 #[derive(Clone, Copy, Debug, Default)]
@@ -222,59 +222,58 @@ pub fn month_as_string(date: NaiveDate) -> String {
     date.format("%B").to_string()
 }
 
-lazy_static! {
-    /// Gets the length of the longest month name.
-    pub static ref MAX_MONTH_STR_LEN: usize = {
-        let months = [
-            NaiveDate::from_ymd_opt(0, 1, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 2, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 3, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 4, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 5, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 6, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 7, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 8, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 9, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 10, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 11, 1).expect("Year, Month or Day doesnt Exist"),
-            NaiveDate::from_ymd_opt(0, 12, 1).expect("Year, Month or Day doesnt Exist"),
-        ];
+/// Gets the length of the longest month name.
+pub static MAX_MONTH_STR_LEN: Lazy<usize> = Lazy::new(|| {
+    let months = [
+        NaiveDate::from_ymd_opt(0, 1, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 2, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 3, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 4, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 5, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 6, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 7, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 8, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 9, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 10, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 11, 1).expect("Year, Month or Day doesnt Exist"),
+        NaiveDate::from_ymd_opt(0, 12, 1).expect("Year, Month or Day doesnt Exist"),
+    ];
 
-        let max = months.iter()
-            .map(|m| month_as_string(*m))
-            .map(|s| s.len())
-            .max().expect("There should be a maximum element");
+    let max = months
+        .iter()
+        .map(|m| month_as_string(*m))
+        .map(|s| s.len())
+        .max()
+        .expect("There should be a maximum element");
 
-        max
-    };
+    max
+});
 
-    /// Gets the labels of the weekdays containing the first two characters of
-    /// the weekdays.
-    pub static ref WEEKDAY_LABELS: Vec<String> = {
-        let days = [
-            // Monday
-            NaiveDate::from_ymd_opt(2020, 6, 1).expect("Year, Month or Day doesnt Exist"),
-            // Tuesday
-            NaiveDate::from_ymd_opt(2020, 6, 2).expect("Year, Month or Day doesnt Exist"),
-            // Wednesday
-            NaiveDate::from_ymd_opt(2020, 6, 3).expect("Year, Month or Day doesnt Exist"),
-            // Thursday
-            NaiveDate::from_ymd_opt(2020, 6, 4).expect("Year, Month or Day doesnt Exist"),
-            // Friday
-            NaiveDate::from_ymd_opt(2020, 6, 5).expect("Year, Month or Day doesnt Exist"),
-            // Saturday
-            NaiveDate::from_ymd_opt(2020, 6, 6).expect("Year, Month or Day doesnt Exist"),
-            // Sunday
-            NaiveDate::from_ymd_opt(2020, 6, 7).expect("Year, Month or Day doesnt Exist"),
+/// Gets the labels of the weekdays containing the first two characters of
+/// the weekdays.
+pub static WEEKDAY_LABELS: Lazy<Vec<String>> = Lazy::new(|| {
+    let days = [
+        // Monday
+        NaiveDate::from_ymd_opt(2020, 6, 1).expect("Year, Month or Day doesnt Exist"),
+        // Tuesday
+        NaiveDate::from_ymd_opt(2020, 6, 2).expect("Year, Month or Day doesnt Exist"),
+        // Wednesday
+        NaiveDate::from_ymd_opt(2020, 6, 3).expect("Year, Month or Day doesnt Exist"),
+        // Thursday
+        NaiveDate::from_ymd_opt(2020, 6, 4).expect("Year, Month or Day doesnt Exist"),
+        // Friday
+        NaiveDate::from_ymd_opt(2020, 6, 5).expect("Year, Month or Day doesnt Exist"),
+        // Saturday
+        NaiveDate::from_ymd_opt(2020, 6, 6).expect("Year, Month or Day doesnt Exist"),
+        // Sunday
+        NaiveDate::from_ymd_opt(2020, 6, 7).expect("Year, Month or Day doesnt Exist"),
+    ];
 
-        ];
-
-        days.iter()
-            .map(|d| d.format("%a").to_string())
-            .map(|s| s[0..2].to_owned())
-            .collect()
-    };
-}
+    days.iter()
+        .map(|d| d.format("%a").to_string())
+        .map(|s| s[0..2].to_owned())
+        .collect()
+});
 
 #[cfg(test)]
 

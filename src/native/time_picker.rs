@@ -28,7 +28,7 @@ pub use crate::style::time_picker::{Appearance, StyleSheet};
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::{TimePicker,time_picker};
+/// # use iced_aw::{TimePicker, time_picker};
 /// # use iced_native::widget::{button, Button, Text};
 /// #
 /// #[derive(Clone, Debug)]

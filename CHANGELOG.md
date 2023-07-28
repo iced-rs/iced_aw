@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Breaking Selection list Message Type is now Name((usize, T)) for on_select.
 - Upgraded to Latest Iced 0.10.0.
 - Depreciating Older Versions of Iced_aw.
+- Switched lazy_static to OnceCell
 
 ### Fixed
 - Floating Element Position is corrected. Original position issue was due to Center_x containg both X and Width/2.
