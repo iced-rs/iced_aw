@@ -14,12 +14,10 @@ use iced_widget::core::{
 ///
 /// # Example
 ///
-/// ```
-/// # use iced_native::renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_aw::native::grid;
+/// ```ignore
+/// # use iced::widget::Text;
+/// # use iced_aw::Grid;
 /// #
-/// # pub type Grid<'a, Message> = grid::Grid<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }

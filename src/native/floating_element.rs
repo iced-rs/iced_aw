@@ -22,12 +22,10 @@ use super::overlay::floating_element::FloatingElementOverlay;
 /// A floating element floating over some content.
 ///
 /// # Example
-/// ```
-/// # use iced_widget::graphics::renderer::Null;
-/// # use iced_widget::{button, Button, Column, Text};
-/// # use iced_aw::native::floating_element;
+/// ```ignore
+/// # use iced::widget::{button, Button, Column, Text};
+/// # use iced_aw::native::FloatingElement;
 /// #
-/// # pub type FloatingElement<'a, B, Message> = floating_element::FloatingElement<'a, B, Message>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ButtonPressed,

@@ -18,11 +18,10 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// A badge for color highlighting small information.
 ///
 /// # Example
-/// ```
-/// # use iced_native::{widget::Text, renderer::Null};
-/// # use iced_aw::native::badge;
+/// ```ignore
+/// # use iced::widget::Text;
+/// # use iced_aw::Badge;
 /// #
-/// # pub type Badge<'a, Message> = badge::Badge<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 /// }

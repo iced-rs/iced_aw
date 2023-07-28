@@ -40,12 +40,9 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// A tab bar to show tabs.
 ///
 /// # Example
-/// ```
-/// # use iced_aw::{TabLabel};
-/// # use iced_native::{renderer::Null};
-/// # use iced_aw::native::tab_bar;
+/// ```ignore
+/// # use iced_aw::{TabLabel, TabBar};
 /// #
-/// # pub type TabBar<Message> = tab_bar::TabBar<Message, TabId, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(TabId),

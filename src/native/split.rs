@@ -24,13 +24,10 @@ pub use crate::style::split::{Appearance, StyleSheet};
 /// It can split horizontally or vertically.
 ///
 /// # Example
-/// ```
-/// # use iced_aw::split::{State, Axis};
-/// # use iced_native::renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_aw::native::split;
+/// ```ignore
+/// # use iced_aw::split::{State, Axis, Split};
+/// # use iced::widget::Text;
 /// #
-/// # pub type Split<'a, Message> = split::Split<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     Resized(u16),

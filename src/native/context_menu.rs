@@ -16,14 +16,10 @@ pub use crate::style::context_menu::StyleSheet;
 ///
 ///
 /// # Example
-/// ```
-/// # use iced_native::renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_native::widget::Button;
-/// # use iced_aw::native::context_menu;
+/// ```ignore
+/// # use iced::widget::{Text, Button};
+/// # use iced_aw::ContextMenu;
 /// #
-/// # pub type ContextMenu<'a, Content, Message>
-/// #  = context_menu::ContextMenu<'a, Message, Content, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     Action1,

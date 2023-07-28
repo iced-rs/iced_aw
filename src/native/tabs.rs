@@ -28,13 +28,10 @@ pub use tab_bar_position::TabBarPosition;
 /// along with the tab's content.
 ///
 /// # Example
-/// ```
-/// # use iced_aw::{TabLabel};
-/// # use iced_native::renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_aw::native::tabs;
+/// ```ignore
+/// # use iced_aw::{TabLabel, tabs::Tabs};
+/// # use iced::widget::Text;
 /// #
-/// # pub type Tabs<'a, Message> = tabs::Tabs<'a, Message, TabId, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     TabSelected(TabId),

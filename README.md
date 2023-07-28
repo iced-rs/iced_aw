@@ -13,18 +13,18 @@ Every widget is hidden by a feature gate. This allows you to cherry pick the wid
 Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
-iced = "0.9.0"
-iced_aw = { version = "0.5", default-features = false, features = [...] }
+iced = "0.10.0"
+iced_aw = { version = "0.6.0", default-features = false, features = [...] }
 ```
 
 ## Versioning
 
 | `iced` version | `iced_aw` version |
 | -------------- | ----------------- |
-| 0.4            | 0.2               |
-| 0.7            | 0.3               |
 | 0.8            | 0.4               |
 | 0.9            | 0.5               |
+| 0.10           | 0.6               |
+
 ## Widgets
 
 

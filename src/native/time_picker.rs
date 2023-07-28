@@ -28,11 +28,9 @@ pub use crate::style::time_picker::{Appearance, StyleSheet};
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::time_picker;
-/// # use iced_native::renderer::Null;
+/// # use iced_aw::{TimePicker,time_picker};
 /// # use iced_native::widget::{button, Button, Text};
 /// #
-/// # pub type TimePicker<'a, Message> = iced_aw::TimePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,

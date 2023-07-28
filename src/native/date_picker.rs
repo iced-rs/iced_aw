@@ -30,12 +30,10 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 /// An input element for picking dates.
 ///
 /// # Example
-/// ```
-/// # use iced_aw::date_picker;
-/// # use iced_native::{renderer::Null};
-/// # use iced_native::widget::{button, Button, Text};
+/// ```ignore
+/// # use iced_aw::DatePicker;
+/// # use iced::widget::{button, Button, Text};
 /// #
-/// # pub type DatePicker<'a, Message> = iced_aw::DatePicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,

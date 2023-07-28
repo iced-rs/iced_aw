@@ -29,11 +29,9 @@ use super::overlay::color_picker::{
 ///
 /// # Example
 /// ```ignore
-/// # use iced_aw::pure::color_picker;
-/// # use iced_native::{Color, renderer::Null};
-/// # use iced_pure::widget::{button, Button, Text};
+/// # use iced_aw::ColorPicker;
+/// # use iced::{Color, widget::{button, Button, Text}};
 /// #
-/// # pub type ColorPicker<'a, Message> = iced_aw::pure::ColorPicker<'a, Message, Null>;
 /// #[derive(Clone, Debug)]
 /// enum Message {
 ///     Open,

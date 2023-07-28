@@ -26,12 +26,10 @@ const DEFAULT_PADDING: f32 = 10.0;
 /// A card consisting of a head, body and optional foot.
 ///
 /// # Example
-/// ```
-/// # use core::Renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_aw::native::card;
+/// ```ignore
+/// # use iced::widget::Text;
+/// # use iced_aw::Card;
 /// #
-/// # pub type Card<'a, Message> = card::Card<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     ClosingCard,

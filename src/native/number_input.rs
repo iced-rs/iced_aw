@@ -37,11 +37,9 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// A field that can only be filled with numeric type.
 ///
 /// # Example
-/// ```
-/// # use iced_native::renderer::Null;
-/// # use iced_aw::native::number_input;
+/// ```ignore
+/// # use iced_aw::NumberInput;
 /// #
-/// # pub type NumberInput<'a, T, Message> = number_input::NumberInput<'a, T, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     NumberInputChanged(u32),

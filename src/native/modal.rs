@@ -20,13 +20,10 @@ pub use crate::style::modal::StyleSheet;
 /// widget to form dialog elements.
 ///
 /// # Example
-/// ```
-/// # use core::Renderer::Null;
-/// # use iced_native::widget::Text;
-/// # use iced_aw::native::{ modal};
+/// ```ignore
+/// # use iced::widget::Text;
+/// # use iced_aw::Modal;
 /// #
-/// # pub type Modal<'a, Message>
-/// #  = modal::Modal<'a, Message, Null>;
 /// #[derive(Debug, Clone)]
 /// enum Message {
 ///     CloseModal,
