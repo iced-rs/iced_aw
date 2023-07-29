@@ -62,7 +62,7 @@ where
     underlay: Element<'a, Message, Renderer<Theme>>,
     /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_cancel: Message,
-    /// The function thet produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
+    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
     style: <Theme as StyleSheet>::Style,
@@ -80,12 +80,12 @@ where
     /// It expects:
     ///     * if the overlay of the color picker is visible.
     ///     * the initial color to show.
-    ///     * the underlay [`Element`](iced_pure::Element) on which this [`ColorPicker`](ColorPicker)
+    ///     * the underlay [`Element`] on which this [`ColorPicker`](ColorPicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
     ///         is pressed.
     ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
-    ///         is pressed, which takes the picked [`Color`](iced_native::Color) value.
+    ///         is pressed, which takes the picked [`Color`] value.
     pub fn new<U, F>(
         show_picker: bool,
         color: Color,

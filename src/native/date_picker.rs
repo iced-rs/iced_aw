@@ -83,7 +83,7 @@ where
     /// It expects:
     ///     * if the overlay of the date picker is visible.
     ///     * the initial date to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`DatePicker`](DatePicker)
+    ///     * the underlay [`Element`] on which this [`DatePicker`](DatePicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
     ///         is pressed.

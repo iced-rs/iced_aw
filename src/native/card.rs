@@ -57,7 +57,7 @@ where
     max_width: f32,
     /// The maximum height of the [`Card`](Card).
     max_height: f32,
-    /// The padding of teh head fo the [`Card`](Card).
+    /// The padding of the head of the [`Card`](Card).
     padding_head: f32,
     /// The padding of the body of the [`Card`](Card).
     padding_body: f32,
@@ -67,11 +67,11 @@ where
     close_size: Option<f32>,
     /// The optional message that is send if the close icon of the [`Card`](Card) is pressed.
     on_close: Option<Message>,
-    /// The head [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The head [`Element`] of the [`Card`](Card).
     head: Element<'a, Message, Renderer>,
-    /// The body [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The body [`Element`] of the [`Card`](Card).
     body: Element<'a, Message, Renderer>,
-    /// The optional foot [`Element`](iced_native::Element) of the [`Card`](Card).
+    /// The optional foot [`Element`] of the [`Card`](Card).
     foot: Option<Element<'a, Message, Renderer>>,
     /// The style of the [`Card`](Card).
     style: <Renderer::Theme as StyleSheet>::Style,
@@ -85,9 +85,9 @@ where
     /// Creates a new [`Card`](Card) containing the given head and body.
     ///
     /// It expects:
-    ///     * the head [`Element`](iced_native::Element) to display at the top of
+    ///     * the head [`Element`] to display at the top of
     ///         the [`Card`](Card).
-    ///     * the body [`Element`](iced_native::Element) to display at the middle
+    ///     * the body [`Element`] to display at the middle
     ///         of the [`Card`](Card).
     pub fn new<H, B>(head: H, body: B) -> Self
     where
@@ -111,8 +111,7 @@ where
         }
     }
 
-    /// Sets the [`Element`](iced_native::Element) of the foot of the
-    /// [`Card`](Card).
+    /// Sets the [`Element`] of the foot of the [`Card`](Card).
     #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self
     where

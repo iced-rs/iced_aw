@@ -9,7 +9,7 @@ use std::{borrow::Cow, hash::Hash};
 
 /// Creates a [`Grid`] with the given children.
 ///
-/// [`Grid`]: iced_aw::Grid
+/// [`Grid`]: crate::Grid
 #[cfg(feature = "grid")]
 #[macro_export]
 macro_rules! grid {
@@ -21,9 +21,9 @@ macro_rules! grid {
     );
 }
 
-/// Creates a Horizontal [`Wrap`] with the given children.
+/// Creates a horizontal [`Wrap`] with the given children.
 ///
-/// [`Wrap`]: iced_aw::Wrap
+/// [`Wrap`]: crate::Wrap
 #[cfg(feature = "wrap")]
 #[macro_export]
 macro_rules! wrap_horizontal {
@@ -35,9 +35,9 @@ macro_rules! wrap_horizontal {
     );
 }
 
-/// Creates a Horizontal [`Wrap`] with the given children.
+/// Creates a vertical [`Wrap`] with the given children.
 ///
-/// [`Wrap`]: iced_aw::Wrap
+/// [`Wrap`]: crate::Wrap
 #[cfg(feature = "wrap")]
 #[macro_export]
 macro_rules! wrap_vertical {
@@ -51,7 +51,7 @@ macro_rules! wrap_vertical {
 
 /// Creates a [`MenuTree`] with the given children.
 ///
-/// [`MenuTree`]: iced_aw::MenuTree
+/// [`MenuTree`]: crate::MenuTree
 #[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_tree {
@@ -65,7 +65,7 @@ macro_rules! menu_tree {
 
 /// Creates a [`MenuBar`] with the given children.
 ///
-/// [`MenuBar`]: iced_aw::MenuBar
+/// [`MenuBar`]: crate::MenuBar
 #[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_bar {
@@ -78,7 +78,9 @@ macro_rules! menu_bar {
 }
 
 #[cfg(feature = "menu")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`MenuBar`] Widget.
+///
+/// [`MenuBar`]: crate::MenuBar
 #[must_use]
 pub fn menu_bar<Message, Renderer>(
     menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
@@ -91,7 +93,9 @@ where
 }
 
 #[cfg(feature = "menu")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`MenuTree`] Widget.
+///
+/// [`MenuTree`]: crate::MenuTree
 #[must_use]
 pub fn menu_tree<'a, Message, Renderer>(
     item: impl Into<Element<'a, Message, Renderer>>,
@@ -104,7 +108,9 @@ where
 }
 
 #[cfg(feature = "badge")]
-/// Shortcut helper to create a Badge Widget.
+/// Shortcut helper to create a [`Badge`] Widget.
+///
+/// [`Badge`]: crate::Badge
 pub fn badge<'a, Message, Renderer>(
     content: impl Into<Element<'a, Message, Renderer>>,
 ) -> crate::Badge<'a, Message, Renderer>
@@ -116,7 +122,9 @@ where
 }
 
 #[cfg(feature = "card")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`Card`] Widget.
+///
+/// [`Card`]: crate::Card
 pub fn card<'a, Message, Renderer>(
     head: impl Into<Element<'a, Message, Renderer>>,
     body: impl Into<Element<'a, Message, Renderer>>,
@@ -129,7 +137,9 @@ where
 }
 
 #[cfg(feature = "color_picker")]
-/// Shortcut helper to create a ``ColorPicker`` Widget.
+/// Shortcut helper to create a [`ColorPicker`] Widget.
+///
+/// [`ColorPicker`]: crate::ColorPicker
 pub fn color_picker<'a, Message, Theme, F>(
     show_picker: bool,
     color: Color,
@@ -149,7 +159,9 @@ where
 }
 
 #[cfg(feature = "date_picker")]
-/// Shortcut helper to create a ``ColorPicker`` Widget.
+/// Shortcut helper to create a [`DatePicker`] Widget.
+///
+/// [`DatePicker`]: crate::DatePicker
 pub fn date_picker<'a, Message, Theme, F>(
     show_picker: bool,
     date: impl Into<crate::core::date::Date>,
@@ -170,7 +182,9 @@ where
 }
 
 #[cfg(feature = "floating_element")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`FloatingElement`] Widget.
+///
+/// [`FloatingElement`]: crate::FloatingElement
 pub fn floating_element<'a, Message, Renderer>(
     underlay: impl Into<Element<'a, Message, Renderer>>,
     element: impl Into<Element<'a, Message, Renderer>>,
@@ -183,7 +197,9 @@ where
 }
 
 #[cfg(feature = "grid")]
-/// Shortcut helper to create a Grid Widget.
+/// Shortcut helper to create a [`Grid`] Widget.
+///
+/// [`Grid`]: crate::Grid
 #[must_use]
 pub fn grid<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
@@ -195,7 +211,9 @@ where
 }
 
 #[cfg(feature = "wrap")]
-/// Shortcut helper to create a Wrap Widget.
+/// Shortcut helper to create a horizontal [`Wrap`] Widget.
+///
+/// [`Wrap`]: crate::Wrap
 #[must_use]
 pub fn wrap_horizontal<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
@@ -207,7 +225,9 @@ where
 }
 
 #[cfg(feature = "wrap")]
-/// Shortcut helper to create a Wrap Widget.
+/// Shortcut helper to create a vertical [`Wrap`] Widget.
+///
+/// [`Wrap`]: crate::Wrap
 #[must_use]
 pub fn wrap_vertical<Message, Renderer>(
     children: Vec<Element<Message, Renderer>>,
@@ -219,7 +239,9 @@ where
 }
 
 #[cfg(feature = "icon_text")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create an [`IconText`] Widget.
+///
+/// [`IconText`]: crate::IconText
 #[must_use]
 pub fn icon_text<Renderer>(label: impl Into<String>) -> crate::IconText<Renderer>
 where
@@ -229,7 +251,9 @@ where
 }
 
 #[cfg(feature = "modal")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`Modal`] Widget.
+///
+/// [`Modal`]: crate::Modal
 #[must_use]
 pub fn modal<'a, Message, Renderer>(
     show_modal: bool,
@@ -245,7 +269,9 @@ where
 }
 
 #[cfg(feature = "number_input")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`NumberInput`] Widget.
+///
+/// [`NumberInput`]: crate::NumberInput
 #[must_use]
 pub fn number_input<'a, T, Message, Renderer, F>(
     value: T,
@@ -272,7 +298,9 @@ where
 }
 
 #[cfg(feature = "selection_list")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`SelectionList`] Widget.
+///
+/// [`SelectionList`]: crate::SelectionList
 #[must_use]
 pub fn selection_list_with<'a, T, Message, Renderer>(
     options: impl Into<Cow<'a, [T]>>,
@@ -304,7 +332,9 @@ where
 }
 
 #[cfg(feature = "selection_list")]
-/// Shortcut helper to create a Card Widget.
+/// Shortcut helper to create a [`SelectionList`] Widget.
+///
+/// [`SelectionList`]: crate::SelectionList
 #[must_use]
 pub fn selection_list<'a, T, Message, Renderer>(
     options: impl Into<Cow<'a, [T]>>,

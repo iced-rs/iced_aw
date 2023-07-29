@@ -165,7 +165,7 @@ impl From<Time> for chrono::NaiveTime {
             Period::Pm => (h + 12) % 24,
         };
 
-        Self::from_hms_opt(h, m, s).expect("Time Convertion failed. H, M, or S was to large.")
+        Self::from_hms_opt(h, m, s).expect("Time Conversion failed. H, M, or S was too large.")
     }
 }
 
@@ -199,7 +199,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(8, 52, 17).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(8, 52, 17).expect("Time Conversion failed")
         );
 
         let time = Time::Hms {
@@ -212,7 +212,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(23, 48, 39).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(23, 48, 39).expect("Time Conversion failed")
         );
 
         let time = Time::Hms {
@@ -225,7 +225,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(8, 52, 17).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(8, 52, 17).expect("Time Conversion failed")
         );
 
         let time = Time::Hms {
@@ -238,7 +238,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(20, 52, 17).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(20, 52, 17).expect("Time Conversion failed")
         );
 
         let time = Time::Hms {
@@ -251,7 +251,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(0, 52, 17).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(0, 52, 17).expect("Time Conversion failed")
         );
 
         let time = Time::Hms {
@@ -264,7 +264,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(12, 52, 17).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(12, 52, 17).expect("Time Conversion failed")
         );
 
         let time = Time::Hm {
@@ -276,7 +276,7 @@ mod tests {
         let naive: NaiveTime = time.into();
         assert_eq!(
             naive,
-            NaiveTime::from_hms_opt(17, 52, 0).expect("Time Convertion failed")
+            NaiveTime::from_hms_opt(17, 52, 0).expect("Time Conversion failed")
         );
     }
 }

@@ -9,7 +9,7 @@ use iced_widget::{
 /// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
-    /// The backgronud of the [`ContextMenu`](crate::native::ContextMenu).
+    /// The background of the [`ContextMenu`](crate::native::ContextMenu).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,

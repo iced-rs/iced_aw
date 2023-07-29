@@ -46,7 +46,7 @@ where
     vertical_alignment: Alignment,
     /// The style of the [`Badge`](Badge).
     style: <Renderer::Theme as StyleSheet>::Style,
-    /// The content [`Element`](iced_native::Element) of the [`Badge`](Badge).
+    /// The content [`Element`] of the [`Badge`](Badge).
     content: Element<'a, Message, Renderer>,
 }
 
@@ -58,7 +58,7 @@ where
     /// Creates a new [`Badge`](Badge) with the given content.
     ///
     /// It expects:
-    ///     * the content [`Element`](iced_native::Element) to display in the [`Badge`](Badge).
+    ///     * the content [`Element`] to display in the [`Badge`](Badge).
     pub fn new<T>(content: T) -> Self
     where
         T: Into<Element<'a, Message, Renderer>>,
