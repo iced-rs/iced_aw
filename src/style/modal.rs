@@ -9,7 +9,7 @@ use iced_widget::{
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
-    /// The backgronud of the [`Modal`](crate::native::Modal).
+    /// The background of the [`Modal`](crate::native::Modal).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,

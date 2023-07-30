@@ -34,7 +34,7 @@ pub const DARK: Color = Color::from_rgb(0.204, 0.227, 0.251);
 /// Alice Blue <span style="color:aliceBlue">Color</span>.
 pub const ALICE_BLUE: Color = Color::from_rgb(0.941, 0.973, 1.0);
 
-/// Antique Whute <span style="color:antiqueWhite">Color</span>.
+/// Antique White <span style="color:antiqueWhite">Color</span>.
 pub const ANTIQUE_WHITE: Color = Color::from_rgb(0.98, 0.922, 0.843);
 
 /// Aqua <span style="color:aqua">Color</span>.

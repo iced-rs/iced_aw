@@ -46,7 +46,7 @@ pub enum MenuBarStyle {
     /// The default style.
     #[default]
     Default,
-    /// A [`Theme`] that uses a [`Custom`] palette.
+    /// A [`Theme`] that uses a `Custom` palette.
     Custom(Box<dyn StyleSheet<Style = Theme>>),
 }
 

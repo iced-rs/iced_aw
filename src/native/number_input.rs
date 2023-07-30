@@ -161,10 +161,10 @@ where
         self
     }
 
-    /// Sets the [ `Font`] of the [`Text`].
+    /// Sets the [`Font`] of the [`Text`].
     ///
-    /// [`Font`]: crate::widget::text::Renderer::Font
-    /// [`Text`]: crate::widget::Text
+    /// [`Font`]: core::Font
+    /// [`Text`]: core::widget::Text
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn font(mut self, font: Renderer::Font) -> Self {

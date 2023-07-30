@@ -63,7 +63,7 @@ where
     on_submit: &'a dyn Fn(Date) -> Message,
     /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
     position: Point,
-    /// The style of teh [`DatePickerOverlay`](DatePickerOverlay).
+    /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
     style: <Theme as StyleSheet>::Style,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,

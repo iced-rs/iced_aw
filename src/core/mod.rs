@@ -1,4 +1,4 @@
-//! A module fitting `iced_native`.
+//! A module fitting `iced_core`.
 
 #[cfg(feature = "date_picker")]
 //#[cfg(all(feature = "date_picker", not(target_arch = "wasm32")))]

@@ -29,7 +29,7 @@ pub use crate::style::time_picker::{Appearance, StyleSheet};
 /// # Example
 /// ```ignore
 /// # use iced_aw::{TimePicker, time_picker};
-/// # use iced_native::widget::{button, Button, Text};
+/// # use iced_widget::{button, Button, Text};
 /// #
 /// #[derive(Clone, Debug)]
 /// enum Message {
@@ -83,7 +83,7 @@ where
     /// It expects:
     ///     * if the overlay of the time picker is visible.
     ///     * the initial time to show.
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`TimePicker`](TimePicker)
+    ///     * the underlay [`Element`] on which this [`TimePicker`](TimePicker)
     ///         will be wrapped around.
     ///     * a message that will be send when the cancel button of the [`TimePicker`](TimePicker)
     ///         is pressed.
