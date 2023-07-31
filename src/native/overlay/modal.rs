@@ -2,11 +2,11 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self, event, keyboard, layout,
+    self, alignment, event, keyboard, layout,
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,
-    Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size, Vector,
+    Alignment, Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size,
 };
 
 use crate::style::modal::StyleSheet;
@@ -29,6 +29,8 @@ where
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
+    horizontal_alignment: alignment::Horizontal,
+    vertical_alignment: alignment::Vertical,
 }
 
 impl<'a, 'b, Message, Renderer> ModalOverlay<'a, 'b, Message, Renderer>
@@ -44,6 +46,8 @@ where
         backdrop: Option<Message>,
         esc: Option<Message>,
         style: <Renderer::Theme as StyleSheet>::Style,
+        horizontal_alignment: alignment::Horizontal,
+        vertical_alignment: alignment::Vertical,
     ) -> Self {
         ModalOverlay {
             state,
@@ -51,6 +55,8 @@ where
             backdrop,
             esc,
             style,
+            horizontal_alignment,
+            vertical_alignment,
         }
     }
 }
@@ -62,25 +68,16 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> layout::Node {
+    fn layout(&self, renderer: &Renderer, bounds: Size, _position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
-
         let mut content = self.content.as_widget().layout(renderer, &limits);
-
-        // Center position
         let max_size = limits.max();
-        let container_half_width = max_size.width / 2.0;
-        let container_half_height = max_size.height / 2.0;
-        let content_half_width = content.bounds().width / 2.0;
-        let content_half_height = content.bounds().height / 2.0;
 
-        let position = position
-            + Vector::new(
-                container_half_width - content_half_width,
-                container_half_height - content_half_height,
-            );
-
-        content.move_to(position);
+        content.align(
+            Alignment::from(self.horizontal_alignment),
+            Alignment::from(self.vertical_alignment),
+            max_size,
+        );
 
         layout::Node::with_children(max_size, vec![content])
     }

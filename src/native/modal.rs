@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self, event,
+    self, alignment, event,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -55,6 +55,8 @@ where
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
     style: <Renderer::Theme as StyleSheet>::Style,
+    horizontal_alignment: alignment::Horizontal,
+    vertical_alignment: alignment::Vertical,
 }
 
 impl<'a, Message, Renderer> Modal<'a, Message, Renderer>
@@ -74,11 +76,11 @@ where
     ///     * the underlay [`Element`] on which this [`Modal`](Modal)
     ///         will be wrapped around.
     ///     * the content [`Element`] of the [`Modal`](Modal).
-    pub fn new<U, C>(show_modal: bool, underlay: U, content: C) -> Self
-    where
-        U: Into<Element<'a, Message, Renderer>>,
-        C: Into<Element<'a, Message, Renderer>>,
-    {
+    pub fn new(
+        show_modal: bool,
+        underlay: impl Into<Element<'a, Message, Renderer>>,
+        content: impl Into<Element<'a, Message, Renderer>>,
+    ) -> Self {
         Modal {
             show_modal,
             underlay: underlay.into(),
@@ -86,6 +88,8 @@ where
             backdrop: None,
             esc: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
+            horizontal_alignment: alignment::Horizontal::Center,
+            vertical_alignment: alignment::Vertical::Center,
         }
     }
 
@@ -111,6 +115,20 @@ where
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
+        self
+    }
+
+    /// Sets the content alignment for the horizontal axis of the [`Modal`](Modal).
+    #[must_use]
+    pub fn align_x(mut self, alignment: alignment::Horizontal) -> Self {
+        self.horizontal_alignment = alignment;
+        self
+    }
+
+    /// Sets the content alignment for the vertical axis of the [`Modal`](Modal).
+    #[must_use]
+    pub fn align_y(mut self, alignment: alignment::Vertical) -> Self {
+        self.vertical_alignment = alignment;
         self
     }
 }
@@ -229,6 +247,8 @@ where
                     self.backdrop.clone(),
                     self.esc.clone(),
                     self.style,
+                    self.horizontal_alignment,
+                    self.vertical_alignment,
                 )),
             ))
         } else {
