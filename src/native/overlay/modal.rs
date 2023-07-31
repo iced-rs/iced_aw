@@ -2,9 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: modal*
 use iced_widget::core::{
-    self,
-    alignment,
-    event, keyboard, layout,
+    self, alignment, event, keyboard, layout,
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,

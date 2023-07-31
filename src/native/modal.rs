@@ -76,11 +76,11 @@ where
     ///     * the underlay [`Element`] on which this [`Modal`](Modal)
     ///         will be wrapped around.
     ///     * the content [`Element`] of the [`Modal`](Modal).
-    pub fn new<U, C>(show_modal: bool, underlay: U, content: C) -> Self
-    where
-        U: Into<Element<'a, Message, Renderer>>,
-        C: Into<Element<'a, Message, Renderer>>,
-    {
+    pub fn new(
+        show_modal: bool,
+        underlay: impl Into<Element<'a, Message, Renderer>>,
+        content: impl Into<Element<'a, Message, Renderer>>,
+    ) -> Self {
         Modal {
             show_modal,
             underlay: underlay.into(),
