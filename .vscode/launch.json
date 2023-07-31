@@ -277,6 +277,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'tabstest'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=tabstest",
+                    "--package=tabstest"
+                ],
+                "filter": {
+                    "name": "tabstest",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'time_picker'",
             "cargo": {
                 "args": [

@@ -125,7 +125,7 @@ where
             indices,
             tab_bar_position: TabBarPosition::Top,
             width: Length::Fill,
-            height: Length::Fill,
+            height: Length::Shrink,
         }
     }
 
@@ -297,15 +297,11 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let tab_bar_limits = limits.width(self.width).height(self.tab_bar.get_height());
+        let tab_bar_limits = limits.width(self.width).height(Length::Shrink);
 
         let mut tab_bar_node = self.tab_bar.layout(renderer, &tab_bar_limits);
 
-        let tab_content_limits = limits
-            .clone()
-            .shrink(Size::new(0.0, tab_bar_node.size().height))
-            .width(self.width)
-            .height(self.height);
+        let tab_content_limits = limits.width(self.width).height(self.height);
 
         let mut tab_content_node = self
             .tabs

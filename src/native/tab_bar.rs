@@ -334,21 +334,15 @@ where
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let label = match tab_label {
                     TabLabel::Icon(icon) => Column::new().align_items(Alignment::Center).push(
-                        Row::new()
-                            .width(Length::Shrink)
-                            .height(Length::Shrink)
-                            .push(
-                                Text::new(icon.to_string())
-                                    .size(self.icon_size)
-                                    .font(self.icon_font.unwrap_or_default())
-                                    .horizontal_alignment(alignment::Horizontal::Center)
-                                    .vertical_alignment(alignment::Vertical::Center),
-                            ),
+                        Text::new(icon.to_string())
+                            .size(self.icon_size)
+                            .font(self.icon_font.unwrap_or_default())
+                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .vertical_alignment(alignment::Vertical::Center),
                     ),
                     TabLabel::Text(text) => Column::new().align_items(Alignment::Center).push(
                         Text::new(text)
                             .size(self.text_size)
-                            .width(self.tab_width)
                             .font(self.text_font.unwrap_or_default())
                             .horizontal_alignment(alignment::Horizontal::Center)
                             .vertical_alignment(alignment::Vertical::Center),
@@ -356,16 +350,11 @@ where
                     TabLabel::IconText(icon, text) => Column::new()
                         .align_items(Alignment::Center)
                         .push(
-                            Row::new()
-                                .width(Length::Shrink)
-                                .height(Length::Shrink)
-                                .push(
-                                    Text::new(icon.to_string())
-                                        .size(self.icon_size)
-                                        .font(self.icon_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                ),
+                            Text::new(icon.to_string())
+                                .size(self.icon_size)
+                                .font(self.icon_font.unwrap_or_default())
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .vertical_alignment(alignment::Vertical::Center),
                         )
                         .push(
                             Text::new(text)
@@ -386,8 +375,8 @@ where
                 if self.on_close.is_some() {
                     label_row = label_row.push(
                         Row::new()
-                            .width(Length::Fixed(self.close_size + 1.0))
-                            .height(Length::Fixed(self.close_size + 1.0))
+                            .width(Length::Fixed(self.close_size * 1.3 + 1.0))
+                            .height(Length::Fixed(self.close_size * 1.3 + 1.0))
                             .align_items(Alignment::Center),
                     );
                 }
