@@ -146,6 +146,7 @@ impl Application for ModalExample {
                 )
                 .backdrop(Message::CloseModal)
                 .on_esc(Message::CloseModal)
+                .align_y(alignment::Vertical::Top)
                 .into()
             }
         }
