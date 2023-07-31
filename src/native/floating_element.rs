@@ -61,12 +61,12 @@ where
     Renderer: core::Renderer,
 {
     /// Creates a new [`FloatingElement`](FloatingElement) over some content,
-    /// showing the given [`Element`](iced_native::Element).
+    /// showing the given [`Element`].
     ///
     /// It expects:
-    ///     * the underlay [`Element`](iced_native::Element) on which this [`FloatingElement`](FloatingElement)
+    ///     * the underlay [`Element`] on which this [`FloatingElement`](FloatingElement)
     ///         will be wrapped around.
-    ///     * a function that will lazy create the [`Element`](iced_native::Element) for the overlay.
+    ///     * a function that will lazily create the [`Element`] for the overlay.
     pub fn new<U, B>(underlay: U, element: B) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
@@ -98,8 +98,7 @@ where
         self
     }
 
-    /// Hide or unhide the [`Element`](iced_native::Element) on the
-    /// [`FloatingElement`](FloatingElement).
+    /// Hide or unhide the [`Element`] on the [`FloatingElement`](FloatingElement).
     #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;

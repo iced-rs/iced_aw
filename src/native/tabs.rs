@@ -99,7 +99,7 @@ where
     /// It expects:
     ///     * the index of the currently active tab.
     ///     * a vector containing the [`TabLabel`](TabLabel)s along with the content
-    ///         [`Element`](iced_native::Element)s of the [`Tabs`](Tabs).
+    ///         [`Element`]s of the [`Tabs`](Tabs).
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(

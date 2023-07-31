@@ -1,10 +1,10 @@
-//! Use a floating button to overlay a button over some content
+//! Use a floating element to overlay a button over some content
 //!
-//! *This API requires the following crate features to be activated: `floating_button`*
+//! *This API requires the following crate features to be activated: `floating_element`*
 
 use iced_widget::core::Point;
 
-/// The [`Offset`](Offset) for the [`FloatingButton`](super::FloatingButton).
+/// The [`Offset`](Offset) for the [`FloatingElement`](super::FloatingElement).
 #[derive(Copy, Clone, Debug)]
 pub struct Offset {
     /// Offset on the x-axis from the [`Anchor`](super::Anchor)
