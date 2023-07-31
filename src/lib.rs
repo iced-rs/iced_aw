@@ -96,7 +96,9 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "modal")]
-    pub use {crate::native::modal, crate::style::ModalStyles, modal::Modal};
+    pub use {
+        crate::native::modal, crate::style::ModalStyles, iced_widget::core::alignment, modal::Modal,
+    };
 
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
