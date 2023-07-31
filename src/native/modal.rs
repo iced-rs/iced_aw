@@ -119,12 +119,14 @@ where
     }
 
     /// Sets the content alignment for the horizontal axis of the [`Modal`](Modal).
+    #[must_use]
     pub fn align_x(mut self, alignment: alignment::Horizontal) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
     /// Sets the content alignment for the vertical axis of the [`Modal`](Modal).
+    #[must_use]
     pub fn align_y(mut self, alignment: alignment::Vertical) -> Self {
         self.vertical_alignment = alignment;
         self
