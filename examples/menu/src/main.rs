@@ -190,11 +190,11 @@ impl Application for App {
                 menu_1(self),
                 menu_2(self),
                 menu_3(self),
-                menu_4(self),
-                menu_6(self),
+                menu_44(self),
+                menu_55(self),
             )
             .item_width(ItemWidth::Static(180))
-            .item_height(ItemHeight::Static(25)),
+            .item_height(ItemHeight::Dynamic(32)),
         }
         .spacing(4.0)
         .bounds_expand(30)
@@ -331,7 +331,8 @@ fn sub_menu<'a>(
                     .height(Length::Fill)
                     .vertical_alignment(alignment::Vertical::Center),
                 arrow
-            ],
+            ]
+            .align_items(iced::Alignment::Center),
             msg,
         )
         .width(Length::Fill)
@@ -345,6 +346,46 @@ fn debug_sub_menu<'a>(
     children: Vec<MenuTree<'a, Message, iced::Renderer>>,
 ) -> MenuTree<'a, Message, iced::Renderer> {
     sub_menu(label, Message::Debug(label.into()), children)
+}
+
+fn sub_menu2<'a>(
+    label: &str,
+    msg: Message,
+    children: Vec<MenuTree<'a, Message, iced::Renderer>>,
+) -> MenuTree<'a, Message, iced::Renderer> {
+    let handle = svg::Handle::from_path(format!(
+        "{}/caret-right-fill.svg",
+        env!("CARGO_MANIFEST_DIR")
+    ));
+    let arrow = svg(handle)
+        .width(Length::Shrink)
+        .style(theme::Svg::custom_fn(|theme| svg::Appearance {
+            color: Some(theme.extended_palette().background.base.text),
+        }));
+
+    menu_tree(
+        base_button(
+            row![
+                text(label)
+                    .width(Length::Fill)
+                    .height(Length::Shrink)
+                    .vertical_alignment(alignment::Vertical::Center),
+                arrow
+            ]
+            .align_items(iced::Alignment::Center),
+            msg,
+        )
+        .width(Length::Fill)
+        .height(Length::Shrink),
+        children,
+    )
+}
+
+fn debug_sub_menu2<'a>(
+    label: &str,
+    children: Vec<MenuTree<'a, Message, iced::Renderer>>,
+) -> MenuTree<'a, Message, iced::Renderer> {
+    sub_menu2(label, Message::Debug(label.into()), children)
 }
 
 fn separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
@@ -720,6 +761,146 @@ fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
+fn menu_44<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+    let dekjdaud = debug_sub_menu2(
+        "dekjdaud",
+        vec![
+            debug_item2("ajrs"),
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"),
+            debug_item2("ajrs"),
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"),
+        ],
+    );
+
+    let luyortp = debug_sub_menu2(
+        "luyortp",
+        vec![
+            debug_item2("ajrs"), // 0
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 13
+        ],
+    );
+
+    let jcsu = debug_sub_menu2(
+        "jcsu",
+        vec![
+            debug_item2("ajrs"), // 0
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            luyortp, // 11
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 13
+        ],
+    );
+
+    let root = menu_tree(
+        debug_button("Scroll"),
+        vec![
+            debug_item2("ajrs"), // 0
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            jcsu, // 9
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 13
+            debug_item2("ajrs"), // 14
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 27
+            debug_item2("ajrs"), // 28
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            dekjdaud,
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"),
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 41
+            debug_item2("ajrs"), // 42
+            debug_item2("bsdfho"),
+            debug_item2("clkjhbf"),
+            debug_item2("dekjdaud"),
+            debug_item2("ecsh"),
+            debug_item2("fweiu"),
+            debug_item2("giwe"),
+            debug_item2("heruyv"),
+            debug_item2("isabe"),
+            debug_item2("jcsu"),
+            debug_item2("kaljkahd"), // 52
+            debug_item2("luyortp"),
+            debug_item2("mmdyrc"),
+            debug_item2("nquc"), // 55
+        ],
+    );
+
+    root
+}
+
 fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     let slider_count = 3;
     let slider_width = 30;
@@ -753,7 +934,7 @@ fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_55<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     let slider_count = 3;
     let slider_width = 30;
     let spacing = 4;
@@ -764,14 +945,17 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
         vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
             x, g, b
         )))
+        .height(80)
         .width(30),
         vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
             r, x, b
         )))
+        .height(80)
         .width(30),
         vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
             r, g, x
         )))
+        .height(80)
         .width(30),
     ]
     .spacing(4))
@@ -782,9 +966,9 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
         vec![
             labeled_separator("Primary"),
             sliders,
-            debug_item2("AABB"), // .height(80)
+            debug_item2("AABB"),       // .height(80)
             debug_item3("CCDD", 50.0), // .height(60)
-            debug_item2("EEFF"), // .height(50)
+            debug_item2("EEFF"),       // .height(50)
         ],
     )
     .width(slider_width * slider_count + (slider_count - 1) * spacing);

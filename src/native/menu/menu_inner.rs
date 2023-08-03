@@ -232,7 +232,7 @@ impl MenuBounds {
         Renderer: renderer::Renderer,
     {
         let (children_size, child_positions, child_sizes) =
-            get_children_layout(menu_tree, renderer, item_width, item_height);
+            get_children_layout(menu_tree, renderer, viewport_size, item_width, item_height);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -318,7 +318,6 @@ impl MenuState {
         &self,
         overlay_offset: Vector,
         index: usize,
-        item_height: ItemHeight,
         renderer: &Renderer,
         menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> Node
@@ -339,12 +338,11 @@ impl MenuState {
         node
     }
 
-    fn slice<Message, Renderer>(
+    fn slice(
         &self,
         viewport_size: Size,
         overlay_offset: Vector,
         item_height: ItemHeight,
-        menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> MenuSlice {
         // viewport space children bounds
         let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
@@ -366,19 +364,25 @@ impl MenuState {
                 let end_index = ((upper_bound_rel / f32::from(u)).floor() as usize).min(max_index);
                 (start_index, end_index)
             }
-            ItemHeight::Static(s) | ItemHeight::Dynamic(s) => {
+            ItemHeight::Static(_) | ItemHeight::Dynamic(_) => {
                 let positions = &self.menu_bounds.child_positions;
+                let sizes = &self.menu_bounds.child_sizes;
 
-                let start_index =
-                    search_bound(0, 0, max_index, s, lower_bound_rel, positions, menu_tree);
+                let start_index = search_bound(
+                    0,
+                    0,
+                    max_index,
+                    lower_bound_rel,
+                    positions,
+                    sizes,
+                );
                 let end_index = search_bound(
                     max_index,
                     start_index,
                     max_index,
-                    s,
                     upper_bound_rel,
                     positions,
-                    menu_tree,
+                    &sizes,
                 )
                 .min(max_index);
 
@@ -462,7 +466,6 @@ where
         let menu_status = process_menu_events(
             self.tree,
             self.menu_roots,
-            self.item_height,
             event.clone(),
             view_cursor,
             renderer,
@@ -595,17 +598,20 @@ where
                 let draw_menu = |r: &mut Renderer| {
                     // calc slice
                     let slice =
-                        ms.slice(viewport_size, overlay_offset, self.item_height, menu_root);
+                        ms.slice(viewport_size, overlay_offset, self.item_height);
                     let start_index = slice.start_index;
                     let end_index = slice.end_index;
 
                     // calc layout
-                    let children_node =
-                        ms.layout(overlay_offset, slice, r, menu_root);
+                    let children_node = ms.layout(overlay_offset, slice, r, menu_root);
                     let children_layout = Layout::new(&children_node);
                     let children_bounds = children_layout.bounds();
 
                     // draw menu background
+                    // let bounds = pad_rectangle(children_bounds, styling.background_expand.into());
+                    // println!("cursor: {:?}", view_cursor);
+                    // println!("bg_bounds: {:?}", bounds);
+                    // println!("color: {:?}\n", styling.background);
                     let menu_quad = renderer::Quad {
                         bounds: pad_rectangle(children_bounds, styling.background_expand.into()),
                         border_radius: styling.border_radius.into(),
@@ -740,7 +746,6 @@ fn init_root_menu<Message, Renderer>(
 fn process_menu_events<'b, Message, Renderer>(
     tree: &'b mut Tree,
     menu_roots: &'b mut [MenuTree<'_, Message, Renderer>],
-    item_height: ItemHeight,
     event: event::Event,
     view_cursor: Cursor,
     renderer: &Renderer,
@@ -774,7 +779,6 @@ where
     let child_node = last_ms.layout_single(
         overlay_offset,
         last_ms.index.expect("missing index within menu state."),
-        item_height,
         renderer,
         mt,
     );
@@ -924,16 +928,15 @@ where
 
     let new_index = match menu.item_height {
         ItemHeight::Uniform(u) => (height_diff / f32::from(u)).floor() as usize,
-        ItemHeight::Static(s) | ItemHeight::Dynamic(s) => {
+        ItemHeight::Static(_) | ItemHeight::Dynamic(_) => {
             let max_index = active_menu.children.len() - 1;
             search_bound(
                 0,
                 0,
                 max_index,
-                s,
                 height_diff,
                 &last_menu_bounds.child_positions,
-                active_menu,
+                &last_menu_bounds.child_sizes,
             )
         }
     };
@@ -1066,6 +1069,7 @@ where
 fn get_children_layout<Message, Renderer>(
     menu_tree: &MenuTree<'_, Message, Renderer>,
     renderer: &Renderer,
+    viewport_size: Size,
     item_width: ItemWidth,
     item_height: ItemHeight,
 ) -> (Size, Vec<f32>, Vec<Size>)
@@ -1094,15 +1098,23 @@ where
                 let w = mt.item.as_widget();
                 match w.height() {
                     Length::Fixed(f) => Size::new(width, f as f32),
-                    Length::Shrink => Size::new(
-                        width,
-                        w.layout(
-                            renderer,
-                            &Limits::new(Size::ZERO, Size::new(width, f32::MAX)),
-                        )
-                        .size()
-                        .height,
-                    ),
+                    Length::Shrink => {
+                        let l_height = w
+                            .layout(
+                                renderer,
+                                &Limits::new(Size::ZERO, Size::new(width, viewport_size.height)),
+                            )
+                            .size()
+                            .height;
+
+                        let height = if (viewport_size.height - l_height).abs() < 0.0001 {
+                            d as f32
+                        } else {
+                            l_height
+                        };
+
+                        Size::new(width, height)
+                    }
                     _ => Size::new(width, d as f32),
                 }
             })
@@ -1122,14 +1134,13 @@ where
     (Size::new(width, height), child_positions, child_sizes)
 }
 
-fn search_bound<Message, Renderer>(
+fn search_bound(
     default: usize,
     default_left: usize,
     default_right: usize,
-    default_height: u16,
     bound: f32,
     positions: &[f32],
-    menu_tree: &MenuTree<'_, Message, Renderer>,
+    sizes: &[Size],
 ) -> usize {
     // binary search
     let mut left = default_left;
@@ -1144,7 +1155,8 @@ fn search_bound<Message, Renderer>(
             left = m;
         }
     }
-    let height = f32::from(menu_tree.children[left].height.unwrap_or(default_height));
+    // let height = f32::from(menu_tree.children[left].height.unwrap_or(default_height));
+    let height = sizes[left].height;
     if positions[left] + height > bound {
         index = left;
     }
