@@ -42,14 +42,19 @@ pub enum ItemWidth {
 /// The height of an item
 #[derive(Debug, Clone, Copy)]
 pub enum ItemHeight {
-    /// Use uniform height
+    /// Use uniform height.
     Uniform(u16),
-    /// Static tries to use the height value of each menu tree,
-    /// if that value is None,
-    /// the default value will be used instead,
-    /// which is the value of the Static variant
+    /// Static tries to use `MenuTree.height` as item height,
+    /// when it's `None` it'll fallback to the value of the `Static` variant.
     Static(u16),
-    /// Dynamic item height
+    /// Dynamic tries to automatically choose the proper item height for you,
+    /// but it only works in certain cases:
+    ///
+    /// - Fixed height
+    /// - Shrink height
+    /// - Menu tree height
+    ///
+    /// If none of these is the case, it'll fallback to the value of the `Dynamic` variant.
     Dynamic(u16),
 }
 
@@ -232,7 +237,7 @@ impl MenuBounds {
         Renderer: renderer::Renderer,
     {
         let (children_size, child_positions, child_sizes) =
-            get_children_layout(menu_tree, renderer, viewport_size, item_width, item_height);
+            get_children_layout(menu_tree, renderer, item_width, item_height);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -368,14 +373,7 @@ impl MenuState {
                 let positions = &self.menu_bounds.child_positions;
                 let sizes = &self.menu_bounds.child_sizes;
 
-                let start_index = search_bound(
-                    0,
-                    0,
-                    max_index,
-                    lower_bound_rel,
-                    positions,
-                    sizes,
-                );
+                let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
                 let end_index = search_bound(
                     max_index,
                     start_index,
@@ -597,8 +595,7 @@ where
 
                 let draw_menu = |r: &mut Renderer| {
                     // calc slice
-                    let slice =
-                        ms.slice(viewport_size, overlay_offset, self.item_height);
+                    let slice = ms.slice(viewport_size, overlay_offset, self.item_height);
                     let start_index = slice.start_index;
                     let end_index = slice.end_index;
 
@@ -1069,7 +1066,6 @@ where
 fn get_children_layout<Message, Renderer>(
     menu_tree: &MenuTree<'_, Message, Renderer>,
     renderer: &Renderer,
-    viewport_size: Size,
     item_width: ItemWidth,
     item_height: ItemHeight,
 ) -> (Size, Vec<f32>, Vec<Size>)
@@ -1102,12 +1098,12 @@ where
                         let l_height = w
                             .layout(
                                 renderer,
-                                &Limits::new(Size::ZERO, Size::new(width, viewport_size.height)),
+                                &Limits::new(Size::ZERO, Size::new(width, f32::MAX)),
                             )
                             .size()
                             .height;
 
-                        let height = if (viewport_size.height - l_height).abs() < 0.0001 {
+                        let height = if (f32::MAX - l_height) < 0.001 {
                             d as f32
                         } else {
                             l_height
@@ -1115,7 +1111,13 @@ where
 
                         Size::new(width, height)
                     }
-                    _ => Size::new(width, d as f32),
+                    _ => {
+                        if let Some(h) = mt.height {
+                            Size::new(width, h as f32)
+                        } else {
+                            Size::new(width, d as f32)
+                        }
+                    }
                 }
             })
             .collect(),
