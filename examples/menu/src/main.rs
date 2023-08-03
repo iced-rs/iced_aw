@@ -13,7 +13,7 @@ pub fn main() -> iced::Result {
     App::run(iced::Settings {
         default_text_size: 15.0,
         window: iced::window::Settings {
-            size: (800, 500),
+            size: (1000, 500),
             // position: iced::window::Position::Default,
             ..Default::default()
         },
@@ -25,9 +25,14 @@ pub fn main() -> iced::Result {
 enum SizeOption {
     Uniform,
     Static,
+    DynamicHeight,
 }
 impl SizeOption {
-    const ALL: [SizeOption; 2] = [SizeOption::Uniform, SizeOption::Static];
+    const ALL: [SizeOption; 3] = [
+        SizeOption::Uniform,
+        SizeOption::Static,
+        SizeOption::DynamicHeight,
+    ];
 }
 impl std::fmt::Display for SizeOption {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -37,6 +42,7 @@ impl std::fmt::Display for SizeOption {
             match self {
                 Self::Uniform => "Uniform",
                 Self::Static => "Static",
+                Self::DynamicHeight => "DynamicHeight",
             }
         )
     }
@@ -91,7 +97,7 @@ impl Application for App {
                 flip_v: false,
                 dark_mode: false,
                 text: "Text Input".into(),
-                size_option: SizeOption::Static,
+                size_option: SizeOption::DynamicHeight,
             },
             iced::Command::none(),
         )
@@ -177,6 +183,15 @@ impl Application for App {
                 menu_3(self),
                 menu_4(self),
                 menu_5(self),
+            )
+            .item_width(ItemWidth::Static(180))
+            .item_height(ItemHeight::Static(25)),
+            SizeOption::DynamicHeight => menu_bar!(
+                menu_1(self),
+                menu_2(self),
+                menu_3(self),
+                menu_4(self),
+                menu_6(self),
             )
             .item_width(ItemWidth::Static(180))
             .item_height(ItemHeight::Static(25)),
@@ -274,6 +289,14 @@ fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Renderer> 
 
 fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
     menu_tree!(debug_button(label).width(Length::Fill).height(Length::Fill))
+}
+
+fn debug_item2<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
+    menu_tree!(debug_button(label).width(Length::Fill).height(Length::Shrink))
+}
+
+fn debug_item3<'a>(label: &str, h: f32) -> MenuTree<'a, Message, iced::Renderer> {
+    menu_tree!(debug_button(label).width(Length::Fill).height(Length::Fixed(h)))
 }
 
 fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Renderer> {
@@ -720,6 +743,51 @@ fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     let root = menu_tree(
         debug_button("Static"),
         vec![labeled_separator("Primary"), sliders],
+    )
+    .width(slider_width * slider_count + (slider_count - 1) * spacing);
+
+    root
+}
+
+fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+    let slider_count = 3;
+    let slider_width = 30;
+    let spacing = 4;
+
+    let [r, g, b, _] = app.theme.palette().primary.into_rgba8();
+
+    let sliders = menu_tree!(row![
+        vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
+            x, g, b
+        )))
+        .width(30),
+        vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
+            r, x, b
+        )))
+        .width(30),
+        vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
+            r, g, x
+        )))
+        .width(30),
+    ]
+    .spacing(4))
+    .height(100);
+
+    let root = menu_tree(
+        debug_button("Dynamic Height"),
+        vec![
+            labeled_separator("Primary"),
+            sliders,
+            debug_item2("AABB")
+                // .height(80)
+                ,
+            debug_item3("CCDD", 50.0)
+                // .height(60)
+                ,
+            debug_item2("EEFF")
+                // .height(50)
+                ,
+        ],
     )
     .width(slider_width * slider_count + (slider_count - 1) * spacing);
 

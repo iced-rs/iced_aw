@@ -209,6 +209,7 @@ struct MenuSlice {
 /// Menu bounds in overlay space
 struct MenuBounds {
     child_positions: Vec<f32>,
+    child_sizes: Vec<Size>,
     children_bounds: Rectangle,
     parent_bounds: Rectangle,
     check_bounds: Rectangle,
@@ -228,7 +229,9 @@ impl MenuBounds {
     where
         Renderer: renderer::Renderer,
     {
-        let children_size = get_children_size(menu_tree, item_width, item_height);
+        // let children_size = get_children_size(menu_tree, item_width, item_height);
+        // let child_positions = get_child_positions(menu_tree, item_height);
+        let (children_size, child_positions, child_sizes) = get_children_layout(menu_tree, item_width, item_height);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -238,11 +241,11 @@ impl MenuBounds {
             aod.point(view_parent_bounds, children_size, viewport_size) - overlay_offset;
 
         let children_bounds = Rectangle::new(children_position, children_size);
-        let child_positions = get_child_positions(menu_tree, item_height);
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
 
         Self {
             child_positions,
+            child_sizes,
             children_bounds,
             parent_bounds,
             check_bounds,
@@ -1075,11 +1078,62 @@ where
     Size::new(width, height)
 }
 
-fn get_children_size<Message, Renderer>(
+// fn get_children_size<Message, Renderer>(
+//     menu_tree: &MenuTree<'_, Message, Renderer>,
+//     item_width: ItemWidth,
+//     item_height: ItemHeight,
+// ) -> Size
+// where
+//     Renderer: renderer::Renderer,
+// {
+//     let width = match item_width {
+//         ItemWidth::Uniform(u) => f32::from(u),
+//         ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
+//     };
+
+//     let height = match item_height {
+//         ItemHeight::Uniform(u) => f32::from(u) * (menu_tree.children.len() as f32),
+//         ItemHeight::Static(s) => menu_tree
+//             .children
+//             .iter()
+//             .fold(0.0, |h, mt| h + f32::from(mt.height.unwrap_or(s))),
+//     };
+
+//     Size::new(width, height)
+// }
+
+// fn get_child_positions<Message, Renderer>(
+//     menu_tree: &MenuTree<'_, Message, Renderer>,
+//     item_height: ItemHeight,
+// ) -> Vec<f32>
+// where
+//     Renderer: renderer::Renderer,
+// {
+//     match item_height {
+//         ItemHeight::Uniform(u) => {
+//             let children_count = menu_tree.children.len();
+//             (0..children_count)
+//                 .map(|i| (i as f32) * f32::from(u))
+//                 .collect()
+//         }
+//         ItemHeight::Static(s) => {
+//             let max_index = menu_tree.children.len() - 1;
+//             std::iter::once(0.0)
+//                 .chain(menu_tree.children[0..max_index].iter().scan(0.0, |p, mt| {
+//                     *p += f32::from(mt.height.unwrap_or(s));
+//                     Some(*p)
+//                 }))
+//                 .collect::<Vec<_>>()
+//         }
+//     }
+// }
+
+/// Returns (children_size, child_positions, child_sizes)
+fn get_children_layout<Message, Renderer>(
     menu_tree: &MenuTree<'_, Message, Renderer>,
     item_width: ItemWidth,
     item_height: ItemHeight,
-) -> Size
+) -> (Size, Vec<f32>, Vec<Size>)
 where
     Renderer: renderer::Renderer,
 {
@@ -1088,41 +1142,26 @@ where
         ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
     };
 
-    let height = match item_height {
-        ItemHeight::Uniform(u) => f32::from(u) * (menu_tree.children.len() as f32),
-        ItemHeight::Static(s) => menu_tree
-            .children
-            .iter()
-            .fold(0.0, |h, mt| h + f32::from(mt.height.unwrap_or(s))),
+    let child_sizes:Vec<Size> = match item_height {
+        ItemHeight::Uniform(u) => {
+            let count = menu_tree.children.len();
+            (0..count).map(|_| Size::new(width, u as f32) ).collect()
+        },
+        ItemHeight::Static(s) => {
+            menu_tree.children.iter().map(|mt| Size::new(width, mt.height.unwrap_or(s) as f32) ).collect()
+        },
     };
 
-    Size::new(width, height)
-}
+    let max_index = menu_tree.children.len() - 1;
+    let child_positions:Vec<f32> = std::iter::once(0.0)
+        .chain(child_sizes[0..max_index].iter().scan(0.0, |acc, x|{
+            *acc += x.height;
+            Some(*acc)
+        })).collect();
+    
+    let height = child_sizes.iter().fold(0.0, |acc, x| acc + x.height );
 
-fn get_child_positions<Message, Renderer>(
-    menu_tree: &MenuTree<'_, Message, Renderer>,
-    item_height: ItemHeight,
-) -> Vec<f32>
-where
-    Renderer: renderer::Renderer,
-{
-    match item_height {
-        ItemHeight::Uniform(u) => {
-            let children_count = menu_tree.children.len();
-            (0..children_count)
-                .map(|i| (i as f32) * f32::from(u))
-                .collect()
-        }
-        ItemHeight::Static(s) => {
-            let max_index = menu_tree.children.len() - 1;
-            std::iter::once(0.0)
-                .chain(menu_tree.children[0..max_index].iter().scan(0.0, |p, mt| {
-                    *p += f32::from(mt.height.unwrap_or(s));
-                    Some(*p)
-                }))
-                .collect::<Vec<_>>()
-        }
-    }
+    (Size::new(width, height), child_positions, child_sizes)
 }
 
 fn search_bound<Message, Renderer>(
