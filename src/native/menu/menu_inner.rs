@@ -287,10 +287,12 @@ impl MenuState {
 
         let child_nodes = self.menu_bounds.child_positions[start_index..=end_index]
             .iter()
+            .zip(self.menu_bounds.child_sizes[start_index..=end_index].iter())
             .zip(menu_tree.children[start_index..=end_index].iter())
-            .map(|(cp, mt)| {
+            .map(|((cp, size), mt)| {
                 let mut position = *cp;
-                let mut size = get_item_size(mt, children_bounds.width, item_height);
+                let mut size = *size;
+                // let mut size = get_item_size(mt, children_bounds.width, item_height);
 
                 if position < lower_bound_rel && (position + size.height) > lower_bound_rel {
                     size.height = position + size.height - lower_bound_rel;
@@ -330,7 +332,8 @@ impl MenuState {
         let position = self.menu_bounds.child_positions[index];
         let limits = Limits::new(
             Size::ZERO,
-            get_item_size(menu_tree, children_bounds.width, item_height),
+            // get_item_size(menu_tree, children_bounds.width, item_height),
+            self.menu_bounds.child_sizes[index]
         );
         let parent_offset = children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
@@ -947,11 +950,13 @@ where
             0.0,
             last_menu_bounds.child_positions[new_index] + last_menu_state.scroll_offset,
         );
-        let item_size = get_item_size(
-            item,
-            last_menu_bounds.children_bounds.width,
-            menu.item_height,
-        );
+        let item_size = last_menu_bounds.child_sizes[new_index];
+        
+        // let item_size = get_item_size(
+        //     item,
+        //     last_menu_bounds.children_bounds.width,
+        //     menu.item_height,
+        // );
 
         // overlay space item bounds
         let item_bounds = Rectangle::new(item_position, item_size)
@@ -1062,21 +1067,21 @@ where
     Captured
 }
 
-fn get_item_size<Message, Renderer>(
-    menu_tree: &MenuTree<'_, Message, Renderer>,
-    width: f32,
-    item_height: ItemHeight,
-) -> Size
-where
-    Renderer: renderer::Renderer,
-{
-    let height = match item_height {
-        ItemHeight::Uniform(u) => f32::from(u),
-        ItemHeight::Static(s) => f32::from(menu_tree.height.unwrap_or(s)),
-    };
+// fn get_item_size<Message, Renderer>(
+//     menu_tree: &MenuTree<'_, Message, Renderer>,
+//     width: f32,
+//     item_height: ItemHeight,
+// ) -> Size
+// where
+//     Renderer: renderer::Renderer,
+// {
+//     let height = match item_height {
+//         ItemHeight::Uniform(u) => f32::from(u),
+//         ItemHeight::Static(s) => f32::from(menu_tree.height.unwrap_or(s)),
+//     };
 
-    Size::new(width, height)
-}
+//     Size::new(width, height)
+// }
 
 // fn get_children_size<Message, Renderer>(
 //     menu_tree: &MenuTree<'_, Message, Renderer>,
@@ -1090,7 +1095,6 @@ where
 //         ItemWidth::Uniform(u) => f32::from(u),
 //         ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
 //     };
-
 //     let height = match item_height {
 //         ItemHeight::Uniform(u) => f32::from(u) * (menu_tree.children.len() as f32),
 //         ItemHeight::Static(s) => menu_tree
@@ -1098,7 +1102,6 @@ where
 //             .iter()
 //             .fold(0.0, |h, mt| h + f32::from(mt.height.unwrap_or(s))),
 //     };
-
 //     Size::new(width, height)
 // }
 
