@@ -10,7 +10,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::Tree,
-    Clipboard, Color, Layout, Padding, Point, Rectangle, Shell, Size, Vector,
+    Clipboard, Color, Layout, Padding, Point, Rectangle, Shell, Size, Vector, Length,
 };
 
 /// The condition of when to close a menu
@@ -49,7 +49,8 @@ pub enum ItemHeight {
     /// the default value will be used instead,
     /// which is the value of the Static variant
     Static(u16),
-    // TODO: Flex,
+    /// Dynamic item height
+    Dynamic(u16),
 }
 
 /// Methods for drawing path highlight
@@ -218,6 +219,7 @@ impl MenuBounds {
     #[allow(clippy::too_many_arguments)]
     fn new<Message, Renderer>(
         menu_tree: &MenuTree<'_, Message, Renderer>,
+        renderer: &Renderer,
         item_width: ItemWidth,
         item_height: ItemHeight,
         viewport_size: Size,
@@ -229,9 +231,7 @@ impl MenuBounds {
     where
         Renderer: renderer::Renderer,
     {
-        // let children_size = get_children_size(menu_tree, item_width, item_height);
-        // let child_positions = get_child_positions(menu_tree, item_height);
-        let (children_size, child_positions, child_sizes) = get_children_layout(menu_tree, item_width, item_height);
+        let (children_size, child_positions, child_sizes) = get_children_layout(menu_tree, renderer, item_width, item_height);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -292,7 +292,6 @@ impl MenuState {
             .map(|((cp, size), mt)| {
                 let mut position = *cp;
                 let mut size = *size;
-                // let mut size = get_item_size(mt, children_bounds.width, item_height);
 
                 if position < lower_bound_rel && (position + size.height) > lower_bound_rel {
                     size.height = position + size.height - lower_bound_rel;
@@ -332,7 +331,6 @@ impl MenuState {
         let position = self.menu_bounds.child_positions[index];
         let limits = Limits::new(
             Size::ZERO,
-            // get_item_size(menu_tree, children_bounds.width, item_height),
             self.menu_bounds.child_sizes[index]
         );
         let parent_offset = children_bounds.position() - Point::ORIGIN;
@@ -371,7 +369,7 @@ impl MenuState {
                 let end_index = ((upper_bound_rel / f32::from(u)).floor() as usize).min(max_index);
                 (start_index, end_index)
             }
-            ItemHeight::Static(s) => {
+            ItemHeight::Static(s) | ItemHeight::Dynamic(s) => {
                 let positions = &self.menu_bounds.child_positions;
 
                 let start_index =
@@ -478,6 +476,7 @@ where
 
         init_root_menu(
             self,
+            renderer,
             overlay_cursor,
             viewport_size,
             overlay_offset,
@@ -502,6 +501,7 @@ where
                 let overlay_cursor = view_cursor.position().unwrap_or_default() - overlay_offset;
                 process_overlay_events(
                     self,
+                    renderer,
                     viewport_size,
                     overlay_offset,
                     view_cursor,
@@ -672,6 +672,7 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
 
 fn init_root_menu<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
+    renderer: &Renderer,
     overlay_cursor: Point,
     viewport_size: Size,
     overlay_offset: Vector,
@@ -716,6 +717,7 @@ fn init_root_menu<Message, Renderer>(
 
             let menu_bounds = MenuBounds::new(
                 mt,
+                renderer,
                 menu.item_width,
                 menu.item_height,
                 viewport_size,
@@ -800,6 +802,7 @@ where
 #[allow(unused_results)]
 fn process_overlay_events<Message, Renderer>(
     menu: &mut Menu<'_, '_, Message, Renderer>,
+    renderer: &Renderer,
     viewport_size: Size,
     overlay_offset: Vector,
     view_cursor: Cursor,
@@ -924,7 +927,7 @@ where
 
     let new_index = match menu.item_height {
         ItemHeight::Uniform(u) => (height_diff / f32::from(u)).floor() as usize,
-        ItemHeight::Static(s) => {
+        ItemHeight::Static(s) | ItemHeight::Dynamic(s) => {
             let max_index = active_menu.children.len() - 1;
             search_bound(
                 0,
@@ -952,12 +955,6 @@ where
         );
         let item_size = last_menu_bounds.child_sizes[new_index];
         
-        // let item_size = get_item_size(
-        //     item,
-        //     last_menu_bounds.children_bounds.width,
-        //     menu.item_height,
-        // );
-
         // overlay space item bounds
         let item_bounds = Rectangle::new(item_position, item_size)
             + (last_menu_bounds.children_bounds.position() - Point::ORIGIN);
@@ -976,6 +973,7 @@ where
             scroll_offset: 0.0,
             menu_bounds: MenuBounds::new(
                 item,
+                renderer,
                 menu.item_width,
                 menu.item_height,
                 viewport_size,
@@ -1067,73 +1065,10 @@ where
     Captured
 }
 
-// fn get_item_size<Message, Renderer>(
-//     menu_tree: &MenuTree<'_, Message, Renderer>,
-//     width: f32,
-//     item_height: ItemHeight,
-// ) -> Size
-// where
-//     Renderer: renderer::Renderer,
-// {
-//     let height = match item_height {
-//         ItemHeight::Uniform(u) => f32::from(u),
-//         ItemHeight::Static(s) => f32::from(menu_tree.height.unwrap_or(s)),
-//     };
-
-//     Size::new(width, height)
-// }
-
-// fn get_children_size<Message, Renderer>(
-//     menu_tree: &MenuTree<'_, Message, Renderer>,
-//     item_width: ItemWidth,
-//     item_height: ItemHeight,
-// ) -> Size
-// where
-//     Renderer: renderer::Renderer,
-// {
-//     let width = match item_width {
-//         ItemWidth::Uniform(u) => f32::from(u),
-//         ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
-//     };
-//     let height = match item_height {
-//         ItemHeight::Uniform(u) => f32::from(u) * (menu_tree.children.len() as f32),
-//         ItemHeight::Static(s) => menu_tree
-//             .children
-//             .iter()
-//             .fold(0.0, |h, mt| h + f32::from(mt.height.unwrap_or(s))),
-//     };
-//     Size::new(width, height)
-// }
-
-// fn get_child_positions<Message, Renderer>(
-//     menu_tree: &MenuTree<'_, Message, Renderer>,
-//     item_height: ItemHeight,
-// ) -> Vec<f32>
-// where
-//     Renderer: renderer::Renderer,
-// {
-//     match item_height {
-//         ItemHeight::Uniform(u) => {
-//             let children_count = menu_tree.children.len();
-//             (0..children_count)
-//                 .map(|i| (i as f32) * f32::from(u))
-//                 .collect()
-//         }
-//         ItemHeight::Static(s) => {
-//             let max_index = menu_tree.children.len() - 1;
-//             std::iter::once(0.0)
-//                 .chain(menu_tree.children[0..max_index].iter().scan(0.0, |p, mt| {
-//                     *p += f32::from(mt.height.unwrap_or(s));
-//                     Some(*p)
-//                 }))
-//                 .collect::<Vec<_>>()
-//         }
-//     }
-// }
-
 /// Returns (children_size, child_positions, child_sizes)
 fn get_children_layout<Message, Renderer>(
     menu_tree: &MenuTree<'_, Message, Renderer>,
+    renderer: &Renderer,
     item_width: ItemWidth,
     item_height: ItemHeight,
 ) -> (Size, Vec<f32>, Vec<Size>)
@@ -1153,6 +1088,19 @@ where
         ItemHeight::Static(s) => {
             menu_tree.children.iter().map(|mt| Size::new(width, mt.height.unwrap_or(s) as f32) ).collect()
         },
+        ItemHeight::Dynamic(d) => {
+            menu_tree.children.iter().map(|mt|{
+                let w = mt.item.as_widget();
+                match w.height() {
+                    Length::Fixed(f) => Size::new(width, f as f32),
+                    Length::Shrink => Size::new(
+                        width, 
+                        w.layout(renderer, &Limits::new(Size::ZERO, Size::new(width, f32::MAX))).size().height
+                    ),
+                    _ => Size::new(width, d as f32)
+                }
+            }).collect()
+        }
     };
 
     let max_index = menu_tree.children.len() - 1;
