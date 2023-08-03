@@ -292,11 +292,15 @@ fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
 }
 
 fn debug_item2<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
-    menu_tree!(debug_button(label).width(Length::Fill).height(Length::Shrink))
+    menu_tree!(debug_button(label)
+        .width(Length::Fill)
+        .height(Length::Shrink))
 }
 
 fn debug_item3<'a>(label: &str, h: f32) -> MenuTree<'a, Message, iced::Renderer> {
-    menu_tree!(debug_button(label).width(Length::Fill).height(Length::Fixed(h)))
+    menu_tree!(debug_button(label)
+        .width(Length::Fill)
+        .height(Length::Fixed(h)))
 }
 
 fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Renderer> {
@@ -778,15 +782,9 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
         vec![
             labeled_separator("Primary"),
             sliders,
-            debug_item2("AABB")
-                // .height(80)
-                ,
-            debug_item3("CCDD", 50.0)
-                // .height(60)
-                ,
-            debug_item2("EEFF")
-                // .height(50)
-                ,
+            debug_item2("AABB"), // .height(80)
+            debug_item3("CCDD", 50.0), // .height(60)
+            debug_item2("EEFF"), // .height(50)
         ],
     )
     .width(slider_width * slider_count + (slider_count - 1) * spacing);

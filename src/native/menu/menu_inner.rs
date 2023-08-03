@@ -10,7 +10,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::Tree,
-    Clipboard, Color, Layout, Padding, Point, Rectangle, Shell, Size, Vector, Length,
+    Clipboard, Color, Layout, Length, Padding, Point, Rectangle, Shell, Size, Vector,
 };
 
 /// The condition of when to close a menu
@@ -231,7 +231,8 @@ impl MenuBounds {
     where
         Renderer: renderer::Renderer,
     {
-        let (children_size, child_positions, child_sizes) = get_children_layout(menu_tree, renderer, item_width, item_height);
+        let (children_size, child_positions, child_sizes) =
+            get_children_layout(menu_tree, renderer, item_width, item_height);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -263,7 +264,6 @@ impl MenuState {
         &self,
         overlay_offset: Vector,
         slice: MenuSlice,
-        item_height: ItemHeight,
         renderer: &Renderer,
         menu_tree: &MenuTree<'_, Message, Renderer>,
     ) -> Node
@@ -329,10 +329,7 @@ impl MenuState {
         let children_bounds = self.menu_bounds.children_bounds + overlay_offset;
 
         let position = self.menu_bounds.child_positions[index];
-        let limits = Limits::new(
-            Size::ZERO,
-            self.menu_bounds.child_sizes[index]
-        );
+        let limits = Limits::new(Size::ZERO, self.menu_bounds.child_sizes[index]);
         let parent_offset = children_bounds.position() - Point::ORIGIN;
         let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
         node.move_to(Point::new(
@@ -604,7 +601,7 @@ where
 
                     // calc layout
                     let children_node =
-                        ms.layout(overlay_offset, slice, self.item_height, r, menu_root);
+                        ms.layout(overlay_offset, slice, r, menu_root);
                     let children_layout = Layout::new(&children_node);
                     let children_bounds = children_layout.bounds();
 
@@ -954,7 +951,7 @@ where
             last_menu_bounds.child_positions[new_index] + last_menu_state.scroll_offset,
         );
         let item_size = last_menu_bounds.child_sizes[new_index];
-        
+
         // overlay space item bounds
         let item_bounds = Rectangle::new(item_position, item_size)
             + (last_menu_bounds.children_bounds.position() - Point::ORIGIN);
@@ -1080,37 +1077,47 @@ where
         ItemWidth::Static(s) => f32::from(menu_tree.width.unwrap_or(s)),
     };
 
-    let child_sizes:Vec<Size> = match item_height {
+    let child_sizes: Vec<Size> = match item_height {
         ItemHeight::Uniform(u) => {
             let count = menu_tree.children.len();
-            (0..count).map(|_| Size::new(width, u as f32) ).collect()
-        },
-        ItemHeight::Static(s) => {
-            menu_tree.children.iter().map(|mt| Size::new(width, mt.height.unwrap_or(s) as f32) ).collect()
-        },
-        ItemHeight::Dynamic(d) => {
-            menu_tree.children.iter().map(|mt|{
+            (0..count).map(|_| Size::new(width, u as f32)).collect()
+        }
+        ItemHeight::Static(s) => menu_tree
+            .children
+            .iter()
+            .map(|mt| Size::new(width, mt.height.unwrap_or(s) as f32))
+            .collect(),
+        ItemHeight::Dynamic(d) => menu_tree
+            .children
+            .iter()
+            .map(|mt| {
                 let w = mt.item.as_widget();
                 match w.height() {
                     Length::Fixed(f) => Size::new(width, f as f32),
                     Length::Shrink => Size::new(
-                        width, 
-                        w.layout(renderer, &Limits::new(Size::ZERO, Size::new(width, f32::MAX))).size().height
+                        width,
+                        w.layout(
+                            renderer,
+                            &Limits::new(Size::ZERO, Size::new(width, f32::MAX)),
+                        )
+                        .size()
+                        .height,
                     ),
-                    _ => Size::new(width, d as f32)
+                    _ => Size::new(width, d as f32),
                 }
-            }).collect()
-        }
+            })
+            .collect(),
     };
 
     let max_index = menu_tree.children.len() - 1;
-    let child_positions:Vec<f32> = std::iter::once(0.0)
-        .chain(child_sizes[0..max_index].iter().scan(0.0, |acc, x|{
+    let child_positions: Vec<f32> = std::iter::once(0.0)
+        .chain(child_sizes[0..max_index].iter().scan(0.0, |acc, x| {
             *acc += x.height;
             Some(*acc)
-        })).collect();
-    
-    let height = child_sizes.iter().fold(0.0, |acc, x| acc + x.height );
+        }))
+        .collect();
+
+    let height = child_sizes.iter().fold(0.0, |acc, x| acc + x.height);
 
     (Size::new(width, height), child_positions, child_sizes)
 }
