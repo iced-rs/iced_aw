@@ -1,6 +1,8 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -48,31 +50,47 @@ pub struct Appearance {
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
 pub trait StyleSheet {
     /// The style type of this stylesheet
-    type Style: std::default::Default + Copy;
+    type Style: Default + Clone;
     /// The normal appearance of a [`TimePicker`](crate::native::TimePicker).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`TimePicker`](crate::native::TimePicker)
-    fn selected(&self, style: Self::Style) -> Appearance;
+    fn selected(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`TimePicker`](crate::native::TimePicker).
-    fn hovered(&self, style: Self::Style) -> Appearance;
+    fn hovered(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`TimePicker`](crate::native::TimePicker).
-    fn focused(&self, style: Self::Style) -> Appearance;
+    fn focused(&self, style: &Self::Style) -> Appearance;
 }
 
-/// The default appearance of the [`TimePicker`](crate::native::TimePicker)
-#[derive(Clone, Copy, Default, Debug)]
-pub struct Default;
+/// The style appearance of the [`TimePicker`](crate::native::TimePicker)
+#[derive(Clone, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+pub enum TimePickerStyle {
+    #[default]
+    Default,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+}
+
+impl TimePickerStyle {
+    /// Creates a custom [`TimePickerStyle`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
+    }
+}
 
 impl StyleSheet for Theme {
-    type Style = Default;
+    type Style = TimePickerStyle;
 
-    fn active(&self, _style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
+        if let TimePickerStyle::Custom(custom) = style {
+            return custom.active(self);
+        }
+
         let palette = self.extended_palette();
         let foreground = self.palette();
 
@@ -90,7 +108,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn selected(&self, style: Self::Style) -> Appearance {
+    fn selected(&self, style: &Self::Style) -> Appearance {
+        if let TimePickerStyle::Custom(custom) = style {
+            return custom.selected(self);
+        }
+
         let palette = self.extended_palette();
 
         Appearance {
@@ -100,7 +122,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        if let TimePickerStyle::Custom(custom) = style {
+            return custom.hovered(self);
+        }
+
         let palette = self.extended_palette();
 
         Appearance {
@@ -110,7 +136,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn focused(&self, style: Self::Style) -> Appearance {
+    fn focused(&self, style: &Self::Style) -> Appearance {
+        if let TimePickerStyle::Custom(custom) = style {
+            return custom.focused(self);
+        }
+
         Appearance {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             ..self.active(style)

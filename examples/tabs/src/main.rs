@@ -147,6 +147,7 @@ impl Application for TabBarExample {
                     .settings_tab
                     .settings()
                     .tab_bar_theme
+                    .clone()
                     .unwrap_or_default();
 
                 Tabs::new(Message::TabSelected)
@@ -171,7 +172,7 @@ impl Application for TabBarExample {
                         state.settings_tab.view(),
                     )
                     .set_active_tab(&state.active_tab)
-                    .tab_bar_style(theme)
+                    .tab_bar_style(theme.clone())
                     .icon_font(ICON_FONT)
                     .tab_bar_position(match position {
                         TabBarPosition::Top => iced_aw::TabBarPosition::Top,

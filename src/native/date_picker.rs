@@ -269,9 +269,8 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                self.style,
+                self.style.clone(),
                 &mut state.children[1],
-                //self.button_style, // Clone not satisfied
             )
             .overlay(),
         )

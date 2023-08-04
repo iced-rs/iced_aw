@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
 
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -35,31 +37,47 @@ pub struct Appearance {
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 pub trait StyleSheet {
     /// The style type of this stylesheet
-    type Style: std::default::Default + Copy;
+    type Style: Default + Clone;
     /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn selected(&self, style: Self::Style) -> Appearance;
+    fn selected(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn hovered(&self, style: Self::Style) -> Appearance;
+    fn hovered(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`ColorPicker`](crate::native::ColorPicker).
-    fn focused(&self, style: Self::Style) -> Appearance;
+    fn focused(&self, style: &Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
-#[derive(Clone, Copy, Default, Debug)]
-pub struct Default;
+#[derive(Clone, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+pub enum ColorPickerStyles {
+    #[default]
+    Default,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+}
+
+impl ColorPickerStyles {
+    /// Creates a custom [`ColorPickerStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
+    }
+}
 
 impl StyleSheet for Theme {
-    type Style = Default;
+    type Style = ColorPickerStyles;
 
-    fn active(&self, _style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
+        if let ColorPickerStyles::Custom(custom) = style {
+            return custom.active(self);
+        }
+
         let palette = self.extended_palette();
         let foreground = self.palette();
 
@@ -74,15 +92,27 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn selected(&self, style: Self::Style) -> Appearance {
+    fn selected(&self, style: &Self::Style) -> Appearance {
+        if let ColorPickerStyles::Custom(custom) = style {
+            return custom.selected(self);
+        }
+
         self.active(style)
     }
 
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        if let ColorPickerStyles::Custom(custom) = style {
+            return custom.hovered(self);
+        }
+
         self.active(style)
     }
 
-    fn focused(&self, style: Self::Style) -> Appearance {
+    fn focused(&self, style: &Self::Style) -> Appearance {
+        if let ColorPickerStyles::Custom(custom) = style {
+            return custom.focused(self);
+        }
+
         let palette = self.extended_palette();
         Appearance {
             border_color: palette.background.strong.color,

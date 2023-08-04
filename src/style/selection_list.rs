@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `selection_list`*
 
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -46,22 +48,34 @@ impl std::default::Default for Appearance {
 /// A set of rules that dictate the style of a container.
 pub trait StyleSheet {
     ///Style for the trait to use.
-    type Style: std::default::Default + Copy;
+    type Style: Default + Clone;
     /// Produces the style of a container.
-    fn style(&self, style: Self::Style) -> Appearance;
+    fn style(&self, style: &Self::Style) -> Appearance;
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 /// Default Prebuilt ``SelectionList`` Styles
 pub enum SelectionListStyles {
     #[default]
     Default,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+}
+
+impl SelectionListStyles {
+    /// Creates a custom [`SelectionListStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
+    }
 }
 
 impl StyleSheet for Theme {
     type Style = SelectionListStyles;
-    fn style(&self, _style: Self::Style) -> Appearance {
+    fn style(&self, style: &Self::Style) -> Appearance {
+        if let SelectionListStyles::Custom(custom) = style {
+            return custom.style(self);
+        }
+
         let palette = self.extended_palette();
         let foreground = self.palette();
 

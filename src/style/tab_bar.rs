@@ -6,6 +6,8 @@
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -42,17 +44,17 @@ pub struct Appearance {
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 pub trait StyleSheet {
     ///Style for the trait to use.
-    type Style: Default + Copy;
+    type Style: Default;
 
     /// The normal appearance0of a tab bar and its tab labels.
     ///
     /// `is_active` is true if the tab is selected.
-    fn active(&self, style: Self::Style, is_active: bool) -> Appearance;
+    fn active(&self, style: &Self::Style, is_active: bool) -> Appearance;
 
     /// The appearance when the tab bar and/or a tab label is hovered.
     ///
     /// `is_active` is true if the tab is selected.
-    fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance;
+    fn hovered(&self, style: &Self::Style, is_active: bool) -> Appearance;
 }
 
 impl Default for Appearance {
@@ -70,7 +72,7 @@ impl Default for Appearance {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 /// Default Prebuilt ``TabBar`` Styles
 pub enum TabBarStyles {
@@ -81,25 +83,20 @@ pub enum TabBarStyles {
     Blue,
     Green,
     Purple,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
 }
 
-impl From<TabBarStyles> for String {
-    fn from(style: TabBarStyles) -> Self {
-        Self::from(match style {
-            TabBarStyles::Default => "Default",
-            TabBarStyles::Dark => "Dark",
-            TabBarStyles::Red => "Red",
-            TabBarStyles::Blue => "Blue",
-            TabBarStyles::Green => "Green",
-            TabBarStyles::Purple => "Purple",
-        })
+impl TabBarStyles {
+    /// Creates a custom [`TabBarStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
     }
 }
 
 impl StyleSheet for Theme {
     type Style = TabBarStyles;
 
-    fn active(&self, style: Self::Style, is_active: bool) -> Appearance {
+    fn active(&self, style: &Self::Style, is_active: bool) -> Appearance {
         let mut appearance = Appearance::default();
 
         match style {
@@ -177,12 +174,13 @@ impl StyleSheet for Theme {
                 appearance.icon_color = text_color;
                 appearance.text_color = text_color;
             }
+            TabBarStyles::Custom(custom) => return custom.active(self, is_active),
         }
 
         appearance
     }
 
-    fn hovered(&self, style: Self::Style, is_active: bool) -> Appearance {
+    fn hovered(&self, style: &Self::Style, is_active: bool) -> Appearance {
         match style {
             TabBarStyles::Default => Appearance {
                 tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
@@ -217,6 +215,7 @@ impl StyleSheet for Theme {
                     ..self.active(style, is_active)
                 }
             }
+            TabBarStyles::Custom(custom) => custom.hovered(self, is_active),
         }
     }
 }

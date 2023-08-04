@@ -48,12 +48,12 @@ pub struct Appearance {
 /// The appearance of a [`Card`](crate::native::card::Card).
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
-    type Style: std::default::Default + Copy;
+    type Style: Default;
     /// The normal appearance of a [`Card`](crate::native::card::Card).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 /// Default Prebuilt ``Card`` Styles
 pub enum CardStyles {
@@ -68,12 +68,20 @@ pub enum CardStyles {
     White,
     #[default]
     Default,
+    Custom(Box<dyn StyleSheet<Style = Theme>>),
+}
+
+impl CardStyles {
+    /// Creates a custom [`BadgeStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Box::new(style_sheet))
+    }
 }
 
 impl StyleSheet for Theme {
     type Style = CardStyles;
 
-    fn active(&self, style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
         let palette = self.extended_palette();
         let foreground = self.palette();
 
@@ -108,11 +116,12 @@ impl StyleSheet for Theme {
             CardStyles::Dark => backing_with_text(colors::DARK, colors::WHITE),
             CardStyles::White => backing_only(colors::WHITE),
             CardStyles::Default => backing_only([0.87, 0.87, 0.87].into()),
+            CardStyles::Custom(custom) => custom.active(self),
         }
     }
 }
 
-impl std::default::Default for Appearance {
+impl Default for Appearance {
     fn default() -> Self {
         Self {
             background: Color::WHITE.into(),

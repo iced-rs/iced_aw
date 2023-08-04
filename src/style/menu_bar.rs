@@ -55,6 +55,7 @@ impl From<fn(&Theme) -> Appearance> for MenuBarStyle {
         Self::Custom(Box::new(f))
     }
 }
+
 impl StyleSheet for fn(&Theme) -> Appearance {
     type Style = Theme;
 

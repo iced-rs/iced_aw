@@ -174,7 +174,7 @@ where
     ) {
         let bounds = layout.bounds();
 
-        let style_sheet = theme.active(self.style);
+        let style_sheet = theme.active(&self.style);
 
         // Background
         renderer.fill_quad(

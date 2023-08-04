@@ -29,6 +29,7 @@ impl From<TabBarPosition> for String {
 pub struct TabSettings {
     pub tab_bar_position: Option<TabBarPosition>,
     pub tab_bar_theme: Option<TabBarStyles>,
+    pub tab_bar_theme_id: Option<usize>,
 }
 
 impl TabSettings {
@@ -36,6 +37,7 @@ impl TabSettings {
         TabSettings {
             tab_bar_position: Some(TabBarPosition::Top),
             tab_bar_theme: Some(TabBarStyles::default()),
+            tab_bar_theme_id: Some(0),
         }
     }
 }
@@ -43,7 +45,7 @@ impl TabSettings {
 #[derive(Debug, Clone)]
 pub enum SettingsMessage {
     PositionSelected(TabBarPosition),
-    ThemeSelected(TabBarStyles),
+    ThemeSelected(usize),
 }
 
 pub struct SettingsTab {
@@ -66,7 +68,18 @@ impl SettingsTab {
             SettingsMessage::PositionSelected(position) => {
                 self.settings.tab_bar_position = Some(position)
             }
-            SettingsMessage::ThemeSelected(theme) => self.settings.tab_bar_theme = Some(theme),
+            SettingsMessage::ThemeSelected(index) => {
+                self.settings.tab_bar_theme_id = Some(index);
+                self.settings.tab_bar_theme = Some(match index {
+                    0 => TabBarStyles::Default,
+                    1 => TabBarStyles::Dark,
+                    2 => TabBarStyles::Red,
+                    3 => TabBarStyles::Blue,
+                    4 => TabBarStyles::Green,
+                    5 => TabBarStyles::Purple,
+                    _ => TabBarStyles::Default,
+                })
+            }
         }
     }
 }
@@ -107,8 +120,8 @@ impl Tab for SettingsTab {
                         column.push(
                             Radio::new(
                                 predefined_style(id),
-                                predefined_style(id),
-                                self.settings().tab_bar_theme,
+                                id,
+                                self.settings().tab_bar_theme_id,
                                 SettingsMessage::ThemeSelected,
                             )
                             .size(16),
@@ -122,14 +135,14 @@ impl Tab for SettingsTab {
     }
 }
 
-fn predefined_style(index: usize) -> TabBarStyles {
+fn predefined_style(index: usize) -> String {
     match index {
-        0 => TabBarStyles::Default,
-        1 => TabBarStyles::Dark,
-        2 => TabBarStyles::Red,
-        3 => TabBarStyles::Blue,
-        4 => TabBarStyles::Green,
-        5 => TabBarStyles::Purple,
-        _ => TabBarStyles::Default,
+        0 => "Default".to_owned(),
+        1 => "Dark".to_owned(),
+        2 => "Red".to_owned(),
+        3 => "Blue".to_owned(),
+        4 => "Green".to_owned(),
+        5 => "Purple".to_owned(),
+        _ => "Default".to_owned(),
     }
 }

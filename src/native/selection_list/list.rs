@@ -240,19 +240,19 @@ where
                         border_color: Color::TRANSPARENT,
                     },
                     if is_selected {
-                        theme.style(self.style).selected_background
+                        theme.style(&self.style).selected_background
                     } else {
-                        theme.style(self.style).hovered_background
+                        theme.style(&self.style).hovered_background
                     },
                 );
             }
 
             let text_color = if is_selected {
-                theme.style(self.style).selected_text_color
+                theme.style(&self.style).selected_text_color
             } else if is_hovered {
-                theme.style(self.style).hovered_text_color
+                theme.style(&self.style).hovered_text_color
             } else {
-                theme.style(self.style).text_color
+                theme.style(&self.style).text_color
             };
 
             renderer.fill_text(core::text::Text {

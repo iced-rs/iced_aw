@@ -833,13 +833,13 @@ where
         let mut children = layout.children();
 
         let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, &self.style));
         let _ = style_sheet.insert(
             StyleState::Selected,
-            StyleSheet::selected(theme, self.style),
+            StyleSheet::selected(theme, &self.style),
         );
-        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, self.style));
-        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, self.style));
+        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, &self.style));
+        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, &self.style));
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {

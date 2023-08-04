@@ -110,7 +110,7 @@ where
             font,
             text_size,
             padding,
-            style,
+            style: style.clone(),
             selected,
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData,
@@ -260,11 +260,11 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_color: theme.style(self.style).border_color,
-                border_width: theme.style(self.style).border_width,
+                border_color: theme.style(&self.style).border_color,
+                border_width: theme.style(&self.style).border_width,
                 border_radius: (0.0).into(),
             },
-            theme.style(self.style).background,
+            theme.style(&self.style).background,
         );
 
         self.container.draw(

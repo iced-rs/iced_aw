@@ -31,24 +31,32 @@ pub struct Appearance {
 /// The appearance of a [`Split`](crate::native::split::Split).
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub trait StyleSheet {
-    type Style: Default + Copy;
+    type Style: Default;
     /// The normal appearance of a [`Split`](crate::native::split::Split).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when the [`Split`](crate::native::split::Split) is hovered.
-    fn hovered(&self, style: Self::Style) -> Appearance;
+    fn hovered(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when the divider of the [`Split`](crate::native::split::Split) is dragged
-    fn dragged(&self, style: Self::Style) -> Appearance;
+    fn dragged(&self, style: &Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`Split`](crate::native::split::Split).
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 /// Default Prebuilt ``Split`` Styles
 pub enum SplitStyles {
     #[default]
     Default,
+    Custom(Box<dyn StyleSheet<Style = Theme>>),
+}
+
+impl SplitStyles {
+    /// Creates a custom [`SplitStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Box::new(style_sheet))
+    }
 }
 
 impl std::default::Default for Appearance {
@@ -68,7 +76,11 @@ impl std::default::Default for Appearance {
 
 impl StyleSheet for Theme {
     type Style = SplitStyles;
-    fn active(&self, _style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
+        if let SplitStyles::Custom(custom) = style {
+            return custom.active(self);
+        }
+
         let palette = self.extended_palette();
 
         Appearance {
@@ -79,7 +91,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        if let SplitStyles::Custom(custom) = style {
+            return custom.hovered(self);
+        }
+
         let palette = self.extended_palette();
         let active = self.active(style);
 
@@ -89,7 +105,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn dragged(&self, style: Self::Style) -> Appearance {
+    fn dragged(&self, style: &Self::Style) -> Appearance {
+        if let SplitStyles::Custom(custom) = style {
+            return custom.dragged(self);
+        }
+
         let palette = self.extended_palette();
         let active = self.active(style);
 

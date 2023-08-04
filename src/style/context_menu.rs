@@ -1,6 +1,8 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -26,23 +28,31 @@ impl Default for Appearance {
 /// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
 pub trait StyleSheet {
     ///Style for the trait to use.
-    type Style: Default + Copy;
+    type Style: Default + Clone;
     /// The normal appearance of a [`ContextMenu`](crate::native::ContextMenu).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 }
 
 /// The default appearance of a [`ContextMenu`](crate::native::ContextMenu).
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub enum ContextMenuStyle {
     #[default]
     Default,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+}
+
+impl ContextMenuStyle {
+    /// Creates a custom [`ContextMenuStyle`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
+    }
 }
 
 impl StyleSheet for Theme {
     type Style = ContextMenuStyle;
 
-    fn active(&self, _style: Self::Style) -> Appearance {
+    fn active(&self, _style: &Self::Style) -> Appearance {
         let palette = self.extended_palette();
 
         Appearance {

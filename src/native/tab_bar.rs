@@ -483,9 +483,9 @@ where
         let children = layout.children();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let style_sheet = if is_mouse_over {
-            theme.hovered(self.style, false)
+            theme.hovered(&self.style, false)
         } else {
-            theme.active(self.style, false)
+            theme.active(&self.style, false)
         };
 
         renderer.fill_quad(
@@ -506,7 +506,7 @@ where
                 tab,
                 layout,
                 theme,
-                self.style,
+                &self.style,
                 i == self.get_active_tab_idx(),
                 cursor,
                 (self.icon_font.unwrap_or(icons::ICON_FONT), self.icon_size),
@@ -528,7 +528,7 @@ fn draw_tab<Renderer>(
     tab: &TabLabel,
     layout: Layout<'_>,
     theme: &Renderer::Theme,
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: &<Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
     cursor: Cursor,
     icon_data: (Font, f32),

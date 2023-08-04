@@ -230,7 +230,7 @@ where
         content.as_widget().diff(&mut state.children[1]);
 
         Some(
-            ContextMenuOverlay::new(&mut state.children[1], content, self.style, s)
+            ContextMenuOverlay::new(&mut state.children[1], content, self.style.clone(), s)
                 .overlay(position),
         )
     }

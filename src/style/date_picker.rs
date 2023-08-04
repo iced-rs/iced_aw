@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
 
+use std::rc::Rc;
+
 use iced_widget::{
     core::{Background, Color},
     style::Theme,
@@ -37,31 +39,47 @@ pub struct Appearance {
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
 pub trait StyleSheet {
     /// The style type of this stylesheet
-    type Style: std::default::Default + Copy;
+    type Style: Default + Clone;
     /// The normal appearance of a [`DatePicker`](crate::native::DatePicker).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn selected(&self, style: Self::Style) -> Appearance;
+    fn selected(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn hovered(&self, style: Self::Style) -> Appearance;
+    fn hovered(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
     /// [`DatePicker`](crate::native::DatePicker).
-    fn focused(&self, style: Self::Style) -> Appearance;
+    fn focused(&self, style: &Self::Style) -> Appearance;
 }
 
 /// The default appearance of the [`DatePicker`](crate::native::DatePicker).
-#[derive(Clone, Copy, Default, Debug)]
-pub struct Default;
+#[derive(Clone, Default)]
+#[allow(missing_docs, clippy::missing_docs_in_private_items)]
+pub enum DatePickerStyle {
+    #[default]
+    Default,
+    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+}
+
+impl DatePickerStyle {
+    /// Creates a custom [`DatePickerStyle`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Rc::new(style_sheet))
+    }
+}
 
 impl StyleSheet for Theme {
-    type Style = Default;
+    type Style = DatePickerStyle;
 
-    fn active(&self, _style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
+        if let DatePickerStyle::Custom(custom) = style {
+            return custom.active(self);
+        }
+
         let palette = self.extended_palette();
         let foreground = self.palette();
 
@@ -79,7 +97,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn selected(&self, style: Self::Style) -> Appearance {
+    fn selected(&self, style: &Self::Style) -> Appearance {
+        if let DatePickerStyle::Custom(custom) = style {
+            return custom.selected(self);
+        }
+
         let palette = self.extended_palette();
 
         Appearance {
@@ -89,7 +111,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        if let DatePickerStyle::Custom(custom) = style {
+            return custom.hovered(self);
+        }
+
         let palette = self.extended_palette();
 
         Appearance {
@@ -99,7 +125,11 @@ impl StyleSheet for Theme {
         }
     }
 
-    fn focused(&self, style: Self::Style) -> Appearance {
+    fn focused(&self, style: &Self::Style) -> Appearance {
+        if let DatePickerStyle::Custom(custom) = style {
+            return custom.focused(self);
+        }
+
         Appearance {
             border_color: Color::from_rgb(0.5, 0.5, 0.5),
             ..self.active(style)

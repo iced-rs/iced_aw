@@ -213,9 +213,9 @@ where
         let mut children = layout.children();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let style_sheet = if is_mouse_over {
-            theme.hovered(self.style)
+            theme.hovered(&self.style)
         } else {
-            theme.active(self.style)
+            theme.active(&self.style)
         };
 
         //println!("height: {}", bounds.height);

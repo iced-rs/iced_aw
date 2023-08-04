@@ -359,11 +359,11 @@ where
             renderer::Quad {
                 bounds: layout.bounds(),
                 border_radius: (0.0).into(),
-                border_width: theme.active(self.style).border_width,
-                border_color: theme.active(self.style).border_color,
+                border_width: theme.active(&self.style).border_width,
+                border_color: theme.active(&self.style).border_color,
             },
             theme
-                .active(self.style)
+                .active(&self.style)
                 .background
                 .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -384,9 +384,9 @@ where
                 .bounds()
                 .contains(cursor.position().unwrap_or_default())
             {
-                theme.hovered(self.style).first_background
+                theme.hovered(&self.style).first_background
             } else {
-                theme.active(self.style).first_background
+                theme.active(&self.style).first_background
             }
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -421,9 +421,9 @@ where
                 .bounds()
                 .contains(cursor.position().unwrap_or_default())
             {
-                theme.hovered(self.style).second_background
+                theme.hovered(&self.style).second_background
             } else {
-                theme.active(self.style).second_background
+                theme.active(&self.style).second_background
             }
             .unwrap_or_else(|| Color::TRANSPARENT.into()),
         );
@@ -440,14 +440,14 @@ where
 
         // Divider
         let divider_style = if split_state.dragging {
-            theme.dragged(self.style)
+            theme.dragged(&self.style)
         } else if divider_layout
             .bounds()
             .contains(cursor.position().unwrap_or_default())
         {
-            theme.hovered(self.style)
+            theme.hovered(&self.style)
         } else {
-            theme.active(self.style)
+            theme.active(&self.style)
         };
 
         renderer.fill_quad(

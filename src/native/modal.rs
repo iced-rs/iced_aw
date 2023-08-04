@@ -246,7 +246,7 @@ where
                     &mut self.content,
                     self.backdrop.clone(),
                     self.esc.clone(),
-                    self.style,
+                    self.style.clone(),
                     self.horizontal_alignment,
                     self.vertical_alignment,
                 )),

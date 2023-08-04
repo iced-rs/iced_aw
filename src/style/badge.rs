@@ -30,12 +30,12 @@ pub struct Appearance {
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
 pub trait StyleSheet {
     ///Style for the trait to use.
-    type Style: Default + Copy;
+    type Style: Default;
     /// The normal appearance of a [`Badge`](crate::native::badge::Badge).
-    fn active(&self, style: Self::Style) -> Appearance;
+    fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when the [`Badge`](crate::native::badge::Badge) is hovered.
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
         self.active(style)
     }
 }
@@ -52,7 +52,7 @@ impl std::default::Default for Appearance {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 /// Default Prebuilt ``Badge`` Styles
 pub enum BadgeStyles {
@@ -67,12 +67,20 @@ pub enum BadgeStyles {
     White,
     #[default]
     Default,
+    Custom(Box<dyn StyleSheet<Style = Theme>>),
+}
+
+impl BadgeStyles {
+    /// Creates a custom [`BadgeStyles`] style variant.
+    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
+        Self::Custom(Box::new(style_sheet))
+    }
 }
 
 impl StyleSheet for Theme {
     type Style = BadgeStyles;
 
-    fn active(&self, style: Self::Style) -> Appearance {
+    fn active(&self, style: &Self::Style) -> Appearance {
         let from_colors = |color: Color, text_color: Color| Appearance {
             background: Background::Color(color),
             border_color: Some(color),
@@ -91,10 +99,15 @@ impl StyleSheet for Theme {
             BadgeStyles::Dark => from_colors(colors::DARK, colors::WHITE),
             BadgeStyles::White => from_colors(colors::WHITE, colors::BLACK),
             BadgeStyles::Default => Appearance::default(),
+            BadgeStyles::Custom(custom) => custom.active(self),
         }
     }
 
-    fn hovered(&self, style: Self::Style) -> Appearance {
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        if let BadgeStyles::Custom(custom) = style {
+            return custom.hovered(self);
+        }
+
         self.active(style)
     }
 }

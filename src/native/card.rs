@@ -490,7 +490,7 @@ where
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
-        let style_sheet = theme.active(self.style);
+        let style_sheet = theme.active(&self.style);
 
         // Background
         renderer.fill_quad(
@@ -686,7 +686,7 @@ fn draw_head<Message, Renderer>(
     Renderer::Theme: StyleSheet,
 {
     let mut head_children = layout.children();
-    let style_sheet = theme.active(*style);
+    let style_sheet = theme.active(style);
     let bounds = layout.bounds();
     let border_radius = style_sheet.border_radius;
 
@@ -771,7 +771,7 @@ fn draw_body<Message, Renderer>(
     Renderer::Theme: StyleSheet,
 {
     let mut body_children = layout.children();
-    let style_sheet = theme.active(*style);
+    let style_sheet = theme.active(style);
 
     // Body background
     renderer.fill_quad(
@@ -815,7 +815,7 @@ fn draw_foot<Message, Renderer>(
     Renderer::Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
-    let style_sheet = theme.active(*style);
+    let style_sheet = theme.active(style);
 
     // Foot background
     renderer.fill_quad(

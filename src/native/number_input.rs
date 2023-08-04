@@ -667,19 +667,19 @@ where
         let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
 
         let decrease_btn_style = if is_decrease_disabled {
-            theme.disabled(self.style)
+            theme.disabled(&self.style)
         } else if state.state.downcast_ref::<ModifierState>().decrease_pressed {
-            theme.pressed(self.style)
+            theme.pressed(&self.style)
         } else {
-            theme.active(self.style)
+            theme.active(&self.style)
         };
 
         let increase_btn_style = if is_increase_disabled {
-            theme.disabled(self.style)
+            theme.disabled(&self.style)
         } else if state.state.downcast_ref::<ModifierState>().increase_pressed {
-            theme.pressed(self.style)
+            theme.pressed(&self.style)
         } else {
-            theme.active(self.style)
+            theme.active(&self.style)
         };
 
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
