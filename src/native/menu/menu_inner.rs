@@ -380,7 +380,7 @@ impl MenuState {
                     max_index,
                     upper_bound_rel,
                     positions,
-                    &sizes,
+                    sizes,
                 )
                 .min(max_index);
 
@@ -1062,6 +1062,7 @@ where
     Captured
 }
 
+#[allow(clippy::pedantic)]
 /// Returns (children_size, child_positions, child_sizes)
 fn get_children_layout<Message, Renderer>(
     menu_tree: &MenuTree<'_, Message, Renderer>,
@@ -1080,12 +1081,12 @@ where
     let child_sizes: Vec<Size> = match item_height {
         ItemHeight::Uniform(u) => {
             let count = menu_tree.children.len();
-            (0..count).map(|_| Size::new(width, u as f32)).collect()
+            (0..count).map(|_| Size::new(width, f32::from(u))).collect()
         }
         ItemHeight::Static(s) => menu_tree
             .children
             .iter()
-            .map(|mt| Size::new(width, mt.height.unwrap_or(s) as f32))
+            .map(|mt| Size::new(width, f32::from(mt.height.unwrap_or(s))))
             .collect(),
         ItemHeight::Dynamic(d) => menu_tree
             .children
@@ -1093,7 +1094,7 @@ where
             .map(|mt| {
                 let w = mt.item.as_widget();
                 match w.height() {
-                    Length::Fixed(f) => Size::new(width, f as f32),
+                    Length::Fixed(f) => Size::new(width, f),
                     Length::Shrink => {
                         let l_height = w
                             .layout(
@@ -1104,20 +1105,17 @@ where
                             .height;
 
                         let height = if (f32::MAX - l_height) < 0.001 {
-                            d as f32
+                            f32::from(d)
                         } else {
                             l_height
                         };
 
                         Size::new(width, height)
                     }
-                    _ => {
-                        if let Some(h) = mt.height {
-                            Size::new(width, h as f32)
-                        } else {
-                            Size::new(width, d as f32)
-                        }
-                    }
+                    _ => mt.height.map_or_else(
+                        || Size::new(width, f32::from(d)),
+                        |h| Size::new(width, f32::from(h)),
+                    ),
                 }
             })
             .collect(),
