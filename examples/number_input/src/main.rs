@@ -26,7 +26,7 @@ pub enum Message {
 
 fn main() -> iced::Result {
     NumberInputDemo::run(Settings {
-        default_text_size: 14.0,
+        default_text_size: 65.0,
         window: window::Settings {
             size: (250, 200),
             ..Default::default()

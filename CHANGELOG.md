@@ -10,9 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DynamicHeight to menu bar @latidoremi .
 - [Breaking] Custom Style Options for all widgets.
 - Align Option for modal @wiiznokes .
+- width setting to `NumberInput`.`
+
+### Changed
+- Changed current width to content_width for `NumberInput`.
 
 ### Fixed
 - TabBars hieght issue within container.
+- number input buttons not rendering correctly when they are oversized.
 
 ## [0.6.0] - 2023-07-28
 

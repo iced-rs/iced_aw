@@ -82,6 +82,8 @@ where
     style: <Renderer::Theme as number_input::StyleSheet>::Style,
     /// The font text of the [`NumberInput`](NumberInput).
     font: Renderer::Font,
+    /// The Width to use for the NumberBox Default is Length::Fill
+    width: Length,
 }
 
 impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
@@ -124,6 +126,7 @@ where
             on_change: Box::new(on_changed),
             style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
             font: Renderer::Font::default(),
+            width: Length::Fill,
         }
     }
 
@@ -176,6 +179,13 @@ where
     /// Sets the width of the [`NumberInput`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
+        self
+    }
+
+    /// Sets the content width of the [`NumberInput`].
+    #[must_use]
+    pub fn content_width(mut self, width: Length) -> Self {
         self.content = self.content.width(width);
         self
     }
@@ -289,7 +299,7 @@ where
     }
 
     fn width(&self) -> Length {
-        Length::Fill
+        self.width
     }
 
     fn height(&self) -> Length {
@@ -302,7 +312,8 @@ where
             .width(self.width())
             .height(Length::Shrink)
             .pad(padding);
-        let content = self.content.layout(renderer, &limits.loose());
+        let content = self.content.layout(renderer, &limits);
+        let limits2 = Limits::new(Size::new(0.0, 0.0), content.size());
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
 
         let icon_size = txt_size * 2.5 / 4.0;
@@ -317,17 +328,17 @@ where
                 .width(Length::Shrink)
                 .push(btn_mod('+'))
                 .push(btn_mod('-'))
-                .layout(renderer, &limits.loose())
+                .layout(renderer, &limits2.loose())
         } else {
             Column::<(), Renderer>::new()
                 .spacing(1)
                 .width(Length::Shrink)
                 .push(btn_mod('▲'))
                 .push(btn_mod('▼'))
-                .layout(renderer, &limits.loose())
+                .layout(renderer, &limits2.loose())
         };
         let intrinsic = Size::new(
-            content.size().width - 3.0,
+            content.size().width - 1.0,
             content.size().height.max(modifier.size().height),
         );
         modifier.align(Alignment::End, Alignment::Center, intrinsic);
