@@ -157,6 +157,12 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
+        let color_picker_state = tree.state.downcast_mut::<State>();
+
+        if color_picker_state.overlay_state.color != self.color {
+            color_picker_state.overlay_state.color = self.color;
+        }
+
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
