@@ -182,8 +182,13 @@ impl Aod {
         }
     }
 
-    /// Returns child position and offset position 
-    fn resolve(&self, parent_bounds: Rectangle, children_size: Size, viewport_size: Size) -> (Point, Point) {
+    /// Returns child position and offset position
+    fn resolve(
+        &self,
+        parent_bounds: Rectangle,
+        children_size: Size,
+        viewport_size: Size,
+    ) -> (Point, Point) {
         let (x, ox) = Self::adaptive(
             parent_bounds.x,
             parent_bounds.width,
@@ -261,9 +266,9 @@ impl MenuBounds {
 
         // calc offset bounds
         let delta = children_position - offset_position;
-        let offset_size = if delta.x.abs() > delta.y.abs(){
+        let offset_size = if delta.x.abs() > delta.y.abs() {
             Size::new(delta.x, children_size.height)
-        }else{
+        } else {
             Size::new(children_size.width, delta.y)
         };
         let offset_bounds = Rectangle::new(offset_position, offset_size);
