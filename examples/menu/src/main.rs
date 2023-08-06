@@ -198,6 +198,8 @@ impl Application for App {
         }
         .spacing(4.0)
         .bounds_expand(30)
+        .main_offset(13)
+        .cross_offset(16)
         .path_highlight(Some(PathHighlight::MenuActive))
         .close_condition(CloseCondition {
             leave: true,

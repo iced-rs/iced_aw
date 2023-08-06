@@ -65,6 +65,8 @@ where
     spacing: f32,
     padding: Padding,
     bounds_expand: u16,
+    main_offset: i32,
+    cross_offset: i32,
     close_condition: CloseCondition,
     item_width: ItemWidth,
     item_height: ItemHeight,
@@ -89,6 +91,8 @@ where
             spacing: 0.0,
             padding: Padding::ZERO,
             bounds_expand: 15,
+            main_offset: 0,
+            cross_offset: 0,
             close_condition: CloseCondition {
                 leave: true,
                 click_outside: true,
@@ -131,6 +135,20 @@ where
     #[must_use]
     pub fn bounds_expand(mut self, value: u16) -> Self {
         self.bounds_expand = value;
+        self
+    }
+
+    /// Moves all the menus in the vertical open direction
+    #[must_use]
+    pub fn main_offset(mut self, value: i32) -> Self {
+        self.main_offset = value;
+        self
+    }
+
+    /// Moves each menu in the horizontal open direction
+    #[must_use]
+    pub fn cross_offset(mut self, value: i32) -> Self {
+        self.cross_offset = value;
         self
     }
 
@@ -387,6 +405,8 @@ where
                 item_width: self.item_width,
                 item_height: self.item_height,
                 bar_bounds: layout.bounds(),
+                main_offset: self.main_offset,
+                cross_offset: self.cross_offset,
                 root_bounds_list: layout.children().map(|lo| lo.bounds()).collect(),
                 path_highlight: self.path_highlight,
                 style: &self.style,

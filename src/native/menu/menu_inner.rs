@@ -91,17 +91,24 @@ struct Aod {
     // default direction
     horizontal_direction: Direction,
     vertical_direction: Direction,
+
+    // Offset of the child in the default direction
+    horizontal_offset: f32,
+    vertical_offset: f32,
 }
 impl Aod {
+    /// Returns child position and offset position
+    #[allow(clippy::too_many_arguments)]
     fn adaptive(
         parent_pos: f32,
         parent_size: f32,
         child_size: f32,
         max_size: f32,
+        offset: f32,
         on: bool,
         overlap: bool,
         direction: Direction,
-    ) -> f32 {
+    ) -> (f32, f32) {
         /*
         Imagine there're two sticks, parent and child
         parent: o-----o
@@ -139,16 +146,16 @@ impl Aod {
                 if overlap {
                     let overshoot = child_size - parent_size;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        parent_pos - overshoot
+                        (parent_pos - overshoot, parent_pos - overshoot)
                     } else {
-                        parent_pos
+                        (parent_pos, parent_pos)
                     }
                 } else {
-                    let overshoot = child_size;
+                    let overshoot = child_size + offset;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        parent_pos - overshoot
+                        (parent_pos - overshoot, parent_pos - offset)
                     } else {
-                        parent_pos + parent_size
+                        (parent_pos + parent_size + offset, parent_pos + parent_size)
                     }
                 }
             }
@@ -159,43 +166,46 @@ impl Aod {
                 if overlap {
                     let overshoot = child_size - parent_size;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        parent_pos
+                        (parent_pos, parent_pos)
                     } else {
-                        parent_pos - overshoot
+                        (parent_pos - overshoot, parent_pos - overshoot)
                     }
                 } else {
-                    let overshoot = child_size;
+                    let overshoot = child_size + offset;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        parent_pos + parent_size
+                        (parent_pos + parent_size + offset, parent_pos + parent_size)
                     } else {
-                        parent_pos - overshoot
+                        (parent_pos - overshoot, parent_pos - offset)
                     }
                 }
             }
         }
     }
 
-    fn point(&self, parent_bounds: Rectangle, children_size: Size, viewport_size: Size) -> Point {
-        let x = Self::adaptive(
+    /// Returns child position and offset position 
+    fn resolve(&self, parent_bounds: Rectangle, children_size: Size, viewport_size: Size) -> (Point, Point) {
+        let (x, ox) = Self::adaptive(
             parent_bounds.x,
             parent_bounds.width,
             children_size.width,
             viewport_size.width,
+            self.horizontal_offset,
             self.horizontal,
             self.horizontal_overlap,
             self.horizontal_direction,
         );
-        let y = Self::adaptive(
+        let (y, oy) = Self::adaptive(
             parent_bounds.y,
             parent_bounds.height,
             children_size.height,
             viewport_size.height,
+            self.vertical_offset,
             self.vertical,
             self.vertical_overlap,
             self.vertical_direction,
         );
 
-        [x, y].into()
+        ([x, y].into(), [ox, oy].into())
     }
 }
 
@@ -219,6 +229,7 @@ struct MenuBounds {
     children_bounds: Rectangle,
     parent_bounds: Rectangle,
     check_bounds: Rectangle,
+    offset_bounds: Rectangle,
 }
 impl MenuBounds {
     #[allow(clippy::too_many_arguments)]
@@ -243,8 +254,19 @@ impl MenuBounds {
         let view_parent_bounds = parent_bounds + overlay_offset;
 
         // overlay space children position
-        let children_position =
-            aod.point(view_parent_bounds, children_size, viewport_size) - overlay_offset;
+        let (children_position, offset_position) = {
+            let (cp, op) = aod.resolve(view_parent_bounds, children_size, viewport_size);
+            (cp - overlay_offset, op - overlay_offset)
+        };
+
+        // calc offset bounds
+        let delta = children_position - offset_position;
+        let offset_size = if delta.x.abs() > delta.y.abs(){
+            Size::new(delta.x, children_size.height)
+        }else{
+            Size::new(children_size.width, delta.y)
+        };
+        let offset_bounds = Rectangle::new(offset_position, offset_size);
 
         let children_bounds = Rectangle::new(children_position, children_size);
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
@@ -255,6 +277,7 @@ impl MenuBounds {
             children_bounds,
             parent_bounds,
             check_bounds,
+            offset_bounds,
         }
     }
 }
@@ -409,6 +432,8 @@ where
     pub(super) item_width: ItemWidth,
     pub(super) item_height: ItemHeight,
     pub(super) bar_bounds: Rectangle,
+    pub(super) main_offset: i32,
+    pub(super) cross_offset: i32,
     pub(super) root_bounds_list: Vec<Rectangle>,
     pub(super) path_highlight: Option<PathHighlight>,
     pub(super) style: &'b <Renderer::Theme as StyleSheet>::Style,
@@ -479,6 +504,7 @@ where
             viewport_size,
             overlay_offset,
             self.bar_bounds,
+            self.main_offset as f32,
         );
 
         match event {
@@ -504,6 +530,7 @@ where
                     overlay_offset,
                     view_cursor,
                     overlay_cursor,
+                    self.cross_offset as f32,
                 )
                 .merge(menu_status)
             }
@@ -677,6 +704,7 @@ fn init_root_menu<Message, Renderer>(
     viewport_size: Size,
     overlay_offset: Vector,
     bar_bounds: Rectangle,
+    main_offset: f32,
 ) where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
@@ -713,6 +741,8 @@ fn init_root_menu<Message, Renderer>(
                 vertical_overlap: false,
                 horizontal_direction: state.horizontal_direction,
                 vertical_direction: state.vertical_direction,
+                horizontal_offset: 0.0,
+                vertical_offset: main_offset,
             };
 
             let menu_bounds = MenuBounds::new(
@@ -805,6 +835,7 @@ fn process_overlay_events<Message, Renderer>(
     overlay_offset: Vector,
     view_cursor: Cursor,
     overlay_cursor: Point,
+    cross_offset: f32,
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
@@ -853,6 +884,7 @@ where
 
             if mb.parent_bounds.contains(overlay_cursor)
                 || mb.children_bounds.contains(overlay_cursor)
+                || mb.offset_bounds.contains(overlay_cursor)
                 || (mb.check_bounds.contains(overlay_cursor)
                     && prev_bounds.iter().all(|pvb| !pvb.contains(overlay_cursor)))
             {
@@ -963,6 +995,8 @@ where
             vertical_overlap: true,
             horizontal_direction: state.horizontal_direction,
             vertical_direction: state.vertical_direction,
+            horizontal_offset: cross_offset,
+            vertical_offset: 0.0,
         };
 
         state.menu_states.push(MenuState {
