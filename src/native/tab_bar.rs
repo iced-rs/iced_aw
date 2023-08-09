@@ -676,7 +676,7 @@ fn draw_tab<Renderer>(
         if is_mouse_over_cross {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: Rectangle { ..cross_bounds },
+                    bounds: cross_bounds,
                     border_radius: style.icon_border_radius,
                     border_width: style.border_width,
                     border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
