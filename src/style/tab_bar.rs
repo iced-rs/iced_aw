@@ -46,7 +46,7 @@ pub trait StyleSheet {
     ///Style for the trait to use.
     type Style: Default;
 
-    /// The normal appearance0of a tab bar and its tab labels.
+    /// The normal appearance of a tab bar and its tab labels.
     ///
     /// `is_active` is true if the tab is selected.
     fn active(&self, style: &Self::Style, is_active: bool) -> Appearance;
