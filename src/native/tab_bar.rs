@@ -672,6 +672,20 @@ fn draw_tab<Renderer>(
             line_height: LineHeight::Relative(1.3),
             shaping: iced_widget::text::Shaping::Basic,
         });
+
+        if is_mouse_over_cross {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: Rectangle { ..cross_bounds },
+                    border_radius: style.icon_border_radius,
+                    border_width: style.border_width,
+                    border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
+                },
+                style
+                    .icon_background
+                    .unwrap_or(core::Background::Color(Color::TRANSPARENT)),
+            );
+        }
     };
 }
 
