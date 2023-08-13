@@ -41,7 +41,7 @@ where
     /// Style for Font colors and Box hover colors.
     pub style: <Renderer::Theme as StyleSheet>::Style,
     /// Function Pointer On Select to call on Mouse button press.
-    pub on_selected: Box<dyn Fn((usize, T)) -> Message>,
+    pub on_selected: Box<dyn Fn(usize, T) -> Message>,
     /// The padding Width
     pub padding: f32,
     /// The Text Size
@@ -164,7 +164,7 @@ where
                             .last_selected_index
                             .map_or(event::Status::Ignored, |last| {
                                 if let Some(option) = self.options.get(last.0) {
-                                    shell.publish((self.on_selected)((last.0, option.clone())));
+                                    shell.publish((self.on_selected)(last.0, option.clone()));
                                     event::Status::Captured
                                 } else {
                                     event::Status::Ignored

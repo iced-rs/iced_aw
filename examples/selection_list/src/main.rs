@@ -18,7 +18,7 @@ struct Example {
 
 #[derive(Debug, Clone)]
 enum Message {
-    LanguageSelected((usize, String)),
+    LanguageSelected(usize, String),
     AddAtSelection,
     ManualSelection,
 }
@@ -45,7 +45,7 @@ impl Sandbox for Example {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::LanguageSelected((index, language)) => {
+            Message::LanguageSelected(index, language) => {
                 self.selected_language = language;
                 self.selected_index = index;
                 self.manual_select = None;

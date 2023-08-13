@@ -304,7 +304,7 @@ where
 #[must_use]
 pub fn selection_list_with<'a, T, Message, Renderer>(
     options: impl Into<Cow<'a, [T]>>,
-    on_selected: impl Fn((usize, T)) -> Message + 'static,
+    on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
     padding: f32,
     style: <Renderer::Theme as crate::style::selection_list::StyleSheet>::Style,
@@ -338,7 +338,7 @@ where
 #[must_use]
 pub fn selection_list<'a, T, Message, Renderer>(
     options: impl Into<Cow<'a, [T]>>,
-    on_selected: impl Fn((usize, T)) -> Message + 'static,
+    on_selected: impl Fn(usize, T) -> Message + 'static,
 ) -> crate::SelectionList<'a, T, Message, Renderer>
 where
     Message: 'a + Clone,

@@ -65,7 +65,7 @@ where
     /// to set those.
     pub fn new(
         options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn((usize, T)) -> Message + 'static,
+        on_selected: impl Fn(usize, T) -> Message + 'static,
     ) -> Self {
         let options = options.into();
         let container = Container::new(Scrollable::new(List {
@@ -97,7 +97,7 @@ where
     /// selected, the `style`, `text_size`, `padding` and `font`.
     pub fn new_with(
         options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn((usize, T)) -> Message + 'static,
+        on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
         padding: f32,
         style: <Renderer::Theme as StyleSheet>::Style,
