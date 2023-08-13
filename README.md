@@ -112,6 +112,17 @@ Enable this widget with the feature `number_input`.
 
 *This widget does currently not support web*
 
+### SelectionList
+
+A selection space to show any options passed in.
+
+<div align="center">
+
+![SelectionList showcase](./images/showcase/selection_list.gif)
+</div>
+
+Enable this widget with the feature `selection_list`.
+
 ### Split
 
 A split divides the available space to display two different elements.
