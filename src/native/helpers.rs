@@ -298,12 +298,13 @@ where
 }
 
 #[cfg(feature = "selection_list")]
+use std::fmt::Display;
 /// Shortcut helper to create a [`SelectionList`] Widget.
 ///
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
 pub fn selection_list_with<'a, T, Message, Renderer>(
-    options: impl Into<Cow<'a, [T]>>,
+    options: &'a [T],
     on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
     padding: f32,
@@ -317,9 +318,10 @@ where
     Renderer::Theme: crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
+
     crate::SelectionList::new_with(
         options,
         on_selected,
@@ -337,7 +339,7 @@ where
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
 pub fn selection_list<'a, T, Message, Renderer>(
-    options: impl Into<Cow<'a, [T]>>,
+    options: &'a [T],
     on_selected: impl Fn(usize, T) -> Message + 'static,
 ) -> crate::SelectionList<'a, T, Message, Renderer>
 where
@@ -346,7 +348,7 @@ where
     Renderer::Theme: crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     crate::SelectionList::new(options, on_selected)

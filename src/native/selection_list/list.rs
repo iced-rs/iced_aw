@@ -1,7 +1,7 @@
 //! Build and show dropdown `ListMenus`.
 use std::{
-    borrow::Cow,
     collections::hash_map::DefaultHasher,
+    fmt::Display,
     hash::{Hash, Hasher},
     marker::PhantomData,
 };
@@ -28,13 +28,13 @@ use iced_widget::{
 #[allow(missing_debug_implementations)]
 pub struct List<'a, T: 'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
     /// Options pointer to hold all rendered strings
-    pub options: Cow<'a, [T]>,
+    pub options: &'a [T],
     /// Hovered Item Pointer
     /// Label Font
     pub font: Renderer::Font,
@@ -63,7 +63,7 @@ pub struct ListState {
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
@@ -278,7 +278,7 @@ where
 impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     Message: 'a,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
