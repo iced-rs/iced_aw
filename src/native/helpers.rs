@@ -256,16 +256,15 @@ where
 /// [`Modal`]: crate::Modal
 #[must_use]
 pub fn modal<'a, Message, Renderer>(
-    show_modal: bool,
     underlay: impl Into<Element<'a, Message, Renderer>>,
-    content: impl Into<Element<'a, Message, Renderer>>,
+    overlay: Option<impl Into<Element<'a, Message, Renderer>>>,
 ) -> crate::Modal<'a, Message, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
     Renderer::Theme: crate::style::modal::StyleSheet,
 {
-    crate::Modal::new(show_modal, underlay, content)
+    crate::Modal::new(underlay, overlay)
 }
 
 #[cfg(feature = "number_input")]
