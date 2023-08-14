@@ -28,10 +28,10 @@ macro_rules! grid {
 #[macro_export]
 macro_rules! wrap_horizontal {
     () => (
-        $crate::wrap::new()
+        $crate::Wrap::new()
     );
     ($($x:expr),+ $(,)?) => (
-        $crate::Grid::with_elements(vec![$($crate::Element::from($x)),+])
+        $crate::Wrap::with_elements(vec![$($crate::Element::from($x)),+])
     );
 }
 
@@ -42,10 +42,10 @@ macro_rules! wrap_horizontal {
 #[macro_export]
 macro_rules! wrap_vertical {
     () => (
-        $crate::wrap::new_vertical()
+        $crate::Wrap::new_vertical()
     );
     ($($x:expr),+ $(,)?) => (
-        $crate::wrap::with_elements_vertical(vec![$($crate::Element::from($x)),+])
+        $crate::Wrap::with_elements_vertical(vec![$($crate::Element::from($x)),+])
     );
 }
 
