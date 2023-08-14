@@ -5,7 +5,7 @@
 #[allow(unused_imports)]
 use iced_widget::core::{self, Color, Element};
 #[allow(unused_imports)]
-use std::{borrow::Cow, hash::Hash};
+use std::{borrow::Cow, hash::Hash, fmt::Display};
 
 /// Creates a [`Grid`] with the given children.
 ///
@@ -298,7 +298,6 @@ where
 }
 
 #[cfg(feature = "selection_list")]
-use std::fmt::Display;
 /// Shortcut helper to create a [`SelectionList`] Widget.
 ///
 /// [`SelectionList`]: crate::SelectionList
