@@ -321,7 +321,6 @@ where
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
-
     crate::SelectionList::new_with(
         options,
         on_selected,
