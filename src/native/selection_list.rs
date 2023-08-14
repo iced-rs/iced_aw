@@ -19,8 +19,8 @@ use iced_widget::{
 };
 
 pub use list::List;
-use std::marker::PhantomData;
-use std::{borrow::Cow, hash::Hash};
+use std::hash::Hash;
+use std::{fmt::Display, marker::PhantomData};
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
@@ -35,7 +35,7 @@ where
     /// Container for Rendering List.
     container: Container<'a, Message, Renderer>,
     /// List of Elements to Render.
-    options: Cow<'a, [T]>,
+    options: &'a [T],
     /// Label Font
     font: Renderer::Font,
     /// The Containers Width
@@ -56,20 +56,16 @@ where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet + container::StyleSheet + scrollable::StyleSheet,
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     /// Creates a new [`SelectionList`] with the given list of `options`,
     /// the current selected value, and the `message` to produce when an option is
     /// selected. This will default the `style`, `text_size` and `padding`. use `new_with`
     /// to set those.
-    pub fn new(
-        options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn((usize, T)) -> Message + 'static,
-    ) -> Self {
-        let options = options.into();
+    pub fn new(options: &'a [T], on_selected: impl Fn(usize, T) -> Message + 'static) -> Self {
         let container = Container::new(Scrollable::new(List {
-            options: options.clone(),
+            options,
             font: Font::default(),
             text_size: 12.0,
             padding: 5.0,
@@ -96,17 +92,16 @@ where
     /// the current selected value, the message to produce when an option is
     /// selected, the `style`, `text_size`, `padding` and `font`.
     pub fn new_with(
-        options: impl Into<Cow<'a, [T]>>,
-        on_selected: impl Fn((usize, T)) -> Message + 'static,
+        options: &'a [T],
+        on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
         padding: f32,
         style: <Renderer::Theme as StyleSheet>::Style,
         selected: Option<usize>,
         font: Font,
     ) -> Self {
-        let options = options.into();
         let container = Container::new(Scrollable::new(List {
-            options: options.clone(),
+            options,
             font,
             text_size,
             padding,

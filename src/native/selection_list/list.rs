@@ -1,7 +1,7 @@
 //! Build and show dropdown `ListMenus`.
 use std::{
-    borrow::Cow,
     collections::hash_map::DefaultHasher,
+    fmt::Display,
     hash::{Hash, Hasher},
     marker::PhantomData,
 };
@@ -28,20 +28,20 @@ use iced_widget::{
 #[allow(missing_debug_implementations)]
 pub struct List<'a, T: 'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
     /// Options pointer to hold all rendered strings
-    pub options: Cow<'a, [T]>,
+    pub options: &'a [T],
     /// Hovered Item Pointer
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
     pub style: <Renderer::Theme as StyleSheet>::Style,
     /// Function Pointer On Select to call on Mouse button press.
-    pub on_selected: Box<dyn Fn((usize, T)) -> Message>,
+    pub on_selected: Box<dyn Fn(usize, T) -> Message>,
     /// The padding Width
     pub padding: f32,
     /// The Text Size
@@ -63,7 +63,7 @@ pub struct ListState {
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
 {
@@ -164,7 +164,7 @@ where
                             .last_selected_index
                             .map_or(event::Status::Ignored, |last| {
                                 if let Some(option) = self.options.get(last.0) {
-                                    shell.publish((self.on_selected)((last.0, option.clone())));
+                                    shell.publish((self.on_selected)(last.0, option.clone()));
                                     event::Status::Captured
                                 } else {
                                     event::Status::Ignored
@@ -278,7 +278,7 @@ where
 impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + Display + Eq + Hash,
     Message: 'a,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet,
