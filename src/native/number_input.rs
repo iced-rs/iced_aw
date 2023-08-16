@@ -574,7 +574,7 @@ where
                             ),
                         }
                     }
-                    // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
+
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                         let positive = match delta {
                             mouse::ScrollDelta::Lines { y, .. }
