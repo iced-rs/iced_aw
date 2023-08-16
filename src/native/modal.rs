@@ -136,11 +136,10 @@ where
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
-        if let Some(overlay) = &self.overlay {
-            vec![Tree::new(&self.underlay), Tree::new(overlay)]
-        } else {
-            vec![Tree::new(&self.underlay)]
-        }
+        self.overlay.as_ref().map_or_else(
+            || vec![Tree::new(&self.underlay)],
+            |overlay| vec![Tree::new(&self.underlay), Tree::new(overlay)],
+        )
     }
 
     fn diff(&self, tree: &mut Tree) {
