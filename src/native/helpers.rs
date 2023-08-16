@@ -5,7 +5,7 @@
 #[allow(unused_imports)]
 use iced_widget::core::{self, Color, Element};
 #[allow(unused_imports)]
-use std::{borrow::Cow, hash::Hash, fmt::Display};
+use std::{borrow::Cow, fmt::Display, hash::Hash};
 
 /// Creates a [`Grid`] with the given children.
 ///
