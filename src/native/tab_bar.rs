@@ -332,45 +332,50 @@ where
         self.tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
-                let label = match tab_label {
-                    TabLabel::Icon(icon) => Column::new().align_items(Alignment::Center).push(
-                        Text::new(icon.to_string())
-                            .size(self.icon_size)
-                            .font(self.icon_font.unwrap_or_default())
-                            .horizontal_alignment(alignment::Horizontal::Center)
-                            .vertical_alignment(alignment::Vertical::Center),
-                    ),
-                    TabLabel::Text(text) => Column::new().align_items(Alignment::Center).push(
-                        Text::new(text)
-                            .size(self.text_size)
-                            .font(self.text_font.unwrap_or_default())
-                            .horizontal_alignment(alignment::Horizontal::Center)
-                            .vertical_alignment(alignment::Vertical::Center),
-                    ),
-                    TabLabel::IconText(icon, text) => Column::new()
-                        .align_items(Alignment::Center)
-                        .push(
-                            Text::new(icon.to_string())
-                                .size(self.icon_size)
-                                .font(self.icon_font.unwrap_or_default())
-                                .horizontal_alignment(alignment::Horizontal::Center)
-                                .vertical_alignment(alignment::Vertical::Center),
-                        )
-                        .push(
-                            Text::new(text)
-                                .size(self.text_size)
-                                .width(self.tab_width)
-                                .font(self.text_font.unwrap_or_default()),
-                        ),
-                }
-                .width(self.tab_width)
-                .height(self.height);
-
                 let mut label_row = Row::new()
+                    .push(
+                        match tab_label {
+                            TabLabel::Icon(icon) => {
+                                Column::new().align_items(Alignment::Center).push(
+                                    Text::new(icon.to_string())
+                                        .size(self.icon_size)
+                                        .font(self.icon_font.unwrap_or_default())
+                                        .horizontal_alignment(alignment::Horizontal::Center)
+                                        .vertical_alignment(alignment::Vertical::Center),
+                                )
+                            }
+                            TabLabel::Text(text) => {
+                                Column::new().align_items(Alignment::Center).push(
+                                    Text::new(text)
+                                        .size(self.text_size)
+                                        .font(self.text_font.unwrap_or_default())
+                                        .horizontal_alignment(alignment::Horizontal::Center)
+                                        .vertical_alignment(alignment::Vertical::Center),
+                                )
+                            }
+                            TabLabel::IconText(icon, text) => Column::new()
+                                .align_items(Alignment::Center)
+                                .push(
+                                    Text::new(icon.to_string())
+                                        .size(self.icon_size)
+                                        .font(self.icon_font.unwrap_or_default())
+                                        .horizontal_alignment(alignment::Horizontal::Center)
+                                        .vertical_alignment(alignment::Vertical::Center),
+                                )
+                                .push(
+                                    Text::new(text)
+                                        .size(self.text_size)
+                                        .font(self.text_font.unwrap_or_default())
+                                        .horizontal_alignment(alignment::Horizontal::Center)
+                                        .vertical_alignment(alignment::Vertical::Center),
+                                ),
+                        }
+                        .width(self.tab_width)
+                        .height(self.height),
+                    )
                     .align_items(Alignment::Center)
                     .padding(self.padding)
-                    .width(self.tab_width)
-                    .push(label);
+                    .width(self.tab_width);
 
                 if self.on_close.is_some() {
                     label_row = label_row.push(
@@ -386,7 +391,7 @@ where
             .width(self.width)
             .height(self.height)
             .spacing(self.spacing)
-            .layout(renderer, limits)
+            .layout(renderer, &limits.loose())
     }
 
     fn on_event(
@@ -581,7 +586,7 @@ fn draw_tab<Renderer>(
                 size: icon_data.1,
                 color: style.icon_color,
                 font: icon_data.0,
-                horizontal_alignment: Horizontal::Center,
+                horizontal_alignment: Horizontal::Left,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
                 shaping: iced_widget::text::Shaping::Advanced,

@@ -1,10 +1,9 @@
 use iced::{
     alignment, font,
     theme::Theme,
-    widget::{container, text, Container, Row, Text},
+    widget::{container, text, Column, Container, Row, Text},
     window, Alignment, Application, Command, Element, Length, Settings,
 };
-use iced_aw::{number_input, style::NumberInputStyles};
 
 #[derive(Debug)]
 enum NumberInputDemo {
@@ -12,15 +11,15 @@ enum NumberInputDemo {
     Loaded(State),
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct State {
-    value: f32,
+    value: [NumInput<f32, Message>; 2],
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(f32),
     Loaded(Result<(), String>),
+    GenericF32Input((usize, NumInputMessage<f32>)),
     FontLoaded(Result<(), font::Error>),
 }
 
@@ -28,12 +27,16 @@ fn main() -> iced::Result {
     NumberInputDemo::run(Settings {
         default_text_size: 12.0,
         window: window::Settings {
-            size: (250, 200),
+            size: (500, 400),
             ..Default::default()
         },
         ..Settings::default()
     })
 }
+
+mod numberinput;
+
+use numberinput::*;
 
 async fn load() -> Result<(), String> {
     Ok(())
@@ -63,12 +66,14 @@ impl Application for NumberInputDemo {
         match self {
             NumberInputDemo::Loading => {
                 if let Message::Loaded(_) = message {
-                    *self = NumberInputDemo::Loaded(State { value: 27.0 })
+                    *self = NumberInputDemo::Loaded(State {
+                        value: [NumInput::new(27.0), NumInput::new(5.0)],
+                    })
                 }
             }
             NumberInputDemo::Loaded(State { value }) => {
-                if let Message::NumInpChanged(val) = message {
-                    *value = val;
+                if let Message::GenericF32Input((id, val)) = message {
+                    value[id].value = val.get_data();
                 }
             }
         }
@@ -89,23 +94,27 @@ impl Application for NumberInputDemo {
             .center_x()
             .into(),
             NumberInputDemo::Loaded(State { value }) => {
-                let lb_minute = Text::new("Number Input:");
-                let txt_minute = number_input(*value, 255.0, Message::NumInpChanged)
-                    .style(NumberInputStyles::Default)
-                    .step(0.5);
+                let mut column1 = Column::new();
 
-                Container::new(
-                    Row::new()
-                        .spacing(10)
-                        .align_items(Alignment::Center)
-                        .push(lb_minute)
-                        .push(txt_minute),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x()
-                .center_y()
-                .into()
+                for (id, val) in value.iter().enumerate() {
+                    let lb_minute = Text::new(format!("Number Input {}:", id));
+                    let txt_minute = val.view(id, 1.0, 255.0, 0.5, Message::GenericF32Input, None);
+
+                    column1 = column1.push(
+                        Row::new()
+                            .spacing(10)
+                            .align_items(Alignment::Center)
+                            .push(lb_minute)
+                            .push(txt_minute),
+                    );
+                }
+
+                Container::new(column1)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .center_x()
+                    .center_y()
+                    .into()
             }
         }
     }

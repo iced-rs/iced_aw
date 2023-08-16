@@ -295,6 +295,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'widget_id'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=widget_id",
+                    "--package=widget_id"
+                ],
+                "filter": {
+                    "name": "widget_id",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'time_picker'",
             "cargo": {
                 "args": [
