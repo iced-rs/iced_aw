@@ -576,11 +576,11 @@ where
                     }
                     // This section from line 502 to 516 was owned by 13r0ck (https://github.com/13r0ck).
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                        let negative = match delta {
+                        let positive = match delta {
                             mouse::ScrollDelta::Lines { y, .. }
-                            | mouse::ScrollDelta::Pixels { y, .. } => y.is_sign_negative(),
+                            | mouse::ScrollDelta::Pixels { y, .. } => y.is_sign_positive(),
                         };
-                        if negative {
+                        if positive {
                             self.increase_val(shell);
                         } else {
                             self.decrease_val(shell);
