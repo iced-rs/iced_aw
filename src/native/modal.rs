@@ -43,12 +43,10 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Show the modal.
-    show_modal: bool,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
     /// The content of the [`ModalOverlay`](ModalOverlay).
-    content: Element<'a, Message, Renderer>,
+    overlay: Option<Element<'a, Message, Renderer>>,
     /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
@@ -77,14 +75,12 @@ where
     ///         will be wrapped around.
     ///     * the content [`Element`] of the [`Modal`](Modal).
     pub fn new(
-        show_modal: bool,
         underlay: impl Into<Element<'a, Message, Renderer>>,
-        content: impl Into<Element<'a, Message, Renderer>>,
+        overlay: Option<impl Into<Element<'a, Message, Renderer>>>,
     ) -> Self {
         Modal {
-            show_modal,
             underlay: underlay.into(),
-            content: content.into(),
+            overlay: overlay.map(Into::into),
             backdrop: None,
             esc: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
@@ -140,11 +136,19 @@ where
     Renderer::Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.content)]
+        if let Some(overlay) = &self.overlay {
+            vec![Tree::new(&self.underlay), Tree::new(overlay)]
+        } else {
+            vec![Tree::new(&self.underlay)]
+        }
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.content]);
+        if let Some(overlay) = &self.overlay {
+            tree.diff_children(&[&self.underlay, overlay]);
+        } else {
+            tree.diff_children(&[&self.underlay]);
+        }
     }
 
     fn width(&self) -> Length {
@@ -170,7 +174,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        if !self.show_modal {
+        if self.overlay.is_none() {
             return self.underlay.as_widget_mut().on_event(
                 &mut state.children[0],
                 event,
@@ -194,7 +198,7 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        if !self.show_modal {
+        if self.overlay.is_none() {
             return self.underlay.as_widget().mouse_interaction(
                 &state.children[0],
                 layout,
@@ -234,16 +238,16 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
-        if self.show_modal {
+        if let Some(overlay) = &mut self.overlay {
             let bounds = layout.bounds();
             let position = Point::new(bounds.x, bounds.y);
-            self.content.as_widget().diff(&mut state.children[1]);
+            overlay.as_widget().diff(&mut state.children[1]);
 
             Some(overlay::Element::new(
                 position,
                 Box::new(ModalOverlay::new(
                     &mut state.children[1],
-                    &mut self.content,
+                    overlay,
                     self.backdrop.clone(),
                     self.esc.clone(),
                     self.style.clone(),
@@ -265,10 +269,10 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<Message>,
     ) {
-        if self.show_modal {
-            self.content.as_widget().diff(&mut state.children[1]);
+        if let Some(overlay) = &self.overlay {
+            overlay.as_widget().diff(&mut state.children[1]);
 
-            self.content
+            overlay
                 .as_widget()
                 .operate(&mut state.children[1], layout, renderer, operation);
         } else {

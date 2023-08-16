@@ -87,7 +87,7 @@ impl Application for ModalExample {
             .center_x()
             .into(),
             ModalExample::Loaded(state) => {
-                let content = Container::new(
+                let underlay = Container::new(
                     Row::new()
                         .spacing(10)
                         .align_items(Alignment::Center)
@@ -105,14 +105,16 @@ impl Application for ModalExample {
                         ))),
                 );
 
-                Modal::new(
-                    state.show_modal,
-                    content,
-                    container(my_component::MyComponent),
-                )
-                .backdrop(Message::CloseModal)
-                .on_esc(Message::CloseModal)
-                .into()
+                let overlay = if state.show_modal {
+                    Some(container(my_component::MyComponent))
+                } else {
+                    None
+                };
+
+                Modal::new(underlay, overlay)
+                    .backdrop(Message::CloseModal)
+                    .on_esc(Message::CloseModal)
+                    .into()
             }
         }
     }

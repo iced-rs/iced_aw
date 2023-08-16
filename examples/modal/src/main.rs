@@ -93,7 +93,7 @@ impl Application for ModalExample {
             .center_x()
             .into(),
             ModalExample::Loaded(state) => {
-                let content = Container::new(
+                let underlay = Container::new(
                     Row::new()
                         .spacing(10)
                         .align_items(Alignment::Center)
@@ -113,41 +113,46 @@ impl Application for ModalExample {
                         ))),
                 );
 
-                modal(
-                    state.show_modal,
-                    content,
-                    Card::new(
-                        Text::new("My modal"),
-                        Text::new("This is a modal!"), //Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit​​, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead.")
-                    )
-                    .foot(
-                        Row::new()
-                            .spacing(10)
-                            .padding(5)
-                            .width(Length::Fill)
-                            .push(
-                                Button::new(
-                                    Text::new("Cancel").horizontal_alignment(Horizontal::Center),
-                                )
+                let overlay = if state.show_modal {
+                    Some(
+                        Card::new(
+                            Text::new("My modal"),
+                            Text::new("This is a modal!"), //Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit​​, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead.")
+                        )
+                        .foot(
+                            Row::new()
+                                .spacing(10)
+                                .padding(5)
                                 .width(Length::Fill)
-                                .on_press(Message::CancelButtonPressed),
-                            )
-                            .push(
-                                Button::new(
-                                    Text::new("Ok").horizontal_alignment(Horizontal::Center),
+                                .push(
+                                    Button::new(
+                                        Text::new("Cancel")
+                                            .horizontal_alignment(Horizontal::Center),
+                                    )
+                                    .width(Length::Fill)
+                                    .on_press(Message::CancelButtonPressed),
                                 )
-                                .width(Length::Fill)
-                                .on_press(Message::OkButtonPressed),
-                            ),
+                                .push(
+                                    Button::new(
+                                        Text::new("Ok").horizontal_alignment(Horizontal::Center),
+                                    )
+                                    .width(Length::Fill)
+                                    .on_press(Message::OkButtonPressed),
+                                ),
+                        )
+                        .max_width(300.0)
+                        //.width(Length::Shrink)
+                        .on_close(Message::CloseModal),
                     )
-                    .max_width(300.0)
-                    //.width(Length::Shrink)
-                    .on_close(Message::CloseModal),
-                )
-                .backdrop(Message::CloseModal)
-                .on_esc(Message::CloseModal)
-                .align_y(alignment::Vertical::Top)
-                .into()
+                } else {
+                    None
+                };
+
+                modal(underlay, overlay)
+                    .backdrop(Message::CloseModal)
+                    .on_esc(Message::CloseModal)
+                    .align_y(alignment::Vertical::Top)
+                    .into()
             }
         }
     }
