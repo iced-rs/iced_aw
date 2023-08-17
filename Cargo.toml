@@ -1,7 +1,10 @@
 [package]
 name = "iced_aw"
 version = "0.7.0"
-authors = ["Kaiden42 <gitlab@tinysn.com>", "Andrew Wheeler <genusistimelord@gmail.com>"]
+authors = [
+    "Kaiden42 <gitlab@tinysn.com>",
+    "Andrew Wheeler <genusistimelord@gmail.com>",
+]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"
 license = "MIT"
@@ -19,7 +22,7 @@ color_picker = ["icon_text", "iced_widget/canvas"]
 cupertino = ["iced_widget/canvas", "time"]
 floating_element = []
 grid = []
-glow = [] # TODO
+glow = []                                                   # TODO
 icon_text = ["icons"]
 icons = []
 modal = []
@@ -88,6 +91,7 @@ members = [
     "examples/grid",
     "examples/modal",
     "examples/modal_component",
+    "examples/multiple_modals",
     "examples/tab_bar",
     "examples/tabs",
     "examples/time_picker",
@@ -99,7 +103,7 @@ members = [
     "examples/menu",
     "examples/spinner",
     "examples/context_menu",
-    "examples/WidgetIDReturn"
+    "examples/WidgetIDReturn",
 ]
 
 [workspace.dependencies.iced]
@@ -111,4 +115,3 @@ features = ["advanced", "lazy", "tokio"]
 [workspace.dependencies.iced_aw]
 path = "./"
 default-features = false
-
