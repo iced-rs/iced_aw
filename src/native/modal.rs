@@ -30,9 +30,8 @@ pub use crate::style::modal::StyleSheet;
 /// }
 ///
 /// let modal = Modal::new(
-///     false,
 ///     Text::new("Underlay"),
-///     Text::new("Overlay"),
+///     Some(Text::new("Overlay")),
 /// )
 /// .backdrop(Message::CloseModal);
 /// ```
@@ -45,7 +44,7 @@ where
 {
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
-    /// The content of the [`ModalOverlay`](ModalOverlay).
+    /// The optional content of the [`ModalOverlay`](ModalOverlay).
     overlay: Option<Element<'a, Message, Renderer>>,
     /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
@@ -70,10 +69,9 @@ where
     /// overlying content.
     ///
     /// It expects:
-    ///     * if the overlay of the date picker is visible.
     ///     * the underlay [`Element`] on which this [`Modal`](Modal)
     ///         will be wrapped around.
-    ///     * the content [`Element`] of the [`Modal`](Modal).
+    ///     * the optional overlay [`Element`] of the [`Modal`](Modal).
     pub fn new(
         underlay: impl Into<Element<'a, Message, Renderer>>,
         overlay: Option<impl Into<Element<'a, Message, Renderer>>>,
