@@ -238,18 +238,6 @@ where
     crate::Wrap::with_elements_vertical(children)
 }
 
-#[cfg(feature = "icon_text")]
-/// Shortcut helper to create an [`IconText`] Widget.
-///
-/// [`IconText`]: crate::IconText
-#[must_use]
-pub fn icon_text<Renderer>(label: impl Into<String>) -> crate::IconText<Renderer>
-where
-    Renderer: core::text::Renderer<Font = core::Font>,
-{
-    crate::IconText::new(label)
-}
-
 #[cfg(feature = "modal")]
 /// Shortcut helper to create a [`Modal`] Widget.
 ///

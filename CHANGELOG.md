@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2023-08-30
+
 ### Added
 - DynamicHeight to menu bar @latidoremi .
 - [Breaking] Custom Style Options for all widgets.
@@ -14,10 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Changed current width to content_width for `NumberInput`.
+- (Breaking) Removed `Icon_text`, Use `Iced::widget::Text` instead.
 
 ### Fixed
 - TabBars hieght issue within container.
 - number input buttons not rendering correctly when they are oversized.
+- Fixed SFUIRounded family name to be correct.
+- number input scrolling to be  normal scrolling instead of inversed scrolling @Redhawk18. 
 
 ## [0.6.0] - 2023-07-28
 

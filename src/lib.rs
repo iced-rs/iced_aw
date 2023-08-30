@@ -63,10 +63,6 @@ mod platform {
     pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
 
     #[doc(no_inline)]
-    #[cfg(feature = "icon_text")]
-    pub use {crate::native::icon_text, crate::native::icon_text::IconText};
-
-    #[doc(no_inline)]
     #[cfg(feature = "badge")]
     pub use {crate::native::badge, crate::style::BadgeStyles, badge::Badge};
 

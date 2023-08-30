@@ -1,6 +1,6 @@
 [package]
 name = "iced_aw"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Kaiden42 <gitlab@tinysn.com>", "Andrew Wheeler <genusistimelord@gmail.com>"]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"

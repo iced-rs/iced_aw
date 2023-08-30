@@ -1,10 +1,8 @@
 //! Use a date picker as an input element for picking dates.
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
-use std::collections::HashMap;
 
 use chrono::{Datelike, Local, NaiveDate};
-
 use iced_widget::{
     button, container,
     core::{
@@ -23,6 +21,7 @@ use iced_widget::{
     renderer::Renderer,
     text, Button, Column, Container, Row, Text,
 };
+use std::collections::HashMap;
 
 use crate::{
     core::{
@@ -30,8 +29,7 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    graphics::icons::{Icon, ICON_FONT},
-    native::IconText,
+    graphics::icons::{icon_to_char, Icon, ICON_FONT},
     style::style_state::StyleState,
 };
 
@@ -89,12 +87,22 @@ where
 
         DatePickerOverlay {
             state: overlay_state,
-            cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
-                .width(Length::Fill)
-                .on_press(on_cancel.clone()),
-            submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
-                .width(Length::Fill)
-                .on_press(on_cancel), // Sending a fake message
+            cancel_button: Button::new(
+                text::Text::new(icon_to_char(Icon::X).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel.clone()),
+            submit_button: Button::new(
+                text::Text::new(icon_to_char(Icon::Check).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
             style,
@@ -909,8 +917,20 @@ where
 {
     fn default() -> Self {
         Self {
-            cancel_button: Button::new(IconText::new(Icon::X)).into(),
-            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+            cancel_button: Button::new(
+                text::Text::new(icon_to_char(Icon::X).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .into(),
+            submit_button: Button::new(
+                text::Text::new(icon_to_char(Icon::Check).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .into(),
         }
     }
 }

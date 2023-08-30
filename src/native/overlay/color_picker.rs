@@ -30,7 +30,6 @@ use crate::{
         overlay::Position,
     },
     graphics::icons::{icon_to_char, Icon},
-    //native::IconText,
     style::{
         color_picker::{Appearance, StyleSheet},
         style_state::StyleState,
@@ -101,7 +100,6 @@ where
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
-            //IconText
             submit_button: Button::new(
                 iced_widget::Text::new(icon_to_char(Icon::Check).to_string())
                     .horizontal_alignment(alignment::Horizontal::Center)

@@ -3,6 +3,7 @@
 //! *This API requires the following crate features to be activated: `time_picker`*
 use std::collections::HashMap;
 
+use crate::graphics::icons::{icon_to_char, ICON_FONT};
 use crate::time_picker::{self, Time};
 use crate::{
     core::clock::{
@@ -11,7 +12,6 @@ use crate::{
         SECOND_RADIUS_PERCENTAGE,
     },
     core::{clock, overlay::Position, time::Period},
-    native::IconText,
     style::style_state::StyleState,
     Icon,
 };
@@ -94,12 +94,22 @@ where
 
         TimePickerOverlay {
             state: overlay_state,
-            cancel_button: Button::new(IconText::new(Icon::X).width(Length::Fill))
-                .width(Length::Fill)
-                .on_press(on_cancel.clone()),
-            submit_button: Button::new(IconText::new(Icon::Check).width(Length::Fill))
-                .width(Length::Fill)
-                .on_press(on_cancel), // Sending a fake message
+            cancel_button: Button::new(
+                text::Text::new(icon_to_char(Icon::X).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel.clone()),
+            submit_button: Button::new(
+                text::Text::new(icon_to_char(Icon::Check).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .width(Length::Fill)
+            .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
             style,
@@ -1656,8 +1666,20 @@ where
 {
     fn default() -> Self {
         Self {
-            cancel_button: Button::new(IconText::new(Icon::X)).into(),
-            submit_button: Button::new(IconText::new(Icon::Check)).into(),
+            cancel_button: Button::new(
+                text::Text::new(icon_to_char(Icon::X).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .into(),
+            submit_button: Button::new(
+                text::Text::new(icon_to_char(Icon::Check).to_string())
+                    .font(ICON_FONT)
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill),
+            )
+            .into(),
         }
     }
 }

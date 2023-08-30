@@ -64,12 +64,6 @@ pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
 #[cfg(feature = "grid")]
 pub use grid::Strategy;
 
-#[cfg(feature = "icon_text")]
-pub mod icon_text;
-#[cfg(feature = "icon_text")]
-/// Text widget with icon font.
-pub type IconText<Renderer> = crate::native::icon_text::IconText<Renderer>;
-
 #[cfg(feature = "modal")]
 pub mod modal;
 #[cfg(feature = "modal")]
