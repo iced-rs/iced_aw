@@ -9,4 +9,4 @@ pub const SF_UI_ROUNDED_BYTES: &[u8] = include_bytes!("./fonts/SFUIRounded.ttf")
 /// The default cupertino font for alerts and button.
 #[cfg(feature = "cupertino")]
 pub const SF_UI_ROUNDED: iced_widget::core::Font =
-    iced_widget::core::Font::with_name("sfuiRounded");
+    iced_widget::core::Font::with_name(".SF UI Rounded");
