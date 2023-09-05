@@ -62,15 +62,13 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`Modal`] wrapping the underlying element to
-    /// show some content as an overlay.
+    /// Creates a new [`Modal`] wrapping the underlying element to show some content as an overlay.
     ///
-    /// `state` is the content's state, assigned at the creation of the
-    /// overlying content.
+    /// If [`overlay`] is `Some`, the contained [`Element`] is shown over the underlying element.
+    /// If [`overlay`] is `None`, only the underlying element is shown.
     ///
     /// It expects:
-    ///     * the underlay [`Element`] on which this [`Modal`]
-    ///         will be wrapped around.
+    ///     * the underlay [`Element`] on which this [`Modal`] will be wrapped around.
     ///     * the optional overlay [`Element`] of the [`Modal`].
     pub fn new(
         underlay: impl Into<Element<'a, Message, Renderer>>,
