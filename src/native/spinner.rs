@@ -26,11 +26,11 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// The width of the [`Spinner`](Spinner).
+    /// The width of the [`Spinner`].
     width: Length,
-    /// The height of the [`Spinner`](Spinner).
+    /// The height of the [`Spinner`].
     height: Length,
-    /// The rate of the [`Spinner`](Spinner).
+    /// The rate of the [`Spinner`].
     rate: Duration,
     /// The radius of the spinning circle.
     circle_radius: f32,
@@ -65,14 +65,14 @@ where
         Self::default()
     }
 
-    /// Sets the width of the [`Spinner`](Spinner).
+    /// Sets the width of the [`Spinner`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Spinner`](Spinner).
+    /// Sets the height of the [`Spinner`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;

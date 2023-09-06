@@ -44,13 +44,13 @@ where
 {
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
-    /// The optional content of the [`ModalOverlay`](ModalOverlay).
+    /// The optional content of the [`ModalOverlay`].
     overlay: Option<Element<'a, Message, Renderer>>,
     /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
-    /// The style of the [`ModalOverlay`](ModalOverlay).
+    /// The style of the [`ModalOverlay`].
     style: <Renderer::Theme as StyleSheet>::Style,
     horizontal_alignment: alignment::Horizontal,
     vertical_alignment: alignment::Vertical,
@@ -62,16 +62,14 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`Modal`](Modal) wrapping the underlying element to
-    /// show some content as an overlay.
+    /// Creates a new [`Modal`] wrapping the underlying element to show some content as an overlay.
     ///
-    /// `state` is the content's state, assigned at the creation of the
-    /// overlying content.
+    /// If [`overlay`] is `Some`, the contained [`Element`] is shown over the underlying element.
+    /// If [`overlay`] is `None`, only the underlying element is shown.
     ///
     /// It expects:
-    ///     * the underlay [`Element`] on which this [`Modal`](Modal)
-    ///         will be wrapped around.
-    ///     * the optional overlay [`Element`] of the [`Modal`](Modal).
+    ///     * the underlay [`Element`] on which this [`Modal`] will be wrapped around.
+    ///     * the optional overlay [`Element`] of the [`Modal`].
     pub fn new(
         underlay: impl Into<Element<'a, Message, Renderer>>,
         overlay: Option<impl Into<Element<'a, Message, Renderer>>>,
@@ -88,7 +86,7 @@ where
     }
 
     /// Sets the message that will be produced when the backdrop of the
-    /// [`Modal`](Modal) is clicked.
+    /// [`Modal`] is clicked.
     #[must_use]
     pub fn backdrop(mut self, message: Message) -> Self {
         self.backdrop = Some(message);
@@ -105,21 +103,21 @@ where
         self
     }
 
-    /// Sets the style of the [`Modal`](Modal).
+    /// Sets the style of the [`Modal`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 
-    /// Sets the content alignment for the horizontal axis of the [`Modal`](Modal).
+    /// Sets the content alignment for the horizontal axis of the [`Modal`].
     #[must_use]
     pub fn align_x(mut self, alignment: alignment::Horizontal) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
-    /// Sets the content alignment for the vertical axis of the [`Modal`](Modal).
+    /// Sets the content alignment for the vertical axis of the [`Modal`].
     #[must_use]
     pub fn align_y(mut self, alignment: alignment::Vertical) -> Self {
         self.vertical_alignment = alignment;
@@ -294,14 +292,14 @@ where
 /// The state of the modal.
 #[derive(Debug, Default)]
 pub struct State<S> {
-    /// The visibility of the [`Modal`](Modal) overlay.
+    /// The visibility of the [`Modal`] overlay.
     show: bool,
-    /// The state of the content of the [`Modal`](Modal) overlay.
+    /// The state of the content of the [`Modal`] overlay.
     state: S,
 }
 
 impl<S> State<S> {
-    /// Creates a new [`State`](State) containing the given state data.
+    /// Creates a new [`State`] containing the given state data.
     pub const fn new(s: S) -> Self {
         Self {
             show: false,

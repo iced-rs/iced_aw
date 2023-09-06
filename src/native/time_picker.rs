@@ -59,17 +59,17 @@ where
     time: Time,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer<Theme>>,
-    /// The message that is send if the cancel button of the [`TimePickerOverlay`](TimePickerOverlay) is pressed.
+    /// The message that is send if the cancel button of the [`TimePickerOverlay`] is pressed.
     on_cancel: Message,
-    /// The function that produces a message when the submit button of the [`TimePickerOverlay`](TimePickerOverlay) is pressed.
+    /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Time) -> Message>,
-    /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The style of the [`TimePickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Renderer<Theme>>,
-    /// Toggle the use of the 24h clock of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// Toggle the use of the 24h clock of the [`TimePickerOverlay`].
     use_24h: bool,
-    /// Toggle the use of the seconds of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// Toggle the use of the seconds of the [`TimePickerOverlay`].
     show_seconds: bool,
 }
 
@@ -78,16 +78,15 @@ where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet,
 {
-    /// Creates a new [`TimePicker`](TimePicker) wrapping around the given underlay.
+    /// Creates a new [`TimePicker`] wrapping around the given underlay.
     ///
     /// It expects:
     ///     * if the overlay of the time picker is visible.
     ///     * the initial time to show.
-    ///     * the underlay [`Element`] on which this [`TimePicker`](TimePicker)
+    ///     * the underlay [`Element`] on which this [`TimePicker`]
     ///         will be wrapped around.
-    ///     * a message that will be send when the cancel button of the [`TimePicker`](TimePicker)
-    ///         is pressed.
-    ///     * a function that will be called when the submit button of the [`TimePicker`](TimePicker)
+    ///     * a message that will be send when the cancel button of the [`TimePicker`] is pressed.
+    ///     * a function that will be called when the submit button of the [`TimePicker`]
     ///         is pressed, which takes the picked [`Time`](crate::time_picker::Time) value.
     pub fn new<U, F>(
         show_picker: bool,
@@ -127,7 +126,7 @@ where
         self
     }
 
-    /// Sets the style of the [`TimePicker`](TimePicker).
+    /// Sets the style of the [`TimePicker`].
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
@@ -135,7 +134,7 @@ where
     }
 }
 
-/// The state of the [`TimePicker`](TimePicker) / [`TimePickerOverlay`](TimePickerOverlay).
+/// The state of the [`TimePicker`] / [`TimePickerOverlay`].
 #[derive(Debug)]
 pub struct State {
     /// The state of the overlay.
@@ -143,7 +142,7 @@ pub struct State {
 }
 
 impl State {
-    /// Creates a new [`State`](State) with the current time.
+    /// Creates a new [`State`] with the current time.
     #[must_use]
     pub fn now() -> Self {
         Self {
@@ -151,7 +150,7 @@ impl State {
         }
     }
 
-    /// Creates a new [`State`](State) with the given time.
+    /// Creates a new [`State`] with the given time.
     #[must_use]
     pub fn new(time: Time) -> Self {
         Self {

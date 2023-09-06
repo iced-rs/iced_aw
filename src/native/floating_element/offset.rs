@@ -4,7 +4,7 @@
 
 use iced_widget::core::Point;
 
-/// The [`Offset`](Offset) for the [`FloatingElement`](super::FloatingElement).
+/// The [`Offset`] for the [`FloatingElement`](super::FloatingElement).
 #[derive(Copy, Clone, Debug)]
 pub struct Offset {
     /// Offset on the x-axis from the [`Anchor`](super::Anchor)

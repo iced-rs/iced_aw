@@ -62,11 +62,11 @@ where
     date: Date,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer<Theme>>,
-    /// The message that is send if the cancel button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
+    /// The message that is send if the cancel button of the [`DatePickerOverlay`] is pressed.
     on_cancel: Message,
-    /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
+    /// The function that produces a message when the submit button of the [`DatePickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
-    /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The style of the [`DatePickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Renderer<Theme>>,
@@ -78,16 +78,16 @@ where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    /// Creates a new [`DatePicker`](DatePicker) wrapping around the given underlay.
+    /// Creates a new [`DatePicker`] wrapping around the given underlay.
     ///
     /// It expects:
     ///     * if the overlay of the date picker is visible.
     ///     * the initial date to show.
-    ///     * the underlay [`Element`] on which this [`DatePicker`](DatePicker)
+    ///     * the underlay [`Element`] on which this [`DatePicker`]
     ///         will be wrapped around.
-    ///     * a message that will be send when the cancel button of the [`DatePicker`](DatePicker)
+    ///     * a message that will be send when the cancel button of the [`DatePicker`]
     ///         is pressed.
-    ///     * a function that will be called when the submit button of the [`DatePicker`](DatePicker)
+    ///     * a function that will be called when the submit button of the [`DatePicker`]
     ///         is pressed, which takes the picked [`Date`](crate::date_picker::Date) value.
     pub fn new<U, F>(
         show_picker: bool,
@@ -112,7 +112,7 @@ where
         }
     }
 
-    /// Sets the style of the [`DatePicker`](DatePicker).
+    /// Sets the style of the [`DatePicker`].
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
@@ -121,7 +121,7 @@ where
     }
 }
 
-/// The state of the [`DatePicker`](DatePicker) / [`DatePickerOverlay`](DatePickerOverlay).
+/// The state of the [`DatePicker`] / [`DatePickerOverlay`].
 #[derive(Debug)]
 pub struct State {
     /// The state of the overlay.
@@ -129,7 +129,7 @@ pub struct State {
 }
 
 impl State {
-    /// Creates a new [`State`](State) with the current date.
+    /// Creates a new [`State`] with the current date.
     #[must_use]
     pub fn now() -> Self {
         Self {
@@ -137,7 +137,7 @@ impl State {
         }
     }
 
-    /// Creates a new [`State`](State) with the given date.
+    /// Creates a new [`State`] with the given date.
     #[must_use]
     pub fn new(date: Date) -> Self {
         Self {

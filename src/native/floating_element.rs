@@ -52,7 +52,7 @@ where
     hidden: bool,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
-    /// The floating element of the [`FloatingElementOverlay`](FloatingElementOverlay).
+    /// The floating element of the [`FloatingElementOverlay`].
     element: Element<'a, Message, Renderer>,
 }
 
@@ -60,11 +60,11 @@ impl<'a, Message, Renderer> FloatingElement<'a, Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    /// Creates a new [`FloatingElement`](FloatingElement) over some content,
+    /// Creates a new [`FloatingElement`] over some content,
     /// showing the given [`Element`].
     ///
     /// It expects:
-    ///     * the underlay [`Element`] on which this [`FloatingElement`](FloatingElement)
+    ///     * the underlay [`Element`] on which this [`FloatingElement`]
     ///         will be wrapped around.
     ///     * a function that will lazily create the [`Element`] for the overlay.
     pub fn new<U, B>(underlay: U, element: B) -> Self
@@ -81,14 +81,14 @@ where
         }
     }
 
-    /// Sets the [`Anchor`](Anchor) of the [`FloatingElement`](FloatingElement).
+    /// Sets the [`Anchor`] of the [`FloatingElement`].
     #[must_use]
     pub fn anchor(mut self, anchor: Anchor) -> Self {
         self.anchor = anchor;
         self
     }
 
-    /// Sets the [`Offset`](Offset) of the [`FloatingElement`](FloatingElement).
+    /// Sets the [`Offset`] of the [`FloatingElement`].
     #[must_use]
     pub fn offset<O>(mut self, offset: O) -> Self
     where
@@ -98,7 +98,7 @@ where
         self
     }
 
-    /// Hide or unhide the [`Element`] on the [`FloatingElement`](FloatingElement).
+    /// Hide or unhide the [`Element`] on the [`FloatingElement`].
     #[must_use]
     pub fn hide(mut self, hide: bool) -> Self {
         self.hidden = hide;

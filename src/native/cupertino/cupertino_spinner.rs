@@ -67,21 +67,21 @@ impl CupertinoSpinner {
         Self::default()
     }
 
-    /// Sets the width of the [`CupertinoSpinner`](CupertinoSpinner).
+    /// Sets the width of the [`CupertinoSpinner`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`CupertinoSpinner`](CupertinoSpinner).
+    /// Sets the height of the [`CupertinoSpinner`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the radius of the [`CupertinoSpinner`](CupertinoSpinner).
+    /// Sets the radius of the [`CupertinoSpinner`].
     /// NOTE: While you _can_ tweak the radius, the scale may be all out of whack if not using a
     /// number close to the default of `20.0`.
     #[must_use]

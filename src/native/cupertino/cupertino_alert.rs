@@ -82,21 +82,21 @@ where
         Self::default()
     }
 
-    /// Sets the `child` for the [`CupertinoDialogAction`](CupertinoDialogAction).
+    /// Sets the `child` for the [`CupertinoDialogAction`].
     #[must_use]
     pub fn child(mut self, child: Element<'a, Message, Renderer>) -> Self {
         self.child = child;
         self
     }
 
-    /// Sets `is_enabled` for the [`CupertinoDialogAction`](CupertinoDialogAction).
+    /// Sets `is_enabled` for the [`CupertinoDialogAction`].
     #[must_use]
     pub fn is_enabled(mut self, is_enabled: bool) -> Self {
         self.is_enabled = is_enabled;
         self
     }
 
-    /// Sets `on_pressed` for the [`CupertinoDialogAction`](CupertinoDialogAction).
+    /// Sets `on_pressed` for the [`CupertinoDialogAction`].
     #[must_use]
     pub fn on_pressed(mut self, on_pressed: Option<Message>) -> Self {
         self.on_pressed = on_pressed;
@@ -182,56 +182,56 @@ where
         Self::default()
     }
 
-    /// Sets the `width` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `width` of the [`CupertinoAlert`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the `height` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `height` of the [`CupertinoAlert`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets `is_hidden` for the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets `is_hidden` for the [`CupertinoAlert`].
     #[must_use]
     pub fn is_hidden(mut self, is_hidden: bool) -> Self {
         self.is_hidden = is_hidden;
         self
     }
 
-    /// Sets the `title` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `title` of the [`CupertinoAlert`].
     #[must_use]
     pub fn title(mut self, title: String) -> Self {
         self.title = title;
         self
     }
 
-    /// Sets the `content` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `content` of the [`CupertinoAlert`].
     #[must_use]
     pub fn content(mut self, content: String) -> Self {
         self.content = content;
         self
     }
 
-    /// Sets the `actions` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `actions` of the [`CupertinoAlert`].
     #[must_use]
     pub fn actions(mut self, actions: Vec<CupertinoDialogAction<'a, Message, Renderer>>) -> Self {
         self.actions = actions;
         self
     }
 
-    /// Sets the `backdrop` of the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets the `backdrop` of the [`CupertinoAlert`].
     #[must_use]
     pub fn backdrop(mut self, backdrop: Option<Message>) -> Self {
         self.backdrop = backdrop;
         self
     }
 
-    /// Sets `on_escape` for the [`CupertinoAlert`](CupertinoAlert).
+    /// Sets `on_escape` for the [`CupertinoAlert`].
     #[must_use]
     pub fn on_escape(mut self, on_escape: Option<Message>) -> Self {
         self.on_escape = on_escape;

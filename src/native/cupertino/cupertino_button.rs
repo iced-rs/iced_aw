@@ -78,21 +78,21 @@ where
         Self::default()
     }
 
-    /// Sets the `on_pressed` callback of the [`CupertinoButton`](CupertinoButton).
+    /// Sets the `on_pressed` callback of the [`CupertinoButton`].
     #[must_use]
     pub fn on_pressed(mut self, on_pressed: Option<Message>) -> Self {
         self.on_pressed = on_pressed;
         self
     }
 
-    /// Sets the `is_filled` of the [`CupertinoButton`](CupertinoButton).
+    /// Sets the `is_filled` of the [`CupertinoButton`].
     #[must_use]
     pub fn is_filled(mut self, is_filled: bool) -> Self {
         self.is_filled = is_filled;
         self
     }
 
-    /// Sets the `body` of the [`CupertinoButton`](CupertinoButton).
+    /// Sets the `body` of the [`CupertinoButton`].
     #[must_use]
     pub fn body<T>(mut self, body: T) -> Self
     where
@@ -105,7 +105,7 @@ where
         self
     }
 
-    /// Sets the `colour` of the [`CupertinoButton`](CupertinoButton).
+    /// Sets the `colour` of the [`CupertinoButton`].
     #[must_use]
     pub fn colour(mut self, colour: Option<Color>) -> Self {
         self.colour = colour;

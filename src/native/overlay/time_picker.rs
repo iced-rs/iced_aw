@@ -59,17 +59,17 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The state of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The state of the [`TimePickerOverlay`].
     state: &'a mut State,
-    /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The cancel button of the [`TimePickerOverlay`].
     cancel_button: Button<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The submit button of the [`TimePickerOverlay`].
     submit_button: Button<'a, Message, Renderer<Theme>>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
-    /// The position of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The position of the [`TimePickerOverlay`].
     position: Point,
-    /// The style of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The style of the [`TimePickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
@@ -80,8 +80,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    /// Creates a new [`TimePickerOverlay`](TimePickerOverlay) on the given
-    /// position.
+    /// Creates a new [`TimePickerOverlay`] on the given position.
     pub fn new(
         state: &'a mut time_picker::State,
         on_cancel: Message,
@@ -117,8 +116,7 @@ where
         }
     }
 
-    /// Turn this [`TimePickerOverlay`](TimePickerOverlay) into an overlay
-    /// [`Element`](overlay::Element).
+    /// Turn this [`TimePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
         overlay::Element::new(self.position, Box::new(self))
@@ -1599,22 +1597,22 @@ fn draw_digital_clock<Message, Theme>(
     }
 }
 
-/// The state of the [`TimePickerOverlay`](TimePickerOverlay).
+/// The state of the [`TimePickerOverlay`].
 #[derive(Debug)]
 pub struct State {
-    /// The selected time of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The selected time of the [`TimePickerOverlay`].
     pub(crate) time: NaiveTime,
     /// Toggle if the cache needs to be cleared.
     pub(crate) clock_cache_needs_clearance: bool,
-    /// The cache of the clock of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The cache of the clock of the [`TimePickerOverlay`].
     pub(crate) clock_cache: canvas::Cache,
-    /// Toggle the use of the 24h clock of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// Toggle the use of the 24h clock of the [`TimePickerOverlay`].
     pub(crate) use_24h: bool,
-    /// Toggle the use of the seconds of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// Toggle the use of the seconds of the [`TimePickerOverlay`].
     pub(crate) show_seconds: bool,
-    /// The dragged clock element of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The dragged clock element of the [`TimePickerOverlay`].
     pub(crate) clock_dragged: ClockDragged,
-    /// The focus of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The focus of the [`TimePickerOverlay`].
     pub(crate) focus: Focus,
     /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
@@ -1653,9 +1651,9 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The cancel button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The cancel button of the [`TimePickerOverlay`].
     cancel_button: Element<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`TimePickerOverlay`](TimePickerOverlay).
+    /// The submit button of the [`TimePickerOverlay`].
     submit_button: Element<'a, Message, Renderer<Theme>>,
 }
 
@@ -1755,7 +1753,7 @@ pub enum ClockDragged {
     Second,
 }
 
-/// An enumeration of all focusable elements of the [`TimePickerOverlay`](TimePickerOverlay).
+/// An enumeration of all focusable elements of the [`TimePickerOverlay`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.

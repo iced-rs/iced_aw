@@ -1,4 +1,4 @@
-//! Displays a [`Tabs`](Tabs) widget to select the content to be displayed.
+//! Displays a [`Tabs`] widget to select the content to be displayed.
 //!
 //! This is a wrapper around the [`TabBar`](super::tab_bar::TabBar) widget.
 //! Unlike the [`TabBar`](super::tab_bar::TabBar) widget it will also handle
@@ -24,7 +24,7 @@ use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
 
-/// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
+/// A [`Tabs`] widget for showing a [`TabBar`](super::tab_bar::TabBar)
 /// along with the tab's content.
 ///
 /// # Example
@@ -58,7 +58,7 @@ where
     Renderer::Theme: StyleSheet,
     TabId: Eq + Clone,
 {
-    /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`](Tabs).
+    /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`].
     tab_bar: TabBar<Message, TabId, Renderer>,
     /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Renderer>>,
@@ -66,9 +66,9 @@ where
     indices: Vec<TabId>,
     /// The position of the [`TabBar`](crate::native::TabBar).
     tab_bar_position: TabBarPosition,
-    /// the width of the [`Tabs`](Tabs).
+    /// the width of the [`Tabs`].
     width: Length,
-    /// The height of the [`Tabs`](Tabs).
+    /// The height of the [`Tabs`].
     height: Length,
 }
 
@@ -78,9 +78,8 @@ where
     Renderer::Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
-    /// Creates a new [`Tabs`](Tabs) widget with the index of the selected tab
-    /// and a specified message which will be send when a tab is selected by
-    /// the user.
+    /// Creates a new [`Tabs`] widget with the index of the selected tab and a
+    /// specified message which will be send when a tab is selected by the user.
     ///
     /// It expects:
     ///     * the index of the currently active tab.
@@ -98,8 +97,8 @@ where
     ///
     /// It expects:
     ///     * the index of the currently active tab.
-    ///     * a vector containing the [`TabLabel`](TabLabel)s along with the content
-    ///         [`Element`]s of the [`Tabs`](Tabs).
+    ///     * a vector containing the [`TabLabel`]s along with the content
+    ///         [`Element`]s of the [`Tabs`].
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn with_tabs<F>(
@@ -130,7 +129,7 @@ where
     }
 
     /// Sets the message that will be produced when the close icon of a tab
-    /// on the [`TabBar`](TabBar) is pressed.
+    /// on the [`TabBar`] is pressed.
     ///
     /// Setting this enables the drawing of a close icon on the tabs.
     #[must_use]
@@ -142,38 +141,35 @@ where
         self
     }
 
-    /// Sets the width of the [`Tabs`](Tabs).
+    /// Sets the width of the [`Tabs`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Tabs`](Tabs).
+    /// Sets the height of the [`Tabs`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the width of the [`TabBar`](super::tab_bar::TabBar) of the
-    /// [`Tabs`](Tabs).
+    /// Sets the width of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
     #[must_use]
     pub fn tab_bar_width(mut self, width: Length) -> Self {
         self.tab_bar = self.tab_bar.width(width);
         self
     }
 
-    /// Sets the height of the [`TabBar`](super::tab_bar::TabBar) of the
-    /// [`Tabs`](Tabs).
+    /// Sets the height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
     #[must_use]
     pub fn tab_bar_height(mut self, height: Length) -> Self {
         self.tab_bar = self.tab_bar.height(height);
         self
     }
 
-    /// Sets the maximum height of the [`TabBar`](super::tab_bar::TabBar) of the
-    /// [`Tabs`](Tabs).
+    /// Sets the maximum height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
     #[must_use]
     pub fn tab_bar_max_height(mut self, max_height: f32) -> Self {
         self.tab_bar = self.tab_bar.max_height(max_height);
@@ -245,8 +241,7 @@ where
         self
     }
 
-    /// Sets the [`TabBarPosition`](TabBarPosition) of the
-    /// [`TabBar`](super::tab_bar::TabBar).
+    /// Sets the [`TabBarPosition`] of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
     pub fn tab_bar_position(mut self, position: TabBarPosition) -> Self {
         self.tab_bar_position = position;
@@ -254,7 +249,7 @@ where
     }
 
     /// Pushes a [`TabLabel`](super::tab_bar::TabLabel) along with the tabs
-    /// content to the [`Tabs`](Tabs).
+    /// content to the [`Tabs`].
     #[must_use]
     pub fn push<E>(mut self, id: TabId, tab_label: TabLabel, element: E) -> Self
     where
@@ -266,7 +261,7 @@ where
         self
     }
 
-    /// Sets the active tab of the [`Tabs`](Tabs) using the ``TabId``.
+    /// Sets the active tab of the [`Tabs`] using the ``TabId``.
     #[must_use]
     pub fn set_active_tab(mut self, id: &TabId) -> Self {
         self.tab_bar = self.tab_bar.set_active_tab(id);

@@ -100,63 +100,63 @@ where
         Self::default()
     }
 
-    /// Sets the width of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the width of the [`CupertinoSwitch`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the height of the [`CupertinoSwitch`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the active colour of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the active colour of the [`CupertinoSwitch`].
     #[must_use]
     pub fn active_colour(mut self, colour: Color) -> Self {
         self.active_colour = colour;
         self
     }
 
-    /// Sets the focus colour of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the focus colour of the [`CupertinoSwitch`].
     #[must_use]
     pub fn focus_colour(mut self, colour: Color) -> Self {
         self.focus_colour = colour;
         self
     }
 
-    /// Sets the thumb colour of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the thumb colour of the [`CupertinoSwitch`].
     #[must_use]
     pub fn thumb_colour(mut self, colour: Color) -> Self {
         self.thumb_colour = colour;
         self
     }
 
-    /// Sets `apply_theme` of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets `apply_theme` of the [`CupertinoSwitch`].
     #[must_use]
     pub fn apply_theme(mut self, theme: bool) -> Self {
         self.apply_theme = theme;
         self
     }
 
-    // /// Sets `drag_start_behaviour` of the [`CupertinoSwitch`](CupertinoSwitch).
+    // /// Sets `drag_start_behaviour` of the [`CupertinoSwitch`].
     // #[must_use]
     // pub fn drag_start_behaviour(mut self, behaviour: bool) -> Self {
     //     self.drag_start_behaviour = behaviour;
     //     self
     // }
 
-    /// Sets `on_changed` of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets `on_changed` of the [`CupertinoSwitch`].
     #[must_use]
     pub fn on_changed(mut self, on_changed: Option<Box<dyn Fn(bool) -> Message>>) -> Self {
         self.on_changed = on_changed;
         self
     }
 
-    /// Sets the value of the [`CupertinoSwitch`](CupertinoSwitch).
+    /// Sets the value of the [`CupertinoSwitch`].
     #[must_use]
     pub fn value(mut self, value: bool) -> Self {
         self.value = value;

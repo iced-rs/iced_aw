@@ -124,21 +124,21 @@ where
         }
     }
 
-    /// Sets the width of the [`SelectionList`](SelectionList).
+    /// Sets the width of the [`SelectionList`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`SelectionList`](SelectionList).
+    /// Sets the height of the [`SelectionList`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the style of the [`SelectionList`](SelectionList).
+    /// Sets the style of the [`SelectionList`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;

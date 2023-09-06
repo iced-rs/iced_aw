@@ -64,23 +64,23 @@ where
         + container::StyleSheet
         + text::StyleSheet,
 {
-    /// The current value of the [`NumberInput`](NumberInput).
+    /// The current value of the [`NumberInput`].
     value: T,
-    /// The step for each modify of the [`NumberInput`](NumberInput).
+    /// The step for each modify of the [`NumberInput`].
     step: T,
-    /// The min and max value of the [`NumberInput`](NumberInput).
+    /// The min and max value of the [`NumberInput`].
     bounds: (T, T),
-    /// The content padding of the [`NumberInput`](NumberInput).
+    /// The content padding of the [`NumberInput`].
     padding: f32,
-    /// The text size of the [`NumberInput`](NumberInput).
+    /// The text size of the [`NumberInput`].
     size: Option<f32>,
-    /// The underlying element of the [`NumberInput`](NumberInput).
+    /// The underlying element of the [`NumberInput`].
     content: TextInput<'a, Message, Renderer>,
-    /// The on_change event of the [`NumberInput`](NumberInput).
+    /// The on_change event of the [`NumberInput`].
     on_change: Box<dyn Fn(T) -> Message>,
-    /// The style of the [`NumberInput`](NumberInput).
+    /// The style of the [`NumberInput`].
     style: <Renderer::Theme as number_input::StyleSheet>::Style,
-    /// The font text of the [`NumberInput`](NumberInput).
+    /// The font text of the [`NumberInput`].
     font: Renderer::Font,
     /// The Width to use for the NumberBox Default is Length::Fill
     width: Length,

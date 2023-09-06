@@ -60,11 +60,11 @@ where
     color: Color,
     /// The underlying element.
     underlay: Element<'a, Message, Renderer<Theme>>,
-    /// The message that is send if the cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
+    /// The message that is sent if the cancel button of the [`ColorPickerOverlay`] is pressed.
     on_cancel: Message,
-    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay) is pressed.
+    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
-    /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The style of the [`ColorPickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Renderer<Theme>>,
@@ -75,16 +75,16 @@ where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
-    /// Creates a new [`ColorPicker`](ColorPicker) wrapping around the given underlay.
+    /// Creates a new [`ColorPicker`] wrapping around the given underlay.
     ///
     /// It expects:
     ///     * if the overlay of the color picker is visible.
     ///     * the initial color to show.
-    ///     * the underlay [`Element`] on which this [`ColorPicker`](ColorPicker)
+    ///     * the underlay [`Element`] on which this [`ColorPicker`]
     ///         will be wrapped around.
-    ///     * a message that will be send when the cancel button of the [`ColorPicker`](ColorPicker)
+    ///     * a message that will be send when the cancel button of the [`ColorPicker`]
     ///         is pressed.
-    ///     * a function that will be called when the submit button of the [`ColorPicker`](ColorPicker)
+    ///     * a function that will be called when the submit button of the [`ColorPicker`]
     ///         is pressed, which takes the picked [`Color`] value.
     pub fn new<U, F>(
         show_picker: bool,
@@ -108,7 +108,7 @@ where
         }
     }
 
-    /// Sets the style of the [`ColorPicker`](ColorPicker).
+    /// Sets the style of the [`ColorPicker`].
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
@@ -116,7 +116,7 @@ where
     }
 }
 
-/// The state of the [`ColorPicker`](ColorPicker).
+/// The state of the [`ColorPicker`].
 #[derive(Debug, Default)]
 pub struct State {
     /// The state of the overlay.
@@ -124,7 +124,7 @@ pub struct State {
 }
 
 impl State {
-    /// Creates a new [`State`](State).
+    /// Creates a new [`State`].
     #[must_use]
     pub fn new(color: Color) -> Self {
         Self {
