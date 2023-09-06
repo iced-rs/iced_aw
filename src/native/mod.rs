@@ -88,7 +88,7 @@ pub use tab_bar::TabLabel;
 #[cfg(feature = "tabs")]
 pub mod tabs;
 #[cfg(feature = "tabs")]
-/// A [`Tabs`](Tabs) widget for showing a [`TabBar`](super::tab_bar::TabBar)
+/// A [`Tabs`] widget for showing a [`TabBar`](super::tab_bar::TabBar)
 pub type Tabs<'a, Message, TabId, Renderer> = tabs::Tabs<'a, Message, TabId, Renderer>;
 
 #[cfg(feature = "tabs")]

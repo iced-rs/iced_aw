@@ -42,9 +42,9 @@ where
 {
     /// The underlying element.
     underlay: Element<'a, Message, Renderer>,
-    /// The content of [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// The content of [`ContextMenuOverlay`].
     overlay: Overlay,
-    /// The style of the [`ContextMenu`](ContextMenu).
+    /// The style of the [`ContextMenu`].
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
@@ -55,11 +55,11 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`ContextMenu`](ContextMenu)
+    /// Creates a new [`ContextMenu`]
     ///
     /// `underlay`: The underlying element.
     ///
-    /// `overlay`: The content of [`ContextMenuOverlay`](ContextMenuOverlay) which will be displayed when `underlay` is clicked.
+    /// `overlay`: The content of [`ContextMenuOverlay`] which will be displayed when `underlay` is clicked.
     pub fn new<U>(underlay: U, overlay: Overlay) -> Self
     where
         U: Into<Element<'a, Message, Renderer>>,
@@ -71,7 +71,7 @@ where
         }
     }
 
-    /// Sets the style of the [`ContextMenu`](ContextMenu).
+    /// Sets the style of the [`ContextMenu`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
@@ -252,14 +252,14 @@ where
 /// The state of the ``context_menu``.
 #[derive(Debug, Default)]
 pub(crate) struct State {
-    /// The visibility of the [`ContextMenu`](ContextMenu) overlay.
+    /// The visibility of the [`ContextMenu`] overlay.
     pub show: bool,
     /// Use for showing the overlay where the click was made.
     pub cursor_position: Point,
 }
 
 impl State {
-    /// Creates a new [`State`](State) containing the given state data.
+    /// Creates a new [`State`] containing the given state data.
     pub const fn new() -> Self {
         Self {
             show: false,

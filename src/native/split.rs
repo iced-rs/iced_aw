@@ -44,30 +44,30 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// The first element of the [`Split`](Split).
+    /// The first element of the [`Split`].
     first: Element<'a, Message, Renderer>,
-    /// The second element of the [`Split`](Split).
+    /// The second element of the [`Split`].
     second: Element<'a, Message, Renderer>,
     /// The position of the divider.
     divider_position: Option<u16>,
     /// The axis to split at.
     axis: Axis,
-    /// The padding around the elements of the [`Split`](Split).
+    /// The padding around the elements of the [`Split`].
     padding: f32,
-    /// The spacing between the elements of the [`Split`](Split).
+    /// The spacing between the elements of the [`Split`].
     /// This is also the width of the divider.
     spacing: f32,
-    /// The width of the [`Split`](Split).
+    /// The width of the [`Split`].
     width: Length,
-    /// The height of the [`Split`](Split).
+    /// The height of the [`Split`].
     height: Length,
-    /// The minimum size of the first element of the [`Split`](Split).
+    /// The minimum size of the first element of the [`Split`].
     min_size_first: u16,
-    /// The minimum size of the second element of the [`Split`](Split).
+    /// The minimum size of the second element of the [`Split`].
     min_size_second: u16,
-    /// The message that is send when the divider of the [`Split`](Split) is moved.
+    /// The message that is send when the divider of the [`Split`] is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
-    /// The style of the [`Split`](Split).
+    /// The style of the [`Split`].
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
@@ -77,13 +77,13 @@ where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet + container::StyleSheet,
 {
-    /// Creates a new [`Split`](Split).
+    /// Creates a new [`Split`].
     ///
     /// It expects:
-    ///     - The first [`Element`](Element) to display
-    ///     - The second [`Element`](Element) to display
+    ///     - The first [`Element`] to display
+    ///     - The second [`Element`] to display
     ///     - The position of the divider. If none, the space will be split in half.
-    ///     - The [`Axis`](Axis) to split at.
+    ///     - The [`Axis`] to split at.
     ///     - The message that is send on moving the divider
     pub fn new<A, B, F>(
         first: A,
@@ -119,14 +119,14 @@ where
         }
     }
 
-    /// Sets the padding of the [`Split`](Split) around the inner elements.
+    /// Sets the padding of the [`Split`] around the inner elements.
     #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
 
-    /// Sets the spacing of the [`Split`](Split) between the elements.
+    /// Sets the spacing of the [`Split`] between the elements.
     /// This will also be the width of the divider.
     #[must_use]
     pub fn spacing(mut self, spacing: f32) -> Self {
@@ -134,35 +134,35 @@ where
         self
     }
 
-    /// Sets the width of the [`Split`](Split).
+    /// Sets the width of the [`Split`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Split`](Split).
+    /// Sets the height of the [`Split`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the minimum size of the first element of the [`Split`](Split).
+    /// Sets the minimum size of the first element of the [`Split`].
     #[must_use]
     pub fn min_size_first(mut self, size: u16) -> Self {
         self.min_size_first = size;
         self
     }
 
-    /// Sets the minimum size of the second element of the [`Split`](Split).
+    /// Sets the minimum size of the second element of the [`Split`].
     #[must_use]
     pub fn min_size_second(mut self, size: u16) -> Self {
         self.min_size_second = size;
         self
     }
 
-    /// Sets the style of the [`Split`](Split).
+    /// Sets the style of the [`Split`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
@@ -661,7 +661,7 @@ where
     }
 }
 
-/// The state of a [`Split`](Split).
+/// The state of a [`Split`].
 #[derive(Clone, Debug, Default)]
 pub struct SplitState {
     /// If the divider is dragged by the user.
@@ -669,11 +669,11 @@ pub struct SplitState {
 }
 
 impl SplitState {
-    /// Creates a new [`State`](State) for a [`Split`](Split).
+    /// Creates a new [`State`] for a [`Split`].
     ///
     /// It expects:
     ///     - The optional position of the divider. If none, the available space will be split in half.
-    ///     - The [`Axis`](Axis) to split at.
+    ///     - The [`Axis`] to split at.
     #[must_use]
     pub const fn new() -> Self {
         Self { dragging: false }

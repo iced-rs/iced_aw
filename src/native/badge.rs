@@ -40,13 +40,13 @@ where
     width: Length,
     /// The height of the [`Badge`].
     height: Length,
-    /// The horizontal alignment of the [`Badge`](Badge).
+    /// The horizontal alignment of the [`Badge`].
     horizontal_alignment: Alignment,
-    /// The vertical alignment of the [`Badge`](Badge).
+    /// The vertical alignment of the [`Badge`].
     vertical_alignment: Alignment,
-    /// The style of the [`Badge`](Badge).
+    /// The style of the [`Badge`].
     style: <Renderer::Theme as StyleSheet>::Style,
-    /// The content [`Element`] of the [`Badge`](Badge).
+    /// The content [`Element`] of the [`Badge`].
     content: Element<'a, Message, Renderer>,
 }
 
@@ -55,10 +55,10 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`Badge`](Badge) with the given content.
+    /// Creates a new [`Badge`] with the given content.
     ///
     /// It expects:
-    ///     * the content [`Element`] to display in the [`Badge`](Badge).
+    ///     * the content [`Element`] to display in the [`Badge`].
     pub fn new<T>(content: T) -> Self
     where
         T: Into<Element<'a, Message, Renderer>>,
@@ -74,42 +74,42 @@ where
         }
     }
 
-    /// Sets the padding of the [`Badge`](Badge).
+    /// Sets the padding of the [`Badge`].
     #[must_use]
     pub fn padding(mut self, units: u16) -> Self {
         self.padding = units;
         self
     }
 
-    /// Sets the width of the [`Badge`](Badge).
+    /// Sets the width of the [`Badge`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Badge`](Badge).
+    /// Sets the height of the [`Badge`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the horizontal alignment of the content of the [`Badge`](Badge).
+    /// Sets the horizontal alignment of the content of the [`Badge`].
     #[must_use]
     pub fn align_x(mut self, alignment: Alignment) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
-    /// Sets the vertical alignment of the content of the [`Badge`](Badge).
+    /// Sets the vertical alignment of the content of the [`Badge`].
     #[must_use]
     pub fn align_y(mut self, alignment: Alignment) -> Self {
         self.vertical_alignment = alignment;
         self
     }
 
-    /// Sets the style of the [`Badge`](Badge).
+    /// Sets the style of the [`Badge`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;

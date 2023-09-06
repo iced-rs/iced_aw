@@ -56,17 +56,17 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The state of the [`ColorPickerOverlay`].
     state: &'a mut State,
-    /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The cancel button of the [`ColorPickerOverlay`].
     cancel_button: Button<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The submit button of the [`ColorPickerOverlay`].
     submit_button: Button<'a, Message, Renderer<Theme>>,
-    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The function that produces a message when the submit button of the [`ColorPickerOverlay`].
     on_submit: &'a dyn Fn(Color) -> Message,
-    /// The position of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The position of the [`ColorPickerOverlay`].
     position: Point,
-    /// The style of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The style of the [`ColorPickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
@@ -77,8 +77,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
-    /// Creates a new [`ColorPickerOverlay`](ColorPickerOverlay) on the given
-    /// position.
+    /// Creates a new [`ColorPickerOverlay`] on the given position.
     pub fn new(
         state: &'a mut color_picker::State,
         on_cancel: Message,
@@ -115,8 +114,7 @@ where
         }
     }
 
-    /// Turn this [`ColorPickerOverlay`](ColorPickerOverlay) into an overlay
-    /// [`Element`](overlay::Element).
+    /// Turn this [`ColorPickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
         overlay::Element::new(self.position, Box::new(self))
@@ -1601,18 +1599,18 @@ fn hex_text<Theme>(
     });
 }
 
-/// The state of the [`ColorPickerOverlay`](ColorPickerOverlay).
+/// The state of the [`ColorPickerOverlay`].
 #[derive(Debug)]
 pub struct State {
-    /// The selected color of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The selected color of the [`ColorPickerOverlay`].
     pub(crate) color: Color,
-    /// The cache of the sat/value canvas of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The cache of the sat/value canvas of the [`ColorPickerOverlay`].
     pub(crate) sat_value_canvas_cache: canvas::Cache,
-    /// The cache of the hue canvas of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The cache of the hue canvas of the [`ColorPickerOverlay`].
     pub(crate) hue_canvas_cache: canvas::Cache,
-    /// The dragged color bar of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The dragged color bar of the [`ColorPickerOverlay`].
     pub(crate) color_bar_dragged: ColorBarDragged,
-    /// the focus of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// the focus of the [`ColorPickerOverlay`].
     pub(crate) focus: Focus,
     /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
@@ -1649,9 +1647,9 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The cancel button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The cancel button of the [`ColorPickerOverlay`].
     cancel_button: Element<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`ColorPickerOverlay`](ColorPickerOverlay).
+    /// The submit button of the [`ColorPickerOverlay`].
     submit_button: Element<'a, Message, Renderer<Theme>>,
 }
 
@@ -1760,7 +1758,7 @@ impl Default for ColorBarDragged {
     }
 }
 
-/// An enumeration of all focusable element of the [`ColorPickerOverlay`](ColorPickerOverlay).
+/// An enumeration of all focusable element of the [`ColorPickerOverlay`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.

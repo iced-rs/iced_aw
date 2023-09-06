@@ -1,4 +1,4 @@
-//! Displays a [`Card`](Card).
+//! Displays a [`Card`].
 //!
 //! *This API requires the following crate features to be activated: card*
 
@@ -20,7 +20,7 @@ use iced_widget::{
 use crate::graphics::icons::{Icon, ICON_FONT};
 pub use crate::style::card::{Appearance, StyleSheet};
 
-/// The default padding of a [`Card`](Card).
+/// The default padding of a [`Card`].
 const DEFAULT_PADDING: f32 = 10.0;
 
 /// A card consisting of a head, body and optional foot.
@@ -49,31 +49,31 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// The width of the [`Card`](Card).
+    /// The width of the [`Card`].
     width: Length,
-    /// The height of the [`Card`](Card).
+    /// The height of the [`Card`].
     height: Length,
-    /// The maximum width of the [`Card`](Card).
+    /// The maximum width of the [`Card`].
     max_width: f32,
-    /// The maximum height of the [`Card`](Card).
+    /// The maximum height of the [`Card`].
     max_height: f32,
-    /// The padding of the head of the [`Card`](Card).
+    /// The padding of the head of the [`Card`].
     padding_head: f32,
-    /// The padding of the body of the [`Card`](Card).
+    /// The padding of the body of the [`Card`].
     padding_body: f32,
-    /// The padding of the foot of the [`Card`](Card).
+    /// The padding of the foot of the [`Card`].
     padding_foot: f32,
-    /// The optional size of the close icon of the [`Card`](Card).
+    /// The optional size of the close icon of the [`Card`].
     close_size: Option<f32>,
-    /// The optional message that is send if the close icon of the [`Card`](Card) is pressed.
+    /// The optional message that is send if the close icon of the [`Card`] is pressed.
     on_close: Option<Message>,
-    /// The head [`Element`] of the [`Card`](Card).
+    /// The head [`Element`] of the [`Card`].
     head: Element<'a, Message, Renderer>,
-    /// The body [`Element`] of the [`Card`](Card).
+    /// The body [`Element`] of the [`Card`].
     body: Element<'a, Message, Renderer>,
-    /// The optional foot [`Element`] of the [`Card`](Card).
+    /// The optional foot [`Element`] of the [`Card`].
     foot: Option<Element<'a, Message, Renderer>>,
-    /// The style of the [`Card`](Card).
+    /// The style of the [`Card`].
     style: <Renderer::Theme as StyleSheet>::Style,
 }
 
@@ -82,13 +82,11 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`Card`](Card) containing the given head and body.
+    /// Creates a new [`Card`] containing the given head and body.
     ///
     /// It expects:
-    ///     * the head [`Element`] to display at the top of
-    ///         the [`Card`](Card).
-    ///     * the body [`Element`] to display at the middle
-    ///         of the [`Card`](Card).
+    ///     * the head [`Element`] to display at the top of the [`Card`].
+    ///     * the body [`Element`] to display at the middle of the [`Card`].
     pub fn new<H, B>(head: H, body: B) -> Self
     where
         H: Into<Element<'a, Message, Renderer>>,
@@ -111,7 +109,7 @@ where
         }
     }
 
-    /// Sets the [`Element`] of the foot of the [`Card`](Card).
+    /// Sets the [`Element`] of the foot of the [`Card`].
     #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self
     where
@@ -121,35 +119,35 @@ where
         self
     }
 
-    /// Sets the width of the [`Card`](Card).
+    /// Sets the width of the [`Card`].
     #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Card`](Card).
+    /// Sets the height of the [`Card`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the maximum width of the [`Card`](Card).
+    /// Sets the maximum width of the [`Card`].
     #[must_use]
     pub fn max_width(mut self, width: f32) -> Self {
         self.max_width = width;
         self
     }
 
-    /// Sets the maximum height of the [`Card`](Card).
+    /// Sets the maximum height of the [`Card`].
     #[must_use]
     pub fn max_height(mut self, height: f32) -> Self {
         self.max_height = height;
         self
     }
 
-    /// Sets the padding of the [`Card`](Card).
+    /// Sets the padding of the [`Card`].
     ///
     /// This will set the padding of the head, body and foot to the
     /// same value.
@@ -161,28 +159,28 @@ where
         self
     }
 
-    /// Sets the padding of the head of the [`Card`](Card).
+    /// Sets the padding of the head of the [`Card`].
     #[must_use]
     pub fn padding_head(mut self, padding: f32) -> Self {
         self.padding_head = padding;
         self
     }
 
-    /// Sets the padding of the body of the [`Card`](Card).
+    /// Sets the padding of the body of the [`Card`].
     #[must_use]
     pub fn padding_body(mut self, padding: f32) -> Self {
         self.padding_body = padding;
         self
     }
 
-    /// Sets the padding of the foot of the [`Card`](Card).
+    /// Sets the padding of the foot of the [`Card`].
     #[must_use]
     pub fn padding_foot(mut self, padding: f32) -> Self {
         self.padding_foot = padding;
         self
     }
 
-    /// Sets the size of the close icon of the [`Card`](Card).
+    /// Sets the size of the close icon of the [`Card`].
     #[must_use]
     pub fn close_size(mut self, size: f32) -> Self {
         self.close_size = Some(size);
@@ -190,16 +188,16 @@ where
     }
 
     /// Sets the message that will be produced when the close icon of the
-    /// [`Card`](Card) is pressed.
+    /// [`Card`] is pressed.
     ///
-    /// Setting this enables the drawing of a close icon on the [`Card`](Card).
+    /// Setting this enables the drawing of a close icon on the [`Card`].
     #[must_use]
     pub fn on_close(mut self, msg: Message) -> Self {
         self.on_close = Some(msg);
         self
     }
 
-    /// Sets the style of the [`Card`](Card).
+    /// Sets the style of the [`Card`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;

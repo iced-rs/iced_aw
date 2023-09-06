@@ -23,13 +23,13 @@ where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// The state of the [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// The state of the [`ContextMenuOverlay`].
     tree: &'a mut Tree,
-    /// The content of the [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// The content of the [`ContextMenuOverlay`].
     content: Element<'a, Message, Renderer>,
-    /// The style of the [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// The style of the [`ContextMenuOverlay`].
     style: <Renderer::Theme as StyleSheet>::Style,
-    /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
 }
 
@@ -39,7 +39,7 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    /// Creates a new [`ContextMenuOverlay`](ContextMenuOverlay).
+    /// Creates a new [`ContextMenuOverlay`].
     pub(crate) fn new<C>(
         tree: &'a mut Tree,
         content: C,
@@ -57,8 +57,7 @@ where
         }
     }
 
-    /// Turn this [`ContextMenuOverlay`] into an overlay
-    /// [`Element`](overlay::Element).
+    /// Turn this [`ContextMenuOverlay`] into an overlay [`Element`](overlay::Element).
     pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
         overlay::Element::new(position, Box::new(self))
     }

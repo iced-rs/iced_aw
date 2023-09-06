@@ -14,7 +14,7 @@ pub struct Hsv {
 }
 
 impl Hsv {
-    /// Creates a [`Hsv`](Hsv) from its HSV components.
+    /// Creates a [`Hsv`] from its HSV components.
     #[must_use]
     pub const fn from_hsv(hue: u16, saturation: f32, value: f32) -> Self {
         Self {

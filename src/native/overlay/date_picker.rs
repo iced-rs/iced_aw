@@ -51,17 +51,17 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The state of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The state of the [`DatePickerOverlay`].
     state: &'a mut State,
-    /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The cancel button of the [`DatePickerOverlay`].
     cancel_button: Button<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The submit button of the [`DatePickerOverlay`].
     submit_button: Button<'a, Message, Renderer<Theme>>,
-    /// The function that produces a message when the submit button of the [`DatePickerOverlay`](DatePickerOverlay) is pressed.
+    /// The function that produces a message when the submit button of the [`DatePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Date) -> Message,
-    /// The position of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The position of the [`DatePickerOverlay`].
     position: Point,
-    /// The style of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The style of the [`DatePickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
@@ -72,8 +72,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    /// Creates a new [`DatePickerOverlay`](DatePickerOverlay) on the given
-    /// position.
+    /// Creates a new [`DatePickerOverlay`] on the given position.
     pub fn new(
         state: &'a mut date_picker::State,
         on_cancel: Message,
@@ -110,8 +109,7 @@ where
         }
     }
 
-    /// Turn this [`DatePickerOverlay`](DatePickerOverlay) into an overlay
-    /// [`Element`](overlay::Element).
+    /// Turn this [`DatePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
         overlay::Element::new(self.position, Box::new(self))
@@ -865,12 +863,12 @@ where
     }
 }
 
-/// The state of the [`DatePickerOverlay`](DatePickerOverlay).
+/// The state of the [`DatePickerOverlay`].
 #[derive(Debug)]
 pub struct State {
-    /// The selected date of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The selected date of the [`DatePickerOverlay`].
     pub(crate) date: NaiveDate,
-    /// The focus of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The focus of the [`DatePickerOverlay`].
     pub(crate) focus: Focus,
     /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
@@ -904,9 +902,9 @@ where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
 {
-    /// The cancel button of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The cancel button of the [`DatePickerOverlay`].
     cancel_button: Element<'a, Message, Renderer<Theme>>,
-    /// The submit button of the [`DatePickerOverlay`](DatePickerOverlay).
+    /// The submit button of the [`DatePickerOverlay`].
     submit_button: Element<'a, Message, Renderer<Theme>>,
 }
 
@@ -990,7 +988,7 @@ where
     }
 }
 
-/// An enumeration of all focusable elements of the [`DatePickerOverlay`](DatePickerOverlay).
+/// An enumeration of all focusable elements of the [`DatePickerOverlay`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Focus {
     /// Nothing is in focus.

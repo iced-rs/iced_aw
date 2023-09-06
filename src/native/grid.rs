@@ -31,13 +31,13 @@ use iced_widget::core::{
 /// ```
 #[allow(missing_debug_implementations)]
 pub struct Grid<'a, Message, Renderer = crate::Renderer> {
-    /// The distribution [`Strategy`](Strategy) of the [`Grid`](Grid).
+    /// The distribution [`Strategy`] of the [`Grid`].
     strategy: Strategy,
-    /// The elements in the [`Grid`](Grid).
+    /// The elements in the [`Grid`].
     elements: Vec<Element<'a, Message, Renderer>>,
 }
 
-/// The [`Strategy`](Strategy) of how to distribute the columns of the [`Grid`](Grid).
+/// The [`Strategy`] of how to distribute the columns of the [`Grid`].
 #[derive(Debug)]
 pub enum Strategy {
     /// Use `n` columns.
@@ -56,14 +56,14 @@ impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    /// Creates a [`Grid`](Grid) with ``Strategy::Columns(1)``
+    /// Creates a [`Grid`] with ``Strategy::Columns(1)``
     /// Use ``strategy()`` to update the Strategy.
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Creates a [`Grid`](Grid) with given elements and ``Strategy::Columns(1)``
+    /// Creates a [`Grid`] with given elements and ``Strategy::Columns(1)``
     /// Use ``strategy()`` to update the Strategy.
     #[must_use]
     pub fn with_children(children: Vec<Element<'a, Message, Renderer>>) -> Self {
@@ -73,7 +73,7 @@ where
         }
     }
 
-    /// Creates a new empty [`Grid`](Grid).
+    /// Creates a new empty [`Grid`].
     /// Elements will be laid out in a specific amount of columns.
     #[must_use]
     pub fn with_columns(columns: usize) -> Self {
@@ -83,7 +83,7 @@ where
         }
     }
 
-    /// Creates a new empty [`Grid`](Grid).
+    /// Creates a new empty [`Grid`].
     /// Columns will be generated to fill the given space.
     #[must_use]
     pub fn with_column_width(column_width: f32) -> Self {
@@ -93,7 +93,7 @@ where
         }
     }
 
-    /// Sets the [`Grid`](Grid) Strategy.
+    /// Sets the [`Grid`] Strategy.
     /// Default is ``Strategy::Columns(1)``.
     #[must_use]
     pub fn strategy(mut self, strategy: Strategy) -> Self {
@@ -101,7 +101,7 @@ where
         self
     }
 
-    /// Adds an [`Element`](Element) to the [`Grid`](Grid).
+    /// Adds an [`Element`] to the [`Grid`].
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
@@ -111,7 +111,7 @@ where
         self
     }
 
-    /// Inserts an [`Element`](Element) into the [`Grid`](Grid).
+    /// Inserts an [`Element`] into the [`Grid`].
     pub fn insert<E>(&mut self, element: E)
     where
         E: Into<Element<'a, Message, Renderer>>,
@@ -313,7 +313,7 @@ where
     }
 }
 
-/// Builds the layout of the [`Grid`](grid).
+/// Builds the layout of the [`Grid`].
 fn build_grid(
     columns: usize,
     column_aligns: impl Iterator<Item = f32> + Clone,

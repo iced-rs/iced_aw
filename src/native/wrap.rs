@@ -18,39 +18,39 @@ use std::marker::PhantomData;
 pub struct Wrap<'a, Message, Direction, Renderer = crate::Renderer> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Renderer>>,
-    /// The alignment of the [`Wrap`](Wrap).
+    /// The alignment of the [`Wrap`].
     pub alignment: Alignment,
-    /// The width of the [`Wrap`](Wrap).
+    /// The width of the [`Wrap`].
     pub width: Length,
-    /// The height of the [`Wrap`](Wrap).
+    /// The height of the [`Wrap`].
     pub height: Length,
-    /// The maximum width of the [`Wrap`](Wrap).
+    /// The maximum width of the [`Wrap`].
     pub max_width: f32,
-    /// The maximum height of the [`Wrap`](Wrap)
+    /// The maximum height of the [`Wrap`].
     pub max_height: f32,
-    /// The padding of each element of the [`Wrap`](Wrap).
+    /// The padding of each element of the [`Wrap`].
     pub padding: f32,
-    /// The spacing between each element of the [`Wrap`](Wrap).
+    /// The spacing between each element of the [`Wrap`].
     pub spacing: f32,
-    /// The spacing between each line of the [`Wrap`](Wrap).
+    /// The spacing between each line of the [`Wrap`].
     pub line_spacing: f32,
-    /// The minimal length of each line of the [`Wrap`](Wrap).
+    /// The minimal length of each line of the [`Wrap`].
     pub line_minimal_length: f32,
     #[allow(clippy::missing_docs_in_private_items)]
     _direction: PhantomData<Direction>,
 }
 
 impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
-    /// Creates an empty horizontal [`Wrap`](Wrap).
+    /// Creates an empty horizontal [`Wrap`].
     #[must_use]
     pub fn new() -> Self {
         Self::with_elements(Vec::new())
     }
 
-    /// Creates a [`Wrap`](Wrap) with the given elements.
+    /// Creates a [`Wrap`] with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`]s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`]s for this [`Wrap`].
     #[must_use]
     pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -61,16 +61,16 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
 }
 
 impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
-    /// Creates an empty vertical [`Wrap`](Wrap).
+    /// Creates an empty vertical [`Wrap`].
     #[must_use]
     pub fn new_vertical() -> Self {
         Self::with_elements_vertical(Vec::new())
     }
 
-    /// Creates a [`Wrap`](Wrap) with the given elements.
+    /// Creates a [`Wrap`] with the given elements.
     ///
     /// It expects:
-    ///     * the vector containing the [`Element`]s for this [`Wrap`](Wrap).
+    ///     * the vector containing the [`Element`]s for this [`Wrap`].
     #[must_use]
     pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
         Self {
@@ -81,70 +81,70 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
 }
 
 impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Direction, Renderer> {
-    /// Sets the spacing of the [`Wrap`](Wrap).
+    /// Sets the spacing of the [`Wrap`].
     #[must_use]
     pub const fn spacing(mut self, units: f32) -> Self {
         self.spacing = units;
         self
     }
 
-    /// Sets the spacing of the lines of the [`Wrap`](Wrap).
+    /// Sets the spacing of the lines of the [`Wrap`].
     #[must_use]
     pub const fn line_spacing(mut self, units: f32) -> Self {
         self.line_spacing = units;
         self
     }
 
-    /// Sets the minimal length of the lines of the [`Wrap`](Wrap).
+    /// Sets the minimal length of the lines of the [`Wrap`].
     #[must_use]
     pub const fn line_minimal_length(mut self, units: f32) -> Self {
         self.line_minimal_length = units;
         self
     }
 
-    /// Sets the padding of the elements in the [`Wrap`](Wrap).
+    /// Sets the padding of the elements in the [`Wrap`].
     #[must_use]
     pub const fn padding(mut self, units: f32) -> Self {
         self.padding = units;
         self
     }
 
-    /// Sets the width of the [`Wrap`](Wrap).
+    /// Sets the width of the [`Wrap`].
     #[must_use]
     pub const fn width_items(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
-    /// Sets the height of the [`Wrap`](Wrap).
+    /// Sets the height of the [`Wrap`].
     #[must_use]
     pub const fn height_items(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
-    /// Sets the maximum width of the [`Wrap`](Wrap).
+    /// Sets the maximum width of the [`Wrap`].
     #[must_use]
     pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
-    /// Sets the maximum height of the [`Wrap`](Wrap).
+    /// Sets the maximum height of the [`Wrap`].
     #[must_use]
     pub const fn max_height(mut self, max_height: f32) -> Self {
         self.max_height = max_height;
         self
     }
 
-    /// Sets the alignment of the [`Wrap`](Wrap).
+    /// Sets the alignment of the [`Wrap`].
     #[must_use]
     pub const fn align_items(mut self, align: Alignment) -> Self {
         self.alignment = align;
         self
     }
 
-    /// Pushes an [`Element`] to the [`Wrap`](Wrap).
+    /// Pushes an [`Element`] to the [`Wrap`].
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
@@ -332,12 +332,12 @@ impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Direction, 
         }
     }
 }
-/// A inner layout of the [`Wrap`](Wrap).
+/// A inner layout of the [`Wrap`].
 pub trait WrapLayout<Renderer>
 where
     Renderer: core::Renderer,
 {
-    /// A inner layout of the [`Wrap`](Wrap).
+    /// A inner layout of the [`Wrap`].
     fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
