@@ -104,8 +104,24 @@ where
     text_font: Option<Font>,
     /// The style of the [`TabBar`].
     style: <Renderer::Theme as StyleSheet>::Style,
+    /// Where the icon is placed relative to text
+    position: Position,
     #[allow(clippy::missing_docs_in_private_items)]
     _renderer: PhantomData<Renderer>,
+}
+
+#[derive(Default)]
+/// The [`Position`] of the icon relative to text, this enum is only relative if [`TabLabel::IconText`] is used.
+pub enum Position {
+    /// Icon is placed above of the text.
+    Top,
+    /// Icon is placed right of the text.
+    Right,
+    #[default]
+    /// Icon is placed left of the text.
+    Left,
+    /// Icon is placed below of the text.
+    Bottom,
 }
 
 impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
@@ -157,6 +173,7 @@ where
             icon_font: None,
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
+            position: Position::default(),
             _renderer: PhantomData,
         }
     }
@@ -309,6 +326,22 @@ where
             .map_or(0, |a| a);
         self
     }
+
+    fn layout_icon(&self, icon: &char, size: f32, font: Option<Font>) -> Text {
+        Text::new(icon.to_string())
+            .size(size)
+            .font(font.unwrap_or_default())
+            .horizontal_alignment(alignment::Horizontal::Center)
+            .vertical_alignment(alignment::Vertical::Center)
+    }
+
+    fn layout_text(&self, text: &str, size: f32, font: Option<Font>) -> Text {
+        Text::new(text)
+            .size(size)
+            .font(font.unwrap_or_default())
+            .horizontal_alignment(alignment::Horizontal::Center)
+            .vertical_alignment(alignment::Vertical::Center)
+    }
 }
 
 impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
@@ -332,40 +365,80 @@ where
                 let mut label_row = Row::new()
                     .push(
                         match tab_label {
-                            TabLabel::Icon(icon) => {
-                                Column::new().align_items(Alignment::Center).push(
-                                    Text::new(icon.to_string())
-                                        .size(self.icon_size)
-                                        .font(self.icon_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                            }
-                            TabLabel::Text(text) => {
-                                Column::new().align_items(Alignment::Center).push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .font(self.text_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                            }
-                            TabLabel::IconText(icon, text) => Column::new()
+                            TabLabel::Icon(icon) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(
-                                    Text::new(icon.to_string())
-                                        .size(self.icon_size)
-                                        .font(self.icon_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                                .push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .font(self.text_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                ),
+                                .push(self.layout_icon(icon, self.icon_size, self.icon_font)),
+
+                            TabLabel::Text(text) => Column::new()
+                                .align_items(Alignment::Center)
+                                .push(self.layout_text(text, self.icon_size, self.icon_font)),
+
+                            TabLabel::IconText(icon, text) => {
+                                let mut column = Column::new().align_items(Alignment::Center);
+
+                                match self.position {
+                                    Position::Top => {
+                                        column = column
+                                            .push(self.layout_icon(
+                                                icon,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ))
+                                            .push(self.layout_text(
+                                                text,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ))
+                                    }
+                                    Position::Right => {
+                                        column = column.push(
+                                            Row::new()
+                                                .align_items(Alignment::Center)
+                                                .push(self.layout_icon(
+                                                    icon,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                ))
+                                                .push(self.layout_text(
+                                                    text,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                )),
+                                        )
+                                    }
+                                    Position::Left => {
+                                        column = column.push(
+                                            Row::new()
+                                                .align_items(Alignment::Center)
+                                                .push(self.layout_text(
+                                                    text,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                ))
+                                                .push(self.layout_icon(
+                                                    icon,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                )),
+                                        )
+                                    }
+                                    Position::Bottom => {
+                                        column = column
+                                            .push(self.layout_text(
+                                                text,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ))
+                                            .push(self.layout_icon(
+                                                icon,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ))
+                                    }
+                                }
+
+                                column
+                            }
                         }
                         .width(self.tab_width)
                         .height(self.height),
@@ -612,14 +685,17 @@ fn draw_tab<Renderer>(
             });
         }
         TabLabel::IconText(icon, text) => {
-            let icon_bounds = label_layout_children
+            let mut row_childern = label_layout_children.next().unwrap().children();
+            let icon_bounds = row_childern
                 .next()
                 .expect("Graphics: Layout should have an icons layout for an IconText")
                 .bounds();
-            let text_bounds = label_layout_children
+            println!("{:#?}", icon_bounds);
+            let text_bounds = row_childern
                 .next()
                 .expect("Graphics: Layout should have a text layout for an IconText")
                 .bounds();
+            println!("{:#?}", text_bounds);
 
             renderer.fill_text(core::text::Text {
                 content: &icon.to_string(),
