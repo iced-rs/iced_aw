@@ -148,7 +148,7 @@ where
             width: Length::Fill,
             tab_width: Length::Fill,
             height: Length::Shrink,
-            max_height: 4_294_967_295.0,
+            max_height: u32::MAX as f32,
             icon_size: DEFAULT_ICON_SIZE,
             text_size: DEFAULT_TEXT_SIZE,
             close_size: DEFAULT_CLOSE_SIZE,
