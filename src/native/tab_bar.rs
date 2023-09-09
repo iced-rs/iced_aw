@@ -118,7 +118,7 @@ pub enum Position {
     /// Icon is placed right of the text.
     Right,
     #[default]
-    /// Icon is placed left of the text.
+    /// Icon is placed left of the text, the default.
     Left,
     /// Icon is placed below of the text.
     Bottom,
@@ -343,15 +343,11 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
-        fn layout_icon<'a, Renderer>(
-            icon: &char,
-            size: f32,
-            font: Option<Font>,
-        ) -> Text<'a, Renderer>
+        fn layout_icon<Renderer>(icon: &char, size: f32, font: Option<Font>) -> Text<'_, Renderer>
         where
             Renderer: iced_widget::core::text::Renderer,
-            Renderer::Theme: iced_widget::text::StyleSheet,
             Renderer::Font: From<Font>,
+            Renderer::Theme: iced_widget::text::StyleSheet,
         {
             Text::<Renderer>::new(icon.to_string())
                 .size(size)
@@ -360,15 +356,11 @@ where
                 .vertical_alignment(alignment::Vertical::Center)
         }
 
-        fn layout_text<'a, Renderer>(
-            text: &'a str,
-            size: f32,
-            font: Option<Font>,
-        ) -> Text<'a, Renderer>
+        fn layout_text<Renderer>(text: &str, size: f32, font: Option<Font>) -> Text<'_, Renderer>
         where
             Renderer: iced_widget::core::text::Renderer,
-            Renderer::Theme: iced_widget::text::StyleSheet,
             Renderer::Font: From<Font>,
+            Renderer::Theme: iced_widget::text::StyleSheet,
         {
             Text::<Renderer>::new(text)
                 .size(size)
@@ -617,6 +609,15 @@ fn draw_tab<Renderer>(
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet + text::StyleSheet,
 {
+    fn icon_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
+        item.expect("Graphics: Layout should have an icons layout for an IconText")
+            .bounds()
+    }
+
+    fn text_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
+        item.expect("Graphics: Layout should have an icons layout for an IconText")
+            .bounds()
+    }
     let is_mouse_over = layout
         .bounds()
         .contains(cursor.position().unwrap_or_default());
@@ -645,10 +646,7 @@ fn draw_tab<Renderer>(
 
     match tab {
         TabLabel::Icon(icon) => {
-            let icon_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have an icon layout for an Icon")
-                .bounds();
+            let icon_bounds = icon_bound_rectangle(label_layout_children.next());
 
             renderer.fill_text(core::text::Text {
                 content: &icon.to_string(),
@@ -667,10 +665,7 @@ fn draw_tab<Renderer>(
             });
         }
         TabLabel::Text(text) => {
-            let text_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have a text layout for a Text")
-                .bounds();
+            let text_bounds = text_bound_rectangle(label_layout_children.next());
 
             renderer.fill_text(core::text::Text {
                 content: &text[..],
@@ -694,62 +689,24 @@ fn draw_tab<Renderer>(
 
             match position {
                 Position::Top => {
-                    icon_bounds = label_layout_children
-                        .next()
-                        .expect("Graphics: Layout should have an icons layout for an IconText")
-                        .bounds();
-
-                    text_bounds = label_layout_children
-                        .next()
-                        .expect("Graphics: Layout should have a text layout for an IconText")
-                        .bounds();
+                    icon_bounds = icon_bound_rectangle(label_layout_children.next());
+                    text_bounds = text_bound_rectangle(label_layout_children.next());
                 }
                 Position::Right => {
                     let mut row_childern = label_layout_children.next().unwrap().children();
-                    text_bounds = row_childern
-                        .next()
-                        .expect("Graphics: Layout should have a text layout for an IconText")
-                        .bounds();
-
-                    icon_bounds = row_childern
-                        .next()
-                        .expect("Graphics: Layout should have an icons layout for an IconText")
-                        .bounds();
+                    text_bounds = text_bound_rectangle(row_childern.next());
+                    icon_bounds = icon_bound_rectangle(row_childern.next());
                 }
                 Position::Left => {
                     let mut row_childern = label_layout_children.next().unwrap().children();
-                    icon_bounds = row_childern
-                        .next()
-                        .expect("Graphics: Layout should have an icons layout for an IconText")
-                        .bounds();
-
-                    text_bounds = row_childern
-                        .next()
-                        .expect("Graphics: Layout should have a text layout for an IconText")
-                        .bounds();
+                    icon_bounds = icon_bound_rectangle(row_childern.next());
+                    text_bounds = text_bound_rectangle(row_childern.next());
                 }
                 Position::Bottom => {
-                    text_bounds = label_layout_children
-                        .next()
-                        .expect("Graphics: Layout should have a text layout for an IconText")
-                        .bounds();
-
-                    icon_bounds = label_layout_children
-                        .next()
-                        .expect("Graphics: Layout should have an icons layout for an IconText")
-                        .bounds();
+                    text_bounds = text_bound_rectangle(label_layout_children.next());
+                    icon_bounds = icon_bound_rectangle(label_layout_children.next());
                 }
             }
-            // let mut row_childern = label_layout_children.next().unwrap().children();
-            // let icon_bounds = row_childern
-            //     .next()
-            //     .expect("Graphics: Layout should have an icons layout for an IconText")
-            //     .bounds();
-
-            // let text_bounds = row_childern
-            //     .next()
-            //     .expect("Graphics: Layout should have a text layout for an IconText")
-            //     .bounds();
 
             renderer.fill_text(core::text::Text {
                 content: &icon.to_string(),
