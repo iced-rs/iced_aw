@@ -401,7 +401,7 @@ where
                                 .push(layout_text(text, self.icon_size, self.icon_font)),
 
                             TabLabel::IconText(icon, text) => {
-                                let mut column = Column::<Renderer>::new().align_items(Alignment::Center);
+                                let mut column = Column::new().align_items(Alignment::Center);
 
                                 match self.position {
                                     Position::Top => {
@@ -421,7 +421,7 @@ where
                                         column = column.push(
                                             Row::new()
                                                 .align_items(Alignment::Center)
-                                                .push(self.layout_icon(
+                                                .push(layout_icon(
                                                     icon,
                                                     self.icon_size,
                                                     self.icon_font,
