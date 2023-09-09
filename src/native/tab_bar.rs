@@ -326,6 +326,12 @@ where
             .map_or(0, |a| a);
         self
     }
+
+    /// Sets the [`Position`] of the Icon next to Text, Only used in [`TabLabel::IconText`]
+    pub fn set_position(mut self, position: Position) -> Self {
+        self.position = position;
+        self
+    }
 }
 
 impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
