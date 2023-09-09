@@ -333,14 +333,7 @@ where
             .font(font.unwrap_or_default())
             .horizontal_alignment(alignment::Horizontal::Center)
             .vertical_alignment(alignment::Vertical::Center)
-    }
-
-    fn layout_text(&self, text: &str, size: f32, font: Option<Font>) -> Text {
-        Text::new(text)
-            .size(size)
-            .font(font.unwrap_or_default())
-            .horizontal_alignment(alignment::Horizontal::Center)
-            .vertical_alignment(alignment::Vertical::Center)
+            .into()
     }
 }
 
@@ -359,6 +352,40 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+        fn layout_icon<'a, Renderer>(
+            icon: &char,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'a, Renderer>
+        where
+            Renderer: iced_widget::core::text::Renderer,
+            Renderer::Theme: iced_widget::text::StyleSheet,
+            Renderer::Font: From<Font>,
+        {
+            Text::<Renderer>::new(icon.to_string())
+                .size(size)
+                .font(font.unwrap_or_default())
+                .horizontal_alignment(alignment::Horizontal::Center)
+                .vertical_alignment(alignment::Vertical::Center)
+        }
+
+        fn layout_text<'a, Renderer>(
+            text: &'a str,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'a, Renderer>
+        where
+            Renderer: iced_widget::core::text::Renderer,
+            Renderer::Theme: iced_widget::text::StyleSheet,
+            Renderer::Font: From<Font>,
+        {
+            Text::<Renderer>::new(text)
+                .size(size)
+                .font(font.unwrap_or_default())
+                .horizontal_alignment(alignment::Horizontal::Center)
+                .vertical_alignment(alignment::Vertical::Center)
+        }
+
         self.tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
@@ -367,24 +394,24 @@ where
                         match tab_label {
                             TabLabel::Icon(icon) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(self.layout_icon(icon, self.icon_size, self.icon_font)),
+                                .push(layout_icon(icon, self.icon_size, self.icon_font)),
 
                             TabLabel::Text(text) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(self.layout_text(text, self.icon_size, self.icon_font)),
+                                .push(layout_text(text, self.icon_size, self.icon_font)),
 
                             TabLabel::IconText(icon, text) => {
-                                let mut column = Column::new().align_items(Alignment::Center);
+                                let mut column = Column::<Renderer>::new().align_items(Alignment::Center);
 
                                 match self.position {
                                     Position::Top => {
                                         column = column
-                                            .push(self.layout_icon(
+                                            .push(layout_icon(
                                                 icon,
                                                 self.icon_size,
                                                 self.icon_font,
                                             ))
-                                            .push(self.layout_text(
+                                            .push(layout_text(
                                                 text,
                                                 self.icon_size,
                                                 self.icon_font,
@@ -399,7 +426,7 @@ where
                                                     self.icon_size,
                                                     self.icon_font,
                                                 ))
-                                                .push(self.layout_text(
+                                                .push(layout_text(
                                                     text,
                                                     self.icon_size,
                                                     self.icon_font,
@@ -410,12 +437,12 @@ where
                                         column = column.push(
                                             Row::new()
                                                 .align_items(Alignment::Center)
-                                                .push(self.layout_text(
+                                                .push(layout_text(
                                                     text,
                                                     self.icon_size,
                                                     self.icon_font,
                                                 ))
-                                                .push(self.layout_icon(
+                                                .push(layout_icon(
                                                     icon,
                                                     self.icon_size,
                                                     self.icon_font,
@@ -424,12 +451,12 @@ where
                                     }
                                     Position::Bottom => {
                                         column = column
-                                            .push(self.layout_text(
+                                            .push(layout_text(
                                                 text,
                                                 self.icon_size,
                                                 self.icon_font,
                                             ))
-                                            .push(self.layout_icon(
+                                            .push(layout_icon(
                                                 icon,
                                                 self.icon_size,
                                                 self.icon_font,
