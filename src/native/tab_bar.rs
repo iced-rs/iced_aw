@@ -104,8 +104,24 @@ where
     text_font: Option<Font>,
     /// The style of the [`TabBar`].
     style: <Renderer::Theme as StyleSheet>::Style,
+    /// Where the icon is placed relative to text
+    position: Position,
     #[allow(clippy::missing_docs_in_private_items)]
     _renderer: PhantomData<Renderer>,
+}
+
+#[derive(Clone, Copy, Default)]
+/// The [`Position`] of the icon relative to text, this enum is only relative if [`TabLabel::IconText`] is used.
+pub enum Position {
+    /// Icon is placed above of the text.
+    Top,
+    /// Icon is placed right of the text.
+    Right,
+    #[default]
+    /// Icon is placed left of the text, the default.
+    Left,
+    /// Icon is placed below of the text.
+    Bottom,
 }
 
 impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
@@ -148,7 +164,7 @@ where
             width: Length::Fill,
             tab_width: Length::Fill,
             height: Length::Shrink,
-            max_height: 4_294_967_295.0,
+            max_height: u32::MAX as f32,
             icon_size: DEFAULT_ICON_SIZE,
             text_size: DEFAULT_TEXT_SIZE,
             close_size: DEFAULT_CLOSE_SIZE,
@@ -157,6 +173,7 @@ where
             icon_font: None,
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
+            position: Position::default(),
             _renderer: PhantomData,
         }
     }
@@ -309,6 +326,13 @@ where
             .map_or(0, |a| a);
         self
     }
+
+    #[must_use]
+    /// Sets the [`Position`] of the Icon next to Text, Only used in [`TabLabel::IconText`]
+    pub fn set_position(mut self, position: Position) -> Self {
+        self.position = position;
+        self
+    }
 }
 
 impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
@@ -326,46 +350,104 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+        fn layout_icon<Renderer>(icon: &char, size: f32, font: Option<Font>) -> Text<'_, Renderer>
+        where
+            Renderer: iced_widget::core::text::Renderer,
+            Renderer::Font: From<Font>,
+            Renderer::Theme: iced_widget::text::StyleSheet,
+        {
+            Text::<Renderer>::new(icon.to_string())
+                .size(size)
+                .font(font.unwrap_or_default())
+                .horizontal_alignment(alignment::Horizontal::Center)
+                .vertical_alignment(alignment::Vertical::Center)
+        }
+
+        fn layout_text<Renderer>(text: &str, size: f32, font: Option<Font>) -> Text<'_, Renderer>
+        where
+            Renderer: iced_widget::core::text::Renderer,
+            Renderer::Font: From<Font>,
+            Renderer::Theme: iced_widget::text::StyleSheet,
+        {
+            Text::<Renderer>::new(text)
+                .size(size)
+                .font(font.unwrap_or_default())
+                .horizontal_alignment(alignment::Horizontal::Center)
+                .vertical_alignment(alignment::Vertical::Center)
+        }
+
         self.tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let mut label_row = Row::new()
                     .push(
                         match tab_label {
-                            TabLabel::Icon(icon) => {
-                                Column::new().align_items(Alignment::Center).push(
-                                    Text::new(icon.to_string())
-                                        .size(self.icon_size)
-                                        .font(self.icon_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                            }
-                            TabLabel::Text(text) => {
-                                Column::new().align_items(Alignment::Center).push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .font(self.text_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                            }
-                            TabLabel::IconText(icon, text) => Column::new()
+                            TabLabel::Icon(icon) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(
-                                    Text::new(icon.to_string())
-                                        .size(self.icon_size)
-                                        .font(self.icon_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                )
-                                .push(
-                                    Text::new(text)
-                                        .size(self.text_size)
-                                        .font(self.text_font.unwrap_or_default())
-                                        .horizontal_alignment(alignment::Horizontal::Center)
-                                        .vertical_alignment(alignment::Vertical::Center),
-                                ),
+                                .push(layout_icon(icon, self.icon_size, self.icon_font)),
+
+                            TabLabel::Text(text) => Column::new()
+                                .align_items(Alignment::Center)
+                                .push(layout_text(text, self.icon_size, self.icon_font)),
+
+                            TabLabel::IconText(icon, text) => {
+                                let mut column = Column::new().align_items(Alignment::Center);
+
+                                match self.position {
+                                    Position::Top => {
+                                        column = column
+                                            .push(layout_icon(icon, self.icon_size, self.icon_font))
+                                            .push(layout_text(
+                                                text,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ));
+                                    }
+                                    Position::Right => {
+                                        column = column.push(
+                                            Row::new()
+                                                .align_items(Alignment::Center)
+                                                .push(layout_icon(
+                                                    icon,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                ))
+                                                .push(layout_text(
+                                                    text,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                )),
+                                        );
+                                    }
+                                    Position::Left => {
+                                        column = column.push(
+                                            Row::new()
+                                                .align_items(Alignment::Center)
+                                                .push(layout_text(
+                                                    text,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                ))
+                                                .push(layout_icon(
+                                                    icon,
+                                                    self.icon_size,
+                                                    self.icon_font,
+                                                )),
+                                        );
+                                    }
+                                    Position::Bottom => {
+                                        column = column
+                                            .push(layout_text(text, self.icon_size, self.icon_font))
+                                            .push(layout_icon(
+                                                icon,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ));
+                                    }
+                                }
+
+                                column
+                            }
                         }
                         .width(self.tab_width)
                         .height(self.height),
@@ -507,6 +589,7 @@ where
                 renderer,
                 tab,
                 layout,
+                self.position,
                 theme,
                 &self.style,
                 i == self.get_active_tab_idx(),
@@ -529,6 +612,7 @@ fn draw_tab<Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,
     layout: Layout<'_>,
+    position: Position,
     theme: &Renderer::Theme,
     style: &<Renderer::Theme as StyleSheet>::Style,
     is_selected: bool,
@@ -540,6 +624,15 @@ fn draw_tab<Renderer>(
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet + text::StyleSheet,
 {
+    fn icon_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
+        item.expect("Graphics: Layout should have an icons layout for an IconText")
+            .bounds()
+    }
+
+    fn text_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
+        item.expect("Graphics: Layout should have an texts layout for an IconText")
+            .bounds()
+    }
     let is_mouse_over = layout
         .bounds()
         .contains(cursor.position().unwrap_or_default());
@@ -568,10 +661,7 @@ fn draw_tab<Renderer>(
 
     match tab {
         TabLabel::Icon(icon) => {
-            let icon_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have an icon layout for an Icon")
-                .bounds();
+            let icon_bounds = icon_bound_rectangle(label_layout_children.next());
 
             renderer.fill_text(core::text::Text {
                 content: &icon.to_string(),
@@ -590,10 +680,7 @@ fn draw_tab<Renderer>(
             });
         }
         TabLabel::Text(text) => {
-            let text_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have a text layout for a Text")
-                .bounds();
+            let text_bounds = text_bound_rectangle(label_layout_children.next());
 
             renderer.fill_text(core::text::Text {
                 content: &text[..],
@@ -612,14 +699,35 @@ fn draw_tab<Renderer>(
             });
         }
         TabLabel::IconText(icon, text) => {
-            let icon_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have an icons layout for an IconText")
-                .bounds();
-            let text_bounds = label_layout_children
-                .next()
-                .expect("Graphics: Layout should have a text layout for an IconText")
-                .bounds();
+            let icon_bounds: Rectangle;
+            let text_bounds: Rectangle;
+
+            match position {
+                Position::Top => {
+                    icon_bounds = icon_bound_rectangle(label_layout_children.next());
+                    text_bounds = text_bound_rectangle(label_layout_children.next());
+                }
+                Position::Right => {
+                    let mut row_childern = label_layout_children
+                        .next()
+                        .expect("Graphics: Right Layout should have have a row with one child")
+                        .children();
+                    text_bounds = text_bound_rectangle(row_childern.next());
+                    icon_bounds = icon_bound_rectangle(row_childern.next());
+                }
+                Position::Left => {
+                    let mut row_childern = label_layout_children
+                        .next()
+                        .expect("Graphics: Left Layout should have have a row with one child")
+                        .children();
+                    icon_bounds = icon_bound_rectangle(row_childern.next());
+                    text_bounds = text_bound_rectangle(row_childern.next());
+                }
+                Position::Bottom => {
+                    text_bounds = text_bound_rectangle(label_layout_children.next());
+                    icon_bounds = icon_bound_rectangle(label_layout_children.next());
+                }
+            }
 
             renderer.fill_text(core::text::Text {
                 content: &icon.to_string(),
