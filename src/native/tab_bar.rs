@@ -327,6 +327,7 @@ where
         self
     }
 
+    #[must_use]
     /// Sets the [`Position`] of the Icon next to Text, Only used in [`TabLabel::IconText`]
     pub fn set_position(mut self, position: Position) -> Self {
         self.position = position;
@@ -396,7 +397,11 @@ where
                                     Position::Top => {
                                         column = column
                                             .push(layout_icon(icon, self.icon_size, self.icon_font))
-                                            .push(layout_text(text, self.icon_size, self.icon_font))
+                                            .push(layout_text(
+                                                text,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ));
                                     }
                                     Position::Right => {
                                         column = column.push(
@@ -412,7 +417,7 @@ where
                                                     self.icon_size,
                                                     self.icon_font,
                                                 )),
-                                        )
+                                        );
                                     }
                                     Position::Left => {
                                         column = column.push(
@@ -428,12 +433,16 @@ where
                                                     self.icon_size,
                                                     self.icon_font,
                                                 )),
-                                        )
+                                        );
                                     }
                                     Position::Bottom => {
                                         column = column
                                             .push(layout_text(text, self.icon_size, self.icon_font))
-                                            .push(layout_icon(icon, self.icon_size, self.icon_font))
+                                            .push(layout_icon(
+                                                icon,
+                                                self.icon_size,
+                                                self.icon_font,
+                                            ));
                                     }
                                 }
 
@@ -621,7 +630,7 @@ fn draw_tab<Renderer>(
     }
 
     fn text_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
-        item.expect("Graphics: Layout should have an icons layout for an IconText")
+        item.expect("Graphics: Layout should have an texts layout for an IconText")
             .bounds()
     }
     let is_mouse_over = layout
@@ -699,12 +708,18 @@ fn draw_tab<Renderer>(
                     text_bounds = text_bound_rectangle(label_layout_children.next());
                 }
                 Position::Right => {
-                    let mut row_childern = label_layout_children.next().unwrap().children();
+                    let mut row_childern = label_layout_children
+                        .next()
+                        .expect("Graphics: Right Layout should have have a row with one child")
+                        .children();
                     text_bounds = text_bound_rectangle(row_childern.next());
                     icon_bounds = icon_bound_rectangle(row_childern.next());
                 }
                 Position::Left => {
-                    let mut row_childern = label_layout_children.next().unwrap().children();
+                    let mut row_childern = label_layout_children
+                        .next()
+                        .expect("Graphics: Left Layout should have have a row with one child")
+                        .children();
                     icon_bounds = icon_bound_rectangle(row_childern.next());
                     text_bounds = text_bound_rectangle(row_childern.next());
                 }
