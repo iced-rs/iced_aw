@@ -575,9 +575,9 @@ where
                 .zip(&mut tree.children)
                 .zip(layout.children())
                 .filter_map(|((child, state), layout)| {
-                    layout.children().next().map(|child_layout| {
+                    layout.children().next().and_then(|child_layout| {
                         child.as_widget_mut().overlay(state, child_layout, renderer)
-                    }).unwrap_or(None)
+                    })
                 })
                 .collect::<Vec<_>>();
 
