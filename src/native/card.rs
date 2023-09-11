@@ -561,29 +561,29 @@ where
     }
 
     fn overlay<'b>(
-            &'b mut self,
-            tree: &'b mut Tree,
-            layout: Layout<'_>,
-            renderer: &Renderer,
-        ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
-            let mut children = vec![&mut self.head, &mut self.body];
-            if let Some(foot) = &mut self.foot {
-                children.push(foot);
-            }
-            let children = children
-                .into_iter()
-                .zip(&mut tree.children)
-                .zip(layout.children())
-                .filter_map(|((child, state), layout)| {
-                    layout.children().next().and_then(|child_layout| {
-                        child.as_widget_mut().overlay(state, child_layout, renderer)
-                    })
-                })
-                .collect::<Vec<_>>();
-
-            (!children.is_empty()).then(|| core::overlay::Group::with_children(children).overlay())
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
+        let mut children = vec![&mut self.head, &mut self.body];
+        if let Some(foot) = &mut self.foot {
+            children.push(foot);
         }
+        let children = children
+            .into_iter()
+            .zip(&mut tree.children)
+            .zip(layout.children())
+            .filter_map(|((child, state), layout)| {
+                layout.children().next().and_then(|child_layout| {
+                    child.as_widget_mut().overlay(state, child_layout, renderer)
+                })
+            })
+            .collect::<Vec<_>>();
+
+        (!children.is_empty()).then(|| core::overlay::Group::with_children(children).overlay())
     }
+}
 
 /// Calculates the layout of the head.
 fn head_node<Message, Renderer>(
