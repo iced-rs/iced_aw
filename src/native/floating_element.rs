@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
 
+use super::overlay::floating_element::FloatingElementOverlay;
+
 use iced_widget::core::{
     self, event,
     layout::{Limits, Node},
@@ -13,11 +15,8 @@ use iced_widget::core::{
 
 pub mod anchor;
 pub use anchor::Anchor;
-
 pub mod offset;
 pub use offset::Offset;
-
-use super::overlay::floating_element::FloatingElementOverlay;
 
 /// A floating element floating over some content.
 ///
@@ -88,6 +87,13 @@ where
         self
     }
 
+    /// Hide or unhide the [`Element`] on the [`FloatingElement`].
+    #[must_use]
+    pub fn hide(mut self, hide: bool) -> Self {
+        self.hidden = hide;
+        self
+    }
+
     /// Sets the [`Offset`] of the [`FloatingElement`].
     #[must_use]
     pub fn offset<O>(mut self, offset: O) -> Self
@@ -95,13 +101,6 @@ where
         O: Into<Offset>,
     {
         self.offset = offset.into();
-        self
-    }
-
-    /// Hide or unhide the [`Element`] on the [`FloatingElement`].
-    #[must_use]
-    pub fn hide(mut self, hide: bool) -> Self {
-        self.hidden = hide;
         self
     }
 }

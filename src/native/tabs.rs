@@ -6,6 +6,9 @@
 //!
 //! *This API requires the following crate features to be activated: tabs*
 
+pub mod tab_bar_position;
+use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
+
 use iced_widget::{
     core::{
         self, event,
@@ -19,9 +22,6 @@ use iced_widget::{
     text, Row,
 };
 
-use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
-
-pub mod tab_bar_position;
 pub use tab_bar_position::TabBarPosition;
 
 /// A [`Tabs`] widget for showing a [`TabBar`](super::tab_bar::TabBar)
@@ -89,7 +89,7 @@ where
     where
         F: 'static + Fn(TabId) -> Message,
     {
-        Self::with_tabs(Vec::new(), on_select)
+        Self::new_with_tabs(Vec::new(), on_select)
     }
 
     /// Similar to `new` but with a given Vector of the
@@ -101,7 +101,7 @@ where
     ///         [`Element`]s of the [`Tabs`].
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
-    pub fn with_tabs<F>(
+    pub fn new_with_tabs<F>(
         tabs: Vec<(TabId, TabLabel, Element<'a, Message, Renderer>)>,
         on_select: F,
     ) -> Self
@@ -128,70 +128,6 @@ where
         }
     }
 
-    /// Sets the message that will be produced when the close icon of a tab
-    /// on the [`TabBar`] is pressed.
-    ///
-    /// Setting this enables the drawing of a close icon on the tabs.
-    #[must_use]
-    pub fn on_close<F>(mut self, on_close: F) -> Self
-    where
-        F: 'static + Fn(TabId) -> Message,
-    {
-        self.tab_bar = self.tab_bar.on_close(on_close);
-        self
-    }
-
-    /// Sets the width of the [`Tabs`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the height of the [`Tabs`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
-    /// Sets the width of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
-    #[must_use]
-    pub fn tab_bar_width(mut self, width: Length) -> Self {
-        self.tab_bar = self.tab_bar.width(width);
-        self
-    }
-
-    /// Sets the height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
-    #[must_use]
-    pub fn tab_bar_height(mut self, height: Length) -> Self {
-        self.tab_bar = self.tab_bar.height(height);
-        self
-    }
-
-    /// Sets the maximum height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
-    #[must_use]
-    pub fn tab_bar_max_height(mut self, max_height: f32) -> Self {
-        self.tab_bar = self.tab_bar.max_height(max_height);
-        self
-    }
-
-    /// Sets the icon size of the [`TabLabel`](super::tab_bar::TabLabel) of the
-    /// [`TabBar`](super::tab_bar::TabBar).
-    #[must_use]
-    pub fn icon_size(mut self, icon_size: f32) -> Self {
-        self.tab_bar = self.tab_bar.icon_size(icon_size);
-        self
-    }
-
-    /// Sets the text size of the [`TabLabel`](super::tab_bar::TabLabel) of the
-    /// [`TabBar`](super::tab_bar::TabBar).
-    #[must_use]
-    pub fn text_size(mut self, text_size: f32) -> Self {
-        self.tab_bar = self.tab_bar.text_size(text_size);
-        self
-    }
-
     /// Sets the size of the close icon of the
     /// [`TabLabel`](super::tab_bar::TabLabel) of the
     /// [`TabBar`](super::tab_bar::TabBar).
@@ -201,18 +137,10 @@ where
         self
     }
 
-    /// Sets the padding of the tabs of the [`TabBar`](super::tab_bar::TabBar).
+    /// Sets the height of the [`Tabs`].
     #[must_use]
-    pub fn tab_label_padding(mut self, padding: f32) -> Self {
-        self.tab_bar = self.tab_bar.padding(padding);
-        self
-    }
-
-    /// Sets the spacing between the tabs of the
-    /// [`TabBar`](super::tab_bar::TabBar).
-    #[must_use]
-    pub fn tab_label_spacing(mut self, spacing: f32) -> Self {
-        self.tab_bar = self.tab_bar.spacing(spacing);
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
         self
     }
 
@@ -225,26 +153,24 @@ where
         self
     }
 
-    /// Sets the font of the text of the
-    /// [`TabLabel`](super::tab_bar::TabLabel)s of the
+    /// Sets the icon size of the [`TabLabel`](super::tab_bar::TabLabel) of the
     /// [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn text_font(mut self, text_font: Font) -> Self {
-        self.tab_bar = self.tab_bar.text_font(text_font);
+    pub fn icon_size(mut self, icon_size: f32) -> Self {
+        self.tab_bar = self.tab_bar.icon_size(icon_size);
         self
     }
 
-    /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
+    /// Sets the message that will be produced when the close icon of a tab
+    /// on the [`TabBar`] is pressed.
+    ///
+    /// Setting this enables the drawing of a close icon on the tabs.
     #[must_use]
-    pub fn tab_bar_style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
-        self.tab_bar = self.tab_bar.style(style);
-        self
-    }
-
-    /// Sets the [`TabBarPosition`] of the [`TabBar`](super::tab_bar::TabBar).
-    #[must_use]
-    pub fn tab_bar_position(mut self, position: TabBarPosition) -> Self {
-        self.tab_bar_position = position;
+    pub fn on_close<F>(mut self, on_close: F) -> Self
+    where
+        F: 'static + Fn(TabId) -> Message,
+    {
+        self.tab_bar = self.tab_bar.on_close(on_close);
         self
     }
 
@@ -265,6 +191,80 @@ where
     #[must_use]
     pub fn set_active_tab(mut self, id: &TabId) -> Self {
         self.tab_bar = self.tab_bar.set_active_tab(id);
+        self
+    }
+
+    /// Sets the height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
+    #[must_use]
+    pub fn tab_bar_height(mut self, height: Length) -> Self {
+        self.tab_bar = self.tab_bar.height(height);
+        self
+    }
+
+    /// Sets the maximum height of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
+    #[must_use]
+    pub fn tab_bar_max_height(mut self, max_height: f32) -> Self {
+        self.tab_bar = self.tab_bar.max_height(max_height);
+        self
+    }
+
+    /// Sets the width of the [`TabBar`](super::tab_bar::TabBar) of the [`Tabs`].
+    #[must_use]
+    pub fn tab_bar_width(mut self, width: Length) -> Self {
+        self.tab_bar = self.tab_bar.width(width);
+        self
+    }
+
+    /// Sets the [`TabBarPosition`] of the [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn tab_bar_position(mut self, position: TabBarPosition) -> Self {
+        self.tab_bar_position = position;
+        self
+    }
+
+    /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn tab_bar_style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.tab_bar = self.tab_bar.style(style);
+        self
+    }
+
+    /// Sets the padding of the tabs of the [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn tab_label_padding(mut self, padding: f32) -> Self {
+        self.tab_bar = self.tab_bar.padding(padding);
+        self
+    }
+
+    /// Sets the spacing between the tabs of the
+    /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn tab_label_spacing(mut self, spacing: f32) -> Self {
+        self.tab_bar = self.tab_bar.spacing(spacing);
+        self
+    }
+
+    /// Sets the font of the text of the
+    /// [`TabLabel`](super::tab_bar::TabLabel)s of the
+    /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn text_font(mut self, text_font: Font) -> Self {
+        self.tab_bar = self.tab_bar.text_font(text_font);
+        self
+    }
+
+    /// Sets the text size of the [`TabLabel`](super::tab_bar::TabLabel) of the
+    /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn text_size(mut self, text_size: f32) -> Self {
+        self.tab_bar = self.tab_bar.text_size(text_size);
+        self
+    }
+
+    /// Sets the width of the [`Tabs`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

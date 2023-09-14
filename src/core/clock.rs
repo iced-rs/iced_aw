@@ -1,8 +1,7 @@
 //! Helper functions for calculating the clock
 
-use std::fmt::Display;
-
 use iced_widget::core::Point;
+use std::fmt::Display;
 
 /// The size of the period on the clock based on the clock's size.
 pub const PERIOD_PERCENTAGE: f32 = 0.1;
@@ -61,45 +60,6 @@ pub enum NearestRadius {
     Second,
 }
 
-/// # Panics
-/// Determining the nearest radius to the position of the cursor position based
-/// on the distance to the center.
-/// Will panic if distance vec can not compare a and b
-#[must_use]
-pub fn nearest_radius(
-    radii: &[(f32, NearestRadius)],
-    cursor_position: Point,
-    center: Point,
-) -> NearestRadius {
-    let distance = cursor_position.distance(center);
-
-    let mut distance_vec: Vec<(f32, &NearestRadius)> = radii
-        .iter()
-        .map(|(r, n)| ((r - distance).abs(), n))
-        .collect();
-
-    distance_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Should be comparable"));
-
-    distance_vec[0].1.clone()
-}
-
-/// # Panics
-/// Determines the nearest point with the smallest distance to the cursor
-/// position. The index of the point is returned.
-/// Will panic if distance vec can not compare a and b
-#[must_use]
-pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
-    let mut distance_vec: Vec<(usize, f32)> = points
-        .iter()
-        .enumerate()
-        .map(|(i, p)| (i, p.distance(cursor_position)))
-        .collect();
-
-    distance_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).expect("Should be comparable"));
-
-    distance_vec[0].0
-}
-
 /// Distributes the amount of points on a circle with the given radius around the
 /// center.
 #[must_use]
@@ -120,6 +80,45 @@ pub fn circle_points(distance_radius: f32, center: Point, amount: u16) -> Vec<Po
         .collect();
 
     points
+}
+
+/// # Panics
+/// Determines the nearest point with the smallest distance to the cursor
+/// position. The index of the point is returned.
+/// Will panic if distance vec can not compare a and b
+#[must_use]
+pub fn nearest_point(points: &[Point], cursor_position: Point) -> usize {
+    let mut distance_vec: Vec<(usize, f32)> = points
+        .iter()
+        .enumerate()
+        .map(|(i, p)| (i, p.distance(cursor_position)))
+        .collect();
+
+    distance_vec.sort_by(|a, b| a.1.partial_cmp(&b.1).expect("Should be comparable"));
+
+    distance_vec[0].0
+}
+
+/// # Panics
+/// Determining the nearest radius to the position of the cursor position based
+/// on the distance to the center.
+/// Will panic if distance vec can not compare a and b
+#[must_use]
+pub fn nearest_radius(
+    radii: &[(f32, NearestRadius)],
+    cursor_position: Point,
+    center: Point,
+) -> NearestRadius {
+    let distance = cursor_position.distance(center);
+
+    let mut distance_vec: Vec<(f32, &NearestRadius)> = radii
+        .iter()
+        .map(|(r, n)| ((r - distance).abs(), n))
+        .collect();
+
+    distance_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).expect("Should be comparable"));
+
+    distance_vec[0].1.clone()
 }
 
 #[cfg(test)]

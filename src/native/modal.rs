@@ -1,6 +1,9 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
+
+use super::overlay::modal::ModalOverlay;
+
 use iced_widget::core::{
     self, alignment, event,
     layout::{Limits, Node},
@@ -9,8 +12,6 @@ use iced_widget::core::{
     widget::{Operation, Tree},
     Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
 };
-
-use super::overlay::modal::ModalOverlay;
 
 pub use crate::style::modal::StyleSheet;
 
@@ -85,6 +86,20 @@ where
         }
     }
 
+    /// Sets the content alignment for the horizontal axis of the [`Modal`].
+    #[must_use]
+    pub fn align_x(mut self, alignment: alignment::Horizontal) -> Self {
+        self.horizontal_alignment = alignment;
+        self
+    }
+
+    /// Sets the content alignment for the vertical axis of the [`Modal`].
+    #[must_use]
+    pub fn align_y(mut self, alignment: alignment::Vertical) -> Self {
+        self.vertical_alignment = alignment;
+        self
+    }
+
     /// Sets the message that will be produced when the backdrop of the
     /// [`Modal`] is clicked.
     #[must_use]
@@ -107,20 +122,6 @@ where
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
-        self
-    }
-
-    /// Sets the content alignment for the horizontal axis of the [`Modal`].
-    #[must_use]
-    pub fn align_x(mut self, alignment: alignment::Horizontal) -> Self {
-        self.horizontal_alignment = alignment;
-        self
-    }
-
-    /// Sets the content alignment for the vertical axis of the [`Modal`].
-    #[must_use]
-    pub fn align_y(mut self, alignment: alignment::Vertical) -> Self {
-        self.vertical_alignment = alignment;
         self
     }
 }

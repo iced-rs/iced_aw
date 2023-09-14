@@ -63,6 +63,32 @@ where
         Self::default()
     }
 
+    /// Inserts an [`Element`] into the [`Grid`].
+    pub fn insert<E>(&mut self, element: E)
+    where
+        E: Into<Element<'a, Message, Renderer>>,
+    {
+        self.elements.push(element.into());
+    }
+
+    /// Adds an [`Element`] to the [`Grid`].
+    #[must_use]
+    pub fn push<E>(mut self, element: E) -> Self
+    where
+        E: Into<Element<'a, Message, Renderer>>,
+    {
+        self.elements.push(element.into());
+        self
+    }
+
+    /// Sets the [`Grid`] Strategy.
+    /// Default is ``Strategy::Columns(1)``.
+    #[must_use]
+    pub fn strategy(mut self, strategy: Strategy) -> Self {
+        self.strategy = strategy;
+        self
+    }
+
     /// Creates a [`Grid`] with given elements and ``Strategy::Columns(1)``
     /// Use ``strategy()`` to update the Strategy.
     #[must_use]
@@ -91,32 +117,6 @@ where
             strategy: Strategy::ColumnWidth(column_width),
             elements: Vec::new(),
         }
-    }
-
-    /// Sets the [`Grid`] Strategy.
-    /// Default is ``Strategy::Columns(1)``.
-    #[must_use]
-    pub fn strategy(mut self, strategy: Strategy) -> Self {
-        self.strategy = strategy;
-        self
-    }
-
-    /// Adds an [`Element`] to the [`Grid`].
-    #[must_use]
-    pub fn push<E>(mut self, element: E) -> Self
-    where
-        E: Into<Element<'a, Message, Renderer>>,
-    {
-        self.elements.push(element.into());
-        self
-    }
-
-    /// Inserts an [`Element`] into the [`Grid`].
-    pub fn insert<E>(&mut self, element: E)
-    where
-        E: Into<Element<'a, Message, Renderer>>,
-    {
-        self.elements.push(element.into());
     }
 }
 

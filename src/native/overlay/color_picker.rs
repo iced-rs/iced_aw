@@ -1,7 +1,19 @@
 //! Use a color picker as an input element for picking colors.
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
-use std::collections::HashMap;
+
+use crate::{
+    color_picker,
+    core::{
+        color::{HexString, Hsv},
+        overlay::Position,
+    },
+    graphics::icons::{icon_to_char, Icon},
+    style::{
+        color_picker::{Appearance, StyleSheet},
+        style_state::StyleState,
+    },
+};
 
 use iced_widget::{
     button,
@@ -22,19 +34,8 @@ use iced_widget::{
     renderer::Renderer,
     Button, Column, Row,
 };
+use std::collections::HashMap;
 
-use crate::{
-    color_picker,
-    core::{
-        color::{HexString, Hsv},
-        overlay::Position,
-    },
-    graphics::icons::{icon_to_char, Icon},
-    style::{
-        color_picker::{Appearance, StyleSheet},
-        style_state::StyleState,
-    },
-};
 /// The padding around the elements.
 const PADDING: f32 = 10.0;
 /// The spacing between the element.

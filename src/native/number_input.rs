@@ -17,12 +17,11 @@ use iced_widget::{
         Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding,
         Rectangle, Shell, Size, Widget,
     },
-    style, text,
+    text,
     text::LineHeight,
     text_input::{self, cursor, Value},
     Column, Container, Row, Text, TextInput,
 };
-
 use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
@@ -130,10 +129,31 @@ where
         }
     }
 
-    /// Sets the step of the [`NumberInput`].
+    /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
     #[must_use]
-    pub fn step(mut self, step: T) -> Self {
-        self.step = step;
+    pub fn bounds(mut self, bounds: (T, T)) -> Self {
+        if bounds.0 <= bounds.1 {
+            self.bounds = bounds;
+        }
+        self
+    }
+
+    /// Sets the content width of the [`NumberInput`].
+    #[must_use]
+    pub fn content_width(mut self, width: Length) -> Self {
+        self.content = self.content.width(width);
+        self
+    }
+
+    /// Sets the [`Font`] of the [`Text`].
+    ///
+    /// [`Font`]: core::Font
+    /// [`Text`]: core::widget::Text
+    #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
+    pub fn font(mut self, font: Renderer::Font) -> Self {
+        self.font = font;
+        self.content = self.content.font(font);
         self
     }
 
@@ -155,38 +175,11 @@ where
         self
     }
 
-    /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
+    /// Sets the message that should be produced when the [`NumberInput`] is
+    /// focused and the enter key is pressed.
     #[must_use]
-    pub fn bounds(mut self, bounds: (T, T)) -> Self {
-        if bounds.0 <= bounds.1 {
-            self.bounds = bounds;
-        }
-        self
-    }
-
-    /// Sets the [`Font`] of the [`Text`].
-    ///
-    /// [`Font`]: core::Font
-    /// [`Text`]: core::widget::Text
-    #[allow(clippy::needless_pass_by_value)]
-    #[must_use]
-    pub fn font(mut self, font: Renderer::Font) -> Self {
-        self.font = font;
-        self.content = self.content.font(font);
-        self
-    }
-
-    /// Sets the width of the [`NumberInput`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the content width of the [`NumberInput`].
-    #[must_use]
-    pub fn content_width(mut self, width: Length) -> Self {
-        self.content = self.content.width(width);
+    pub fn on_submit(mut self, message: Message) -> Self {
+        self.content = self.content.on_submit(message);
         self
     }
 
@@ -206,11 +199,10 @@ where
         self
     }
 
-    /// Sets the message that should be produced when the [`NumberInput`] is
-    /// focused and the enter key is pressed.
+    /// Sets the step of the [`NumberInput`].
     #[must_use]
-    pub fn on_submit(mut self, message: Message) -> Self {
-        self.content = self.content.on_submit(message);
+    pub fn step(mut self, step: T) -> Self {
+        self.step = step;
         self
     }
 
@@ -224,13 +216,10 @@ where
         self
     }
 
-    /// Sets the input style of the [`NumberInput`].
+    /// Sets the width of the [`NumberInput`].
     #[must_use]
-    pub fn input_style(
-        mut self,
-        style: impl Into<<Renderer::Theme as style::text_input::StyleSheet>::Style>,
-    ) -> Self {
-        self.content = self.content.style(style);
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 

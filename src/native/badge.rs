@@ -74,27 +74,6 @@ where
         }
     }
 
-    /// Sets the padding of the [`Badge`].
-    #[must_use]
-    pub fn padding(mut self, units: u16) -> Self {
-        self.padding = units;
-        self
-    }
-
-    /// Sets the width of the [`Badge`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the height of the [`Badge`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
     /// Sets the horizontal alignment of the content of the [`Badge`].
     #[must_use]
     pub fn align_x(mut self, alignment: Alignment) -> Self {
@@ -109,10 +88,31 @@ where
         self
     }
 
+    /// Sets the height of the [`Badge`].
+    #[must_use]
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
+
+    /// Sets the padding of the [`Badge`].
+    #[must_use]
+    pub fn padding(mut self, units: u16) -> Self {
+        self.padding = units;
+        self
+    }
+
     /// Sets the style of the [`Badge`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
+        self
+    }
+
+    /// Sets the width of the [`Badge`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

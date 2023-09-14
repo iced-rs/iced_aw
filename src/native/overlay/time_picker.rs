@@ -1,10 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use std::collections::HashMap;
 
-use crate::graphics::icons::{icon_to_char, ICON_FONT};
-use crate::time_picker::{self, Time};
 use crate::{
     core::clock::{
         NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
@@ -12,11 +9,13 @@ use crate::{
         SECOND_RADIUS_PERCENTAGE,
     },
     core::{clock, overlay::Position, time::Period},
+    graphics::icons::{icon_to_char, ICON_FONT},
     style::style_state::StyleState,
+    time_picker::{self, Time},
     Icon,
 };
-use chrono::{Duration, Local, NaiveTime, Timelike};
 
+use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_widget::{
     button,
     canvas::{self, LineCap, Path, Stroke, Style, Text},
@@ -38,6 +37,7 @@ use iced_widget::{
     renderer::Renderer,
     text, Button, Column, Container, Row,
 };
+use std::collections::HashMap;
 
 pub use crate::style::time_picker::{Appearance, StyleSheet};
 

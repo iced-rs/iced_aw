@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 
+use crate::graphics::icons::{Icon, ICON_FONT};
+
 use iced_widget::{
     core::{
         self,
@@ -17,7 +19,6 @@ use iced_widget::{
     text::LineHeight,
 };
 
-use crate::graphics::icons::{Icon, ICON_FONT};
 pub use crate::style::card::{Appearance, StyleSheet};
 
 /// The default padding of a [`Card`].
@@ -95,8 +96,8 @@ where
         Card {
             width: Length::Fill,
             height: Length::Shrink,
-            max_width: 4_294_967_295.0,
-            max_height: 4_294_967_295.0,
+            max_width: u32::MAX as f32,
+            max_height: u32::MAX as f32,
             padding_head: DEFAULT_PADDING,
             padding_body: DEFAULT_PADDING,
             padding_foot: DEFAULT_PADDING,
@@ -119,10 +120,10 @@ where
         self
     }
 
-    /// Sets the width of the [`Card`].
+    /// Sets the size of the close icon of the [`Card`].
     #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
+    pub fn close_size(mut self, size: f32) -> Self {
+        self.close_size = Some(size);
         self
     }
 
@@ -133,6 +134,13 @@ where
         self
     }
 
+    /// Sets the maximum height of the [`Card`].
+    #[must_use]
+    pub fn max_height(mut self, height: f32) -> Self {
+        self.max_height = height;
+        self
+    }
+
     /// Sets the maximum width of the [`Card`].
     #[must_use]
     pub fn max_width(mut self, width: f32) -> Self {
@@ -140,10 +148,13 @@ where
         self
     }
 
-    /// Sets the maximum height of the [`Card`].
+    /// Sets the message that will be produced when the close icon of the
+    /// [`Card`] is pressed.
+    ///
+    /// Setting this enables the drawing of a close icon on the [`Card`].
     #[must_use]
-    pub fn max_height(mut self, height: f32) -> Self {
-        self.max_height = height;
+    pub fn on_close(mut self, msg: Message) -> Self {
+        self.on_close = Some(msg);
         self
     }
 
@@ -180,27 +191,17 @@ where
         self
     }
 
-    /// Sets the size of the close icon of the [`Card`].
-    #[must_use]
-    pub fn close_size(mut self, size: f32) -> Self {
-        self.close_size = Some(size);
-        self
-    }
-
-    /// Sets the message that will be produced when the close icon of the
-    /// [`Card`] is pressed.
-    ///
-    /// Setting this enables the drawing of a close icon on the [`Card`].
-    #[must_use]
-    pub fn on_close(mut self, msg: Message) -> Self {
-        self.on_close = Some(msg);
-        self
-    }
-
     /// Sets the style of the [`Card`].
     #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
+        self
+    }
+
+    /// Sets the width of the [`Card`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

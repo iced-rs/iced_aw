@@ -1,10 +1,4 @@
 //! Build and show dropdown `ListMenus`.
-use std::{
-    collections::hash_map::DefaultHasher,
-    fmt::Display,
-    hash::{Hash, Hasher},
-    marker::PhantomData,
-};
 
 use crate::selection_list::StyleSheet;
 
@@ -22,6 +16,12 @@ use iced_widget::{
         Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
     },
     text::LineHeight,
+};
+use std::{
+    collections::hash_map::DefaultHasher,
+    fmt::Display,
+    hash::{Hash, Hasher},
+    marker::PhantomData,
 };
 
 /// The Private [`List`] Handles the Actual list rendering.

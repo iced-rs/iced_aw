@@ -1,7 +1,5 @@
 //! Menu tree overlay
-
-use super::menu_bar::MenuBarState;
-use super::menu_tree::MenuTree;
+use super::{menu_bar::MenuBarState, menu_tree::MenuTree};
 use crate::style::menu_bar::StyleSheet;
 
 use iced_widget::core::{

@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
 
+use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
+
 use chrono::Local;
 use iced_widget::{
     button, container,
@@ -20,11 +22,10 @@ use iced_widget::{
     text,
 };
 
-pub use crate::core::date::Date;
-
-pub use crate::style::date_picker::{Appearance, StyleSheet};
-
-use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
+pub use crate::{
+    core::date::Date,
+    style::date_picker::{Appearance, StyleSheet},
+};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking dates.

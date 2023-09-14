@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
 
+use crate::native::floating_element::{Anchor, Offset};
+
 use iced_widget::core::{
     self, event, layout,
     mouse::{self, Cursor},
@@ -9,8 +11,6 @@ use iced_widget::core::{
     widget::Tree,
     Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
 };
-
-use crate::native::floating_element::{Anchor, Offset};
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_widget::core::Element) as an overlay.

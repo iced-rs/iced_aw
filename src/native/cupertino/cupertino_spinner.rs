@@ -12,7 +12,6 @@ use iced_widget::{
     graphics::geometry::Renderer as _,
     renderer::Renderer,
 };
-
 use std::f32::consts::PI;
 
 const HAND_COUNT: usize = 8;
@@ -67,13 +66,6 @@ impl CupertinoSpinner {
         Self::default()
     }
 
-    /// Sets the width of the [`CupertinoSpinner`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
     /// Sets the height of the [`CupertinoSpinner`].
     #[must_use]
     pub fn height(mut self, height: Length) -> Self {
@@ -87,6 +79,13 @@ impl CupertinoSpinner {
     #[must_use]
     pub fn radius(mut self, radius: f32) -> Self {
         self.radius = radius;
+        self
+    }
+
+    /// Sets the width of the [`CupertinoSpinner`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }
