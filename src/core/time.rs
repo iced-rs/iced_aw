@@ -1,9 +1,9 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use std::fmt::Display;
 
 use chrono::{Local, Timelike};
+use std::fmt::Display;
 
 /// The time value
 #[derive(Clone, Copy, Debug)]

@@ -118,11 +118,11 @@ pub enum Position {
     Top,
     /// Icon is placed right of the text.
     Right,
+    /// Icon is placed below of the text.
+    Bottom,
     #[default]
     /// Icon is placed left of the text, the default.
     Left,
-    /// Icon is placed below of the text.
-    Bottom,
 }
 
 impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>

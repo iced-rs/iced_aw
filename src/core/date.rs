@@ -1,12 +1,8 @@
 //! Helper functions for calculating dates
 
-use std::fmt::Display;
-
-use chrono::Local;
-
-use chrono::{Datelike, Duration, NaiveDate};
-
+use chrono::{Local, Datelike, Duration, NaiveDate};
 use once_cell::sync::Lazy;
+use std::fmt::Display;
 
 /// The date value
 #[derive(Clone, Copy, Debug, Default)]

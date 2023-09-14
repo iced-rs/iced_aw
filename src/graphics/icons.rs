@@ -1,4 +1,5 @@
 //! The default icon font of the widgets of this library.
+
 use iced_widget::core::Font;
 
 #[cfg(feature = "icons")]
