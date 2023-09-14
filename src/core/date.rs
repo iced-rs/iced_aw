@@ -1,6 +1,6 @@
 //! Helper functions for calculating dates
 
-use chrono::{Local, Datelike, Duration, NaiveDate};
+use chrono::{Datelike, Duration, Local, NaiveDate};
 use once_cell::sync::Lazy;
 use std::fmt::Display;
 
