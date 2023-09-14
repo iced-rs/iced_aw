@@ -1,3 +1,6 @@
+use crate::graphics::SF_UI_ROUNDED;
+use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
+
 use iced_widget::{
     core::{
         self, event,
@@ -12,11 +15,6 @@ use iced_widget::{
     style::application,
     text, Text,
 };
-
-// INTERNAL //
-use crate::graphics::SF_UI_ROUNDED;
-use crate::native::cupertino::cupertino_colours::{secondary_system_fill, system_blue};
-//
 
 /**
  * `CupertinoButton`
@@ -78,20 +76,6 @@ where
         Self::default()
     }
 
-    /// Sets the `on_pressed` callback of the [`CupertinoButton`].
-    #[must_use]
-    pub fn on_pressed(mut self, on_pressed: Option<Message>) -> Self {
-        self.on_pressed = on_pressed;
-        self
-    }
-
-    /// Sets the `is_filled` of the [`CupertinoButton`].
-    #[must_use]
-    pub fn is_filled(mut self, is_filled: bool) -> Self {
-        self.is_filled = is_filled;
-        self
-    }
-
     /// Sets the `body` of the [`CupertinoButton`].
     #[must_use]
     pub fn body<T>(mut self, body: T) -> Self
@@ -105,10 +89,24 @@ where
         self
     }
 
-    /// Sets the `colour` of the [`CupertinoButton`].
+    /// Sets the `color` of the [`CupertinoButton`].
     #[must_use]
-    pub fn colour(mut self, colour: Option<Color>) -> Self {
-        self.colour = colour;
+    pub fn color(mut self, color: Option<Color>) -> Self {
+        self.colour = color;
+        self
+    }
+
+    /// Sets the `is_filled` of the [`CupertinoButton`].
+    #[must_use]
+    pub fn is_filled(mut self, is_filled: bool) -> Self {
+        self.is_filled = is_filled;
+        self
+    }
+
+    /// Sets the `on_pressed` callback of the [`CupertinoButton`].
+    #[must_use]
+    pub fn on_pressed(mut self, on_pressed: Option<Message>) -> Self {
+        self.on_pressed = on_pressed;
         self
     }
 }

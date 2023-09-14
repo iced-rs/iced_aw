@@ -17,10 +17,9 @@ use iced_widget::{
     text::LineHeight,
     Container, Scrollable,
 };
+use std::{fmt::Display, hash::Hash, marker::PhantomData};
 
 pub use list::List;
-use std::hash::Hash;
-use std::{fmt::Display, marker::PhantomData};
 
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]

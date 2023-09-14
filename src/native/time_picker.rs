@@ -1,8 +1,10 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
-use chrono::Local;
 
+use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButtons};
+
+use chrono::Local;
 use iced_widget::{
     button, container,
     core::{
@@ -17,11 +19,10 @@ use iced_widget::{
     text,
 };
 
-use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButtons};
-
-pub use crate::core::time::{Period, Time};
-
-pub use crate::style::time_picker::{Appearance, StyleSheet};
+pub use crate::{
+    core::time::{Period, Time},
+    style::time_picker::{Appearance, StyleSheet},
+};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking times.
@@ -112,13 +113,6 @@ where
         }
     }
 
-    /// Use 24 hour format instead of AM/PM.
-    #[must_use]
-    pub fn use_24h(mut self) -> Self {
-        self.use_24h = true;
-        self
-    }
-
     /// Enables the picker to also pick seconds.
     #[must_use]
     pub fn show_seconds(mut self) -> Self {
@@ -130,6 +124,13 @@ where
     #[must_use]
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
+        self
+    }
+
+    /// Use 24 hour format instead of AM/PM.
+    #[must_use]
+    pub fn use_24h(mut self) -> Self {
+        self.use_24h = true;
         self
     }
 }

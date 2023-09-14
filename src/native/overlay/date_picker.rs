@@ -2,6 +2,19 @@
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
 
+use crate::{
+    core::{
+        date::{Date, IsInMonth},
+        overlay::Position,
+    },
+    date_picker,
+    graphics::icons::{icon_to_char, Icon, ICON_FONT},
+    style::{
+        date_picker::{Appearance, StyleSheet},
+        style_state::StyleState,
+    },
+};
+
 use chrono::{Datelike, Local, NaiveDate};
 use iced_widget::{
     button, container,
@@ -22,18 +35,6 @@ use iced_widget::{
     text, Button, Column, Container, Row, Text,
 };
 use std::collections::HashMap;
-
-use crate::{
-    core::{
-        date::{Date, IsInMonth},
-        overlay::Position,
-    },
-    date_picker,
-    graphics::icons::{icon_to_char, Icon, ICON_FONT},
-    style::style_state::StyleState,
-};
-
-pub use crate::style::date_picker::{Appearance, StyleSheet};
 
 /// The padding around the elements.
 const PADDING: f32 = 10.0;

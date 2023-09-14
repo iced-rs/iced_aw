@@ -4,6 +4,10 @@
 //! to use the [`Tabs`](super::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
+
+pub mod tab_label;
+use crate::graphics::icons;
+
 use iced_widget::{
     core::{
         self,
@@ -18,14 +22,11 @@ use iced_widget::{
     text::{self, LineHeight},
     Column, Row, Text,
 };
+use std::marker::PhantomData;
 
-pub mod tab_label;
 pub use crate::style::tab_bar::{Appearance, StyleSheet};
 pub use tab_label::TabLabel;
 
-use crate::graphics::icons;
-
-use std::marker::PhantomData;
 /// The default icon size.
 const DEFAULT_ICON_SIZE: f32 = 32.0;
 /// The default text size.
@@ -178,10 +179,12 @@ where
         }
     }
 
-    /// Gets the index of the currently active tab on the [`TabBar`].
+    /// Sets the size of the close icon of the
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
     #[must_use]
-    pub fn get_active_tab_idx(&self) -> usize {
-        self.active_tab
+    pub fn close_size(mut self, close_size: f32) -> Self {
+        self.close_size = close_size;
+        self
     }
 
     /// Gets the id of the currently active tab on the [`TabBar`].
@@ -190,10 +193,51 @@ where
         self.tab_indices.get(self.active_tab)
     }
 
-    /// Gets the amount of tabs on the [`TabBar`].
+    /// Gets the index of the currently active tab on the [`TabBar`].
     #[must_use]
-    pub fn size(&self) -> usize {
-        self.tab_indices.len()
+    pub fn get_active_tab_idx(&self) -> usize {
+        self.active_tab
+    }
+
+    /// Gets the width of the [`TabBar`].
+    #[must_use]
+    pub fn get_height(&self) -> Length {
+        self.height
+    }
+
+    /// Gets the width of the [`TabBar`].
+    #[must_use]
+    pub fn get_width(&self) -> Length {
+        self.width
+    }
+
+    /// Sets the height of the [`TabBar`].
+    #[must_use]
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
+
+    /// Sets the font of the icons of the
+    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
+    #[must_use]
+    pub fn icon_font(mut self, icon_font: Font) -> Self {
+        self.icon_font = Some(icon_font);
+        self
+    }
+
+    /// Sets the icon size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
+    #[must_use]
+    pub fn icon_size(mut self, icon_size: f32) -> Self {
+        self.icon_size = icon_size;
+        self
+    }
+
+    /// Sets the maximum height of the [`TabBar`].
+    #[must_use]
+    pub fn max_height(mut self, max_height: f32) -> Self {
+        self.max_height = max_height;
+        self
     }
 
     /// Sets the message that will be produced when the close icon of a tab
@@ -209,68 +253,6 @@ where
         self
     }
 
-    /// Sets the width of the [`TabBar`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Gets the width of the [`TabBar`].
-    #[must_use]
-    pub fn get_width(&self) -> Length {
-        self.width
-    }
-
-    /// Sets the width of a tab on the [`TabBar`].
-    #[must_use]
-    pub fn tab_width(mut self, width: Length) -> Self {
-        self.tab_width = width;
-        self
-    }
-
-    /// Sets the height of the [`TabBar`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
-    /// Gets the width of the [`TabBar`].
-    #[must_use]
-    pub fn get_height(&self) -> Length {
-        self.height
-    }
-
-    /// Sets the maximum height of the [`TabBar`].
-    #[must_use]
-    pub fn max_height(mut self, max_height: f32) -> Self {
-        self.max_height = max_height;
-        self
-    }
-
-    /// Sets the icon size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
-    #[must_use]
-    pub fn icon_size(mut self, icon_size: f32) -> Self {
-        self.icon_size = icon_size;
-        self
-    }
-
-    /// Sets the text size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
-    #[must_use]
-    pub fn text_size(mut self, text_size: f32) -> Self {
-        self.text_size = text_size;
-        self
-    }
-
-    /// Sets the size of the close icon of the
-    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
-    #[must_use]
-    pub fn close_size(mut self, close_size: f32) -> Self {
-        self.close_size = close_size;
-        self
-    }
-
     /// Sets the padding of the tabs of the [`TabBar`].
     #[must_use]
     pub fn padding(mut self, padding: f32) -> Self {
@@ -278,18 +260,24 @@ where
         self
     }
 
+    /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`].
+    #[must_use]
+    pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
+        self.tab_labels.push(tab_label);
+        self.tab_indices.push(id);
+        self
+    }
+
+    /// Gets the amount of tabs on the [`TabBar`].
+    #[must_use]
+    pub fn size(&self) -> usize {
+        self.tab_indices.len()
+    }
+
     /// Sets the spacing between the tabs of the [`TabBar`].
     #[must_use]
     pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
-        self
-    }
-
-    /// Sets the font of the icons of the
-    /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
-    #[must_use]
-    pub fn icon_font(mut self, icon_font: Font) -> Self {
-        self.icon_font = Some(icon_font);
         self
     }
 
@@ -301,18 +289,17 @@ where
         self
     }
 
-    /// Sets the style of the [`TabBar`].
+    /// Sets the text size of the [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn text_size(mut self, text_size: f32) -> Self {
+        self.text_size = text_size;
         self
     }
 
-    /// Pushes a [`TabLabel`](crate::tab_bar::TabLabel) to the [`TabBar`].
+    /// Sets the width of a tab on the [`TabBar`].
     #[must_use]
-    pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
-        self.tab_labels.push(tab_label);
-        self.tab_indices.push(id);
+    pub fn tab_width(mut self, width: Length) -> Self {
+        self.tab_width = width;
         self
     }
 
@@ -331,6 +318,20 @@ where
     /// Sets the [`Position`] of the Icon next to Text, Only used in [`TabLabel::IconText`]
     pub fn set_position(mut self, position: Position) -> Self {
         self.position = position;
+        self
+    }
+
+    /// Sets the style of the [`TabBar`].
+    #[must_use]
+    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+        self.style = style;
+        self
+    }
+
+    /// Sets the width of the [`TabBar`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

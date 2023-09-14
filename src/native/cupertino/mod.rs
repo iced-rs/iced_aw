@@ -11,7 +11,7 @@ pub mod cupertino_button;
 /// Use Cupertino-style colours.
 ///
 /// *This API requires the following crate features to be activated: `cupertino`*
-pub mod cupertino_colours;
+pub mod cupertino_colors;
 
 /// Use a Cupertino-style spinner element.
 ///

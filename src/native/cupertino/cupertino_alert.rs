@@ -1,5 +1,8 @@
 #![allow(clippy::todo)]
 
+use crate::graphics::SF_UI_ROUNDED;
+use crate::native::cupertino::cupertino_colors::secondary_system_fill;
+
 use iced_widget::{
     core::{
         self,
@@ -16,13 +19,7 @@ use iced_widget::{
     style::application,
     text, Text,
 };
-
 use std::ops::Range;
-
-// INTERNAL //
-use crate::graphics::SF_UI_ROUNDED;
-use crate::native::cupertino::cupertino_colours::secondary_system_fill;
-//
 
 /**
  * `CupertinoDialogAction`
@@ -189,34 +186,6 @@ where
         self
     }
 
-    /// Sets the `height` of the [`CupertinoAlert`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
-    /// Sets `is_hidden` for the [`CupertinoAlert`].
-    #[must_use]
-    pub fn is_hidden(mut self, is_hidden: bool) -> Self {
-        self.is_hidden = is_hidden;
-        self
-    }
-
-    /// Sets the `title` of the [`CupertinoAlert`].
-    #[must_use]
-    pub fn title(mut self, title: String) -> Self {
-        self.title = title;
-        self
-    }
-
-    /// Sets the `content` of the [`CupertinoAlert`].
-    #[must_use]
-    pub fn content(mut self, content: String) -> Self {
-        self.content = content;
-        self
-    }
-
     /// Sets the `actions` of the [`CupertinoAlert`].
     #[must_use]
     pub fn actions(mut self, actions: Vec<CupertinoDialogAction<'a, Message, Renderer>>) -> Self {
@@ -231,6 +200,27 @@ where
         self
     }
 
+    /// Sets the `content` of the [`CupertinoAlert`].
+    #[must_use]
+    pub fn content(mut self, content: String) -> Self {
+        self.content = content;
+        self
+    }
+
+    /// Sets the `height` of the [`CupertinoAlert`].
+    #[must_use]
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
+
+    /// Sets `is_hidden` for the [`CupertinoAlert`].
+    #[must_use]
+    pub fn is_hidden(mut self, is_hidden: bool) -> Self {
+        self.is_hidden = is_hidden;
+        self
+    }
+
     /// Sets `on_escape` for the [`CupertinoAlert`].
     #[must_use]
     pub fn on_escape(mut self, on_escape: Option<Message>) -> Self {
@@ -238,10 +228,16 @@ where
         self
     }
 
-    // Internal //
-    fn _text_with_font<T>(element: T) -> Element<'a, Message, Renderer>
+    /// Sets the `title` of the [`CupertinoAlert`].
+    #[must_use]
+    pub fn title(mut self, title: String) -> Self {
+        self.title = title;
+        self
+    }
+
+    fn text_with_font<E>(element: E) -> Element<'a, Message, Renderer>
     where
-        T: Into<Text<'a, Renderer>>,
+        E: Into<Text<'a, Renderer>>,
     {
         let as_text_element = element.into().font(SF_UI_ROUNDED);
 
@@ -482,7 +478,7 @@ where
                 });
 
                 let title: Element<'a, Message, Renderer> =
-                    CupertinoAlert::<'a, Message, Renderer>::_text_with_font(
+                    CupertinoAlert::<'a, Message, Renderer>::text_with_font(
                         Text::new(self.title.clone()).horizontal_alignment(Horizontal::Center),
                     );
 
@@ -497,7 +493,7 @@ where
                 );
 
                 let content: Element<'a, Message, Renderer> =
-                    CupertinoAlert::<'a, Message, Renderer>::_text_with_font(
+                    CupertinoAlert::<'a, Message, Renderer>::text_with_font(
                         Text::new(self.content.clone()).horizontal_alignment(Horizontal::Center),
                     );
 

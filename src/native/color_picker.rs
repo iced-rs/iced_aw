@@ -2,6 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
 
+use super::overlay::color_picker::{
+    self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
+};
+
 use iced_widget::{
     button,
     core::{
@@ -19,10 +23,6 @@ use iced_widget::{
 };
 
 pub use crate::style::color_picker::{Appearance, StyleSheet};
-
-use super::overlay::color_picker::{
-    self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
-};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.

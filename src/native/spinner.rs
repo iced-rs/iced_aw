@@ -1,5 +1,7 @@
 //! A spinner to suggest something is loading.
 
+use crate::style::spinner::StyleSheet;
+
 use iced_widget::core::{
     self,
     event::Status,
@@ -13,11 +15,10 @@ use iced_widget::core::{
     window, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector,
     Widget,
 };
-
-use std::marker::PhantomData;
-use std::time::{Duration, Instant};
-
-use crate::style::spinner::StyleSheet;
+use std::{
+    marker::PhantomData,
+    time::{Duration, Instant},
+};
 
 /// A spinner widget, a circle spinning around the center of the widget.
 #[allow(missing_debug_implementations)]

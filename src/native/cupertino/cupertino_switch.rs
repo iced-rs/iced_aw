@@ -1,3 +1,5 @@
+use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_green};
+
 use iced_widget::{
     canvas::{Cache, Fill, Geometry, Path},
     core::{
@@ -12,10 +14,6 @@ use iced_widget::{
     graphics::geometry::Renderer as _,
     renderer::Renderer,
 };
-
-// INTERNAL //
-use crate::native::cupertino::cupertino_colours::{secondary_system_fill, system_green};
-//
 
 /**
  * `CupertinoSwitch`
@@ -100,38 +98,10 @@ where
         Self::default()
     }
 
-    /// Sets the width of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the height of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
     /// Sets the active colour of the [`CupertinoSwitch`].
     #[must_use]
     pub fn active_colour(mut self, colour: Color) -> Self {
         self.active_colour = colour;
-        self
-    }
-
-    /// Sets the focus colour of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn focus_colour(mut self, colour: Color) -> Self {
-        self.focus_colour = colour;
-        self
-    }
-
-    /// Sets the thumb colour of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn thumb_colour(mut self, colour: Color) -> Self {
-        self.thumb_colour = colour;
         self
     }
 
@@ -142,12 +112,19 @@ where
         self
     }
 
-    // /// Sets `drag_start_behaviour` of the [`CupertinoSwitch`].
-    // #[must_use]
-    // pub fn drag_start_behaviour(mut self, behaviour: bool) -> Self {
-    //     self.drag_start_behaviour = behaviour;
-    //     self
-    // }
+    /// Sets the focus colour of the [`CupertinoSwitch`].
+    #[must_use]
+    pub fn focus_colour(mut self, colour: Color) -> Self {
+        self.focus_colour = colour;
+        self
+    }
+
+    /// Sets the height of the [`CupertinoSwitch`].
+    #[must_use]
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
+        self
+    }
 
     /// Sets `on_changed` of the [`CupertinoSwitch`].
     #[must_use]
@@ -156,10 +133,24 @@ where
         self
     }
 
+    /// Sets the thumb colour of the [`CupertinoSwitch`].
+    #[must_use]
+    pub fn thumb_colour(mut self, colour: Color) -> Self {
+        self.thumb_colour = colour;
+        self
+    }
+
     /// Sets the value of the [`CupertinoSwitch`].
     #[must_use]
     pub fn value(mut self, value: bool) -> Self {
         self.value = value;
+        self
+    }
+
+    /// Sets the width of the [`CupertinoSwitch`].
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

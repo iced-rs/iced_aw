@@ -10,7 +10,6 @@ use iced_widget::core::{
     Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
     Widget,
 };
-
 use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.

@@ -1,9 +1,10 @@
 //! A widget that handles menu trees
-
-use super::menu_inner::{
-    CloseCondition, Direction, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight,
+use super::{
+    menu_inner::{
+        CloseCondition, Direction, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight,
+    },
+    menu_tree::MenuTree,
 };
-use super::menu_tree::MenuTree;
 use crate::style::menu_bar::StyleSheet;
 
 use iced_widget::core::{
@@ -74,6 +75,7 @@ where
     menu_roots: Vec<MenuTree<'a, Message, Renderer>>,
     style: <Renderer::Theme as StyleSheet>::Style,
 }
+
 impl<'a, Message, Renderer> MenuBar<'a, Message, Renderer>
 where
     Renderer: renderer::Renderer,
@@ -106,27 +108,6 @@ where
         }
     }
 
-    /// Sets the width of the [`MenuBar`]
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
-
-    /// Sets the height of the [`MenuBar`]
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
-    /// Sets the spacing between menu roots
-    #[must_use]
-    pub fn spacing(mut self, units: f32) -> Self {
-        self.spacing = units;
-        self
-    }
-
     /// Sets the expand value for each menu's check bounds
     ///
     /// When the cursor goes outside of a menu's check bounds,
@@ -138,10 +119,10 @@ where
         self
     }
 
-    /// Moves all the menus in the vertical open direction
+    /// [`CloseCondition`]
     #[must_use]
-    pub fn main_offset(mut self, value: i32) -> Self {
-        self.main_offset = value;
+    pub fn close_condition(mut self, close_condition: CloseCondition) -> Self {
+        self.close_condition = close_condition;
         self
     }
 
@@ -152,24 +133,10 @@ where
         self
     }
 
-    /// Sets the [`Padding`] of the [`MenuBar`]
+    /// Sets the height of the [`MenuBar`]
     #[must_use]
-    pub fn padding<P: Into<Padding>>(mut self, padding: P) -> Self {
-        self.padding = padding.into();
-        self
-    }
-
-    /// [`CloseCondition`]
-    #[must_use]
-    pub fn close_condition(mut self, close_condition: CloseCondition) -> Self {
-        self.close_condition = close_condition;
-        self
-    }
-
-    /// [`ItemWidth`]
-    #[must_use]
-    pub fn item_width(mut self, item_width: ItemWidth) -> Self {
-        self.item_width = item_width;
+    pub fn height(mut self, height: Length) -> Self {
+        self.height = height;
         self
     }
 
@@ -180,6 +147,27 @@ where
         self
     }
 
+    /// [`ItemWidth`]
+    #[must_use]
+    pub fn item_width(mut self, item_width: ItemWidth) -> Self {
+        self.item_width = item_width;
+        self
+    }
+
+    /// Moves all the menus in the vertical open direction
+    #[must_use]
+    pub fn main_offset(mut self, value: i32) -> Self {
+        self.main_offset = value;
+        self
+    }
+
+    /// Sets the [`Padding`] of the [`MenuBar`]
+    #[must_use]
+    pub fn padding<P: Into<Padding>>(mut self, padding: P) -> Self {
+        self.padding = padding.into();
+        self
+    }
+
     /// Sets the method for drawing path highlight
     #[must_use]
     pub fn path_highlight(mut self, path_highlight: Option<PathHighlight>) -> Self {
@@ -187,10 +175,24 @@ where
         self
     }
 
+    /// Sets the spacing between menu roots
+    #[must_use]
+    pub fn spacing(mut self, units: f32) -> Self {
+        self.spacing = units;
+        self
+    }
+
     /// Sets the style of the menu bar and its menus
     #[must_use]
     pub fn style(mut self, style: impl Into<<Renderer::Theme as StyleSheet>::Style>) -> Self {
         self.style = style.into();
+        self
+    }
+
+    /// Sets the width of the [`MenuBar`]
+    #[must_use]
+    pub fn width(mut self, width: Length) -> Self {
+        self.width = width;
         self
     }
 }

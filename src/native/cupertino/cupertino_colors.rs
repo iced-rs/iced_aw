@@ -7,6 +7,12 @@ use iced_widget::core::Color;
 /// Because iced expects `r`, `g`, and `b` to be between 0 and 1, divide by 255 everywhere.
 // System Colours //
 
+/// Secondary System Fill
+#[must_use]
+pub fn secondary_system_fill() -> Color {
+    Color::from_rgb(209.0 / 255.0, 209.0 / 255.0, 214.0 / 255.0)
+}
+
 /// System Blue
 #[must_use]
 pub fn system_blue(alpha: f32) -> Color {
@@ -59,11 +65,4 @@ pub fn system_teal(alpha: f32) -> Color {
 #[must_use]
 pub fn system_yellow(alpha: f32) -> Color {
     Color::from_rgba(1.0, 204.0 / 255.0, 0.0 / 255.0, alpha)
-}
-//
-
-/// Secondary System Fill
-#[must_use]
-pub fn secondary_system_fill() -> Color {
-    Color::from_rgb(209.0 / 255.0, 209.0 / 255.0, 214.0 / 255.0)
 }

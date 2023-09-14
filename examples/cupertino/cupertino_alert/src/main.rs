@@ -2,7 +2,7 @@ use iced::widget::{column, container, Text};
 use iced::{alignment, executor, font, Application, Command, Element, Length, Settings, Theme};
 use iced_aw::native::cupertino::cupertino_alert::{CupertinoAlert, CupertinoDialogAction};
 use iced_aw::native::cupertino::cupertino_button::CupertinoButton;
-use iced_aw::native::cupertino::cupertino_colours::system_red;
+use iced_aw::native::cupertino::cupertino_colors::system_red;
 
 pub fn main() -> iced::Result {
     Alert::run(Settings {
@@ -97,7 +97,7 @@ impl Application for Alert {
 
         let cancel_button: CupertinoButton<Message, _> = CupertinoButton::new()
             .on_pressed(Some(Message::CancelEvent))
-            .colour(Some(system_red(1.0)))
+            .color(Some(system_red(1.0)))
             .body(Text::new(ALLOW)
                 .size(24)
                 .width(Length::Fixed(100.0))
