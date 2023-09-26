@@ -12,7 +12,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::tree::Tree,
-    Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size,
+    window, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
@@ -75,6 +75,16 @@ where
         let max_size = limits.max();
 
         let mut content = self.content.as_widget().layout(renderer, &limits);
+
+        // Try to stay inside borders
+        let mut position = position;
+        if position.x + content.size().width > bounds.width {
+            position.x = f32::max(0.0, position.x - content.size().width);
+        }
+        if position.y + content.size().height > bounds.height {
+            position.y = f32::max(0.0, position.y - content.size().height);
+        }
+
         content.move_to(position);
 
         Node::with_children(max_size, vec![content])
@@ -164,6 +174,11 @@ where
                 } else {
                     Status::Captured
                 }
+            }
+
+            Event::Window(window::Event::Resized { .. }) => {
+                self.state.show = false;
+                Status::Captured
             }
 
             _ => Status::Ignored,
