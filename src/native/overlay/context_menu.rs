@@ -144,10 +144,13 @@ where
             .next()
             .expect("Native: Layout should have a content layout.");
 
+        let mut forward_event_to_children = true;
+
         let status = match event {
             Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
                 if key_code == keyboard::KeyCode::Escape {
                     self.state.show = false;
+                    forward_event_to_children = false;
                     Status::Captured
                 } else {
                     Status::Ignored
@@ -158,34 +161,30 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if cursor.is_over(layout_children.bounds()) {
-                    Status::Ignored
-                } else {
+                if !cursor.is_over(layout_children.bounds()) {
                     self.state.show = false;
-                    Status::Captured
+                    forward_event_to_children = false;
                 }
+                Status::Captured
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
-                if cursor.is_over(layout_children.bounds()) {
-                    Status::Ignored
-                } else {
-                    Status::Captured
-                }
+                Status::Captured
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
+                forward_event_to_children = false;
                 Status::Captured
             }
 
             _ => Status::Ignored,
         };
 
-        match status {
-            Status::Ignored => self.content.as_widget_mut().on_event(
+        let child_status = if forward_event_to_children {
+            self.content.as_widget_mut().on_event(
                 self.tree,
                 event,
                 layout_children,
@@ -194,7 +193,13 @@ where
                 clipboard,
                 shell,
                 &layout.bounds(),
-            ),
+            )
+        } else {
+            Status::Ignored
+        };
+
+        match child_status {
+            Status::Ignored => status,
             Status::Captured => Status::Captured,
         }
     }
