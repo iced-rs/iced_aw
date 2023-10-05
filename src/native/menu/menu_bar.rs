@@ -242,6 +242,10 @@ where
         }
     }
 
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<MenuBarState>()
+    }
+
     fn state(&self) -> tree::State {
         tree::State::new(MenuBarState::default())
     }
