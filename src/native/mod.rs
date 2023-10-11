@@ -60,7 +60,10 @@ pub type FloatingElement<'a, Message, Renderer> =
 pub mod grid;
 #[cfg(feature = "grid")]
 /// A container that distributes its contents in a grid.
-pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
+// pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
+pub use grid::Grid;
+#[cfg(feature = "grid")]
+pub use grid::GridRow;
 #[cfg(feature = "grid")]
 pub use grid::Strategy;
 

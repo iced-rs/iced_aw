@@ -86,7 +86,7 @@ mod platform {
     #[cfg(feature = "grid")]
     pub use {
         crate::native::grid,
-        grid::{Grid, Strategy},
+        grid::{Grid, GridRow, Strategy},
     };
 
     #[doc(no_inline)]
