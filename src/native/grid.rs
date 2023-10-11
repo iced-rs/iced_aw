@@ -210,6 +210,8 @@ where
             return Node::new(Size::ZERO);
         }
 
+        let limits = limits.width(self.width()).height(self.height());
+
         // Calculate the column widths and row heights to fit the contents
         let mut min_columns_widths = Vec::<f32>::with_capacity(self.column_count());
         let mut min_row_heights = Vec::<f32>::with_capacity(self.row_count());
@@ -219,7 +221,7 @@ where
             let mut row_height = 0.0f32;
 
             for (col_idx, element) in row.elements.iter().enumerate() {
-                let layout = element.as_widget().layout(renderer, limits);
+                let layout = element.as_widget().layout(renderer, &limits);
                 let Size { width, height } = layout.size();
 
                 #[allow(clippy::option_if_let_else)]
@@ -253,7 +255,7 @@ where
                 };
                 let cell_size = Size::new(col_width, row_height);
 
-                let mut node = element.as_widget().layout(renderer, limits);
+                let mut node = element.as_widget().layout(renderer, &limits);
                 node.move_to(Point::new(x, y));
                 node.align(
                     self.horizontal_alignment.into(),
