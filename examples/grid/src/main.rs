@@ -86,9 +86,9 @@ impl Sandbox for App {
         let row_height_radio = column(
             STRATEGIES
                 .iter()
-                .map(|strat| {
-                    let name = strategy_to_string(&strat);
-                    radio(name, strat, Some(&self.row_strategy), |click| {
+                .map(|strategy| {
+                    let name = strategy_to_string(strategy);
+                    radio(name, strategy, Some(&self.row_strategy), |click| {
                         Message::RowStrategy(click.clone())
                     })
                 })
@@ -99,9 +99,9 @@ impl Sandbox for App {
 
         let col_width_radio = row(STRATEGIES
             .iter()
-            .map(|strat| {
-                let name = strategy_to_string(&strat);
-                radio(name, strat, Some(&self.column_strategy), |click| {
+            .map(|strategy| {
+                let name = strategy_to_string(strategy);
+                radio(name, strategy, Some(&self.column_strategy), |click| {
                     Message::ColumnStrategy(click.clone())
                 })
             })
