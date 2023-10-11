@@ -11,8 +11,6 @@ use iced_widget::core::{
     Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Widget,
 };
 
-use crate::grid::row::GridRow;
-
 /// A container that distributes its contents in a grid of rows and columns.
 ///
 /// The number of columns is determined by the row with the most elements.
@@ -49,11 +47,13 @@ where
     Renderer: iced_widget::core::Renderer,
 {
     /// Creates a new [`Grid`].
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a [`Grid`] with the given [`GridRow`]s.
+    #[must_use]
     pub fn with_rows(rows: Vec<GridRow<'a, Message, Renderer>>) -> Self {
         Self {
             rows,
@@ -62,6 +62,7 @@ where
     }
 
     /// Adds a [`GridRow`] to the [`Grid`].
+    #[must_use]
     pub fn push(mut self, row: GridRow<'a, Message, Renderer>) -> Self {
         self.rows.push(row);
         self
@@ -69,6 +70,7 @@ where
 
     /// Sets the horizontal alignment of the widgets within their cells. Default:
     /// [`Horizontal::Left`]
+    #[must_use]
     pub fn horizontal_alignment(mut self, align: Horizontal) -> Self {
         self.horizontal_alignment = align;
         self
@@ -76,18 +78,21 @@ where
 
     /// Sets the vertical alignment of the widgets within their cells. Default:
     /// [`Vertical::Center`]
+    #[must_use]
     pub fn vertical_alignment(mut self, align: Vertical) -> Self {
         self.vertical_alignment = align;
         self
     }
 
     /// Sets the [`Strategy`] used to determine the height of the rows.
+    #[must_use]
     pub fn row_height_strategy(mut self, strategy: Strategy) -> Self {
         self.row_height_strategy = strategy;
         self
     }
 
     /// Sets the [`Strategy`] used to determine the width of the columns.
+    #[must_use]
     pub fn column_width_strategy(mut self, strategy: Strategy) -> Self {
         self.columng_width_stratgey = strategy;
         self
@@ -95,6 +100,7 @@ where
 
     /// Sets the spacing between the rows and columns.
     // pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+    #[must_use]
     pub fn spacing(mut self, spacing: f32) -> Self {
         let spacing: Pixels = spacing.into();
         self.row_spacing = spacing;
@@ -103,12 +109,14 @@ where
     }
 
     /// Sets the spacing between the rows.
+    #[must_use]
     pub fn row_spacing(mut self, spacing: impl Into<Pixels>) -> Self {
         self.row_spacing = spacing.into();
         self
     }
 
     /// Sets the spacing between the columns.
+    #[must_use]
     pub fn column_spacing(mut self, spacing: impl Into<Pixels>) -> Self {
         self.column_spacing = spacing.into();
         self
@@ -139,6 +147,52 @@ where
     }
 }
 
+/// A container that distributes its contents in a row of a [`crate::Grid`].
+#[allow(missing_debug_implementations)]
+pub struct GridRow<'a, Message, Renderer = crate::Renderer> {
+    pub(crate) elements: Vec<Element<'a, Message, Renderer>>,
+}
+
+impl<'a, Message, Renderer> Default for GridRow<'a, Message, Renderer>
+where
+    Renderer: iced_widget::core::Renderer,
+{
+    fn default() -> Self {
+        Self {
+            elements: Vec::new(),
+        }
+    }
+}
+
+impl<'a, Message, Renderer> GridRow<'a, Message, Renderer>
+where
+    Renderer: iced_widget::core::Renderer,
+{
+    /// Creates a new [`GridRow`].
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Creates a new [`GridRow`] with the given widgets.
+    #[must_use]
+    pub fn with_elements(children: Vec<impl Into<Element<'a, Message, Renderer>>>) -> Self {
+        Self {
+            elements: children.into_iter().map(std::convert::Into::into).collect(),
+        }
+    }
+
+    /// Adds a widget to the [`GridRow`].
+    #[must_use]
+    pub fn push<E>(mut self, element: E) -> Self
+    where
+        E: Into<Element<'a, Message, Renderer>>,
+    {
+        self.elements.push(element.into());
+        self
+    }
+}
+
 impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
@@ -161,13 +215,14 @@ where
         let mut min_row_heights = Vec::<f32>::with_capacity(self.row_count());
         let mut max_row_height = 0.0f32;
         let mut max_column_width = 0.0f32;
-        for row in self.rows.iter() {
+        for row in &self.rows {
             let mut row_height = 0.0f32;
 
             for (col_idx, element) in row.elements.iter().enumerate() {
-                let layout = element.as_widget().layout(renderer, &limits);
+                let layout = element.as_widget().layout(renderer, limits);
                 let Size { width, height } = layout.size();
 
+                #[allow(clippy::option_if_let_else)]
                 if let Some(column_width) = min_columns_widths.get_mut(col_idx) {
                     *column_width = column_width.max(width);
                 } else {
@@ -198,7 +253,7 @@ where
                 };
                 let cell_size = Size::new(col_width, row_height);
 
-                let mut node = element.as_widget().layout(renderer, &limits);
+                let mut node = element.as_widget().layout(renderer, limits);
                 node.move_to(Point::new(x, y));
                 node.align(
                     self.horizontal_alignment.into(),
@@ -219,8 +274,7 @@ where
 
         let grid_size = Size::new(x, y);
 
-        let grid = Node::with_children(grid_size, nodes);
-        grid
+        Node::with_children(grid_size, nodes)
     }
 
     fn draw(
@@ -249,7 +303,7 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements_iter().collect::<Vec<_>>())
+        tree.diff_children(&self.elements_iter().collect::<Vec<_>>());
     }
 
     fn operate(
