@@ -125,7 +125,7 @@ where
             on_change: Box::new(on_changed),
             style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
             font: Renderer::Font::default(),
-            width: Length::Fill,
+            width: Length::Shrink,
         }
     }
 

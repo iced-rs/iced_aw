@@ -113,7 +113,7 @@ impl Sandbox for RandStrings {
         let RandStrings {
             vbuttons, hbuttons, ..
         } = self;
-        let vertcal = Container::new(
+        let vertical = Container::new(
             vbuttons
                 .iter()
                 .fold(Wrap::new_vertical(), |wrap, button| {
@@ -175,6 +175,10 @@ impl Sandbox for RandStrings {
             .height(iced::Length::Shrink)
             .align_items(iced::Alignment::Center);
 
-        Row::new().push(ctrls).push(vertcal).push(horizontal).into()
+        Row::new()
+            .push(ctrls)
+            .push(vertical)
+            .push(horizontal)
+            .into()
     }
 }
