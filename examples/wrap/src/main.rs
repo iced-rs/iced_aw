@@ -175,6 +175,10 @@ impl Sandbox for RandStrings {
             .height(iced::Length::Shrink)
             .align_items(iced::Alignment::Center);
 
-        Row::new().push(ctrls).push(vertical).push(horizontal).into()
+        Row::new()
+            .push(ctrls)
+            .push(vertical)
+            .push(horizontal)
+            .into()
     }
 }
