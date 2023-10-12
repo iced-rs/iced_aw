@@ -7,9 +7,10 @@ use iced_widget::core::{self, Color, Element};
 #[allow(unused_imports)]
 use std::{borrow::Cow, fmt::Display, hash::Hash};
 
-/// Creates a [`Grid`] with the given children.
+/// Creates a [`Grid`] with the given [`GridRow`]s.
 ///
 /// [`Grid`]: crate::Grid
+/// [`GridRow`]: crate::GridRow
 #[cfg(feature = "grid")]
 #[macro_export]
 macro_rules! grid {
@@ -17,7 +18,21 @@ macro_rules! grid {
         $crate::Grid::new()
     );
     ($($x:expr),+ $(,)?) => (
-        $crate::Grid::with_children(vec![$($crate::Element::from($x)),+])
+        $crate::Grid::with_rows(vec![$($x),+])
+    );
+}
+
+/// Creates a [`GridRow`] with the given widgets.
+///
+/// [`GridRow`]: crate::GridRow
+#[cfg(feature = "grid")]
+#[macro_export]
+macro_rules! grid_row {
+    () => (
+        $crate::GridRow::new()
+    );
+    ($($x:expr),+ $(,)?) => (
+        $crate::GridRow::with_elements(vec![$(iced::Element::from($x)),+])
     );
 }
 
@@ -199,15 +214,30 @@ where
 #[cfg(feature = "grid")]
 /// Shortcut helper to create a [`Grid`] Widget.
 ///
-/// [`Grid`]: crate::Grid
+/// [`Grid`]: crate::grid::Grid
 #[must_use]
 pub fn grid<Message, Renderer>(
-    children: Vec<Element<Message, Renderer>>,
-) -> crate::Grid<Message, Renderer>
+    rows: Vec<crate::GridRow<'_, Message, Renderer>>,
+) -> crate::Grid<'_, Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    crate::Grid::with_children(children)
+    crate::Grid::with_rows(rows)
+}
+
+#[cfg(feature = "grid")]
+/// Shortcut helper to create a [`GridRow`] for the [`Grid`] Widget.
+///
+/// [`GridRow`]: crate::GridRow
+/// [`Grid`]: crate::Grid
+#[must_use]
+pub fn grid_row<'a, Message, Renderer>(
+    elements: Vec<impl Into<Element<'a, Message, Renderer>>>,
+) -> crate::GridRow<'a, Message, Renderer>
+where
+    Renderer: core::Renderer,
+{
+    crate::GridRow::with_elements(elements)
 }
 
 #[cfg(feature = "wrap")]

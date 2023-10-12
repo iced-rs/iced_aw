@@ -1,7 +1,7 @@
 [package]
 name = "grid"
 version = "0.1.0"
-authors = ["daxpedda <daxpedda@gmail.com>", "Luni-4 <luni-4@hotmail.it>"]
+authors = ["Alexander van Saase <avsaase [at] gmail.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
