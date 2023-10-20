@@ -52,7 +52,7 @@ where
         .min_height(min_size.height)
         .width(width)
         .height(height);
-    let grid_size = grid_limits.fill().max(min_size);
+    let grid_size = grid_limits.fill();
 
     // Allocate the available space
     let available_width = grid_size.width - total_spacing(column_count, column_spacing);
@@ -71,6 +71,7 @@ where
         vertical_alignment,
         column_spacing,
         row_spacing,
+        padding,
         grid_size,
     )
 }
@@ -168,15 +169,16 @@ fn create_grid_layout<Message, Renderer>(
     vertical_alignment: Vertical,
     column_spacing: Pixels,
     row_spacing: Pixels,
+    padding: Padding,
     grid_size: Size,
 ) -> Node
 where
     Renderer: iced_widget::core::Renderer,
 {
-    let mut y = 0.0;
+    let mut y = padding.top;
     let mut nodes = Vec::with_capacity(element_count);
     for (row_position, (row, &row_height)) in rows.iter().zip(row_heights).with_position() {
-        let mut x = 0.0;
+        let mut x = padding.left;
         for (col_position, (element, &column_width)) in
             row.elements.iter().zip(column_widths).with_position()
         {
@@ -207,7 +209,7 @@ where
         }
     }
 
-    Node::with_children(grid_size, nodes)
+    Node::with_children(grid_size.pad(padding), nodes)
 }
 
 fn not_last(position: Position) -> bool {
