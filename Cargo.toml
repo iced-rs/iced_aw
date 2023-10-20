@@ -21,7 +21,7 @@ date_picker = ["chrono", "once_cell", "icon_text"]
 color_picker = ["icon_text", "iced_widget/canvas"]
 cupertino = ["iced_widget/canvas", "time"]
 floating_element = []
-grid = []
+grid = ["itertools"]
 glow = []                                                   # TODO
 icon_text = ["icons"]
 icons = []
@@ -66,6 +66,7 @@ num-traits = { version = "0.2.16", optional = true }
 time = { version = "0.3.23", features = ["local-offset"], optional = true }
 chrono = { version = "0.4.26", optional = true }
 once_cell = { version = "1.18.0", optional = true }
+itertools = { version = "0.11.0", optional = true }
 
 
 [dependencies.iced_widget]

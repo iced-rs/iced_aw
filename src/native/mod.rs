@@ -64,8 +64,6 @@ pub mod grid;
 pub use grid::Grid;
 #[cfg(feature = "grid")]
 pub use grid::GridRow;
-#[cfg(feature = "grid")]
-pub use grid::Strategy;
 
 #[cfg(feature = "modal")]
 pub mod modal;
