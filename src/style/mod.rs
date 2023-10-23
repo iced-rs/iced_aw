@@ -61,3 +61,8 @@ pub use spinner::SpinnerStyle;
 pub mod context_menu;
 #[cfg(feature = "context_menu")]
 pub use context_menu::ContextMenuStyle;
+
+#[cfg(feature = "segmented_button")]
+pub mod segmented_button;
+#[cfg(feature = "segmented_button")]
+pub use segmented_button::SegmentedButton;
