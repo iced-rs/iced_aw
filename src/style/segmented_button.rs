@@ -1,4 +1,4 @@
-//! Use a segmented_button as an alternative to radio button.
+//! Use a `segmented_button` as an alternative to radio button.
 
 use iced_widget::{
     core::{Background, Color},

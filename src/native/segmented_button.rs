@@ -1,6 +1,6 @@
-//! Create choices using segnmented_button buttons.
+//! Create choices using `segnmented_button` buttons.
 use iced_widget::core::{
-     event,
+    event,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
@@ -11,9 +11,7 @@ use iced_widget::core::{
 
 pub use crate::style::segmented_button::StyleSheet;
 
-
-
-/// A segmented_button for color highlighting small information.
+/// A  `segnmented_button` for color highlighting small information.
 ///
 /// # Example
 /// ```ignore
@@ -79,36 +77,42 @@ where
     }
 
     /// Sets the padding of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn padding(mut self, units: Padding) -> Self {
         self.padding = units;
         self
     }
 
     /// Sets the width of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn width(mut self, width: Length) -> Self {
         self.width = width;
         self
     }
 
     /// Sets the height of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn height(mut self, height: Length) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the horizontal alignment of the content of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn align_x(mut self, alignment: Alignment) -> Self {
         self.horizontal_alignment = alignment;
         self
     }
 
     /// Sets the vertical alignment of the content of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn align_y(mut self, alignment: Alignment) -> Self {
         self.vertical_alignment = alignment;
         self
     }
 
     /// Sets the style of the [`SegmentedButton`](SegmentedButton).
+    #[must_use]
     pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
@@ -138,7 +142,7 @@ where
     }
 
     fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = self.padding.into();
+        let padding = self.padding;
         let limits = limits
             .loose()
             .width(self.width)

@@ -1,6 +1,6 @@
 use iced::widget::container;
+use iced::widget::{column, row, text};
 use iced::{Element, Length, Sandbox, Settings};
-use iced::widget::{column, row,  text};
 
 use iced_aw::native::segmented_button;
 use segmented_button::SegmentedButton;
@@ -43,23 +43,22 @@ impl Sandbox for Example {
     fn view(&self) -> Element<Message> {
         // let selected_radio = Some(Choice::A);
 
-       // i added a row just to demonstrate that anything can be used as a child, 
-       //in this case instead of A B C you might add icons 
+        // i added a row just to demonstrate that anything can be used as a child,
+        //in this case instead of A B C you might add icons
         let a = SegmentedButton::new(
             row!(text("HEAVY  "), "A"),
             Choice::A,
             self.selected_radio,
             Message::RadioSelected,
         );
-        
-    
+
         let b = SegmentedButton::new(
             row!(text("MEDIUM  "), "B"),
             Choice::B,
             self.selected_radio,
             Message::RadioSelected,
         );
-     
+
         let c = SegmentedButton::new(
             row!(text("LIGHT  "), "C"),
             Choice::C,
