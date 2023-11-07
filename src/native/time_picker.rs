@@ -197,8 +197,10 @@ where
         self.underlay.as_widget().height()
     }
 
-    fn layout(&self, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
-        self.underlay.as_widget().layout(renderer, limits)
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+        self.underlay
+            .as_widget()
+            .layout(&mut tree.children[0], renderer, limits)
     }
 
     fn on_event(
