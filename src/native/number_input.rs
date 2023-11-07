@@ -14,8 +14,8 @@ use iced_widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding,
-        Rectangle, Shell, Size, Widget,
+        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
+        Point, Rectangle, Shell, Size, Widget,
     },
     text,
     text::LineHeight,
@@ -295,37 +295,55 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let limits = limits
             .width(self.width())
             .height(Length::Shrink)
             .pad(padding);
-        let content = self.content.layout(renderer, &limits);
+        let content = self
+            .content
+            .layout(&mut tree.children[0], renderer, &limits, None);
         let limits2 = Limits::new(Size::new(0.0, 0.0), content.size());
-        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
 
         let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
-            Container::<(), Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
+            Container::<Message, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y()
                 .center_x()
         };
-        let mut modifier = if self.padding < DEFAULT_PADDING {
-            Row::<(), Renderer>::new()
-                .spacing(1)
-                .width(Length::Shrink)
-                .push(btn_mod('+'))
-                .push(btn_mod('-'))
-                .layout(renderer, &limits2.loose())
+
+        let mut element = if self.padding < DEFAULT_PADDING {
+            Element::new(
+                Row::<Message, Renderer>::new()
+                    .spacing(1)
+                    .width(Length::Shrink)
+                    .push(btn_mod('+'))
+                    .push(btn_mod('-')),
+            )
         } else {
-            Column::<(), Renderer>::new()
-                .spacing(1)
-                .width(Length::Shrink)
-                .push(btn_mod('▲'))
-                .push(btn_mod('▼'))
-                .layout(renderer, &limits2.loose())
+            Element::new(
+                Column::<Message, Renderer>::new()
+                    .spacing(1)
+                    .width(Length::Shrink)
+                    .push(btn_mod('▲'))
+                    .push(btn_mod('▼')),
+            )
         };
+
+        let mut input_tree = if let Some(child_tree) = tree.children.get_mut(1) {
+            child_tree.diff(element.as_widget());
+            child_tree
+        } else {
+            let child_tree = Tree::new(element.as_widget());
+            tree.children.insert(1, child_tree);
+            &mut tree.children[1]
+        };
+
+        let mut modifier = element
+            .as_widget()
+            .layout(&mut input_tree, renderer, &limits2.loose());
         let intrinsic = Size::new(
             content.size().width - 1.0,
             content.size().height.max(modifier.size().height),
@@ -424,13 +442,16 @@ where
             } else {
                 match event {
                     Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                        if child.state.downcast_mut::<text_input::State>().is_focused()
+                        if child
+                            .state
+                            .downcast_mut::<text_input::State<Renderer::Paragraph>>()
+                            .is_focused()
                             && c.is_numeric() =>
                     {
                         let mut new_val = self.value.to_string();
                         match child
                             .state
-                            .downcast_mut::<text_input::State>()
+                            .downcast_mut::<text_input::State<Renderer::Paragraph>>()
                             .cursor()
                             .state(&Value::new(&new_val))
                         {
@@ -476,7 +497,10 @@ where
                         }
                     }
                     Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
-                        if child.state.downcast_mut::<text_input::State>().is_focused() =>
+                        if child
+                            .state
+                            .downcast_mut::<text_input::State<Renderer::Paragraph>>()
+                            .is_focused() =>
                     {
                         match key_code {
                             keyboard::KeyCode::Up => {
@@ -494,7 +518,7 @@ where
                                     let mut new_val = self.value.to_string();
                                     match child
                                         .state
-                                        .downcast_mut::<text_input::State>()
+                                        .downcast_mut::<text_input::State<Renderer::Paragraph>>()
                                         .cursor()
                                         .state(&Value::new(&new_val))
                                     {
@@ -682,9 +706,9 @@ where
             theme.active(&self.style)
         };
 
-        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
 
-        let icon_size = txt_size * 2.5 / 4.0;
+        let icon_size = Pixels(txt_size * 2.5 / 4.0);
 
         // decrease button section
         renderer.fill_quad(
@@ -701,21 +725,20 @@ where
 
         let mut buffer = [0; 4];
 
-        renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: dec_bounds.center_x(),
-                y: dec_bounds.center_y(),
-                ..dec_bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+                bounds: Size::new(dec_bounds.width, dec_bounds.height),
+                size: icon_size,
+                font: ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             },
-            size: icon_size,
-            color: decrease_btn_style.icon_color,
-            font: ICON_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Advanced,
-        });
+            Point::new(dec_bounds.center_x(), dec_bounds.center_y()),
+            decrease_btn_style.icon_color,
+        );
 
         // increase button section
         renderer.fill_quad(
@@ -730,21 +753,20 @@ where
                 .unwrap_or(Background::Color(Color::TRANSPARENT)),
         );
 
-        renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: inc_bounds.center_x(),
-                y: inc_bounds.center_y(),
-                ..inc_bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+                bounds: Size::new(inc_bounds.width, inc_bounds.height),
+                size: icon_size,
+                font: ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             },
-            size: icon_size,
-            color: increase_btn_style.icon_color,
-            font: ICON_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Advanced,
-        });
+            Point::new(inc_bounds.center_x(), inc_bounds.center_y()),
+            increase_btn_style.icon_color,
+        );
     }
 }
 
