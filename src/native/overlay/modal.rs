@@ -68,9 +68,12 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, renderer: &Renderer, bounds: Size, _position: Point) -> layout::Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size, _position: Point) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
-        let mut content = self.content.as_widget().layout(renderer, &limits);
+        let mut content = self
+            .content
+            .as_widget()
+            .layout(&mut self.state, renderer, &limits);
         let max_size = limits.max();
 
         content.align(
