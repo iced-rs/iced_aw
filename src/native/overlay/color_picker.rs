@@ -27,8 +27,8 @@ use iced_widget::{
         text::Renderer as _,
         touch,
         widget::{self, tree::Tree},
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-        Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
+        Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
     },
     graphics::geometry::Renderer as _,
     renderer::Renderer,
@@ -938,24 +938,10 @@ where
 
     let hex_text_limits = block2_limits;
 
-    let mut hex_text = Row::<Message, Renderer<Theme>>::new()
+    let mut hex_text_layout = Row::<Message, Renderer<Theme>>::new()
         .width(Length::Fill)
-        .height(Length::Fixed(renderer.default_size().0 + 2.0 * PADDING));
-
-    let element: Element<Message, Renderer<Theme>> = Element::new(hex_text);
-    let mut rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(2) {
-        child_tree.diff(element.as_widget());
-        child_tree
-    } else {
-        let child_tree = Tree::new(element.as_widget());
-        color_picker.tree.children.insert(2, child_tree);
-        color_picker.tree.children.get_mut(2).unwrap()
-    };
-
-    let mut hex_text_layout =
-        element
-            .as_widget()
-            .layout(color_picker.tree, renderer, &hex_text_limits);
+        .height(Length::Fixed(renderer.default_size().0 + 2.0 * PADDING))
+        .layout(color_picker.tree, renderer, &hex_text_limits);
 
     let block2_limits = block2_limits.shrink(Size::new(
         0.0,
@@ -991,13 +977,13 @@ where
         );
     }
     let element: Element<Message, Renderer<Theme>> = Element::new(rgba_colors);
-    let mut rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(3) {
+    let mut rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(2) {
         child_tree.diff(element.as_widget());
         child_tree
     } else {
         let child_tree = Tree::new(element.as_widget());
-        color_picker.tree.children.insert(3, child_tree);
-        color_picker.tree.children.get_mut(3).unwrap()
+        color_picker.tree.children.insert(2, child_tree);
+        &mut color_picker.tree.children[2]
     };
 
     let mut rgba_colors = element

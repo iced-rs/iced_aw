@@ -314,7 +314,7 @@ where
                 .center_x()
         };
 
-        let mut element = if self.padding < DEFAULT_PADDING {
+        let element = if self.padding < DEFAULT_PADDING {
             Element::new(
                 Row::<Message, Renderer>::new()
                     .spacing(1)
