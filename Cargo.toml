@@ -17,18 +17,17 @@ categories = ["gui"]
 [features]
 badge = []
 card = []
-date_picker = ["chrono", "once_cell", "icon_text"]
-color_picker = ["icon_text", "iced_widget/canvas"]
+date_picker = ["chrono", "once_cell", "icons"]
+color_picker = ["icons", "iced_widget/canvas"]
 cupertino = ["iced_widget/canvas", "time"]
 floating_element = []
 grid = ["itertools"]
 glow = []                                                   # TODO
-icon_text = ["icons"]
 icons = []
 modal = []
 tab_bar = []
 tabs = ["tab_bar"]
-time_picker = ["chrono", "icon_text", "iced_widget/canvas"]
+time_picker = ["chrono", "icons", "iced_widget/canvas"]
 wrap = []
 number_input = ["num-traits"]
 selection_list = []
@@ -46,8 +45,7 @@ default = [
     "date_picker",
     "color_picker",
     "floating_element",
-    #"icon_text",
-    #"grid",
+    "grid",
     #"modal",
     #"tab_bar",
     #"tabs",
@@ -91,7 +89,7 @@ members = [
     "examples/date_picker",
     "examples/floating_element",
     "examples/floating_element_anchors",
-    #"examples/grid",
+    "examples/grid",
     #"examples/modal",
     #"examples/modal_component",
     #"examples/multiple_modals",
