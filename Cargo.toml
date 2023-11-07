@@ -40,7 +40,7 @@ context_menu = []
 segmented_button = []
 
 default = [
-    #"badge",
+    "badge",
     #"card",
     #"number_input",
     #"date_picker",
@@ -81,7 +81,7 @@ opt-level = 2
 
 [workspace]
 members = [
-    #"examples/badge",
+    "examples/badge",
     #"examples/card",
     "examples/color_picker",
     #"examples/cupertino/cupertino_alert",
