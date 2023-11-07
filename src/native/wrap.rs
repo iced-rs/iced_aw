@@ -176,8 +176,8 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        self.inner_layout(renderer, limits)
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        self.inner_layout(tree, renderer, limits)
     }
 
     fn on_event(
@@ -337,7 +337,7 @@ where
     Renderer: core::Renderer,
 {
     /// A inner layout of the [`Wrap`].
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node;
+    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
 impl<'a, Message, Renderer> WrapLayout<Renderer>
@@ -347,7 +347,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -361,6 +361,7 @@ where
             .max_height(self.max_height);
         let max_width = limits.max().width;
 
+        let mut children = tree.children.iter_mut();
         let mut curse = padding.left;
         let mut deep_curse = padding.left;
         let mut current_line_height = line_minimal_length;
@@ -376,7 +377,9 @@ where
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
-                let mut node = elem.as_widget().layout(renderer, &node_limit);
+                let mut node =
+                    elem.as_widget()
+                        .layout(&mut children.next().unwrap(), renderer, &node_limit);
 
                 let size = node.size();
 
@@ -429,7 +432,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -443,6 +446,7 @@ where
             .max_height(self.max_height);
         let max_height = limits.max().height;
 
+        let mut children = tree.children.iter_mut();
         let mut curse = padding.left;
         let mut wide_curse = padding.left;
         let mut current_line_width = line_minimal_length;
@@ -458,7 +462,9 @@ where
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
-                let mut node = elem.as_widget().layout(renderer, &node_limit);
+                let mut node =
+                    elem.as_widget()
+                        .layout(&mut children.next().unwrap(), renderer, &node_limit);
 
                 let size = node.size();
 
