@@ -56,12 +56,15 @@ impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    fn layout(&self, renderer: &Renderer, _bounds: Size, position: Point) -> layout::Node {
+    fn layout(&mut self, renderer: &Renderer, _bounds: Size, position: Point) -> layout::Node {
         // Constrain overlay to fit inside the underlay's bounds
         let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
             .width(Length::Fill)
             .height(Length::Fill);
-        let mut node = self.element.as_widget().layout(renderer, &limits);
+        let mut node = self
+            .element
+            .as_widget()
+            .layout(&mut self.state, renderer, &limits);
 
         let position = match self.anchor {
             Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
