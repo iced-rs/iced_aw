@@ -16,7 +16,8 @@ use iced_widget::{
         mouse::{self, Cursor},
         renderer, touch,
         widget::Tree,
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Widget,
+        Alignment, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
+        Widget,
     },
     runtime::Font,
     text::{self, LineHeight},
@@ -350,7 +351,12 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(
+        &self,
+        tree: &mut Tree,
+        renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
         fn layout_icon<Renderer>(icon: &char, size: f32, font: Option<Font>) -> Text<'_, Renderer>
         where
             Renderer: iced_widget::core::text::Renderer,
@@ -377,7 +383,8 @@ where
                 .vertical_alignment(alignment::Vertical::Center)
         }
 
-        self.tab_labels
+        let row = self
+            .tab_labels
             .iter()
             .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
                 let mut label_row = Row::new()
@@ -470,8 +477,21 @@ where
             })
             .width(self.width)
             .height(self.height)
-            .spacing(self.spacing)
-            .layout(renderer, &limits.loose())
+            .spacing(self.spacing);
+
+        let element: Element<Message, Renderer> = Element::new(row);
+        let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
+            child_tree.diff(element.as_widget());
+            child_tree
+        } else {
+            let child_tree = Tree::new(element.as_widget());
+            tree.children.insert(0, child_tree);
+            &mut tree.children[0]
+        };
+
+        element
+            .as_widget()
+            .layout(tab_tree, renderer, &limits.loose())
     }
 
     fn on_event(
@@ -664,40 +684,39 @@ fn draw_tab<Renderer>(
         TabLabel::Icon(icon) => {
             let icon_bounds = icon_bound_rectangle(label_layout_children.next());
 
-            renderer.fill_text(core::text::Text {
-                content: &icon.to_string(),
-                bounds: Rectangle {
-                    x: icon_bounds.center_x(),
-                    y: icon_bounds.center_y(),
-                    ..icon_bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &icon.to_string(),
+                    bounds: Size::new(icon_bounds.width, icon_bounds.height),
+                    size: core::Pixels(icon_data.1),
+                    font: icon_data.0,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::Relative(1.3),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: icon_data.1,
-                color: style.icon_color,
-                font: icon_data.0,
-                horizontal_alignment: Horizontal::Left,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
+                style.icon_color,
+            );
         }
+
         TabLabel::Text(text) => {
             let text_bounds = text_bound_rectangle(label_layout_children.next());
 
-            renderer.fill_text(core::text::Text {
-                content: &text[..],
-                bounds: Rectangle {
-                    x: text_bounds.center_x(),
-                    y: text_bounds.center_y(),
-                    ..text_bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &text[..],
+                    bounds: Size::new(text_bounds.width, text_bounds.height),
+                    size: core::Pixels(text_data.1),
+                    font: text_data.0,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::Relative(1.3),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: text_data.1,
-                color: style.text_color,
-                font: text_data.0,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(text_bounds.center_x(), text_bounds.center_y()),
+                style.text_color,
+            );
         }
         TabLabel::IconText(icon, text) => {
             let icon_bounds: Rectangle;
@@ -730,37 +749,35 @@ fn draw_tab<Renderer>(
                 }
             }
 
-            renderer.fill_text(core::text::Text {
-                content: &icon.to_string(),
-                bounds: Rectangle {
-                    x: icon_bounds.center_x(),
-                    y: icon_bounds.center_y(),
-                    ..icon_bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &icon.to_string(),
+                    bounds: Size::new(icon_bounds.width, icon_bounds.height),
+                    size: core::Pixels(icon_data.1),
+                    font: icon_data.0,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::Relative(1.3),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: icon_data.1,
-                color: style.icon_color,
-                font: icon_data.0,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
+                style.icon_color,
+            );
 
-            renderer.fill_text(core::text::Text {
-                content: &text[..],
-                bounds: Rectangle {
-                    x: text_bounds.center_x(),
-                    y: text_bounds.center_y(),
-                    ..text_bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &text[..],
+                    bounds: Size::new(text_bounds.width, text_bounds.height),
+                    size: core::Pixels(text_data.1),
+                    font: text_data.0,
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::Relative(1.3),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: text_data.1,
-                color: style.text_color,
-                font: text_data.0,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(text_bounds.center_x(), text_bounds.center_y()),
+                style.text_color,
+            );
         }
     };
 
@@ -768,21 +785,20 @@ fn draw_tab<Renderer>(
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cursor.is_over(cross_bounds);
 
-        renderer.fill_text(core::text::Text {
-            content: &icons::icon_to_char(icons::Icon::X).to_string(),
-            bounds: Rectangle {
-                x: cross_bounds.center_x(),
-                y: cross_bounds.center_y(),
-                ..cross_bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: &icons::icon_to_char(icons::Icon::X).to_string(),
+                bounds: Size::new(cross_bounds.width, cross_bounds.height),
+                size: core::Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
+                font: icons::ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Basic,
             },
-            size: close_size + if is_mouse_over_cross { 1.0 } else { 0.0 },
-            color: style.icon_color,
-            font: icons::ICON_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Basic,
-        });
+            Point::new(cross_bounds.center_x(), cross_bounds.center_y()),
+            style.text_color,
+        );
 
         if is_mouse_over_cross {
             renderer.fill_quad(
