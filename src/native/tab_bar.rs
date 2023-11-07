@@ -29,7 +29,7 @@ pub use crate::style::tab_bar::{Appearance, StyleSheet};
 pub use tab_label::TabLabel;
 
 /// The default icon size.
-const DEFAULT_ICON_SIZE: f32 = 32.0;
+const DEFAULT_ICON_SIZE: f32 = 16.0;
 /// The default text size.
 const DEFAULT_TEXT_SIZE: f32 = 16.0;
 /// The default size of the close icon.
@@ -367,7 +367,8 @@ where
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Center)
+                .vertical_alignment(alignment::Vertical::Bottom)
+                .shaping(text::Shaping::Advanced)
         }
 
         fn layout_text<Renderer>(text: &str, size: f32, font: Option<Font>) -> Text<'_, Renderer>
@@ -380,7 +381,8 @@ where
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Center)
+                .vertical_alignment(alignment::Vertical::Bottom)
+                .shaping(text::Shaping::Advanced)
         }
 
         let row = self
@@ -392,11 +394,12 @@ where
                         match tab_label {
                             TabLabel::Icon(icon) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(layout_icon(icon, self.icon_size, self.icon_font)),
+                                .push(layout_icon(icon, self.icon_size + 1.0, self.icon_font)),
 
                             TabLabel::Text(text) => Column::new()
+                                .padding(5.0)
                                 .align_items(Alignment::Center)
-                                .push(layout_text(text, self.icon_size, self.icon_font)),
+                                .push(layout_text(text, self.text_size + 1.0, self.text_font)),
 
                             TabLabel::IconText(icon, text) => {
                                 let mut column = Column::new().align_items(Alignment::Center);
@@ -404,11 +407,15 @@ where
                                 match self.position {
                                     Position::Top => {
                                         column = column
-                                            .push(layout_icon(icon, self.icon_size, self.icon_font))
+                                            .push(layout_icon(
+                                                icon,
+                                                self.icon_size + 1.0,
+                                                self.icon_font,
+                                            ))
                                             .push(layout_text(
                                                 text,
-                                                self.icon_size,
-                                                self.icon_font,
+                                                self.text_size + 1.0,
+                                                self.text_font,
                                             ));
                                     }
                                     Position::Right => {
@@ -417,13 +424,13 @@ where
                                                 .align_items(Alignment::Center)
                                                 .push(layout_icon(
                                                     icon,
-                                                    self.icon_size,
+                                                    self.icon_size + 1.0,
                                                     self.icon_font,
                                                 ))
                                                 .push(layout_text(
                                                     text,
-                                                    self.icon_size,
-                                                    self.icon_font,
+                                                    self.text_size + 1.0,
+                                                    self.text_font,
                                                 )),
                                         );
                                     }
@@ -433,23 +440,27 @@ where
                                                 .align_items(Alignment::Center)
                                                 .push(layout_text(
                                                     text,
-                                                    self.icon_size,
+                                                    self.icon_size + 1.0,
                                                     self.icon_font,
                                                 ))
                                                 .push(layout_icon(
                                                     icon,
-                                                    self.icon_size,
-                                                    self.icon_font,
+                                                    self.text_size + 1.0,
+                                                    self.text_font,
                                                 )),
                                         );
                                     }
                                     Position::Bottom => {
                                         column = column
-                                            .push(layout_text(text, self.icon_size, self.icon_font))
+                                            .push(layout_text(
+                                                text,
+                                                self.icon_size + 1.0,
+                                                self.icon_font,
+                                            ))
                                             .push(layout_icon(
                                                 icon,
-                                                self.icon_size,
-                                                self.icon_font,
+                                                self.text_size + 1.0,
+                                                self.text_font,
                                             ));
                                     }
                                 }
@@ -477,7 +488,8 @@ where
             })
             .width(self.width)
             .height(self.height)
-            .spacing(self.spacing);
+            .spacing(self.spacing)
+            .align_items(Alignment::Center);
 
         let element: Element<Message, Renderer> = Element::new(row);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
@@ -695,7 +707,7 @@ fn draw_tab<Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_widget::text::Shaping::Advanced,
                 },
-                Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
+                Point::new(icon_bounds.x, icon_bounds.center_y()),
                 style.icon_color,
             );
         }
@@ -714,7 +726,7 @@ fn draw_tab<Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_widget::text::Shaping::Advanced,
                 },
-                Point::new(text_bounds.center_x(), text_bounds.center_y()),
+                Point::new(text_bounds.x, text_bounds.center_y()),
                 style.text_color,
             );
         }

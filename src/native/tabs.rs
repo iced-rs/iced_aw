@@ -15,7 +15,10 @@ use iced_widget::{
         layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer,
-        widget::{Operation, Tree},
+        widget::{
+            tree::{State, Tag},
+            Operation, Tree,
+        },
         Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
     },
     runtime::Font,
@@ -276,11 +279,23 @@ where
     TabId: Eq + Clone,
 {
     fn children(&self) -> Vec<Tree> {
-        self.tabs.iter().map(Tree::new).collect()
+        let tabs = Tree {
+            tag: Tag::stateless(),
+            state: State::None,
+            children: self.tabs.iter().map(Tree::new).collect(),
+        };
+
+        let bar = Tree {
+            tag: self.tab_bar.tag(),
+            state: self.tab_bar.state(),
+            children: self.tab_bar.children(),
+        };
+
+        vec![bar, tabs]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.tabs);
+        tree.children[1].diff_children(&self.tabs);
     }
 
     fn width(&self) -> Length {
@@ -291,25 +306,27 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let tab_bar_limits = limits.width(self.width).height(Length::Shrink);
-
-        let mut tab_bar_node = self.tab_bar.layout(renderer, &tab_bar_limits);
+        let mut tab_bar_node =
+            self.tab_bar
+                .layout(&mut tree.children[0], renderer, &tab_bar_limits);
 
         let tab_content_limits = limits.width(self.width).height(self.height);
 
-        let mut tab_content_node = self
-            .tabs
-            .get(self.tab_bar.get_active_tab_idx())
-            .map_or_else(
-                || {
-                    Row::<Message, Renderer>::new()
-                        .width(Length::Fill)
-                        .height(Length::Fill)
-                        .layout(renderer, &tab_content_limits)
-                },
-                |element| element.as_widget().layout(renderer, &tab_content_limits),
-            );
+        let mut tab_content_node =
+            if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab_idx()) {
+                element.as_widget().layout(
+                    &mut tree.children[1].children[self.tab_bar.get_active_tab_idx()],
+                    renderer,
+                    &tab_content_limits,
+                )
+            } else {
+                Row::<Message, Renderer>::new()
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .layout(tree, renderer, &tab_content_limits)
+            };
 
         tab_bar_node.move_to(Point::new(
             tab_bar_node.bounds().x,
@@ -390,7 +407,7 @@ where
             .get_mut(idx)
             .map_or(event::Status::Ignored, |element| {
                 element.as_widget_mut().on_event(
-                    &mut state.children[idx],
+                    &mut state.children[1].children[idx],
                     event,
                     tab_content_layout,
                     cursor,
@@ -449,7 +466,7 @@ where
         let idx = self.tab_bar.get_active_tab_idx();
         if let Some(element) = self.tabs.get(idx) {
             let new_mouse_interaction = element.as_widget().mouse_interaction(
-                &state.children[idx],
+                &state.children[1].children[idx],
                 tab_content_layout,
                 cursor,
                 viewport,
@@ -508,7 +525,7 @@ where
         let idx = self.tab_bar.get_active_tab_idx();
         if let Some(element) = self.tabs.get(idx) {
             element.as_widget().draw(
-                &state.children[idx],
+                &state.children[1].children[idx],
                 renderer,
                 theme,
                 style,
@@ -535,7 +552,7 @@ where
             self.tabs
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
-                .and_then(|w| w.overlay(&mut state.children[idx], layout, renderer))
+                .and_then(|w| w.overlay(&mut state.children[1].children[idx], layout, renderer))
         })
     }
 
@@ -549,7 +566,7 @@ where
         let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
             self.tabs[active_tab].as_widget().operate(
-                &mut tree.children[active_tab],
+                &mut tree.children[1].children[active_tab],
                 layout
                     .children()
                     .nth(1)
