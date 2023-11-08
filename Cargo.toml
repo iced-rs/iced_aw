@@ -57,7 +57,7 @@ default = [
     #"quad",
     #"context_menu",
     "spinner",
-    #"cupertino",
+    "cupertino",
     #"segmented_button",
 ]
 
@@ -82,10 +82,9 @@ members = [
     "examples/badge",
     "examples/card",
     "examples/color_picker",
-    #"examples/cupertino/cupertino_alert",
-    #"examples/cupertino/cupertino_button",
-    #"examples/cupertino/cupertino_spinner",
-    #"examples/cupertino/cupertino_switch",
+    "examples/cupertino/cupertino_button",
+    "examples/cupertino/cupertino_spinner",
+    "examples/cupertino/cupertino_switch",
     "examples/date_picker",
     "examples/floating_element",
     "examples/floating_element_anchors",

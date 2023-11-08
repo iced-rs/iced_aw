@@ -98,7 +98,7 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
