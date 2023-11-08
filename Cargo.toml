@@ -54,11 +54,11 @@ default = [
     "selection_list",
     "split",
     #"menu",
-    #"quad",
-    #"context_menu",
+    "quad",
+    "context_menu",
     "spinner",
     "cupertino",
-    #"segmented_button",
+    "segmented_button",
 ]
 
 [dependencies]
@@ -102,9 +102,9 @@ members = [
     "examples/split_scroller",
     #"examples/menu",
     "examples/spinner",
-    #"examples/context_menu",
+    "examples/context_menu",
     #"examples/WidgetIDReturn",
-    #"examples/segmented_button",
+    "examples/segmented_button",
 ]
 
 [workspace.dependencies.iced]

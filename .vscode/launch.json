@@ -25,6 +25,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'segmented_button'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=segmented_button",
+                    "--package=segmented_button"
+                ],
+                "filter": {
+                    "name": "segmented_button",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'cupertino-spinner'",
             "cargo": {
                 "args": [

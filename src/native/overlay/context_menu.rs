@@ -70,11 +70,14 @@ where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, renderer: &Renderer, bounds: Size, position: Point) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size, position: Point) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
         let max_size = limits.max();
 
-        let mut content = self.content.as_widget().layout(renderer, &limits);
+        let mut content = self
+            .content
+            .as_widget()
+            .layout(self.tree, renderer, &limits);
 
         // Try to stay inside borders
         let mut position = position;
