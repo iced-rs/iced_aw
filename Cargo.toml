@@ -56,7 +56,7 @@ default = [
     #"menu",
     #"quad",
     #"context_menu",
-    #"spinner",
+    "spinner",
     #"cupertino",
     #"segmented_button",
 ]
@@ -102,7 +102,7 @@ members = [
     "examples/split",
     "examples/split_scroller",
     #"examples/menu",
-    #"examples/spinner",
+    "examples/spinner",
     #"examples/context_menu",
     #"examples/WidgetIDReturn",
     #"examples/segmented_button",

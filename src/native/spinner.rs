@@ -127,7 +127,7 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
