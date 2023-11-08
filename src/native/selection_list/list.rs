@@ -13,7 +13,8 @@ use iced_widget::{
             tree::{State, Tag},
             Tree,
         },
-        Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+        Clipboard, Color, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size,
+        Widget,
     },
     text::LineHeight,
 };
@@ -109,7 +110,12 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(
+        &self,
+        _tree: &mut Tree,
+        _renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
@@ -255,22 +261,20 @@ where
                 theme.style(&self.style).text_color
             };
 
-            renderer.fill_text(core::text::Text {
-                content: &option.to_string(),
-                bounds: Rectangle {
-                    x: bounds.x,
-                    y: bounds.center_y(),
-                    width: f32::INFINITY,
-                    ..bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &option.to_string(),
+                    bounds: Size::new(f32::INFINITY, bounds.height),
+                    size: Pixels(self.text_size),
+                    font: self.font,
+                    horizontal_alignment: Horizontal::Left,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::default(),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: self.text_size,
-                color: text_color,
-                font: self.font,
-                horizontal_alignment: Horizontal::Left,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::default(),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(bounds.x, bounds.center_y()),
+                text_color,
+            );
         }
     }
 }

@@ -5,13 +5,17 @@ use crate::style::selection_list::StyleSheet;
 use iced_widget::{
     container,
     core::{
-        self, event,
+        self,
+        alignment::{Horizontal, Vertical},
+        event,
         layout::{Limits, Node},
         mouse::{self, Cursor},
         renderer,
+        text::{Paragraph, Text},
         widget::Tree,
-        Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+        Clipboard, Element, Event, Layout, Length, Pixels, Rectangle, Shell, Size, Widget,
     },
+    graphics,
     runtime::Font,
     scrollable, text,
     text::LineHeight,
@@ -168,7 +172,7 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
 
         let limits = limits.width(self.width).height(self.height);
@@ -179,16 +183,20 @@ where
 
                 labels
                     .map(|label| {
-                        let size = renderer.measure(
-                            &label,
-                            self.text_size,
-                            LineHeight::default(),
-                            self.font,
-                            Size::new(f32::INFINITY, f32::INFINITY),
-                            text::Shaping::Advanced,
-                        );
+                        let text = Text {
+                            content: &label,
+                            size: Pixels(self.text_size),
+                            line_height: LineHeight::default(),
+                            bounds: Size::INFINITY,
+                            font: self.font,
+                            horizontal_alignment: Horizontal::Left,
+                            vertical_alignment: Vertical::Top,
+                            shaping: text::Shaping::Advanced,
+                        };
 
-                        size.width.round() as u32 + self.padding as u32 * 2
+                        let mut paragraph = graphics::text::Paragraph::new();
+                        paragraph.update(text);
+                        paragraph.min_bounds().width.round() as u32 + self.padding as u32 * 2
                     })
                     .max()
                     .unwrap_or(100)
@@ -198,7 +206,9 @@ where
 
         let limits = limits.max_width(max_width as f32 + self.padding * 2.0);
 
-        let content = self.container.layout(renderer, &limits);
+        let content = self
+            .container
+            .layout(&mut tree.children[0], renderer, &limits);
         let size = limits.resolve(content.size());
         Node::with_children(size, vec![content])
     }
