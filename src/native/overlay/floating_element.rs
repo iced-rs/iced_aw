@@ -64,7 +64,7 @@ where
         let mut node = self
             .element
             .as_widget()
-            .layout(&mut self.state, renderer, &limits);
+            .layout(self.state, renderer, &limits);
 
         let position = match self.anchor {
             Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),

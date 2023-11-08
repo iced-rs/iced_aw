@@ -377,9 +377,11 @@ where
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
-                let mut node =
-                    elem.as_widget()
-                        .layout(&mut children.next().unwrap(), renderer, &node_limit);
+                let mut node = elem.as_widget().layout(
+                    children.next().expect("wrap missing expected child"),
+                    renderer,
+                    &node_limit,
+                );
 
                 let size = node.size();
 
@@ -462,9 +464,11 @@ where
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
-                let mut node =
-                    elem.as_widget()
-                        .layout(&mut children.next().unwrap(), renderer, &node_limit);
+                let mut node = elem.as_widget().layout(
+                    children.next().expect("wrap missing expected child"),
+                    renderer,
+                    &node_limit,
+                );
 
                 let size = node.size();
 

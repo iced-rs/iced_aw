@@ -332,7 +332,7 @@ where
             )
         };
 
-        let mut input_tree = if let Some(child_tree) = tree.children.get_mut(1) {
+        let input_tree = if let Some(child_tree) = tree.children.get_mut(1) {
             child_tree.diff(element.as_widget());
             child_tree
         } else {
@@ -343,7 +343,7 @@ where
 
         let mut modifier = element
             .as_widget()
-            .layout(&mut input_tree, renderer, &limits2.loose());
+            .layout(input_tree, renderer, &limits2.loose());
         let intrinsic = Size::new(
             content.size().width - 1.0,
             content.size().height.max(modifier.size().height),

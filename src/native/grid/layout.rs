@@ -89,14 +89,18 @@ fn minimum_row_column_sizes<Message, Renderer>(
     Renderer: iced_widget::core::Renderer,
 {
     let mut children = tree.children.iter_mut();
-    for row in rows.iter() {
+    for row in rows {
         let mut row_height = 0.0f32;
 
         for (col_idx, element) in row.elements.iter().enumerate() {
             let child_limits = Limits::NONE.width(Length::Shrink).height(Length::Shrink);
             let Size { width, height } = element
                 .as_widget()
-                .layout(children.next().unwrap(), renderer, &child_limits)
+                .layout(
+                    children.next().expect("grid missing expected child"),
+                    renderer,
+                    &child_limits,
+                )
                 .size();
 
             #[allow(clippy::option_if_let_else)]
@@ -200,7 +204,11 @@ where
                 .max_width(column_width)
                 .max_height(row_height);
 
-            let mut node = widget.layout(children.next().unwrap(), renderer, &widget_limits);
+            let mut node = widget.layout(
+                children.next().expect("Grid missing child"),
+                renderer,
+                &widget_limits,
+            );
             node.move_to(Point::new(x, y));
             node.align(
                 horizontal_alignment.into(),

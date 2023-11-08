@@ -595,6 +595,7 @@ where
 }
 
 /// Calculates the layout of the head.
+#[allow(clippy::too_many_arguments)]
 fn head_node<Message, Renderer>(
     renderer: &Renderer,
     limits: &Limits,

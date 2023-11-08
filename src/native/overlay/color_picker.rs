@@ -906,7 +906,7 @@ where
                 .width(Length::Fill)
                 .height(Length::FillPortion(1)),
         )
-        .layout(&mut color_picker.tree, renderer, &block1_limits);
+        .layout(color_picker.tree, renderer, &block1_limits);
 
     block1_node.move_to(Point::new(bounds.x + PADDING, bounds.y + PADDING));
 
@@ -977,7 +977,7 @@ where
         );
     }
     let element: Element<Message, Renderer<Theme>> = Element::new(rgba_colors);
-    let mut rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(2) {
+    let rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(2) {
         child_tree.diff(element.as_widget());
         child_tree
     } else {
@@ -988,7 +988,7 @@ where
 
     let mut rgba_colors = element
         .as_widget()
-        .layout(&mut rgba_tree, renderer, &block2_limits);
+        .layout(rgba_tree, renderer, &block2_limits);
 
     rgba_colors.move_to(Point::new(
         rgba_colors.bounds().x + PADDING,

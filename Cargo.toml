@@ -68,10 +68,15 @@ chrono = { version = "0.4.26", optional = true }
 once_cell = { version = "1.18.0", optional = true }
 itertools = { version = "0.11.0", optional = true }
 
-
 [dependencies.iced_widget]
 git = "https://github.com/iced-rs/iced.git"
 rev = "751ea77c29f6eb3d00f45f0a04c833a1d03a425c"
+#version = "0.1.1"
+
+#[dependencies.iced_renderer]
+#git = "https://github.com/iced-rs/iced.git"
+#rev = "751ea77c29f6eb3d00f45f0a04c833a1d03a425c"
+#features = ["wgpu"]
 #version = "0.1.1"
 
 [profile.dev.package."*"]
@@ -91,7 +96,7 @@ members = [
     "examples/grid",
     "examples/modal",
     "examples/modal_component",
-    #"examples/multiple_modals",
+    "examples/multiple_modals",
     "examples/tab_bar",
     "examples/tabs",
     "examples/time_picker",

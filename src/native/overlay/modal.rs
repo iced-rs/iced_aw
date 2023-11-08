@@ -73,7 +73,7 @@ where
         let mut content = self
             .content
             .as_widget()
-            .layout(&mut self.state, renderer, &limits);
+            .layout(self.state, renderer, &limits);
         let max_size = limits.max();
 
         content.align(

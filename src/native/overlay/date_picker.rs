@@ -470,7 +470,7 @@ where
             .push(days);
 
         let element: Element<Message, Renderer<Theme>> = Element::new(col);
-        let mut col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
+        let col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
             child_tree.diff(element.as_widget());
             child_tree
         } else {
@@ -479,7 +479,7 @@ where
             &mut self.tree.children[2]
         };
 
-        let mut col = element.as_widget().layout(&mut col_tree, renderer, &limits);
+        let mut col = element.as_widget().layout(col_tree, renderer, &limits);
         col.move_to(Point::new(
             col.bounds().x + PADDING,
             col.bounds().y + PADDING,

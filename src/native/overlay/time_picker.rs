@@ -530,7 +530,7 @@ where
         let mut clock = Row::<(), Renderer<Theme>>::new()
             .width(Length::Fill)
             .height(Length::Fill)
-            .layout(&mut self.tree, renderer, &limits);
+            .layout(self.tree, renderer, &limits);
 
         clock.move_to(Point::new(
             clock.bounds().x + PADDING,
