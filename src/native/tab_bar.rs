@@ -707,7 +707,7 @@ fn draw_tab<Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_widget::text::Shaping::Advanced,
                 },
-                Point::new(icon_bounds.x, icon_bounds.center_y()),
+                Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
                 style.icon_color,
             );
         }
@@ -726,7 +726,7 @@ fn draw_tab<Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_widget::text::Shaping::Advanced,
                 },
-                Point::new(text_bounds.x, text_bounds.center_y()),
+                Point::new(text_bounds.center_x(), text_bounds.center_y()),
                 style.text_color,
             );
         }

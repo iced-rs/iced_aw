@@ -70,7 +70,7 @@ itertools = { version = "0.11.0", optional = true }
 
 [dependencies.iced_widget]
 git = "https://github.com/iced-rs/iced.git"
-rev = "751ea77c29f6eb3d00f45f0a04c833a1d03a425c"
+rev = "817f72868746461891ca4e74473c555f3b5c5703"
 #version = "0.1.1"
 
 #[dependencies.iced_renderer]
@@ -114,7 +114,7 @@ members = [
 
 [workspace.dependencies.iced]
 git = "https://github.com/iced-rs/iced.git"
-rev = "751ea77c29f6eb3d00f45f0a04c833a1d03a425c"
+rev = "817f72868746461891ca4e74473c555f3b5c5703"
 #version = "0.10.0"
 features = ["advanced", "lazy", "tokio"]
 

@@ -6,7 +6,10 @@ use iced::{
 use iced_aw::{TabBar, TabLabel};
 
 fn main() -> iced::Result {
-    TabBarExample::run(Settings::default())
+    TabBarExample::run(Settings {
+        default_text_size: 12.into(),
+        ..Default::default()
+    })
 }
 
 #[derive(Debug, Clone)]
@@ -131,13 +134,13 @@ impl Application for TabBarExample {
                             .push(
                                 TextInput::new("Tab label", &state.new_tab_label)
                                     .on_input(Message::TabLabelInputChanged)
-                                    .size(22)
+                                    .size(16)
                                     .padding(5.0),
                             )
                             .push(
                                 TextInput::new("Tab content", &state.new_tab_content)
                                     .on_input(Message::TabContentInputChanged)
-                                    .size(22)
+                                    .size(12)
                                     .padding(5.0),
                             )
                             .push(Button::new(Text::new("New")).on_press(Message::NewTab))
