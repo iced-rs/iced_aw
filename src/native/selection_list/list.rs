@@ -60,6 +60,8 @@ pub struct ListState {
     pub hovered_option: Option<usize>,
     /// The index in the list of options of the last chosen Item Clicked for Processing
     pub last_selected_index: Option<(usize, u64)>,
+    /// String Build Cache
+    pub options: Vec<String>,
 }
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
@@ -73,7 +75,10 @@ where
     }
 
     fn state(&self) -> State {
-        State::new(ListState::default())
+        State::new(ListState {
+            options: self.options.iter().map(ToString::to_string).collect(),
+            ..ListState::default()
+        })
     }
 
     fn diff(&self, state: &mut Tree) {
@@ -100,6 +105,8 @@ where
                 list_state.last_selected_index = None;
             }
         }
+
+        list_state.options = self.options.iter().map(ToString::to_string).collect();
     }
 
     fn width(&self) -> Length {
@@ -218,12 +225,9 @@ where
         let offset = viewport.y - bounds.y;
         let start = (offset / option_height) as usize;
         let end = ((offset + viewport.height) / option_height).ceil() as usize;
-
-        let visible_options = &self.options[start..end.min(self.options.len())];
         let list_state = state.state.downcast_ref::<ListState>();
 
-        for (i, option) in visible_options.iter().enumerate() {
-            let i = start + i;
+        for i in start..end.min(self.options.len()) {
             let is_selected = list_state
                 .last_selected_index
                 .map(|u| u.0 == i)
@@ -263,7 +267,7 @@ where
 
             renderer.fill_text(
                 core::text::Text {
-                    content: &option.to_string(),
+                    content: &list_state.options[i],
                     bounds: Size::new(f32::INFINITY, bounds.height),
                     size: Pixels(self.text_size),
                     font: self.font,

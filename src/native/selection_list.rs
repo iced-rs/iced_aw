@@ -12,7 +12,7 @@ use iced_widget::{
         mouse::{self, Cursor},
         renderer,
         text::{Paragraph, Text},
-        widget::Tree,
+        widget::{tree, Tree},
         Clipboard, Element, Event, Layout, Length, Pixels, Rectangle, Shell, Size, Widget,
     },
     graphics,
@@ -151,7 +151,7 @@ where
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SelectionList<'a, T, Message, Renderer>
 where
-    T: 'a + Clone + ToString + Eq + Hash,
+    T: 'a + Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font> + 'a,
     Renderer::Theme: StyleSheet + container::StyleSheet,
@@ -162,6 +162,13 @@ where
 
     fn diff(&self, tree: &mut Tree) {
         tree.diff_children(&[&self.container as &dyn Widget<_, _>]);
+        let state = tree.state.downcast_mut::<State>();
+
+        state.values = self
+            .options
+            .iter()
+            .map(|_| graphics::text::Paragraph::new())
+            .collect()
     }
 
     fn width(&self) -> Length {
@@ -172,35 +179,43 @@ where
         Length::Shrink
     }
 
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<State>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(State::new(self.options))
+    }
+
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
+
+        let state = tree.state.downcast_mut::<State>();
 
         let limits = limits.width(self.width).height(self.height);
 
         let max_width = match self.width {
-            Length::Shrink => {
-                let labels = self.options.iter().map(ToString::to_string);
+            Length::Shrink => self
+                .options
+                .iter()
+                .enumerate()
+                .map(|(id, val)| {
+                    let text = Text {
+                        content: &val.to_string(),
+                        size: Pixels(self.text_size),
+                        line_height: LineHeight::default(),
+                        bounds: Size::INFINITY,
+                        font: self.font,
+                        horizontal_alignment: Horizontal::Left,
+                        vertical_alignment: Vertical::Top,
+                        shaping: text::Shaping::Advanced,
+                    };
 
-                labels
-                    .map(|label| {
-                        let text = Text {
-                            content: &label,
-                            size: Pixels(self.text_size),
-                            line_height: LineHeight::default(),
-                            bounds: Size::INFINITY,
-                            font: self.font,
-                            horizontal_alignment: Horizontal::Left,
-                            vertical_alignment: Vertical::Top,
-                            shaping: text::Shaping::Advanced,
-                        };
-
-                        let mut paragraph = graphics::text::Paragraph::new();
-                        paragraph.update(text);
-                        paragraph.min_bounds().width.round() as u32 + self.padding as u32 * 2
-                    })
-                    .max()
-                    .unwrap_or(100)
-            }
+                    state.values[id].update(text);
+                    state.values[id].min_bounds().width.round() as u32 + self.padding as u32 * 2
+                })
+                .max()
+                .unwrap_or(100),
             _ => limits.max().width as u32,
         };
 
@@ -289,12 +304,34 @@ where
 impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
     for Element<'a, Message, Renderer>
 where
-    T: Clone + ToString + Eq + Hash,
+    T: Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
     Renderer::Theme: StyleSheet + container::StyleSheet,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Renderer>) -> Self {
         Element::new(selection_list)
+    }
+}
+
+/// A Paragraph cache to enhance speed of layouting.
+#[derive(Debug, Default, Clone)]
+pub struct State {
+    values: Vec<graphics::text::Paragraph>,
+}
+
+impl State {
+    /// Creates a new [`State`], representing an unfocused [`TextInput`].
+    pub fn new<'a, T>(options: &'a [T]) -> Self
+    where
+        T: Clone + Display + Eq + Hash,
+        [T]: ToOwned<Owned = Vec<T>>,
+    {
+        Self {
+            values: options
+                .iter()
+                .map(|_| graphics::text::Paragraph::new())
+                .collect(),
+        }
     }
 }
