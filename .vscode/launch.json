@@ -25,6 +25,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'slidebar'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=slidebar",
+                    "--package=slidebar"
+                ],
+                "filter": {
+                    "name": "slidebar",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'segmented_button'",
             "cargo": {
                 "args": [

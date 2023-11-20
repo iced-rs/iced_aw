@@ -148,6 +148,8 @@ mod platform {
     #[cfg(feature = "spinner")]
     pub use {crate::native::spinner, crate::style::SpinnerStyle, spinner::Spinner};
 
+    pub use crate::native::SlideBar;
+
     #[doc(no_inline)]
     #[cfg(feature = "context_menu")]
     pub use {

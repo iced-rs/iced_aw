@@ -59,14 +59,16 @@ default = [
     "spinner",
     "cupertino",
     "segmented_button",
+    "num-traits"
 ]
 
 [dependencies]
-num-traits = { version = "0.2.16", optional = true }
+num-traits = {version = "0.2.16", optional = true}
 time = { version = "0.3.23", features = ["local-offset"], optional = true }
 chrono = { version = "0.4.26", optional = true }
 once_cell = { version = "1.18.0", optional = true }
 itertools = { version = "0.11.0", optional = true }
+
 
 [dependencies.iced_widget]
 git = "https://github.com/iced-rs/iced.git"
@@ -110,6 +112,7 @@ members = [
     "examples/context_menu",
     #"examples/WidgetIDReturn",
     "examples/segmented_button",
+    "examples/sliderbar",
 ]
 
 [workspace.dependencies.iced]
@@ -121,3 +124,4 @@ features = ["advanced", "lazy", "tokio"]
 [workspace.dependencies.iced_aw]
 path = "./"
 default-features = false
+features = ["num-traits"]
