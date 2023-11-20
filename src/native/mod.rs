@@ -60,9 +60,10 @@ pub type FloatingElement<'a, Message, Renderer> =
 pub mod grid;
 #[cfg(feature = "grid")]
 /// A container that distributes its contents in a grid.
-pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
+// pub type Grid<'a, Message, Renderer> = grid::Grid<'a, Message, Renderer>;
+pub use grid::Grid;
 #[cfg(feature = "grid")]
-pub use grid::Strategy;
+pub use grid::GridRow;
 
 #[cfg(feature = "modal")]
 pub mod modal;
@@ -124,3 +125,10 @@ pub mod context_menu;
 /// A context menu
 pub type ContextMenu<'a, Overlay, Message, Renderer> =
     context_menu::ContextMenu<'a, Overlay, Message, Renderer>;
+
+#[cfg(feature = "segmented_button")]
+pub mod segmented_button;
+#[cfg(feature = "segmented_button")]
+/// A badge for color highlighting small information.
+pub type SegmentedButton<'a, Message, Renderer> =
+    segmented_button::SegmentedButton<'a, Message, Renderer>;
