@@ -1,47 +1,30 @@
 //! The default icon font of the widgets of this library.
 
+use cfg_if::cfg_if;
 use iced_widget::core::Font;
 
-#[cfg(feature = "icons")]
-mod bootstrap;
-#[cfg(feature = "icons")]
-pub use bootstrap::*;
+cfg_if! {
+    if #[cfg(feature = "icons")] {
+        pub mod bootstrap;
+        pub mod nerd;
 
-#[cfg(not(feature = "icons"))]
-mod required;
-#[cfg(not(feature = "icons"))]
-pub use required::*;
+        /// The default icon font bytes for loading the font into iced.
+        pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
+        /// the icon font that has all nerd fonts.
+        pub const NERD_FONT_BYTES: &[u8] = include_bytes!("./fonts/nerd-icons.ttf");
 
-/// The default icon font bytes for loading the font into iced.
-#[cfg(feature = "icons")]
-pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
+        /// The bootstrap icon font.
+        pub const BOOTSTRAP_FONT: Font = Font::with_name("bootstrap-icons");
+        /// The nerd icon font.
+        pub const NERD_FONT: Font = Font::with_name("nerd-icons");
 
-/// The default icon font bytes for loading the font into iced.
-#[cfg(not(feature = "icons"))]
-pub const ICON_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");
+    } else {
+        pub mod required;
 
-/// The default icon font.
-#[cfg(feature = "icons")]
-pub const ICON_FONT: Font = Font::with_name("bootstrap-icons");
-
-/// The default icon font.
-#[cfg(not(feature = "icons"))]
-pub const ICON_FONT: Font = Font::with_name("required-icons");
-
-impl From<Icon> for char {
-    fn from(icon: Icon) -> Self {
-        icon_to_char(icon)
+        /// The default icon font bytes for loading the font into iced.
+        pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");
+        /// The default icon font.
+        pub const BOOTSTRAP_FONT: Font = Font::with_name("required-icons");
     }
-}
 
-impl From<Icon> for String {
-    fn from(icon: Icon) -> Self {
-        format!("{}", icon_to_char(icon))
-    }
-}
-
-impl std::fmt::Display for Icon {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", icon_to_char(*self))
-    }
 }

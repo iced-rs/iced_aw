@@ -26,7 +26,7 @@ use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
-    graphics::icons::{Icon, ICON_FONT},
+    graphics::icons::{bootstrap::BootstrapIcon, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 
@@ -702,7 +702,7 @@ where
         let mut buffer = [0; 4];
 
         renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: dec_bounds.center_x(),
                 y: dec_bounds.center_y(),
@@ -710,7 +710,7 @@ where
             },
             size: icon_size,
             color: decrease_btn_style.icon_color,
-            font: ICON_FONT,
+            font: BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: LineHeight::Relative(1.3),
@@ -731,7 +731,7 @@ where
         );
 
         renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: inc_bounds.center_x(),
                 y: inc_bounds.center_y(),
@@ -739,7 +739,7 @@ where
             },
             size: icon_size,
             color: increase_btn_style.icon_color,
-            font: ICON_FONT,
+            font: BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: LineHeight::Relative(1.3),

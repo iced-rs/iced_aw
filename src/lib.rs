@@ -60,7 +60,10 @@ use iced_widget::{renderer, style as iced_style};
 mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "icons")]
-    pub use {crate::graphics::icons::Icon, crate::graphics::icons::ICON_FONT};
+    pub use {
+        crate::graphics::icons::{bootstrap::BootstrapIcon, nerd::NerdIcon},
+        crate::graphics::icons::{BOOTSTRAP_FONT, NERD_FONT},
+    };
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]

@@ -44,7 +44,7 @@ impl Application for ModalExample {
         (
             ModalExample::Loading,
             Command::batch(vec![
-                font::load(iced_aw::graphics::icons::ICON_FONT_BYTES).map(Message::FontLoaded),
+                font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )

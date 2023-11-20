@@ -56,7 +56,7 @@ impl Application for MultipleModalsExample {
                 state: State::Start,
                 button_pressed: None,
             },
-            font::load(iced_aw::graphics::icons::ICON_FONT_BYTES).map(Message::FontLoaded),
+            font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT).map(Message::FontLoaded),
         )
     }
 

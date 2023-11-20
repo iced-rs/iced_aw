@@ -19,8 +19,8 @@ use settings::{SettingsMessage, SettingsTab, TabBarPosition};
 
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
-const ICON_FONT_BYTES: &[u8] = include_bytes!("../fonts/icons.ttf");
-const ICON_FONT: Font = Font::with_name("icons");
+const BOOTSTRAP_FONT: &[u8] = include_bytes!("../fonts/icons.ttf");
+const BOOTSTRAP_FONT: Font = Font::with_name("icons");
 
 enum Icon {
     User,
@@ -89,7 +89,7 @@ impl Application for TabBarExample {
         (
             TabBarExample::Loading,
             Command::batch(vec![
-                font::load(ICON_FONT_BYTES).map(Message::FontLoaded),
+                font::load(BOOTSTRAP_FONT).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )
@@ -173,7 +173,7 @@ impl Application for TabBarExample {
                     )
                     .set_active_tab(&state.active_tab)
                     .tab_bar_style(theme.clone())
-                    .icon_font(ICON_FONT)
+                    .BOOTSTRAP_FONT(BOOTSTRAP_FONT)
                     .tab_bar_position(match position {
                         TabBarPosition::Top => iced_aw::TabBarPosition::Top,
                         TabBarPosition::Bottom => iced_aw::TabBarPosition::Bottom,
