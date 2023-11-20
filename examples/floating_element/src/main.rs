@@ -6,9 +6,9 @@ use iced::{
     Application, Command, Element, Length, Settings, Theme,
 };
 
-use iced_aw::BootstrapIcon;
 use iced_aw::floating_element::Anchor;
 use iced_aw::graphics::icons::bootstrap::icon_to_string;
+use iced_aw::BootstrapIcon;
 use iced_aw::{helpers::floating_element, BOOTSTRAP_FONT};
 
 fn main() -> iced::Result {
