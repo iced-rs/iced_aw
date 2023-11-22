@@ -9,10 +9,12 @@ use crate::{
         SECOND_RADIUS_PERCENTAGE,
     },
     core::{clock, overlay::Position, time::Period},
-    graphics::icons::{icon_to_char, ICON_FONT},
+    graphics::icons::{
+        bootstrap::{icon_to_string, BootstrapIcon},
+        BOOTSTRAP_FONT,
+    },
     style::style_state::StyleState,
     time_picker::{self, Time},
-    Icon,
 };
 
 use chrono::{Duration, Local, NaiveTime, Timelike};
@@ -94,16 +96,16 @@ where
         TimePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_char(Icon::X).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::X))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_char(Icon::Check).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -1418,7 +1420,7 @@ fn draw_digital_clock<Message, Theme>(
 
         // Caret up
         renderer.fill_text(core::Text {
-            content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: up_bounds.center_x(),
                 y: up_bounds.center_y(),
@@ -1429,7 +1431,7 @@ fn draw_digital_clock<Message, Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: crate::graphics::icons::ICON_FONT,
+            font: crate::graphics::icons::BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
@@ -1458,7 +1460,7 @@ fn draw_digital_clock<Message, Theme>(
 
         // Down caret
         renderer.fill_text(core::Text {
-            content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: down_bounds.center_x(),
                 y: down_bounds.center_y(),
@@ -1469,7 +1471,7 @@ fn draw_digital_clock<Message, Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: crate::graphics::icons::ICON_FONT,
+            font: crate::graphics::icons::BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
@@ -1665,15 +1667,15 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_char(Icon::X).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::X))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_char(Icon::Check).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )

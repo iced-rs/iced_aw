@@ -64,6 +64,7 @@ default = [
 ]
 
 [dependencies]
+cfg-if = "1.0"
 num-traits = { version = "0.2.16", optional = true }
 time = { version = "0.3.23", features = ["local-offset"], optional = true }
 chrono = { version = "0.4.26", optional = true }

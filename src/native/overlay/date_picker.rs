@@ -8,7 +8,10 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    graphics::icons::{icon_to_char, Icon, ICON_FONT},
+    graphics::icons::{
+        bootstrap::{icon_to_string, BootstrapIcon},
+        BOOTSTRAP_FONT,
+    },
     style::{
         date_picker::{Appearance, StyleSheet},
         style_state::StyleState,
@@ -88,16 +91,16 @@ where
         DatePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_char(Icon::X).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::X))
+                    .font(crate::BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_char(Icon::Check).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                    .font(crate::BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -396,9 +399,9 @@ where
                             Row::new() // Left Month arrow
                                 .width(Length::Shrink)
                                 .push(
-                                    Text::new(char::from(Icon::CaretLeftFill).to_string())
+                                    Text::new(char::from(BootstrapIcon::CaretLeftFill).to_string())
                                         .size(font_size + 1.0)
-                                        .font(ICON_FONT),
+                                        .font(BOOTSTRAP_FONT),
                                 ),
                         )
                         .height(Length::Shrink),
@@ -412,9 +415,9 @@ where
                     .push(
                         // Right Month arrow
                         Container::new(
-                            Text::new(char::from(Icon::CaretRightFill).to_string())
+                            Text::new(char::from(BootstrapIcon::CaretRightFill).to_string())
                                 .size(font_size + 1.0)
-                                .font(ICON_FONT),
+                                .font(crate::BOOTSTRAP_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -428,9 +431,9 @@ where
                             Row::new() // Left Year arrow
                                 .width(Length::Shrink)
                                 .push(
-                                    Text::new(char::from(Icon::CaretLeftFill).to_string())
+                                    Text::new(char::from(BootstrapIcon::CaretLeftFill).to_string())
                                         .size(font_size + 1.0)
-                                        .font(ICON_FONT),
+                                        .font(BOOTSTRAP_FONT),
                                 ),
                         )
                         .height(Length::Shrink)
@@ -447,9 +450,11 @@ where
                                 .width(Length::Shrink)
                                 .height(Length::Shrink)
                                 .push(
-                                    Text::new(char::from(Icon::CaretRightFill).to_string())
-                                        .size(font_size + 1.0)
-                                        .font(ICON_FONT),
+                                    Text::new(
+                                        char::from(BootstrapIcon::CaretRightFill).to_string(),
+                                    )
+                                    .size(font_size + 1.0)
+                                    .font(BOOTSTRAP_FONT),
                                 ),
                         )
                         .height(Length::Shrink)
@@ -917,15 +922,15 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_char(Icon::X).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::X))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_char(Icon::Check).to_string())
-                    .font(ICON_FONT)
+                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                    .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -1125,7 +1130,7 @@ fn month_year<Theme>(
 
         // Left caret
         renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretLeftFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretLeftFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: left_bounds.center_x(),
                 y: left_bounds.center_y(),
@@ -1136,7 +1141,7 @@ fn month_year<Theme>(
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: ICON_FONT,
+            font: BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
@@ -1165,7 +1170,7 @@ fn month_year<Theme>(
 
         // Right caret
         renderer.fill_text(core::text::Text {
-            content: char::from(Icon::CaretRightFill).encode_utf8(&mut buffer),
+            content: char::from(BootstrapIcon::CaretRightFill).encode_utf8(&mut buffer),
             bounds: Rectangle {
                 x: right_bounds.center_x(),
                 y: right_bounds.center_y(),
@@ -1176,7 +1181,7 @@ fn month_year<Theme>(
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: ICON_FONT,
+            font: BOOTSTRAP_FONT,
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
