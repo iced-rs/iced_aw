@@ -26,10 +26,7 @@ use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
-    graphics::icons::{
-        bootstrap::{icon_to_string, BootstrapIcon},
-        BOOTSTRAP_FONT,
-    },
+    graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 

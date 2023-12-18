@@ -6,10 +6,7 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
 pub mod tab_label;
-use crate::graphics::icons::{
-    bootstrap::{icon_to_string, BootstrapIcon},
-    BOOTSTRAP_FONT,
-};
+use crate::graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT};
 
 use iced_widget::{
     core::{

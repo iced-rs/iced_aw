@@ -8,10 +8,7 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    graphics::icons::{
-        bootstrap::{icon_to_string, BootstrapIcon},
-        BOOTSTRAP_FONT,
-    },
+    graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT},
     style::{
         date_picker::{Appearance, StyleSheet},
         style_state::StyleState,

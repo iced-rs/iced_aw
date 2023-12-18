@@ -1,8 +1,9 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{Button, Column, Container, PickList, Row, Text},
-    Element, Sandbox, Settings,
+    alignment, font,
+    widget::{container, text, Button, Column, Container, PickList, Row, Text},
+    Application, Command, Element, Length, Settings, Theme,
 };
 use iced_aw::{NumberInput, Wrap};
 use rand::Rng;
@@ -11,7 +12,12 @@ fn main() -> iced::Result {
     RandStrings::run(Settings::default())
 }
 
-struct RandStrings {
+enum RandStrings {
+    Loading,
+    Loaded(State),
+}
+
+struct State {
     vbuttons: Vec<StrButton>,
     hbuttons: Vec<StrButton>,
     spacing: f32,
@@ -59,126 +65,166 @@ struct StrButton {
 }
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Message {
     ChangeAlign(WrapAlign),
     ChangeSpacing(f32),
     ChangeLineSpacing(f32),
     ChangeMinimalLength(f32),
+    Loaded(Result<(), String>),
+    FontLoaded(Result<(), font::Error>),
 }
 
-impl Sandbox for RandStrings {
-    type Message = Message;
+async fn load() -> Result<(), String> {
+    Ok(())
+}
 
-    fn new() -> Self {
-        let mut rng = rand::thread_rng();
-        let data: Vec<StrButton> = (0..45)
-            .map(|s| StrButton {
-                str: s.to_string(),
-                size: rng.gen_range(15.0..50.0),
-            })
-            .collect();
-        Self {
-            vbuttons: data.clone(),
-            hbuttons: data,
-            align: iced::Alignment::Start,
-            spacing: 0.0,
-            line_spacing: 0.0,
-            line_minimal_length: 10.0,
-        }
+impl Application for RandStrings {
+    type Message = Message;
+    type Theme = Theme;
+    type Executor = iced::executor::Default;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (Self, Command<Message>) {
+        (
+            Self::Loading,
+            Command::batch(vec![
+                font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
+                Command::perform(load(), Message::Loaded),
+            ]),
+        )
     }
 
     fn title(&self) -> String {
         "wrap".to_owned()
     }
 
-    fn update(&mut self, message: Self::Message) {
-        match message {
-            Message::ChangeAlign(align) => {
-                self.align = align.into();
+    fn update(&mut self, message: Self::Message) -> Command<Message> {
+        match self {
+            Self::Loading => {
+                if let Message::Loaded(_) = message {
+                    *self = Self::Loaded({
+                        let mut rng = rand::thread_rng();
+                        let data: Vec<StrButton> = (0..45)
+                            .map(|s| StrButton {
+                                str: s.to_string(),
+                                size: rng.gen_range(15.0..50.0),
+                            })
+                            .collect();
+                        State {
+                            vbuttons: data.clone(),
+                            hbuttons: data,
+                            align: iced::Alignment::Start,
+                            spacing: 0.0,
+                            line_spacing: 0.0,
+                            line_minimal_length: 10.0,
+                        }
+                    })
+                }
             }
-            Message::ChangeSpacing(num) => {
-                self.spacing = num;
-            }
-            Message::ChangeLineSpacing(num) => {
-                self.line_spacing = num;
-            }
-            Message::ChangeMinimalLength(num) => {
-                self.line_minimal_length = num;
-            }
+            Self::Loaded(state) => match message {
+                Message::ChangeAlign(align) => {
+                    state.align = align.into();
+                }
+                Message::ChangeSpacing(num) => {
+                    state.spacing = num;
+                }
+                Message::ChangeLineSpacing(num) => {
+                    state.line_spacing = num;
+                }
+                Message::ChangeMinimalLength(num) => {
+                    state.line_minimal_length = num;
+                }
+                _ => {}
+            },
         }
+
+        Command::none()
     }
 
     fn view(&self) -> Element<'_, Self::Message> {
-        let RandStrings {
-            vbuttons, hbuttons, ..
-        } = self;
-        let vertical = Container::new(
-            vbuttons
-                .iter()
-                .fold(Wrap::new_vertical(), |wrap, button| {
-                    let StrButton { str, .. } = button;
-                    wrap.push(Button::new(Text::new(str.as_str()).size(button.size)))
-                })
-                .align_items(self.align)
-                .spacing(self.spacing)
-                .line_spacing(self.line_spacing)
-                .line_minimal_length(self.line_minimal_length),
-        )
-        .width(iced::Length::FillPortion(5));
-        let horizontal = Container::new(
-            hbuttons
-                .iter()
-                .fold(Wrap::new(), |wrap, button| {
-                    let StrButton { str, .. } = button;
-                    wrap.push(Button::new(Text::new(str.as_str()).size(button.size)))
-                })
-                .align_items(self.align)
-                .spacing(self.spacing)
-                .line_spacing(self.line_spacing)
-                .line_minimal_length(self.line_minimal_length),
-        )
-        .width(iced::Length::FillPortion(5));
-        let align_picklist = PickList::new(
-            vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
-            Some(self.align.into()),
-            Message::ChangeAlign,
-        );
-        let spacing_input = Column::new()
-            .push(Text::new("spacing"))
-            .push(NumberInput::new(
-                self.spacing,
-                500.0,
-                Message::ChangeSpacing,
-            ));
-        let line_spacing_input =
-            Column::new()
-                .push(Text::new("line spacing"))
-                .push(NumberInput::new(
-                    self.line_spacing,
-                    500.0,
-                    Message::ChangeLineSpacing,
-                ));
-        let line_minimal_length_input =
-            Column::new()
-                .push(Text::new("line minimal length"))
-                .push(NumberInput::new(
-                    self.line_minimal_length,
-                    999.0,
-                    Message::ChangeMinimalLength,
-                ));
-        let ctrls = Column::new()
-            .push(align_picklist)
-            .push(spacing_input)
-            .push(line_spacing_input)
-            .push(line_minimal_length_input)
-            .height(iced::Length::Shrink)
-            .align_items(iced::Alignment::Center);
+        match self {
+            Self::Loading => container(
+                text("Loading...")
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .size(50),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_y()
+            .center_x()
+            .into(),
+            Self::Loaded(state) => {
+                let vertical = Container::new(
+                    state
+                        .vbuttons
+                        .iter()
+                        .fold(Wrap::new_vertical(), |wrap, button| {
+                            let StrButton { str, .. } = button;
+                            wrap.push(Button::new(Text::new(str.as_str()).size(button.size)))
+                        })
+                        .align_items(state.align)
+                        .spacing(state.spacing)
+                        .line_spacing(state.line_spacing)
+                        .line_minimal_length(state.line_minimal_length),
+                )
+                .width(iced::Length::FillPortion(5));
+                let horizontal = Container::new(
+                    state
+                        .hbuttons
+                        .iter()
+                        .fold(Wrap::new(), |wrap, button| {
+                            let StrButton { str, .. } = button;
+                            wrap.push(Button::new(Text::new(str.as_str()).size(button.size)))
+                        })
+                        .align_items(state.align)
+                        .spacing(state.spacing)
+                        .line_spacing(state.line_spacing)
+                        .line_minimal_length(state.line_minimal_length),
+                )
+                .width(iced::Length::FillPortion(5));
+                let align_picklist = PickList::new(
+                    vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
+                    Some(state.align.into()),
+                    Message::ChangeAlign,
+                );
+                let spacing_input =
+                    Column::new()
+                        .push(Text::new("spacing"))
+                        .push(NumberInput::new(
+                            state.spacing,
+                            500.0,
+                            Message::ChangeSpacing,
+                        ));
+                let line_spacing_input =
+                    Column::new()
+                        .push(Text::new("line spacing"))
+                        .push(NumberInput::new(
+                            state.line_spacing,
+                            500.0,
+                            Message::ChangeLineSpacing,
+                        ));
+                let line_minimal_length_input = Column::new()
+                    .push(Text::new("line minimal length"))
+                    .push(NumberInput::new(
+                        state.line_minimal_length,
+                        999.0,
+                        Message::ChangeMinimalLength,
+                    ));
+                let ctrls = Column::new()
+                    .push(align_picklist)
+                    .push(spacing_input)
+                    .push(line_spacing_input)
+                    .push(line_minimal_length_input)
+                    .height(iced::Length::Shrink)
+                    .align_items(iced::Alignment::Center);
 
-        Row::new()
-            .push(ctrls)
-            .push(vertical)
-            .push(horizontal)
-            .into()
+                Row::new()
+                    .push(ctrls)
+                    .push(vertical)
+                    .push(horizontal)
+                    .into()
+            }
+        }
     }
 }
