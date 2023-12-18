@@ -6,7 +6,10 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
 pub mod tab_label;
-use crate::graphics::icons;
+use crate::graphics::icons::{
+    bootstrap::{icon_to_string, BootstrapIcon},
+    BOOTSTRAP_FONT,
+};
 
 use iced_widget::{
     core::{
@@ -101,7 +104,7 @@ where
     /// The spacing of the tabs of the [`TabBar`].
     spacing: f32,
     /// The optional icon font of the [`TabBar`].
-    icon_font: Option<Font>,
+    font: Option<Font>,
     /// The optional text font of the [`TabBar`].
     text_font: Option<Font>,
     /// The style of the [`TabBar`].
@@ -172,7 +175,7 @@ where
             close_size: DEFAULT_CLOSE_SIZE,
             padding: DEFAULT_PADDING,
             spacing: DEFAULT_SPACING,
-            icon_font: None,
+            font: None,
             text_font: None,
             style: <Renderer::Theme as StyleSheet>::Style::default(),
             position: Position::default(),
@@ -222,8 +225,8 @@ where
     /// Sets the font of the icons of the
     /// [`TabLabel`](crate::tab_bar::TabLabel)s of the [`TabBar`].
     #[must_use]
-    pub fn icon_font(mut self, icon_font: Font) -> Self {
-        self.icon_font = Some(icon_font);
+    pub fn icon_font(mut self, font: Font) -> Self {
+        self.font = Some(font);
         self
     }
 
@@ -407,6 +410,7 @@ where
                                 match self.position {
                                     Position::Top => {
                                         column = column
+
                                             .push(layout_icon(
                                                 icon,
                                                 self.icon_size + 1.0,
@@ -417,6 +421,7 @@ where
                                                 self.text_size + 1.0,
                                                 self.text_font,
                                             ));
+
                                     }
                                     Position::Right => {
                                         column = column.push(
@@ -432,6 +437,7 @@ where
                                                     self.text_size + 1.0,
                                                     self.text_font,
                                                 )),
+
                                         );
                                     }
                                     Position::Left => {
@@ -627,7 +633,7 @@ where
                 &self.style,
                 i == self.get_active_tab_idx(),
                 cursor,
-                (self.icon_font.unwrap_or(icons::ICON_FONT), self.icon_size),
+                (self.font.unwrap_or(BOOTSTRAP_FONT), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
             );
@@ -801,12 +807,13 @@ fn draw_tab<Renderer>(
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cursor.is_over(cross_bounds);
 
+
         renderer.fill_text(
             core::text::Text {
-                content: &icons::icon_to_char(icons::Icon::X).to_string(),
+                content:&icon_to_string(BootstrapIcon::X),
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: core::Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
-                font: icons::ICON_FONT,
+                font: BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),

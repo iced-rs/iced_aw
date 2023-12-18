@@ -8,7 +8,7 @@ use crate::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    graphics::icons::{icon_to_char, Icon},
+    graphics::icons::bootstrap::{icon_to_string, BootstrapIcon},
     style::{
         color_picker::{Appearance, StyleSheet},
         style_state::StyleState,
@@ -93,18 +93,18 @@ where
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced_widget::Text::new(icon_to_char(Icon::X).to_string())
+                iced_widget::Text::new(icon_to_string(BootstrapIcon::X))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
-                    .font(crate::ICON_FONT),
+                    .font(crate::BOOTSTRAP_FONT),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced_widget::Text::new(icon_to_char(Icon::Check).to_string())
+                iced_widget::Text::new(icon_to_string(BootstrapIcon::Check))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
-                    .font(crate::ICON_FONT),
+                    .font(crate::BOOTSTRAP_FONT),
             )
             .width(Length::Fill)
             .on_press(on_cancel), // Sending a fake message
@@ -1699,11 +1699,11 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                widget::Text::new(icon_to_char(Icon::X).to_string()).font(crate::ICON_FONT),
+                widget::Text::new(icon_to_string(BootstrapIcon::X)).font(crate::BOOTSTRAP_FONT),
             )
             .into(),
             submit_button: Button::new(
-                widget::Text::new(icon_to_char(Icon::Check).to_string()).font(crate::ICON_FONT),
+                widget::Text::new(icon_to_string(BootstrapIcon::Check)).font(crate::BOOTSTRAP_FONT),
             )
             .into(),
         }

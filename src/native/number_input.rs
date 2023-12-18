@@ -26,7 +26,7 @@ use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
-    graphics::icons::{Icon, ICON_FONT},
+    graphics::icons::{bootstrap::BootstrapIcon, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 
@@ -726,6 +726,7 @@ where
 
         let mut buffer = [0; 4];
 
+
         renderer.fill_text(
             core::text::Text {
                 content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
@@ -741,6 +742,7 @@ where
             decrease_btn_style.icon_color,
             dec_bounds,
         );
+
 
         // increase button section
         renderer.fill_quad(

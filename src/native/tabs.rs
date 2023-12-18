@@ -151,8 +151,8 @@ where
     /// [`TabLabel`](super::tab_bar::TabLabel)s of the
     /// [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn icon_font(mut self, icon_font: Font) -> Self {
-        self.tab_bar = self.tab_bar.icon_font(icon_font);
+    pub fn icon_font(mut self, font: Font) -> Self {
+        self.tab_bar = self.tab_bar.icon_font(font);
         self
     }
 

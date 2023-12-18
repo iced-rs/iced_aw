@@ -2,7 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 
-use crate::graphics::icons::{Icon, ICON_FONT};
+use crate::graphics::icons::{
+    bootstrap::{icon_to_string, BootstrapIcon},
+    BOOTSTRAP_FONT,
+};
 
 use iced_widget::{
     core::{
@@ -775,6 +778,7 @@ fn draw_head<Message, Renderer>(
     if let Some(close_layout) = head_children.next() {
         let close_bounds = close_layout.bounds();
         let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
+
 
         renderer.fill_text(
             core::text::Text {

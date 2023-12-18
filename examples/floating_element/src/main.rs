@@ -7,7 +7,9 @@ use iced::{
 };
 
 use iced_aw::floating_element::Anchor;
-use iced_aw::{helpers::floating_element, Icon, ICON_FONT};
+use iced_aw::graphics::icons::bootstrap::icon_to_string;
+use iced_aw::BootstrapIcon;
+use iced_aw::{helpers::floating_element, BOOTSTRAP_FONT};
 
 fn main() -> iced::Result {
     FloatingElementExample::run(Settings::default())
@@ -45,7 +47,7 @@ impl Application for FloatingElementExample {
         (
             FloatingElementExample::Loading,
             Command::batch(vec![
-                font::load(iced_aw::graphics::icons::ICON_FONT_BYTES).map(Message::FontLoaded),
+                font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )
@@ -106,8 +108,8 @@ impl Application for FloatingElementExample {
                         .max_height(600)
                         .style(theme::Container::Box),
                     Button::new(
-                        Text::new(Icon::Plus.to_string())
-                            .font(ICON_FONT)
+                        Text::new(icon_to_string(BootstrapIcon::Plus))
+                            .font(BOOTSTRAP_FONT)
                             .size(35)
                             .line_height(1.0)
                             .shaping(text::Shaping::Advanced),
