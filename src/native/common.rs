@@ -17,6 +17,7 @@ pub enum InnerBounds {
 }
 impl InnerBounds {
     /// Gets the inner bounds of the Set type.
+    #[must_use]
     pub fn get_bounds(&self, outer_bounds: Rectangle) -> Rectangle {
         use InnerBounds::{Custom, Padding, Ratio, Square};
         match self {

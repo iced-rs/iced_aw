@@ -168,7 +168,7 @@ where
             .options
             .iter()
             .map(|_| graphics::text::Paragraph::new())
-            .collect()
+            .collect();
     }
 
     fn width(&self) -> Length {
@@ -322,7 +322,7 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`], representing an unfocused [`TextInput`].
-    pub fn new<'a, T>(options: &'a [T]) -> Self
+    pub fn new<T>(options: &[T]) -> Self
     where
         T: Clone + Display + Eq + Hash,
         [T]: ToOwned<Owned = Vec<T>>,

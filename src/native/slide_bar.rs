@@ -13,10 +13,10 @@ use iced_widget::core::{
 
 use std::ops::RangeInclusive;
 
-/// Constant Default height of SliderBar.
+/// Constant Default height of `SliderBar`.
 pub const DEFAULT_HEIGHT: f32 = 30.0;
 
-/// A widget that draws a SlideBar
+/// A widget that draws a `SlideBar`
 #[allow(missing_debug_implementations)]
 pub struct SlideBar<'a, T, Message>
 where
@@ -98,25 +98,29 @@ where
     ///
     /// Typically, the user's interaction with the slider is finished when this message is produced.
     /// This is useful if you need to spawn a long-running task from the slider's result, where
-    /// the default on_change message could create too many events.
+    /// the default `on_change` message could create too many events.
+    #[must_use]
     pub fn on_release(mut self, on_release: Message) -> Self {
         self.on_release = Some(on_release);
         self
     }
 
     /// Sets the width of the [`Slider`].
+    #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
         self
     }
 
     /// Sets the height of the [`Slider`].
+    #[must_use]
     pub fn height(mut self, height: Option<Length>) -> Self {
         self.height = height;
         self
     }
 
     /// Sets the step size of the [`Slider`].
+    #[must_use]
     pub fn step(mut self, step: impl Into<T>) -> Self {
         self.step = step.into();
         self
@@ -167,7 +171,7 @@ where
         _viewport: &Rectangle,
     ) -> event::Status {
         update(
-            event,
+            &event,
             layout,
             cursor,
             shell,
@@ -190,14 +194,15 @@ where
         _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
-        draw(renderer, layout, &self);
+        draw(renderer, layout, self);
     }
 }
 
 /// Processes an [`Event`] and updates the [`State`] of a [`SliderBar`]
 /// accordingly.
+#[allow(clippy::too_many_arguments)]
 pub fn update<Message, T>(
-    event: Event,
+    event: &Event,
     layout: Layout<'_>,
     cursor: mouse::Cursor,
     shell: &mut Shell<'_, Message>,
@@ -255,8 +260,7 @@ where
             }
         }
         Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-        | Event::Touch(touch::Event::FingerLifted { .. })
-        | Event::Touch(touch::Event::FingerLost { .. }) => {
+        | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
             if is_dragging {
                 if let Some(on_release) = on_release.clone() {
                     shell.publish(on_release);
@@ -307,7 +311,7 @@ where
         }
     };
 
-    let background = slider.background.unwrap_or(Color::from([1.0; 3]));
+    let background = slider.background.unwrap_or_else(|| Color::from([1.0; 3]));
 
     renderer.fill_quad(
         renderer::Quad {
@@ -351,7 +355,8 @@ pub struct State {
 
 impl State {
     /// Creates a new [`State`].
-    pub fn new() -> State {
-        State::default()
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
     }
 }
