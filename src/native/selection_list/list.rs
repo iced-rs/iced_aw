@@ -13,7 +13,8 @@ use iced_widget::{
             tree::{State, Tag},
             Tree,
         },
-        Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+        Clipboard, Color, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size,
+        Widget,
     },
     text::LineHeight,
 };
@@ -59,6 +60,8 @@ pub struct ListState {
     pub hovered_option: Option<usize>,
     /// The index in the list of options of the last chosen Item Clicked for Processing
     pub last_selected_index: Option<(usize, u64)>,
+    /// String Build Cache
+    pub options: Vec<String>,
 }
 
 impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
@@ -72,7 +75,10 @@ where
     }
 
     fn state(&self) -> State {
-        State::new(ListState::default())
+        State::new(ListState {
+            options: self.options.iter().map(ToString::to_string).collect(),
+            ..ListState::default()
+        })
     }
 
     fn diff(&self, state: &mut Tree) {
@@ -99,6 +105,8 @@ where
                 list_state.last_selected_index = None;
             }
         }
+
+        list_state.options = self.options.iter().map(ToString::to_string).collect();
     }
 
     fn width(&self) -> Length {
@@ -109,7 +117,12 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &layout::Limits) -> layout::Node {
+    fn layout(
+        &self,
+        _tree: &mut Tree,
+        _renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
@@ -212,12 +225,9 @@ where
         let offset = viewport.y - bounds.y;
         let start = (offset / option_height) as usize;
         let end = ((offset + viewport.height) / option_height).ceil() as usize;
-
-        let visible_options = &self.options[start..end.min(self.options.len())];
         let list_state = state.state.downcast_ref::<ListState>();
 
-        for (i, option) in visible_options.iter().enumerate() {
-            let i = start + i;
+        for i in start..end.min(self.options.len()) {
             let is_selected = list_state
                 .last_selected_index
                 .map(|u| u.0 == i)
@@ -255,22 +265,21 @@ where
                 theme.style(&self.style).text_color
             };
 
-            renderer.fill_text(core::text::Text {
-                content: &option.to_string(),
-                bounds: Rectangle {
-                    x: bounds.x,
-                    y: bounds.center_y(),
-                    width: f32::INFINITY,
-                    ..bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &list_state.options[i],
+                    bounds: Size::new(f32::INFINITY, bounds.height),
+                    size: Pixels(self.text_size),
+                    font: self.font,
+                    horizontal_alignment: Horizontal::Left,
+                    vertical_alignment: Vertical::Center,
+                    line_height: LineHeight::default(),
+                    shaping: iced_widget::text::Shaping::Advanced,
                 },
-                size: self.text_size,
-                color: text_color,
-                font: self.font,
-                horizontal_alignment: Horizontal::Left,
-                vertical_alignment: Vertical::Center,
-                line_height: LineHeight::default(),
-                shaping: iced_widget::text::Shaping::Advanced,
-            });
+                Point::new(bounds.x, bounds.center_y()),
+                text_color,
+                bounds,
+            );
         }
     }
 }

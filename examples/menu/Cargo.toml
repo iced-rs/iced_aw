@@ -8,6 +8,6 @@ publish = false
 iced_aw = { workspace = true, features = [
     "menu",
     "quad",
-    "icon_text"
+    "icons"
 ] }
 iced = {workspace = true, features = ["svg"]}

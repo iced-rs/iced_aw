@@ -32,7 +32,7 @@ use iced_widget::{
         touch,
         widget::tree::Tree,
         Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Renderer as _, Shell, Size, Widget,
+        Rectangle, Renderer as _, Shell, Size, Vector, Widget,
     },
     renderer::Renderer,
     text, Button, Column, Container, Row, Text,
@@ -371,7 +371,13 @@ where
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
-    fn layout(&self, renderer: &Renderer<Theme>, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer<Theme>,
+        bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
@@ -381,42 +387,37 @@ where
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
-        let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+        let cancel_button =
+            self.cancel_button
+                .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height + SPACING));
 
         // Month/Year
         let font_size = renderer.default_size();
 
-        let month_year = Row::<(), Renderer<Theme>>::new()
+        let month_year = Row::<Message, Renderer<Theme>>::new()
             .width(Length::Fill)
             .spacing(SPACING)
             .push(
                 Row::new()
                     .width(Length::Fill)
-                    .push(
-                        Container::new(
-                            Row::new() // Left Month arrow
-                                .width(Length::Shrink)
-                                .push(
-                                    Text::new(char::from(BootstrapIcon::CaretLeftFill).to_string())
-                                        .size(font_size + 1.0)
-                                        .font(BOOTSTRAP_FONT),
-                                ),
-                        )
-                        .height(Length::Shrink),
-                    )
+                    .push(Container::new(
+                        Row::new().push(
+                            Text::new(char::from(Icon::CaretLeftFill).to_string())
+                                .size(font_size.0 + 1.0)
+                                .font(crate::BOOTSTRAP_FONT),
+                        ),
+                    ))
                     .push(
                         // Month
-                        Text::new("October")
-                            .width(Length::Fill)
-                            .height(Length::Shrink),
+                        Text::new("October").width(Length::Fill),
                     )
                     .push(
                         // Right Month arrow
                         Container::new(
-                            Text::new(char::from(BootstrapIcon::CaretRightFill).to_string())
-                                .size(font_size + 1.0)
+                            Text::new(char::from(Icon::CaretRightFill).to_string())
+                                .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
                         )
                         .height(Length::Shrink)
@@ -426,43 +427,32 @@ where
             .push(
                 Row::new()
                     .width(Length::Fill)
-                    .push(
-                        Container::new(
-                            Row::new() // Left Year arrow
-                                .width(Length::Shrink)
-                                .push(
-                                    Text::new(char::from(BootstrapIcon::CaretLeftFill).to_string())
-                                        .size(font_size + 1.0)
-                                        .font(BOOTSTRAP_FONT),
-                                ),
-                        )
-                        .height(Length::Shrink)
-                        .width(Length::Shrink),
-                    )
+
+                    .push(Container::new(
+                        Row::new().push(
+                            Text::new(char::from(Icon::CaretLeftFill).to_string())
+                                .size(font_size.0 + 1.0)
+                                .font(BOOTSTRAP_FONT),
+                        ),
+                    ))
                     .push(
                         // Year
-                        Text::new("9999").width(Length::Fill).height(Length::Shrink),
+                        Text::new("9999").width(Length::Fill),
                     )
                     .push(
                         // Right Year arrow
                         Container::new(
-                            Row::new()
-                                .width(Length::Shrink)
-                                .height(Length::Shrink)
-                                .push(
-                                    Text::new(
-                                        char::from(BootstrapIcon::CaretRightFill).to_string(),
-                                    )
-                                    .size(font_size + 1.0)
+                            Row::new().push(
+                                Text::new(char::from(Icon::CaretRightFill).to_string())
+                                    .size(font_size.0 + 1.0)
                                     .font(BOOTSTRAP_FONT),
-                                ),
-                        )
-                        .height(Length::Shrink)
+                            ),
+                        ) .height(Length::Shrink)
                         .width(Length::Shrink),
                     ),
             );
 
-        let days = Container::<(), Renderer<Theme>>::new((0..7).fold(
+        let days = Container::<Message, Renderer<Theme>>::new((0..7).fold(
             Column::new().width(Length::Fill).height(Length::Fill),
             |column, _y| {
                 column.push(
@@ -473,14 +463,9 @@ where
                             .padding(DAY_CELL_PADDING),
                         |row, _x| {
                             row.push(
-                                Container::new(
-                                    Row::new()
-                                        .width(Length::Shrink)
-                                        .height(Length::Shrink)
-                                        .push(Text::new("31").size(font_size)),
-                                )
-                                .width(Length::Fill)
-                                .height(Length::Shrink),
+                                Container::new(Row::new().push(Text::new("31").size(font_size)))
+                                    .width(Length::Fill)
+                                    .height(Length::Fill),
                             )
                         },
                     ),
@@ -491,13 +476,23 @@ where
         .height(Length::Fill)
         .center_y();
 
-        let mut col = Column::<(), Renderer<Theme>>::new()
+        let col = Column::<Message, Renderer<Theme>>::new()
             .spacing(SPACING)
             .align_items(Alignment::Center)
             .push(month_year)
-            .push(days)
-            .layout(renderer, &limits);
+            .push(days);
 
+        let element: Element<Message, Renderer<Theme>> = Element::new(col);
+        let col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
+            child_tree.diff(element.as_widget());
+            child_tree
+        } else {
+            let child_tree = Tree::new(element.as_widget());
+            self.tree.children.insert(2, child_tree);
+            &mut self.tree.children[2]
+        };
+
+        let mut col = element.as_widget().layout(col_tree, renderer, &limits);
         col.move_to(Point::new(
             col.bounds().x + PADDING,
             col.bounds().y + PADDING,
@@ -507,12 +502,16 @@ where
         let cancel_limits =
             limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
-        let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+        let mut cancel_button =
+            self.cancel_button
+                .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
             limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
-        let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
+        let mut submit_button =
+            self.submit_button
+                .layout(&mut self.tree.children[1], renderer, &submit_limits);
 
         cancel_button.move_to(Point {
             x: cancel_button.bounds().x + PADDING,
@@ -965,7 +964,7 @@ where
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 
@@ -1129,64 +1128,69 @@ fn month_year<Theme>(
         let mut buffer = [0; 4];
 
         // Left caret
-        renderer.fill_text(core::text::Text {
-            content: char::from(BootstrapIcon::CaretLeftFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: left_bounds.center_x(),
-                y: left_bounds.center_y(),
-                ..left_bounds
+
+        renderer.fill_text(
+            core::text::Text {
+                content: char::from(Icon::CaretLeftFill).encode_utf8(&mut buffer),
+                bounds: Size::new(left_bounds.width, left_bounds.height),
+                size: core::Pixels(
+                    renderer.default_size().0 + if left_arrow_hovered { 1.0 } else { 0.0 },
+                ),
+                font: BOOTSTRAP_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Advanced,
             },
-            size: renderer.default_size() + if left_arrow_hovered { 1.0 } else { 0.0 },
-            color: style
+            Point::new(left_bounds.center_x(), left_bounds.center_y()),
+            style
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: BOOTSTRAP_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Advanced,
-        });
+            left_bounds,
+        );
 
         // Text
-        renderer.fill_text(core::text::Text {
-            content: text,
-            bounds: Rectangle {
-                x: center_bounds.center_x(),
-                y: center_bounds.center_y(),
-                ..center_bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: text,
+                bounds: Size::new(center_bounds.width, center_bounds.height),
+                size: renderer.default_size(),
+                font: renderer.default_font(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            size: renderer.default_size(),
-            color: style
+            Point::new(center_bounds.center_x(), center_bounds.center_y()),
+            style
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            center_bounds,
+        );
 
         // Right caret
-        renderer.fill_text(core::text::Text {
-            content: char::from(BootstrapIcon::CaretRightFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: right_bounds.center_x(),
-                y: right_bounds.center_y(),
-                ..right_bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: char::from(BootstrapIcon::CaretRightFill).encode_utf8(&mut buffer),
+                bounds: Size::new(right_bounds.width, right_bounds.height),
+                size: core::Pixels(
+                    renderer.default_size().0 + if right_arrow_hovered { 1.0 } else { 0.0 },
+                ),
+                font: BOOTSTRAP_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Advanced,
             },
-            size: renderer.default_size() + if right_arrow_hovered { 1.0 } else { 0.0 },
-            color: style
+            Point::new(right_bounds.center_x(), right_bounds.center_y()),
+            style
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: BOOTSTRAP_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Advanced,
-        });
+            right_bounds,
+        );
     };
 
     // Draw month
@@ -1230,24 +1234,24 @@ fn day_labels<Theme>(
     for (i, label) in layout.children().enumerate() {
         let bounds = label.bounds();
 
-        renderer.fill_text(core::text::Text {
-            content: &crate::core::date::WEEKDAY_LABELS[i],
-            bounds: Rectangle {
-                x: bounds.center_x(),
-                y: bounds.center_y(),
-                ..bounds
+        renderer.fill_text(
+            core::text::Text {
+                content: &crate::core::date::WEEKDAY_LABELS[i],
+                bounds: Size::new(bounds.width, bounds.height),
+                size: renderer.default_size(),
+                font: renderer.default_font(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            size: renderer.default_size(),
-            color: style
+            Point::new(bounds.center_x(), bounds.center_y()),
+            style
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            bounds,
+        );
     }
 }
 
@@ -1315,15 +1319,19 @@ fn day_table<Theme>(
                 );
             }
 
-            renderer.fill_text(core::text::Text {
-                content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
-                bounds: Rectangle {
-                    x: bounds.center_x(),
-                    y: bounds.center_y(),
-                    ..bounds
+            renderer.fill_text(
+                core::text::Text {
+                    content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
+                    bounds: Size::new(bounds.width, bounds.height),
+                    size: renderer.default_size(),
+                    font: renderer.default_font(),
+                    horizontal_alignment: Horizontal::Center,
+                    vertical_alignment: Vertical::Center,
+                    line_height: text::LineHeight::Relative(1.3),
+                    shaping: text::Shaping::Basic,
                 },
-                size: renderer.default_size(),
-                color: if is_in_month == IsInMonth::Same {
+                Point::new(bounds.center_x(), bounds.center_y()),
+                if is_in_month == IsInMonth::Same {
                     style
                         .get(&style_state)
                         .expect("Style Sheet not found.")
@@ -1334,12 +1342,8 @@ fn day_table<Theme>(
                         .expect("Style Sheet not found.")
                         .text_attenuated_color
                 },
-                font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
-                line_height: text::LineHeight::Relative(1.3),
-                shaping: text::Shaping::Basic,
-            });
+                bounds,
+            );
         }
     }
 }

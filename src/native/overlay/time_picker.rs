@@ -505,7 +505,13 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn layout(&self, renderer: &Renderer<Theme>, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer<Theme>,
+        bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
@@ -519,7 +525,9 @@ where
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
-        let cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+        let cancel_button =
+            self.cancel_button
+                .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let limits = limits.shrink(Size::new(
             0.0,
@@ -530,7 +538,7 @@ where
         let mut clock = Row::<(), Renderer<Theme>>::new()
             .width(Length::Fill)
             .height(Length::Fill)
-            .layout(renderer, &limits);
+            .layout(self.tree, renderer, &limits);
 
         clock.move_to(Point::new(
             clock.bounds().x + PADDING,
@@ -546,12 +554,16 @@ where
         let cancel_limits =
             limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
-        let mut cancel_button = self.cancel_button.layout(renderer, &cancel_limits);
+        let mut cancel_button =
+            self.cancel_button
+                .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
             limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
 
-        let mut submit_button = self.submit_button.layout(renderer, &submit_limits);
+        let mut submit_button =
+            self.submit_button
+                .layout(&mut self.tree.children[1], renderer, &submit_limits);
 
         cancel_button.move_to(Point {
             x: cancel_button.bounds().x + PADDING,
@@ -921,7 +933,7 @@ where
 
 /// Defines the layout of the digital clock of the time picker.
 fn digital_clock<Message, Theme>(
-    time_picker: &TimePickerOverlay<'_, Message, Theme>,
+    time_picker: &mut TimePickerOverlay<'_, Message, Theme>,
     renderer: &Renderer<Theme>,
     limits: Limits,
 ) -> Node
@@ -929,10 +941,10 @@ where
     Message: 'static + Clone,
     Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    let arrow_size = renderer.default_size();
-    let font_size = 1.2 * renderer.default_size();
+    let arrow_size = renderer.default_size().0;
+    let font_size = 1.2 * renderer.default_size().0;
 
-    let mut digital_clock_row = Row::<(), Renderer<Theme>>::new()
+    let mut digital_clock_row = Row::<Message, Renderer<Theme>>::new()
         .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
@@ -1034,12 +1046,25 @@ where
         );
     }
 
-    Container::new(digital_clock_row)
+    let container = Container::new(digital_clock_row)
         .width(Length::Fill)
         .height(Length::Shrink)
         .center_x()
-        .center_y()
-        .layout(renderer, &limits)
+        .center_y();
+
+    let element: Element<Message, Renderer<Theme>> = Element::new(container);
+    let container_tree = if let Some(child_tree) = time_picker.tree.children.get_mut(2) {
+        child_tree.diff(element.as_widget());
+        child_tree
+    } else {
+        let child_tree = Tree::new(element.as_widget());
+        time_picker.tree.children.insert(2, child_tree);
+        &mut time_picker.tree.children[2]
+    };
+
+    element
+        .as_widget()
+        .layout(container_tree, renderer, &limits)
 }
 
 /// Draws the analog clock.
@@ -1191,7 +1216,7 @@ fn draw_clock<Message, Theme>(
                     .get(&clock_style_state)
                     .expect("Style Sheet not found.")
                     .clock_number_color,
-                size: period_size,
+                size: core::Pixels(period_size),
                 font: renderer.default_font(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1236,7 +1261,7 @@ fn draw_clock<Message, Theme>(
                         .get(&style_state)
                         .expect("Style Sheet not found.")
                         .clock_number_color,
-                    size: number_size,
+                    size: core::Pixels(number_size),
                     font: renderer.default_font(),
                     horizontal_alignment: Horizontal::Center,
                     vertical_alignment: Vertical::Center,
@@ -1271,7 +1296,7 @@ fn draw_clock<Message, Theme>(
                             .get(&style_state)
                             .expect("Style Sheet not found.")
                             .clock_number_color,
-                        size: number_size,
+                        size: core::Pixels(number_size),
                         font: renderer.default_font(),
                         horizontal_alignment: Horizontal::Center,
                         vertical_alignment: Vertical::Center,
@@ -1317,7 +1342,7 @@ fn draw_clock<Message, Theme>(
                                 .get(&style_state)
                                 .expect("Style Sheet not found.")
                                 .clock_number_color,
-                            size: number_size,
+                            size: core::Pixels(number_size),
                             font: renderer.default_font(),
                             horizontal_alignment: Horizontal::Center,
                             vertical_alignment: Vertical::Center,
@@ -1419,64 +1444,62 @@ fn draw_digital_clock<Message, Theme>(
         let mut buffer = [0; 4];
 
         // Caret up
-        renderer.fill_text(core::Text {
-            content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: up_bounds.center_x(),
-                y: up_bounds.center_y(),
-                ..up_bounds
+        renderer.fill_text(
+            core::Text {
+                content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
+                bounds: Size::new(up_bounds.width, up_bounds.height),
+                size: core::Pixels(
+                    renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 },
+                ),
+                font: crate::graphics::icons::BOOTSTRAP_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            size: renderer.default_size() + if up_arrow_hovered { 1.0 } else { 0.0 },
-            color: style
+            Point::new(up_bounds.center_x(), up_bounds.center_y()),
+            style
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: crate::graphics::icons::BOOTSTRAP_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            up_bounds,
+        );
 
         // Text
-        renderer.fill_text(core::Text {
-            content: &text,
-            bounds: Rectangle {
-                x: center_bounds.center_x(),
-                y: center_bounds.center_y(),
-                ..center_bounds
+        renderer.fill_text(
+            core::Text {
+                content: &text,
+                bounds: Size::new(center_bounds.width, center_bounds.height),
+                size: renderer.default_size(),
+                font: renderer.default_font(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            size: renderer.default_size(),
-            color: style
+            Point::new(center_bounds.center_x(), center_bounds.center_y()),
+            style
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
-            font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            center_bounds,
+        );
 
         // Down caret
-        renderer.fill_text(core::Text {
-            content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
-            bounds: Rectangle {
-                x: down_bounds.center_x(),
-                y: down_bounds.center_y(),
-                ..down_bounds
-            },
-            size: renderer.default_size() + if down_arrow_hovered { 1.0 } else { 0.0 },
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: crate::graphics::icons::BOOTSTRAP_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+        renderer.fill_text(
+            core::Text {
+                content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
+                bounds: Size::new(down_bounds.width, down_bounds.height),
+                size: core::Pixels(
+                    renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
+                ),
+                font: crate::graphics::icons::BOOTSTRAP_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
+            down_bounds,
+        );
     };
 
     if !time_picker.state.use_24h {
@@ -1506,21 +1529,28 @@ fn draw_digital_clock<Message, Theme>(
     let hour_minute_separator = children
         .next()
         .expect("Graphics: Layout should have a hour/minute separator layout");
-    renderer.fill_text(core::Text {
-        content: ":",
-        bounds: Rectangle {
-            x: hour_minute_separator.bounds().center_x(),
-            y: hour_minute_separator.bounds().center_y(),
-            ..hour_minute_separator.bounds()
+
+    renderer.fill_text(
+        core::Text {
+            content: ":",
+            bounds: Size::new(
+                hour_minute_separator.bounds().width,
+                hour_minute_separator.bounds().height,
+            ),
+            size: renderer.default_size(),
+            font: renderer.default_font(),
+            horizontal_alignment: Horizontal::Center,
+            vertical_alignment: Vertical::Center,
+            line_height: text::LineHeight::Relative(1.3),
+            shaping: text::Shaping::Basic,
         },
-        size: renderer.default_size(),
-        color: style[&StyleState::Active].text_color,
-        font: renderer.default_font(),
-        horizontal_alignment: Horizontal::Center,
-        vertical_alignment: Vertical::Center,
-        line_height: text::LineHeight::Relative(1.3),
-        shaping: text::Shaping::Basic,
-    });
+        Point::new(
+            hour_minute_separator.bounds().center_x(),
+            hour_minute_separator.bounds().center_y(),
+        ),
+        style[&StyleState::Active].text_color,
+        hour_minute_separator.bounds(),
+    );
 
     // Draw minutes
     let minute_layout = children
@@ -1538,24 +1568,27 @@ fn draw_digital_clock<Message, Theme>(
         let minute_second_separator = children
             .next()
             .expect("Graphics: Layout should have a minute/second separator layout");
-        renderer.fill_text(core::Text {
-            content: ":",
-            bounds: Rectangle {
-                x: minute_second_separator.bounds().center_x(),
-                y: minute_second_separator.bounds().center_y(),
-                ..minute_second_separator.bounds()
+        renderer.fill_text(
+            core::Text {
+                content: ":",
+                bounds: Size::new(
+                    minute_second_separator.bounds().width,
+                    minute_second_separator.bounds().height,
+                ),
+                size: renderer.default_size(),
+                font: renderer.default_font(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            size: renderer.default_size(),
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            Point::new(
+                minute_second_separator.bounds().center_x(),
+                minute_second_separator.bounds().center_y(),
+            ),
+            style[&StyleState::Active].text_color,
+            minute_second_separator.bounds(),
+        );
 
         // Draw seconds
         let second_layout = children
@@ -1574,28 +1607,25 @@ fn draw_digital_clock<Message, Theme>(
         let period = children
             .next()
             .expect("Graphics: Layout should have a period layout");
-        renderer.fill_text(core::Text {
-            content: if time_picker.state.time.hour12().0 {
-                "PM"
-            } else {
-                "AM"
+        renderer.fill_text(
+            core::Text {
+                content: if time_picker.state.time.hour12().0 {
+                    "PM"
+                } else {
+                    "AM"
+                },
+                bounds: Size::new(period.bounds().width, period.bounds().height),
+                size: renderer.default_size(),
+                font: renderer.default_font(),
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: text::LineHeight::Relative(1.3),
+                shaping: text::Shaping::Basic,
             },
-            bounds: Rectangle {
-                x: period.bounds().center_x(),
-                y: period.bounds().center_y(),
-                ..period.bounds()
-            },
-            size: renderer.default_size(),
-            color: style
-                .get(&StyleState::Active)
-                .expect("Style Sheet not found.")
-                .text_color,
-            font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: text::LineHeight::Relative(1.3),
-            shaping: text::Shaping::Basic,
-        });
+            Point::new(period.bounds().center_x(), period.bounds().center_y()),
+            style[&StyleState::Active].text_color,
+            period.bounds(),
+        );
     }
 }
 
@@ -1710,7 +1740,7 @@ where
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 

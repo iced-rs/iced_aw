@@ -22,7 +22,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         if self.element_count() == 0 {
             return Node::new(Size::ZERO);
         }
@@ -37,6 +37,7 @@ where
         );
 
         layout(
+            tree,
             renderer,
             limits,
             self.column_count(),

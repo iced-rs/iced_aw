@@ -61,10 +61,10 @@ impl Sandbox for Example {
                 self.manual_select = None;
             }
             Message::ManualSelection => {
-                if let Some(option) = self.vec.get(0) {
+                if let Some(option) = self.vec.get(2) {
                     self.selected_language = option.to_owned();
-                    self.selected_index = 0;
-                    self.manual_select = Some(0);
+                    self.selected_index = 2;
+                    self.manual_select = Some(2);
                 }
             }
         }

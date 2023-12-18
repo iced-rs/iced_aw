@@ -127,8 +127,19 @@ where
         self.body.as_widget().height()
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
-        return self.body.as_widget().layout(renderer, limits);
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.body)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.body));
+    }
+
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        return self
+            .body
+            .as_widget()
+            .layout(&mut tree.children[0], renderer, limits);
     }
 
     fn draw(
@@ -189,9 +200,15 @@ where
             new_style.text_color = secondary_system_fill();
         }
 
-        self.body
-            .as_widget()
-            .draw(state, renderer, theme, new_style, layout, cursor, viewport);
+        self.body.as_widget().draw(
+            &state.children[0],
+            renderer,
+            theme,
+            new_style,
+            layout,
+            cursor,
+            viewport,
+        );
     }
 
     fn on_event(

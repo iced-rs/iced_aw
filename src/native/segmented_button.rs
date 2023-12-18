@@ -141,7 +141,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = self.padding;
         let limits = limits
             .loose()
@@ -149,7 +149,10 @@ where
             .height(self.height)
             .pad(padding);
 
-        let mut content = self.content.as_widget().layout(renderer, &limits.loose());
+        let mut content =
+            self.content
+                .as_widget()
+                .layout(&mut tree.children[0], renderer, &limits.loose());
         let size = limits.resolve(content.size());
 
         content.move_to(Point::new(padding.left, padding.top));

@@ -127,7 +127,7 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
@@ -195,7 +195,7 @@ where
 
         let bounds = layout.bounds();
 
-        if let Event::Window(window::Event::RedrawRequested(now)) = event {
+        if let Event::Window(_id, window::Event::RedrawRequested(now)) = event {
             if is_visible(&bounds) {
                 let state = state.state.downcast_mut::<SpinnerState>();
                 let duration = (now - state.last_update).as_secs_f32();

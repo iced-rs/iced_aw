@@ -6,7 +6,10 @@ use iced_aw::{card, modal, CardStyles};
 fn main() -> iced::Result {
     MultipleModalsExample::run(Settings {
         window: window::Settings {
-            size: (500, 150),
+            size: iced::Size {
+                width: 500.0,
+                height: 150.0,
+            },
             position: window::Position::Centered,
             ..Default::default()
         },
@@ -114,7 +117,7 @@ impl Application for MultipleModalsExample {
                 self.state = State::Button1;
                 Command::none()
             }
-            Message::ButtonQuitPressed => window::close(),
+            Message::ButtonQuitPressed => window::close(window::Id::MAIN),
             Message::CloseOverlay => {
                 match (&self.state, &self.button_pressed) {
                     (State::Button1, Some(ButtonPressed::Correct)) => self.state = State::Button2,

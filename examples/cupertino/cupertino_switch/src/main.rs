@@ -49,10 +49,16 @@ impl Application for Switch {
     fn view(&self) -> Element<Message> {
         let toggle_1: CupertinoSwitch<Message> = CupertinoSwitch::new().on_changed(Some(Box::new(
             Message::LeftSwitchChanged
-        )));
+        ))).value(match self {
+            Switch::LeftSwitchChanged(v) => *v,
+            _ => true,
+        });
 
         let toggle_2: CupertinoSwitch<Message> = CupertinoSwitch::new()
-            .value(false)
+            .value(match self {
+                Switch::LeftSwitchChanged(v) => *v,
+                _ => false,
+            })
             .on_changed(Some(Box::new(Message::RightSwitchChanged)));
 
         let left_text: String = match self {

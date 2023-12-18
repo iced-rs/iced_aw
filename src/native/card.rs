@@ -16,8 +16,8 @@ use iced_widget::{
         mouse::{self, Cursor},
         renderer, touch,
         widget::{Operation, Tree},
-        Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-        Rectangle, Shell, Size, Widget,
+        Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
+        Point, Rectangle, Shell, Size, Widget,
     },
     text::LineHeight,
 };
@@ -244,7 +244,7 @@ where
         self.height
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
@@ -255,9 +255,17 @@ where
             self.width,
             self.on_close.is_some(),
             self.close_size,
+            tree,
         );
 
-        let mut body_node = body_node(renderer, &limits, &self.body, self.padding_body, self.width);
+        let mut body_node = body_node(
+            renderer,
+            &limits,
+            &self.body,
+            self.padding_body,
+            self.width,
+            tree,
+        );
 
         body_node.move_to(Point::new(
             body_node.bounds().x,
@@ -265,7 +273,7 @@ where
         ));
 
         let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
-            foot_node(renderer, &limits, foot, self.padding_foot, self.width)
+            foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
         });
 
         foot_node.move_to(Point::new(
@@ -590,6 +598,7 @@ where
 }
 
 /// Calculates the layout of the head.
+#[allow(clippy::too_many_arguments)]
 fn head_node<Message, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
@@ -598,6 +607,7 @@ fn head_node<Message, Renderer>(
     width: Length,
     on_close: bool,
     close_size: Option<f32>,
+    tree: &mut Tree,
 ) -> Node
 where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
@@ -609,7 +619,7 @@ where
         .height(head.as_widget().height())
         .pad(pad);
 
-    let close_size = close_size.unwrap_or_else(|| renderer.default_size());
+    let close_size = close_size.unwrap_or_else(|| renderer.default_size().0);
     let mut close = if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
         Some(Node::new(Size::new(close_size + 1.0, close_size + 1.0)))
@@ -617,7 +627,9 @@ where
         None
     };
 
-    let mut head = head.as_widget().layout(renderer, &limits);
+    let mut head = head
+        .as_widget()
+        .layout(&mut tree.children[0], renderer, &limits);
     let mut size = limits.resolve(head.size());
 
     head.move_to(Point::new(padding, padding));
@@ -646,6 +658,7 @@ fn body_node<Message, Renderer>(
     body: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
+    tree: &mut Tree,
 ) -> Node
 where
     Renderer: core::Renderer,
@@ -658,7 +671,9 @@ where
         .height(body.as_widget().height())
         .pad(pad);
 
-    let mut body = body.as_widget().layout(renderer, &limits);
+    let mut body = body
+        .as_widget()
+        .layout(&mut tree.children[1], renderer, &limits);
     let size = limits.resolve(body.size());
 
     body.move_to(Point::new(padding, padding));
@@ -674,6 +689,7 @@ fn foot_node<Message, Renderer>(
     foot: &Element<'_, Message, Renderer>,
     padding: f32,
     width: Length,
+    tree: &mut Tree,
 ) -> Node
 where
     Renderer: core::Renderer,
@@ -686,7 +702,9 @@ where
         .height(foot.as_widget().height())
         .pad(pad);
 
-    let mut foot = foot.as_widget().layout(renderer, &limits);
+    let mut foot = foot
+        .as_widget()
+        .layout(&mut tree.children[2], renderer, &limits);
     let size = limits.resolve(foot.size());
 
     foot.move_to(Point::new(padding, padding));
@@ -761,23 +779,25 @@ fn draw_head<Message, Renderer>(
         let close_bounds = close_layout.bounds();
         let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
 
-        renderer.fill_text(core::text::Text {
-            content: &icon_to_string(BootstrapIcon::X),
-            bounds: Rectangle {
-                x: close_bounds.center_x(),
-                y: close_bounds.center_y(),
-                height: close_bounds.height,
-                ..close_bounds
+
+        renderer.fill_text(
+            core::text::Text {
+                content: &Icon::X.to_string(),
+                bounds: Size::new(close_bounds.width, close_bounds.height),
+                size: Pixels(
+                    close_size.unwrap_or_else(|| renderer.default_size().0)
+                        + if is_mouse_over_close { 1.0 } else { 0.0 },
+                ),
+                font: ICON_FONT,
+                horizontal_alignment: Horizontal::Center,
+                vertical_alignment: Vertical::Center,
+                line_height: LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
             },
-            size: close_size.unwrap_or_else(|| renderer.default_size())
-                + if is_mouse_over_close { 1.0 } else { 0.0 },
-            color: style_sheet.close_color,
-            font: BOOTSTRAP_FONT,
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
-            line_height: LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Advanced,
-        });
+            Point::new(close_bounds.center_x(), close_bounds.center_y()),
+            style_sheet.close_color,
+            close_bounds,
+        );
     }
 }
 

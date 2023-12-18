@@ -151,7 +151,7 @@ impl Application for ModalExample {
                 modal(underlay, overlay)
                     .backdrop(Message::CloseModal)
                     .on_esc(Message::CloseModal)
-                    .align_y(alignment::Vertical::Top)
+                    .align_y(alignment::Vertical::Center)
                     .into()
             }
         }

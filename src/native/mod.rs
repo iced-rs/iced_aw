@@ -1,9 +1,14 @@
 //! Stateless, pure widgets for iced
 //use iced_widget::{renderer, style};
 pub mod helpers;
+#[allow(unused_imports)]
 pub use helpers::*;
 
 pub mod overlay;
+
+pub mod common;
+
+pub use common::InnerBounds;
 
 #[cfg(feature = "badge")]
 pub mod badge;
@@ -132,3 +137,7 @@ pub mod segmented_button;
 /// A badge for color highlighting small information.
 pub type SegmentedButton<'a, Message, Renderer> =
     segmented_button::SegmentedButton<'a, Message, Renderer>;
+
+pub mod slide_bar;
+
+pub use slide_bar::SlideBar;

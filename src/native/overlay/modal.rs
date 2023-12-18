@@ -7,6 +7,7 @@ use iced_widget::core::{
     renderer, touch,
     widget::Tree,
     Alignment, Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size,
+    Vector,
 };
 
 use crate::style::modal::StyleSheet;
@@ -68,9 +69,18 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn layout(&self, renderer: &Renderer, bounds: Size, _position: Point) -> layout::Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer,
+        bounds: Size,
+        _position: Point,
+        _translation: Vector,
+    ) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
-        let mut content = self.content.as_widget().layout(renderer, &limits);
+        let mut content = self
+            .content
+            .as_widget()
+            .layout(self.state, renderer, &limits);
         let max_size = limits.max();
 
         content.align(

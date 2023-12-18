@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use iced_widget::core::{
     alignment::{Horizontal, Vertical},
     layout::{Limits, Node},
+    widget::Tree,
     Length, Padding, Pixels, Point, Size,
 };
 use itertools::{Itertools, Position};
@@ -11,6 +12,7 @@ use super::types::GridRow;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn layout<Message, Renderer>(
+    tree: &mut Tree,
     renderer: &Renderer,
     limits: &Limits,
     column_count: usize,
@@ -34,7 +36,7 @@ where
     let mut row_heights = Vec::<f32>::with_capacity(row_count);
 
     // Measure the minimum row and column size to fit the contents
-    minimum_row_column_sizes(renderer, &mut column_widths, &mut row_heights, rows);
+    minimum_row_column_sizes(tree, renderer, &mut column_widths, &mut row_heights, rows);
 
     // Adjust for fixed row and column sizes
     adjust_size_for_fixed_length(&mut column_widths, column_lengths);
@@ -62,6 +64,7 @@ where
 
     // Lay out the widgets
     create_grid_layout(
+        tree,
         element_count,
         rows,
         &row_heights,
@@ -77,6 +80,7 @@ where
 }
 
 fn minimum_row_column_sizes<Message, Renderer>(
+    tree: &mut Tree,
     renderer: &Renderer,
     column_widths: &mut Vec<f32>,
     row_heights: &mut Vec<f32>,
@@ -84,12 +88,20 @@ fn minimum_row_column_sizes<Message, Renderer>(
 ) where
     Renderer: iced_widget::core::Renderer,
 {
+    let mut children = tree.children.iter_mut();
     for row in rows {
         let mut row_height = 0.0f32;
 
         for (col_idx, element) in row.elements.iter().enumerate() {
             let child_limits = Limits::NONE.width(Length::Shrink).height(Length::Shrink);
-            let Size { width, height } = element.as_widget().layout(renderer, &child_limits).size();
+            let Size { width, height } = element
+                .as_widget()
+                .layout(
+                    children.next().expect("grid missing expected child"),
+                    renderer,
+                    &child_limits,
+                )
+                .size();
 
             #[allow(clippy::option_if_let_else)]
             match column_widths.get_mut(col_idx) {
@@ -160,6 +172,7 @@ fn allocate_space(current_sizes: &mut [f32], length_settings: &[Length], availab
 
 #[allow(clippy::too_many_arguments)]
 fn create_grid_layout<Message, Renderer>(
+    tree: &mut Tree,
     element_count: usize,
     rows: &[GridRow<'_, Message, Renderer>],
     row_heights: &[f32],
@@ -177,6 +190,8 @@ where
 {
     let mut y = padding.top;
     let mut nodes = Vec::with_capacity(element_count);
+    let mut children = tree.children.iter_mut();
+
     for (row_position, (row, &row_height)) in rows.iter().zip(row_heights).with_position() {
         let mut x = padding.left;
         for (col_position, (element, &column_width)) in
@@ -189,7 +204,11 @@ where
                 .max_width(column_width)
                 .max_height(row_height);
 
-            let mut node = widget.layout(renderer, &widget_limits);
+            let mut node = widget.layout(
+                children.next().expect("Grid missing child"),
+                renderer,
+                &widget_limits,
+            );
             node.move_to(Point::new(x, y));
             node.align(
                 horizontal_alignment.into(),

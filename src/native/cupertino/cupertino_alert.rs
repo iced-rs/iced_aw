@@ -267,7 +267,7 @@ where
         }
     }
 
-    fn layout(&self, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(if self.is_hidden {
@@ -282,6 +282,13 @@ where
                 })
                 .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
         )
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        self.actions
+            .iter()
+            .map(|action| Tree::new(&action.child))
+            .collect()
     }
 
     fn draw(
@@ -438,7 +445,7 @@ where
                     });
 
                     child_1.draw(
-                        state,
+                        &state.children[0],
                         r,
                         theme,
                         style,
@@ -448,7 +455,7 @@ where
                     );
 
                     child_2.draw(
-                        state,
+                        &state.children[1],
                         r,
                         theme,
                         style,
@@ -477,7 +484,7 @@ where
                     y: center.y - height / 3.0,
                 });
 
-                let title: Element<'a, Message, Renderer> =
+                /*let title: Element<'a, Message, Renderer> =
                     CupertinoAlert::<'a, Message, Renderer>::text_with_font(
                         Text::new(self.title.clone()).horizontal_alignment(Horizontal::Center),
                     );
@@ -505,7 +512,7 @@ where
                     Layout::new(&content_node),
                     cursor,
                     viewport,
-                );
+                );*/
             };
 
             renderer.with_layer(rectangle, draw_element);

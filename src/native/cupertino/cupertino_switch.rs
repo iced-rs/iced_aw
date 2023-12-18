@@ -166,7 +166,7 @@ where
         self.height
     }
 
-    fn layout(&self, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
         Node::new(
             limits
                 .width(self.width)
@@ -340,7 +340,7 @@ where
         let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
 
         match event {
-            Event::Window(window::Event::RedrawRequested(_now)) => {
+            Event::Window(_id, window::Event::RedrawRequested(_now)) => {
                 if state.toggle_staged {
                     state.animation_frame += 1;
 
