@@ -397,7 +397,7 @@ where
                         match tab_label {
                             TabLabel::Icon(icon) => Column::new()
                                 .align_items(Alignment::Center)
-                                .push(layout_icon(icon, self.icon_size + 1.0, self.icon_font)),
+                                .push(layout_icon(icon, self.icon_size + 1.0, self.font)),
 
                             TabLabel::Text(text) => Column::new()
                                 .padding(5.0)
@@ -410,18 +410,16 @@ where
                                 match self.position {
                                     Position::Top => {
                                         column = column
-
                                             .push(layout_icon(
                                                 icon,
                                                 self.icon_size + 1.0,
-                                                self.icon_font,
+                                                self.font,
                                             ))
                                             .push(layout_text(
                                                 text,
                                                 self.text_size + 1.0,
                                                 self.text_font,
                                             ));
-
                                     }
                                     Position::Right => {
                                         column = column.push(
@@ -430,14 +428,13 @@ where
                                                 .push(layout_icon(
                                                     icon,
                                                     self.icon_size + 1.0,
-                                                    self.icon_font,
+                                                    self.font,
                                                 ))
                                                 .push(layout_text(
                                                     text,
                                                     self.text_size + 1.0,
                                                     self.text_font,
                                                 )),
-
                                         );
                                     }
                                     Position::Left => {
@@ -447,7 +444,7 @@ where
                                                 .push(layout_text(
                                                     text,
                                                     self.icon_size + 1.0,
-                                                    self.icon_font,
+                                                    self.font,
                                                 ))
                                                 .push(layout_icon(
                                                     icon,
@@ -461,7 +458,7 @@ where
                                             .push(layout_text(
                                                 text,
                                                 self.icon_size + 1.0,
-                                                self.icon_font,
+                                                self.font,
                                             ))
                                             .push(layout_icon(
                                                 icon,
@@ -807,10 +804,9 @@ fn draw_tab<Renderer>(
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cursor.is_over(cross_bounds);
 
-
         renderer.fill_text(
             core::text::Text {
-                content:&icon_to_string(BootstrapIcon::X),
+                content: &icon_to_string(BootstrapIcon::X),
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: core::Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,

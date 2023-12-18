@@ -26,7 +26,10 @@ use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
 pub use crate::{
-    graphics::icons::{bootstrap::BootstrapIcon, BOOTSTRAP_FONT},
+    graphics::icons::{
+        bootstrap::{icon_to_string, BootstrapIcon},
+        BOOTSTRAP_FONT,
+    },
     style::number_input::{self, Appearance, StyleSheet},
 };
 
@@ -724,15 +727,12 @@ where
                 .unwrap_or(Background::Color(Color::TRANSPARENT)),
         );
 
-        let mut buffer = [0; 4];
-
-
         renderer.fill_text(
             core::text::Text {
-                content: char::from(Icon::CaretDownFill).encode_utf8(&mut buffer),
+                content: &icon_to_string(BootstrapIcon::CaretDownFill),
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
-                font: ICON_FONT,
+                font: BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -742,7 +742,6 @@ where
             decrease_btn_style.icon_color,
             dec_bounds,
         );
-
 
         // increase button section
         renderer.fill_quad(
@@ -759,10 +758,10 @@ where
 
         renderer.fill_text(
             core::text::Text {
-                content: char::from(Icon::CaretUpFill).encode_utf8(&mut buffer),
+                content: &icon_to_string(BootstrapIcon::CaretUpFill),
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
-                font: ICON_FONT,
+                font: BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),

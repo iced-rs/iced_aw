@@ -3,7 +3,7 @@
 
 /// Bootstrap RequiredIcons
 #[derive(Copy, Clone, Debug, Hash)]
-pub enum RequiredRequiredIcon {
+pub enum BootstrapIcon {
     /// caret-down-fill
     CaretDownFill,
     /// caret-left-fill
@@ -18,32 +18,38 @@ pub enum RequiredRequiredIcon {
     X,
 }
 
-/// Converts an RequiredIcon into a char.
+/// Converts an BootstrapIcon into a char.
 #[must_use]
-pub const fn icon_to_char(RequiredIcon: RequiredRequiredIcon) -> char {
-    match RequiredIcon {
-        RequiredIcon::CaretDownFill => '\u{f217}',
-        RequiredIcon::CaretLeftFill => '\u{f21b}',
-        RequiredIcon::CaretRightFill => '\u{f21f}',
-        RequiredIcon::CaretUpFill => '\u{f223}',
-        RequiredIcon::Check => '\u{f25c}',
-        RequiredIcon::X => '\u{f5ae}',
+pub const fn icon_to_char(icon: BootstrapIcon) -> char {
+    match icon {
+        BootstrapIcon::CaretDownFill => '\u{f217}',
+        BootstrapIcon::CaretLeftFill => '\u{f21b}',
+        BootstrapIcon::CaretRightFill => '\u{f21f}',
+        BootstrapIcon::CaretUpFill => '\u{f223}',
+        BootstrapIcon::Check => '\u{f25c}',
+        BootstrapIcon::X => '\u{f5ae}',
     }
 }
 
-impl From<RequiredIcon> for char {
-    fn from(RequiredIcon: RequiredIcon) -> Self {
-        icon_to_char(RequiredIcon)
+/// Converts an BootstrapIcon into a String.
+#[must_use]
+pub fn icon_to_string(icon: BootstrapIcon) -> String {
+    icon_to_char(icon).to_string()
+}
+
+impl From<BootstrapIcon> for char {
+    fn from(icon: BootstrapIcon) -> Self {
+        icon_to_char(icon)
     }
 }
 
-impl From<RequiredIcon> for String {
-    fn from(RequiredIcon: RequiredIcon) -> Self {
-        format!("{}", icon_to_char(RequiredIcon))
+impl From<BootstrapIcon> for String {
+    fn from(icon: BootstrapIcon) -> Self {
+        format!("{}", icon_to_char(icon))
     }
 }
 
-impl std::fmt::Display for RequiredIcon {
+impl std::fmt::Display for BootstrapIcon {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", icon_to_char(*self))
     }

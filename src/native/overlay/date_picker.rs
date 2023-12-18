@@ -404,7 +404,7 @@ where
                     .width(Length::Fill)
                     .push(Container::new(
                         Row::new().push(
-                            Text::new(char::from(Icon::CaretLeftFill).to_string())
+                            Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
                         ),
@@ -416,7 +416,7 @@ where
                     .push(
                         // Right Month arrow
                         Container::new(
-                            Text::new(char::from(Icon::CaretRightFill).to_string())
+                            Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
                                 .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
                         )
@@ -427,10 +427,9 @@ where
             .push(
                 Row::new()
                     .width(Length::Fill)
-
                     .push(Container::new(
                         Row::new().push(
-                            Text::new(char::from(Icon::CaretLeftFill).to_string())
+                            Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(BOOTSTRAP_FONT),
                         ),
@@ -443,11 +442,12 @@ where
                         // Right Year arrow
                         Container::new(
                             Row::new().push(
-                                Text::new(char::from(Icon::CaretRightFill).to_string())
+                                Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
                                     .size(font_size.0 + 1.0)
                                     .font(BOOTSTRAP_FONT),
                             ),
-                        ) .height(Length::Shrink)
+                        )
+                        .height(Length::Shrink)
                         .width(Length::Shrink),
                     ),
             );
@@ -1125,13 +1125,11 @@ fn month_year<Theme>(
             );
         }
 
-        let mut buffer = [0; 4];
-
         // Left caret
 
         renderer.fill_text(
             core::text::Text {
-                content: char::from(Icon::CaretLeftFill).encode_utf8(&mut buffer),
+                content: &icon_to_string(BootstrapIcon::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
                 size: core::Pixels(
                     renderer.default_size().0 + if left_arrow_hovered { 1.0 } else { 0.0 },
@@ -1173,7 +1171,7 @@ fn month_year<Theme>(
         // Right caret
         renderer.fill_text(
             core::text::Text {
-                content: char::from(BootstrapIcon::CaretRightFill).encode_utf8(&mut buffer),
+                content: &icon_to_string(BootstrapIcon::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
                 size: core::Pixels(
                     renderer.default_size().0 + if right_arrow_hovered { 1.0 } else { 0.0 },

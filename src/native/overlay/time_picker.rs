@@ -1498,6 +1498,12 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+            },
+            Point::new(down_bounds.center_x(), down_bounds.center_y()),
+            style
+                .get(&StyleState::Active)
+                .expect("Style Sheet not found.")
+                .text_color,
             down_bounds,
         );
     };

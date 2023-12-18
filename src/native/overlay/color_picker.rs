@@ -1412,7 +1412,7 @@ fn rgba_color<Theme>(
                 content: label,
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
-                font: crate::ICON_FONT,
+                font: crate::BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
