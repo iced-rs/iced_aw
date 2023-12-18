@@ -544,7 +544,13 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
-    fn layout(&mut self, renderer: &Renderer<Theme>, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer<Theme>,
+        bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
             (600.0, 300.0)
         } else {
@@ -1417,6 +1423,7 @@ fn rgba_color<Theme>(
                 label_layout.bounds().center_y(),
             ),
             style.text_color,
+            label_layout.bounds(),
         );
 
         let bounds = bar_layout.bounds();
@@ -1488,6 +1495,7 @@ fn rgba_color<Theme>(
                 value_layout.bounds().center_y(),
             ),
             style.text_color,
+            value_layout.bounds(),
         );
 
         if focus == target {
@@ -1625,6 +1633,7 @@ fn hex_text<Theme>(
             }
             .into()
         },
+        layout.bounds(),
     );
 }
 

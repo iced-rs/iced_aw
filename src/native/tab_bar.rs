@@ -709,6 +709,7 @@ fn draw_tab<Renderer>(
                 },
                 Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
                 style.icon_color,
+                icon_bounds,
             );
         }
 
@@ -728,6 +729,7 @@ fn draw_tab<Renderer>(
                 },
                 Point::new(text_bounds.center_x(), text_bounds.center_y()),
                 style.text_color,
+                text_bounds,
             );
         }
         TabLabel::IconText(icon, text) => {
@@ -774,6 +776,7 @@ fn draw_tab<Renderer>(
                 },
                 Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
                 style.icon_color,
+                icon_bounds,
             );
 
             renderer.fill_text(
@@ -789,6 +792,7 @@ fn draw_tab<Renderer>(
                 },
                 Point::new(text_bounds.center_x(), text_bounds.center_y()),
                 style.text_color,
+                text_bounds,
             );
         }
     };
@@ -810,6 +814,7 @@ fn draw_tab<Renderer>(
             },
             Point::new(cross_bounds.center_x(), cross_bounds.center_y()),
             style.text_color,
+            cross_bounds,
         );
 
         if is_mouse_over_cross {

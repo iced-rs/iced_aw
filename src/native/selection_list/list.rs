@@ -278,6 +278,7 @@ where
                 },
                 Point::new(bounds.x, bounds.center_y()),
                 text_color,
+                bounds,
             );
         }
     }

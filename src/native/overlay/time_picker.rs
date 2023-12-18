@@ -503,7 +503,13 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn layout(&mut self, renderer: &Renderer<Theme>, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer<Theme>,
+        bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
@@ -1454,6 +1460,7 @@ fn draw_digital_clock<Message, Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
+            up_bounds,
         );
 
         // Text
@@ -1473,6 +1480,7 @@ fn draw_digital_clock<Message, Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
+            center_bounds,
         );
 
         // Down caret
@@ -1494,6 +1502,7 @@ fn draw_digital_clock<Message, Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
+            down_bounds,
         );
     };
 
@@ -1544,6 +1553,7 @@ fn draw_digital_clock<Message, Theme>(
             hour_minute_separator.bounds().center_y(),
         ),
         style[&StyleState::Active].text_color,
+        hour_minute_separator.bounds(),
     );
 
     // Draw minutes
@@ -1581,6 +1591,7 @@ fn draw_digital_clock<Message, Theme>(
                 minute_second_separator.bounds().center_y(),
             ),
             style[&StyleState::Active].text_color,
+            minute_second_separator.bounds(),
         );
 
         // Draw seconds
@@ -1617,6 +1628,7 @@ fn draw_digital_clock<Message, Theme>(
             },
             Point::new(period.bounds().center_x(), period.bounds().center_y()),
             style[&StyleState::Active].text_color,
+            period.bounds(),
         );
     }
 }

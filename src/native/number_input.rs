@@ -663,7 +663,7 @@ where
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) {
         let mut children = layout.children();
         let content_layout = children.next().expect("fail to get content layout");
@@ -686,6 +686,7 @@ where
             content_layout,
             cursor,
             None,
+            viewport,
         );
         let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
         let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
@@ -738,6 +739,7 @@ where
             },
             Point::new(dec_bounds.center_x(), dec_bounds.center_y()),
             decrease_btn_style.icon_color,
+            dec_bounds,
         );
 
         // increase button section
@@ -766,6 +768,7 @@ where
             },
             Point::new(inc_bounds.center_x(), inc_bounds.center_y()),
             increase_btn_style.icon_color,
+            inc_bounds,
         );
     }
 }

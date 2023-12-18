@@ -340,7 +340,7 @@ where
         let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
 
         match event {
-            Event::Window(window::Event::RedrawRequested(_now)) => {
+            Event::Window(_id, window::Event::RedrawRequested(_now)) => {
                 if state.toggle_staged {
                     state.animation_frame += 1;
 

@@ -192,7 +192,7 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
     ) -> event::Status {
         let state: &mut SpinnerState = state.state.downcast_mut::<SpinnerState>();
 
-        if let Event::Window(window::Event::RedrawRequested(_now)) = &event {
+        if let Event::Window(_id, window::Event::RedrawRequested(_now)) = &event {
             // if is_visible(&bounds) {
             state.now = time::OffsetDateTime::now_local()
                 .unwrap_or_else(|_| time::OffsetDateTime::now_utc());

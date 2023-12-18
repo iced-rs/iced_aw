@@ -28,7 +28,10 @@ fn main() -> iced::Result {
     NumberInputDemo::run(Settings {
         default_text_size: iced::Pixels(12.0),
         window: window::Settings {
-            size: (250, 200),
+            size: iced::Size {
+                width: 250.0,
+                height: 200.0,
+            },
             ..Default::default()
         },
         ..Settings::default()

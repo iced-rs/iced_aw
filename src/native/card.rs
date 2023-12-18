@@ -792,6 +792,7 @@ fn draw_head<Message, Renderer>(
             },
             Point::new(close_bounds.center_x(), close_bounds.center_y()),
             style_sheet.close_color,
+            close_bounds,
         );
     }
 }

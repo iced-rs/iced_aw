@@ -9,7 +9,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::Tree,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector,
 };
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
@@ -56,7 +56,13 @@ impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
 where
     Renderer: core::Renderer,
 {
-    fn layout(&mut self, renderer: &Renderer, _bounds: Size, position: Point) -> layout::Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer,
+        _bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> layout::Node {
         // Constrain overlay to fit inside the underlay's bounds
         let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
             .width(Length::Fill)

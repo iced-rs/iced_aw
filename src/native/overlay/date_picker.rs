@@ -29,7 +29,7 @@ use iced_widget::{
         touch,
         widget::tree::Tree,
         Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Renderer as _, Shell, Size, Widget,
+        Rectangle, Renderer as _, Shell, Size, Vector, Widget,
     },
     renderer::Renderer,
     text, Button, Column, Container, Row, Text,
@@ -368,7 +368,13 @@ where
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
-    fn layout(&mut self, renderer: &Renderer<Theme>, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer<Theme>,
+        bounds: Size,
+        position: Point,
+        _translation: Vector,
+    ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .pad(Padding::from(PADDING))
             .width(Length::Fill)
@@ -1133,6 +1139,7 @@ fn month_year<Theme>(
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
+            left_bounds,
         );
 
         // Text
@@ -1152,6 +1159,7 @@ fn month_year<Theme>(
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
+            center_bounds,
         );
 
         // Right caret
@@ -1173,6 +1181,7 @@ fn month_year<Theme>(
                 .get(&style_state)
                 .expect("Style Sheet not found.")
                 .text_color,
+            right_bounds,
         );
     };
 
@@ -1233,6 +1242,7 @@ fn day_labels<Theme>(
                 .get(&StyleState::Active)
                 .expect("Style Sheet not found.")
                 .text_color,
+            bounds,
         );
     }
 }
@@ -1324,6 +1334,7 @@ fn day_table<Theme>(
                         .expect("Style Sheet not found.")
                         .text_attenuated_color
                 },
+                bounds,
             );
         }
     }
