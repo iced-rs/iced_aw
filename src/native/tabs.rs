@@ -8,6 +8,7 @@
 
 pub mod tab_bar_position;
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
+pub use crate::tab_bar::Position;
 
 use iced_widget::{
     core::{
@@ -69,6 +70,8 @@ where
     indices: Vec<TabId>,
     /// The position of the [`TabBar`](crate::native::TabBar).
     tab_bar_position: TabBarPosition,
+    /// The position of the [`TabBar`](crate::native::TabBar) Icon.
+    tab_icon_position: Position,
     /// the width of the [`Tabs`].
     width: Length,
     /// The height of the [`Tabs`].
@@ -126,6 +129,7 @@ where
             tabs: elements,
             indices,
             tab_bar_position: TabBarPosition::Top,
+            tab_icon_position: Position::Left,
             width: Length::Fill,
             height: Length::Shrink,
         }
@@ -137,6 +141,15 @@ where
     #[must_use]
     pub fn close_size(mut self, close_size: f32) -> Self {
         self.tab_bar = self.tab_bar.close_size(close_size);
+        self
+    }
+
+    /// Sets the Tabs Icon render Position
+    /// [`TabLabel`](super::tab_bar::TabLabel) of the
+    /// [`TabBar`](super::tab_bar::TabBar).
+    #[must_use]
+    pub fn tab_icon_position(mut self, position: Position) -> Self {
+        self.tab_icon_position = position;
         self
     }
 
@@ -184,7 +197,7 @@ where
     where
         E: Into<Element<'a, Message, Renderer>>,
     {
-        self.tab_bar = self.tab_bar.push(id.clone(), tab_label);
+        self.tab_bar = self.tab_bar.push(id.clone(), tab_label).set_position(self.tab_icon_position);
         self.tabs.push(element.into());
         self.indices.push(id);
         self

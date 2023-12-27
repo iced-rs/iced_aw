@@ -424,15 +424,15 @@ where
                                         column = column.push(
                                             Row::new()
                                                 .align_items(Alignment::Center)
-                                                .push(layout_icon(
-                                                    icon,
-                                                    self.icon_size + 1.0,
-                                                    self.font,
-                                                ))
                                                 .push(layout_text(
                                                     text,
                                                     self.text_size + 1.0,
                                                     self.text_font,
+                                                ))
+                                                .push(layout_icon(
+                                                    icon,
+                                                    self.icon_size + 1.0,
+                                                    self.font,
                                                 )),
                                         );
                                     }
