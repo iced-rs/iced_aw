@@ -367,8 +367,9 @@ where
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Bottom)
+                .vertical_alignment(alignment::Vertical::Center)
                 .shaping(text::Shaping::Advanced)
+                .width(Length::Shrink)
         }
 
         fn layout_text<Renderer>(text: &str, size: f32, font: Option<Font>) -> Text<'_, Renderer>
@@ -381,8 +382,9 @@ where
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Bottom)
+                .vertical_alignment(alignment::Vertical::Center)
                 .shaping(text::Shaping::Advanced)
+                .width(Length::Shrink)
         }
 
         let row = self
@@ -438,13 +440,13 @@ where
                                         column = column.push(
                                             Row::new()
                                                 .align_items(Alignment::Center)
-                                                .push(layout_text(
-                                                    text,
+                                                .push(layout_icon(
+                                                    icon,
                                                     self.icon_size + 1.0,
                                                     self.font,
                                                 ))
-                                                .push(layout_icon(
-                                                    icon,
+                                                .push(layout_text(
+                                                    text,
                                                     self.text_size + 1.0,
                                                     self.text_font,
                                                 )),
@@ -454,13 +456,13 @@ where
                                         column = column
                                             .push(layout_text(
                                                 text,
-                                                self.icon_size + 1.0,
-                                                self.font,
+                                                self.text_size + 1.0,
+                                                self.text_font,
                                             ))
                                             .push(layout_icon(
                                                 icon,
-                                                self.text_size + 1.0,
-                                                self.text_font,
+                                                self.icon_size + 1.0,
+                                                self.font,
                                             ));
                                     }
                                 }
