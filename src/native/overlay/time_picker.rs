@@ -1659,8 +1659,10 @@ pub struct State {
 impl State {
     /// Creates a new State with the given time.
     #[must_use]
-    pub fn new(time: Time) -> Self {
+    pub fn new(time: Time, use_24h: bool, show_seconds: bool) -> Self {
         Self {
+            use_24h,
+            show_seconds,
             time: time.into(),
             ..Self::default()
         }

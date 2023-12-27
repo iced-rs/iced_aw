@@ -153,9 +153,9 @@ impl State {
 
     /// Creates a new [`State`] with the given time.
     #[must_use]
-    pub fn new(time: Time) -> Self {
+    pub fn new(time: Time, use_24h: bool, show_seconds: bool) -> Self {
         Self {
-            overlay_state: time_picker::State::new(time),
+            overlay_state: time_picker::State::new(time, use_24h, show_seconds),
         }
     }
 
@@ -163,8 +163,6 @@ impl State {
     pub fn reset(&mut self) {
         self.overlay_state.clock_cache.clear();
         self.overlay_state.time = Local::now().naive_local().time();
-        self.overlay_state.use_24h = false;
-        self.overlay_state.show_seconds = false;
     }
 }
 
@@ -178,7 +176,7 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::new(self.time))
+        tree::State::new(State::new(self.time, self.use_24h, self.show_seconds))
     }
 
     fn children(&self) -> Vec<Tree> {
