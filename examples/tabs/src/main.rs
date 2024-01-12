@@ -150,7 +150,8 @@ impl Application for TabBarExample {
                     .clone()
                     .unwrap_or_default();
 
-                Tabs::new(Message::TabSelected).tab_icon_position(iced_aw::tabs::Position::Bottom)
+                Tabs::new(Message::TabSelected)
+                    .tab_icon_position(iced_aw::tabs::Position::Bottom)
                     .push(
                         TabId::Login,
                         state.login_tab.tab_label(),

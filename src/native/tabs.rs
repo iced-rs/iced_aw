@@ -7,8 +7,8 @@
 //! *This API requires the following crate features to be activated: tabs*
 
 pub mod tab_bar_position;
-use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 pub use crate::tab_bar::Position;
+use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
 use iced_widget::{
     core::{
@@ -197,7 +197,10 @@ where
     where
         E: Into<Element<'a, Message, Renderer>>,
     {
-        self.tab_bar = self.tab_bar.push(id.clone(), tab_label).set_position(self.tab_icon_position);
+        self.tab_bar = self
+            .tab_bar
+            .push(id.clone(), tab_label)
+            .set_position(self.tab_icon_position);
         self.tabs.push(element.into());
         self.indices.push(id);
         self
