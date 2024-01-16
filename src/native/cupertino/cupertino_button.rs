@@ -120,11 +120,8 @@ where
     Renderer: core::Renderer + core::text::Renderer,
     Renderer::Theme: application::StyleSheet,
 {
-    fn width(&self) -> Length {
-        self.body.as_widget().width()
-    }
-    fn height(&self) -> Length {
-        self.body.as_widget().height()
+    fn size(&self) -> Size<Length> {
+        self.body.as_widget().size()
     }
 
     fn children(&self) -> Vec<Tree> {

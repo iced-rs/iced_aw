@@ -87,12 +87,9 @@ where
     Renderer: 'a + core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn width(&self) -> Length {
-        self.underlay.as_widget().width()
-    }
 
-    fn height(&self) -> Length {
-        self.underlay.as_widget().height()
+    fn size(&self) -> core::Size<Length> {
+        self.underlay.as_widget().size()
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {

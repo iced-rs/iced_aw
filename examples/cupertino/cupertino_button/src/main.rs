@@ -23,6 +23,7 @@ enum ButtonApp {
 enum Message {
     EnabledButtonClicked,
     EnabledFilledButtonClicked,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

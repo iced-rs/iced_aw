@@ -174,6 +174,12 @@ Enable this widget with the feature `menu`.
 
 You might also want to enable the feature `quad` for drawing separators.
 
+### Slide Bar
+
+Please take a look into our examples on how to use slidebars.
+
+Enable this widget with the feature `slide_bar`.
+
 
 ## Quickstart features
 

@@ -151,6 +151,8 @@ mod platform {
     #[cfg(feature = "spinner")]
     pub use {crate::native::spinner, crate::style::SpinnerStyle, spinner::Spinner};
 
+    #[doc(no_inline)]
+    #[cfg(feature = "slide_bar")]
     pub use crate::native::SlideBar;
 
     #[doc(no_inline)]

@@ -513,7 +513,7 @@ where
         _translation: Vector,
     ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(Padding::from(PADDING))
+            .shrink(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300.0)
@@ -540,14 +540,16 @@ where
             .height(Length::Fill)
             .layout(self.tree, renderer, &limits);
 
-        clock.move_to(Point::new(
-            clock.bounds().x + PADDING,
-            clock.bounds().y + PADDING,
+        let clock_bounds = clock.bounds();
+        clock = clock.move_to(Point::new(
+            clock_bounds.x + PADDING,
+            clock_bounds.y + PADDING,
         ));
 
-        digital_clock.move_to(Point::new(
-            digital_clock.bounds().x + PADDING,
-            digital_clock.bounds().y + PADDING + SPACING + clock.bounds().height,
+        let digital_bounds = digital_clock.bounds();
+        digital_clock = digital_clock.move_to(Point::new(
+            digital_bounds.x + PADDING,
+            digital_bounds.y + PADDING + SPACING + clock.bounds().height,
         ));
 
         // Buttons
@@ -565,26 +567,27 @@ where
             self.submit_button
                 .layout(&mut self.tree.children[1], renderer, &submit_limits);
 
-        cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING,
-            y: cancel_button.bounds().y
+        let cancel_bounds = cancel_button.bounds();
+        cancel_button = cancel_button.move_to(Point {
+            x: cancel_bounds.x + PADDING,
+            y: cancel_bounds.y
                 + clock.bounds().height
                 + PADDING
                 + digital_clock.bounds().height
                 + 2.0 * SPACING,
         });
 
-        submit_button.move_to(Point {
-            x: submit_button.bounds().x + clock.bounds().width - submit_button.bounds().width
-                + PADDING,
-            y: submit_button.bounds().y
+        let submit_bounds = submit_button.bounds();
+        submit_button = submit_button.move_to(Point {
+            x: submit_bounds.x + clock.bounds().width - submit_bounds.width + PADDING,
+            y: submit_bounds.y
                 + clock.bounds().height
                 + PADDING
                 + digital_clock.bounds().height
                 + 2.0 * SPACING,
         });
 
-        let mut node = Node::with_children(
+        let node = Node::with_children(
             Size::new(
                 clock.bounds().width + (2.0 * PADDING),
                 clock.bounds().height
@@ -596,9 +599,7 @@ where
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
-        node.center_and_bounce(position, bounds);
-
-        node
+        node.center_and_bounce(position, bounds)
     }
 
     fn on_event(
@@ -1740,11 +1741,7 @@ where
         tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
-    fn width(&self) -> Length {
-        unimplemented!("This should never be reached!")
-    }
-
-    fn height(&self) -> Length {
+    fn size(&self) -> Size<Length> {
         unimplemented!("This should never be reached!")
     }
 

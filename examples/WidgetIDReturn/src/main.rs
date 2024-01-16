@@ -2,7 +2,7 @@ use iced::{
     alignment, font,
     theme::Theme,
     widget::{container, text, Column, Container, Row, Text},
-    window, Alignment, Application, Command, Element, Length, Settings,
+    window, Alignment, Application, Command, Element, Length, Settings, Size,
 };
 
 #[derive(Debug)]
@@ -25,9 +25,9 @@ pub enum Message {
 
 fn main() -> iced::Result {
     NumberInputDemo::run(Settings {
-        default_text_size: 12.0,
+        default_text_size: iced::Pixels(12.0),
         window: window::Settings {
-            size: (500, 400),
+            size: Size::new(500.0, 400.0),
             ..Default::default()
         },
         ..Settings::default()

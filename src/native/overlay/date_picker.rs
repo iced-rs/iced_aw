@@ -376,7 +376,7 @@ where
         _translation: Vector,
     ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(Padding::from(PADDING))
+            .shrink(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300.0)
@@ -490,10 +490,8 @@ where
         };
 
         let mut col = element.as_widget().layout(col_tree, renderer, &limits);
-        col.move_to(Point::new(
-            col.bounds().x + PADDING,
-            col.bounds().y + PADDING,
-        ));
+        let col_bounds = col.bounds();
+        col = col.move_to(Point::new(col_bounds.x + PADDING, col_bounds.y + PADDING));
 
         // Buttons
         let cancel_limits =
@@ -510,28 +508,26 @@ where
             self.submit_button
                 .layout(&mut self.tree.children[1], renderer, &submit_limits);
 
-        cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING,
-            y: cancel_button.bounds().y + col.bounds().height + PADDING + SPACING,
+        let cancel_bounds = cancel_button.bounds();
+        cancel_button = cancel_button.move_to(Point {
+            x: cancel_bounds.x + PADDING,
+            y: cancel_bounds.y + col.bounds().height + PADDING + SPACING,
         });
 
-        submit_button.move_to(Point {
-            x: submit_button.bounds().x + col.bounds().width - submit_button.bounds().width
-                + PADDING,
-            y: submit_button.bounds().y + col.bounds().height + PADDING + SPACING,
+        let submit_bounds = submit_button.bounds();
+        submit_button = submit_button.move_to(Point {
+            x: submit_bounds.x + col.bounds().width - submit_bounds.width + PADDING,
+            y: submit_bounds.y + col.bounds().height + PADDING + SPACING,
         });
 
-        let mut node = Node::with_children(
+        Node::with_children(
             Size::new(
                 col.bounds().width + (2.0 * PADDING),
                 col.bounds().height + cancel_button.bounds().height + (2.0 * PADDING) + SPACING,
             ),
             vec![col, cancel_button, submit_button],
-        );
-
-        node.center_and_bounce(position, bounds);
-
-        node
+        )
+        .center_and_bounce(position, bounds)
     }
 
     fn on_event(
@@ -953,11 +949,7 @@ where
         tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
-    fn width(&self) -> Length {
-        unimplemented!("This should never be reached!")
-    }
-
-    fn height(&self) -> Length {
+    fn size(&self) -> Size<Length> {
         unimplemented!("This should never be reached!")
     }
 

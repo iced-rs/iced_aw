@@ -109,12 +109,8 @@ where
         list_state.options = self.options.iter().map(ToString::to_string).collect();
     }
 
-    fn width(&self) -> Length {
-        Length::Fill
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(Length::Fill, Length::Shrink)
     }
 
     fn layout(
@@ -128,7 +124,7 @@ where
 
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
-            limits.fill().width,
+            limits.max().width,
             (self.text_size + self.padding * 2.0) * self.options.len() as f32,
         );
 

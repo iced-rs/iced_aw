@@ -137,6 +137,7 @@ pub mod segmented_button;
 pub type SegmentedButton<'a, Message, Renderer> =
     segmented_button::SegmentedButton<'a, Message, Renderer>;
 
+#[cfg(feature = "slide_bar")]
 pub mod slide_bar;
-
+#[cfg(feature = "slide_bar")]
 pub use slide_bar::SlideBar;

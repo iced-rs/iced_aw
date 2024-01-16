@@ -159,20 +159,16 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSwitch<Messag
 where
     Message: Clone,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
-        Node::new(
-            limits
-                .width(self.width)
-                .height(self.height)
-                .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        )
+        Node::new(limits.width(self.width).height(self.height).resolve(
+            self.width,
+            self.height,
+            Size::new(100.0, 32.0),
+        ))
     }
 
     fn draw(

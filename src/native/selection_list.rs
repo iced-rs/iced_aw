@@ -171,12 +171,8 @@ where
             .collect();
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, Length::Shrink)
     }
 
     fn tag(&self) -> tree::Tag {
@@ -224,7 +220,7 @@ where
         let content = self
             .container
             .layout(&mut tree.children[0], renderer, &limits);
-        let size = limits.resolve(content.size());
+        let size = limits.resolve(self.width, self.height, content.size());
         Node::with_children(size, vec![content])
     }
 

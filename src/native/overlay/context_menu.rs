@@ -94,7 +94,7 @@ where
             position.y = f32::max(0.0, position.y - content.size().height);
         }
 
-        content.move_to(position);
+        content.move_to_mut(position);
 
         Node::with_children(max_size, vec![content])
     }

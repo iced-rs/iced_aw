@@ -17,6 +17,7 @@ enum Message {
     CloseModal,
     CancelButtonPressed,
     OkButtonPressed,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

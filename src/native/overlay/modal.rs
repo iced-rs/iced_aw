@@ -83,7 +83,7 @@ where
             .layout(self.state, renderer, &limits);
         let max_size = limits.max();
 
-        content.align(
+        content = content.align(
             Alignment::from(self.horizontal_alignment),
             Alignment::from(self.vertical_alignment),
             max_size,

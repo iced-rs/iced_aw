@@ -19,6 +19,7 @@ enum Message {
     TabLabelInputChanged(String),
     TabContentInputChanged(String),
     NewTab,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

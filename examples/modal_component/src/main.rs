@@ -14,6 +14,7 @@ fn main() -> iced::Result {
 enum Message {
     OpenModal,
     CloseModal,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

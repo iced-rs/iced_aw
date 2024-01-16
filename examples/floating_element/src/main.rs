@@ -18,6 +18,7 @@ fn main() -> iced::Result {
 #[derive(Debug, Clone)]
 enum Message {
     ButtonPressed,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

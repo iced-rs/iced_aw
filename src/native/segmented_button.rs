@@ -133,12 +133,8 @@ where
         tree.diff_children(std::slice::from_ref(&self.content));
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> iced_widget::core::Size<Length> {
+        iced_widget::core::Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -147,18 +143,18 @@ where
             .loose()
             .width(self.width)
             .height(self.height)
-            .pad(padding);
+            .shrink(padding);
 
         let mut content =
             self.content
                 .as_widget()
                 .layout(&mut tree.children[0], renderer, &limits.loose());
-        let size = limits.resolve(content.size());
+        let size = limits.resolve(self.width, self.height, content.size());
 
-        content.move_to(Point::new(padding.left, padding.top));
-        content.align(self.horizontal_alignment, self.vertical_alignment, size);
+        content.move_to_mut(Point::new(padding.left, padding.top));
+        content.align_mut(self.horizontal_alignment, self.vertical_alignment, size);
 
-        Node::with_children(size.pad(padding), vec![content])
+        Node::with_children(size.expand(padding), vec![content])
     }
 
     fn on_event(

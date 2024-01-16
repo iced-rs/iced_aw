@@ -119,21 +119,16 @@ where
     Renderer: core::Renderer,
     Renderer::Theme: StyleSheet,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
-        Node::new(
-            limits
-                .width(self.width)
-                .height(self.height)
-                .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        )
+        Node::new(limits.width(self.width).height(self.height).resolve(
+            self.width,
+            self.height,
+            Size::new(f32::INFINITY, f32::INFINITY),
+        ))
     }
 
     fn draw(

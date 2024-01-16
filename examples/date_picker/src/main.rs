@@ -15,6 +15,7 @@ enum Message {
     ChooseDate,
     SubmitDate(Date),
     CancelDate,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

@@ -1,5 +1,5 @@
 use iced::{
-    widget::{button, Column, Container, Space, Text},
+    widget::{button, Column, Container, Text},
     Alignment, Element, Font, Length, Sandbox, Settings,
 };
 use iced_aw::{selection_list::SelectionList, SelectionListStyles};
@@ -83,8 +83,9 @@ impl Sandbox for Example {
         .width(Length::Shrink)
         .height(Length::Fixed(100.0));
 
-        let mut content = Column::new()
+        let content = Column::new()
             .width(Length::Fill)
+            .height(Length::Fill)
             .align_items(Alignment::Center)
             .spacing(10)
             .push(selection_list)
@@ -93,7 +94,7 @@ impl Sandbox for Example {
             .push(button("press to add at selection").on_press(Message::AddAtSelection))
             .push(button("Manual select Index 2").on_press(Message::ManualSelection));
 
-        content = content.push(Space::with_height(Length::Fixed(800.0)));
+        //content = content.push(Space::with_height(Length::Fixed(400.0)));
 
         Container::new(content)
             .width(Length::Fill)

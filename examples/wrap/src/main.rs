@@ -71,6 +71,7 @@ enum Message {
     ChangeSpacing(f32),
     ChangeLineSpacing(f32),
     ChangeMinimalLength(f32),
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

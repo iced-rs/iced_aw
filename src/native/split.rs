@@ -192,12 +192,8 @@ where
         tree.diff_children(&[&self.first, &self.second]);
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -562,29 +558,29 @@ where
             0.0,
             space.bounds().height - f32::from(divider_position),
         ))
-        .pad(padding);
+        .shrink(padding);
     let mut first = split
         .first
         .as_widget()
         .layout(&mut tree.children[0], renderer, &first_limits);
-    first.move_to(Point::new(
+    first.move_to_mut(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + split.padding,
     ));
 
     let mut divider = Node::new(Size::new(space.bounds().width, split.spacing));
-    divider.move_to(Point::new(space.bounds().x, f32::from(divider_position)));
+    divider.move_to_mut(Point::new(space.bounds().x, f32::from(divider_position)));
 
     let second_limits = limits
         .clone()
         .shrink(Size::new(0.0, f32::from(divider_position) + split.spacing))
-        .pad(padding);
+        .shrink(padding);
     let mut second =
         split
             .second
             .as_widget()
             .layout(&mut tree.children[1], renderer, &second_limits);
-    second.move_to(Point::new(
+    second.move_to_mut(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + f32::from(divider_position) + split.spacing + split.padding,
     ));
@@ -641,29 +637,29 @@ where
             space.bounds().width - f32::from(divider_position),
             0.0,
         ))
-        .pad(padding);
+        .shrink(padding);
     let mut first = split
         .first
         .as_widget()
         .layout(&mut tree.children[0], renderer, &first_limits);
-    first.move_to(Point::new(
+    first.move_to_mut(Point::new(
         space.bounds().x + split.padding,
         space.bounds().y + split.padding,
     ));
 
     let mut divider = Node::new(Size::new(split.spacing, space.bounds().height));
-    divider.move_to(Point::new(f32::from(divider_position), space.bounds().y));
+    divider.move_to_mut(Point::new(f32::from(divider_position), space.bounds().y));
 
     let second_limits = limits
         .clone()
         .shrink(Size::new(f32::from(divider_position) + split.spacing, 0.0))
-        .pad(padding);
+        .shrink(padding);
     let mut second =
         split
             .second
             .as_widget()
             .layout(&mut tree.children[1], renderer, &second_limits);
-    second.move_to(Point::new(
+    second.move_to_mut(Point::new(
         space.bounds().x + f32::from(divider_position) + split.spacing + split.padding,
         space.bounds().y + split.padding,
     ));

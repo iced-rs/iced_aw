@@ -343,12 +343,8 @@ where
     Renderer::Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(

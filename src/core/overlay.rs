@@ -10,28 +10,28 @@ pub trait Position {
 }
 
 impl Position for layout::Node {
-    fn center_and_bounce(self, position: Point, _bounds: Size) -> Self {
+    fn center_and_bounce(self, position: Point, bounds: Size) -> Self {
         let size = self.size();
-        let mut new_self = self.move_to(Point::new(
+        let new_self = self.move_to(Point::new(
             (position.x - size.width / 2.0).max(0.0),
             (position.y - size.height / 2.0).max(0.0),
         ));
 
-        let bounds = new_self.bounds();
+        let new_self_bounds = new_self.bounds();
 
-        new_self = new_self.move_to(Point::new(
-            if bounds.x + bounds.width > bounds.width {
-                (bounds.x - (bounds.width - (bounds.width - bounds.x))).max(0.0)
+        new_self.move_to(Point::new(
+            if new_self_bounds.x + new_self_bounds.width > bounds.width {
+                (new_self_bounds.x - (new_self_bounds.width - (bounds.width - new_self_bounds.x)))
+                    .max(0.0)
             } else {
-                bounds.x
+                new_self_bounds.x
             },
-            if bounds.y + bounds.height > bounds.height {
-                (bounds.y - (bounds.height - (bounds.height - bounds.y))).max(0.0)
+            if new_self_bounds.y + new_self_bounds.height > bounds.height {
+                (new_self_bounds.y - (new_self_bounds.height - (bounds.height - new_self_bounds.y)))
+                    .max(0.0)
             } else {
-                bounds.y
+                new_self_bounds.y
             },
-        ));
-
-        new_self
+        ))
     }
 }

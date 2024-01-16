@@ -168,12 +168,8 @@ where
         tree.diff_children(&self.elements);
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -354,7 +350,7 @@ where
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length;
         let limits = limits
-            .pad(padding)
+            .shrink(padding)
             .width(self.width)
             .height(self.height)
             .max_width(self.max_width)
@@ -394,10 +390,10 @@ where
                     start = end;
                     end += 1;
                     current_line_height = line_minimal_length;
-                    node.move_to(Point::new(padding.left, deep_curse));
+                    node.move_to_mut(Point::new(padding.left, deep_curse));
                     curse = offset_init + padding.left;
                 } else {
-                    node.move_to(Point::new(curse, deep_curse));
+                    node.move_to_mut(Point::new(curse, deep_curse));
                     curse = offset;
                     end += 1;
                 }
@@ -414,16 +410,16 @@ where
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(size.width, max_length);
-                node.align(Alignment::Start, self.alignment, space);
+                node.align_mut(Alignment::Start, self.alignment, space);
             });
         }
         let (width, height) = (
             max_main - padding.left,
             deep_curse - padding.left + current_line_height,
         );
-        let size = limits.resolve(Size::new(width, height));
+        let size = limits.resolve(self.width, self.height, Size::new(width, height));
 
-        Node::with_children(size.pad(padding), nodes)
+        Node::with_children(size.expand(padding), nodes)
     }
 }
 
@@ -441,7 +437,7 @@ where
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
         let line_minimal_length = self.line_minimal_length;
         let limits = limits
-            .pad(padding)
+            .shrink(padding)
             .width(self.width)
             .height(self.height)
             .max_width(self.max_width)
@@ -481,10 +477,10 @@ where
                     start = end;
                     end += 1;
                     current_line_width = line_minimal_length;
-                    node.move_to(Point::new(wide_curse, padding.left));
+                    node = node.move_to(Point::new(wide_curse, padding.left));
                     curse = offset_init + padding.left;
                 } else {
-                    node.move_to(Point::new(wide_curse, curse));
+                    node = node.move_to(Point::new(wide_curse, curse));
                     end += 1;
                     curse = offset;
                 }
@@ -502,7 +498,7 @@ where
             nodes[range].iter_mut().for_each(|node| {
                 let size = node.size();
                 let space = Size::new(max_length, size.height);
-                node.align(self.alignment, Alignment::Start, space);
+                node.align_mut(self.alignment, Alignment::Start, space);
             });
         }
 
@@ -510,9 +506,9 @@ where
             wide_curse - padding.left + current_line_width,
             max_main - padding.left,
         );
-        let size = limits.resolve(Size::new(width, height));
+        let size = limits.resolve(self.width, self.height, Size::new(width, height));
 
-        Node::with_children(size.pad(padding), nodes)
+        Node::with_children(size.expand(padding), nodes)
     }
 }
 

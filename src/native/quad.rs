@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::Cursor,
     renderer,
     widget::Tree,
-    Color, Element, Layout, Length, Rectangle, Widget,
+    Color, Element, Layout, Length, Rectangle, Size, Widget,
 };
 
 use crate::native::InnerBounds;
@@ -51,12 +51,8 @@ impl<Message, Renderer> Widget<Message, Renderer> for Quad
 where
     Renderer: renderer::Renderer,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {

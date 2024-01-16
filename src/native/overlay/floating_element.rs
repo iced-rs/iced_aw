@@ -67,7 +67,7 @@ where
         let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
             .width(Length::Fill)
             .height(Length::Fill);
-        let mut node = self
+        let node = self
             .element
             .as_widget()
             .layout(self.state, renderer, &limits);
@@ -108,8 +108,7 @@ where
             ),
         };
 
-        node.move_to(position);
-        node
+        node.move_to(position)
     }
 
     fn on_event(

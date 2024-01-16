@@ -153,7 +153,11 @@ where
             .width(self.width)
             .height(self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)));
 
-        let size = limits.resolve(self.width, self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)), Size::ZERO);
+        let size = limits.resolve(
+            self.width,
+            self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)),
+            Size::ZERO,
+        );
 
         Node::new(size)
     }

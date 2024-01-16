@@ -287,20 +287,17 @@ where
         );
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, Length::Shrink)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = Padding::from(self.padding);
+        let num_size = self.size();
         let limits = limits
-            .width(self.width())
+            .width(num_size.width)
             .height(Length::Shrink)
-            .pad(padding);
+            .shrink(padding);
         let content = self
             .content
             .layout(&mut tree.children[0], renderer, &limits, None);
@@ -348,9 +345,9 @@ where
             content.size().width - 1.0,
             content.size().height.max(modifier.size().height),
         );
-        modifier.align(Alignment::End, Alignment::Center, intrinsic);
+        modifier = modifier.align(Alignment::End, Alignment::Center, intrinsic);
 
-        let size = limits.resolve(intrinsic);
+        let size = limits.resolve(num_size.width, Length::Shrink, intrinsic);
         Node::with_children(size, vec![content, modifier])
     }
 

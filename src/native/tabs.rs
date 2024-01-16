@@ -314,12 +314,8 @@ where
         tree.children[1].diff_children(&self.tabs);
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -344,18 +340,22 @@ where
                     .layout(tree, renderer, &tab_content_limits)
             };
 
-        tab_bar_node.move_to(Point::new(
-            tab_bar_node.bounds().x,
-            tab_bar_node.bounds().y
+        let tab_bar_bounds = tab_bar_node.bounds();
+        tab_bar_node = tab_bar_node.move_to(Point::new(
+            tab_bar_bounds.x,
+            tab_bar_bounds.y
                 + match self.tab_bar_position {
                     TabBarPosition::Top => 0.0,
-                    TabBarPosition::Bottom => tab_content_node.bounds().height,
+                    TabBarPosition::Bottom => {
+                        tab_content_node.bounds().height - tab_bar_bounds.height
+                    }
                 },
         ));
 
-        tab_content_node.move_to(Point::new(
-            tab_content_node.bounds().x,
-            tab_content_node.bounds().y
+        let tab_content_bounds = tab_content_node.bounds();
+        tab_content_node = tab_content_node.move_to(Point::new(
+            tab_content_bounds.x,
+            tab_content_bounds.y
                 + match self.tab_bar_position {
                     TabBarPosition::Top => tab_bar_node.bounds().height,
                     TabBarPosition::Bottom => 0.0,
