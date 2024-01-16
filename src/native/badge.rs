@@ -3,11 +3,12 @@
 //! *This API requires the following crate features to be activated: badge*
 use iced_widget::core::{
     self, event,
-    layout::{Limits, Node},
+    layout::{self, Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::tree::Tree,
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell,
+    Size, Widget,
 };
 
 pub use crate::style::badge::{Appearance, StyleSheet};
@@ -131,32 +132,32 @@ where
         tree.diff_children(std::slice::from_ref(&self.content));
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = self.padding.into();
+        let padding: Padding = self.padding.into();
         let limits = limits
             .loose()
             .width(self.width)
             .height(self.height)
-            .pad(padding);
+            .shrink(padding);
 
         let mut content =
             self.content
                 .as_widget()
                 .layout(&mut tree.children[0], renderer, &limits.loose());
-        let size = limits.resolve(content.size());
+        let size = limits.resolve(self.width, self.height, content.size());
 
-        content.move_to(Point::new(padding.left, padding.top));
-        content.align(self.horizontal_alignment, self.vertical_alignment, size);
+        content = content
+            .move_to(Point::new(padding.left, padding.top))
+            .align(self.horizontal_alignment, self.vertical_alignment, size);
 
-        Node::with_children(size.pad(padding), vec![content])
+        Node::with_children(size.expand(padding), vec![content])
     }
 
     fn on_event(

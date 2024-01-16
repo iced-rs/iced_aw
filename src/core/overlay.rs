@@ -6,29 +6,32 @@ use iced_widget::core::{layout, Point, Size};
 pub trait Position {
     /// Centers this node around the given position. If the node is over the
     /// specified bounds it's bouncing back to be fully visible on screen.
-    fn center_and_bounce(&mut self, position: Point, bounds: Size);
+    fn center_and_bounce(self, position: Point, bounds: Size) -> Self;
 }
 
 impl Position for layout::Node {
-    fn center_and_bounce(&mut self, position: Point, bounds: Size) {
-        self.move_to(Point::new(
-            (position.x - self.size().width / 2.0).max(0.0),
-            (position.y - self.size().height / 2.0).max(0.0),
+    fn center_and_bounce(mut self, position: Point, _bounds: Size) -> Self {
+        let size = self.size();
+        let mut new_self = self.move_to(Point::new(
+            (position.x - size.width / 2.0).max(0.0),
+            (position.y - size.height / 2.0).max(0.0),
         ));
 
-        self.move_to(Point::new(
-            if self.bounds().x + self.bounds().width > bounds.width {
-                (self.bounds().x - (self.bounds().width - (bounds.width - self.bounds().x)))
-                    .max(0.0)
+        let bounds = new_self.bounds();
+
+        new_self = new_self.move_to(Point::new(
+            if bounds.x + bounds.width > bounds.width {
+                (bounds.x - (bounds.width - (bounds.width - bounds.x))).max(0.0)
             } else {
-                self.bounds().x
+                bounds.x
             },
-            if self.bounds().y + self.bounds().height > bounds.height {
-                (self.bounds().y - (self.bounds().height - (bounds.height - self.bounds().y)))
-                    .max(0.0)
+            if bounds.y + bounds.height > bounds.height {
+                (bounds.y - (bounds.height - (bounds.height - bounds.y))).max(0.0)
             } else {
-                self.bounds().y
+                bounds.y
             },
         ));
+
+        new_self
     }
 }

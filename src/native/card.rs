@@ -9,7 +9,7 @@ use iced_widget::{
         self,
         alignment::{Horizontal, Vertical},
         event,
-        layout::{Limits, Node},
+        layout::{self, Limits, Node},
         mouse::{self, Cursor},
         renderer, touch,
         widget::{Operation, Tree},
@@ -59,11 +59,11 @@ where
     /// The maximum height of the [`Card`].
     max_height: f32,
     /// The padding of the head of the [`Card`].
-    padding_head: f32,
+    padding_head: Padding,
     /// The padding of the body of the [`Card`].
-    padding_body: f32,
+    padding_body: Padding,
     /// The padding of the foot of the [`Card`].
-    padding_foot: f32,
+    padding_foot: Padding,
     /// The optional size of the close icon of the [`Card`].
     close_size: Option<f32>,
     /// The optional message that is send if the close icon of the [`Card`] is pressed.
@@ -98,9 +98,9 @@ where
             height: Length::Shrink,
             max_width: u32::MAX as f32,
             max_height: u32::MAX as f32,
-            padding_head: DEFAULT_PADDING,
-            padding_body: DEFAULT_PADDING,
-            padding_foot: DEFAULT_PADDING,
+            padding_head: DEFAULT_PADDING.into(),
+            padding_body: DEFAULT_PADDING.into(),
+            padding_foot: DEFAULT_PADDING.into(),
             close_size: None,
             on_close: None,
             head: head.into(),
@@ -163,7 +163,7 @@ where
     /// This will set the padding of the head, body and foot to the
     /// same value.
     #[must_use]
-    pub fn padding(mut self, padding: f32) -> Self {
+    pub fn padding(mut self, padding: Padding) -> Self {
         self.padding_head = padding;
         self.padding_body = padding;
         self.padding_foot = padding;
@@ -172,21 +172,21 @@ where
 
     /// Sets the padding of the head of the [`Card`].
     #[must_use]
-    pub fn padding_head(mut self, padding: f32) -> Self {
+    pub fn padding_head(mut self, padding: Padding) -> Self {
         self.padding_head = padding;
         self
     }
 
     /// Sets the padding of the body of the [`Card`].
     #[must_use]
-    pub fn padding_body(mut self, padding: f32) -> Self {
+    pub fn padding_body(mut self, padding: Padding) -> Self {
         self.padding_body = padding;
         self
     }
 
     /// Sets the padding of the foot of the [`Card`].
     #[must_use]
-    pub fn padding_foot(mut self, padding: f32) -> Self {
+    pub fn padding_foot(mut self, padding: Padding) -> Self {
         self.padding_foot = padding;
         self
     }
@@ -233,12 +233,11 @@ where
         }
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -264,18 +263,21 @@ where
             tree,
         );
 
-        body_node.move_to(Point::new(
-            body_node.bounds().x,
-            body_node.bounds().y + head_node.bounds().height,
+        let body_bounds = body_node.bounds();
+        body_node = body_node.move_to(Point::new(
+            body_bounds.x,
+            body_bounds.y + head_node.bounds().height,
         ));
 
         let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
             foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
         });
 
-        foot_node.move_to(Point::new(
-            foot_node.bounds().x,
-            foot_node.bounds().y + head_node.bounds().height + body_node.bounds().height,
+        let foot_bounds = foot_node.bounds();
+
+        foot_node = foot_node.move_to(Point::new(
+            foot_bounds.x,
+            foot_bounds.y + head_node.bounds().height + body_node.bounds().height,
         ));
 
         Node::with_children(
@@ -600,7 +602,7 @@ fn head_node<Message, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
     head: &Element<'_, Message, Renderer>,
-    padding: f32,
+    padding: Padding,
     width: Length,
     on_close: bool,
     close_size: Option<f32>,
@@ -609,38 +611,45 @@ fn head_node<Message, Renderer>(
 where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
 {
-    let pad = Padding::from(padding as u16);
+    let header_size = head.as_widget().size();
+
     let mut limits = limits
         .loose()
         .width(width)
-        .height(head.as_widget().height())
-        .pad(pad);
+        .height(header_size.height)
+        .shrink(padding);
 
     let close_size = close_size.unwrap_or_else(|| renderer.default_size().0);
-    let mut close = if on_close {
+
+    if on_close {
         limits = limits.shrink(Size::new(close_size, 0.0));
-        Some(Node::new(Size::new(close_size + 1.0, close_size + 1.0)))
-    } else {
-        None
-    };
+    }
 
     let mut head = head
         .as_widget()
         .layout(&mut tree.children[0], renderer, &limits);
-    let mut size = limits.resolve(head.size());
+    let mut size = limits.resolve(width, header_size.height, head.size());
 
-    head.move_to(Point::new(padding, padding));
-    head.align(Alignment::Start, Alignment::Center, head.size());
+    head = head.move_to(Point::new(padding.left, padding.top));
+    let head_size = head.size();
+    head = head.align(Alignment::Start, Alignment::Center, head_size);
 
-    if let Some(node) = close.as_mut() {
+    let close = if on_close {
+        let node = Node::new(Size::new(close_size + 1.0, close_size + 1.0));
+        let node_size = node.size();
+
         size = Size::new(size.width + close_size, size.height);
 
-        node.move_to(Point::new(size.width - padding, padding));
-        node.align(Alignment::End, Alignment::Center, node.size());
-    }
+        Some(
+            node.move_to(Point::new(size.width - padding.right, padding.top))
+                .align(Alignment::End, Alignment::Center, node_size),
+        )
+    } else {
+        None
+    };
 
     Node::with_children(
-        size.pad(pad),
+        size.expand(padding),
         match close {
             Some(node) => vec![head, node],
             None => vec![head],
@@ -653,30 +662,33 @@ fn body_node<Message, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
     body: &Element<'_, Message, Renderer>,
-    padding: f32,
+    padding: Padding,
     width: Length,
     tree: &mut Tree,
 ) -> Node
 where
     Renderer: core::Renderer,
 {
-    let pad = Padding::from(padding as u16);
+    let body_size = body.as_widget().size();
+
     let limits = limits
-        .clone()
         .loose()
         .width(width)
-        .height(body.as_widget().height())
-        .pad(pad);
+        .height(body_size.height)
+        .shrink(padding);
 
     let mut body = body
         .as_widget()
         .layout(&mut tree.children[1], renderer, &limits);
-    let size = limits.resolve(body.size());
+    let size = limits.resolve(width, body_size.height, body.size());
 
-    body.move_to(Point::new(padding, padding));
-    body.align(Alignment::Start, Alignment::Start, size);
+    body = body.move_to(Point::new(padding.left, padding.top)).align(
+        Alignment::Start,
+        Alignment::Start,
+        size,
+    );
 
-    Node::with_children(size.pad(pad), vec![body])
+    Node::with_children(size.expand(padding), vec![body])
 }
 
 /// Calculates the layout of the foot.
@@ -684,30 +696,33 @@ fn foot_node<Message, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
     foot: &Element<'_, Message, Renderer>,
-    padding: f32,
+    padding: Padding,
     width: Length,
     tree: &mut Tree,
 ) -> Node
 where
     Renderer: core::Renderer,
 {
-    let pad = Padding::from(padding as u16);
+    let foot_size = foot.as_widget().size();
+
     let limits = limits
-        .clone()
         .loose()
         .width(width)
-        .height(foot.as_widget().height())
-        .pad(pad);
+        .height(foot_size.height)
+        .shrink(padding);
 
     let mut foot = foot
         .as_widget()
         .layout(&mut tree.children[2], renderer, &limits);
-    let size = limits.resolve(foot.size());
+    let size = limits.resolve(width, foot_size.height, foot.size());
 
-    foot.move_to(Point::new(padding, padding));
-    foot.align(Alignment::Start, Alignment::Center, size);
+    foot = foot.move_to(Point::new(padding.left, padding.right)).align(
+        Alignment::Start,
+        Alignment::Center,
+        size,
+    );
 
-    Node::with_children(size.pad(pad), vec![foot])
+    Node::with_children(size.expand(padding), vec![foot])
 }
 
 /// Draws the head of the card.

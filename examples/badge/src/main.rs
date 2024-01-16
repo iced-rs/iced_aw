@@ -40,7 +40,7 @@ impl Sandbox for BadgeExample {
     fn view(&self) -> Element<Message> {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
-            .spacing(15)
+            .spacing(10)
             .max_width(300);
 
         let content_messages =
@@ -83,13 +83,13 @@ impl Sandbox for BadgeExample {
 
         Container::new(
             Column::new()
-                .spacing(40)
+                .spacing(10)
+                .align_items(Alignment::Center)
                 .push(content_messages)
                 .push(content_all),
         )
         .width(Length::Fill)
         .height(Length::Fill)
-        .center_x()
         .center_y()
         .into()
     }

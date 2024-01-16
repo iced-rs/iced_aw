@@ -141,12 +141,11 @@ where
         tree::State::new(State::new())
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT))
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)),
+        }
     }
 
     fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
@@ -154,7 +153,7 @@ where
             .width(self.width)
             .height(self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)));
 
-        let size = limits.resolve(Size::ZERO);
+        let size = limits.resolve(self.width, self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)), Size::ZERO);
 
         Node::new(size)
     }
