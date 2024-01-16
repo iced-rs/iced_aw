@@ -49,12 +49,15 @@ where
     );
 
     let grid_limits = limits
-        .pad(padding)
+        .shrink(padding)
         .min_width(min_size.width)
         .min_height(min_size.height)
         .width(width)
         .height(height);
-    let grid_size = grid_limits.fill();
+
+    //use to be grid_limits.fill();
+    let grid_size = grid_limits.min();
+    let grid_size = grid_limits.resolve(width, height, grid_size);
 
     // Allocate the available space
     let available_width = grid_size.width - total_spacing(column_count, column_spacing);
@@ -198,23 +201,25 @@ where
             row.elements.iter().zip(column_widths).with_position()
         {
             let widget = element.as_widget();
+            let widget_size = widget.size();
             let widget_limits = Limits::NONE
-                .width(widget.width())
-                .height(widget.height())
+                .width(widget_size.width)
+                .height(widget_size.height)
                 .max_width(column_width)
                 .max_height(row_height);
 
-            let mut node = widget.layout(
-                children.next().expect("Grid missing child"),
-                renderer,
-                &widget_limits,
-            );
-            node.move_to(Point::new(x, y));
-            node.align(
-                horizontal_alignment.into(),
-                vertical_alignment.into(),
-                Size::new(column_width, row_height),
-            );
+            let node = widget
+                .layout(
+                    children.next().expect("Grid missing child"),
+                    renderer,
+                    &widget_limits,
+                )
+                .move_to(Point::new(x, y))
+                .align(
+                    horizontal_alignment.into(),
+                    vertical_alignment.into(),
+                    Size::new(column_width, row_height),
+                );
             nodes.push(node);
 
             x += column_width;
@@ -228,7 +233,7 @@ where
         }
     }
 
-    Node::with_children(grid_size.pad(padding), nodes)
+    Node::with_children(grid_size, nodes)
 }
 
 fn not_last(position: Position) -> bool {

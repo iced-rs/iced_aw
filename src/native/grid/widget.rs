@@ -14,12 +14,11 @@ impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Rend
 where
     Renderer: iced_widget::core::Renderer,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {

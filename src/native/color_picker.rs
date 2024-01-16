@@ -166,12 +166,8 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn width(&self) -> Length {
-        self.underlay.as_widget().width()
-    }
-
-    fn height(&self) -> Length {
-        self.underlay.as_widget().width()
+    fn size(&self) -> iced_widget::core::Size<Length> {
+        self.underlay.as_widget().size()
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer<Theme>, limits: &Limits) -> Node {

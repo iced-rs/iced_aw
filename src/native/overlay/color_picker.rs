@@ -558,7 +558,7 @@ where
         };
 
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(Padding::from(PADDING))
+            .shrink(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(max_width)
@@ -607,12 +607,9 @@ where
             )
         };
 
-        let mut node =
-            Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
+        let node = Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
-        node.center_and_bounce(position, bounds);
-
-        node
+        node.center_and_bounce(position, bounds)
     }
 
     fn on_event(
@@ -900,7 +897,7 @@ where
         .width(Length::Fill)
         .height(Length::Fill);
 
-    let mut block1_node = Column::<(), Renderer<Theme>>::new()
+    let block1_node = Column::<(), Renderer<Theme>>::new()
         .spacing(PADDING)
         .push(
             Row::new()
@@ -914,9 +911,7 @@ where
         )
         .layout(color_picker.tree, renderer, &block1_limits);
 
-    block1_node.move_to(Point::new(bounds.x + PADDING, bounds.y + PADDING));
-
-    block1_node
+    block1_node.move_to(Point::new(bounds.x + PADDING, bounds.y + PADDING))
 }
 
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
@@ -996,20 +991,21 @@ where
         .as_widget()
         .layout(rgba_tree, renderer, &block2_limits);
 
-    rgba_colors.move_to(Point::new(
-        rgba_colors.bounds().x + PADDING,
-        rgba_colors.bounds().y + PADDING,
-    ));
+    let rgba_bounds = rgba_colors.bounds();
+    rgba_colors = rgba_colors.move_to(Point::new(rgba_bounds.x + PADDING, rgba_bounds.y + PADDING));
+    let rgba_bounds = rgba_colors.bounds();
 
     // Hex text
-    hex_text_layout.move_to(Point::new(
-        hex_text_layout.bounds().x + PADDING,
-        hex_text_layout.bounds().y + rgba_colors.bounds().height + PADDING + SPACING,
+    let hex_bounds = hex_text_layout.bounds();
+    hex_text_layout = hex_text_layout.move_to(Point::new(
+        hex_bounds.x + PADDING,
+        hex_bounds.y + rgba_bounds.height + PADDING + SPACING,
     ));
+    let hex_bounds = hex_text_layout.bounds();
 
     // Buttons
     let cancel_limits =
-        block2_limits.max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING).max(0.0));
 
     let mut cancel_button = color_picker.cancel_button.layout(
         &mut color_picker.tree.children[0],
@@ -1018,7 +1014,7 @@ where
     );
 
     let submit_limits =
-        block2_limits.max_width(((rgba_colors.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING).max(0.0));
 
     let mut submit_button = color_picker.submit_button.layout(
         &mut color_picker.tree.children[1],
@@ -1026,39 +1022,31 @@ where
         &submit_limits,
     );
 
-    cancel_button.move_to(Point::new(
-        cancel_button.bounds().x + PADDING,
-        cancel_button.bounds().y
-            + rgba_colors.bounds().height
-            + hex_text_layout.bounds().height
-            + PADDING
-            + 2.0 * SPACING,
+    let cancel_bounds = cancel_button.bounds();
+    cancel_button = cancel_button.move_to(Point::new(
+        cancel_bounds.x + PADDING,
+        cancel_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING + 2.0 * SPACING,
+    ));
+    let cancel_bounds = cancel_button.bounds();
+
+    let submit_bounds = submit_button.bounds();
+    submit_button = submit_button.move_to(Point::new(
+        submit_bounds.x + rgba_colors.bounds().width - submit_bounds.width + PADDING,
+        submit_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING + 2.0 * SPACING,
     ));
 
-    submit_button.move_to(Point::new(
-        submit_button.bounds().x + rgba_colors.bounds().width - submit_button.bounds().width
-            + PADDING,
-        submit_button.bounds().y
-            + rgba_colors.bounds().height
-            + hex_text_layout.bounds().height
-            + PADDING
-            + 2.0 * SPACING,
-    ));
-
-    let mut block2_node = Node::with_children(
+    Node::with_children(
         Size::new(
-            rgba_colors.bounds().width + (2.0 * PADDING),
-            rgba_colors.bounds().height
-                + hex_text_layout.bounds().height
-                + cancel_button.bounds().height
+            rgba_bounds.width + (2.0 * PADDING),
+            rgba_bounds.height
+                + hex_bounds.height
+                + cancel_bounds.height
                 + (2.0 * PADDING)
                 + (2.0 * SPACING),
         ),
         vec![rgba_colors, hex_text_layout, cancel_button, submit_button],
-    );
-    block2_node.move_to(Point::new(bounds.x, bounds.y));
-
-    block2_node
+    )
+    .move_to(Point::new(bounds.x, bounds.y))
 }
 
 /// Draws the 1. block of the color picker containing the HSV part.
@@ -1728,11 +1716,7 @@ where
         tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
-    fn width(&self) -> Length {
-        unimplemented!("This should never be reached!")
-    }
-
-    fn height(&self) -> Length {
+    fn size(&self) -> iced_widget::core::Size<Length> {
         unimplemented!("This should never be reached!")
     }
 

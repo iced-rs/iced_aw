@@ -116,7 +116,7 @@ impl Application for ColorPickerExample {
                     .center_x()
                     .center_y()
                     .width(Length::Fill)
-                    .height(Length::Fill)
+                    .height(Length::Fill).center_x().center_y()
                     .into()
             }
         }

@@ -10,7 +10,7 @@ pub trait Position {
 }
 
 impl Position for layout::Node {
-    fn center_and_bounce(mut self, position: Point, _bounds: Size) -> Self {
+    fn center_and_bounce(self, position: Point, _bounds: Size) -> Self {
         let size = self.size();
         let mut new_self = self.move_to(Point::new(
             (position.x - size.width / 2.0).max(0.0),

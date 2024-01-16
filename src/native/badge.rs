@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: badge*
 use iced_widget::core::{
     self, event,
-    layout::{self, Limits, Node},
+    layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::tree::Tree,
