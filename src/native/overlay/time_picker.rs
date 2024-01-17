@@ -447,10 +447,10 @@ where
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            if matches!(key_code, keyboard::KeyCode::Tab) {
+            if matches!(key, keyboard::Key::Named(keyboard::key::Named::Tab)) {
                 if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous(self.state.show_seconds);
                 } else {
@@ -458,13 +458,15 @@ where
                 }
             } else {
                 let mut keyboard_handle =
-                    |key_code: &keyboard::KeyCode, time: &mut NaiveTime, duration: Duration| {
+                    |key_code: &keyboard::Key, time: &mut NaiveTime, duration: Duration| {
                         match key_code {
-                            keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                            keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
+                            | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                                 *time -= duration;
                                 status = event::Status::Captured;
                             }
-                            keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                            keyboard::Key::Named(keyboard::key::Named::ArrowRight)
+                            | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                                 *time += duration;
                                 status = event::Status::Captured;
                             }
@@ -474,13 +476,13 @@ where
 
                 match self.state.focus {
                     Focus::DigitalHour => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::hours(1));
+                        keyboard_handle(key, &mut self.state.time, Duration::hours(1));
                     }
                     Focus::DigitalMinute => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::minutes(1));
+                        keyboard_handle(key, &mut self.state.time, Duration::minutes(1));
                     }
                     Focus::DigitalSecond => {
-                        keyboard_handle(key_code, &mut self.state.time, Duration::seconds(1));
+                        keyboard_handle(key, &mut self.state.time, Duration::seconds(1));
                     }
                     _ => {}
                 }

@@ -155,9 +155,9 @@ where
 
         let mut forward_event_to_children = true;
 
-        let status = match event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                if key_code == keyboard::KeyCode::Escape {
+        let status = match &event {
+            Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
+                if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                     self.state.show = false;
                     forward_event_to_children = false;
                     Status::Captured

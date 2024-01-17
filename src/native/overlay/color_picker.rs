@@ -422,10 +422,10 @@ where
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            if matches!(key_code, keyboard::KeyCode::Tab) {
+            if matches!(key, keyboard::Key::Named(keyboard::key::Named::Tab)) {
                 if self.state.keyboard_modifiers.shift() {
                     self.state.focus = self.state.focus.previous();
                 } else {
@@ -435,24 +435,24 @@ where
                 self.state.sat_value_canvas_cache.clear();
                 self.state.hue_canvas_cache.clear();
             } else {
-                let sat_value_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
+                let sat_value_handle = |key_code: &keyboard::Key, color: &mut Color| {
                     let mut hsv_color: Hsv = (*color).into();
                     let mut status = event::Status::Ignored;
 
                     match key_code {
-                        keyboard::KeyCode::Left => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft) => {
                             hsv_color.saturation -= SAT_VALUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowRight) => {
                             hsv_color.saturation += SAT_VALUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Up => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                             hsv_color.value -= SAT_VALUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Down => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                             hsv_color.value += SAT_VALUE_STEP;
                             status = event::Status::Captured;
                         }
@@ -469,18 +469,18 @@ where
                     status
                 };
 
-                let hue_handle = |key_code: &keyboard::KeyCode, color: &mut Color| {
+                let hue_handle = |key_code: &keyboard::Key, color: &mut Color| {
                     let mut hsv_color: Hsv = (*color).into();
                     let mut status = event::Status::Ignored;
 
                     let mut value = i32::from(hsv_color.hue);
 
                     match key_code {
-                        keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft) | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                             value -= HUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowRight) | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                             value += HUE_STEP;
                             status = event::Status::Captured;
                         }
@@ -497,16 +497,16 @@ where
                     status
                 };
 
-                let rgba_bar_handle = |key_code: &keyboard::KeyCode, value: &mut f32| {
+                let rgba_bar_handle = |key_code: &keyboard::Key, value: &mut f32| {
                     let mut byte_value = (*value * 255.0) as i16;
                     let mut status = event::Status::Captured;
 
                     match key_code {
-                        keyboard::KeyCode::Left | keyboard::KeyCode::Down => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft) | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                             byte_value -= RGBA_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right | keyboard::KeyCode::Up => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowRight) | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                             byte_value += RGBA_STEP;
                             status = event::Status::Captured;
                         }
@@ -518,12 +518,12 @@ where
                 };
 
                 match self.state.focus {
-                    Focus::SatValue => status = sat_value_handle(key_code, &mut self.state.color),
-                    Focus::Hue => status = hue_handle(key_code, &mut self.state.color),
-                    Focus::Red => status = rgba_bar_handle(key_code, &mut self.state.color.r),
-                    Focus::Green => status = rgba_bar_handle(key_code, &mut self.state.color.g),
-                    Focus::Blue => status = rgba_bar_handle(key_code, &mut self.state.color.b),
-                    Focus::Alpha => status = rgba_bar_handle(key_code, &mut self.state.color.a),
+                    Focus::SatValue => status = sat_value_handle(key, &mut self.state.color),
+                    Focus::Hue => status = hue_handle(key, &mut self.state.color),
+                    Focus::Red => status = rgba_bar_handle(key, &mut self.state.color.r),
+                    Focus::Green => status = rgba_bar_handle(key, &mut self.state.color.g),
+                    Focus::Blue => status = rgba_bar_handle(key, &mut self.state.color.b),
+                    Focus::Alpha => status = rgba_bar_handle(key, &mut self.state.color.a),
                     _ => {}
                 }
             }

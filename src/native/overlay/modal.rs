@@ -106,9 +106,9 @@ where
         let esc_status = self
             .esc
             .as_ref()
-            .map_or(event::Status::Ignored, |esc| match event {
-                Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                    if key_code == keyboard::KeyCode::Escape {
+            .map_or(event::Status::Ignored, |esc| match &event {
+                Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
+                    if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                         shell.publish(esc.to_owned());
                         event::Status::Captured
                     } else {
@@ -120,7 +120,7 @@ where
 
         let backdrop_status = self.backdrop.as_ref().zip(layout.children().next()).map_or(
             event::Status::Ignored,
-            |(backdrop, layout)| match event {
+            |(backdrop, layout)| match &event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     if layout

@@ -437,154 +437,154 @@ where
                 }
                 event_status
             } else {
-                match event {
-                    Event::Keyboard(keyboard::Event::CharacterReceived(c))
-                        if child
-                            .state
-                            .downcast_mut::<text_input::State<Renderer::Paragraph>>()
-                            .is_focused()
-                            && c.is_numeric() =>
-                    {
-                        let mut new_val = self.value.to_string();
-                        match child
-                            .state
-                            .downcast_mut::<text_input::State<Renderer::Paragraph>>()
-                            .cursor()
-                            .state(&Value::new(&new_val))
-                        {
-                            cursor::State::Index(idx) => {
-                                if T::zero().eq(&self.value) {
-                                    new_val = c.to_string();
-                                } else {
-                                    new_val.insert(idx, c);
-                                }
-                            }
-                            cursor::State::Selection { start, end } => {
-                                if (0..new_val.len()).contains(&start)
-                                    && (0..new_val.len()).contains(&end)
-                                {
-                                    new_val.replace_range(
-                                        if start > end { end..start } else { start..end },
-                                        &c.to_string(),
-                                    );
-                                }
-                            }
-                        }
-
-                        match T::from_str(&new_val) {
-                            Ok(val) => {
-                                if (self.bounds.0..=self.bounds.1).contains(&val) {
-                                    self.value = val;
-                                    shell.publish((self.on_change)(self.value));
-                                    self.content.on_event(
-                                        child,
-                                        event.clone(),
-                                        content,
-                                        cursor,
-                                        renderer,
-                                        clipboard,
-                                        shell,
-                                        viewport,
-                                    )
-                                } else {
-                                    event::Status::Ignored
-                                }
-                            }
-                            Err(_) => event::Status::Ignored,
-                        }
-                    }
-                    Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. })
+                match event.clone() {
+                    Event::Keyboard(keyboard::Event::KeyPressed { key, .. })
                         if child
                             .state
                             .downcast_mut::<text_input::State<Renderer::Paragraph>>()
                             .is_focused() =>
                     {
-                        match key_code {
-                            keyboard::KeyCode::Up => {
-                                self.increase_val(shell);
-                                event::Status::Captured
+                        match key.as_ref() {
+                            keyboard::Key::Character(c) if c.trim().parse::<i64>().is_ok() => {
+                                let mut new_val = self.value.to_string();
+                                match child
+                                    .state
+                                    .downcast_mut::<text_input::State<Renderer::Paragraph>>()
+                                    .cursor()
+                                    .state(&Value::new(&new_val))
+                                {
+                                    cursor::State::Index(mut idx) => {
+                                        if T::zero().eq(&self.value) {
+                                            new_val = c.to_string();
+                                        } else {
+                                            for char in c.chars() {
+                                                new_val.insert(idx, char);
+                                                idx += 1;
+                                            }
+                                        }
+                                    }
+                                    cursor::State::Selection { start, end } => {
+                                        if (0..new_val.len()).contains(&start)
+                                            && (0..new_val.len()).contains(&end)
+                                        {
+                                            new_val.replace_range(
+                                                if start > end { end..start } else { start..end },
+                                                &c.to_string(),
+                                            );
+                                        }
+                                    }
+                                }
+
+                                match T::from_str(&new_val) {
+                                    Ok(val) => {
+                                        if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                            self.value = val;
+                                            shell.publish((self.on_change)(self.value));
+                                            self.content.on_event(
+                                                child,
+                                                event.clone(),
+                                                content,
+                                                cursor,
+                                                renderer,
+                                                clipboard,
+                                                shell,
+                                                viewport,
+                                            )
+                                        } else {
+                                            event::Status::Ignored
+                                        }
+                                    }
+                                    Err(_) => event::Status::Ignored,
+                                }
                             }
-                            keyboard::KeyCode::Down => {
-                                self.decrease_val(shell);
-                                event::Status::Captured
-                            }
-                            keyboard::KeyCode::Backspace => {
-                                if T::zero().eq(&self.value) {
-                                    event::Status::Ignored
-                                } else {
-                                    let mut new_val = self.value.to_string();
-                                    match child
-                                        .state
-                                        .downcast_mut::<text_input::State<Renderer::Paragraph>>()
-                                        .cursor()
-                                        .state(&Value::new(&new_val))
-                                    {
-                                        cursor::State::Index(idx) => {
-                                            if idx >= 1 && idx <= new_val.len() {
-                                                if new_val.len() == 1 {
-                                                    new_val = if self.bounds.0 > T::zero() {
-                                                        self.bounds.0
+                            keyboard::Key::Named(k) => match k {
+                                keyboard::key::Named::ArrowUp => {
+                                    self.increase_val(shell);
+                                    event::Status::Captured
+                                }
+                                keyboard::key::Named::ArrowDown => {
+                                    self.decrease_val(shell);
+                                    event::Status::Captured
+                                }
+                                keyboard::key::Named::Backspace => {
+                                    if T::zero().eq(&self.value) {
+                                        event::Status::Ignored
+                                    } else {
+                                        let mut new_val = self.value.to_string();
+                                        match child
+                                            .state
+                                            .downcast_mut::<text_input::State<Renderer::Paragraph>>(
+                                            )
+                                            .cursor()
+                                            .state(&Value::new(&new_val))
+                                        {
+                                            cursor::State::Index(idx) => {
+                                                if idx >= 1 && idx <= new_val.len() {
+                                                    if new_val.len() == 1 {
+                                                        new_val = if self.bounds.0 > T::zero() {
+                                                            self.bounds.0
+                                                        } else {
+                                                            T::zero()
+                                                        }
+                                                        .to_string();
                                                     } else {
-                                                        T::zero()
+                                                        let _ = new_val.remove(idx - 1);
                                                     }
-                                                    .to_string();
-                                                } else {
-                                                    let _ = new_val.remove(idx - 1);
+                                                }
+                                            }
+                                            cursor::State::Selection { start, end } => {
+                                                if (0..new_val.len()).contains(&start)
+                                                    && (0..new_val.len()).contains(&end)
+                                                {
+                                                    new_val.replace_range(
+                                                        if start > end {
+                                                            end..start
+                                                        } else {
+                                                            start..end
+                                                        },
+                                                        "",
+                                                    );
                                                 }
                                             }
                                         }
-                                        cursor::State::Selection { start, end } => {
-                                            if (0..new_val.len()).contains(&start)
-                                                && (0..new_val.len()).contains(&end)
-                                            {
-                                                new_val.replace_range(
-                                                    if start > end {
-                                                        end..start
-                                                    } else {
-                                                        start..end
-                                                    },
-                                                    "",
-                                                );
-                                            }
-                                        }
-                                    }
 
-                                    match T::from_str(&new_val) {
-                                        Ok(val) => {
-                                            if (self.bounds.0..=self.bounds.1).contains(&val) {
-                                                self.value = val;
-                                                shell.publish((self.on_change)(self.value));
-                                                self.content.on_event(
-                                                    child,
-                                                    event.clone(),
-                                                    content,
-                                                    cursor,
-                                                    renderer,
-                                                    clipboard,
-                                                    shell,
-                                                    viewport,
-                                                )
-                                            } else {
-                                                event::Status::Ignored
+                                        match T::from_str(&new_val) {
+                                            Ok(val) => {
+                                                if (self.bounds.0..=self.bounds.1).contains(&val) {
+                                                    self.value = val;
+                                                    shell.publish((self.on_change)(self.value));
+                                                    self.content.on_event(
+                                                        child,
+                                                        event.clone(),
+                                                        content,
+                                                        cursor,
+                                                        renderer,
+                                                        clipboard,
+                                                        shell,
+                                                        viewport,
+                                                    )
+                                                } else {
+                                                    event::Status::Ignored
+                                                }
                                             }
+                                            Err(_) => event::Status::Ignored,
                                         }
-                                        Err(_) => event::Status::Ignored,
                                     }
                                 }
-                            }
-                            _ => self.content.on_event(
-                                child,
-                                event.clone(),
-                                content,
-                                cursor,
-                                renderer,
-                                clipboard,
-                                shell,
-                                viewport,
-                            ),
+                                _ => self.content.on_event(
+                                    child,
+                                    event.clone(),
+                                    content,
+                                    cursor,
+                                    renderer,
+                                    clipboard,
+                                    shell,
+                                    viewport,
+                                ),
+                            },
+                            _ => event::Status::Ignored,
                         }
                     }
-
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                         let positive = match delta {
                             mouse::ScrollDelta::Lines { y, .. }

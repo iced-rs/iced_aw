@@ -295,54 +295,54 @@ where
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            match key_code {
-                keyboard::KeyCode::Tab => {
+            match key.as_ref() {
+                keyboard::Key::Named(keyboard::key::Named::Tab) => {
                     if self.state.keyboard_modifiers.shift() {
                         self.state.focus = self.state.focus.previous();
                     } else {
                         self.state.focus = self.state.focus.next();
                     }
                 }
-                _ => match self.state.focus {
-                    Focus::Month => match key_code {
-                        keyboard::KeyCode::Left => {
+                keyboard::Key::Named(k) => match self.state.focus {
+                    Focus::Month => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_month(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_month(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
-                    Focus::Year => match key_code {
-                        keyboard::KeyCode::Left => {
+                    Focus::Year => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_year(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_year(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
-                    Focus::Day => match key_code {
-                        keyboard::KeyCode::Left => {
+                    Focus::Day => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_day(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_day(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Up => {
+                        keyboard::key::Named::ArrowUp => {
                             self.state.date = crate::core::date::pred_week(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Down => {
+                        keyboard::key::Named::ArrowDown => {
                             self.state.date = crate::core::date::succ_week(self.state.date);
                             status = event::Status::Captured;
                         }
@@ -350,6 +350,7 @@ where
                     },
                     _ => {}
                 },
+                _ => {}
             }
 
             status

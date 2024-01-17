@@ -167,7 +167,7 @@ where
         Node::new(limits.width(self.width).height(self.height).resolve(
             self.width,
             self.height,
-            Size::new(100.0, 32.0),
+            Size::new(40.0, 40.0),
         ))
     }
 
