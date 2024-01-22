@@ -7,8 +7,8 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     renderer,
     widget::tree::Tree,
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell,
-    Size, Widget,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Shadow, Shell, Size, Widget,
 };
 
 pub use crate::style::badge::{Appearance, StyleSheet};
@@ -30,10 +30,10 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Renderer = crate::Renderer>
+pub struct Badge<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The padding of the [`Badge`].
     padding: u16,
@@ -46,15 +46,15 @@ where
     /// The vertical alignment of the [`Badge`].
     vertical_alignment: Alignment,
     /// The style of the [`Badge`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     /// The content [`Element`] of the [`Badge`].
-    content: Element<'a, Message, Renderer>,
+    content: Element<'a, Message, Theme, Renderer>,
 }
 
-impl<'a, Message, Renderer> Badge<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Badge<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`Badge`] with the given content.
     ///
@@ -62,7 +62,7 @@ where
     ///     * the content [`Element`] to display in the [`Badge`].
     pub fn new<T>(content: T) -> Self
     where
-        T: Into<Element<'a, Message, Renderer>>,
+        T: Into<Element<'a, Message, Theme, Renderer>>,
     {
         Badge {
             padding: 7,
@@ -70,7 +70,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             content: content.into(),
         }
     }
@@ -105,7 +105,7 @@ where
 
     /// Sets the style of the [`Badge`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
@@ -118,11 +118,12 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Badge<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Badge<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.content)]
@@ -207,7 +208,7 @@ where
         &self,
         tree: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -232,9 +233,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: border_radius.into(),
-                border_width: style_sheet.border_width,
-                border_color: style_sheet.border_color.unwrap_or(Color::BLACK),
+                border: Border {
+                    radius: border_radius.into(),
+                    width: style_sheet.border_width,
+                    color: style_sheet.border_color.unwrap_or(Color::BLACK),
+                },
+                shadow: Shadow::default(),
             },
             style_sheet.background,
         );
@@ -255,13 +259,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Badge<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Badge<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(badge: Badge<'a, Message, Renderer>) -> Self {
+    fn from(badge: Badge<'a, Message, Theme, Renderer>) -> Self {
         Self::new(badge)
     }
 }

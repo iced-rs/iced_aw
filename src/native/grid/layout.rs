@@ -11,14 +11,14 @@ use itertools::{Itertools, Position};
 use super::types::GridRow;
 
 #[allow(clippy::too_many_arguments)]
-pub(super) fn layout<Message, Renderer>(
+pub(super) fn layout<Message, Theme, Renderer>(
     tree: &mut Tree,
     renderer: &Renderer,
     limits: &Limits,
     column_count: usize,
     row_count: usize,
     element_count: usize,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
     column_spacing: Pixels,
     row_spacing: Pixels,
     padding: Padding,
@@ -82,12 +82,12 @@ where
     )
 }
 
-fn minimum_row_column_sizes<Message, Renderer>(
+fn minimum_row_column_sizes<Message, Theme, Renderer>(
     tree: &mut Tree,
     renderer: &Renderer,
     column_widths: &mut Vec<f32>,
     row_heights: &mut Vec<f32>,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
 ) where
     Renderer: iced_widget::core::Renderer,
 {
@@ -174,10 +174,10 @@ fn allocate_space(current_sizes: &mut [f32], length_settings: &[Length], availab
 }
 
 #[allow(clippy::too_many_arguments)]
-fn create_grid_layout<Message, Renderer>(
+fn create_grid_layout<Message, Theme, Renderer>(
     tree: &mut Tree,
     element_count: usize,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
     row_heights: &[f32],
     column_widths: &[f32],
     renderer: &Renderer,

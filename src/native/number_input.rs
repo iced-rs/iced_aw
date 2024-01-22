@@ -14,8 +14,8 @@ use iced_widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
-        Point, Rectangle, Shell, Size, Widget,
+        Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
+        Pixels, Point, Rectangle, Shadow, Shell, Size, Widget,
     },
     text,
     text::LineHeight,
@@ -25,6 +25,7 @@ use iced_widget::{
 use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
 
+use crate::style;
 pub use crate::{
     graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
@@ -55,10 +56,10 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Renderer = crate::Renderer>
+pub struct NumberInput<'a, T, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: number_input::StyleSheet
+    Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
         + text::StyleSheet,
@@ -74,23 +75,23 @@ where
     /// The text size of the [`NumberInput`].
     size: Option<f32>,
     /// The underlying element of the [`NumberInput`].
-    content: TextInput<'a, Message, Renderer>,
+    content: TextInput<'a, Message, Theme, Renderer>,
     /// The on_change event of the [`NumberInput`].
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`].
-    style: <Renderer::Theme as number_input::StyleSheet>::Style,
+    style: <Theme as number_input::StyleSheet>::Style,
     /// The font text of the [`NumberInput`].
     font: Renderer::Font,
     /// The Width to use for the NumberBox Default is Length::Fill
     width: Length,
 }
 
-impl<'a, T, Message, Renderer> NumberInput<'a, T, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
     Renderer: core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: number_input::StyleSheet
+    Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
         + text::StyleSheet,
@@ -123,7 +124,7 @@ where
                 .padding(padding)
                 .width(Length::Fixed(127.0)),
             on_change: Box::new(on_changed),
-            style: <Renderer::Theme as number_input::StyleSheet>::Style::default(),
+            style: <Theme as number_input::StyleSheet>::Style::default(),
             font: Renderer::Font::default(),
             width: Length::Shrink,
         }
@@ -208,10 +209,7 @@ where
 
     /// Sets the style of the [`NumberInput`].
     #[must_use]
-    pub fn style(
-        mut self,
-        style: impl Into<<Renderer::Theme as number_input::StyleSheet>::Style>,
-    ) -> Self {
+    pub fn style(mut self, style: impl Into<<Theme as number_input::StyleSheet>::Style>) -> Self {
         self.style = style.into();
         self
     }
@@ -250,12 +248,13 @@ where
     }
 }
 
-impl<'a, T, Message, Renderer> Widget<Message, Renderer> for NumberInput<'a, T, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for NumberInput<'a, T, Message, Theme, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: 'a + Clone,
     Renderer: 'a + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: number_input::StyleSheet
+    Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
         + text::StyleSheet,
@@ -306,14 +305,14 @@ where
 
         let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
-            Container::<Message, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
+            Container::<Message, Theme, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y()
                 .center_x()
         };
 
         let element = if self.padding < DEFAULT_PADDING {
             Element::new(
-                Row::<Message, Renderer>::new()
+                Row::<Message, Theme, Renderer>::new()
                     .spacing(1)
                     .width(Length::Shrink)
                     .push(btn_mod('+'))
@@ -321,7 +320,7 @@ where
             )
         } else {
             Element::new(
-                Column::<Message, Renderer>::new()
+                Column::<Message, Theme, Renderer>::new()
                     .spacing(1)
                     .width(Length::Shrink)
                     .push(btn_mod('▲'))
@@ -656,7 +655,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -689,19 +688,20 @@ where
         let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
 
         let decrease_btn_style = if is_decrease_disabled {
-            theme.disabled(&self.style)
+            style::number_input::StyleSheet::disabled(theme, &self.style)
+            //theme.disabled(&self.style)
         } else if state.state.downcast_ref::<ModifierState>().decrease_pressed {
-            theme.pressed(&self.style)
+            style::number_input::StyleSheet::pressed(theme, &self.style)
         } else {
-            theme.active(&self.style)
+            style::number_input::StyleSheet::active(theme, &self.style)
         };
 
         let increase_btn_style = if is_increase_disabled {
-            theme.disabled(&self.style)
+            style::number_input::StyleSheet::disabled(theme, &self.style)
         } else if state.state.downcast_ref::<ModifierState>().increase_pressed {
-            theme.pressed(&self.style)
+            style::number_input::StyleSheet::pressed(theme, &self.style)
         } else {
-            theme.active(&self.style)
+            style::number_input::StyleSheet::active(theme, &self.style)
         };
 
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
@@ -712,9 +712,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: dec_bounds,
-                border_radius: (3.0).into(),
-                border_width: 0.,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (3.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             decrease_btn_style
                 .button_background
@@ -741,9 +744,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: inc_bounds,
-                border_radius: (3.0).into(),
-                border_width: 0.,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (3.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             increase_btn_style
                 .button_background
@@ -777,18 +783,19 @@ pub struct ModifierState {
     pub increase_pressed: bool,
 }
 
-impl<'a, T, Message, Renderer> From<NumberInput<'a, T, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> From<NumberInput<'a, T, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
     Renderer: 'a + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: number_input::StyleSheet
+    Theme: 'a
+        + number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
         + text::StyleSheet,
 {
-    fn from(num_input: NumberInput<'a, T, Message, Renderer>) -> Self {
+    fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(num_input)
     }
 }

@@ -54,7 +54,6 @@ pub mod core;
 pub mod style;
 
 pub use iced_widget::core::Element;
-use iced_widget::{renderer, style as iced_style};
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
@@ -164,6 +163,3 @@ mod platform {
 
 #[doc(no_inline)]
 pub use platform::*;
-
-#[allow(dead_code)]
-type Renderer<Theme = iced_style::Theme> = renderer::Renderer<Theme>;

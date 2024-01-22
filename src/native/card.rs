@@ -13,8 +13,8 @@ use iced_widget::{
         mouse::{self, Cursor},
         renderer, touch,
         widget::{Operation, Tree},
-        Alignment, BorderRadius, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
-        Point, Rectangle, Shell, Size, Widget,
+        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
+        Point, Rectangle, Shadow, Shell, Size, Widget,
     },
     text::LineHeight,
 };
@@ -45,10 +45,10 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Renderer = crate::Renderer>
+pub struct Card<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The width of the [`Card`].
     width: Length,
@@ -69,19 +69,19 @@ where
     /// The optional message that is send if the close icon of the [`Card`] is pressed.
     on_close: Option<Message>,
     /// The head [`Element`] of the [`Card`].
-    head: Element<'a, Message, Renderer>,
+    head: Element<'a, Message, Theme, Renderer>,
     /// The body [`Element`] of the [`Card`].
-    body: Element<'a, Message, Renderer>,
+    body: Element<'a, Message, Theme, Renderer>,
     /// The optional foot [`Element`] of the [`Card`].
-    foot: Option<Element<'a, Message, Renderer>>,
+    foot: Option<Element<'a, Message, Theme, Renderer>>,
     /// The style of the [`Card`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
 }
 
-impl<'a, Message, Renderer> Card<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Card<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`Card`] containing the given head and body.
     ///
@@ -90,8 +90,8 @@ where
     ///     * the body [`Element`] to display at the middle of the [`Card`].
     pub fn new<H, B>(head: H, body: B) -> Self
     where
-        H: Into<Element<'a, Message, Renderer>>,
-        B: Into<Element<'a, Message, Renderer>>,
+        H: Into<Element<'a, Message, Theme, Renderer>>,
+        B: Into<Element<'a, Message, Theme, Renderer>>,
     {
         Card {
             width: Length::Fill,
@@ -106,7 +106,7 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
         }
     }
 
@@ -114,7 +114,7 @@ where
     #[must_use]
     pub fn foot<F>(mut self, foot: F) -> Self
     where
-        F: Into<Element<'a, Message, Renderer>>,
+        F: Into<Element<'a, Message, Theme, Renderer>>,
     {
         self.foot = Some(foot.into());
         self
@@ -193,7 +193,7 @@ where
 
     /// Sets the style of the [`Card`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
@@ -206,11 +206,12 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Card<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Card<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         self.foot.as_ref().map_or_else(
@@ -491,7 +492,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -505,9 +506,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet.border_radius.into(),
-                border_width: style_sheet.border_width,
-                border_color: style_sheet.border_color,
+                border: Border {
+                    radius: style_sheet.border_radius.into(),
+                    width: style_sheet.border_width,
+                    color: style_sheet.border_color,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet.background,
         );
@@ -517,9 +521,12 @@ where
             // TODO: fill not necessary
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet.border_radius.into(),
-                border_width: style_sheet.border_width,
-                border_color: style_sheet.border_color,
+                border: Border {
+                    radius: style_sheet.border_radius.into(),
+                    width: style_sheet.border_width,
+                    color: style_sheet.border_color,
+                },
+                shadow: Shadow::default(),
             },
             Color::TRANSPARENT,
         );
@@ -576,7 +583,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = vec![&mut self.head, &mut self.body];
         if let Some(foot) = &mut self.foot {
             children.push(foot);
@@ -598,10 +605,10 @@ where
 
 /// Calculates the layout of the head.
 #[allow(clippy::too_many_arguments)]
-fn head_node<Message, Renderer>(
+fn head_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    head: &Element<'_, Message, Renderer>,
+    head: &Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     on_close: bool,
@@ -658,10 +665,10 @@ where
 }
 
 /// Calculates the layout of the body.
-fn body_node<Message, Renderer>(
+fn body_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    body: &Element<'_, Message, Renderer>,
+    body: &Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -692,10 +699,10 @@ where
 }
 
 /// Calculates the layout of the foot.
-fn foot_node<Message, Renderer>(
+fn foot_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    foot: &Element<'_, Message, Renderer>,
+    foot: &Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -727,19 +734,19 @@ where
 
 /// Draws the head of the card.
 #[allow(clippy::too_many_arguments)]
-fn draw_head<Message, Renderer>(
+fn draw_head<Message, Theme, Renderer>(
     state: &Tree,
     renderer: &mut Renderer,
-    head: &Element<'_, Message, Renderer>,
+    head: &Element<'_, Message, Theme, Renderer>,
     layout: Layout<'_>,
     cursor: Cursor,
     viewport: &Rectangle,
-    theme: &Renderer::Theme,
-    style: &<Renderer::Theme as StyleSheet>::Style,
+    theme: &Theme,
+    style: &<Theme as StyleSheet>::Style,
     close_size: Option<f32>,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     let mut head_children = layout.children();
     let style_sheet = theme.active(style);
@@ -750,9 +757,12 @@ fn draw_head<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds,
-            border_radius: BorderRadius::from(border_radius),
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+            border: Border {
+                radius: border_radius.into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
         },
         style_sheet.head_background,
     );
@@ -766,9 +776,12 @@ fn draw_head<Message, Renderer>(
                 width: bounds.width,
                 height: border_radius,
             },
-            border_radius: (0.0).into(),
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+            border: Border {
+                radius: (0.0).into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
         },
         style_sheet.head_background,
     );
@@ -814,18 +827,18 @@ fn draw_head<Message, Renderer>(
 
 /// Draws the body of the card.
 #[allow(clippy::too_many_arguments)]
-fn draw_body<Message, Renderer>(
+fn draw_body<Message, Theme, Renderer>(
     state: &Tree,
     renderer: &mut Renderer,
-    body: &Element<'_, Message, Renderer>,
+    body: &Element<'_, Message, Theme, Renderer>,
     layout: Layout<'_>,
     cursor: Cursor,
     viewport: &Rectangle,
-    theme: &Renderer::Theme,
-    style: &<Renderer::Theme as StyleSheet>::Style,
+    theme: &Theme,
+    style: &<Theme as StyleSheet>::Style,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     let mut body_children = layout.children();
     let style_sheet = theme.active(style);
@@ -834,9 +847,12 @@ fn draw_body<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: (0.0).into(),
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+            border: Border {
+                radius: (0.0).into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
         },
         style_sheet.body_background,
     );
@@ -858,18 +874,18 @@ fn draw_body<Message, Renderer>(
 
 /// Draws the foot of the card.
 #[allow(clippy::too_many_arguments)]
-fn draw_foot<Message, Renderer>(
+fn draw_foot<Message, Theme, Renderer>(
     state: Option<&Tree>,
     renderer: &mut Renderer,
-    foot: &Option<Element<'_, Message, Renderer>>,
+    foot: &Option<Element<'_, Message, Theme, Renderer>>,
     layout: Layout<'_>,
     cursor: Cursor,
     viewport: &Rectangle,
-    theme: &Renderer::Theme,
-    style: &<Renderer::Theme as StyleSheet>::Style,
+    theme: &Theme,
+    style: &<Theme as StyleSheet>::Style,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
     let style_sheet = theme.active(style);
@@ -878,9 +894,12 @@ fn draw_foot<Message, Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style_sheet.border_radius.into(),
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+            border: Border {
+                radius: style_sheet.border_radius.into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
         },
         style_sheet.foot_background,
     );
@@ -902,13 +921,14 @@ fn draw_foot<Message, Renderer>(
     }
 }
 
-impl<'a, Message, Renderer> From<Card<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Card<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
     Message: Clone + 'a,
 {
-    fn from(card: Card<'a, Message, Renderer>) -> Self {
+    fn from(card: Card<'a, Message, Theme, Renderer>) -> Self {
         Element::new(card)
     }
 }

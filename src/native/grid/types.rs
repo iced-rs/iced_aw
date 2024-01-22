@@ -7,8 +7,8 @@ use iced_widget::core::{
 ///
 /// The number of columns is determined by the row with the most elements.
 #[allow(missing_debug_implementations)]
-pub struct Grid<'a, Message, Renderer = crate::Renderer> {
-    pub(super) rows: Vec<GridRow<'a, Message, Renderer>>,
+pub struct Grid<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
+    pub(super) rows: Vec<GridRow<'a, Message, Theme, Renderer>>,
     pub(super) horizontal_alignment: Horizontal,
     pub(super) vertical_alignment: Vertical,
     pub(super) column_spacing: Pixels,
@@ -20,7 +20,7 @@ pub struct Grid<'a, Message, Renderer = crate::Renderer> {
     pub(super) row_heights: Vec<Length>,
 }
 
-impl<'a, Message, Renderer> Default for Grid<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Default for Grid<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
 {
@@ -40,7 +40,7 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Grid<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Grid<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
 {
@@ -52,7 +52,7 @@ where
 
     /// Creates a [`Grid`] with the given [`GridRow`]s.
     #[must_use]
-    pub fn with_rows(rows: Vec<GridRow<'a, Message, Renderer>>) -> Self {
+    pub fn with_rows(rows: Vec<GridRow<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             rows,
             ..Default::default()
@@ -61,7 +61,7 @@ where
 
     /// Adds a [`GridRow`] to the [`Grid`].
     #[must_use]
-    pub fn push(mut self, row: GridRow<'a, Message, Renderer>) -> Self {
+    pub fn push(mut self, row: GridRow<'a, Message, Theme, Renderer>) -> Self {
         self.rows.push(row);
         self
     }
@@ -171,13 +171,15 @@ where
         self
     }
 
-    pub(super) fn elements_iter(&self) -> impl Iterator<Item = &Element<'a, Message, Renderer>> {
+    pub(super) fn elements_iter(
+        &self,
+    ) -> impl Iterator<Item = &Element<'a, Message, Theme, Renderer>> {
         self.rows.iter().flat_map(|row| row.elements.iter())
     }
 
     pub(super) fn elements_iter_mut(
         &mut self,
-    ) -> impl Iterator<Item = &mut Element<'a, Message, Renderer>> {
+    ) -> impl Iterator<Item = &mut Element<'a, Message, Theme, Renderer>> {
         self.rows.iter_mut().flat_map(|row| row.elements.iter_mut())
     }
 
@@ -200,11 +202,11 @@ where
 
 /// A container that distributes its contents in a row of a [`crate::Grid`].
 #[allow(missing_debug_implementations)]
-pub struct GridRow<'a, Message, Renderer = crate::Renderer> {
-    pub(crate) elements: Vec<Element<'a, Message, Renderer>>,
+pub struct GridRow<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
+    pub(crate) elements: Vec<Element<'a, Message, Theme, Renderer>>,
 }
 
-impl<'a, Message, Renderer> Default for GridRow<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Default for GridRow<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
 {
@@ -215,7 +217,7 @@ where
     }
 }
 
-impl<'a, Message, Renderer> GridRow<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> GridRow<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
 {
@@ -227,7 +229,7 @@ where
 
     /// Creates a new [`GridRow`] with the given widgets.
     #[must_use]
-    pub fn with_elements(children: Vec<impl Into<Element<'a, Message, Renderer>>>) -> Self {
+    pub fn with_elements(children: Vec<impl Into<Element<'a, Message, Theme, Renderer>>>) -> Self {
         Self {
             elements: children.into_iter().map(std::convert::Into::into).collect(),
         }
@@ -237,7 +239,7 @@ where
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
-        E: Into<Element<'a, Message, Renderer>>,
+        E: Into<Element<'a, Message, Theme, Renderer>>,
     {
         self.elements.push(element.into());
         self

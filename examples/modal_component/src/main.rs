@@ -103,7 +103,8 @@ impl Application for ModalExample {
                                 },
                                 None => "None",
                             }
-                        ))),
+                        )))
+                        .into(),
                 );
 
                 let overlay = if state.show_modal {
@@ -124,25 +125,25 @@ impl Application for ModalExample {
 mod my_component {
     use iced::{
         widget::{component, container, row, text, Component},
-        Element, Renderer,
+        Element,
     };
 
     pub struct MyComponent;
 
-    impl<Message> Component<Message, Renderer> for MyComponent {
+    impl<Message> Component<Message> for MyComponent {
         type State = ();
         type Event = ();
 
-        fn update(&mut self, _state: &mut Self::State, _event: Self::Event) -> Option<Message> {
+        fn update(&mut self, _state: &mut Self::State, _event: ()) -> Option<Message> {
             None
         }
 
-        fn view(&self, _state: &Self::State) -> Element<Self::Event, Renderer> {
+        fn view(&self, _state: &Self::State) -> Element<()> {
             container(row![text("Hello there")]).into()
         }
     }
 
-    impl<'a, Message> From<MyComponent> for Element<'a, Message, Renderer>
+    impl<'a, Message> From<MyComponent> for Element<'a, Message>
     where
         Message: 'a,
     {

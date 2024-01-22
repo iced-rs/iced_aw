@@ -39,8 +39,12 @@ pub use offset::Offset;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingElement<'a, Message, Renderer = crate::Renderer>
-where
+pub struct FloatingElement<
+    'a,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Renderer: core::Renderer,
 {
     /// The anchor of the element.
@@ -50,12 +54,12 @@ where
     /// The visibility of the element.
     hidden: bool,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer>,
+    underlay: Element<'a, Message, Theme, Renderer>,
     /// The floating element of the [`FloatingElementOverlay`].
-    element: Element<'a, Message, Renderer>,
+    element: Element<'a, Message, Theme, Renderer>,
 }
 
-impl<'a, Message, Renderer> FloatingElement<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> FloatingElement<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
@@ -68,8 +72,8 @@ where
     ///     * a function that will lazily create the [`Element`] for the overlay.
     pub fn new<U, B>(underlay: U, element: B) -> Self
     where
-        U: Into<Element<'a, Message, Renderer>>,
-        B: Into<Element<'a, Message, Renderer>>,
+        U: Into<Element<'a, Message, Theme, Renderer>>,
+        B: Into<Element<'a, Message, Theme, Renderer>>,
     {
         FloatingElement {
             anchor: Anchor::SouthEast,
@@ -105,7 +109,8 @@ where
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for FloatingElement<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for FloatingElement<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Renderer: core::Renderer,
@@ -172,7 +177,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -206,7 +211,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if self.hidden {
             return self
                 .underlay
@@ -233,13 +238,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<FloatingElement<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<FloatingElement<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Renderer: 'a + core::Renderer,
+    Theme: 'a,
 {
-    fn from(floating_element: FloatingElement<'a, Message, Renderer>) -> Self {
+    fn from(floating_element: FloatingElement<'a, Message, Theme, Renderer>) -> Self {
         Element::new(floating_element)
     }
 }

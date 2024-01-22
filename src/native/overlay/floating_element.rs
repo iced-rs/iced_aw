@@ -15,11 +15,11 @@ use iced_widget::core::{
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
+pub struct FloatingElementOverlay<'a, 'b, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
     /// The state of the element.
     state: &'b mut Tree,
     /// The floating element
-    element: &'b mut Element<'a, Message, Renderer>,
+    element: &'b mut Element<'a, Message, Theme, Renderer>,
     /// The anchor of the element.
     anchor: &'b Anchor,
     /// The offset of the element.
@@ -28,7 +28,7 @@ pub struct FloatingElementOverlay<'a, 'b, Message, Renderer: core::Renderer> {
     underlay_bounds: Rectangle,
 }
 
-impl<'a, 'b, Message, Renderer> FloatingElementOverlay<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> FloatingElementOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
@@ -36,7 +36,7 @@ where
     /// [`Element`](iced_widget::core::Element).
     pub fn new(
         state: &'b mut Tree,
-        element: &'b mut Element<'a, Message, Renderer>,
+        element: &'b mut Element<'a, Message, Theme, Renderer>,
         anchor: &'b Anchor,
         offset: &'b Offset,
         underlay_bounds: Rectangle,
@@ -51,8 +51,8 @@ where
     }
 }
 
-impl<'a, 'b, Message, Renderer> core::Overlay<Message, Renderer>
-    for FloatingElementOverlay<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> core::Overlay<Message, Theme, Renderer>
+    for FloatingElementOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
@@ -147,7 +147,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -162,7 +162,7 @@ where
         &'c mut self,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'c, Message, Renderer>> {
+    ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
         self.element
             .as_widget_mut()
             .overlay(self.state, layout, renderer)

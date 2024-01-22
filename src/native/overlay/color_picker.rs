@@ -27,8 +27,8 @@ use iced_widget::{
         text::Renderer as _,
         touch,
         widget::{self, tree::Tree},
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
+        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Text, Vector, Widget,
     },
     graphics::geometry::Renderer as _,
     renderer::Renderer,
@@ -60,9 +60,9 @@ where
     /// The state of the [`ColorPickerOverlay`].
     state: &'a mut State,
     /// The cancel button of the [`ColorPickerOverlay`].
-    cancel_button: Button<'a, Message, Renderer<Theme>>,
+    cancel_button: Button<'a, Message, Theme, Renderer>,
     /// The submit button of the [`ColorPickerOverlay`].
-    submit_button: Button<'a, Message, Renderer<Theme>>,
+    submit_button: Button<'a, Message, Theme, Renderer>,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`].
     on_submit: &'a dyn Fn(Color) -> Message,
     /// The position of the [`ColorPickerOverlay`].
@@ -117,7 +117,7 @@ where
 
     /// Turn this [`ColorPickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -128,7 +128,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
@@ -244,7 +244,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
@@ -415,7 +415,7 @@ where
         _layout: Layout<'_>,
         _cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -476,11 +476,13 @@ where
                     let mut value = i32::from(hsv_color.hue);
 
                     match key_code {
-                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft) | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
+                        | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                             value -= HUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::Key::Named(keyboard::key::Named::ArrowRight) | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowRight)
+                        | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                             value += HUE_STEP;
                             status = event::Status::Captured;
                         }
@@ -502,11 +504,13 @@ where
                     let mut status = event::Status::Captured;
 
                     match key_code {
-                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft) | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
+                        | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
                             byte_value -= RGBA_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::Key::Named(keyboard::key::Named::ArrowRight) | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowRight)
+                        | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
                             byte_value += RGBA_STEP;
                             status = event::Status::Captured;
                         }
@@ -538,7 +542,7 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Renderer<Theme>>
+impl<'a, Message, Theme> Overlay<Message, Theme, Renderer>
     for ColorPickerOverlay<'a, Message, Theme>
 where
     Message: 'static + Clone,
@@ -546,7 +550,7 @@ where
 {
     fn layout(
         &mut self,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         bounds: Size,
         position: Point,
         _translation: Vector,
@@ -565,13 +569,13 @@ where
             .max_height(max_height);
 
         let divider = if bounds.width > bounds.height {
-            Row::<(), Renderer<Theme>>::new()
+            Row::<(), Theme, Renderer>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .layout(self.tree, renderer, &limits)
         } else {
-            Column::<(), Renderer<Theme>>::new()
+            Column::<(), Theme, Renderer>::new()
                 .spacing(SPACING)
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
                 .push(Row::new().width(Length::Fill).height(Length::Fill))
@@ -617,7 +621,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -720,7 +724,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
 
@@ -823,7 +827,7 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
@@ -852,9 +856,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet[&style_state].border_radius.into(),
-                border_width: style_sheet[&style_state].border_width,
-                border_color: style_sheet[&style_state].border_color,
+                border: Border {
+                    radius: style_sheet[&style_state].border_radius.into(),
+                    width: style_sheet[&style_state].border_width,
+                    color: style_sheet[&style_state].border_color,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet[&style_state].background,
         );
@@ -885,7 +892,7 @@ where
 /// Defines the layout of the 1. block of the color picker containing the HSV part.
 fn block1_layout<'a, Message, Theme>(
     color_picker: &mut ColorPickerOverlay<'a, Message, Theme>,
-    renderer: &Renderer<Theme>,
+    renderer: &Renderer,
     bounds: Rectangle,
     _position: Point,
 ) -> Node
@@ -897,7 +904,7 @@ where
         .width(Length::Fill)
         .height(Length::Fill);
 
-    let block1_node = Column::<(), Renderer<Theme>>::new()
+    let block1_node = Column::<(), Theme, Renderer>::new()
         .spacing(PADDING)
         .push(
             Row::new()
@@ -917,7 +924,7 @@ where
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
 fn block2_layout<'a, Message, Theme>(
     color_picker: &mut ColorPickerOverlay<'a, Message, Theme>,
-    renderer: &Renderer<Theme>,
+    renderer: &Renderer,
     bounds: Rectangle,
     _position: Point,
 ) -> Node
@@ -939,7 +946,7 @@ where
 
     let hex_text_limits = block2_limits;
 
-    let mut hex_text_layout = Row::<Message, Renderer<Theme>>::new()
+    let mut hex_text_layout = Row::<Message, Theme, Renderer>::new()
         .width(Length::Fill)
         .height(Length::Fixed(renderer.default_size().0 + 2.0 * PADDING))
         .layout(color_picker.tree, renderer, &hex_text_limits);
@@ -950,8 +957,8 @@ where
     ));
 
     // RGBA Colors
-    let mut rgba_colors: Column<'_, Message, Renderer<Theme>> =
-        Column::<Message, Renderer<Theme>>::new();
+    let mut rgba_colors: Column<'_, Message, Theme, Renderer> =
+        Column::<Message, Theme, Renderer>::new();
 
     for _ in 0..4 {
         rgba_colors = rgba_colors.push(
@@ -977,7 +984,7 @@ where
                 ),
         );
     }
-    let element: Element<Message, Renderer<Theme>> = Element::new(rgba_colors);
+    let element: Element<Message, Theme, Renderer> = Element::new(rgba_colors);
     let rgba_tree = if let Some(child_tree) = color_picker.tree.children.get_mut(2) {
         child_tree.diff(element.as_widget());
         child_tree
@@ -1051,7 +1058,7 @@ where
 
 /// Draws the 1. block of the color picker containing the HSV part.
 fn block1<Message, Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
@@ -1079,7 +1086,7 @@ fn block1<Message, Theme>(
 /// Draws the 2. block of the color picker containing the RGBA part, Hex and buttons.
 #[allow(clippy::too_many_arguments)]
 fn block2<Message, Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
@@ -1098,7 +1105,7 @@ fn block2<Message, Theme>(
     let rgba_color_layout = block2_children
         .next()
         .expect("Graphics: Layout should have a RGBA color layout");
-    rgba_color(
+    rgba_color::<Theme>(
         renderer,
         rgba_color_layout,
         &color_picker.state.color,
@@ -1112,7 +1119,7 @@ fn block2<Message, Theme>(
     let hex_text_layout = block2_children
         .next()
         .expect("Graphics: Layout should have a hex text layout");
-    hex_text(
+    hex_text::<Theme>(
         renderer,
         hex_text_layout,
         &color_picker.state.color,
@@ -1156,9 +1163,12 @@ fn block2<Message, Theme>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds: cancel_button_layout.bounds(),
-                border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                border_width: style_sheet[&StyleState::Focused].border_width,
-                border_color: style_sheet[&StyleState::Focused].border_color,
+                border: Border {
+                    radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                    width: style_sheet[&StyleState::Focused].border_width,
+                    color: style_sheet[&StyleState::Focused].border_color,
+                },
+                shadow: Shadow::default(),
             },
             Color::TRANSPARENT,
         );
@@ -1168,9 +1178,12 @@ fn block2<Message, Theme>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds: submit_button_layout.bounds(),
-                border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                border_width: style_sheet[&StyleState::Focused].border_width,
-                border_color: style_sheet[&StyleState::Focused].border_color,
+                border: Border {
+                    radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                    width: style_sheet[&StyleState::Focused].border_width,
+                    color: style_sheet[&StyleState::Focused].border_color,
+                },
+                shadow: Shadow::default(),
             },
             Color::TRANSPARENT,
         );
@@ -1181,7 +1194,7 @@ fn block2<Message, Theme>(
 /// Draws the HSV color area.
 #[allow(clippy::too_many_lines)]
 fn hsv_color<Message, Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     color_picker: &ColorPickerOverlay<'_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
@@ -1363,7 +1376,7 @@ fn hsv_color<Message, Theme>(
 /// Draws the RGBA color area.
 #[allow(clippy::too_many_lines)]
 fn rgba_color<Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
     cursor: Cursor,
@@ -1375,7 +1388,7 @@ fn rgba_color<Theme>(
 {
     let mut rgba_color_children = layout.children();
 
-    let f = |renderer: &mut Renderer<Theme>,
+    let f = |renderer: &mut Renderer,
              layout: Layout,
              label: &str,
              color: Color,
@@ -1431,16 +1444,19 @@ fn rgba_color<Theme>(
                     width: bounds.width * value,
                     height: bounds.height,
                 },
-                border_radius: style_sheet
-                    .get(&bar_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_radius
-                    .into(),
-                border_width: style_sheet
-                    .get(&bar_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_width,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: style_sheet
+                        .get(&bar_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_radius
+                        .into(),
+                    width: style_sheet
+                        .get(&bar_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_width,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             color,
         );
@@ -1449,19 +1465,22 @@ fn rgba_color<Theme>(
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet
-                    .get(&bar_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_radius
-                    .into(),
-                border_width: style_sheet
-                    .get(&bar_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_width,
-                border_color: style_sheet
-                    .get(&bar_style_state)
-                    .expect("Style Sheet not found.")
-                    .bar_border_color,
+                border: Border {
+                    radius: style_sheet
+                        .get(&bar_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_radius
+                        .into(),
+                    width: style_sheet
+                        .get(&bar_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_width,
+                    color: style_sheet
+                        .get(&bar_style_state)
+                        .expect("Style Sheet not found.")
+                        .bar_border_color,
+                },
+                shadow: Shadow::default(),
             },
             Color::TRANSPARENT,
         );
@@ -1490,19 +1509,22 @@ fn rgba_color<Theme>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_radius: style_sheet
-                        .get(&StyleState::Focused)
-                        .expect("Style Sheet not found.")
-                        .border_radius
-                        .into(),
-                    border_width: style_sheet
-                        .get(&StyleState::Focused)
-                        .expect("Style Sheet not found.")
-                        .border_width,
-                    border_color: style_sheet
-                        .get(&StyleState::Focused)
-                        .expect("Style Sheet not found.")
-                        .border_color,
+                    border: Border {
+                        radius: style_sheet
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_radius
+                            .into(),
+                        width: style_sheet
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_width,
+                        color: style_sheet
+                            .get(&StyleState::Focused)
+                            .expect("Style Sheet not found.")
+                            .border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Color::TRANSPARENT,
             );
@@ -1572,7 +1594,7 @@ fn rgba_color<Theme>(
 
 /// Draws the hex text representation of the color.
 fn hex_text<Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
     cursor: Cursor,
@@ -1593,9 +1615,12 @@ fn hex_text<Theme>(
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: style_sheet[&hex_text_style_state].bar_border_radius.into(),
-            border_width: style_sheet[&hex_text_style_state].bar_border_width,
-            border_color: style_sheet[&hex_text_style_state].bar_border_color,
+            border: Border {
+                radius: style_sheet[&hex_text_style_state].bar_border_radius.into(),
+                width: style_sheet[&hex_text_style_state].bar_border_width,
+                color: style_sheet[&hex_text_style_state].bar_border_color,
+            },
+            shadow: Shadow::default(),
         },
         *color,
     );
@@ -1674,9 +1699,9 @@ where
     Theme: StyleSheet + button::StyleSheet,
 {
     /// The cancel button of the [`ColorPickerOverlay`].
-    cancel_button: Element<'a, Message, Renderer<Theme>>,
+    cancel_button: Element<'a, Message, Theme, Renderer>,
     /// The submit button of the [`ColorPickerOverlay`].
-    submit_button: Element<'a, Message, Renderer<Theme>>,
+    submit_button: Element<'a, Message, Theme, Renderer>,
 }
 
 impl<'a, Message, Theme> Default for ColorPickerOverlayButtons<'a, Message, Theme>
@@ -1699,7 +1724,7 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Renderer<Theme>>
+impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for ColorPickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
@@ -1720,14 +1745,14 @@ where
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 
     fn draw(
         &self,
         _state: &Tree,
-        _renderer: &mut Renderer<Theme>,
+        _renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         _layout: Layout<'_>,
@@ -1739,7 +1764,7 @@ where
 }
 
 impl<'a, Message, Theme> From<ColorPickerOverlayButtons<'a, Message, Theme>>
-    for Element<'a, Message, Renderer<Theme>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,

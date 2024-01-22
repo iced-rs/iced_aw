@@ -62,7 +62,7 @@ where
     /// The date to show.
     date: Date,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer<Theme>>,
+    underlay: Element<'a, Message, Theme, Renderer>,
     /// The message that is send if the cancel button of the [`DatePickerOverlay`] is pressed.
     on_cancel: Message,
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`] is pressed.
@@ -70,7 +70,7 @@ where
     /// The style of the [`DatePickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
-    overlay_state: Element<'a, Message, Renderer<Theme>>,
+    overlay_state: Element<'a, Message, Theme, Renderer>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
 }
 
@@ -98,7 +98,7 @@ where
         on_submit: F,
     ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer<Theme>>>,
+        U: Into<Element<'a, Message, Theme, Renderer>>,
         F: 'static + Fn(Date) -> Message,
     {
         Self {
@@ -152,7 +152,7 @@ impl State {
     }
 }
 
-impl<'a, Message, Theme> Widget<Message, Renderer<Theme>> for DatePicker<'a, Message, Theme>
+impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
@@ -177,7 +177,7 @@ where
         self.underlay.as_widget().size()
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay
             .as_widget()
             .layout(&mut tree.children[0], renderer, limits)
@@ -189,7 +189,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
@@ -212,7 +212,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
@@ -226,7 +226,7 @@ where
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
@@ -248,8 +248,8 @@ where
         &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer<Theme>,
-    ) -> Option<core::overlay::Element<'b, Message, Renderer<Theme>>> {
+        renderer: &Renderer,
+    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -277,7 +277,7 @@ where
 }
 
 impl<'a, Message, Theme> From<DatePicker<'a, Message, Theme>>
-    for Element<'a, Message, Renderer<Theme>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,

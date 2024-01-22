@@ -6,47 +6,47 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,
-    Alignment, Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shell, Size,
-    Vector,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Overlay, Point, Rectangle, Shadow,
+    Shell, Size, Vector,
 };
 
 use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]
-pub struct ModalOverlay<'a, 'b, Message, Renderer>
+pub struct ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
     state: &'b mut Tree,
     /// The content of the [`ModalOverlay`](ModalOverlay).
-    content: &'b mut Element<'a, Message, Renderer>,
+    content: &'b mut Element<'a, Message, Theme, Renderer>,
     /// The optional message that will be send when the user clicks on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`](ModalOverlay).
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     horizontal_alignment: alignment::Horizontal,
     vertical_alignment: alignment::Vertical,
 }
 
-impl<'a, 'b, Message, Renderer> ModalOverlay<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
     pub fn new(
         state: &'b mut Tree,
-        content: &'b mut Element<'a, Message, Renderer>,
+        content: &'b mut Element<'a, Message, Theme, Renderer>,
         backdrop: Option<Message>,
         esc: Option<Message>,
-        style: <Renderer::Theme as StyleSheet>::Style,
+        style: <Theme as StyleSheet>::Style,
         horizontal_alignment: alignment::Horizontal,
         vertical_alignment: alignment::Vertical,
     ) -> Self {
@@ -62,12 +62,12 @@ where
     }
 }
 
-impl<'a, 'b, Message, Renderer> Overlay<Message, Renderer>
-    for ModalOverlay<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> Overlay<Message, Theme, Renderer>
+    for ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn layout(
         &mut self,
@@ -177,7 +177,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -190,9 +190,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: (0.0).into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet.background,
         );
