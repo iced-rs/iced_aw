@@ -103,8 +103,7 @@ impl Application for ModalExample {
                                 },
                                 None => "None",
                             }
-                        )))
-                        .into(),
+                        ))),
                 );
 
                 let overlay = if state.show_modal {

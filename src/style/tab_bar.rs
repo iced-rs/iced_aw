@@ -9,7 +9,7 @@
 use std::rc::Rc;
 
 use iced_widget::{
-    core::{Background, BorderRadius, Color},
+    core::{border::Radius, Background, Color},
     style::Theme,
 };
 
@@ -41,7 +41,7 @@ pub struct Appearance {
     pub icon_background: Option<Background>,
 
     /// How soft/hard the corners of the icon border are
-    pub icon_border_radius: BorderRadius,
+    pub icon_border_radius: Radius,
 
     /// The text color of the tab labels.
     pub text_color: Color,

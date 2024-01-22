@@ -13,8 +13,8 @@ use iced_widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
-        Widget,
+        Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+        Shadow, Shell, Size, Widget,
     },
     Container, Row,
 };
@@ -40,15 +40,15 @@ pub use crate::style::split::{Appearance, StyleSheet};
 /// let split = Split::new(first, second, Some(300), Axis::Vertical, Message::Resized);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Split<'a, Message, Renderer>
+pub struct Split<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The first element of the [`Split`].
-    first: Element<'a, Message, Renderer>,
+    first: Element<'a, Message, Theme, Renderer>,
     /// The second element of the [`Split`].
-    second: Element<'a, Message, Renderer>,
+    second: Element<'a, Message, Theme, Renderer>,
     /// The position of the divider.
     divider_position: Option<u16>,
     /// The axis to split at.
@@ -69,14 +69,14 @@ where
     /// The message that is send when the divider of the [`Split`] is moved.
     on_resize: Box<dyn Fn(u16) -> Message>,
     /// The style of the [`Split`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
 }
 
-impl<'a, Message, Renderer> Split<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Split<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet + container::StyleSheet,
+    Theme: 'a + StyleSheet + container::StyleSheet,
 {
     /// Creates a new [`Split`].
     ///
@@ -94,8 +94,8 @@ where
         on_resize: F,
     ) -> Self
     where
-        A: Into<Element<'a, Message, Renderer>>,
-        B: Into<Element<'a, Message, Renderer>>,
+        A: Into<Element<'a, Message, Theme, Renderer>>,
+        B: Into<Element<'a, Message, Theme, Renderer>>,
         F: 'static + Fn(u16) -> Message,
     {
         Self {
@@ -116,7 +116,7 @@ where
             min_size_first: 5,
             min_size_second: 5,
             on_resize: Box::new(on_resize),
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
         }
     }
 
@@ -165,16 +165,17 @@ where
 
     /// Sets the style of the [`Split`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Split<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Split<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<SplitState>()
@@ -197,7 +198,7 @@ where
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let space = Row::<Message, Renderer>::new()
+        let space = Row::<Message, Theme, Renderer>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(tree, renderer, limits);
@@ -341,7 +342,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -355,9 +356,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_radius: (0.0).into(),
-                border_width: theme.active(&self.style).border_width,
-                border_color: theme.active(&self.style).border_color,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: theme.active(&self.style).border_width,
+                    color: theme.active(&self.style).border_color,
+                },
+                shadow: Shadow::default(),
             },
             theme
                 .active(&self.style)
@@ -373,9 +377,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: first_layout.bounds(),
-                border_radius: (0.0).into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             if first_layout
                 .bounds()
@@ -410,9 +417,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: second_layout.bounds(),
-                border_radius: (0.0).into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             if second_layout
                 .bounds()
@@ -450,9 +460,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: divider_layout.bounds(),
-                border_radius: (0.0).into(),
-                border_width: divider_style.divider_border_width,
-                border_color: divider_style.divider_border_color,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: divider_style.divider_border_width,
+                    color: divider_style.divider_border_color,
+                },
+                shadow: Shadow::default(),
             },
             divider_style.divider_background,
         );
@@ -485,7 +498,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
         let _divider_layout = children.next()?;
@@ -510,16 +523,16 @@ where
 }
 
 /// Do a horizontal split.
-fn horizontal_split<'a, Message, Renderer>(
+fn horizontal_split<'a, Message, Theme, Renderer>(
     tree: &mut Tree,
-    split: &Split<'a, Message, Renderer>,
+    split: &Split<'a, Message, Theme, Renderer>,
     renderer: &Renderer,
     limits: &Limits,
     space: &Node,
 ) -> Node
 where
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     if space.bounds().height
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
@@ -589,16 +602,16 @@ where
 }
 
 /// Do a vertical split.
-fn vertical_split<'a, Message, Renderer>(
+fn vertical_split<'a, Message, Theme, Renderer>(
     tree: &mut Tree,
-    split: &Split<'a, Message, Renderer>,
+    split: &Split<'a, Message, Theme, Renderer>,
     renderer: &Renderer,
     limits: &Limits,
     space: &Node,
 ) -> Node
 where
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     if space.bounds().width
         < split.spacing + f32::from(split.min_size_first + split.min_size_second)
@@ -667,13 +680,14 @@ where
     Node::with_children(space.bounds().size(), vec![first, divider, second])
 }
 
-impl<'a, Message, Renderer> From<Split<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Split<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(split_pane: Split<'a, Message, Renderer>) -> Self {
+    fn from(split_pane: Split<'a, Message, Theme, Renderer>) -> Self {
         Element::new(split_pane)
     }
 }

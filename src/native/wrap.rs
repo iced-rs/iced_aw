@@ -14,9 +14,15 @@ use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct Wrap<'a, Message, Direction, Renderer = crate::Renderer> {
+pub struct Wrap<
+    'a,
+    Message,
+    Direction,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> {
     /// The elements to distribute.
-    pub elements: Vec<Element<'a, Message, Renderer>>,
+    pub elements: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The alignment of the [`Wrap`].
     pub alignment: Alignment,
     /// The width of the [`Wrap`].
@@ -39,7 +45,7 @@ pub struct Wrap<'a, Message, Direction, Renderer = crate::Renderer> {
     _direction: PhantomData<Direction>,
 }
 
-impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
+impl<'a, Message, Theme, Renderer> Wrap<'a, Message, direction::Horizontal, Theme, Renderer> {
     /// Creates an empty horizontal [`Wrap`].
     #[must_use]
     pub fn new() -> Self {
@@ -51,7 +57,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
     /// It expects:
     ///     * the vector containing the [`Element`]s for this [`Wrap`].
     #[must_use]
-    pub fn with_elements(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
+    pub fn with_elements(elements: Vec<Element<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             elements,
             ..Wrap::default()
@@ -59,7 +65,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Horizontal, Renderer> {
     }
 }
 
-impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
+impl<'a, Message, Theme, Renderer> Wrap<'a, Message, direction::Vertical, Theme, Renderer> {
     /// Creates an empty vertical [`Wrap`].
     #[must_use]
     pub fn new_vertical() -> Self {
@@ -71,7 +77,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
     /// It expects:
     ///     * the vector containing the [`Element`]s for this [`Wrap`].
     #[must_use]
-    pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Renderer>>) -> Self {
+    pub fn with_elements_vertical(elements: Vec<Element<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             elements,
             ..Wrap::default()
@@ -79,7 +85,7 @@ impl<'a, Message, Renderer> Wrap<'a, Message, direction::Vertical, Renderer> {
     }
 }
 
-impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Direction, Renderer> {
+impl<'a, Message, Renderer, Direction, Theme> Wrap<'a, Message, Direction, Theme, Renderer> {
     /// Sets the spacing of the [`Wrap`].
     #[must_use]
     pub const fn spacing(mut self, units: f32) -> Self {
@@ -147,15 +153,15 @@ impl<'a, Message, Renderer, Direction> Wrap<'a, Message, Direction, Renderer> {
     #[must_use]
     pub fn push<E>(mut self, element: E) -> Self
     where
-        E: Into<Element<'a, Message, Renderer>>,
+        E: Into<Element<'a, Message, Theme, Renderer>>,
     {
         self.elements.push(element.into());
         self
     }
 }
 
-impl<'a, Message, Renderer, Direction> Widget<Message, Renderer>
-    for Wrap<'a, Message, Direction, Renderer>
+impl<'a, Message, Renderer, Direction, Theme> Widget<Message, Theme, Renderer>
+    for Wrap<'a, Message, Direction, Theme, Renderer>
 where
     Self: WrapLayout<Renderer>,
     Renderer: core::Renderer,
@@ -211,7 +217,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         self.elements
             .iter_mut()
             .zip(&mut state.children)
@@ -246,7 +252,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &<Renderer as renderer::Renderer>::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -284,33 +290,37 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Wrap<'a, Message, direction::Vertical, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Wrap<'a, Message, direction::Vertical, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer,
     Message: 'a,
+    Theme: 'a,
 {
     fn from(
-        wrap: Wrap<'a, Message, direction::Vertical, Renderer>,
-    ) -> Element<'a, Message, Renderer> {
+        wrap: Wrap<'a, Message, direction::Vertical, Theme, Renderer>,
+    ) -> Element<'a, Message, Theme, Renderer> {
         Element::new(wrap)
     }
 }
 
-impl<'a, Message, Renderer> From<Wrap<'a, Message, direction::Horizontal, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Wrap<'a, Message, direction::Horizontal, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer,
     Message: 'a,
+    Theme: 'a,
 {
     fn from(
-        wrap: Wrap<'a, Message, direction::Horizontal, Renderer>,
-    ) -> Element<'a, Message, Renderer> {
+        wrap: Wrap<'a, Message, direction::Horizontal, Theme, Renderer>,
+    ) -> Element<'a, Message, Theme, Renderer> {
         Element::new(wrap)
     }
 }
 
-impl<'a, Message, Renderer, Direction> Default for Wrap<'a, Message, Direction, Renderer> {
+impl<'a, Message, Renderer, Direction, Theme> Default
+    for Wrap<'a, Message, Direction, Theme, Renderer>
+{
     fn default() -> Self {
         Self {
             elements: vec![],
@@ -336,8 +346,8 @@ where
     fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
-impl<'a, Message, Renderer> WrapLayout<Renderer>
-    for Wrap<'a, Message, direction::Horizontal, Renderer>
+impl<'a, Message, Theme, Renderer> WrapLayout<Renderer>
+    for Wrap<'a, Message, direction::Horizontal, Theme, Renderer>
 where
     Renderer: core::Renderer + 'a,
 {
@@ -423,8 +433,8 @@ where
     }
 }
 
-impl<'a, Message, Renderer> WrapLayout<Renderer>
-    for Wrap<'a, Message, direction::Vertical, Renderer>
+impl<'a, Message, Theme, Renderer> WrapLayout<Renderer>
+    for Wrap<'a, Message, direction::Vertical, Theme, Renderer>
 where
     Renderer: core::Renderer + 'a,
 {

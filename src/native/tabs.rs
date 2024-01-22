@@ -52,20 +52,20 @@ pub use tab_bar_position::TabBarPosition;
 /// .push(TabId::One, TabLabel::Text(String::from("One")), Text::new(String::from("One")))
 /// .push(TabId::Two, TabLabel::Text(String::from("Two")), Text::new(String::from("Two")))
 /// .push(TabId::Three, TabLabel::Text(String::from("Three")), Text::new(String::from("Three")))
-/// .set_active_tab(&TabId::Two);
+/// .set_active_tab(&TabId::Two);Theme
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Renderer = crate::Renderer>
+pub struct Tabs<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: 'a + core::Renderer + core::text::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
     TabId: Eq + Clone,
 {
     /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`].
-    tab_bar: TabBar<Message, TabId, Renderer>,
+    tab_bar: TabBar<Message, TabId, Theme, Renderer>,
     /// The vector containing the content of the tabs.
-    tabs: Vec<Element<'a, Message, Renderer>>,
+    tabs: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The vector containing the indices of the tabs.
     indices: Vec<TabId>,
     /// The position of the [`TabBar`](crate::native::TabBar).
@@ -78,10 +78,10 @@ where
     height: Length,
 }
 
-impl<'a, Message, TabId, Renderer> Tabs<'a, Message, TabId, Renderer>
+impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     /// Creates a new [`Tabs`] widget with the index of the selected tab and a
@@ -108,7 +108,7 @@ where
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn new_with_tabs<F>(
-        tabs: Vec<(TabId, TabLabel, Element<'a, Message, Renderer>)>,
+        tabs: Vec<(TabId, TabLabel, Element<'a, Message, Theme, Renderer>)>,
         on_select: F,
     ) -> Self
     where
@@ -195,7 +195,7 @@ where
     #[must_use]
     pub fn push<E>(mut self, id: TabId, tab_label: TabLabel, element: E) -> Self
     where
-        E: Into<Element<'a, Message, Renderer>>,
+        E: Into<Element<'a, Message, Theme, Renderer>>,
     {
         self.tab_bar = self
             .tab_bar
@@ -243,7 +243,7 @@ where
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_bar_style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn tab_bar_style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.tab_bar = self.tab_bar.style(style);
         self
     }
@@ -288,10 +288,11 @@ where
     }
 }
 
-impl<'a, Message, TabId, Renderer> Widget<Message, Renderer> for Tabs<'a, Message, TabId, Renderer>
+impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Tabs<'a, Message, TabId, Theme, Renderer>
 where
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     fn children(&self) -> Vec<Tree> {
@@ -334,7 +335,7 @@ where
                     &tab_content_limits,
                 )
             } else {
-                Row::<Message, Renderer>::new()
+                Row::<Message, Theme, Renderer>::new()
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .layout(tree, renderer, &tab_content_limits)
@@ -501,7 +502,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -557,7 +558,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<core::overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout.children().nth(1),
             TabBarPosition::Bottom => layout.children().next(),
@@ -594,15 +595,15 @@ where
     }
 }
 
-impl<'a, Message, TabId, Renderer> From<Tabs<'a, Message, TabId, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: 'a + StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,
 {
-    fn from(tabs: Tabs<'a, Message, TabId, Renderer>) -> Self {
+    fn from(tabs: Tabs<'a, Message, TabId, Theme, Renderer>) -> Self {
         Element::new(tabs)
     }
 }

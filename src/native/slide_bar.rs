@@ -8,7 +8,8 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     renderer, touch,
     widget::{tree, Tree},
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+    Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell,
+    Size, Widget,
 };
 
 use std::ops::RangeInclusive;
@@ -127,7 +128,7 @@ where
     }
 }
 
-impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SlideBar<'a, T, Message>
+impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for SlideBar<'a, T, Message>
 where
     T: Copy + Into<f64> + num_traits::FromPrimitive,
     Message: Clone,
@@ -191,7 +192,7 @@ where
         &self,
         _tree: &Tree,
         renderer: &mut Renderer,
-        _theme: &<Renderer as renderer::Renderer>::Theme,
+        _theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
@@ -319,9 +320,12 @@ where
     renderer.fill_quad(
         renderer::Quad {
             bounds: layout.bounds(),
-            border_radius: slider.border_radius.into(),
-            border_width: slider.border_width,
-            border_color: slider.border_color,
+            border: Border {
+                radius: slider.border_radius.into(),
+                width: slider.border_width,
+                color: slider.border_color,
+            },
+            shadow: Shadow::default(),
         },
         background,
     );
@@ -330,20 +334,25 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: active_progress_bounds,
-                border_radius: slider.border_radius.into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: slider.border_radius.into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             slider.color,
         );
     }
 }
 
-impl<'a, T, Message, Renderer> From<SlideBar<'a, T, Message>> for Element<'a, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> From<SlideBar<'a, T, Message>>
+    for Element<'a, Message, Theme, Renderer>
 where
     T: 'a + Copy + Into<f64> + num_traits::FromPrimitive,
     Renderer: 'a + renderer::Renderer,
     Message: 'a + Clone,
+    Theme: 'a,
 {
     fn from(value: SlideBar<'a, T, Message>) -> Self {
         Self::new(value)

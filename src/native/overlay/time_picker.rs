@@ -32,8 +32,8 @@ use iced_widget::{
         text::Renderer as _,
         touch,
         widget::tree::Tree,
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Renderer as _, Shell, Size, Vector, Widget,
+        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
+        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Vector, Widget,
     },
     graphics::geometry::Renderer as _,
     renderer::Renderer,
@@ -64,9 +64,9 @@ where
     /// The state of the [`TimePickerOverlay`].
     state: &'a mut State,
     /// The cancel button of the [`TimePickerOverlay`].
-    cancel_button: Button<'a, Message, Renderer<Theme>>,
+    cancel_button: Button<'a, Message, Theme, Renderer>,
     /// The submit button of the [`TimePickerOverlay`].
-    submit_button: Button<'a, Message, Renderer<Theme>>,
+    submit_button: Button<'a, Message, Theme, Renderer>,
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Time) -> Message,
     /// The position of the [`TimePickerOverlay`].
@@ -120,7 +120,7 @@ where
 
     /// Turn this [`TimePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -132,7 +132,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if cursor.is_over(layout.bounds()) {
@@ -305,7 +305,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
@@ -440,7 +440,7 @@ where
         _layout: Layout<'_>,
         _cursor: Cursor,
         _shell: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
@@ -502,14 +502,14 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Renderer<Theme>> for TimePickerOverlay<'a, Message, Theme>
+impl<'a, Message, Theme> Overlay<Message, Theme, Renderer> for TimePickerOverlay<'a, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     fn layout(
         &mut self,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         bounds: Size,
         position: Point,
         _translation: Vector,
@@ -537,7 +537,7 @@ where
         ));
 
         // Clock-Canvas
-        let mut clock = Row::<(), Renderer<Theme>>::new()
+        let mut clock = Row::<(), Renderer>::new()
             .width(Length::Fill)
             .height(Length::Fill)
             .layout(self.tree, renderer, &limits);
@@ -609,7 +609,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -714,7 +714,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
         let mouse_interaction = mouse::Interaction::default();
@@ -829,7 +829,7 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
@@ -859,9 +859,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet[&style_state].border_radius.into(),
-                border_width: style_sheet[&style_state].border_width,
-                border_color: style_sheet[&style_state].border_color,
+                border: Border {
+                    radius: style_sheet[&style_state].border_radius.into(),
+                    width: style_sheet[&style_state].border_width,
+                    color: style_sheet[&style_state].border_color,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet[&style_state].background,
         );
@@ -912,9 +915,12 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: cancel_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    border_width: style_sheet[&StyleState::Focused].border_width,
-                    border_color: style_sheet[&StyleState::Focused].border_color,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Color::TRANSPARENT,
             );
@@ -924,9 +930,12 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: submit_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    border_width: style_sheet[&StyleState::Focused].border_width,
-                    border_color: style_sheet[&StyleState::Focused].border_color,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Color::TRANSPARENT,
             );
@@ -937,7 +946,7 @@ where
 /// Defines the layout of the digital clock of the time picker.
 fn digital_clock<Message, Theme>(
     time_picker: &mut TimePickerOverlay<'_, Message, Theme>,
-    renderer: &Renderer<Theme>,
+    renderer: &Renderer,
     limits: Limits,
 ) -> Node
 where
@@ -947,7 +956,7 @@ where
     let arrow_size = renderer.default_size().0;
     let font_size = 1.2 * renderer.default_size().0;
 
-    let mut digital_clock_row = Row::<Message, Renderer<Theme>>::new()
+    let mut digital_clock_row = Row::<Message, Theme, Renderer>::new()
         .align_items(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
@@ -1055,7 +1064,7 @@ where
         .center_x()
         .center_y();
 
-    let element: Element<Message, Renderer<Theme>> = Element::new(container);
+    let element: Element<Message, Theme, Renderer> = Element::new(container);
     let container_tree = if let Some(child_tree) = time_picker.tree.children.get_mut(2) {
         child_tree.diff(element.as_widget());
         child_tree
@@ -1073,7 +1082,7 @@ where
 /// Draws the analog clock.
 #[allow(clippy::too_many_lines)]
 fn draw_clock<Message, Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     time_picker: &TimePickerOverlay<'_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
@@ -1377,7 +1386,7 @@ fn draw_clock<Message, Theme>(
 /// Draws the digital clock.
 #[allow(clippy::too_many_lines)]
 fn draw_digital_clock<Message, Theme>(
-    renderer: &mut Renderer<Theme>,
+    renderer: &mut Renderer,
     time_picker: &TimePickerOverlay<'_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
@@ -1393,7 +1402,7 @@ fn draw_digital_clock<Message, Theme>(
         .expect("Graphics: Layout should have digital clock children")
         .children();
 
-    let f = |renderer: &mut Renderer<Theme>, layout: Layout<'_>, text: String, target: Focus| {
+    let f = |renderer: &mut Renderer, layout: Layout<'_>, text: String, target: Focus| {
         let style_state = if time_picker.state.focus == target {
             StyleState::Focused
         } else {
@@ -1423,19 +1432,22 @@ fn draw_digital_clock<Message, Theme>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_color: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_color,
-                    border_radius: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_radius
-                        .into(),
-                    border_width: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_width,
+                    border: Border {
+                        radius: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_radius
+                            .into(),
+                        width: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_width,
+                        color: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 style
                     .get(&style_state)
@@ -1695,9 +1707,9 @@ where
     Theme: StyleSheet + button::StyleSheet,
 {
     /// The cancel button of the [`TimePickerOverlay`].
-    cancel_button: Element<'a, Message, Renderer<Theme>>,
+    cancel_button: Element<'a, Message, Theme, Renderer>,
     /// The submit button of the [`TimePickerOverlay`].
-    submit_button: Element<'a, Message, Renderer<Theme>>,
+    submit_button: Element<'a, Message, Theme, Renderer>,
 }
 
 impl<'a, Message, Theme> Default for TimePickerOverlayButtons<'a, Message, Theme>
@@ -1726,7 +1738,7 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Renderer<Theme>>
+impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for TimePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
@@ -1747,14 +1759,14 @@ where
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 
     fn draw(
         &self,
         _state: &Tree,
-        _renderer: &mut Renderer<Theme>,
+        _renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         _layout: Layout<'_>,
@@ -1766,7 +1778,7 @@ where
 }
 
 impl<'a, Message, Theme> From<TimePickerOverlayButtons<'a, Message, Theme>>
-    for Element<'a, Message, Renderer<Theme>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet,

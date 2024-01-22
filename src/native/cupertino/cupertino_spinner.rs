@@ -90,12 +90,12 @@ impl CupertinoSpinner {
     }
 }
 
-impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
+impl<Message, Theme> Widget<Message, Theme, Renderer> for CupertinoSpinner {
     fn size(&self) -> Size<Length> {
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         Node::new(limits.width(self.width).height(self.height).resolve(
             self.width,
             self.height,
@@ -106,7 +106,7 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
@@ -181,7 +181,7 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
         event: Event,
         _layout: Layout<'_>,
         _cursor: Cursor,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
@@ -202,7 +202,7 @@ impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSpinner {
     }
 }
 
-impl<'a, Message, Theme> From<CupertinoSpinner> for Element<'a, Message, Renderer<Theme>> {
+impl<'a, Message, Theme> From<CupertinoSpinner> for Element<'a, Message, Theme, Renderer> {
     fn from(spinner: CupertinoSpinner) -> Self {
         Self::new(spinner)
     }

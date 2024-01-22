@@ -7,7 +7,7 @@ use iced_widget::core::{
     mouse::Cursor,
     renderer,
     widget::Tree,
-    Color, Element, Layout, Length, Rectangle, Size, Widget,
+    Border, Color, Element, Layout, Length, Rectangle, Shadow, Size, Widget,
 };
 
 use crate::native::InnerBounds;
@@ -47,7 +47,7 @@ impl Default for Quad {
     }
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for Quad
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Quad
 where
     Renderer: renderer::Renderer,
 {
@@ -64,7 +64,7 @@ where
         &self,
         _state: &Tree,
         renderer: &mut Renderer,
-        _theme: &<Renderer as renderer::Renderer>::Theme,
+        _theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
@@ -74,9 +74,12 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_radius: self.border_radius.into(),
-                    border_width: self.border_width,
-                    border_color: self.border_color,
+                    border: Border {
+                        radius: self.border_radius.into(),
+                        width: self.border_width,
+                        color: self.border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 b,
             );
@@ -84,17 +87,22 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: self.inner_bounds.get_bounds(layout.bounds()),
-                border_radius: self.border_radius.into(),
-                border_width: self.border_width,
-                border_color: self.border_color,
+                border: Border {
+                    radius: self.border_radius.into(),
+                    width: self.border_width,
+                    color: self.border_color,
+                },
+                shadow: Shadow::default(),
             },
             self.color,
         );
     }
 }
-impl<Message, Renderer> From<Quad> for Element<'_, Message, Renderer>
+
+impl<'a, Message, Theme, Renderer> From<Quad> for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: renderer::Renderer,
+    Renderer: 'a + renderer::Renderer,
+    Theme: 'a,
 {
     fn from(value: Quad) -> Self {
         Self::new(value)

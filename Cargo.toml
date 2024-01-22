@@ -48,20 +48,19 @@ default = [
     "floating_element",
     "grid",
     "modal",
-    #"tab_bar",
-    #"tabs",
-    #"time_picker",
-    #"slide_bar",
-    #"wrap",
-    #"selection_list",
-    #"split",
+    "tab_bar",
+    "tabs",
+    "time_picker",
+    "slide_bar",
+    "wrap",
+    "selection_list",
+    "split",
+    "quad",
+    "context_menu",
+    "spinner",
+    "cupertino",
+    "segmented_button",
     #"menu",
-    #"quad",
-    #"context_menu",
-    #"spinner",
-    #"cupertino",
-    #"segmented_button",
-    #"num-traits"
 ]
 
 [dependencies]
@@ -76,12 +75,6 @@ itertools = { version = "0.11.0", optional = true }
 [dependencies.iced_widget]
 git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-#version = "0.1.1"
-
-#[dependencies.iced_renderer]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "751ea77c29f6eb3d00f45f0a04c833a1d03a425c"
-#features = ["wgpu"]
 #version = "0.1.1"
 
 [profile.dev.package."*"]
@@ -100,25 +93,22 @@ members = [
     "examples/modal",
     "examples/modal_component",
     "examples/multiple_modals",
-    #"examples/cupertino/cupertino_button",
-    #"examples/cupertino/cupertino_spinner",
-    #"examples/cupertino/cupertino_switch",
-   
-    
-    
-    #"examples/tab_bar",
-    #"examples/tabs",
-    #"examples/time_picker",
-    #"examples/wrap",
-    #"examples/selection_list",
-    #"examples/split",
-    #"examples/split_scroller",
+    "examples/tab_bar",
+    "examples/tabs",
+    "examples/time_picker",
+    "examples/sliderbar",
+    "examples/wrap",
+    "examples/selection_list",
+    "examples/split",
+    "examples/split_scroller",
+    "examples/context_menu",
+    "examples/spinner",
+    "examples/cupertino/cupertino_button",
+    "examples/cupertino/cupertino_spinner",
+    "examples/cupertino/cupertino_switch",
+    "examples/WidgetIDReturn",
+    "examples/segmented_button",
     #"examples/menu",
-    #"examples/spinner",
-    #"examples/context_menu",
-    #"examples/WidgetIDReturn",
-    #"examples/segmented_button",
-    #"examples/sliderbar",
 ]
 
 [workspace.dependencies.iced]

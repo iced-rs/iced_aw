@@ -16,8 +16,8 @@ use iced_widget::{
         mouse::{self, Cursor},
         renderer, touch,
         widget::Tree,
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Size,
-        Widget,
+        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle,
+        Shadow, Shell, Size, Widget,
     },
     runtime::Font,
     text::{self, LineHeight},
@@ -66,10 +66,10 @@ const DEFAULT_SPACING: f32 = 0.0;
 /// .set_active_tab(&TabId::One);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct TabBar<Message, TabId, Renderer = crate::Renderer>
+pub struct TabBar<Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: core::Renderer + core::text::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
     TabId: Eq + Clone,
 {
     /// The index of the currently active tab.
@@ -105,7 +105,7 @@ where
     /// The optional text font of the [`TabBar`].
     text_font: Option<Font>,
     /// The style of the [`TabBar`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     /// Where the icon is placed relative to text
     position: Position,
     #[allow(clippy::missing_docs_in_private_items)]
@@ -126,10 +126,10 @@ pub enum Position {
     Left,
 }
 
-impl<Message, TabId, Renderer> TabBar<Message, TabId, Renderer>
+impl<Message, TabId, Theme, Renderer> TabBar<Message, TabId, Theme, Renderer>
 where
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
     TabId: Eq + Clone,
 {
     /// Creates a new [`TabBar`] with the index of the selected tab and a specified
@@ -174,7 +174,7 @@ where
             spacing: DEFAULT_SPACING,
             font: None,
             text_font: None,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             position: Position::default(),
             _renderer: PhantomData,
         }
@@ -324,7 +324,7 @@ where
 
     /// Sets the style of the [`TabBar`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
@@ -337,10 +337,11 @@ where
     }
 }
 
-impl<Message, TabId, Renderer> Widget<Message, Renderer> for TabBar<Message, TabId, Renderer>
+impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for TabBar<Message, TabId, Theme, Renderer>
 where
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
     fn size(&self) -> Size<Length> {
@@ -353,13 +354,17 @@ where
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        fn layout_icon<Renderer>(icon: &char, size: f32, font: Option<Font>) -> Text<'_, Renderer>
+        fn layout_icon<Theme, Renderer>(
+            icon: &char,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'_, Theme, Renderer>
         where
             Renderer: iced_widget::core::text::Renderer,
             Renderer::Font: From<Font>,
-            Renderer::Theme: iced_widget::text::StyleSheet,
+            Theme: iced_widget::text::StyleSheet,
         {
-            Text::<Renderer>::new(icon.to_string())
+            Text::<Theme, Renderer>::new(icon.to_string())
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
@@ -368,13 +373,17 @@ where
                 .width(Length::Shrink)
         }
 
-        fn layout_text<Renderer>(text: &str, size: f32, font: Option<Font>) -> Text<'_, Renderer>
+        fn layout_text<Theme, Renderer>(
+            text: &str,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'_, Theme, Renderer>
         where
             Renderer: iced_widget::core::text::Renderer,
             Renderer::Font: From<Font>,
-            Renderer::Theme: iced_widget::text::StyleSheet,
+            Theme: iced_widget::text::StyleSheet,
         {
-            Text::<Renderer>::new(text)
+            Text::<Theme, Renderer>::new(text)
                 .size(size)
                 .font(font.unwrap_or_default())
                 .horizontal_alignment(alignment::Horizontal::Center)
@@ -386,7 +395,7 @@ where
         let row = self
             .tab_labels
             .iter()
-            .fold(Row::<Message, Renderer>::new(), |row, tab_label| {
+            .fold(Row::<Message, Theme, Renderer>::new(), |row, tab_label| {
                 let mut label_row = Row::new()
                     .push(
                         match tab_label {
@@ -489,7 +498,7 @@ where
             .spacing(self.spacing)
             .align_items(Alignment::Center);
 
-        let element: Element<Message, Renderer> = Element::new(row);
+        let element: Element<Message, Theme, Renderer> = Element::new(row);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
             child_tree.diff(element.as_widget());
             child_tree
@@ -588,7 +597,7 @@ where
         &self,
         _state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -606,9 +615,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: (0.0).into(),
-                border_width: style_sheet.border_width,
-                border_color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
+                border: Border {
+                    radius: (0.0).into(),
+                    width: style_sheet.border_width,
+                    color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
+                },
+                shadow: Shadow::default(),
             },
             style_sheet
                 .background
@@ -639,13 +651,13 @@ where
     clippy::too_many_lines,
     clippy::too_many_arguments
 )]
-fn draw_tab<Renderer>(
+fn draw_tab<Theme, Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,
     layout: Layout<'_>,
     position: Position,
-    theme: &Renderer::Theme,
-    style: &<Renderer::Theme as StyleSheet>::Style,
+    theme: &Theme,
+    style: &<Theme as StyleSheet>::Style,
     is_selected: bool,
     cursor: Cursor,
     icon_data: (Font, f32),
@@ -653,7 +665,7 @@ fn draw_tab<Renderer>(
     close_size: f32,
 ) where
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: StyleSheet + text::StyleSheet,
 {
     fn icon_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
         item.expect("Graphics: Layout should have an icons layout for an IconText")
@@ -683,9 +695,12 @@ fn draw_tab<Renderer>(
     renderer.fill_quad(
         renderer::Quad {
             bounds,
-            border_radius: (0.0).into(),
-            border_width: style.tab_label_border_width,
-            border_color: style.tab_label_border_color,
+            border: Border {
+                radius: (0.0).into(),
+                width: style.tab_label_border_width,
+                color: style.tab_label_border_color,
+            },
+            shadow: Shadow::default(),
         },
         style.tab_label_background,
     );
@@ -819,9 +834,12 @@ fn draw_tab<Renderer>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: cross_bounds,
-                    border_radius: style.icon_border_radius,
-                    border_width: style.border_width,
-                    border_color: style.border_color.unwrap_or(Color::TRANSPARENT),
+                    border: Border {
+                        radius: style.icon_border_radius,
+                        width: style.border_width,
+                        color: style.border_color.unwrap_or(Color::TRANSPARENT),
+                    },
+                    shadow: Shadow::default(),
                 },
                 style
                     .icon_background
@@ -831,15 +849,15 @@ fn draw_tab<Renderer>(
     };
 }
 
-impl<'a, Message, TabId, Renderer> From<TabBar<Message, TabId, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, TabId, Theme, Renderer> From<TabBar<Message, TabId, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + text::StyleSheet,
+    Theme: 'a + StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,
 {
-    fn from(tab_bar: TabBar<Message, TabId, Renderer>) -> Self {
+    fn from(tab_bar: TabBar<Message, TabId, Theme, Renderer>) -> Self {
         Element::new(tab_bar)
     }
 }

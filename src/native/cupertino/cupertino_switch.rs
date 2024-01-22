@@ -136,7 +136,7 @@ where
     }
 }
 
-impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSwitch<Message>
+impl<Message, Theme> Widget<Message, Theme, Renderer> for CupertinoSwitch<Message>
 where
     Message: Clone,
 {
@@ -144,14 +144,14 @@ where
         Size::new(Length::Shrink, Length::Shrink)
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         layout::atomic(limits, Length::Shrink, Length::Shrink)
     }
 
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
@@ -301,7 +301,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
@@ -368,9 +368,10 @@ where
     }
 }
 
-impl<'a, Message, Theme> From<CupertinoSwitch<Message>> for Element<'a, Message, Renderer<Theme>>
+impl<'a, Message, Theme> From<CupertinoSwitch<Message>> for Element<'a, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
+    Theme: 'a,
 {
     fn from(switch: CupertinoSwitch<Message>) -> Self {
         Self::new(switch)

@@ -33,27 +33,32 @@ pub use crate::style::context_menu::StyleSheet;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ContextMenu<'a, Overlay, Message, Renderer = crate::Renderer>
-where
-    Overlay: Fn() -> Element<'a, Message, Renderer>,
+pub struct ContextMenu<
+    'a,
+    Overlay,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
+    Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer>,
+    underlay: Element<'a, Message, Theme, Renderer>,
     /// The content of [`ContextMenuOverlay`].
     overlay: Overlay,
     /// The style of the [`ContextMenu`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
 }
 
-impl<'a, Overlay, Message, Renderer> ContextMenu<'a, Overlay, Message, Renderer>
+impl<'a, Overlay, Message, Theme, Renderer> ContextMenu<'a, Overlay, Message, Theme, Renderer>
 where
-    Overlay: Fn() -> Element<'a, Message, Renderer>,
+    Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenu`]
     ///
@@ -62,32 +67,31 @@ where
     /// `overlay`: The content of [`ContextMenuOverlay`] which will be displayed when `underlay` is clicked.
     pub fn new<U>(underlay: U, overlay: Overlay) -> Self
     where
-        U: Into<Element<'a, Message, Renderer>>,
+        U: Into<Element<'a, Message, Theme, Renderer>>,
     {
         ContextMenu {
             underlay: underlay.into(),
             overlay,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
         }
     }
 
     /// Sets the style of the [`ContextMenu`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 }
 
-impl<'a, Content, Message, Renderer> Widget<Message, Renderer>
-    for ContextMenu<'a, Content, Message, Renderer>
+impl<'a, Content, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for ContextMenu<'a, Content, Message, Theme, Renderer>
 where
-    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-
     fn size(&self) -> core::Size<Length> {
         self.underlay.as_widget().size()
     }
@@ -102,7 +106,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -214,7 +218,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let s: &mut State = state.state.downcast_mut();
 
         if !s.show {
@@ -235,15 +239,15 @@ where
     }
 }
 
-impl<'a, Content, Message, Renderer> From<ContextMenu<'a, Content, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Content, Message, Theme, Renderer> From<ContextMenu<'a, Content, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
-    Content: 'a + Fn() -> Element<'a, Message, Renderer>,
+    Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(modal: ContextMenu<'a, Content, Message, Renderer>) -> Self {
+    fn from(modal: ContextMenu<'a, Content, Message, Theme, Renderer>) -> Self {
         Element::new(modal)
     }
 }

@@ -1,6 +1,7 @@
 use crate::graphics::SF_UI_ROUNDED;
 use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
 
+use iced_widget::core::{Border, Shadow};
 use iced_widget::{
     core::{
         self, event,
@@ -31,15 +32,15 @@ use iced_widget::{
  *
  */
 #[allow(missing_debug_implementations)]
-pub struct CupertinoButton<'a, Message, Renderer>
+pub struct CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: application::StyleSheet,
+    Theme: application::StyleSheet,
 {
     on_pressed: Option<Message>,
     is_filled: bool,
-    body: Element<'a, Message, Renderer>,
+    body: Element<'a, Message, Theme, Renderer>,
 
     /// `colour` is an option here because there is already logic to set the colour
     /// depending on if the button is enabled/disabled. But if the button causes a
@@ -48,11 +49,11 @@ where
     colour: Option<Color>,
 }
 
-impl<'a, Message, Renderer> Default for CupertinoButton<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Default for CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
-    Renderer::Theme: application::StyleSheet + text::StyleSheet,
+    Theme: 'a + application::StyleSheet + text::StyleSheet,
 {
     fn default() -> Self {
         Self {
@@ -64,11 +65,11 @@ where
     }
 }
 
-impl<'a, Message, Renderer> CupertinoButton<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
-    Renderer::Theme: application::StyleSheet + text::StyleSheet,
+    Theme: 'a + application::StyleSheet + text::StyleSheet,
 {
     /// Creates a new [`CupertinoButton`] widget.
     #[must_use]
@@ -81,7 +82,7 @@ where
     pub fn body<T>(mut self, body: T) -> Self
     where
         Message: Clone,
-        T: Into<Text<'a, Renderer>>,
+        T: Into<Text<'a, Theme, Renderer>>,
     {
         let as_text = body.into().font(SF_UI_ROUNDED);
 
@@ -114,11 +115,12 @@ where
 const VERTICAL_PADDING: f32 = 14.0;
 // const HORIZONTAL_PADDING: f32 = 64.0;
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for CupertinoButton<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer + core::text::Renderer,
-    Renderer::Theme: application::StyleSheet,
+    Theme: application::StyleSheet,
 {
     fn size(&self) -> Size<Length> {
         self.body.as_widget().size()
@@ -143,7 +145,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -173,9 +175,12 @@ where
             renderer.fill_quad(
                 Quad {
                     bounds: rectangle,
-                    border_radius: [16.0, 16.0, 16.0, 16.0].into(),
-                    border_width: 5.0,
-                    border_color: Color::TRANSPARENT,
+                    border: Border {
+                        radius: (16.0).into(),
+                        width: 5.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Background::Color(colour),
             );
@@ -250,14 +255,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<CupertinoButton<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<CupertinoButton<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
     Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
-    Renderer::Theme: application::StyleSheet,
+    Theme: 'a + application::StyleSheet,
 {
-    fn from(alert: CupertinoButton<'a, Message, Renderer>) -> Self {
+    fn from(alert: CupertinoButton<'a, Message, Theme, Renderer>) -> Self {
         Self::new(alert)
     }
 }

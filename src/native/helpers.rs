@@ -196,6 +196,29 @@ where
     crate::DatePicker::new(show_picker, date, underlay, on_cancel, on_submit)
 }
 
+#[cfg(feature = "time_picker")]
+/// Shortcut helper to create a [`DatePicker`] Widget.
+///
+/// [`DatePicker`]: crate::DatePicker
+pub fn time_picker<'a, Message, Theme, U, F>(
+    show_picker: bool,
+    time: impl Into<crate::core::time::Time>,
+    underlay: U,
+    on_cancel: Message,
+    on_submit: F,
+) -> crate::TimePicker<'a, Message, Theme>
+where
+    Message: 'a + Clone,
+    Theme: 'a
+        + crate::style::time_picker::StyleSheet
+        + iced_widget::button::StyleSheet
+        + iced_widget::text::StyleSheet,
+    U: Into<Element<'a, Message, Theme, iced_widget::renderer::Renderer>>,
+    F: 'static + Fn(crate::core::time::Time) -> Message,
+{
+    crate::TimePicker::new(show_picker, time, underlay, on_cancel, on_submit)
+}
+
 #[cfg(feature = "floating_element")]
 /// Shortcut helper to create a [`FloatingElement`] Widget.
 ///
@@ -245,9 +268,9 @@ where
 ///
 /// [`Wrap`]: crate::Wrap
 #[must_use]
-pub fn wrap_horizontal<Message, Renderer>(
-    children: Vec<Element<Message, Renderer>>,
-) -> crate::Wrap<Message, crate::direction::Horizontal, Renderer>
+pub fn wrap_horizontal<Message, Theme, Renderer>(
+    children: Vec<Element<Message, Theme, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Horizontal, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
@@ -259,9 +282,9 @@ where
 ///
 /// [`Wrap`]: crate::Wrap
 #[must_use]
-pub fn wrap_vertical<Message, Renderer>(
-    children: Vec<Element<Message, Renderer>>,
-) -> crate::Wrap<Message, crate::direction::Vertical, Renderer>
+pub fn wrap_vertical<Message, Theme, Renderer>(
+    children: Vec<Element<Message, Theme, Renderer>>,
+) -> crate::Wrap<Message, crate::direction::Vertical, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
@@ -319,19 +342,19 @@ where
 ///
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
-pub fn selection_list_with<'a, T, Message, Renderer>(
+pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
     options: &'a [T],
     on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
     padding: f32,
-    style: <Renderer::Theme as crate::style::selection_list::StyleSheet>::Style,
+    style: <Theme as crate::style::selection_list::StyleSheet>::Style,
     selected: Option<usize>,
     font: iced_widget::runtime::Font,
-) -> crate::SelectionList<'a, T, Message, Renderer>
+) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: crate::style::selection_list::StyleSheet
+    Theme: 'a + crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
@@ -353,14 +376,14 @@ where
 ///
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
-pub fn selection_list<'a, T, Message, Renderer>(
+pub fn selection_list<'a, T, Message, Theme, Renderer>(
     options: &'a [T],
     on_selected: impl Fn(usize, T) -> Message + 'static,
-) -> crate::SelectionList<'a, T, Message, Renderer>
+) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: crate::style::selection_list::StyleSheet
+    Theme: 'a + crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
