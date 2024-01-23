@@ -15,7 +15,13 @@ use iced_widget::core::{
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<'a, 'b, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
+pub struct FloatingElementOverlay<
+    'a,
+    'b,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> {
     /// The state of the element.
     state: &'b mut Tree,
     /// The floating element

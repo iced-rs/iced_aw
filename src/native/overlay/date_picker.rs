@@ -521,14 +521,15 @@ where
             y: submit_bounds.y + col.bounds().height + PADDING + SPACING,
         });
 
-        Node::with_children(
+        let mut node = Node::with_children(
             Size::new(
                 col.bounds().width + (2.0 * PADDING),
                 col.bounds().height + cancel_button.bounds().height + (2.0 * PADDING) + SPACING,
             ),
             vec![col, cancel_button, submit_button],
-        )
-        .center_and_bounce(position, bounds)
+        );
+        node.center_and_bounce(position, bounds);
+        node
     }
 
     fn on_event(
@@ -782,7 +783,7 @@ where
             .next()
             .expect("Graphics: Layout should have a month/year layout");
 
-        month_year::<Theme>(
+        month_year(
             renderer,
             month_year_layout,
             &self.month_as_string(),
@@ -800,7 +801,7 @@ where
             .next()
             .expect("Graphics: Layout should have a days layout");
 
-        days::<Theme>(
+        days(
             renderer,
             days_layout,
             self.state.date,
@@ -1053,7 +1054,7 @@ impl Default for Focus {
 }
 
 /// Draws the month/year row
-fn month_year<Theme>(
+fn month_year(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     month: &str,
@@ -1062,9 +1063,7 @@ fn month_year<Theme>(
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     let mut children = layout.children();
 
     let month_layout = children
@@ -1201,7 +1200,7 @@ fn month_year<Theme>(
 }
 
 /// Draws the days
-fn days<Theme>(
+fn days(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     date: chrono::NaiveDate,
@@ -1209,28 +1208,24 @@ fn days<Theme>(
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     let mut children = layout.children();
 
     let day_labels_layout = children
         .next()
         .expect("Graphics: Layout should have a day labels layout");
-    day_labels::<Theme>(renderer, day_labels_layout, style, focus);
+    day_labels(renderer, day_labels_layout, style, focus);
 
-    day_table::<Theme>(renderer, &mut children, date, cursor, style, focus);
+    day_table(renderer, &mut children, date, cursor, style, focus);
 }
 
 /// Draws the day labels
-fn day_labels<Theme>(
+fn day_labels(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     style: &HashMap<StyleState, Appearance>,
     _focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     for (i, label) in layout.children().enumerate() {
         let bounds = label.bounds();
 
@@ -1256,16 +1251,14 @@ fn day_labels<Theme>(
 }
 
 /// Draws the day table
-fn day_table<Theme>(
+fn day_table(
     renderer: &mut Renderer,
     children: &mut dyn Iterator<Item = Layout<'_>>,
     date: chrono::NaiveDate,
     cursor: Point,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     for (y, row) in children.enumerate() {
         for (x, label) in row.children().enumerate() {
             let bounds = label.bounds();

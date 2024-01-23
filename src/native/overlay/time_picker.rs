@@ -460,13 +460,15 @@ where
                 let mut keyboard_handle =
                     |key_code: &keyboard::Key, time: &mut NaiveTime, duration: Duration| {
                         match key_code {
-                            keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
-                            | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                            keyboard::Key::Named(
+                                keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowDown,
+                            ) => {
                                 *time -= duration;
                                 status = event::Status::Captured;
                             }
-                            keyboard::Key::Named(keyboard::key::Named::ArrowRight)
-                            | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                            keyboard::Key::Named(
+                                keyboard::key::Named::ArrowRight | keyboard::key::Named::ArrowUp,
+                            ) => {
                                 *time += duration;
                                 status = event::Status::Captured;
                             }
@@ -589,7 +591,7 @@ where
                 + 2.0 * SPACING,
         });
 
-        let node = Node::with_children(
+        let mut node = Node::with_children(
             Size::new(
                 clock.bounds().width + (2.0 * PADDING),
                 clock.bounds().height
@@ -601,7 +603,8 @@ where
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
-        node.center_and_bounce(position, bounds)
+        node.center_and_bounce(position, bounds);
+        node
     }
 
     fn on_event(

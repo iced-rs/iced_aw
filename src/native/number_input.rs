@@ -454,7 +454,7 @@ where
                                 {
                                     cursor::State::Index(mut idx) => {
                                         if T::zero().eq(&self.value) {
-                                            new_val = c.to_string();
+                                            new_val = c.to_owned();
                                         } else {
                                             for char in c.chars() {
                                                 new_val.insert(idx, char);
@@ -468,7 +468,7 @@ where
                                         {
                                             new_val.replace_range(
                                                 if start > end { end..start } else { start..end },
-                                                &c.to_string(),
+                                                c,
                                             );
                                         }
                                     }
@@ -480,14 +480,8 @@ where
                                             self.value = val;
                                             shell.publish((self.on_change)(self.value));
                                             self.content.on_event(
-                                                child,
-                                                event.clone(),
-                                                content,
-                                                cursor,
-                                                renderer,
-                                                clipboard,
-                                                shell,
-                                                viewport,
+                                                child, event, content, cursor, renderer, clipboard,
+                                                shell, viewport,
                                             )
                                         } else {
                                             event::Status::Ignored
@@ -553,14 +547,8 @@ where
                                                     self.value = val;
                                                     shell.publish((self.on_change)(self.value));
                                                     self.content.on_event(
-                                                        child,
-                                                        event.clone(),
-                                                        content,
-                                                        cursor,
-                                                        renderer,
-                                                        clipboard,
-                                                        shell,
-                                                        viewport,
+                                                        child, event, content, cursor, renderer,
+                                                        clipboard, shell, viewport,
                                                     )
                                                 } else {
                                                     event::Status::Ignored
@@ -571,13 +559,7 @@ where
                                     }
                                 }
                                 _ => self.content.on_event(
-                                    child,
-                                    event.clone(),
-                                    content,
-                                    cursor,
-                                    renderer,
-                                    clipboard,
-                                    shell,
+                                    child, event, content, cursor, renderer, clipboard, shell,
                                     viewport,
                                 ),
                             },

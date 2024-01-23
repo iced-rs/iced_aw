@@ -476,13 +476,15 @@ where
                     let mut value = i32::from(hsv_color.hue);
 
                     match key_code {
-                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
-                        | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                        keyboard::Key::Named(
+                            keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowDown,
+                        ) => {
                             value -= HUE_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::Key::Named(keyboard::key::Named::ArrowRight)
-                        | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                        keyboard::Key::Named(
+                            keyboard::key::Named::ArrowRight | keyboard::key::Named::ArrowUp,
+                        ) => {
                             value += HUE_STEP;
                             status = event::Status::Captured;
                         }
@@ -504,13 +506,15 @@ where
                     let mut status = event::Status::Captured;
 
                     match key_code {
-                        keyboard::Key::Named(keyboard::key::Named::ArrowLeft)
-                        | keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                        keyboard::Key::Named(
+                            keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowDown,
+                        ) => {
                             byte_value -= RGBA_STEP;
                             status = event::Status::Captured;
                         }
-                        keyboard::Key::Named(keyboard::key::Named::ArrowRight)
-                        | keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                        keyboard::Key::Named(
+                            keyboard::key::Named::ArrowRight | keyboard::key::Named::ArrowUp,
+                        ) => {
                             byte_value += RGBA_STEP;
                             status = event::Status::Captured;
                         }
@@ -611,9 +615,11 @@ where
             )
         };
 
-        let node = Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
+        let mut node =
+            Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
-        node.center_and_bounce(position, bounds)
+        node.center_and_bounce(position, bounds);
+        node
     }
 
     fn on_event(
@@ -1105,7 +1111,7 @@ fn block2<Message, Theme>(
     let rgba_color_layout = block2_children
         .next()
         .expect("Graphics: Layout should have a RGBA color layout");
-    rgba_color::<Theme>(
+    rgba_color(
         renderer,
         rgba_color_layout,
         &color_picker.state.color,
@@ -1119,7 +1125,7 @@ fn block2<Message, Theme>(
     let hex_text_layout = block2_children
         .next()
         .expect("Graphics: Layout should have a hex text layout");
-    hex_text::<Theme>(
+    hex_text(
         renderer,
         hex_text_layout,
         &color_picker.state.color,
@@ -1375,7 +1381,7 @@ fn hsv_color<Message, Theme>(
 
 /// Draws the RGBA color area.
 #[allow(clippy::too_many_lines)]
-fn rgba_color<Theme>(
+fn rgba_color(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
@@ -1383,9 +1389,7 @@ fn rgba_color<Theme>(
     style: &renderer::Style,
     style_sheet: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
-{
+) {
     let mut rgba_color_children = layout.children();
 
     let f = |renderer: &mut Renderer,
@@ -1593,7 +1597,7 @@ fn rgba_color<Theme>(
 }
 
 /// Draws the hex text representation of the color.
-fn hex_text<Theme>(
+fn hex_text(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     color: &Color,
@@ -1601,9 +1605,7 @@ fn hex_text<Theme>(
     _style: &renderer::Style,
     style_sheet: &HashMap<StyleState, Appearance>,
     _focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
-{
+) {
     let hsv: Hsv = (*color).into();
 
     let hex_text_style_state = if cursor.is_over(layout.bounds()) {

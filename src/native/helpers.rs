@@ -354,7 +354,8 @@ pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Theme: 'a + crate::style::selection_list::StyleSheet
+    Theme: 'a
+        + crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
@@ -383,7 +384,8 @@ pub fn selection_list<'a, T, Message, Theme, Renderer>(
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Theme: 'a + crate::style::selection_list::StyleSheet
+    Theme: 'a
+        + crate::style::selection_list::StyleSheet
         + iced_widget::container::StyleSheet
         + iced_widget::scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
