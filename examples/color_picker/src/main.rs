@@ -16,6 +16,7 @@ enum Message {
     ChooseColor,
     SubmitColor(Color),
     CancelColor,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }
@@ -117,6 +118,8 @@ impl Application for ColorPickerExample {
                     .center_y()
                     .width(Length::Fill)
                     .height(Length::Fill)
+                    .center_x()
+                    .center_y()
                     .into()
             }
         }

@@ -4,9 +4,9 @@ use iced_widget::{
     canvas::{Cache, Fill, Geometry, Path},
     core::{
         event,
-        layout::{Limits, Node},
+        layout::{self, Limits, Node},
         mouse::{self, Cursor},
-        overlay, renderer, touch,
+        renderer, touch,
         widget::tree::{State, Tag, Tree},
         window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Renderer as _,
         Shell, Size, Vector, Widget,
@@ -33,8 +33,6 @@ pub struct CupertinoSwitch<Message>
 where
     Message: Clone,
 {
-    width: Length,
-    height: Length,
     active_colour: Color,
     focus_colour: Color,
     thumb_colour: Color,
@@ -61,7 +59,6 @@ const ANIMATION_FRAME_COUNT: usize = 40;
 #[derive(Debug)]
 struct SwitchState {
     animation_frame: usize,
-    bounds: Rectangle,
     prev_value: bool,
     published: bool,
     switch: Cache,
@@ -74,8 +71,6 @@ where
 {
     fn default() -> Self {
         Self {
-            width: Length::Fixed(180.0),
-            height: Length::Fixed(180.0),
             active_colour: system_green(1.0),
             focus_colour: system_green(0.8),
             thumb_colour: Color::WHITE,
@@ -119,13 +114,6 @@ where
         self
     }
 
-    /// Sets the height of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
-        self
-    }
-
     /// Sets `on_changed` of the [`CupertinoSwitch`].
     #[must_use]
     pub fn on_changed(mut self, on_changed: Option<Box<dyn Fn(bool) -> Message>>) -> Self {
@@ -146,39 +134,24 @@ where
         self.value = value;
         self
     }
-
-    /// Sets the width of the [`CupertinoSwitch`].
-    #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
-        self
-    }
 }
 
-impl<Message, Theme> Widget<Message, Renderer<Theme>> for CupertinoSwitch<Message>
+impl<Message, Theme> Widget<Message, Theme, Renderer> for CupertinoSwitch<Message>
 where
     Message: Clone,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(Length::Shrink, Length::Shrink)
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, limits: &Limits) -> Node {
-        Node::new(
-            limits
-                .width(self.width)
-                .height(self.height)
-                .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        )
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
+        layout::atomic(limits, Length::Shrink, Length::Shrink)
     }
 
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
@@ -204,10 +177,7 @@ where
                 height: viewport.height,
             },
             |frame| {
-                frame.translate(Vector::new(
-                    bounds.x + 2.0 * width - 10.0,
-                    bounds.y + 2.0 * width - 15.0,
-                ));
+                frame.translate(Vector::new(40.0, 0.0));
 
                 let new_index: usize = state.animation_frame;
 
@@ -305,7 +275,7 @@ where
         // });
         //
 
-        let translation = Vector::new(0.0, 0.0);
+        let translation = Vector::new(bounds.x - 40.0, bounds.y);
         renderer.with_translation(translation, |renderer| {
             renderer.draw(vec![switch]);
         });
@@ -318,7 +288,6 @@ where
     fn state(&self) -> State {
         State::new(SwitchState {
             animation_frame: 0,
-            bounds: Rectangle::default(),
             prev_value: self.value,
             published: false,
             switch: Cache::default(),
@@ -330,15 +299,15 @@ where
         &mut self,
         state: &mut Tree,
         event: Event,
-        _layout: Layout<'_>,
+        layout: Layout<'_>,
         cursor: Cursor,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) -> event::Status {
         let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
-
+        let bounds = layout.bounds();
         match event {
             Event::Window(_id, window::Event::RedrawRequested(_now)) => {
                 if state.toggle_staged {
@@ -368,11 +337,9 @@ where
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 let cur_pos = cursor.position().unwrap_or_default();
                 // TODO: Make these calculations not hard-coded //
-                let hit_x: bool =
-                    ((state.bounds.x + 50.0)..(state.bounds.x + 125.0)).contains(&cur_pos.x);
+                let hit_x: bool = (bounds.x - 20.0..(bounds.x + 60.0)).contains(&cur_pos.x);
 
-                let hit_y: bool =
-                    ((state.bounds.y + 70.0)..(state.bounds.y + 100.0)).contains(&cur_pos.y);
+                let hit_y: bool = (bounds.y..(bounds.y + 40.0)).contains(&cur_pos.y);
 
                 if hit_x && hit_y {
                     state.toggle_staged = true;
@@ -399,24 +366,12 @@ where
 
         event::Status::Ignored
     }
-
-    fn overlay<'b>(
-        &'b mut self,
-        state: &'b mut Tree,
-        layout: Layout<'_>,
-        _renderer: &Renderer<Theme>,
-    ) -> Option<overlay::Element<'b, Message, Renderer<Theme>>> {
-        let state: &mut SwitchState = state.state.downcast_mut::<SwitchState>();
-
-        state.bounds = layout.bounds();
-
-        None
-    }
 }
 
-impl<'a, Message, Theme> From<CupertinoSwitch<Message>> for Element<'a, Message, Renderer<Theme>>
+impl<'a, Message, Theme> From<CupertinoSwitch<Message>> for Element<'a, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
+    Theme: 'a,
 {
     fn from(switch: CupertinoSwitch<Message>) -> Self {
         Self::new(switch)

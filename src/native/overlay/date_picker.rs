@@ -28,8 +28,8 @@ use iced_widget::{
         text::Renderer as _,
         touch,
         widget::tree::Tree,
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Renderer as _, Shell, Size, Vector, Widget,
+        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
+        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Vector, Widget,
     },
     renderer::Renderer,
     text, Button, Column, Container, Row, Text,
@@ -55,9 +55,9 @@ where
     /// The state of the [`DatePickerOverlay`].
     state: &'a mut State,
     /// The cancel button of the [`DatePickerOverlay`].
-    cancel_button: Button<'a, Message, Renderer<Theme>>,
+    cancel_button: Button<'a, Message, Theme, Renderer>,
     /// The submit button of the [`DatePickerOverlay`].
-    submit_button: Button<'a, Message, Renderer<Theme>>,
+    submit_button: Button<'a, Message, Theme, Renderer>,
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`] is pressed.
     on_submit: &'a dyn Fn(Date) -> Message,
     /// The position of the [`DatePickerOverlay`].
@@ -112,7 +112,7 @@ where
 
     /// Turn this [`DatePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
-    pub fn overlay(self) -> overlay::Element<'a, Message, Renderer<Theme>> {
+    pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(self.position, Box::new(self))
     }
 
@@ -133,7 +133,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
@@ -224,7 +224,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
@@ -288,61 +288,61 @@ where
         _layout: Layout<'_>,
         _cursor: Cursor,
         _messages: &mut Shell<Message>,
-        _renderer: &Renderer<Theme>,
+        _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
 
-        if let Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) = event {
+        if let Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) = event {
             let mut status = event::Status::Ignored;
 
-            match key_code {
-                keyboard::KeyCode::Tab => {
+            match key.as_ref() {
+                keyboard::Key::Named(keyboard::key::Named::Tab) => {
                     if self.state.keyboard_modifiers.shift() {
                         self.state.focus = self.state.focus.previous();
                     } else {
                         self.state.focus = self.state.focus.next();
                     }
                 }
-                _ => match self.state.focus {
-                    Focus::Month => match key_code {
-                        keyboard::KeyCode::Left => {
+                keyboard::Key::Named(k) => match self.state.focus {
+                    Focus::Month => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_month(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_month(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
-                    Focus::Year => match key_code {
-                        keyboard::KeyCode::Left => {
+                    Focus::Year => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_year(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_year(self.state.date);
                             status = event::Status::Captured;
                         }
                         _ => {}
                     },
-                    Focus::Day => match key_code {
-                        keyboard::KeyCode::Left => {
+                    Focus::Day => match k {
+                        keyboard::key::Named::ArrowLeft => {
                             self.state.date = crate::core::date::pred_day(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Right => {
+                        keyboard::key::Named::ArrowRight => {
                             self.state.date = crate::core::date::succ_day(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Up => {
+                        keyboard::key::Named::ArrowUp => {
                             self.state.date = crate::core::date::pred_week(self.state.date);
                             status = event::Status::Captured;
                         }
-                        keyboard::KeyCode::Down => {
+                        keyboard::key::Named::ArrowDown => {
                             self.state.date = crate::core::date::succ_week(self.state.date);
                             status = event::Status::Captured;
                         }
@@ -350,6 +350,7 @@ where
                     },
                     _ => {}
                 },
+                _ => {}
             }
 
             status
@@ -362,7 +363,7 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Renderer<Theme>> for DatePickerOverlay<'a, Message, Theme>
+impl<'a, Message, Theme> Overlay<Message, Theme, Renderer> for DatePickerOverlay<'a, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
@@ -370,13 +371,13 @@ where
     #[allow(clippy::too_many_lines)]
     fn layout(
         &mut self,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         bounds: Size,
         position: Point,
         _translation: Vector,
     ) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .pad(Padding::from(PADDING))
+            .shrink(Padding::from(PADDING))
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300.0)
@@ -393,7 +394,7 @@ where
         // Month/Year
         let font_size = renderer.default_size();
 
-        let month_year = Row::<Message, Renderer<Theme>>::new()
+        let month_year = Row::<Message, Theme, Renderer>::new()
             .width(Length::Fill)
             .spacing(SPACING)
             .push(
@@ -449,7 +450,7 @@ where
                     ),
             );
 
-        let days = Container::<Message, Renderer<Theme>>::new((0..7).fold(
+        let days = Container::<Message, Theme, Renderer>::new((0..7).fold(
             Column::new().width(Length::Fill).height(Length::Fill),
             |column, _y| {
                 column.push(
@@ -473,13 +474,13 @@ where
         .height(Length::Fill)
         .center_y();
 
-        let col = Column::<Message, Renderer<Theme>>::new()
+        let col = Column::<Message, Theme, Renderer>::new()
             .spacing(SPACING)
             .align_items(Alignment::Center)
             .push(month_year)
             .push(days);
 
-        let element: Element<Message, Renderer<Theme>> = Element::new(col);
+        let element: Element<Message, Theme, Renderer> = Element::new(col);
         let col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
             child_tree.diff(element.as_widget());
             child_tree
@@ -490,10 +491,8 @@ where
         };
 
         let mut col = element.as_widget().layout(col_tree, renderer, &limits);
-        col.move_to(Point::new(
-            col.bounds().x + PADDING,
-            col.bounds().y + PADDING,
-        ));
+        let col_bounds = col.bounds();
+        col = col.move_to(Point::new(col_bounds.x + PADDING, col_bounds.y + PADDING));
 
         // Buttons
         let cancel_limits =
@@ -510,15 +509,16 @@ where
             self.submit_button
                 .layout(&mut self.tree.children[1], renderer, &submit_limits);
 
-        cancel_button.move_to(Point {
-            x: cancel_button.bounds().x + PADDING,
-            y: cancel_button.bounds().y + col.bounds().height + PADDING + SPACING,
+        let cancel_bounds = cancel_button.bounds();
+        cancel_button = cancel_button.move_to(Point {
+            x: cancel_bounds.x + PADDING,
+            y: cancel_bounds.y + col.bounds().height + PADDING + SPACING,
         });
 
-        submit_button.move_to(Point {
-            x: submit_button.bounds().x + col.bounds().width - submit_button.bounds().width
-                + PADDING,
-            y: submit_button.bounds().y + col.bounds().height + PADDING + SPACING,
+        let submit_bounds = submit_button.bounds();
+        submit_button = submit_button.move_to(Point {
+            x: submit_bounds.x + col.bounds().width - submit_bounds.width + PADDING,
+            y: submit_bounds.y + col.bounds().height + PADDING + SPACING,
         });
 
         let mut node = Node::with_children(
@@ -528,9 +528,7 @@ where
             ),
             vec![col, cancel_button, submit_button],
         );
-
         node.center_and_bounce(position, bounds);
-
         node
     }
 
@@ -539,7 +537,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
@@ -627,7 +625,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         let mouse_interaction = mouse::Interaction::default();
 
@@ -736,7 +734,7 @@ where
 
     fn draw(
         &self,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
@@ -770,9 +768,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: style_sheet[&style_state].border_radius.into(),
-                border_width: style_sheet[&style_state].border_width,
-                border_color: style_sheet[&style_state].border_color,
+                border: Border {
+                    radius: style_sheet[&style_state].border_radius.into(),
+                    width: style_sheet[&style_state].border_width,
+                    color: style_sheet[&style_state].border_color,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet[&style_state].background,
         );
@@ -843,9 +844,12 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: cancel_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    border_width: style_sheet[&StyleState::Focused].border_width,
-                    border_color: style_sheet[&StyleState::Focused].border_color,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Color::TRANSPARENT,
             );
@@ -855,9 +859,12 @@ where
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: submit_button_layout.bounds(),
-                    border_radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    border_width: style_sheet[&StyleState::Focused].border_width,
-                    border_color: style_sheet[&StyleState::Focused].border_color,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Color::TRANSPARENT,
             );
@@ -905,9 +912,9 @@ where
     Theme: StyleSheet + button::StyleSheet,
 {
     /// The cancel button of the [`DatePickerOverlay`].
-    cancel_button: Element<'a, Message, Renderer<Theme>>,
+    cancel_button: Element<'a, Message, Theme, Renderer>,
     /// The submit button of the [`DatePickerOverlay`].
-    submit_button: Element<'a, Message, Renderer<Theme>>,
+    submit_button: Element<'a, Message, Theme, Renderer>,
 }
 
 impl<'a, Message, Theme> Default for DatePickerOverlayButtons<'a, Message, Theme>
@@ -936,7 +943,7 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Renderer<Theme>>
+impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for DatePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
@@ -953,22 +960,18 @@ where
         tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
-    fn width(&self) -> Length {
+    fn size(&self) -> Size<Length> {
         unimplemented!("This should never be reached!")
     }
 
-    fn height(&self) -> Length {
-        unimplemented!("This should never be reached!")
-    }
-
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer<Theme>, _limits: &Limits) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 
     fn draw(
         &self,
         _state: &Tree,
-        _renderer: &mut Renderer<Theme>,
+        _renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
         _layout: Layout<'_>,
@@ -980,7 +983,7 @@ where
 }
 
 impl<'a, Message, Theme> From<DatePickerOverlayButtons<'a, Message, Theme>>
-    for Element<'a, Message, Renderer<Theme>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + container::StyleSheet,
@@ -1051,8 +1054,8 @@ impl Default for Focus {
 }
 
 /// Draws the month/year row
-fn month_year<Theme>(
-    renderer: &mut Renderer<Theme>,
+fn month_year(
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     month: &str,
     year: &str,
@@ -1060,9 +1063,7 @@ fn month_year<Theme>(
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     let mut children = layout.children();
 
     let month_layout = children
@@ -1101,19 +1102,22 @@ fn month_year<Theme>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border_color: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_color,
-                    border_radius: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_radius
-                        .into(),
-                    border_width: style
-                        .get(&style_state)
-                        .expect("Style Sheet not found.")
-                        .border_width,
+                    border: Border {
+                        radius: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_radius
+                            .into(),
+                        width: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_width,
+                        color: style
+                            .get(&style_state)
+                            .expect("Style Sheet not found.")
+                            .border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
                 style
                     .get(&style_state)
@@ -1196,17 +1200,15 @@ fn month_year<Theme>(
 }
 
 /// Draws the days
-fn days<Theme>(
-    renderer: &mut Renderer<Theme>,
+fn days(
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     date: chrono::NaiveDate,
     cursor: Point,
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     let mut children = layout.children();
 
     let day_labels_layout = children
@@ -1218,14 +1220,12 @@ fn days<Theme>(
 }
 
 /// Draws the day labels
-fn day_labels<Theme>(
-    renderer: &mut Renderer<Theme>,
+fn day_labels(
+    renderer: &mut Renderer,
     layout: Layout<'_>,
     style: &HashMap<StyleState, Appearance>,
     _focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     for (i, label) in layout.children().enumerate() {
         let bounds = label.bounds();
 
@@ -1251,16 +1251,14 @@ fn day_labels<Theme>(
 }
 
 /// Draws the day table
-fn day_table<Theme>(
-    renderer: &mut Renderer<Theme>,
+fn day_table(
+    renderer: &mut Renderer,
     children: &mut dyn Iterator<Item = Layout<'_>>,
     date: chrono::NaiveDate,
     cursor: Point,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
-) where
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet + text::StyleSheet,
-{
+) {
     for (y, row) in children.enumerate() {
         for (x, label) in row.children().enumerate() {
             let bounds = label.bounds();
@@ -1282,9 +1280,12 @@ fn day_table<Theme>(
             renderer.fill_quad(
                 renderer::Quad {
                     bounds,
-                    border_radius: (bounds.height / 2.0).into(),
-                    border_width: 0.0,
-                    border_color: Color::TRANSPARENT,
+                    border: Border {
+                        radius: (bounds.height / 2.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
                 style
                     .get(&style_state)
@@ -1296,19 +1297,22 @@ fn day_table<Theme>(
                 renderer.fill_quad(
                     renderer::Quad {
                         bounds,
-                        border_radius: style
-                            .get(&StyleState::Focused)
-                            .expect("Style Sheet not found.")
-                            .border_radius
-                            .into(),
-                        border_width: style
-                            .get(&StyleState::Focused)
-                            .expect("Style Sheet not found.")
-                            .border_width,
-                        border_color: style
-                            .get(&StyleState::Focused)
-                            .expect("Style Sheet not found.")
-                            .border_color,
+                        border: Border {
+                            radius: style
+                                .get(&StyleState::Focused)
+                                .expect("Style Sheet not found.")
+                                .border_radius
+                                .into(),
+                            width: style
+                                .get(&StyleState::Focused)
+                                .expect("Style Sheet not found.")
+                                .border_width,
+                            color: style
+                                .get(&StyleState::Focused)
+                                .expect("Style Sheet not found.")
+                                .border_color,
+                        },
+                        shadow: Shadow::default(),
                     },
                     Color::TRANSPARENT,
                 );

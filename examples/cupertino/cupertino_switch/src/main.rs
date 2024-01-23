@@ -76,17 +76,17 @@ impl Application for Switch {
 
             container(column![
                 text(left_text)
-                    .width(Length::Fill)
+                    .width(Length::Shrink)
                     .size(25)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center),
 
                 text(right_text)
-                    .width(Length::Fill)
+                    .width(Length::Shrink)
                     .size(25)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center),
-            ]).width(Length::Fill).center_y(),
+            ]).width(Length::Shrink).center_y(),
 
             toggle_2,
         ].spacing(100).align_items(alignment::Alignment::Center).width(Length::Shrink);

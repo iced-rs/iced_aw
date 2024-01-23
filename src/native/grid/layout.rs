@@ -11,14 +11,14 @@ use itertools::{Itertools, Position};
 use super::types::GridRow;
 
 #[allow(clippy::too_many_arguments)]
-pub(super) fn layout<Message, Renderer>(
+pub(super) fn layout<Message, Theme, Renderer>(
     tree: &mut Tree,
     renderer: &Renderer,
     limits: &Limits,
     column_count: usize,
     row_count: usize,
     element_count: usize,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
     column_spacing: Pixels,
     row_spacing: Pixels,
     padding: Padding,
@@ -49,12 +49,15 @@ where
     );
 
     let grid_limits = limits
-        .pad(padding)
+        .shrink(padding)
         .min_width(min_size.width)
         .min_height(min_size.height)
         .width(width)
         .height(height);
-    let grid_size = grid_limits.fill();
+
+    //use to be grid_limits.fill();
+    let grid_size = grid_limits.min();
+    let grid_size = grid_limits.resolve(width, height, grid_size);
 
     // Allocate the available space
     let available_width = grid_size.width - total_spacing(column_count, column_spacing);
@@ -79,12 +82,12 @@ where
     )
 }
 
-fn minimum_row_column_sizes<Message, Renderer>(
+fn minimum_row_column_sizes<Message, Theme, Renderer>(
     tree: &mut Tree,
     renderer: &Renderer,
     column_widths: &mut Vec<f32>,
     row_heights: &mut Vec<f32>,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
 ) where
     Renderer: iced_widget::core::Renderer,
 {
@@ -171,10 +174,10 @@ fn allocate_space(current_sizes: &mut [f32], length_settings: &[Length], availab
 }
 
 #[allow(clippy::too_many_arguments)]
-fn create_grid_layout<Message, Renderer>(
+fn create_grid_layout<Message, Theme, Renderer>(
     tree: &mut Tree,
     element_count: usize,
-    rows: &[GridRow<'_, Message, Renderer>],
+    rows: &[GridRow<'_, Message, Theme, Renderer>],
     row_heights: &[f32],
     column_widths: &[f32],
     renderer: &Renderer,
@@ -198,23 +201,25 @@ where
             row.elements.iter().zip(column_widths).with_position()
         {
             let widget = element.as_widget();
+            let widget_size = widget.size();
             let widget_limits = Limits::NONE
-                .width(widget.width())
-                .height(widget.height())
+                .width(widget_size.width)
+                .height(widget_size.height)
                 .max_width(column_width)
                 .max_height(row_height);
 
-            let mut node = widget.layout(
-                children.next().expect("Grid missing child"),
-                renderer,
-                &widget_limits,
-            );
-            node.move_to(Point::new(x, y));
-            node.align(
-                horizontal_alignment.into(),
-                vertical_alignment.into(),
-                Size::new(column_width, row_height),
-            );
+            let node = widget
+                .layout(
+                    children.next().expect("Grid missing child"),
+                    renderer,
+                    &widget_limits,
+                )
+                .move_to(Point::new(x, y))
+                .align(
+                    horizontal_alignment.into(),
+                    vertical_alignment.into(),
+                    Size::new(column_width, row_height),
+                );
             nodes.push(node);
 
             x += column_width;
@@ -228,7 +233,7 @@ where
         }
     }
 
-    Node::with_children(grid_size.pad(padding), nodes)
+    Node::with_children(grid_size, nodes)
 }
 
 fn not_last(position: Position) -> bool {

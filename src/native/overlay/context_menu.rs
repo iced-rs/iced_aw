@@ -12,42 +12,47 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::tree::Tree,
-    window, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size, Vector,
+    window, Border, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shadow, Shell,
+    Size, Vector,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<'a, Message, Renderer = crate::Renderer>
-where
+pub struct ContextMenuOverlay<
+    'a,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The state of the [`ContextMenuOverlay`].
     tree: &'a mut Tree,
     /// The content of the [`ContextMenuOverlay`].
-    content: Element<'a, Message, Renderer>,
+    content: Element<'a, Message, Theme, Renderer>,
     /// The style of the [`ContextMenuOverlay`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
 }
 
-impl<'a, Message, Renderer> ContextMenuOverlay<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
     /// Creates a new [`ContextMenuOverlay`].
     pub(crate) fn new<C>(
         tree: &'a mut Tree,
         content: C,
-        style: <Renderer::Theme as StyleSheet>::Style,
+        style: <Theme as StyleSheet>::Style,
         state: &'a mut context_menu::State,
     ) -> Self
     where
-        C: Into<Element<'a, Message, Renderer>>,
+        C: Into<Element<'a, Message, Theme, Renderer>>,
     {
         ContextMenuOverlay {
             tree,
@@ -58,17 +63,17 @@ where
     }
 
     /// Turn this [`ContextMenuOverlay`] into an overlay [`Element`](overlay::Element).
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Renderer> {
+    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(position, Box::new(self))
     }
 }
 
-impl<'a, Message, Renderer> overlay::Overlay<Message, Renderer>
-    for ContextMenuOverlay<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+    for ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn layout(
         &mut self,
@@ -94,7 +99,7 @@ where
             position.y = f32::max(0.0, position.y - content.size().height);
         }
 
-        content.move_to(position);
+        content.move_to_mut(position);
 
         Node::with_children(max_size, vec![content])
     }
@@ -102,7 +107,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -115,9 +120,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: (0.0).into(),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
             style_sheet.background,
         );
@@ -155,9 +163,9 @@ where
 
         let mut forward_event_to_children = true;
 
-        let status = match event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key_code, .. }) => {
-                if key_code == keyboard::KeyCode::Escape {
+        let status = match &event {
+            Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
+                if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                     self.state.show = false;
                     forward_event_to_children = false;
                     Status::Captured

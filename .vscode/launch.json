@@ -115,24 +115,6 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'cupertino-alert'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=cupertino-alert",
-                    "--package=cupertino-alert"
-                ],
-                "filter": {
-                    "name": "cupertino-alert",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug executable 'card'",
             "cargo": {
                 "args": [

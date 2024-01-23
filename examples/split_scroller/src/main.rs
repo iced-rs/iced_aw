@@ -213,7 +213,7 @@ mod demo {
         button, column, container, horizontal_space, progress_bar, radio, row, scrollable, slider,
         text, vertical_space,
     };
-    use iced::{theme, Alignment, Color};
+    use iced::{theme, Alignment, Border, Color};
     use iced::{Command, Element, Length, Theme};
     use once_cell::sync::Lazy;
 
@@ -506,14 +506,18 @@ mod demo {
         fn hovered_horizontal(&self, style: &Self::Style, _is_mouse_over: bool) -> Scrollbar {
             Scrollbar {
                 background: style.active(&theme::Scrollable::default()).background,
-                border_radius: 0.0.into(),
-                border_width: 0.0,
-                border_color: Default::default(),
+                border: Border {
+                    color: Default::default(),
+                    width: 0.0,
+                    radius: 0.0.into(),
+                },
                 scroller: Scroller {
                     color: Color::from_rgb8(250, 85, 134),
-                    border_radius: 0.0.into(),
-                    border_width: 0.0,
-                    border_color: Default::default(),
+                    border: Border {
+                        color: Default::default(),
+                        width: 0.0,
+                        radius: 0.0.into(),
+                    },
                 },
             }
         }

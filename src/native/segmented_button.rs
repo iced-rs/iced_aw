@@ -5,8 +5,8 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,
-    Alignment, Background, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shell, Widget,
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
+    Point, Rectangle, Shadow, Shell, Widget,
 };
 
 pub use crate::style::segmented_button::StyleSheet;
@@ -25,10 +25,10 @@ pub use crate::style::segmented_button::StyleSheet;
 /// let segmented_button = SegmentedButton::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct SegmentedButton<'a, Message, Renderer>
+pub struct SegmentedButton<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     is_selected: bool,
     on_click: Message,
@@ -43,15 +43,15 @@ where
     /// The vertical alignment of the [`SegmentedButton`]
     vertical_alignment: Alignment,
     /// The style of the [`SegmentedButton`]
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     /// The content [`Element`] of the [`SegmentedButton`]
-    content: Element<'a, Message, Renderer>,
+    content: Element<'a, Message, Theme, Renderer>,
 }
 
-impl<'a, Message, Renderer> SegmentedButton<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> SegmentedButton<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`SegmentedButton`](SegmentedButton) with the given content.
     ///
@@ -59,7 +59,7 @@ where
     ///     * the content [`Element`] to display in the [`SegmentedButton`](SegmentedButton).
     pub fn new<T, F, V>(content: T, value: V, selected: Option<V>, f: F) -> Self
     where
-        T: Into<Element<'a, Message, Renderer>>,
+        T: Into<Element<'a, Message, Theme, Renderer>>,
         V: Eq + Copy,
         F: FnOnce(V) -> Message,
     {
@@ -71,7 +71,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             content: content.into(),
         }
     }
@@ -113,17 +113,18 @@ where
 
     /// Sets the style of the [`SegmentedButton`](SegmentedButton).
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for SegmentedButton<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for SegmentedButton<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_widget::core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.content)]
@@ -133,12 +134,8 @@ where
         tree.diff_children(std::slice::from_ref(&self.content));
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> iced_widget::core::Size<Length> {
+        iced_widget::core::Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -147,18 +144,18 @@ where
             .loose()
             .width(self.width)
             .height(self.height)
-            .pad(padding);
+            .shrink(padding);
 
         let mut content =
             self.content
                 .as_widget()
                 .layout(&mut tree.children[0], renderer, &limits.loose());
-        let size = limits.resolve(content.size());
+        let size = limits.resolve(self.width, self.height, content.size());
 
-        content.move_to(Point::new(padding.left, padding.top));
-        content.align(self.horizontal_alignment, self.vertical_alignment, size);
+        content.move_to_mut(Point::new(padding.left, padding.top));
+        content.align_mut(self.horizontal_alignment, self.vertical_alignment, size);
 
-        Node::with_children(size.pad(padding), vec![content])
+        Node::with_children(size.expand(padding), vec![content])
     }
 
     fn on_event(
@@ -206,7 +203,7 @@ where
         &self,
         tree: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -224,9 +221,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
-                border_radius: 2.0.into(),
-                border_width: style_sheet.border_width,
-                border_color: style_sheet.border_color.unwrap_or(Color::BLACK),
+                border: Border {
+                    radius: 2.0.into(),
+                    width: style_sheet.border_width,
+                    color: style_sheet.border_color.unwrap_or(Color::BLACK),
+                },
+                shadow: Shadow::default(),
             },
             style_sheet.background,
         );
@@ -239,9 +239,12 @@ where
                         width: bounds.width,
                         height: bounds.height,
                     },
-                    border_radius: 2.0.into(),
-                    border_width: 0.0,
-                    border_color: Color::TRANSPARENT,
+                    border: Border {
+                        radius: 2.0.into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
                 style_sheet.selected_color,
             );
@@ -256,9 +259,12 @@ where
                         width: bounds.width,
                         height: bounds.height,
                     },
-                    border_radius: 2.0.into(),
-                    border_width: 0.0,
-                    border_color: Color::TRANSPARENT,
+                    border: Border {
+                        radius: 2.0.into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
                 Background::Color([0.0, 0.0, 0.0, 0.5].into()),
             );
@@ -280,14 +286,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<SegmentedButton<'a, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<SegmentedButton<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + iced_widget::core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(segmented_button: SegmentedButton<'a, Message, Renderer>) -> Self {
+    fn from(segmented_button: SegmentedButton<'a, Message, Theme, Renderer>) -> Self {
         Self::new(segmented_button)
     }
 }

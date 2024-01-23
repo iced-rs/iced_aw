@@ -12,21 +12,14 @@ use iced_widget::core::{
         tree::{State, Tag},
         Tree,
     },
-    window, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector,
-    Widget,
+    window, Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shadow, Shell,
+    Size, Vector, Widget,
 };
-use std::{
-    marker::PhantomData,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 /// A spinner widget, a circle spinning around the center of the widget.
 #[allow(missing_debug_implementations)]
-pub struct Spinner<Renderer = crate::Renderer>
-where
-    Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
-{
+pub struct Spinner {
     /// The width of the [`Spinner`].
     width: Length,
     /// The height of the [`Spinner`].
@@ -35,31 +28,20 @@ where
     rate: Duration,
     /// The radius of the spinning circle.
     circle_radius: f32,
-    #[allow(missing_docs)]
-    renderer: PhantomData<Renderer>,
 }
 
-impl<Renderer> Default for Spinner<Renderer>
-where
-    Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
-{
+impl Default for Spinner {
     fn default() -> Self {
         Self {
             width: Length::Fixed(20.0),
             height: Length::Fixed(20.0),
             rate: Duration::from_secs_f32(1.0),
             circle_radius: 2.0,
-            renderer: PhantomData,
         }
     }
 }
 
-impl<Renderer> Spinner<Renderer>
-where
-    Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
-{
+impl Spinner {
     /// Creates a new [`Spinner`] widget.
     #[must_use]
     pub fn new() -> Self {
@@ -106,41 +88,39 @@ fn fill_circle(renderer: &mut impl core::Renderer, position: Vector, radius: f32
                 width: radius * 2.0,
                 height: radius * 2.0,
             },
-            border_radius: radius.into(),
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+            border: Border {
+                radius: radius.into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
         },
         color,
     );
 }
 
-impl<Message, Renderer> Widget<Message, Renderer> for Spinner<Renderer>
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Spinner
 where
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
-        Node::new(
-            limits
-                .width(self.width)
-                .height(self.height)
-                .resolve(Size::new(f32::INFINITY, f32::INFINITY)),
-        )
+        Node::new(limits.width(self.width).height(self.height).resolve(
+            self.width,
+            self.height,
+            Size::new(f32::INFINITY, f32::INFINITY),
+        ))
     }
 
     fn draw(
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        _theme: &Renderer::Theme,
+        _theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
@@ -224,12 +204,12 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Spinner<Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Spinner> for Element<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer + 'a,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(spinner: Spinner<Renderer>) -> Self {
+    fn from(spinner: Spinner) -> Self {
         Self::new(spinner)
     }
 }

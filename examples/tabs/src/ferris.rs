@@ -59,6 +59,7 @@ impl Tab for FerrisTab {
                     FerrisMessage::ImageWidthChanged,
                 )),
         )
+        .align_x(iced::alignment::Horizontal::Center)
         .into();
 
         content.map(Message::Ferris)

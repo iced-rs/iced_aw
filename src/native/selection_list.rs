@@ -13,7 +13,8 @@ use iced_widget::{
         renderer,
         text::{Paragraph, Text},
         widget::{tree, Tree},
-        Clipboard, Element, Event, Layout, Length, Pixels, Rectangle, Shell, Size, Widget,
+        Border, Clipboard, Element, Event, Layout, Length, Pixels, Rectangle, Shadow, Shell, Size,
+        Widget,
     },
     graphics,
     runtime::Font,
@@ -28,15 +29,20 @@ pub use list::List;
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
 #[allow(clippy::type_repetition_in_bounds)]
-pub struct SelectionList<'a, T, Message, Renderer = crate::Renderer>
-where
+pub struct SelectionList<
+    'a,
+    T,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + container::StyleSheet,
+    Theme: StyleSheet + container::StyleSheet,
 {
     /// Container for Rendering List.
-    container: Container<'a, Message, Renderer>,
+    container: Container<'a, Message, Theme, Renderer>,
     /// List of Elements to Render.
     options: &'a [T],
     /// Label Font
@@ -50,15 +56,15 @@ where
     /// The Text Size
     text_size: f32,
     /// Style for Looks
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
 }
 
 #[allow(clippy::type_repetition_in_bounds)]
-impl<'a, T, Message, Renderer> SelectionList<'a, T, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + container::StyleSheet + scrollable::StyleSheet,
+    Theme: 'a + StyleSheet + container::StyleSheet + scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
@@ -72,7 +78,7 @@ where
             font: Font::default(),
             text_size: 12.0,
             padding: 5.0,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             on_selected: Box::new(on_selected),
             selected: None,
             phantomdata: PhantomData,
@@ -82,7 +88,7 @@ where
         Self {
             options,
             font: Font::default(),
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             container,
             width: Length::Fill,
             height: Length::Fill,
@@ -99,7 +105,7 @@ where
         on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
         padding: f32,
-        style: <Renderer::Theme as StyleSheet>::Style,
+        style: <Theme as StyleSheet>::Style,
         selected: Option<usize>,
         font: Font,
     ) -> Self {
@@ -143,25 +149,26 @@ where
 
     /// Sets the style of the [`SelectionList`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 }
 
-impl<'a, T, Message, Renderer> Widget<Message, Renderer> for SelectionList<'a, T, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for SelectionList<'a, T, Message, Theme, Renderer>
 where
     T: 'a + Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font> + 'a,
-    Renderer::Theme: StyleSheet + container::StyleSheet,
+    Theme: StyleSheet + container::StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.container as &dyn Widget<_, _>)]
+        vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.container as &dyn Widget<_, _>]);
+        tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State>();
 
         state.values = self
@@ -171,12 +178,8 @@ where
             .collect();
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, Length::Shrink)
     }
 
     fn tag(&self) -> tree::Tag {
@@ -224,7 +227,7 @@ where
         let content = self
             .container
             .layout(&mut tree.children[0], renderer, &limits);
-        let size = limits.resolve(content.size());
+        let size = limits.resolve(self.width, self.height, content.size());
         Node::with_children(size, vec![content])
     }
 
@@ -270,7 +273,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -279,9 +282,12 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: layout.bounds(),
-                border_color: theme.style(&self.style).border_color,
-                border_width: theme.style(&self.style).border_width,
-                border_radius: (0.0).into(),
+                border: Border {
+                    radius: (0.0).into(),
+                    width: theme.style(&self.style).border_width,
+                    color: theme.style(&self.style).border_color,
+                },
+                shadow: Shadow::default(),
             },
             theme.style(&self.style).background,
         );
@@ -301,15 +307,15 @@ where
     }
 }
 
-impl<'a, T, Message, Renderer> From<SelectionList<'a, T, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> From<SelectionList<'a, T, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     T: Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet + container::StyleSheet,
+    Theme: 'a + StyleSheet + container::StyleSheet,
 {
-    fn from(selection_list: SelectionList<'a, T, Message, Renderer>) -> Self {
+    fn from(selection_list: SelectionList<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(selection_list)
     }
 }

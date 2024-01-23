@@ -71,6 +71,7 @@ enum Message {
     Ferris(FerrisMessage),
     Counter(CounterMessage),
     Settings(SettingsMessage),
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }
@@ -196,7 +197,8 @@ trait Tab {
         let column = Column::new()
             .spacing(20)
             .push(Text::new(self.title()).size(HEADER_SIZE))
-            .push(self.content());
+            .push(self.content())
+            .align_items(iced::Alignment::Center);
 
         Container::new(column)
             .width(Length::Fill)

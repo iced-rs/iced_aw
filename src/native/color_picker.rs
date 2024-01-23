@@ -59,7 +59,7 @@ where
     /// The color to show.
     color: Color,
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer<Theme>>,
+    underlay: Element<'a, Message, Theme, Renderer>,
     /// The message that is sent if the cancel button of the [`ColorPickerOverlay`] is pressed.
     on_cancel: Message,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`] is pressed.
@@ -67,7 +67,7 @@ where
     /// The style of the [`ColorPickerOverlay`].
     style: <Theme as StyleSheet>::Style,
     /// The buttons of the overlay.
-    overlay_state: Element<'a, Message, Renderer<Theme>>,
+    overlay_state: Element<'a, Message, Theme, Renderer>,
 }
 
 impl<'a, Message, Theme> ColorPicker<'a, Message, Theme>
@@ -94,7 +94,7 @@ where
         on_submit: F,
     ) -> Self
     where
-        U: Into<Element<'a, Message, Renderer<Theme>>>,
+        U: Into<Element<'a, Message, Theme, Renderer>>,
         F: 'static + Fn(Color) -> Message,
     {
         Self {
@@ -139,7 +139,7 @@ impl State {
     }
 }
 
-impl<'a, Message, Theme> Widget<Message, Renderer<Theme>> for ColorPicker<'a, Message, Theme>
+impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for ColorPicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
@@ -166,15 +166,11 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn width(&self) -> Length {
-        self.underlay.as_widget().width()
+    fn size(&self) -> iced_widget::core::Size<Length> {
+        self.underlay.as_widget().size()
     }
 
-    fn height(&self) -> Length {
-        self.underlay.as_widget().width()
-    }
-
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer<Theme>, limits: &Limits) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay
             .as_widget()
             .layout(&mut tree.children[0], renderer, limits)
@@ -186,7 +182,7 @@ where
         event: Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
@@ -209,7 +205,7 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
-        renderer: &Renderer<Theme>,
+        renderer: &Renderer,
     ) -> mouse::Interaction {
         self.underlay.as_widget().mouse_interaction(
             &state.children[0],
@@ -223,7 +219,7 @@ where
     fn draw(
         &self,
         state: &Tree,
-        renderer: &mut Renderer<Theme>,
+        renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
@@ -245,8 +241,8 @@ where
         &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer<Theme>,
-    ) -> Option<overlay::Element<'b, Message, Renderer<Theme>>> {
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -274,7 +270,7 @@ where
 }
 
 impl<'a, Message, Theme> From<ColorPicker<'a, Message, Theme>>
-    for Element<'a, Message, Renderer<Theme>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,

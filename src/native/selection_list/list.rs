@@ -13,8 +13,8 @@ use iced_widget::{
             tree::{State, Tag},
             Tree,
         },
-        Clipboard, Color, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size,
-        Widget,
+        Border, Clipboard, Color, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shadow,
+        Shell, Size, Widget,
     },
     text::LineHeight,
 };
@@ -27,12 +27,12 @@ use std::{
 
 /// The Private [`List`] Handles the Actual list rendering.
 #[allow(missing_debug_implementations)]
-pub struct List<'a, T: 'a, Message, Renderer>
+pub struct List<'a, T: 'a, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Options pointer to hold all rendered strings
     pub options: &'a [T],
@@ -40,7 +40,7 @@ where
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
-    pub style: <Renderer::Theme as StyleSheet>::Style,
+    pub style: <Theme as StyleSheet>::Style,
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(usize, T) -> Message>,
     /// The padding Width
@@ -64,11 +64,12 @@ pub struct ListState {
     pub options: Vec<String>,
 }
 
-impl<'a, T, Message, Renderer> Widget<Message, Renderer> for List<'a, T, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for List<'a, T, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<ListState>()
@@ -109,12 +110,8 @@ where
         list_state.options = self.options.iter().map(ToString::to_string).collect();
     }
 
-    fn width(&self) -> Length {
-        Length::Fill
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(Length::Fill, Length::Shrink)
     }
 
     fn layout(
@@ -128,7 +125,7 @@ where
 
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
-            limits.fill().width,
+            limits.max().width,
             (self.text_size + self.padding * 2.0) * self.options.len() as f32,
         );
 
@@ -212,7 +209,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         _style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
@@ -245,9 +242,12 @@ where
                 renderer.fill_quad(
                     renderer::Quad {
                         bounds,
-                        border_radius: (0.0).into(),
-                        border_width: 0.0,
-                        border_color: Color::TRANSPARENT,
+                        border: Border {
+                            radius: (0.0).into(),
+                            width: 0.0,
+                            color: Color::TRANSPARENT,
+                        },
+                        shadow: Shadow::default(),
                     },
                     if is_selected {
                         theme.style(&self.style).selected_background
@@ -284,15 +284,15 @@ where
     }
 }
 
-impl<'a, T, Message, Renderer> From<List<'a, T, Message, Renderer>>
-    for Element<'a, Message, Renderer>
+impl<'a, T, Message, Theme, Renderer> From<List<'a, T, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Message: 'a,
     Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(list: List<'a, T, Message, Renderer>) -> Element<'a, Message, Renderer> {
+    fn from(list: List<'a, T, Message, Theme, Renderer>) -> Element<'a, Message, Theme, Renderer> {
         Element::new(list)
     }
 }

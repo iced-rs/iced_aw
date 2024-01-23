@@ -37,31 +37,31 @@ pub use crate::style::modal::StyleSheet;
 /// .backdrop(Message::CloseModal);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Modal<'a, Message, Renderer = crate::Renderer>
+pub struct Modal<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// The underlying element.
-    underlay: Element<'a, Message, Renderer>,
+    underlay: Element<'a, Message, Theme, Renderer>,
     /// The optional content of the [`ModalOverlay`].
-    overlay: Option<Element<'a, Message, Renderer>>,
+    overlay: Option<Element<'a, Message, Theme, Renderer>>,
     /// The optional message that will be send when the user clicked on the backdrop.
     backdrop: Option<Message>,
     /// The optional message that will be send when the ESC key was pressed.
     esc: Option<Message>,
     /// The style of the [`ModalOverlay`].
-    style: <Renderer::Theme as StyleSheet>::Style,
+    style: <Theme as StyleSheet>::Style,
     horizontal_alignment: alignment::Horizontal,
     vertical_alignment: alignment::Vertical,
 }
 
-impl<'a, Message, Renderer> Modal<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Modal<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`Modal`] wrapping the underlying element to show some content as an overlay.
     ///
@@ -72,15 +72,15 @@ where
     ///     * the underlay [`Element`] on which this [`Modal`] will be wrapped around.
     ///     * the optional overlay [`Element`] of the [`Modal`].
     pub fn new(
-        underlay: impl Into<Element<'a, Message, Renderer>>,
-        overlay: Option<impl Into<Element<'a, Message, Renderer>>>,
+        underlay: impl Into<Element<'a, Message, Theme, Renderer>>,
+        overlay: Option<impl Into<Element<'a, Message, Theme, Renderer>>>,
     ) -> Self {
         Modal {
             underlay: underlay.into(),
             overlay: overlay.map(Into::into),
             backdrop: None,
             esc: None,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: <Theme as StyleSheet>::Style::default(),
             horizontal_alignment: alignment::Horizontal::Center,
             vertical_alignment: alignment::Vertical::Center,
         }
@@ -120,17 +120,18 @@ where
 
     /// Sets the style of the [`Modal`].
     #[must_use]
-    pub fn style(mut self, style: <Renderer::Theme as StyleSheet>::Style) -> Self {
+    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         self
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Modal<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Modal<'a, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
         self.overlay.as_ref().map_or_else(
@@ -147,12 +148,8 @@ where
         }
     }
 
-    fn width(&self) -> Length {
-        self.underlay.as_widget().width()
-    }
-
-    fn height(&self) -> Length {
-        self.underlay.as_widget().height()
+    fn size(&self) -> core::Size<Length> {
+        self.underlay.as_widget().size()
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -213,7 +210,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
@@ -235,7 +232,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if let Some(overlay) = &mut self.overlay {
             let bounds = layout.bounds();
             let position = Point::new(bounds.x, bounds.y);
@@ -281,13 +278,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Modal<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Modal<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + core::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
-    fn from(modal: Modal<'a, Message, Renderer>) -> Self {
+    fn from(modal: Modal<'a, Message, Theme, Renderer>) -> Self {
         Element::new(modal)
     }
 }

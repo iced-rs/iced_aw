@@ -10,16 +10,16 @@ use iced_widget::core::{
 
 use super::{layout::layout, types::Grid};
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for Grid<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Grid<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -60,7 +60,7 @@ where
         &self,
         state: &Tree,
         renderer: &mut Renderer,
-        theme: &<Renderer as iced_widget::core::Renderer>::Theme,
+        theme: &Theme,
         style: &Style,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -159,7 +159,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let children = self
             .elements_iter_mut()
             .zip(&mut tree.children)
@@ -173,12 +173,14 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Grid<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Grid<'a, Message, Theme, Renderer>>
+    for Element<'a, Message, Theme, Renderer>
 where
     Renderer: iced_widget::core::Renderer + 'a,
     Message: 'static,
+    Theme: 'a,
 {
-    fn from(grid: Grid<'a, Message, Renderer>) -> Self {
+    fn from(grid: Grid<'a, Message, Theme, Renderer>) -> Self {
         Element::new(grid)
     }
 }

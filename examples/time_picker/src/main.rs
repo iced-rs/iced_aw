@@ -15,6 +15,7 @@ enum Message {
     ChooseTime,
     SubmitTime(Time),
     CancelTime,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }

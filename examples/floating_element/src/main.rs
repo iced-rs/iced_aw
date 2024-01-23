@@ -18,6 +18,7 @@ fn main() -> iced::Result {
 #[derive(Debug, Clone)]
 enum Message {
     ButtonPressed,
+    #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
 }
@@ -151,7 +152,7 @@ impl button::StyleSheet for CircleButtonStyle {
 
     fn active(&self, style: &Self::Style) -> Appearance {
         let mut appearance = style.active(&self.theme);
-        appearance.border_radius = 25.0.into();
+        appearance.border.radius = 25.0.into();
 
         appearance
     }

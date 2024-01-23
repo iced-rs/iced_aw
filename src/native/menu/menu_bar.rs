@@ -56,7 +56,7 @@ impl Default for MenuBarState {
 /// A `MenuBar` collects `MenuTree`s and handles
 /// all the layout, event processing and drawing
 #[allow(missing_debug_implementations)]
-pub struct MenuBar<'a, Message, Renderer = crate::Renderer>
+pub struct MenuBar<'a, Message, Renderer = iced_widget::Renderer>
 where
     Renderer: renderer::Renderer,
     Renderer::Theme: StyleSheet,
