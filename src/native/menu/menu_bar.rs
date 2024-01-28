@@ -9,11 +9,13 @@ use crate::style::menu_bar::StyleSheet;
 
 use iced_widget::core::{
     event,
-    layout::{Limits, Node},
+    layout::{self, Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::{tree, Tree},
     Alignment, Clipboard, Color, Element, Layout, Length, Padding, Rectangle, Shell, Widget,
+    Border, Shadow,
+    Size,
 };
 
 pub(super) struct MenuBarState {
@@ -56,10 +58,10 @@ impl Default for MenuBarState {
 /// A `MenuBar` collects `MenuTree`s and handles
 /// all the layout, event processing and drawing
 #[allow(missing_debug_implementations)]
-pub struct MenuBar<'a, Message, Renderer = iced_widget::Renderer>
+pub struct MenuBar<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     width: Length,
     height: Length,
@@ -72,18 +74,19 @@ where
     item_width: ItemWidth,
     item_height: ItemHeight,
     path_highlight: Option<PathHighlight>,
-    menu_roots: Vec<MenuTree<'a, Message, Renderer>>,
-    style: <Renderer::Theme as StyleSheet>::Style,
+    menu_roots: Vec<MenuTree<'a, Message, Theme, Renderer>>,
+    // style: <Renderer::Theme as StyleSheet>::Style,
+    style: Theme::Style,
 }
 
-impl<'a, Message, Renderer> MenuBar<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     /// Creates a new [`MenuBar`] with the given menu roots
     #[must_use]
-    pub fn new(menu_roots: Vec<MenuTree<'a, Message, Renderer>>) -> Self {
+    pub fn new(menu_roots: Vec<MenuTree<'a, Message, Theme, Renderer>>) -> Self {
         let mut menu_roots = menu_roots;
         menu_roots.iter_mut().for_each(MenuTree::set_index);
 
@@ -104,7 +107,7 @@ where
             item_height: ItemHeight::Uniform(30),
             path_highlight: Some(PathHighlight::MenuActive),
             menu_roots,
-            style: <Renderer::Theme as StyleSheet>::Style::default(),
+            style: Theme::Style::default(),
         }
     }
 
@@ -184,7 +187,7 @@ where
 
     /// Sets the style of the menu bar and its menus
     #[must_use]
-    pub fn style(mut self, style: impl Into<<Renderer::Theme as StyleSheet>::Style>) -> Self {
+    pub fn style(mut self, style: impl Into<Theme::Style>) -> Self {
         self.style = style.into();
         self
     }
@@ -196,17 +199,13 @@ where
         self
     }
 }
-impl<'a, Message, Renderer> Widget<Message, Renderer> for MenuBar<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for MenuBar<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn diff(&self, tree: &mut Tree) {
@@ -275,7 +274,8 @@ where
             .collect()
     }
 
-    fn layout(&self, renderer: &Renderer, limits: &Limits) -> Node {
+    
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         use super::flex;
 
         let limits = limits.width(self.width).height(self.height);
@@ -285,13 +285,16 @@ where
             .map(|root| &root.item)
             .collect::<Vec<_>>();
         flex::resolve(
-            &flex::Axis::Horizontal,
-            renderer,
-            &limits,
-            self.padding,
-            self.spacing,
-            Alignment::Center,
-            &children,
+            flex::Axis::Horizontal, 
+            renderer, 
+            &limits, 
+            self.width, 
+            self.height, 
+            self.padding, 
+            self.spacing, 
+            Alignment::Center, 
+            &children, 
+            &mut tree.children
         )
     }
 
@@ -311,7 +314,7 @@ where
         use touch::Event::{FingerLifted, FingerLost};
 
         let root_status = process_root_events(
-            &mut self.menu_roots,
+            self.menu_roots.as_mut_slice(),
             view_cursor,
             tree,
             &event,
@@ -340,7 +343,7 @@ where
         &self,
         tree: &Tree,
         renderer: &mut Renderer,
-        theme: &<Renderer as renderer::Renderer>::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         view_cursor: Cursor,
@@ -365,9 +368,15 @@ where
                     .bounds();
                 let path_quad = renderer::Quad {
                     bounds: active_bounds,
-                    border_radius: styling.border_radius.into(),
-                    border_width: 0.0,
-                    border_color: Color::TRANSPARENT,
+                    // border_radius: styling.border_radius.into(),
+                    // border_width: 0.0,
+                    // border_color: Color::TRANSPARENT,
+                    border: Border{
+                        color: Color::TRANSPARENT,
+                        width: 0.0,
+                        radius: styling.border_radius.into()
+                    },
+                    shadow: Shadow::default(),
                 };
                 let path_color = styling.path;
                 renderer.fill_quad(path_quad, path_color);
@@ -396,7 +405,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
-    ) -> Option<overlay::Element<'b, Message, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state = tree.state.downcast_ref::<MenuBarState>();
         if !state.open {
             return None;
@@ -420,21 +429,23 @@ where
             .overlay(),
         )
     }
+
+    
 }
-impl<'a, Message, Renderer> From<MenuBar<'a, Message, Renderer>> for Element<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>> for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Renderer: 'a + renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-    fn from(value: MenuBar<'a, Message, Renderer>) -> Self {
+    fn from(value: MenuBar<'a, Message, Theme, Renderer>) -> Self {
         Self::new(value)
     }
 }
 
 #[allow(unused_results, clippy::too_many_arguments)]
-fn process_root_events<Message, Renderer>(
-    menu_roots: &mut [MenuTree<'_, Message, Renderer>],
+fn process_root_events<Message, Theme, Renderer>(
+    menu_roots: &mut [MenuTree<'_, Message, Theme, Renderer>],
     view_cursor: Cursor,
     tree: &mut Tree,
     event: &event::Event,

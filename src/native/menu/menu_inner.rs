@@ -9,6 +9,7 @@ use iced_widget::core::{
     overlay, renderer, touch,
     widget::Tree,
     Clipboard, Color, Layout, Length, Padding, Point, Rectangle, Shell, Size, Vector,
+    Border, Shadow
 };
 
 /// The condition of when to close a menu
@@ -236,8 +237,8 @@ struct MenuBounds {
 }
 impl MenuBounds {
     #[allow(clippy::too_many_arguments)]
-    fn new<Message, Renderer>(
-        menu_tree: &MenuTree<'_, Message, Renderer>,
+    fn new<Message, Theme, Renderer>(
+        menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
         renderer: &Renderer,
         item_width: ItemWidth,
         item_height: ItemHeight,
@@ -246,12 +247,13 @@ impl MenuBounds {
         aod: &Aod,
         bounds_expand: u16,
         parent_bounds: Rectangle,
+        tree: &mut [Tree],
     ) -> Self
     where
         Renderer: renderer::Renderer,
     {
         let (children_size, child_positions, child_sizes) =
-            get_children_layout(menu_tree, renderer, item_width, item_height);
+            get_children_layout(menu_tree, renderer, item_width, item_height, tree);
 
         // viewport space parent bounds
         let view_parent_bounds = parent_bounds + overlay_offset;
@@ -291,12 +293,13 @@ pub(super) struct MenuState {
     menu_bounds: MenuBounds,
 }
 impl MenuState {
-    fn layout<Message, Renderer>(
+    fn layout<Message, Theme, Renderer>(
         &self,
         overlay_offset: Vector,
         slice: MenuSlice,
         renderer: &Renderer,
-        menu_tree: &MenuTree<'_, Message, Renderer>,
+        menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
+        tree: &mut [Tree],
     ) -> Node
     where
         Renderer: renderer::Renderer,
@@ -334,7 +337,7 @@ impl MenuState {
 
                 let limits = Limits::new(Size::ZERO, size);
 
-                let mut node = mt.item.as_widget().layout(renderer, &limits);
+                let mut node = mt.item.as_widget().layout(&mut tree[mt.index], renderer, &limits);
                 node.move_to(Point::new(0.0, position + self.scroll_offset));
                 node
             })
@@ -345,12 +348,13 @@ impl MenuState {
         node
     }
 
-    fn layout_single<Message, Renderer>(
+    fn layout_single<Message, Theme, Renderer>(
         &self,
         overlay_offset: Vector,
         index: usize,
         renderer: &Renderer,
-        menu_tree: &MenuTree<'_, Message, Renderer>,
+        menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
+        tree: &mut Tree,
     ) -> Node
     where
         Renderer: renderer::Renderer,
@@ -361,7 +365,7 @@ impl MenuState {
         let position = self.menu_bounds.child_positions[index];
         let limits = Limits::new(Size::ZERO, self.menu_bounds.child_sizes[index]);
         let parent_offset = children_bounds.position() - Point::ORIGIN;
-        let mut node = menu_tree.item.as_widget().layout(renderer, &limits);
+        let mut node = menu_tree.item.as_widget().layout(tree, renderer, &limits);
         node.move_to(Point::new(
             parent_offset.x,
             parent_offset.y + position + self.scroll_offset,
@@ -423,13 +427,13 @@ impl MenuState {
     }
 }
 
-pub(super) struct Menu<'a, 'b, Message, Renderer>
+pub(super) struct Menu<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     pub(super) tree: &'b mut Tree,
-    pub(super) menu_roots: &'b mut Vec<MenuTree<'a, Message, Renderer>>,
+    pub(super) menu_roots: &'b mut Vec<MenuTree<'a, Message, Theme, Renderer>>,
     pub(super) bounds_expand: u16,
     pub(super) close_condition: CloseCondition,
     pub(super) item_width: ItemWidth,
@@ -439,28 +443,34 @@ where
     pub(super) cross_offset: i32,
     pub(super) root_bounds_list: Vec<Rectangle>,
     pub(super) path_highlight: Option<PathHighlight>,
-    pub(super) style: &'b <Renderer::Theme as StyleSheet>::Style,
+    pub(super) style: &'b Theme::Style,
 }
-impl<'a, 'b, Message, Renderer> Menu<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> Menu<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-    pub(super) fn overlay(self) -> overlay::Element<'b, Message, Renderer> {
+    pub(super) fn overlay(self) -> overlay::Element<'b, Message, Theme, Renderer> {
         overlay::Element::new(Point::ORIGIN, Box::new(self))
     }
 }
-impl<'a, 'b, Message, Renderer> overlay::Overlay<Message, Renderer>
-    for Menu<'a, 'b, Message, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+    for Menu<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
-    fn layout(&self, _renderer: &Renderer, bounds: Size, position: Point) -> Node {
+    fn layout(
+        &mut self,
+        renderer: &Renderer,
+        bounds: Size,
+        position: Point,
+        translation: Vector,
+    ) -> iced_widget::core::layout::Node {
         // overlay space viewport rectangle
         Node::new(bounds).translate(Point::ORIGIN - position)
     }
-
+    
     fn on_event(
         &mut self,
         event: event::Event,
@@ -583,7 +593,7 @@ where
     fn draw(
         &self,
         renderer: &mut Renderer,
-        theme: &Renderer::Theme,
+        theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
         view_cursor: Cursor,
@@ -641,9 +651,12 @@ where
                     // println!("color: {:?}\n", styling.background);
                     let menu_quad = renderer::Quad {
                         bounds: pad_rectangle(children_bounds, styling.background_expand.into()),
-                        border_radius: styling.border_radius.into(),
-                        border_width: styling.border_width,
-                        border_color: styling.border_color,
+                        border: Border {
+                            color: styling.border_color, 
+                            width: styling.border_width, 
+                            radius: styling.border_radius.into()
+                        },
+                        shadow: Shadow::default(),
                     };
                     let menu_color = styling.background;
                     r.fill_quad(menu_quad, menu_color);
@@ -657,9 +670,12 @@ where
                             .bounds();
                         let path_quad = renderer::Quad {
                             bounds: active_bounds,
-                            border_radius: styling.border_radius.into(),
-                            border_width: 0.0,
-                            border_color: Color::TRANSPARENT,
+                            border: Border{
+                                color: Color::TRANSPARENT,
+                                width: 0.0,
+                                radius: styling.border_radius.into(),
+                            },
+                            shadow: Shadow::default(),
                         };
                         let path_color = styling.path;
                         r.fill_quad(path_quad, path_color);
@@ -700,8 +716,8 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     }
 }
 
-fn init_root_menu<Message, Renderer>(
-    menu: &mut Menu<'_, '_, Message, Renderer>,
+fn init_root_menu<Message, Theme, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     renderer: &Renderer,
     overlay_cursor: Point,
     viewport_size: Size,
@@ -710,7 +726,7 @@ fn init_root_menu<Message, Renderer>(
     main_offset: f32,
 ) where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     let state = menu.tree.state.downcast_mut::<MenuBarState>();
     if !(state.menu_states.is_empty() && bar_bounds.contains(overlay_cursor)) {
@@ -773,9 +789,9 @@ fn init_root_menu<Message, Renderer>(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn process_menu_events<'b, Message, Renderer>(
+fn process_menu_events<'b, Message, Theme, Renderer>(
     tree: &'b mut Tree,
-    menu_roots: &'b mut [MenuTree<'_, Message, Renderer>],
+    menu_roots: &'b mut [MenuTree<'_, Message, Theme, Renderer>],
     event: event::Event,
     view_cursor: Cursor,
     renderer: &Renderer,
@@ -831,8 +847,8 @@ where
 }
 
 #[allow(unused_results)]
-fn process_overlay_events<Message, Renderer>(
-    menu: &mut Menu<'_, '_, Message, Renderer>,
+fn process_overlay_events<Message, Theme, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     renderer: &Renderer,
     viewport_size: Size,
     overlay_offset: Vector,
@@ -842,7 +858,7 @@ fn process_overlay_events<Message, Renderer>(
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     use event::Status::{Captured, Ignored};
     /*
@@ -1022,8 +1038,8 @@ where
     Captured
 }
 
-fn process_scroll_events<Message, Renderer>(
-    menu: &mut Menu<'_, '_, Message, Renderer>,
+fn process_scroll_events<Message, Theme, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     delta: mouse::ScrollDelta,
     overlay_cursor: Point,
     viewport_size: Size,
@@ -1031,7 +1047,7 @@ fn process_scroll_events<Message, Renderer>(
 ) -> event::Status
 where
     Renderer: renderer::Renderer,
-    Renderer::Theme: StyleSheet,
+    Theme: StyleSheet,
 {
     use event::Status::{Captured, Ignored};
     use mouse::ScrollDelta;
@@ -1101,11 +1117,12 @@ where
 
 #[allow(clippy::pedantic)]
 /// Returns (children_size, child_positions, child_sizes)
-fn get_children_layout<Message, Renderer>(
-    menu_tree: &MenuTree<'_, Message, Renderer>,
+fn get_children_layout<Message, Theme, Renderer>(
+    menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
     renderer: &Renderer,
     item_width: ItemWidth,
     item_height: ItemHeight,
+    tree: &mut [Tree],
 ) -> (Size, Vec<f32>, Vec<Size>)
 where
     Renderer: renderer::Renderer,
@@ -1130,11 +1147,12 @@ where
             .iter()
             .map(|mt| {
                 let w = mt.item.as_widget();
-                match w.height() {
+                match w.size().height {
                     Length::Fixed(f) => Size::new(width, f),
                     Length::Shrink => {
                         let l_height = w
                             .layout(
+                                &mut tree[mt.index],
                                 renderer,
                                 &Limits::new(Size::ZERO, Size::new(width, f32::MAX)),
                             )

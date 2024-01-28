@@ -108,7 +108,7 @@ members = [
     "examples/cupertino/cupertino_switch",
     "examples/WidgetIDReturn",
     "examples/segmented_button",
-    #"examples/menu",
+    "examples/menu",
 ]
 
 [workspace.dependencies.iced]

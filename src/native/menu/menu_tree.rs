@@ -10,26 +10,26 @@ use iced_widget::core::{renderer, Element};
 /// but there's no need to explicitly distinguish them here, if a menu tree
 /// has children, it's a menu, otherwise it's an item
 #[allow(missing_debug_implementations)]
-pub struct MenuTree<'a, Message, Renderer = iced_widget::Renderer> {
+pub struct MenuTree<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
     /// The menu tree will be flatten into a vector to build a linear widget tree,
     /// the `index` field is the index of the item in that vector
     pub(super) index: usize,
 
     /// The item of the menu tree
-    pub(super) item: Element<'a, Message, Renderer>,
+    pub(super) item: Element<'a, Message, Theme, Renderer>,
     /// The children of the menu tree
-    pub(super) children: Vec<MenuTree<'a, Message, Renderer>>,
+    pub(super) children: Vec<MenuTree<'a, Message, Theme, Renderer>>,
     /// The width of the menu tree
     pub(super) width: Option<u16>,
     /// The height of the menu tree
     pub(super) height: Option<u16>,
 }
-impl<'a, Message, Renderer> MenuTree<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> MenuTree<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
     /// Create a new menu tree from a widget
-    pub fn new(item: impl Into<Element<'a, Message, Renderer>>) -> Self {
+    pub fn new(item: impl Into<Element<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             index: 0,
             item: item.into(),
@@ -41,8 +41,8 @@ where
 
     /// Create a menu tree from a widget and a vector of sub trees
     pub fn with_children(
-        item: impl Into<Element<'a, Message, Renderer>>,
-        children: Vec<impl Into<MenuTree<'a, Message, Renderer>>>,
+        item: impl Into<Element<'a, Message, Theme, Renderer>>,
+        children: Vec<impl Into<MenuTree<'a, Message, Theme, Renderer>>>,
     ) -> Self {
         Self {
             index: 0,
@@ -78,7 +78,7 @@ where
     /// Set the index of each item
     pub(super) fn set_index(&mut self) {
         /// inner counting function.
-        fn rec<Message, Renderer>(mt: &mut MenuTree<'_, Message, Renderer>, count: &mut usize) {
+        fn rec<Message, Theme, Renderer>(mt: &mut MenuTree<'_, Message, Theme, Renderer>, count: &mut usize) {
             // keep items under the same menu line up
             mt.children.iter_mut().for_each(|c| {
                 c.index = *count;
@@ -97,9 +97,9 @@ where
     /// Flatten the menu tree
     pub(super) fn flattern(&'a self) -> Vec<&Self> {
         /// Inner flattening function
-        fn rec<'a, Message, Renderer>(
-            mt: &'a MenuTree<'a, Message, Renderer>,
-            flat: &mut Vec<&MenuTree<'a, Message, Renderer>>,
+        fn rec<'a, Message, Theme, Renderer>(
+            mt: &'a MenuTree<'a, Message, Theme, Renderer>,
+            flat: &mut Vec<&MenuTree<'a, Message, Theme, Renderer>>,
         ) {
             mt.children.iter().for_each(|c| {
                 flat.push(c);
@@ -118,11 +118,11 @@ where
     }
 }
 
-impl<'a, Message, Renderer> From<Element<'a, Message, Renderer>> for MenuTree<'a, Message, Renderer>
+impl<'a, Message, Theme, Renderer> From<Element<'a, Message, Theme, Renderer>> for MenuTree<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
-    fn from(value: Element<'a, Message, Renderer>) -> Self {
+    fn from(value: Element<'a, Message, Theme, Renderer>) -> Self {
         Self::new(value)
     }
 }

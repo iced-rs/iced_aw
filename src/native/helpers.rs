@@ -97,12 +97,12 @@ macro_rules! menu_bar {
 ///
 /// [`MenuBar`]: crate::MenuBar
 #[must_use]
-pub fn menu_bar<Message, Renderer>(
-    menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
-) -> crate::menu::menu_bar::MenuBar<Message, Renderer>
+pub fn menu_bar<Message, Theme, Renderer>(
+    menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Theme, Renderer>>,
+) -> crate::menu::menu_bar::MenuBar<Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
-    Renderer::Theme: crate::style::menu_bar::StyleSheet,
+    Theme: crate::style::menu_bar::StyleSheet,
 {
     crate::menu::menu_bar::MenuBar::new(menu_roots)
 }
@@ -112,10 +112,10 @@ where
 ///
 /// [`MenuTree`]: crate::MenuTree
 #[must_use]
-pub fn menu_tree<'a, Message, Renderer>(
-    item: impl Into<Element<'a, Message, Renderer>>,
-    children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Renderer>>>,
-) -> crate::menu::menu_tree::MenuTree<'a, Message, Renderer>
+pub fn menu_tree<'a, Message, Theme, Renderer>(
+    item: impl Into<Element<'a, Message, Theme, Renderer>>,
+    children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Theme, Renderer>>>,
+) -> crate::menu::menu_tree::MenuTree<'a, Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
