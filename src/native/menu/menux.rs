@@ -1,16 +1,20 @@
 //! doc
 //!
 use iced_widget::core::{
-    widget::{self, tree::{self, Tree}, },
-    Element, Widget,
-    renderer, overlay, event, layout, mouse, touch,
-    Event, Rectangle, Clipboard, Shell, Size, Length, Alignment, Padding, Point
+    event, layout, mouse, overlay, renderer, touch, widget::tree::{self, Tree}, 
+    Alignment, Border, Clipboard, Color, Element, Event, Length, 
+    Padding, Point, Vector, Rectangle, Shell, Size, Widget,
 };
-use iced_widget::Column;
-use super::menu_inner::Direction;
+use super::types::*;
 
 struct MenuxState{
     open: bool,
+    scroll_offset: f32,
+}
+impl Default for MenuxState{
+    fn default() -> Self {
+        Self { open: false, scroll_offset: 0.0 }
+    }
 }
 
 /// doc
@@ -25,7 +29,9 @@ where
     padding: Padding,
     width: Length,
     height: Length,
-    direction: Direction,
+    axis: Axis,
+    offset: f32,
+    open_condition: OpenCondition,
 }
 impl<'a, Message, Theme, Renderer> Menux<'a, Message, Theme, Renderer>
 where
@@ -40,7 +46,9 @@ where
             padding: [0.0;4].into(),
             width: Length::Shrink,
             height: Length::Shrink,
-            direction: Direction::Positive,
+            axis: Axis::Vertical,
+            offset: 0.0,
+            open_condition: OpenCondition::Hover,
         }
     }
 
@@ -71,6 +79,18 @@ where
         self.height = height.into();
         self
     }
+
+    /// Sets the axis of the [`Menux`].
+    pub fn axis(mut self, axis: Axis) -> Self {
+        self.axis = axis.into();
+        self
+    }
+
+    /// Sets the open condition of the [`Menux`].
+    pub fn open_condition(mut self, open_condition: OpenCondition) -> Self {
+        self.open_condition = open_condition;
+        self
+    }
 }
 impl <'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Menux<'a, Message, Theme, Renderer>
 where
@@ -81,7 +101,7 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(MenuxState{ open: false})
+        tree::State::new(MenuxState::default())
     }
 
     fn children(&self) -> Vec<Tree> {
@@ -132,28 +152,34 @@ where
         let bounds = layout.bounds();
 
         use event::Status::*;
-        match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-            | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if cursor.is_over(bounds) {
-                    state.open = true;
-
-                    Captured
-                }else{
-                    Ignored
+        match self.open_condition{
+            OpenCondition::Click => match event {
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                    if cursor.is_over(bounds) {
+                        state.open = true;
+                        state.scroll_offset = 0.0;
+                        Captured
+                    }else{
+                        Ignored
+                    }
                 }
+                _ => Ignored
             }
-            // Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-            // | Event::Touch(touch::Event::FingerLifted { .. }) => {
-            //     state.open = false;
-            //     Captured
-            // }
-            // Event::Touch(touch::Event::FingerLost { .. }) => {
-            //     state.open = false;
-            //     Captured
-            // }
-            _ => Ignored
-        }.merge(status)
+            OpenCondition::Hover => match event {
+                Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                    if bounds.contains(position) {
+                        state.open = true;
+                        state.scroll_offset = 0.0;
+                        Captured
+                    }else{
+                        Ignored
+                    }
+                }
+                _ => Ignored
+            }
+        }
+        .merge(status)
     }
 
     fn draw(
@@ -189,10 +215,7 @@ where
             og = og.push(c);
         }
 
-        println!("mx overlay downcast_ref");
         let ms = state.downcast_mut::<MenuxState>();
-        println!("mx overlay downcast_ref done");
-
         if !ms.open {
             Some(og.overlay())
         }else{
@@ -207,7 +230,8 @@ where
                     padding: self.padding,
                     width: self.width,
                     height: self.height,
-                    direction: self.direction,
+                    axis: self.axis,
+                    offset: self.offset,
                 }.overlay()
             ).overlay())
         }
@@ -240,7 +264,8 @@ where
     padding: Padding,
     width: Length,
     height: Length,
-    direction: Direction,
+    axis: Axis,
+    offset: f32,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuxOverlay<'a, 'b, Message, Theme, Renderer>
 where
@@ -276,15 +301,36 @@ where
             &mut self.tree.children
         );
 
-        let aod = Aod{
-            horizontal: true,
-            vertical: false,
-            horizontal_overlap: true,
-            vertical_overlap: false,
-            horizontal_direction: Direction::Positive,
-            vertical_direction: Direction::Positive,
-            horizontal_offset: 0.0,
-            vertical_offset: 0.0,
+        let hcenter = bounds.width / 2.0;
+        let vcenter = bounds.height / 2.0;
+        
+        let phcenter = self.parent_bounds.x + self.parent_bounds.width / 2.0;
+        let pvcenter = self.parent_bounds.y + self.parent_bounds.height / 2.0;
+
+        let horizontal_direction = if phcenter < hcenter { Direction::Positive } else { Direction::Negative };
+        let vertical_direction   = if pvcenter < vcenter { Direction::Positive } else { Direction::Negative };
+
+        let aod = match self.axis {
+            Axis::Horizontal => Aod{
+                horizontal: false,
+                vertical: true,
+                horizontal_overlap: false,
+                vertical_overlap: true,
+                horizontal_direction,
+                vertical_direction,
+                horizontal_offset: self.offset,
+                vertical_offset: 0.0,
+            },
+            Axis::Vertical => Aod{
+                horizontal: true,
+                vertical: false,
+                horizontal_overlap: true,
+                vertical_overlap: false,
+                horizontal_direction,
+                vertical_direction,
+                horizontal_offset: 0.0,
+                vertical_offset: self.offset,
+            }
         };
 
         let children_size = layout.bounds().size();
@@ -311,7 +357,7 @@ where
             layout::Node::new(bounds),
             layout::Node::new(offset_bounds.size()).move_to(offset_bounds.position()),
             layout::Node::new(check_bounds.size()).move_to(check_bounds.position()),
-        ].into())
+        ].into()).translate([0.0, self.state.scroll_offset])
     }
 
     fn on_event(
@@ -331,6 +377,8 @@ where
         let viewport = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
+
+        let children_bounds = children_layout.bounds();
 
         let status = self.children
             .iter_mut()
@@ -358,6 +406,15 @@ where
                     || check_bounds.contains(position);
                 Captured
             }
+            Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
+                if cursor.is_over(children_bounds){
+                    self.state.scroll_offset += match delta{
+                        mouse::ScrollDelta::Lines { x, y } => y,
+                        mouse::ScrollDelta::Pixels { x, y } => y,
+                    };
+                }
+                Ignored
+            }
             _ => Ignored
         }.merge(status)
     }
@@ -375,14 +432,27 @@ where
         let children_layout = lc.next().unwrap();
         let viewport = lc.next().unwrap().bounds();
 
-        /* renderer.fill_quad(
+        renderer.fill_quad(
             renderer::Quad{
-                bounds: todo!(),
-                border: todo!(),
-                shadow: todo!(),
+                bounds: self.parent_bounds,
+                ..Default::default()
             }, 
-            background
-        ); */
+            Color::from([1.0, 0.0, 0.0, 0.5])
+        );
+
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: pad_rectangle(children_layout.bounds(), 4.0.into()),
+                border: Border{
+                    // color: todo!(),
+                    // width: 4.0,
+                    radius: 4.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            Color::from([1.0; 3])
+        );
 
         if let Some(viewport) = children_layout.bounds().intersection(&viewport) {
             for ((child, tree), layout) in self
@@ -411,8 +481,50 @@ where
             renderer
         )
     }
+
+    fn is_over(
+        &self,
+        layout: layout::Layout<'_>,
+        _renderer: &Renderer,
+        cursor_position: Point,
+    ) -> bool {
+        let mut lc = layout.children();
+        let children_layout = lc.next().unwrap();
+        children_layout.bounds().contains(cursor_position)
+    }
 }
 
+enum CheckBound{
+    In(Rectangle),
+    Out(Rectangle),
+}
+
+struct CheckBounds{
+    bounds: Vec<Vec<CheckBound>>
+}
+impl CheckBounds{
+    fn check(&self, point:Point, default: bool) -> bool{
+        let mut cb = None;
+        for bounds in self.bounds.iter().rev(){
+            for bound in bounds.iter(){
+                match bound {
+                    CheckBound::In(rect) | CheckBound::Out(rect) => {
+                        if rect.contains(point){
+                            cb = Some(bound)
+                        }
+                    }
+                }
+            }
+        }
+        match cb {
+            Some(x) => match x {
+                CheckBound::In(_) => true,
+                CheckBound::Out(_) => false
+            }
+            None => default
+        }
+    }
+}
 
 /// Adaptive open direction
 #[derive(Debug)]
@@ -560,4 +672,180 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
         height: rect.height + padding.vertical(),
     }
 }
+
+
+/// A part of a menu where items are displayed.
+///
+/// When the bounds of a menu exceed the viewport,
+/// only items inside the viewport will be displayed,
+/// when scrolling happens, this should be updated
+#[derive(Debug, Clone, Copy)]
+struct MenuSlice {
+    start_index: usize,
+    end_index: usize,
+    lower_bound_rel: f32,
+    upper_bound_rel: f32,
+}
+
+fn slice(
+    children_bounds: Rectangle,
+    child_positions: Vec<f32>,
+    child_sizes: Vec<Size>,
+    scroll_offset: f32,
+    viewport_size: Size,
+    overlay_offset: Vector,
+    item_height: ItemHeight,
+) -> MenuSlice {
+    // viewport space children bounds
+    let children_bounds = children_bounds + overlay_offset;
+
+    let max_index = child_positions.len().saturating_sub(1);
+
+    // viewport space absolute bounds
+    let lower_bound = children_bounds.y.max(0.0);
+    let upper_bound = (children_bounds.y + children_bounds.height).min(viewport_size.height);
+
+    // menu space relative bounds
+    let lower_bound_rel = lower_bound - (children_bounds.y + scroll_offset);
+    let upper_bound_rel = upper_bound - (children_bounds.y + scroll_offset);
+
+    // index range
+    let (start_index, end_index) = match item_height {
+        ItemHeight::Uniform(u) => {
+            let start_index = (lower_bound_rel / f32::from(u)).floor() as usize;
+            let end_index = ((upper_bound_rel / f32::from(u)).floor() as usize).min(max_index);
+            (start_index, end_index)
+        }
+        ItemHeight::Static(_) | ItemHeight::Dynamic(_) => {
+            let positions = &child_positions;
+            let sizes = &child_sizes;
+
+            let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
+            let end_index = search_bound(
+                max_index,
+                start_index,
+                max_index,
+                upper_bound_rel,
+                positions,
+                sizes,
+            )
+            .min(max_index);
+
+            (start_index, end_index)
+        }
+    };
+
+    MenuSlice {
+        start_index,
+        end_index,
+        lower_bound_rel,
+        upper_bound_rel,
+    }
+}
+
+fn search_bound(
+    default: usize,
+    default_left: usize,
+    default_right: usize,
+    bound: f32,
+    positions: &[f32],
+    sizes: &[Size],
+) -> usize {
+    // binary search
+    let mut left = default_left;
+    let mut right = default_right;
+
+    let mut index = default;
+    while left != right {
+        let m = ((left + right) / 2) + 1;
+        if positions[m] > bound {
+            right = m - 1;
+        } else {
+            left = m;
+        }
+    }
+    let height = sizes[left].height;
+    if positions[left] + height > bound {
+        index = left;
+    }
+    index
+}
+
+/* fn process_scroll_events<Message, Theme, Renderer>(
+    menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
+    delta: mouse::ScrollDelta,
+    overlay_cursor: Point,
+    viewport_size: Size,
+    overlay_offset: Vector,
+) -> event::Status
+where
+    Renderer: renderer::Renderer,
+    Theme: StyleSheet,
+{
+    use event::Status::{Captured, Ignored};
+    use mouse::ScrollDelta;
+
+    let state = menu.tree.state.downcast_mut::<MenuBarState>();
+
+    let delta_y = match delta {
+        ScrollDelta::Lines { y, .. } => y * 60.0,
+        ScrollDelta::Pixels { y, .. } => y,
+    };
+
+    let calc_offset_bounds = |menu_state: &MenuState, viewport_size: Size| -> (f32, f32) {
+        // viewport space children bounds
+        let children_bounds = menu_state.menu_bounds.children_bounds + overlay_offset;
+
+        let max_offset = (0.0 - children_bounds.y).max(0.0);
+        let min_offset =
+            (viewport_size.height - (children_bounds.y + children_bounds.height)).min(0.0);
+        (max_offset, min_offset)
+    };
+
+    // update
+    if state.menu_states.is_empty() {
+        return Ignored;
+    } else if state.menu_states.len() == 1 {
+        let last_ms = &mut state.menu_states[0];
+
+        if last_ms.index.is_none() {
+            return Captured;
+        }
+
+        let (max_offset, min_offset) = calc_offset_bounds(last_ms, viewport_size);
+        last_ms.scroll_offset = (last_ms.scroll_offset + delta_y).clamp(min_offset, max_offset);
+    } else {
+        // >= 2
+        let max_index = state.menu_states.len() - 1;
+        let last_two = &mut state.menu_states[max_index - 1..=max_index];
+
+        if last_two[1].index.is_some() {
+            // scroll the last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[1], viewport_size);
+            last_two[1].scroll_offset =
+                (last_two[1].scroll_offset + delta_y).clamp(min_offset, max_offset);
+        } else {
+            if !last_two[0]
+                .menu_bounds
+                .children_bounds
+                .contains(overlay_cursor)
+            {
+                return Captured;
+            }
+
+            // scroll the second last one
+            let (max_offset, min_offset) = calc_offset_bounds(&last_two[0], viewport_size);
+            let scroll_offset = (last_two[0].scroll_offset + delta_y).clamp(min_offset, max_offset);
+            let clamped_delta_y = scroll_offset - last_two[0].scroll_offset;
+            last_two[0].scroll_offset = scroll_offset;
+
+            // update the bounds of the last one
+            last_two[1].menu_bounds.parent_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.children_bounds.y += clamped_delta_y;
+            last_two[1].menu_bounds.check_bounds.y += clamped_delta_y;
+        }
+    }
+    Captured
+}
+*/
 

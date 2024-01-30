@@ -3,12 +3,12 @@ use iced::widget::{
     button, checkbox, container, horizontal_space, pick_list, row, slider, svg, text, text_input,
     toggler, vertical_slider,
 };
-use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
+use iced::{alignment, theme, Application, Border, Color, Element, Event, Length, Pixels, Size};
 
 use iced_aw::menu::menu_bar::MenuBar;
 use iced_aw::menu::{
     menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight,
-    Menux,
+    Menux, OpenCondition, Axis
 };
 use iced_aw::quad;
 use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
@@ -76,6 +76,7 @@ enum Message {
     ThemeChange(bool),
     TextChange(String),
     SizeOption(SizeOption),
+    None,
 }
 
 struct App {
@@ -128,6 +129,24 @@ impl Application for App {
 
     fn title(&self) -> String {
         self.title.clone()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        use iced::keyboard;
+        use keyboard::key::Named;
+
+        iced::event::listen().map(|event|{
+            match event{
+                Event::Keyboard(keyboard::Event::KeyPressed { key, ..}) => {
+                    match key {
+                        keyboard::Key::Named(Named::F1) => Message::FlipHorizontal,
+                        keyboard::Key::Named(Named::F2) => Message::FlipVertical,
+                        _ => Message::None
+                    }
+                },
+                _ => Message::None
+            }
+        })
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
@@ -189,6 +208,7 @@ impl Application for App {
                 self.size_option = so;
                 self.title = self.size_option.to_string();
             }
+            Message::None => {}
         }
         iced::Command::none()
     }
@@ -203,15 +223,84 @@ impl Application for App {
 
         let mb = row![
             Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
-                button("abc").on_press(Message::Debug("abc".into())).into(),
-                button("def").on_press(Message::Debug("def".into())).into(),
-                button("xxx").on_press(Message::Debug("xxx".into())).into(),
-            ]),
-            Menux::new(button("aaa").on_press(Message::Debug("aaa".into())).into(), vec![
-                button("abc").on_press(Message::Debug("abc".into())).into(),
-                button("def").on_press(Message::Debug("def".into())).into(),
-                button("xxx").on_press(Message::Debug("xxx".into())).into(),
-            ]),
+                debug_button("abc").width(180.0).into(),
+                debug_button("def").width(180.0).into(),
+                debug_button("xxx").width(180.0).into(),
+                Menux::new(debug_button("htrsth").width(180.0).into(), vec![
+                    debug_button("ccgh").width(180.0).into(),
+                    debug_button("kuyg").width(180.0).into(),
+                    debug_button("vcsa").width(180.0).into(),
+                    debug_button("kiug").width(180.0).into(),
+                ]).axis(Axis::Horizontal).into()
+            ]).open_condition(OpenCondition::Click),
+            Menux::new(debug_button("aaa").into(), vec![
+                debug_button("abc").width(180.0).into(),
+                debug_button("def").width(180.0).into(),
+                debug_button("xxx").width(180.0).into(),
+                Menux::new(debug_button("syjdtyjd").width(180.0).into(), vec![
+                    debug_button("hghg").width(180.0).into(),
+                    debug_button("kuyg").width(180.0).into(),
+                    debug_button("arga").width(180.0).into(),
+                    debug_button("abcd").width(180.0).into(),
+                    debug_button("vcsa").width(180.0).into(),
+                    Menux::new(debug_button("htrsthfs").width(180.0).into(), vec![
+                        debug_button("hghg").width(180.0).into(),
+                        debug_button("kuyg").width(180.0).into(),
+                        debug_button("vcsa").width(180.0).into(),
+                        debug_button("kiug").width(180.0).into(),
+                    ]).axis(Axis::Horizontal).into(),
+                    debug_button("kiug").width(180.0).into(),
+                ]).axis(Axis::Horizontal).into(),
+                debug_button("abc").width(180.0).into(),
+                debug_button("def").width(180.0).into(),
+                debug_button("xxx").width(180.0).into(),
+            ]).open_condition(OpenCondition::Click),
+            Menux::new(debug_button("pondjssbah").into(), vec![
+                debug_button("abc").width(180.0).into(),
+                debug_button("def").width(180.0).into(),
+                debug_button("xxx").width(180.0).into(),
+                debug_button("htrsrt").width(180.0).into(),
+                debug_button("htrdf").width(180.0).into(),
+                debug_button("ngfcgng").width(180.0).into(),
+                debug_button("hytfy").width(180.0).into(),
+                debug_button("kuyg").width(180.0).into(),
+                debug_button("qegvd").width(180.0).into(),
+                debug_button("iuoiy").width(180.0).into(),
+                debug_button("rzsajf").width(180.0).into(),
+                debug_button("pkmehs").width(180.0).into(),
+                debug_button("ivrye").width(180.0).into(),
+                debug_button("zhdkr").width(180.0).into(),
+                debug_button("vjdiwo").width(180.0).into(),
+                Menux::new(debug_button("syjdtyjd").width(180.0).into(), vec![
+                    debug_button("hghg").width(180.0).into(),
+                    debug_button("kuyg").width(180.0).into(),
+                    debug_button("arga").width(180.0).into(),
+                    debug_button("abcd").width(180.0).into(),
+                    debug_button("vcsa").width(180.0).into(),
+                    Menux::new(debug_button("htrsthfs").width(180.0).into(), vec![
+                        debug_button("hghg").width(180.0).into(),
+                        debug_button("kuyg").width(180.0).into(),
+                        debug_button("vcsa").width(180.0).into(),
+                        debug_button("kiug").width(180.0).into(),
+                    ]).axis(Axis::Horizontal).into(),
+                    debug_button("kiug").width(180.0).into(),
+                ]).axis(Axis::Horizontal).into(),
+                debug_button("abc").width(180.0).into(),
+                debug_button("def").width(180.0).into(),
+                debug_button("xxx").width(180.0).into(),
+                debug_button("htrsrt").width(180.0).into(),
+                debug_button("htrdf").width(180.0).into(),
+                debug_button("ngfcgng").width(180.0).into(),
+                debug_button("hytfy").width(180.0).into(),
+                debug_button("kuyg").width(180.0).into(),
+                debug_button("qegvd").width(180.0).into(),
+                debug_button("iuoiy").width(180.0).into(),
+                debug_button("rzsajf").width(180.0).into(),
+                debug_button("pkmehs").width(180.0).into(),
+                debug_button("ivrye").width(180.0).into(),
+                debug_button("zhdkr").width(180.0).into(),
+                debug_button("vjdiwo").width(180.0).into(),
+            ]).open_condition(OpenCondition::Click),
         ];
 
         // let mb = MenuBar::new(
@@ -340,7 +429,7 @@ impl button::StyleSheet for ButtonStyle {
     }
 }
 
-/* fn base_button<'a>(
+fn base_button<'a>(
     content: impl Into<Element<'a, Message, iced::Theme, iced::Renderer>>,
     msg: Message,
 ) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
@@ -353,8 +442,8 @@ impl button::StyleSheet for ButtonStyle {
 fn labeled_button<'a>(label: &str, msg: Message) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     base_button(
         text(label)
-            .width(Length::Fill)
-            .height(Length::Fill)
+            // .width(Length::Fill)
+            // .height(Length::Fill)
             .vertical_alignment(alignment::Vertical::Center),
         msg,
     )
@@ -871,4 +960,3 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
 
     root
 }
- */

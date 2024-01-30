@@ -1,12 +1,13 @@
 //! A widget that handles menu trees
 use super::{
-    menu_inner::{
+    types::{
         // Menu, 
         // Direction, 
         CloseCondition, 
         ItemHeight, ItemWidth, 
-        MenuState, PathHighlight,
+        PathHighlight,
     },
+    menu_inner::MenuState,
     menu_tree::MenuTree,
 };
 use crate::style::menu_bar::StyleSheet;
