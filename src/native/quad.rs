@@ -10,7 +10,7 @@ use iced_widget::core::{
     Border, Color, Element, Layout, Length, Rectangle, Shadow, Size, Widget,
 };
 
-use crate::native::InnerBounds;
+pub use crate::native::InnerBounds;
 
 /// A dummy widget that draws a quad
 #[allow(missing_debug_implementations)]

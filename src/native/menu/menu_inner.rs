@@ -236,7 +236,7 @@ struct MenuBounds {
     offset_bounds: Rectangle,
 }
 impl MenuBounds {
-    #[allow(clippy::too_many_arguments)]
+    /* #[allow(clippy::too_many_arguments)]
     fn new<Message, Theme, Renderer>(
         menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
         renderer: &Renderer,
@@ -284,7 +284,7 @@ impl MenuBounds {
             check_bounds,
             offset_bounds,
         }
-    }
+    } */
 }
 
 pub(super) struct MenuState {
@@ -293,7 +293,7 @@ pub(super) struct MenuState {
     menu_bounds: MenuBounds,
 }
 impl MenuState {
-    fn layout<Message, Theme, Renderer>(
+    /* fn layout<Message, Theme, Renderer>(
         &self,
         overlay_offset: Vector,
         slice: MenuSlice,
@@ -347,8 +347,8 @@ impl MenuState {
         node.move_to(children_bounds.position());
         node
     }
-
-    fn layout_single<Message, Theme, Renderer>(
+ */
+    /* fn layout_single<Message, Theme, Renderer>(
         &self,
         overlay_offset: Vector,
         index: usize,
@@ -372,8 +372,8 @@ impl MenuState {
         ));
         node
     }
-
-    fn slice(
+ */
+    /* fn slice(
         &self,
         viewport_size: Size,
         overlay_offset: Vector,
@@ -425,6 +425,7 @@ impl MenuState {
             upper_bound_rel,
         }
     }
+ */
 }
 
 pub(super) struct Menu<'a, 'b, Message, Theme, Renderer>
@@ -472,6 +473,37 @@ where
     }
     
     fn on_event(
+        &mut self,
+        _event: event::Event,
+        _layout: Layout<'_>,
+        _cursor: mouse::Cursor,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn Clipboard,
+        _shell: &mut Shell<'_, Message>,
+    ) -> event::Status {
+        event::Status::Ignored
+    }
+
+    fn draw(
+        &self,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+    ) {
+        
+    }
+
+    fn overlay<'c>(
+        &'c mut self,
+        _layout: Layout<'_>,
+        _renderer: &Renderer,
+    ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
+        None
+    }
+
+    /* fn on_event(
         &mut self,
         event: event::Event,
         layout: Layout<'_>,
@@ -588,8 +620,8 @@ where
             _ => menu_status,
         }
     }
-
-    #[allow(unused_results)]
+ */
+    /* #[allow(unused_results)]
     fn draw(
         &self,
         renderer: &mut Renderer,
@@ -704,10 +736,10 @@ where
                 ms.index
                     .map_or(menu_root, |active| &menu_root.children[active])
             });
-    }
+    } */
 }
 
-fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
+/* fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     Rectangle {
         x: rect.x - padding.left,
         y: rect.y - padding.top,
@@ -715,8 +747,8 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
         height: rect.height + padding.vertical(),
     }
 }
-
-fn init_root_menu<Message, Theme, Renderer>(
+ */
+/* fn init_root_menu<Message, Theme, Renderer>(
     menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     renderer: &Renderer,
     overlay_cursor: Point,
@@ -787,8 +819,8 @@ fn init_root_menu<Message, Theme, Renderer>(
         }
     }
 }
-
-#[allow(clippy::too_many_arguments)]
+ */
+/* #[allow(clippy::too_many_arguments)]
 fn process_menu_events<'b, Message, Theme, Renderer>(
     tree: &'b mut Tree,
     menu_roots: &'b mut [MenuTree<'_, Message, Theme, Renderer>],
@@ -845,8 +877,8 @@ where
         &Rectangle::default(),
     )
 }
-
-#[allow(unused_results)]
+ */
+/* #[allow(unused_results)]
 fn process_overlay_events<Message, Theme, Renderer>(
     menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     renderer: &Renderer,
@@ -1037,8 +1069,8 @@ where
 
     Captured
 }
-
-fn process_scroll_events<Message, Theme, Renderer>(
+ */
+/* fn process_scroll_events<Message, Theme, Renderer>(
     menu: &mut Menu<'_, '_, Message, Theme, Renderer>,
     delta: mouse::ScrollDelta,
     overlay_cursor: Point,
@@ -1114,8 +1146,8 @@ where
     }
     Captured
 }
-
-#[allow(clippy::pedantic)]
+ */
+/* #[allow(clippy::pedantic)]
 /// Returns (children_size, child_positions, child_sizes)
 fn get_children_layout<Message, Theme, Renderer>(
     menu_tree: &MenuTree<'_, Message, Theme, Renderer>,
@@ -1187,8 +1219,9 @@ where
     let height = child_sizes.iter().fold(0.0, |acc, x| acc + x.height);
 
     (Size::new(width, height), child_positions, child_sizes)
-}
+} */
 
+/* 
 fn search_bound(
     default: usize,
     default_left: usize,
@@ -1217,3 +1250,4 @@ fn search_bound(
     }
     index
 }
+ */

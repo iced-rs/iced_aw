@@ -1,7 +1,11 @@
 //! A widget that handles menu trees
 use super::{
     menu_inner::{
-        CloseCondition, Direction, ItemHeight, ItemWidth, Menu, MenuState, PathHighlight,
+        // Menu, 
+        // Direction, 
+        CloseCondition, 
+        ItemHeight, ItemWidth, 
+        MenuState, PathHighlight,
     },
     menu_tree::MenuTree,
 };
@@ -23,23 +27,23 @@ pub(super) struct MenuBarState {
     pub(super) view_cursor: Cursor,
     pub(super) open: bool,
     pub(super) active_root: Option<usize>,
-    pub(super) horizontal_direction: Direction,
-    pub(super) vertical_direction: Direction,
+    // pub(super) horizontal_direction: Direction,
+    // pub(super) vertical_direction: Direction,
     pub(super) menu_states: Vec<MenuState>,
 }
 impl MenuBarState {
-    pub(super) fn get_trimmed_indices(&self) -> impl Iterator<Item = usize> + '_ {
+    /* pub(super) fn get_trimmed_indices(&self) -> impl Iterator<Item = usize> + '_ {
         self.menu_states
             .iter()
             .take_while(|ms| ms.index.is_some())
             .map(|ms| ms.index.expect("No indices were found in the menu state."))
-    }
+    } */
 
-    pub(super) fn reset(&mut self) {
+    /* pub(super) fn reset(&mut self) {
         self.open = false;
         self.active_root = None;
         self.menu_states.clear();
-    }
+    } */
 }
 impl Default for MenuBarState {
     fn default() -> Self {
@@ -48,8 +52,8 @@ impl Default for MenuBarState {
             view_cursor: Cursor::Available([-0.5, -0.5].into()),
             open: false,
             active_root: None,
-            horizontal_direction: Direction::Positive,
-            vertical_direction: Direction::Positive,
+            // horizontal_direction: Direction::Positive,
+            // vertical_direction: Direction::Positive,
             menu_states: Vec::new(),
         }
     }
@@ -75,7 +79,6 @@ where
     item_height: ItemHeight,
     path_highlight: Option<PathHighlight>,
     menu_roots: Vec<MenuTree<'a, Message, Theme, Renderer>>,
-    // style: <Renderer::Theme as StyleSheet>::Style,
     style: Theme::Style,
 }
 
@@ -90,7 +93,7 @@ where
         let mut menu_roots = menu_roots;
         menu_roots.iter_mut().for_each(MenuTree::set_index);
 
-        Self {
+        let mb = Self {
             width: Length::Shrink,
             height: Length::Shrink,
             spacing: 0.0,
@@ -108,7 +111,9 @@ where
             path_highlight: Some(PathHighlight::MenuActive),
             menu_roots,
             style: Theme::Style::default(),
-        }
+        };
+        println!("new mb");
+        mb
     }
 
     /// Sets the expand value for each menu's check bounds
@@ -284,6 +289,11 @@ where
             .iter()
             .map(|root| &root.item)
             .collect::<Vec<_>>();
+        let mut tree_children = tree
+            .children
+            .iter_mut()
+            .map(|t| &mut t.children[0])
+            .collect::<Vec<_>>();
         flex::resolve(
             flex::Axis::Horizontal, 
             renderer, 
@@ -294,7 +304,7 @@ where
             self.spacing, 
             Alignment::Center, 
             &children, 
-            &mut tree.children
+            tree_children.as_mut_slice()
         )
     }
 
@@ -309,6 +319,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
+        println!("mb on_event");
         use event::Event::{Mouse, Touch};
         use mouse::{Button::Left, Event::ButtonReleased};
         use touch::Event::{FingerLifted, FingerLost};
@@ -349,7 +360,10 @@ where
         view_cursor: Cursor,
         viewport: &Rectangle,
     ) {
+        println!("mb draw");
         let state = tree.state.downcast_ref::<MenuBarState>();
+        println!("mb draw downcast");
+
         let cursor_pos = view_cursor.position().unwrap_or_default();
         let position = if state.open && (cursor_pos.x < 0.0 || cursor_pos.y < 0.0) {
             state.view_cursor
@@ -368,9 +382,6 @@ where
                     .bounds();
                 let path_quad = renderer::Quad {
                     bounds: active_bounds,
-                    // border_radius: styling.border_radius.into(),
-                    // border_width: 0.0,
-                    // border_color: Color::TRANSPARENT,
                     border: Border{
                         color: Color::TRANSPARENT,
                         width: 0.0,
@@ -410,33 +421,33 @@ where
         if !state.open {
             return None;
         }
-
-        Some(
-            Menu {
-                tree,
-                menu_roots: &mut self.menu_roots,
-                bounds_expand: self.bounds_expand,
-                close_condition: self.close_condition,
-                item_width: self.item_width,
-                item_height: self.item_height,
-                bar_bounds: layout.bounds(),
-                main_offset: self.main_offset,
-                cross_offset: self.cross_offset,
-                root_bounds_list: layout.children().map(|lo| lo.bounds()).collect(),
-                path_highlight: self.path_highlight,
-                style: &self.style,
-            }
-            .overlay(),
-        )
+        None
+        // Some(
+        //     Menu {
+        //         tree,
+        //         menu_roots: &mut self.menu_roots,
+        //         bounds_expand: self.bounds_expand,
+        //         close_condition: self.close_condition,
+        //         item_width: self.item_width,
+        //         item_height: self.item_height,
+        //         bar_bounds: layout.bounds(),
+        //         main_offset: self.main_offset,
+        //         cross_offset: self.cross_offset,
+        //         root_bounds_list: layout.children().map(|lo| lo.bounds()).collect(),
+        //         path_highlight: self.path_highlight,
+        //         style: &self.style,
+        //     }
+        //     .overlay(),
+        // )
     }
 
     
 }
 impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>> for Element<'a, Message, Theme, Renderer>
 where
-    Message: 'a,
+    Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: 'a + StyleSheet,
 {
     fn from(value: MenuBar<'a, Message, Theme, Renderer>) -> Self {
         Self::new(value)

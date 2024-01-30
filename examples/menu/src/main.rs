@@ -3,20 +3,36 @@ use iced::widget::{
     button, checkbox, container, horizontal_space, pick_list, row, slider, svg, text, text_input,
     toggler, vertical_slider,
 };
-use iced::{alignment, theme, Application, Color, Element, Length};
+use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
 
-use iced_aw::menu::{menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight};
+use iced_aw::menu::menu_bar::MenuBar;
+use iced_aw::menu::{
+    menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight,
+    Menux,
+};
 use iced_aw::quad;
 use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
 
 pub fn main() -> iced::Result {
+    // std::env::set_var("RUST_BACKTRACE", "full");
     App::run(iced::Settings {
-        default_text_size: 15.0,
-        window: iced::window::Settings {
-            size: (1000, 500),
-            // position: iced::window::Position::Default,
+        default_text_size: Pixels(15.0),
+        window: iced::window::Settings{
+            size: Size::new(1000.0, 500.0),
             ..Default::default()
         },
+        // id: todo!(),
+        // flags: todo!(),
+        // fonts: todo!(),
+        // default_font: todo!(),
+        // antialiasing: todo!(),
+        
+        // default_text_size: 15.0,
+        // window: iced::window::Settings {
+        //     size: (1000, 500),
+        //     // position: iced::window::Position::Default,
+        //     ..Default::default()
+        // },
         ..Default::default()
     })
 }
@@ -81,10 +97,13 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-        let theme = iced::Theme::custom(theme::Palette {
-            primary: Color::from([0.45, 0.25, 0.57]),
-            ..iced::Theme::Light.palette()
-        });
+        let theme = iced::Theme::custom(
+            "Custom Theme".into(),
+            theme::Palette {
+                primary: Color::from([0.45, 0.25, 0.57]),
+                ..iced::Theme::Light.palette()
+            }
+        );
 
         (
             Self {
@@ -112,6 +131,7 @@ impl Application for App {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
+        println!("app update");
         match message {
             Message::Debug(s) => {
                 self.title = s;
@@ -129,10 +149,13 @@ impl Application for App {
                 self.title = t.to_string();
             }
             Message::ColorChange(c) => {
-                self.theme = iced::Theme::custom(theme::Palette {
-                    primary: c,
-                    ..self.theme.palette()
-                });
+                self.theme = iced::Theme::custom(
+                    "Color Change".into(),
+                    theme::Palette {
+                        primary: c,
+                        ..self.theme.palette()
+                    }
+                );
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
             }
             Message::FlipHorizontal => self.flip_h = !self.flip_h,
@@ -141,15 +164,21 @@ impl Application for App {
                 self.dark_mode = b;
                 let primary = self.theme.palette().primary;
                 if b {
-                    self.theme = iced::Theme::custom(theme::Palette {
-                        primary,
-                        ..iced::Theme::Dark.palette()
-                    })
+                    self.theme = iced::Theme::custom(
+                        "Dark".into(),
+                        theme::Palette {
+                            primary,
+                            ..iced::Theme::Dark.palette()
+                        }
+                    )
                 } else {
-                    self.theme = iced::Theme::custom(theme::Palette {
-                        primary,
-                        ..iced::Theme::Light.palette()
-                    })
+                    self.theme = iced::Theme::custom(
+                        "Light".into(),
+                        theme::Palette {
+                            primary,
+                            ..iced::Theme::Light.palette()
+                        }
+                    )
                 }
             }
             Message::TextChange(s) => {
@@ -164,14 +193,51 @@ impl Application for App {
         iced::Command::none()
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message, iced::Renderer<Self::Theme>> {
+    fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
+        println!("app view");
         let pick_size_option = pick_list(
             &SizeOption::ALL[..],
             Some(self.size_option),
             Message::SizeOption,
         );
 
-        let mb = match self.size_option {
+        let mb = row![
+            Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
+                button("abc").on_press(Message::Debug("abc".into())).into(),
+                button("def").on_press(Message::Debug("def".into())).into(),
+                button("xxx").on_press(Message::Debug("xxx".into())).into(),
+            ]),
+            Menux::new(button("aaa").on_press(Message::Debug("aaa".into())).into(), vec![
+                button("abc").on_press(Message::Debug("abc".into())).into(),
+                button("def").on_press(Message::Debug("def".into())).into(),
+                button("xxx").on_press(Message::Debug("xxx".into())).into(),
+            ]),
+        ];
+
+        // let mb = MenuBar::new(
+        //     [
+        //         MenuTree::with_children(
+        //             button("content").on_press(Message::Debug("content".into())), 
+        //             [
+        //                 MenuTree::new(button("abc")),
+        //                 MenuTree::new(button("def")),
+        //                 MenuTree::new(button("wagrarga")),
+        //                 MenuTree::new(button("jfuykyfuk")),
+        //             ].into()
+        //         ),
+        //         MenuTree::with_children(
+        //             button("xxx").on_press(Message::Debug("xxx".into())), 
+        //             [
+        //                 MenuTree::new(button("abc")),
+        //                 MenuTree::new(button("def")),
+        //                 MenuTree::new(button("wagrarga")),
+        //                 MenuTree::new(button("jfuykyfuk")),
+        //             ].into()
+        //         )
+        //     ].into()
+        // );
+
+        /* let mb = match self.size_option {
             SizeOption::Uniform => {
                 menu_bar!(menu_1(self), menu_2(self), menu_3(self), menu_4(self))
                     .item_width(ItemWidth::Uniform(180))
@@ -205,12 +271,17 @@ impl Application for App {
             leave: true,
             click_outside: false,
             click_inside: false,
-        });
+        }); */
 
         let r = if self.flip_h {
-            row!(pick_size_option, horizontal_space(Length::Fill), mb,)
+            row!(pick_size_option, horizontal_space(Length::Fill), 
+                mb,
+            )
         } else {
-            row!(mb, horizontal_space(Length::Fill), pick_size_option)
+            row!(
+                mb, 
+                horizontal_space(Length::Fill), pick_size_option
+            )
         }
         .padding([2, 8])
         .align_items(alignment::Alignment::Center);
@@ -248,9 +319,13 @@ impl button::StyleSheet for ButtonStyle {
     fn active(&self, style: &Self::Style) -> button::Appearance {
         button::Appearance {
             text_color: style.extended_palette().background.base.text,
-            border_radius: [4.0; 4].into(),
             background: Some(Color::TRANSPARENT.into()),
+            border: Border{
+                radius: [4.0;4].into(),
+                ..Default::default()
+            },
             ..Default::default()
+            
         }
     }
 
@@ -265,17 +340,17 @@ impl button::StyleSheet for ButtonStyle {
     }
 }
 
-fn base_button<'a>(
-    content: impl Into<Element<'a, Message, iced::Renderer>>,
+/* fn base_button<'a>(
+    content: impl Into<Element<'a, Message, iced::Theme, iced::Renderer>>,
     msg: Message,
-) -> button::Button<'a, Message, iced::Renderer> {
+) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     button(content)
         .padding([4, 8])
         .style(iced::theme::Button::Custom(Box::new(ButtonStyle {})))
         .on_press(msg)
 }
 
-fn labeled_button<'a>(label: &str, msg: Message) -> button::Button<'a, Message, iced::Renderer> {
+fn labeled_button<'a>(label: &str, msg: Message) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     base_button(
         text(label)
             .width(Length::Fill)
@@ -285,27 +360,27 @@ fn labeled_button<'a>(label: &str, msg: Message) -> button::Button<'a, Message, 
     )
 }
 
-fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Renderer> {
+fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     labeled_button(label, Message::Debug(label.into()))
 }
 
-fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
+fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(debug_button(label).width(Length::Fill).height(Length::Fill))
 }
 
-fn debug_item2<'a>(label: &str) -> MenuTree<'a, Message, iced::Renderer> {
+fn debug_item2<'a>(label: &str) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(debug_button(label)
         .width(Length::Fill)
         .height(Length::Shrink))
 }
 
-fn debug_item3<'a>(label: &str, h: f32) -> MenuTree<'a, Message, iced::Renderer> {
+fn debug_item3<'a>(label: &str, h: f32) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(debug_button(label)
         .width(Length::Fill)
         .height(Length::Fixed(h)))
 }
 
-fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Renderer> {
+fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let color = color.into();
     menu_tree!(base_button(circle(color), Message::ColorChange(color)))
 }
@@ -313,8 +388,8 @@ fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Render
 fn sub_menu<'a>(
     label: &str,
     msg: Message,
-    children: Vec<MenuTree<'a, Message, iced::Renderer>>,
-) -> MenuTree<'a, Message, iced::Renderer> {
+    children: Vec<MenuTree<'a, Message, iced::Theme, iced::Renderer>>,
+) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let handle = svg::Handle::from_path(format!(
         "{}/caret-right-fill.svg",
         env!("CARGO_MANIFEST_DIR")
@@ -345,12 +420,12 @@ fn sub_menu<'a>(
 
 fn debug_sub_menu<'a>(
     label: &str,
-    children: Vec<MenuTree<'a, Message, iced::Renderer>>,
-) -> MenuTree<'a, Message, iced::Renderer> {
+    children: Vec<MenuTree<'a, Message, iced::Theme, iced::Renderer>>,
+) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     sub_menu(label, Message::Debug(label.into()), children)
 }
 
-fn separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
+fn separator<'a>() -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
@@ -359,7 +434,7 @@ fn separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
     })
 }
 
-fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
+fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(text("·························")
         .size(30)
         .width(Length::Fill)
@@ -368,7 +443,7 @@ fn dot_separator<'a>() -> MenuTree<'a, Message, iced::Renderer> {
         .vertical_alignment(alignment::Vertical::Center))
 }
 
-fn labeled_separator(label: &'_ str) -> MenuTree<'_, Message, iced::Renderer> {
+fn labeled_separator(label: &'_ str) -> MenuTree<'_, Message, iced::Theme, iced::Renderer> {
     let q_1 = quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
@@ -402,7 +477,7 @@ fn circle(color: Color) -> quad::Quad {
     }
 }
 
-fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let sub_5 = debug_sub_menu(
         "SUB",
         vec![
@@ -476,7 +551,7 @@ fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let sub_1 = menu_tree(
         container(toggler(
             Some("Or as a sub menu item".to_string()),
@@ -538,7 +613,7 @@ fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let [r, g, b, _] = app.theme.palette().primary.into_rgba8();
 
     let primary = debug_sub_menu(
@@ -583,7 +658,7 @@ fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let dekjdaud = debug_sub_menu(
         "dekjdaud",
         vec![
@@ -723,7 +798,7 @@ fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let slider_count = 3;
     let slider_width = 30;
     let spacing = 4;
@@ -756,7 +831,7 @@ fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
     root
 }
 
-fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
+fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     let slider_count = 3;
     let slider_width = 30;
     let spacing = 4;
@@ -796,3 +871,4 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Renderer> {
 
     root
 }
+ */

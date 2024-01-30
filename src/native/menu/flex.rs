@@ -57,7 +57,7 @@ impl Axis {
 /// padding and alignment to the items as needed.
 ///
 /// It returns a new layout [`Node`].
-pub fn resolve<'a, E, Message, Theme, Renderer>(
+pub fn resolve<'a, E, T, Message, Theme, Renderer>(
     axis: Axis,
     renderer: &Renderer,
     limits: &Limits,
@@ -67,10 +67,12 @@ pub fn resolve<'a, E, Message, Theme, Renderer>(
     spacing: f32,
     align_items: Alignment,
     items: &[E],
-    trees: &mut [widget::Tree],
+    trees: &mut [T],
 ) -> Node
 where
     E: std::borrow::Borrow<Element<'a, Message, Theme, Renderer>>,
+    T: std::borrow::BorrowMut<widget::Tree>,
+
     Renderer: iced_widget::core::Renderer,
 {
     let limits = limits.width(width).height(height).shrink(padding);
@@ -109,7 +111,7 @@ where
                     Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
                 let layout =
-                    child.borrow().as_widget().layout(tree, renderer, &child_limits);
+                    child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
                 let size = layout.size();
 
                 available -= axis.main(size);
@@ -136,7 +138,7 @@ where
                 Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
             let layout =
-                child.borrow().as_widget().layout(tree, renderer, &child_limits);
+                child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
             let size = layout.size();
 
             available -= axis.main(size);
@@ -189,7 +191,7 @@ where
             );
 
             let layout =
-                child.borrow().as_widget().layout(tree, renderer, &child_limits);
+                child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
             cross = cross.max(axis.cross(layout.size()));
 
             nodes[i] = layout;
