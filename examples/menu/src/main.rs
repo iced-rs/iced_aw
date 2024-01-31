@@ -1,7 +1,7 @@
-use iced::widget::column as col;
+use iced::widget::{column as col, vertical_space};
 use iced::widget::{
     button, checkbox, container, horizontal_space, pick_list, row, slider, svg, text, text_input,
-    toggler, vertical_slider,
+    toggler, vertical_slider, scrollable,
 };
 use iced::{alignment, theme, Application, Border, Color, Element, Event, Length, Pixels, Size};
 
@@ -150,7 +150,7 @@ impl Application for App {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
-        println!("app update");
+        // println!("app update");
         match message {
             Message::Debug(s) => {
                 self.title = s;
@@ -214,12 +214,12 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        println!("app view");
-        let pick_size_option = pick_list(
+        // println!("app view");
+        /* let pick_size_option = pick_list(
             &SizeOption::ALL[..],
             Some(self.size_option),
             Message::SizeOption,
-        );
+        ); */
 
         let mb = row![
             Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
@@ -362,42 +362,74 @@ impl Application for App {
             click_inside: false,
         }); */
 
-        let r = if self.flip_h {
-            row!(pick_size_option, horizontal_space(Length::Fill), 
+        /* let r = if self.flip_h {
+            row!(
+                // pick_size_option, 
+                horizontal_space(Length::Fill), 
                 mb,
             )
         } else {
             row!(
                 mb, 
-                horizontal_space(Length::Fill), pick_size_option
+                horizontal_space(Length::Fill), 
+                // pick_size_option
             )
         }
         .padding([2, 8])
-        .align_items(alignment::Alignment::Center);
+        .align_items(alignment::Alignment::Center); */
 
-        let top_bar_style: fn(&iced::Theme) -> container::Appearance =
-            |_theme| container::Appearance {
-                background: Some(Color::TRANSPARENT.into()),
-                ..Default::default()
-            };
-        let top_bar = container(r).width(Length::Fill).style(top_bar_style);
-
-        let back_style: fn(&iced::Theme) -> container::Appearance = |theme| container::Appearance {
-            background: Some(theme.extended_palette().primary.base.color.into()),
-            ..Default::default()
-        };
-        let back = container(col![])
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(back_style);
-
+        let r = row![
+            horizontal_space(800), 
+            mb,
+            horizontal_space(800), 
+        ]
+        .padding([2, 8])
+        .align_items(alignment::Alignment::Center)
+        ;
+        
+        
+        // let top_bar_style: fn(&iced::Theme) -> container::Appearance =
+        //     |_theme| container::Appearance {
+        //         background: Some(Color::TRANSPARENT.into()),
+        //         ..Default::default()
+        //     };
+        // let top_bar = container(r).width(Length::Fill).style(top_bar_style);
+        
+        /* 
         let c = if self.flip_v {
             col![back, top_bar,]
         } else {
             col![top_bar, back,]
         };
 
-        c.into()
+        c.into() */
+    
+        let c = col![
+            vertical_space(600),
+            r,
+            vertical_space(600),
+        ];
+
+        let sc = scrollable(c)
+            // .direction(scrollable::Direction::Both{
+            //     vertical: scrollable::Properties::new(),
+            //     horizontal: scrollable::Properties::new(),
+            // });
+            .direction(scrollable::Direction::Both{
+                vertical: scrollable::Properties::new(),
+                horizontal: scrollable::Properties::new(),
+            });
+        
+        let back_style: fn(&iced::Theme) -> container::Appearance = |theme| container::Appearance {
+            background: Some(theme.extended_palette().primary.base.color.into()),
+            ..Default::default()
+        };
+        let back = container(sc)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(back_style);
+        
+        back.into()
     }
 }
 

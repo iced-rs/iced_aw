@@ -1,7 +1,7 @@
 //! doc
 //!
 use iced_widget::core::{
-    event, layout, mouse, overlay, renderer, touch, widget::tree::{self, Tree}, 
+    event, layout::{self, Node}, mouse, overlay, renderer, touch, widget::tree::{self, Tree}, 
     Alignment, Border, Clipboard, Color, Element, Event, Length, 
     Padding, Point, Vector, Rectangle, Shell, Size, Widget,
 };
@@ -105,7 +105,7 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        println!("mx children");
+        // println!("mx children");
         [
             Tree::new(&self.parent),
             Tree{
@@ -121,7 +121,7 @@ where
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        println!("mx layout");
+        // println!("mx layout");
         self.parent.as_widget().layout(&mut tree.children[0], renderer, limits)
     }
 
@@ -136,7 +136,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        println!("mx event");
+        // println!("mx event");
         let status = self.parent.as_widget_mut().on_event(
             &mut tree.children[0],
             event.clone(),
@@ -192,7 +192,7 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        println!("mx draw");
+        // println!("mx draw");
         self.parent.as_widget().draw(&tree.children[0], renderer, theme, style, layout, cursor, viewport)
     }
 
@@ -202,7 +202,7 @@ where
         layout: layout::Layout<'_>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        println!("mx overlay");
+        // println!("mx overlay");
         let mut og = overlay::Group::new();
         let Tree { tag, state, children } = tree;
         
@@ -250,7 +250,6 @@ where
     }
 }
 
-
 struct MenuxOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer
@@ -286,7 +285,13 @@ where
         position: iced_widget::core::Point,
         translation: iced_widget::core::Vector,
     ) -> layout::Node {
+        println!();
         println!("mxo layout");
+        println!("bounds: {:?}", bounds);
+        println!("position: {:?}", position);
+        println!("translation: {:?}", translation);
+        println!();
+
         let limits = layout::Limits::NONE.max_width(self.max_width);
         let layout = layout::flex::resolve(
             layout::flex::Axis::Vertical,
@@ -301,11 +306,13 @@ where
             &mut self.tree.children
         );
 
+        let vpb = self.parent_bounds + translation; // viewport space parent bounds
+
         let hcenter = bounds.width / 2.0;
         let vcenter = bounds.height / 2.0;
-        
-        let phcenter = self.parent_bounds.x + self.parent_bounds.width / 2.0;
-        let pvcenter = self.parent_bounds.y + self.parent_bounds.height / 2.0;
+
+        let phcenter = vpb.x + vpb.width / 2.0;
+        let pvcenter = vpb.y + vpb.height / 2.0;
 
         let horizontal_direction = if phcenter < hcenter { Direction::Positive } else { Direction::Negative };
         let vertical_direction   = if pvcenter < vcenter { Direction::Positive } else { Direction::Negative };
@@ -335,7 +342,7 @@ where
 
         let children_size = layout.bounds().size();
         let (children_position, offset_position) = aod.resolve(
-            self.parent_bounds + translation, 
+            vpb,
             children_size,
             bounds
         );
@@ -353,11 +360,18 @@ where
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
         
         layout::Node::with_children(Size::INFINITY, [
-            layout.move_to(children_position),
-            layout::Node::new(bounds),
-            layout::Node::new(offset_bounds.size()).move_to(offset_bounds.position()),
-            layout::Node::new(check_bounds.size()).move_to(check_bounds.position()),
-        ].into()).translate([0.0, self.state.scroll_offset])
+            layout.move_to(children_position)
+            .translate([0.0, self.state.scroll_offset]), // children layout
+            layout::Node::new(children_size)
+                .move_to(children_position), // prescroll children bounds
+            layout::Node::new(bounds), // viewport
+            layout::Node::new(offset_bounds.size())
+                .move_to(offset_bounds.position())
+                .translate([0.0, self.state.scroll_offset]), // offset bounds
+            layout::Node::new(check_bounds.size())
+                .move_to(check_bounds.position())
+                .translate([0.0, self.state.scroll_offset]), // check bounds
+        ].into())
     }
 
     fn on_event(
@@ -374,6 +388,7 @@ where
 
         let mut lc = layout.children();
         let children_layout = lc.next().unwrap();
+        let prescroll_children_bounds = lc.next().unwrap().bounds();
         let viewport = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
@@ -399,21 +414,24 @@ where
             .fold(event::Status::Ignored, event::Status::merge);
     
         match event {
+            Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
+                if cursor.is_over(children_bounds){
+                    // self.state.scroll_offset += match delta{
+                    //     mouse::ScrollDelta::Lines { x, y } => y,
+                    //     mouse::ScrollDelta::Pixels { x, y } => y,
+                    // };
+                    // Ignored
+                    process_scroll_event(&mut self.state, prescroll_children_bounds, delta, viewport.size())
+                }else{
+                    Ignored
+                }
+            }
             Event::Mouse(mouse::Event::CursorMoved { position }) => {
                 self.state.open = 
                     self.parent_bounds.contains(position)
                     || offset_bounds.contains(position)
                     || check_bounds.contains(position);
                 Captured
-            }
-            Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                if cursor.is_over(children_bounds){
-                    self.state.scroll_offset += match delta{
-                        mouse::ScrollDelta::Lines { x, y } => y,
-                        mouse::ScrollDelta::Pixels { x, y } => y,
-                    };
-                }
-                Ignored
             }
             _ => Ignored
         }.merge(status)
@@ -430,7 +448,10 @@ where
         println!("mxo draw");
         let mut lc = layout.children();
         let children_layout = lc.next().unwrap();
+        let prescroll_children_bounds = lc.next().unwrap().bounds();
         let viewport = lc.next().unwrap().bounds();
+        // let offset_bounds = lc.next().unwrap().bounds();
+        // let check_bounds = lc.next().unwrap().bounds();
 
         renderer.fill_quad(
             renderer::Quad{
@@ -442,13 +463,13 @@ where
 
         renderer.fill_quad(
             renderer::Quad{
-                bounds: pad_rectangle(children_layout.bounds(), 4.0.into()),
+                bounds: pad_rectangle(prescroll_children_bounds, 4.0.into()),
                 border: Border{
-                    // color: todo!(),
-                    // width: 4.0,
-                    radius: 4.0.into(),
+                    color: [0.5; 3].into(),
+                    width: 1.5,
+                    radius: 6.0.into(),
                     ..Default::default()
-                },
+                }, 
                 ..Default::default()
             }, 
             Color::from([1.0; 3])
@@ -494,37 +515,6 @@ where
     }
 }
 
-enum CheckBound{
-    In(Rectangle),
-    Out(Rectangle),
-}
-
-struct CheckBounds{
-    bounds: Vec<Vec<CheckBound>>
-}
-impl CheckBounds{
-    fn check(&self, point:Point, default: bool) -> bool{
-        let mut cb = None;
-        for bounds in self.bounds.iter().rev(){
-            for bound in bounds.iter(){
-                match bound {
-                    CheckBound::In(rect) | CheckBound::Out(rect) => {
-                        if rect.contains(point){
-                            cb = Some(bound)
-                        }
-                    }
-                }
-            }
-        }
-        match cb {
-            Some(x) => match x {
-                CheckBound::In(_) => true,
-                CheckBound::Out(_) => false
-            }
-            None => default
-        }
-    }
-}
 
 /// Adaptive open direction
 #[derive(Debug)]
@@ -688,16 +678,15 @@ struct MenuSlice {
 }
 
 fn slice(
-    children_bounds: Rectangle,
+    children_bounds: Rectangle, // offset + unsrolled
     child_positions: Vec<f32>,
     child_sizes: Vec<Size>,
     scroll_offset: f32,
     viewport_size: Size,
-    overlay_offset: Vector,
-    item_height: ItemHeight,
+    // overlay_offset: Vector,
 ) -> MenuSlice {
     // viewport space children bounds
-    let children_bounds = children_bounds + overlay_offset;
+    // let children_bounds = children_bounds + overlay_offset;
 
     let max_index = child_positions.len().saturating_sub(1);
 
@@ -710,30 +699,13 @@ fn slice(
     let upper_bound_rel = upper_bound - (children_bounds.y + scroll_offset);
 
     // index range
-    let (start_index, end_index) = match item_height {
-        ItemHeight::Uniform(u) => {
-            let start_index = (lower_bound_rel / f32::from(u)).floor() as usize;
-            let end_index = ((upper_bound_rel / f32::from(u)).floor() as usize).min(max_index);
-            (start_index, end_index)
-        }
-        ItemHeight::Static(_) | ItemHeight::Dynamic(_) => {
-            let positions = &child_positions;
-            let sizes = &child_sizes;
+    let positions = &child_positions;
+    let sizes = &child_sizes;
 
-            let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
-            let end_index = search_bound(
-                max_index,
-                start_index,
-                max_index,
-                upper_bound_rel,
-                positions,
-                sizes,
-            )
-            .min(max_index);
-
-            (start_index, end_index)
-        }
-    };
+    let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
+    let end_index = 
+        search_bound(max_index, start_index, max_index, upper_bound_rel, positions, sizes)
+        .min(max_index);
 
     MenuSlice {
         start_index,
@@ -769,6 +741,27 @@ fn search_bound(
         index = left;
     }
     index
+}
+
+fn process_scroll_event(
+    state: &mut MenuxState,
+    prescroll_children_bounds: Rectangle,
+    delta: mouse::ScrollDelta,
+    viewport_size: Size,
+) -> event::Status{
+    use mouse::ScrollDelta;
+
+    let pcb = prescroll_children_bounds;
+
+    let delta_y = match delta {
+        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y,
+    };
+ 
+    let max_offset = (0.0 - pcb.y).max(0.0);
+    let min_offset = (viewport_size.height - (pcb.y + pcb.height)).min(0.0);
+    state.scroll_offset = (state.scroll_offset + delta_y).clamp(min_offset, max_offset);
+
+    event::Status::Captured
 }
 
 /* fn process_scroll_events<Message, Theme, Renderer>(
