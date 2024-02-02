@@ -10,7 +10,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Vector, Widget
 };
 
 pub use crate::style::modal::StyleSheet;
@@ -232,14 +232,12 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if let Some(overlay) = &mut self.overlay {
-            let bounds = layout.bounds();
-            let position = Point::new(bounds.x, bounds.y);
             overlay.as_widget().diff(&mut state.children[1]);
 
             Some(overlay::Element::new(
-                position,
                 Box::new(ModalOverlay::new(
                     &mut state.children[1],
                     overlay,
@@ -253,7 +251,7 @@ where
         } else {
             self.underlay
                 .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer)
+                .overlay(&mut state.children[0], layout, renderer, translation)
         }
     }
 

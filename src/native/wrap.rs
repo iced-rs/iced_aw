@@ -8,7 +8,7 @@ use iced_widget::core::{
     renderer,
     widget::{Operation, Tree},
     Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
-    Widget,
+    Vector, Widget
 };
 use std::marker::PhantomData;
 
@@ -217,13 +217,14 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         self.elements
             .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
             .find_map(|((child, state), layout)| {
-                child.as_widget_mut().overlay(state, layout, renderer)
+                child.as_widget_mut().overlay(state, layout, renderer, translation)
             })
     }
 

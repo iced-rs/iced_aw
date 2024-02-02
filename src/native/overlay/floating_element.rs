@@ -22,6 +22,8 @@ pub struct FloatingElementOverlay<
     Theme = iced_widget::Theme,
     Renderer = iced_widget::Renderer,
 > {
+    // The position of the element
+    position: Point,
     /// The state of the element.
     state: &'b mut Tree,
     /// The floating element
@@ -41,6 +43,7 @@ where
     /// Creates a new [`FloatingElementOverlay`] containing the given
     /// [`Element`](iced_widget::core::Element).
     pub fn new(
+        position: Point,
         state: &'b mut Tree,
         element: &'b mut Element<'a, Message, Theme, Renderer>,
         anchor: &'b Anchor,
@@ -48,6 +51,7 @@ where
         underlay_bounds: Rectangle,
     ) -> Self {
         FloatingElementOverlay {
+            position,
             state,
             element,
             anchor,
@@ -66,8 +70,6 @@ where
         &mut self,
         renderer: &Renderer,
         _bounds: Size,
-        position: Point,
-        _translation: Vector,
     ) -> layout::Node {
         // Constrain overlay to fit inside the underlay's bounds
         let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
@@ -79,37 +81,37 @@ where
             .layout(self.state, renderer, &limits);
 
         let position = match self.anchor {
-            Anchor::NorthWest => Point::new(position.x + self.offset.x, position.y + self.offset.y),
+            Anchor::NorthWest => Point::new(self.position.x + self.offset.x, self.position.y + self.offset.y),
             Anchor::NorthEast => Point::new(
-                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-                position.y + self.offset.y,
+                self.position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                self.position.y + self.offset.y,
             ),
             Anchor::SouthWest => Point::new(
-                position.x + self.offset.x,
-                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.x + self.offset.x,
+                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::SouthEast => Point::new(
-                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::North => Point::new(
-                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                self.position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
                     + self.offset.x,
-                position.y + self.offset.y,
+                self.position.y + self.offset.y,
             ),
             Anchor::East => Point::new(
-                position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                self.position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
+                self.position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
                     + self.offset.y,
             ),
             Anchor::South => Point::new(
-                position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
+                self.position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
                     + self.offset.x,
-                position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
             ),
             Anchor::West => Point::new(
-                position.x + self.offset.x,
-                position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
+                self.position.x + self.offset.x,
+                self.position.y + self.underlay_bounds.height / 2.0 - node.bounds().height / 2.0
                     + self.offset.y,
             ),
         };
@@ -171,6 +173,6 @@ where
     ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
         self.element
             .as_widget_mut()
-            .overlay(self.state, layout, renderer)
+            .overlay(self.state, layout, renderer, Vector::ZERO)
     }
 }

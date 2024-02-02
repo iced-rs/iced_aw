@@ -118,7 +118,7 @@ where
     /// Turn this [`ColorPickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(self.position, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 
     /// The event handling for the HSV color area.
@@ -556,8 +556,6 @@ where
         &mut self,
         renderer: &Renderer,
         bounds: Size,
-        position: Point,
-        _translation: Vector,
     ) -> Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
             (600.0, 300.0)
@@ -598,10 +596,10 @@ where
             .bounds();
 
         // ----------- Block 1 ----------------------
-        let block1_node = block1_layout(self, renderer, block1_bounds, position);
+        let block1_node = block1_layout(self, renderer, block1_bounds, self.position);
 
         // ----------- Block 2 ----------------------
-        let block2_node = block2_layout(self, renderer, block2_bounds, position);
+        let block2_node = block2_layout(self, renderer, block2_bounds, self.position);
 
         let (width, height) = if bounds.width > bounds.height {
             (
@@ -618,7 +616,7 @@ where
         let mut node =
             Node::with_children(Size::new(width, height), vec![block1_node, block2_node]);
 
-        node.center_and_bounce(position, bounds);
+        node.center_and_bounce(self.position, bounds);
         node
     }
 

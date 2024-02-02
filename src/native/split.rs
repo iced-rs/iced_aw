@@ -14,7 +14,7 @@ use iced_widget::{
             Operation, Tree,
         },
         Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-        Shadow, Shell, Size, Widget,
+        Shadow, Shell, Size, Vector, Widget
     },
     Container, Row,
 };
@@ -498,6 +498,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
@@ -513,11 +514,11 @@ where
 
         first
             .as_widget_mut()
-            .overlay(&mut first_state[0], first_layout, renderer)
+            .overlay(&mut first_state[0], first_layout, renderer, translation)
             .or_else(|| {
                 second
                     .as_widget_mut()
-                    .overlay(&mut second_state[0], second_layout, renderer)
+                    .overlay(&mut second_state[0], second_layout, renderer, translation)
             })
     }
 }

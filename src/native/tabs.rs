@@ -20,7 +20,7 @@ use iced_widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget
     },
     runtime::Font,
     text, Row,
@@ -558,6 +558,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout.children().nth(1),
@@ -569,7 +570,7 @@ where
             self.tabs
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
-                .and_then(|w| w.overlay(&mut state.children[1].children[idx], layout, renderer))
+                .and_then(|w| w.overlay(&mut state.children[1].children[idx], layout, renderer, translation))
         })
     }
 
