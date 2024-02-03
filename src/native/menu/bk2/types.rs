@@ -1,6 +1,6 @@
 use iced_widget::core::{overlay, renderer};
 
-// use super::menu_tree_overlay::MenuTreeOverlay;
+use super::menu_tree_overlay::MenuTreeOverlay;
 
 
 /// The condition of when to close a menu
@@ -80,3 +80,30 @@ pub enum OpenCondition{
     Click,
 }
 
+pub(super) enum MenuOverlayElement<'a, 'b, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    Overlay(overlay::Element<'b, Message, Theme, Renderer>),
+    MenuTree(MenuTreeOverlay<'a, 'b, Message, Theme, Renderer>)
+}
+impl<'a, 'b, Message, Theme, Renderer> 
+    From<overlay::Element<'b, Message, Theme, Renderer>> for 
+    MenuOverlayElement<'a, 'b, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    fn from(value: overlay::Element<'b, Message, Theme, Renderer>) -> Self {
+        Self::Overlay(value)
+    }
+}
+impl<'a, 'b, Message, Theme, Renderer> 
+    From<MenuTreeOverlay<'a, 'b, Message, Theme, Renderer>> for 
+    MenuOverlayElement<'a, 'b, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    fn from(value: MenuTreeOverlay<'a, 'b, Message, Theme, Renderer>) -> Self {
+        Self::MenuTree(value)
+    }
+}

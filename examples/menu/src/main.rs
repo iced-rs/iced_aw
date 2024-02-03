@@ -5,16 +5,17 @@ use iced::widget::{
 };
 use iced::{alignment, theme, Application, Border, Color, Element, Event, Length, Pixels, Size};
 
-use iced_aw::menu::menu_bar::MenuBar;
 use iced_aw::menu::{
-    menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight,
-    Menux, OpenCondition, Axis
+    // menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight,
+    // Menux, OpenCondition, Axis
+    Menu, Item, MenuBar,
+    
 };
 use iced_aw::quad;
-use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
+// use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
 
 pub fn main() -> iced::Result {
-    // std::env::set_var("RUST_BACKTRACE", "full");
+    std::env::set_var("RUST_BACKTRACE", "1");
     App::run(iced::Settings {
         default_text_size: Pixels(15.0),
         window: iced::window::Settings{
@@ -215,13 +216,17 @@ impl Application for App {
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
         // println!("app view");
-        /* let pick_size_option = pick_list(
-            &SizeOption::ALL[..],
-            Some(self.size_option),
-            Message::SizeOption,
-        ); */
 
-        let mb = row![
+        let mb = MenuBar::new([
+            Item::new(debug_button("aaa"))
+                .menu(Menu::new([
+                    Item::new(debug_button("abc").width(180.0)),
+                    Item::new(debug_button("def").width(180.0)),
+                    Item::new(debug_button("xxx").width(180.0)),
+                ].into())),
+        ].into());
+
+        /* let mb = row![
             Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
                 debug_button("abc").width(180.0).into(),
                 debug_button("def").width(180.0).into(),
@@ -301,66 +306,7 @@ impl Application for App {
                 debug_button("zhdkr").width(180.0).into(),
                 debug_button("vjdiwo").width(180.0).into(),
             ]).open_condition(OpenCondition::Click),
-        ];
-
-        // let mb = MenuBar::new(
-        //     [
-        //         MenuTree::with_children(
-        //             button("content").on_press(Message::Debug("content".into())), 
-        //             [
-        //                 MenuTree::new(button("abc")),
-        //                 MenuTree::new(button("def")),
-        //                 MenuTree::new(button("wagrarga")),
-        //                 MenuTree::new(button("jfuykyfuk")),
-        //             ].into()
-        //         ),
-        //         MenuTree::with_children(
-        //             button("xxx").on_press(Message::Debug("xxx".into())), 
-        //             [
-        //                 MenuTree::new(button("abc")),
-        //                 MenuTree::new(button("def")),
-        //                 MenuTree::new(button("wagrarga")),
-        //                 MenuTree::new(button("jfuykyfuk")),
-        //             ].into()
-        //         )
-        //     ].into()
-        // );
-
-        /* let mb = match self.size_option {
-            SizeOption::Uniform => {
-                menu_bar!(menu_1(self), menu_2(self), menu_3(self), menu_4(self))
-                    .item_width(ItemWidth::Uniform(180))
-                    .item_height(ItemHeight::Uniform(27))
-            }
-            SizeOption::Static => menu_bar!(
-                menu_1(self),
-                menu_2(self),
-                menu_3(self),
-                menu_4(self),
-                menu_5(self),
-            )
-            .item_width(ItemWidth::Static(180))
-            .item_height(ItemHeight::Static(35)),
-            SizeOption::DynamicHeight => menu_bar!(
-                menu_1(self),
-                menu_2(self),
-                menu_3(self),
-                menu_4(self),
-                menu_6(self),
-            )
-            .item_width(ItemWidth::Static(180))
-            .item_height(ItemHeight::Dynamic(35)),
-        }
-        .spacing(4.0)
-        .bounds_expand(30)
-        .main_offset(13)
-        .cross_offset(16)
-        .path_highlight(Some(PathHighlight::MenuActive))
-        .close_condition(CloseCondition {
-            leave: true,
-            click_outside: false,
-            click_inside: false,
-        }); */
+        ]; */
 
         /* let r = if self.flip_h {
             row!(
@@ -485,7 +431,7 @@ fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, ice
     labeled_button(label, Message::Debug(label.into()))
 }
 
-fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
+/* fn debug_item<'a>(label: &str) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
     menu_tree!(debug_button(label).width(Length::Fill).height(Length::Fill))
 }
 
@@ -992,3 +938,4 @@ fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
 
     root
 }
+ */

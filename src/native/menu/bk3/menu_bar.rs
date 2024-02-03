@@ -74,13 +74,17 @@ where
     /// \[Tree{item_state, \[widget_state, menu_state]}...]
     fn children(&self) -> Vec<Tree> {
         println!("bar children");
-        todo!()
+        self.roots.iter().map(|item| item.tree()).collect::<Vec<_>>()
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
         println!("bar diff");
-        todo!()
+        tree.diff_children_custom(
+            &self.roots, 
+            |tree, item| item.diff(tree), 
+            |item| item.tree()
+        )
     }
     
     /// tree: Tree{bar_state, \[item_tree...]}
@@ -91,7 +95,18 @@ where
         limits: &layout::Limits,
     ) -> layout::Node {
         println!("bar layout");
-        todo!()
+        flex::resolve(
+            flex::Axis::Horizontal,
+            renderer, 
+            limits, 
+            self.width, 
+            self.height, 
+            self.padding, 
+            self.spacing, 
+            alignment::Alignment::Center,
+            &self.roots.iter().map(|item| &item.item ).collect::<Vec<_>>(),
+            &mut tree.children.iter_mut().map(|tree| &mut tree.children[0]).collect::<Vec<_>>()
+        )
     }
 
     fn on_event(
@@ -108,7 +123,59 @@ where
         println!("bar event");
         use event::Status::*;
 
-        todo!()
+        let status = self.roots // [Item...]
+            .iter_mut()
+            .zip(tree.children.iter_mut()) // [item_tree...]
+            .zip(layout.children()) // [widget_layout...]
+            .map(|((item, tree), layout)|{
+                item.item.as_widget_mut().on_event(
+                    &mut tree.children[0], 
+                    event.clone(), 
+                    layout,
+                    cursor, 
+                    renderer, 
+                    clipboard, 
+                    shell, 
+                    viewport
+                )
+            })
+            .fold(event::Status::Ignored, |acc, x| acc.merge(x) );
+    
+    // make sure there's only one item that is open
+    let mut use_open = false;
+    for (i, t) in tree.children.iter_mut().enumerate(){
+        let item_state = t.state.downcast_mut::<ItemState>();
+        if use_open == true{
+            item_state.open = false;
+        }else if item_state.open{
+            use_open = true;
+            let bar = tree.state.downcast_mut::<MenuBarState>();
+            // store the active item index
+            bar.active_root = i;
+        }
+    }
+
+    status
+
+        // let bar_bounds = layout.bounds();
+
+        // match event {
+        //     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+        //     | Event::Touch(touch::Event::FingerPressed { .. }) => {
+
+        //         Ignored
+        //     }
+        //     Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+        //     | Event::Touch(touch::Event::FingerLifted { .. })
+        //     | Event::Touch(touch::Event::FingerLost { .. }) => {
+
+        //         Ignored
+        //     }   
+        //     Event::Mouse(mouse::Event::CursorMoved { position:_ }) => {
+        //         Ignored
+        //     }
+        //     _ => Ignored
+        // }.merge(status)
     }
 
     fn draw(
@@ -122,7 +189,18 @@ where
         viewport: &Rectangle,
     ) {
         println!("bar draw");
-        todo!()
+        if let Some(viewport) = layout.bounds().intersection(viewport) {
+            for ((root, tree), layout) in self
+                .roots
+                .iter()
+                .zip(&tree.children)
+                .zip(layout.children())
+            {
+                root.item.as_widget().draw(
+                    &tree.children[0], renderer, theme, style, layout, cursor, &viewport,
+                );
+            }
+        }
     }
     
     fn overlay<'b>(
@@ -132,7 +210,20 @@ where
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         println!("bar overlay");
-        todo!()
+        let state = tree.state.downcast_mut::<MenuBarState>();
+        let bar_bounds = layout.bounds();
+        let parent_bounds = layout.children().nth(state.active_root).unwrap().bounds();
+
+        if state.open{
+            Some(MenuBarOverlay{
+                tree,
+                roots: &mut self.roots,
+                parent_bounds,
+                bar_bounds,
+            }.overlay_element())
+        }else {
+            None
+        }
     }
 }
 impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>> for Element<'a, Message, Theme, Renderer>

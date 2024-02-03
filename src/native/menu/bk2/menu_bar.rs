@@ -1,9 +1,5 @@
-//! menu bar
-
 use iced_widget::core::{
-    alignment, event, layout::{self, Node, Limits}, mouse, overlay, renderer, touch, widget::{tree, Tree}, 
-    Event, 
-    Alignment, Clipboard, Color, Element, Layout, Length, Overlay, Padding, Rectangle, Shell, Size, Widget
+    alignment, event, layout, mouse, overlay, renderer, touch, widget::{tree, Tree}, Alignment, Clipboard, Color, Element, Layout, Length, Overlay, Padding, Rectangle, Shell, Size, Widget
 };
 
 use super::{
@@ -13,37 +9,31 @@ use super::{
 pub(super) struct MenuBarState{
     pub(super) active_root: usize,
     pub(super) open: bool,
-    pub(super) viewport: Rectangle,
-    pub(super) indices: Vec<usize>,
 }
 impl Default for MenuBarState{
     fn default() -> Self {
         Self {
             active_root: 0,
             open: false,
-            viewport: Rectangle::default(),
-            indices: Vec::new(),
         }
     }
 }
 
-/// menu bar
 pub struct MenuBar<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
-    roots: Vec<Item<'a, Message, Theme, Renderer>>,
+    roots: Vec<MenuTree<'a, Message, Theme, Renderer>>,
     spacing: f32,
     padding: Padding,
     width: Length,
     height: Length,
 }
-#[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
-    pub fn new(roots: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
+    pub fn new(roots: Vec<MenuTree<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             roots,
             spacing: 0.0,
@@ -71,32 +61,41 @@ where
         tree::State::Some(Box::new(MenuBarState::default()))
     }
 
-    /// \[Tree{item_state, \[widget_state, menu_state]}...]
     fn children(&self) -> Vec<Tree> {
-        println!("bar children");
-        todo!()
+        self.roots.iter().map(|mt| mt.tree()).collect::<Vec<_>>()
     }
 
-    /// tree: Tree{bar_state, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
-        println!("bar diff");
-        todo!()
+        tree.diff_children_custom(
+            &self.roots, 
+            |tree, mt| diff(tree, mt), 
+            |mt| mt.tree()
+        )
     }
-    
-    /// tree: Tree{bar_state, \[item_tree...]}
+
     fn layout(
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        println!("bar layout");
-        todo!()
+        flex::resolve(
+            flex::Axis::Horizontal,
+            renderer,
+            limits,
+            self.width,
+            self.height,
+            self.padding,
+            self.spacing,
+            alignment::Alignment::Center,
+            &self.roots.iter().map(|mt| &mt.parent).collect::<Vec<_>>(),
+            &mut tree.children.iter().map(|tree| &mut tree.children[0]).collect::<Vec<_>>(),
+        )
     }
 
     fn on_event(
         &mut self,
-        tree: &mut Tree,
+        state: &mut Tree,
         event: event::Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -105,10 +104,8 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        println!("bar event");
-        use event::Status::*;
-
-        todo!()
+        
+        event::Status::Ignored
     }
 
     fn draw(
@@ -121,8 +118,18 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        println!("bar draw");
-        todo!()
+        if let Some(viewport) = layout.bounds().intersection(viewport) {
+            for ((root, state), layout) in self
+                .roots
+                .iter()
+                .zip(&tree.children)
+                .zip(layout.children())
+            {
+                root.parent.as_widget().draw(
+                    state, renderer, theme, style, layout, cursor, &viewport,
+                );
+            }
+        }
     }
     
     fn overlay<'b>(
@@ -131,14 +138,24 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        println!("bar overlay");
-        todo!()
+        let state = tree.state.downcast_mut::<MenuBarState>();
+        let parent_bounds = layout.children().nth(state.active_root).unwrap().bounds();
+
+        if state.open{
+            Some(MenuBarOverlay{
+                tree,
+                active_tree: &mut tree.children[state.active_root],
+                active_root: &mut self.roots[state.active_root],
+                parent_bounds,
+            }.overlay_element())
+        }else {
+            None
+        }
     }
 }
 impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>> for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Theme: 'a,
     Renderer: 'a + renderer::Renderer,
     // Renderer::Theme: StyleSheet,
 {

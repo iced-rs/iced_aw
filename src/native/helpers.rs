@@ -64,7 +64,7 @@ macro_rules! wrap_vertical {
     );
 }
 
-/// Creates a [`MenuTree`] with the given children.
+/* /// Creates a [`MenuTree`] with the given children.
 ///
 /// [`MenuTree`]: crate::MenuTree
 #[cfg(feature = "menu")]
@@ -120,7 +120,7 @@ where
     Renderer: core::Renderer,
 {
     crate::menu::menu_tree::MenuTree::with_children(item, children)
-}
+} */
 
 #[cfg(feature = "badge")]
 /// Shortcut helper to create a [`Badge`] Widget.

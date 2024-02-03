@@ -136,9 +136,9 @@ mod platform {
     #[cfg(feature = "menu")]
     pub use {
         crate::native::menu,
-        crate::native::menu::{
-            CloseCondition, ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight,
-        },
+        // crate::native::menu::{
+        //     CloseCondition, ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight,
+        // },
     };
 
     #[doc(no_inline)]

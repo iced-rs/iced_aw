@@ -53,15 +53,16 @@
 //!
 
 mod flex;
-pub mod menu_bar;
+mod menu_bar;
 mod menu_bar_overlay;
-// mod menu_inner;
-pub mod menu_tree;
-// pub mod menux;
+mod menu_tree;
 mod types;
-mod menu_tree_overlay;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
+pub use menu_tree::{Item, Menu};
+pub use menu_bar::MenuBar;
+pub use types::*;
+
 // A `MenuBar` collects `MenuTree`s and handles
 // pub type MenuBar<'a, Message, Renderer> = menu_bar::MenuBar<'a, Message, Renderer>;
 // pub use types::*;
