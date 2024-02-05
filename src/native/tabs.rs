@@ -20,7 +20,7 @@ use iced_widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget
+        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     },
     runtime::Font,
     text, Row,
@@ -570,7 +570,14 @@ where
             self.tabs
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
-                .and_then(|w| w.overlay(&mut state.children[1].children[idx], layout, renderer, translation))
+                .and_then(|w| {
+                    w.overlay(
+                        &mut state.children[1].children[idx],
+                        layout,
+                        renderer,
+                        translation,
+                    )
+                })
         })
     }
 

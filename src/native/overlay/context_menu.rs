@@ -79,11 +79,7 @@ where
     Renderer: 'a + core::Renderer,
     Theme: StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
         let max_size = limits.max();
 

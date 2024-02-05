@@ -66,11 +66,7 @@ impl<'a, 'b, Message, Theme, Renderer> core::Overlay<Message, Theme, Renderer>
 where
     Renderer: core::Renderer,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        _bounds: Size,
-    ) -> layout::Node {
+    fn layout(&mut self, renderer: &Renderer, _bounds: Size) -> layout::Node {
         // Constrain overlay to fit inside the underlay's bounds
         let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
             .width(Length::Fill)
@@ -81,18 +77,25 @@ where
             .layout(self.state, renderer, &limits);
 
         let position = match self.anchor {
-            Anchor::NorthWest => Point::new(self.position.x + self.offset.x, self.position.y + self.offset.y),
+            Anchor::NorthWest => Point::new(
+                self.position.x + self.offset.x,
+                self.position.y + self.offset.y,
+            ),
             Anchor::NorthEast => Point::new(
                 self.position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
                 self.position.y + self.offset.y,
             ),
             Anchor::SouthWest => Point::new(
                 self.position.x + self.offset.x,
-                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.y + self.underlay_bounds.height
+                    - node.bounds().height
+                    - self.offset.y,
             ),
             Anchor::SouthEast => Point::new(
                 self.position.x + self.underlay_bounds.width - node.bounds().width - self.offset.x,
-                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.y + self.underlay_bounds.height
+                    - node.bounds().height
+                    - self.offset.y,
             ),
             Anchor::North => Point::new(
                 self.position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
@@ -107,7 +110,9 @@ where
             Anchor::South => Point::new(
                 self.position.x + self.underlay_bounds.width / 2.0 - node.bounds().width / 2.0
                     + self.offset.x,
-                self.position.y + self.underlay_bounds.height - node.bounds().height - self.offset.y,
+                self.position.y + self.underlay_bounds.height
+                    - node.bounds().height
+                    - self.offset.y,
             ),
             Anchor::West => Point::new(
                 self.position.x + self.offset.x,

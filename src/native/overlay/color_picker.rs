@@ -552,11 +552,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
             (600.0, 300.0)
         } else {

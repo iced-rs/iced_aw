@@ -10,7 +10,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Vector, Widget
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Vector, Widget,
 };
 
 pub use crate::style::modal::StyleSheet;
@@ -237,21 +237,22 @@ where
         if let Some(overlay) = &mut self.overlay {
             overlay.as_widget().diff(&mut state.children[1]);
 
-            Some(overlay::Element::new(
-                Box::new(ModalOverlay::new(
-                    &mut state.children[1],
-                    overlay,
-                    self.backdrop.clone(),
-                    self.esc.clone(),
-                    self.style.clone(),
-                    self.horizontal_alignment,
-                    self.vertical_alignment,
-                )),
-            ))
+            Some(overlay::Element::new(Box::new(ModalOverlay::new(
+                &mut state.children[1],
+                overlay,
+                self.backdrop.clone(),
+                self.esc.clone(),
+                self.style.clone(),
+                self.horizontal_alignment,
+                self.vertical_alignment,
+            ))))
         } else {
-            self.underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer, translation)
+            self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            )
         }
     }
 

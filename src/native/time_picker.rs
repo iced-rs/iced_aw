@@ -13,7 +13,7 @@ use iced_widget::{
         mouse::{self, Cursor},
         overlay, renderer,
         widget::tree::{self, Tag, Tree},
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget
+        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
     },
     renderer::Renderer,
     text,
@@ -268,10 +268,12 @@ where
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
-            return self
-                .underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer, translation);
+            return self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            );
         }
 
         let bounds = layout.bounds();

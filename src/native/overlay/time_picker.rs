@@ -509,11 +509,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)

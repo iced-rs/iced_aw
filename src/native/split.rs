@@ -14,7 +14,7 @@ use iced_widget::{
             Operation, Tree,
         },
         Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-        Shadow, Shell, Size, Vector, Widget
+        Shadow, Shell, Size, Vector, Widget,
     },
     Container, Row,
 };
@@ -516,9 +516,12 @@ where
             .as_widget_mut()
             .overlay(&mut first_state[0], first_layout, renderer, translation)
             .or_else(|| {
-                second
-                    .as_widget_mut()
-                    .overlay(&mut second_state[0], second_layout, renderer, translation)
+                second.as_widget_mut().overlay(
+                    &mut second_state[0],
+                    second_layout,
+                    renderer,
+                    translation,
+                )
             })
     }
 }

@@ -14,7 +14,7 @@ use iced_widget::{
         renderer, touch,
         widget::{Operation, Tree},
         Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
-        Point, Rectangle, Shadow, Shell, Size, Vector, Widget
+        Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
     },
     text::LineHeight,
 };
@@ -595,7 +595,9 @@ where
             .zip(layout.children())
             .filter_map(|((child, state), layout)| {
                 layout.children().next().and_then(|child_layout| {
-                    child.as_widget_mut().overlay(state, child_layout, renderer, translation)
+                    child
+                        .as_widget_mut()
+                        .overlay(state, child_layout, renderer, translation)
                 })
             })
             .collect::<Vec<_>>();

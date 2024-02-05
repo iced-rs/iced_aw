@@ -6,7 +6,7 @@ use iced_widget::core::{
     mouse::{self, Button, Cursor},
     overlay, renderer,
     widget::{tree, Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
 };
 
 use crate::native::overlay::ContextMenuOverlay;
@@ -223,10 +223,12 @@ where
         let s: &mut State = state.state.downcast_mut();
 
         if !s.show {
-            return self
-                .underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer, translation);
+            return self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            );
         }
 
         let position = s.cursor_position;
@@ -238,8 +240,9 @@ where
                 &mut state.children[1],
                 content,
                 self.style.clone(),
-                s
-            ).overlay(),
+                s,
+            )
+            .overlay(),
         )
     }
 }

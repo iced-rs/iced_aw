@@ -369,11 +369,7 @@ where
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)

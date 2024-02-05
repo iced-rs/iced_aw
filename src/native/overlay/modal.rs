@@ -6,8 +6,8 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Overlay, Rectangle, Shadow,
-    Shell, Size,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Overlay, Rectangle, Shadow, Shell,
+    Size,
 };
 
 use crate::style::modal::StyleSheet;
@@ -69,11 +69,7 @@ where
     Renderer: core::Renderer,
     Theme: StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> layout::Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> layout::Node {
         let limits = layout::Limits::new(Size::ZERO, bounds);
         let mut content = self
             .content
