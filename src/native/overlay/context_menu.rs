@@ -13,7 +13,7 @@ use iced_widget::core::{
     overlay, renderer, touch,
     widget::tree::Tree,
     window, Border, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shadow, Shell,
-    Size, Vector,
+    Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
@@ -28,6 +28,8 @@ pub struct ContextMenuOverlay<
     Renderer: 'a + core::Renderer,
     Theme: StyleSheet,
 {
+    // The position of the element
+    position: Point,
     /// The state of the [`ContextMenuOverlay`].
     tree: &'a mut Tree,
     /// The content of the [`ContextMenuOverlay`].
@@ -46,6 +48,7 @@ where
 {
     /// Creates a new [`ContextMenuOverlay`].
     pub(crate) fn new<C>(
+        position: Point,
         tree: &'a mut Tree,
         content: C,
         style: <Theme as StyleSheet>::Style,
@@ -55,6 +58,7 @@ where
         C: Into<Element<'a, Message, Theme, Renderer>>,
     {
         ContextMenuOverlay {
+            position,
             tree,
             content: content.into(),
             style,
@@ -63,8 +67,8 @@ where
     }
 
     /// Turn this [`ContextMenuOverlay`] into an overlay [`Element`](overlay::Element).
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(position, Box::new(self))
+    pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
+        overlay::Element::new(Box::new(self))
     }
 }
 
@@ -75,13 +79,7 @@ where
     Renderer: 'a + core::Renderer,
     Theme: StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
         let max_size = limits.max();
 
@@ -91,7 +89,7 @@ where
             .layout(self.tree, renderer, &limits);
 
         // Try to stay inside borders
-        let mut position = position;
+        let mut position = self.position;
         if position.x + content.size().width > bounds.width {
             position.x = f32::max(0.0, position.x - content.size().width);
         }

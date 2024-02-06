@@ -121,7 +121,7 @@ where
     /// Turn this [`TimePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(self.position, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 
     /// The event handling for the clock.
@@ -509,13 +509,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)
@@ -603,7 +597,7 @@ where
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
-        node.center_and_bounce(position, bounds);
+        node.center_and_bounce(self.position, bounds);
         node
     }
 

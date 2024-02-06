@@ -14,7 +14,7 @@ use iced_widget::{
         renderer, touch,
         widget::{Operation, Tree},
         Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
-        Point, Rectangle, Shadow, Shell, Size, Widget,
+        Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
     },
     text::LineHeight,
 };
@@ -583,6 +583,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = vec![&mut self.head, &mut self.body];
         if let Some(foot) = &mut self.foot {
@@ -594,7 +595,9 @@ where
             .zip(layout.children())
             .filter_map(|((child, state), layout)| {
                 layout.children().next().and_then(|child_layout| {
-                    child.as_widget_mut().overlay(state, child_layout, renderer)
+                    child
+                        .as_widget_mut()
+                        .overlay(state, child_layout, renderer, translation)
                 })
             })
             .collect::<Vec<_>>();

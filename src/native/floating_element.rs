@@ -10,7 +10,7 @@ use iced_widget::core::{
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Widget,
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Vector, Widget,
 };
 
 pub mod anchor;
@@ -211,27 +211,30 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if self.hidden {
-            return self
-                .underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer);
+            return self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            );
         }
 
         if state.children.len() == 2 {
             let bounds = layout.bounds();
 
-            Some(overlay::Element::new(
-                bounds.position(),
-                Box::new(FloatingElementOverlay::new(
+            Some(overlay::Element::new(Box::new(
+                FloatingElementOverlay::new(
+                    layout.position() + translation,
                     &mut state.children[1],
                     &mut self.element,
                     &self.anchor,
                     &self.offset,
                     bounds,
-                )),
-            ))
+                ),
+            )))
         } else {
             None
         }

@@ -5,7 +5,7 @@ use iced_widget::core::{
     overlay::Group,
     renderer::Style,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector, Widget,
 };
 
 use super::{layout::layout, types::Grid};
@@ -159,13 +159,16 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let children = self
             .elements_iter_mut()
             .zip(&mut tree.children)
             .zip(layout.children())
             .filter_map(|((child, state), layout)| {
-                child.as_widget_mut().overlay(state, layout, renderer)
+                child
+                    .as_widget_mut()
+                    .overlay(state, layout, renderer, translation)
             })
             .collect::<Vec<_>>();
 

@@ -29,7 +29,7 @@ use iced_widget::{
         touch,
         widget::tree::Tree,
         Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Vector, Widget,
+        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
     },
     renderer::Renderer,
     text, Button, Column, Container, Row, Text,
@@ -113,7 +113,7 @@ where
     /// Turn this [`DatePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(self.position, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 
     /// String representation of the current year.
@@ -369,13 +369,7 @@ where
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)
@@ -528,7 +522,7 @@ where
             ),
             vec![col, cancel_button, submit_button],
         );
-        node.center_and_bounce(position, bounds);
+        node.center_and_bounce(self.position, bounds);
         node
     }
 
