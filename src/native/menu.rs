@@ -59,8 +59,8 @@ mod menu_tree;
 mod types;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
-pub use menu_tree::{Item, Menu};
 pub use menu_bar::MenuBar;
+pub use menu_tree::{Item, Menu};
 pub use types::*;
 
 // A `MenuBar` collects `MenuTree`s and handles

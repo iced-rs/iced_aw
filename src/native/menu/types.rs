@@ -2,7 +2,6 @@ use iced_widget::core::{overlay, renderer};
 
 // use super::menu_tree_overlay::MenuTreeOverlay;
 
-
 /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
 pub struct CloseCondition {
@@ -65,18 +64,36 @@ pub(super) enum Direction {
     Positive,
     Negative,
 }
+impl Direction{
+    pub(super) fn flip(&self) -> Direction{
+        match self {
+            Direction::Positive => Direction::Negative,
+            Direction::Negative => Direction::Positive,
+        }
+    }
+}
 
 /// Axis
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
-pub enum Axis{
+pub enum Axis {
     Horizontal,
     Vertical,
 }
 
 #[allow(missing_docs)]
-pub enum OpenCondition{
+pub enum OpenCondition {
     Hover,
     Click,
 }
 
+pub(super) type Index = Option<usize>;
+
+
+/// Should be returned from the recursive event processing function, 
+/// tells the caller which type of event has been processed
+pub(super) enum RecEvent{
+    Event, 
+    Close,
+    None 
+}

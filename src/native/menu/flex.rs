@@ -17,7 +17,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use iced_widget::core::{
-    Element, layout::{Limits, Node}, widget, Alignment, Length, Padding, Point, Size
+    layout::{Limits, Node},
+    widget, Alignment, Element, Length, Padding, Point, Size,
 };
 
 /// The main axis of a flex layout.
@@ -107,11 +108,13 @@ where
             if fill_cross_factor == 0 {
                 let (max_width, max_height) = axis.pack(available, max_cross);
 
-                let child_limits =
-                    Limits::new(Size::ZERO, Size::new(max_width, max_height));
+                let child_limits = Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
                 let layout =
-                    child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
+                    child
+                        .borrow()
+                        .as_widget()
+                        .layout(tree.borrow_mut(), renderer, &child_limits);
                 let size = layout.size();
 
                 available -= axis.main(size);
@@ -134,11 +137,13 @@ where
         if fill_main_factor == 0 && fill_cross_factor != 0 {
             let (max_width, max_height) = axis.pack(available, cross);
 
-            let child_limits =
-                Limits::new(Size::ZERO, Size::new(max_width, max_height));
+            let child_limits = Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
             let layout =
-                child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
+                child
+                    .borrow()
+                    .as_widget()
+                    .layout(tree.borrow_mut(), renderer, &child_limits);
             let size = layout.size();
 
             available -= axis.main(size);
@@ -167,8 +172,7 @@ where
         };
 
         if fill_main_factor != 0 {
-            let max_main =
-                remaining * fill_main_factor as f32 / fill_main_sum as f32;
+            let max_main = remaining * fill_main_factor as f32 / fill_main_sum as f32;
 
             let min_main = if max_main.is_infinite() {
                 0.0
@@ -191,7 +195,10 @@ where
             );
 
             let layout =
-                child.borrow().as_widget().layout(tree.borrow_mut(), renderer, &child_limits);
+                child
+                    .borrow()
+                    .as_widget()
+                    .layout(tree.borrow_mut(), renderer, &child_limits);
             cross = cross.max(axis.cross(layout.size()));
 
             nodes[i] = layout;
@@ -212,18 +219,10 @@ where
 
         match axis {
             Axis::Horizontal => {
-                node.align_mut(
-                    Alignment::Start,
-                    align_items,
-                    Size::new(0.0, cross),
-                );
+                node.align_mut(Alignment::Start, align_items, Size::new(0.0, cross));
             }
             Axis::Vertical => {
-                node.align_mut(
-                    align_items,
-                    Alignment::Start,
-                    Size::new(cross, 0.0),
-                );
+                node.align_mut(align_items, Alignment::Start, Size::new(cross, 0.0));
             }
         }
 
@@ -233,11 +232,7 @@ where
     }
 
     let (intrinsic_width, intrinsic_height) = axis.pack(main - pad.0, cross);
-    let size = limits.resolve(
-        width,
-        height,
-        Size::new(intrinsic_width, intrinsic_height),
-    );
+    let size = limits.resolve(width, height, Size::new(intrinsic_width, intrinsic_height));
 
     Node::with_children(size.expand(padding), nodes)
 }

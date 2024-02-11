@@ -1,24 +1,25 @@
-use iced::widget::{column as col, vertical_space};
 use iced::widget::{
-    button, checkbox, container, horizontal_space, pick_list, row, slider, svg, text, text_input,
-    toggler, vertical_slider, scrollable,
+    button, checkbox, container, horizontal_space, pick_list, row, scrollable, slider, svg, text,
+    text_input, toggler, vertical_slider,
 };
+use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Application, Border, Color, Element, Event, Length, Pixels, Size};
 
 use iced_aw::menu::{
+    Item,
     // menu_tree::MenuTree, CloseCondition, ItemHeight, ItemWidth, PathHighlight,
     // Menux, OpenCondition, Axis
-    Menu, Item, MenuBar,
-    
+    Menu,
+    MenuBar,
 };
 use iced_aw::quad;
 // use iced_aw::{helpers::menu_tree, menu_bar, menu_tree};
 
 pub fn main() -> iced::Result {
-    std::env::set_var("RUST_BACKTRACE", "1");
+    // std::env::set_var("RUST_BACKTRACE", "full");
     App::run(iced::Settings {
         default_text_size: Pixels(15.0),
-        window: iced::window::Settings{
+        window: iced::window::Settings {
             size: Size::new(1000.0, 500.0),
             ..Default::default()
         },
@@ -27,7 +28,7 @@ pub fn main() -> iced::Result {
         // fonts: todo!(),
         // default_font: todo!(),
         // antialiasing: todo!(),
-        
+
         // default_text_size: 15.0,
         // window: iced::window::Settings {
         //     size: (1000, 500),
@@ -104,7 +105,7 @@ impl Application for App {
             theme::Palette {
                 primary: Color::from([0.45, 0.25, 0.57]),
                 ..iced::Theme::Light.palette()
-            }
+            },
         );
 
         (
@@ -136,17 +137,13 @@ impl Application for App {
         use iced::keyboard;
         use keyboard::key::Named;
 
-        iced::event::listen().map(|event|{
-            match event{
-                Event::Keyboard(keyboard::Event::KeyPressed { key, ..}) => {
-                    match key {
-                        keyboard::Key::Named(Named::F1) => Message::FlipHorizontal,
-                        keyboard::Key::Named(Named::F2) => Message::FlipVertical,
-                        _ => Message::None
-                    }
-                },
-                _ => Message::None
-            }
+        iced::event::listen().map(|event| match event {
+            Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => match key {
+                keyboard::Key::Named(Named::F1) => Message::FlipHorizontal,
+                keyboard::Key::Named(Named::F2) => Message::FlipVertical,
+                _ => Message::None,
+            },
+            _ => Message::None,
         })
     }
 
@@ -174,7 +171,7 @@ impl Application for App {
                     theme::Palette {
                         primary: c,
                         ..self.theme.palette()
-                    }
+                    },
                 );
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
             }
@@ -189,7 +186,7 @@ impl Application for App {
                         theme::Palette {
                             primary,
                             ..iced::Theme::Dark.palette()
-                        }
+                        },
                     )
                 } else {
                     self.theme = iced::Theme::custom(
@@ -197,7 +194,7 @@ impl Application for App {
                         theme::Palette {
                             primary,
                             ..iced::Theme::Light.palette()
-                        }
+                        },
                     )
                 }
             }
@@ -217,14 +214,145 @@ impl Application for App {
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
         // println!("app view");
 
-        let mb = MenuBar::new([
-            Item::new(debug_button("aaa"))
-                .menu(Menu::new([
-                    Item::new(debug_button("abc").width(180.0)),
-                    Item::new(debug_button("def").width(180.0)),
-                    Item::new(debug_button("xxx").width(180.0)),
-                ].into())),
-        ].into());
+        let mb = MenuBar::new(
+            [
+                Item::with_menu(
+                    debug_button("content"),
+                    Menu::new(
+                        [
+                            Item::new(debug_button("abc").width(180.0)),
+                            Item::new(debug_button("def").width(180.0)),
+                            Item::new(debug_button("xxx").width(180.0)),
+                            Item::with_menu(
+                                debug_button("htrsth").width(180.0), 
+                                Menu::new(
+                                    vec![
+                                        Item::new(debug_button("ccgh").width(180.0)),
+                                        Item::new(debug_button("kuyg").width(180.0)),
+                                        Item::new(debug_button("vcsa").width(180.0)),
+                                        Item::new(debug_button("kiug").width(180.0)),
+                                    ]
+                                ).max_width(180.0)
+                            )
+                        ]
+                        .into(),
+                    ).max_width(180.0),
+                ),
+                Item::with_menu(
+                    debug_button("aaa"),
+                    Menu::new(
+                        [
+                            Item::new(debug_button("abc").width(Length::Fill)),
+                            Item::new(debug_button("def").width(Length::Fill)),
+                            Item::new(debug_button("xxx").width(Length::Fill)),
+                            Item::with_menu(
+                                debug_button("syjdtyjd").width(Length::Fill), 
+                                Menu::new(
+                                    vec![
+                                        Item::new(debug_button("hghg").width(Length::Fill)),
+                                        Item::new(debug_button("kuyg").width(Length::Fill)),
+                                        Item::new(debug_button("arga").width(Length::Fill)),
+                                        Item::new(debug_button("abcd").width(Length::Fill)),
+                                        Item::new(debug_button("vcsa").width(Length::Fill)),
+                                        Item::with_menu(
+                                            debug_button("htrsthfs").width(Length::Fill), 
+                                            Menu::new(
+                                                vec![
+                                                    Item::new(debug_button("hghg").width(Length::Fill)),
+                                                    Item::new(debug_button("kuyg").width(Length::Fill)),
+                                                    Item::new(debug_button("vcsa").width(Length::Fill)),
+                                                    Item::new(debug_button("kiug").width(Length::Fill)),
+                                                ]
+                                            ).max_width(220.0)
+                                        ),
+                                        Item::new(debug_button("kiug").width(Length::Fill)),
+                                    ]
+                                ).max_width(200.0)
+                            ),
+                            Item::new(debug_button("abc").width(Length::Fill)),
+                            Item::new(debug_button("def").width(Length::Fill)),
+                            Item::new(debug_button("xxx").width(Length::Fill)),
+                        ]
+                        .into(),
+                    ).max_width(180.0),
+                ),
+                Item::with_menu(
+                    debug_button("pondjssbah"),
+                    Menu::new(
+                        [
+                            Item::new(debug_button("abc").width(180.0)),
+                            Item::new(debug_button("def").width(180.0)),
+                            Item::new(debug_button("xxx").width(180.0)),
+                            Item::new(debug_button("htrsrt").width(180.0)),
+                            Item::new(debug_button("htrdf").width(180.0)),
+                            Item::new(debug_button("ngfcgng").width(180.0)),
+                            Item::new(debug_button("hytfy").width(180.0)),
+                            Item::new(debug_button("kuyg").width(180.0)),
+                            Item::new(debug_button("qegvd").width(180.0)),
+                            Item::with_menu(
+                                debug_button("iuoiy").width(180.0), 
+                                Menu::new(
+                                    [
+                                        Item::new(debug_button("abc").width(Length::Fill)),
+                                        Item::new(debug_button("def").width(Length::Fill)),
+                                        Item::new(debug_button("xxx").width(Length::Fill)),
+                                        Item::new(debug_button("htrsrt").width(Length::Fill)),
+                                        Item::new(debug_button("htrdf").width(Length::Fill)),
+                                        Item::new(debug_button("ngfcgng").width(Length::Fill)),
+                                        Item::new(debug_button("hytfy").width(Length::Fill)),
+                                        Item::new(debug_button("kuyg").width(Length::Fill)),
+                                        Item::new(debug_button("qegvd").width(Length::Fill)),
+                                        Item::new(debug_button("iuoiy").width(Length::Fill)),
+                                        Item::new(debug_button("rzsajf").width(Length::Fill)),
+                                        Item::new(debug_button("pkmehs").width(Length::Fill)),
+                                        Item::new(debug_button("ivrye").width(Length::Fill)),
+                                        Item::new(debug_button("zhdkr").width(Length::Fill)),
+                                        Item::new(debug_button("vjdiwo").width(Length::Fill)),
+                                        Item::new(debug_button("abc").width(Length::Fill)),
+                                        Item::new(debug_button("def").width(Length::Fill)),
+                                        Item::new(debug_button("xxx").width(Length::Fill)),
+                                        Item::new(debug_button("htrsrt").width(Length::Fill)),
+                                        Item::new(debug_button("htrdf").width(Length::Fill)),
+                                        Item::new(debug_button("ngfcgng").width(Length::Fill)),
+                                        Item::new(debug_button("hytfy").width(Length::Fill)),
+                                        Item::new(debug_button("kuyg").width(Length::Fill)),
+                                        Item::new(debug_button("qegvd").width(Length::Fill)),
+                                        Item::new(debug_button("iuoiy").width(Length::Fill)),
+                                        Item::new(debug_button("rzsajf").width(Length::Fill)),
+                                        Item::new(debug_button("pkmehs").width(Length::Fill)),
+                                        Item::new(debug_button("ivrye").width(Length::Fill)),
+                                        Item::new(debug_button("zhdkr").width(Length::Fill)),
+                                        Item::new(debug_button("vjdiwo").width(Length::Fill)),
+                                    ].into()
+                                ).max_width(180.0)
+                            ),
+                            Item::new(debug_button("rzsajf").width(180.0)),
+                            Item::new(debug_button("pkmehs").width(180.0)),
+                            Item::new(debug_button("ivrye").width(180.0)),
+                            Item::new(debug_button("zhdkr").width(180.0)),
+                            Item::new(debug_button("vjdiwo").width(180.0)),
+                            Item::new(debug_button("abc").width(180.0)),
+                            Item::new(debug_button("def").width(180.0)),
+                            Item::new(debug_button("xxx").width(180.0)),
+                            Item::new(debug_button("htrsrt").width(180.0)),
+                            Item::new(debug_button("htrdf").width(180.0)),
+                            Item::new(debug_button("ngfcgng").width(180.0)),
+                            Item::new(debug_button("hytfy").width(180.0)),
+                            Item::new(debug_button("kuyg").width(180.0)),
+                            Item::new(debug_button("qegvd").width(180.0)),
+                            Item::new(debug_button("iuoiy").width(180.0)),
+                            Item::new(debug_button("rzsajf").width(180.0)),
+                            Item::new(debug_button("pkmehs").width(180.0)),
+                            Item::new(debug_button("ivrye").width(180.0)),
+                            Item::new(debug_button("zhdkr").width(180.0)),
+                            Item::new(debug_button("vjdiwo").width(180.0)),
+                        ]
+                        .into(),
+                    ).max_width(180.0),
+                ),
+            ]
+            .into(),
+        );
 
         /* let mb = row![
             Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
@@ -310,38 +438,32 @@ impl Application for App {
 
         /* let r = if self.flip_h {
             row!(
-                // pick_size_option, 
-                horizontal_space(Length::Fill), 
+                // pick_size_option,
+                horizontal_space(Length::Fill),
                 mb,
             )
         } else {
             row!(
-                mb, 
-                horizontal_space(Length::Fill), 
+                mb,
+                horizontal_space(Length::Fill),
                 // pick_size_option
             )
         }
         .padding([2, 8])
         .align_items(alignment::Alignment::Center); */
 
-        let r = row![
-            horizontal_space(800), 
-            mb,
-            horizontal_space(800), 
-        ]
-        .padding([2, 8])
-        .align_items(alignment::Alignment::Center)
-        ;
-        
-        
+        let r = row![horizontal_space(800), mb, horizontal_space(800),]
+            .padding([2, 8])
+            .align_items(alignment::Alignment::Center);
+
         // let top_bar_style: fn(&iced::Theme) -> container::Appearance =
         //     |_theme| container::Appearance {
         //         background: Some(Color::TRANSPARENT.into()),
         //         ..Default::default()
         //     };
         // let top_bar = container(r).width(Length::Fill).style(top_bar_style);
-        
-        /* 
+
+        /*
         let c = if self.flip_v {
             col![back, top_bar,]
         } else {
@@ -349,23 +471,19 @@ impl Application for App {
         };
 
         c.into() */
-    
-        let c = col![
-            vertical_space(600),
-            r,
-            vertical_space(600),
-        ];
+
+        let c = col![vertical_space(600), r, vertical_space(600),];
 
         let sc = scrollable(c)
             // .direction(scrollable::Direction::Both{
             //     vertical: scrollable::Properties::new(),
             //     horizontal: scrollable::Properties::new(),
             // });
-            .direction(scrollable::Direction::Both{
+            .direction(scrollable::Direction::Both {
                 vertical: scrollable::Properties::new(),
                 horizontal: scrollable::Properties::new(),
             });
-        
+
         let back_style: fn(&iced::Theme) -> container::Appearance = |theme| container::Appearance {
             background: Some(theme.extended_palette().primary.base.color.into()),
             ..Default::default()
@@ -374,7 +492,7 @@ impl Application for App {
             .width(Length::Fill)
             .height(Length::Fill)
             .style(back_style);
-        
+
         back.into()
     }
 }
@@ -387,12 +505,11 @@ impl button::StyleSheet for ButtonStyle {
         button::Appearance {
             text_color: style.extended_palette().background.base.text,
             background: Some(Color::TRANSPARENT.into()),
-            border: Border{
-                radius: [4.0;4].into(),
+            border: Border {
+                radius: [4.0; 4].into(),
                 ..Default::default()
             },
             ..Default::default()
-            
         }
     }
 
@@ -417,7 +534,10 @@ fn base_button<'a>(
         .on_press(msg)
 }
 
-fn labeled_button<'a>(label: &str, msg: Message) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+fn labeled_button<'a>(
+    label: &str,
+    msg: Message,
+) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     base_button(
         text(label)
             // .width(Length::Fill)

@@ -1,12 +1,17 @@
 //! doc
 //!
-use std::borrow::BorrowMut;
+use std::{any::Any, borrow::BorrowMut};
 
-use iced_widget::core::{
-    alignment, event, layout::{self, Limits, Node}, mouse, overlay, renderer, touch, widget::tree::{self, Tree}, Alignment, Border, Clipboard, Color, Element, Event, Length, Padding, Point, Rectangle, Shell, Size, Vector, Widget
-};
 use super::types::*;
 use super::{flex, menu_bar::MenuBarState};
+use iced_widget::core::{
+    alignment, event,
+    layout::{self, Limits, Node},
+    mouse, overlay, renderer, touch,
+    widget::tree::{self, Tree},
+    Alignment, Border, Clipboard, Color, Element, Event, Length, Padding, Point, Rectangle, Shell,
+    Size, Vector, Widget,
+};
 
 /*
 
@@ -38,34 +43,26 @@ Tree{
     ]
 }
 
-layout tree
-Node{
-    item node
-    [
-        Node{widget node}
-        Node{
-            menu node
-            [
-                Node{item node [...]}
-                Node{item node [...]}
-                Node{item node [...]}
-                ...
-            ]
-        }
-    ]
-}
-
 */
 
-#[derive(Debug, Default)]
-pub(super) struct MenuState{
-    scroll_offset:f32,
+#[derive(Debug)]
+pub(super) struct MenuState {
+    scroll_offset: f32,
+    pub(super) active: Index,
+}
+impl Default for MenuState{
+    fn default() -> Self {
+        Self {
+            scroll_offset: 0.0,
+            active: None,
+        }
+    }
 }
 
 /// menu
 pub struct Menu<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
     pub(super) spacing: f32,
@@ -80,40 +77,43 @@ where
 #[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
-    pub fn new(items: Vec<Item<'a, Message, Theme, Renderer>>) -> Self{
-        Self{
+    pub fn new(items: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
+        Self {
             items,
             spacing: 0.0,
             padding: Padding::ZERO,
             max_width: f32::MAX,
-            width: Length::Shrink,
+            width: Length::Fill,
             height: Length::Shrink,
-            axis: Axis::Vertical,
-            offset: 0.0,
+            axis: Axis::Horizontal,
+            offset: 20.0,
             open_condition: OpenCondition::Click,
         }
     }
 
-    pub fn tree(&self) -> Tree{
-        Tree{
+    pub fn tree(&self) -> Tree {
+        Tree {
             tag: self.tag(),
             state: self.state(),
             children: self.children(),
         }
     }
+
+    pub fn max_width(mut self, max_width: f32) -> Self{
+        self.max_width = max_width;
+        self
+    }
 }
-impl<'a, Message, Theme, Renderer> 
-    // Widget<Message, Theme, Renderer> for
-    Menu<'a, Message, Theme, Renderer>
+impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
     pub(super) fn size(&self) -> Size<Length> {
         Size::new(self.width, self.height)
     }
-    
+
     pub(super) fn tag(&self) -> tree::Tag {
         tree::Tag::of::<MenuState>()
     }
@@ -124,26 +124,32 @@ where
 
     /// out: \[item_tree...]
     pub(super) fn children(&self) -> Vec<Tree> {
-        self.items.iter().map(|i| i.tree() ).collect()
+        self.items.iter().map(|i| i.tree()).collect()
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
     pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.items.iter().map(|i| &i.item ).collect::<Vec<_>>());
+        // tree.diff_children(&self.items.iter().map(|i| &i.item ).collect::<Vec<_>>());
+        tree.diff_children_custom(
+            &self.items,
+            |tree, item| item.diff(tree),
+            |item| item.tree(),
+        )
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    /// 
-    /// out: Node{size:inf, \[items_layout, prescroll, offset_bounds, check_bounds]}
+    ///
+    /// out: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
     pub(super) fn layout(
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &layout::Limits,
         parent_bounds: Rectangle,
-        // translation: Vector,
+        parent_direction: (Direction, Direction),
+        translation: Vector,
         viewport: &Rectangle,
-    ) -> layout::Node {
+    ) -> (layout::Node, (Direction, Direction)) {
         let limits = limits.max_width(self.max_width);
 
         let items_node = flex::resolve(
@@ -155,129 +161,59 @@ where
             self.padding,
             self.spacing,
             alignment::Alignment::Center,
-            &self.items.iter().map(|i| &i.item ).collect::<Vec<_>>(),
-            &mut tree.children.iter_mut().map(|t| &mut t.children[0] ).collect::<Vec<_>>(),
+            &self.items.iter().map(|i| &i.item).collect::<Vec<_>>(),
+            &mut tree
+                .children
+                .iter_mut()
+                .map(|t| &mut t.children[0])
+                .collect::<Vec<_>>(),
         );
 
-        let items_node = Node::with_children(
-            items_node.bounds().size(), 
-            self.items
-                .iter()
-                .zip(tree.children.iter_mut())
-                .zip(items_node.children().into_iter())
-                .map(|((item, tree), node)|{
-                    Node::with_children(
-                        Size::ZERO, 
-                        [
-                            node.clone(),
-                            item.layout(tree, renderer, &Limits::NONE, viewport, 
-                                // translation
-                            )
-                        ].into()
-                    )
-                })
-                .collect()
-        );
-
-
-        // for ((item, tree), node) in self.items
-        //     .iter()
-        //     .zip(tree.children.iter_mut())
-        //     .zip(items_node.children().iter_mut())
-        // {
-        //     *node = Node::with_children(
-        //         Size::ZERO, 
-        //         [
-        //             node.clone(),
-        //             item.layout(tree, renderer, &Limits::NONE, viewport, 
-        //                 // translation
-        //             )
-        //                 .children()[1]
-        //         ].into()
-        //     )
-        // }
-
-        let bounds = viewport.size();
-        // let vpb = parent_bounds + translation; // viewport space parent bounds
-        let vpb = parent_bounds;
-        let aod = {
-            let hcenter = bounds.width / 2.0;
-            let vcenter = bounds.height / 2.0;
-    
-            let phcenter = vpb.x + vpb.width / 2.0;
-            let pvcenter = vpb.y + vpb.height / 2.0;
-    
-            let horizontal_direction = if phcenter < hcenter { Direction::Positive } else { Direction::Negative };
-            let vertical_direction   = if pvcenter < vcenter { Direction::Positive } else { Direction::Negative };
-    
-            match self.axis {
-                Axis::Horizontal => Aod{
-                    horizontal: false,
-                    vertical: true,
-                    horizontal_overlap: false,
-                    vertical_overlap: true,
-                    horizontal_direction,
-                    vertical_direction,
-                    horizontal_offset: self.offset,
-                    vertical_offset: 0.0,
-                },
-                Axis::Vertical => Aod{
-                    horizontal: true,
-                    vertical: false,
-                    horizontal_overlap: true,
-                    vertical_overlap: false,
-                    horizontal_direction,
-                    vertical_direction,
-                    horizontal_offset: 0.0,
-                    vertical_offset: self.offset,
-                }
-            }
-        };
+        let aod = Aod::new(self.axis, viewport.size(), parent_bounds, parent_direction, self.offset);
 
         let children_size = items_node.bounds().size();
-        let (children_position, offset_position) = aod.resolve(
-            vpb,
-            children_size,
-            bounds
-        );
-
+        let (children_position, offset_position, child_direction) = aod.resolve(parent_bounds, children_size, viewport.size());
+        
         // calc offset bounds
         let delta = children_position - offset_position;
         let offset_size = if delta.x.abs() > delta.y.abs() {
-            Size::new(delta.x, children_size.height)
+            Size::new(self.offset, children_size.height)
         } else {
-            Size::new(children_size.width, delta.y)
+            Size::new(children_size.width, self.offset)
         };
+        
         let offset_bounds = Rectangle::new(offset_position, offset_size);
         let children_bounds = Rectangle::new(children_position, children_size);
         let bounds_expand = 30.0;
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
-        
+
         let menu_state = tree.state.downcast_ref::<MenuState>();
 
-        layout::Node::with_children(Size::INFINITY, [
-            items_node
-                .move_to(children_position)
-                .translate([0.0, menu_state.scroll_offset]), // items layout
-            layout::Node::new(children_size)
-                .move_to(children_position), // prescroll menu bounds
-            
-            layout::Node::new(offset_bounds.size())
-                .move_to(offset_bounds.position())
-                .translate([0.0, menu_state.scroll_offset]), // offset bounds
-            layout::Node::new(check_bounds.size())
-                .move_to(check_bounds.position())
-                .translate([0.0, menu_state.scroll_offset]), // check bounds
-        ].into())
+        (
+            layout::Node::with_children(
+                Size::INFINITY,
+                [
+                    items_node
+                        .move_to(children_position)
+                        .translate([0.0, menu_state.scroll_offset]), // items layout
+                    layout::Node::new(children_size)
+                        .move_to(children_position), // prescroll bounds
+                    layout::Node::new(offset_bounds.size())
+                        .move_to(offset_bounds.position()), // offset boundss
+                    layout::Node::new(check_bounds.size())
+                        .move_to(check_bounds.position()), // check bounds
+                ]
+                .into(),
+            ),
+            child_direction
+        )
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    /// 
-    /// layout: Node{size:inf, \[items_layout, prescroll, offset_bounds, check_bounds]}
+    ///
+    /// layout: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
     pub(super) fn on_event(
         &mut self,
-        // bar: &mut MenuBarState,
-        item_state: &mut ItemState,
         tree: &mut Tree,
         event: Event,
         layout: layout::Layout<'_>,
@@ -286,17 +222,17 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-        parent_bounds: &Rectangle,
-        items_bounds_list: &[Rectangle],
     ) -> event::Status {
+        // println!("menu event");
         let mut lc = layout.children();
         let items_layout = lc.next().unwrap();
-        
+
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
 
-        let status = self.items // [item...]
+        let status = self
+            .items // [item...]
             .iter_mut()
             .zip(tree.children.iter_mut()) // [item_tree...]
             .zip(items_layout.children()) // [item_layout...]
@@ -313,50 +249,29 @@ where
                 )
             })
             .fold(event::Status::Ignored, event::Status::merge);
-        
+
         let menu_state = tree.state.downcast_mut::<MenuState>();
 
         use event::Status::*;
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                if cursor.is_over(items_layout.bounds()){
-                    process_scroll_event(menu_state, prescroll, delta, viewport.size())
-                }else{
+                if cursor.is_over(items_layout.bounds()) {
+                    process_scroll_event(menu_state, prescroll, delta, viewport.size());
+                    Captured
+                } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
+                    Captured
+                } else {
                     Ignored
                 }
             }
-            Event::Mouse(mouse::Event::CursorMoved { position }) => {
-                let open = {
-                    if prescroll.contains(position){
-                        true
-                    }else if items_bounds_list
-                        .iter()
-                        .any(|r| r.contains(position))
-                    {
-                        false
-                    }else if parent_bounds.contains(position)
-                        || offset_bounds.contains(position)
-                        || check_bounds.contains(position)
-                    {
-                        true
-                    }else{
-                        false
-                    }
-                };
-
-                if item_state.open == true && open == false {
-                    item_state.open = false;
-                    // menu_state.scroll_offset = 0.0;
-                }
-                Captured
-            }
-            _ => Ignored
-        }.merge(status)
+            _ => Ignored,
+        }
+        .merge(status)
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    /// 
-    /// layout: Node{size:inf, \[items_layout, prescroll, offset_bounds, check_bounds]}
+    ///
+    /// layout: Node{inf, \[ items_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn draw(
         &self,
         tree: &Tree,
@@ -366,32 +281,221 @@ where
         layout: layout::Layout<'_>,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
+        parent_bounds: Rectangle,
     ) {
         let mut lc = layout.children();
         let items_layout = lc.next().unwrap();
+        let prescroll = lc.next().unwrap().bounds();
+        let offset_bounds = lc.next().unwrap().bounds();
+        let check_bounds = lc.next().unwrap().bounds();
 
-        for ((item, tree), layout) in self.items // [item...]
+        // println!("prescroll: {:?}", prescroll);
+        // println!("parent_bounds: {:?}", parent_bounds);
+
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: check_bounds,
+                border: Border{
+                    // color: todo!(),
+                    // width: todo!(),
+                    radius: 6.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            Color::from([1.0, 0.0, 0.0, 0.1])
+        );
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: prescroll,
+                border: Border{
+                    // color: todo!(),
+                    // width: todo!(),
+                    radius: 6.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            Color::from([1.0, 1.0, 1.0, 1.0])
+        );
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: offset_bounds,
+                border: Border{
+                    // color: todo!(),
+                    // width: todo!(),
+                    radius: 6.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            Color::from([0.0, 0.0, 1.0, 0.3])
+        );
+
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: parent_bounds,
+                border: Border{
+                    // color: todo!(),
+                    // width: todo!(),
+                    radius: 6.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            Color::from([1.0, 1.0, 0.0, 0.5])
+        );
+
+        for ((item, tree), layout) in self
+            .items // [item...]
             .iter()
             .zip(tree.children.iter()) // [item_tree...]
-            .zip(items_layout.children()) // [item_layout...]
+            .zip(items_layout.children())
+        // [item_layout...]
         {
-            item.draw(
-                tree, renderer, theme, style, layout, cursor, &viewport,
-            );
+            item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
         }
     }
+
+    /// layout: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
+    pub(super) fn open_or_close_event(
+        &mut self,
+        // process_oce: &mut bool,
+        prev: &mut Index,
+        tree: &mut Tree,
+        event: Event,
+        layout: layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        parent_bounds: Rectangle,
+        prev_bounds_list: &[Rectangle],
+    ){
+        let mut lc = layout.children();
+        let items_layout = lc.next().unwrap();
+        let prescroll = lc.next().unwrap().bounds();
+        let offset_bounds = lc.next().unwrap().bounds();
+        let check_bounds = lc.next().unwrap().bounds();
+        
+        let menu_state = tree.state.downcast_mut::<MenuState>();
+
+        match event {
+            Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                let open = {
+                    if cursor.is_over(prescroll)
+                    || cursor.is_over(parent_bounds) 
+                    || cursor.is_over(offset_bounds) {
+                        true
+                    } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
+                        false
+                    } else if cursor.is_over(check_bounds) {
+                        true
+                    } else {
+                        false
+                    }
+                };
+
+                if open {
+                    if !cursor.is_over(prescroll) {
+                        menu_state.active = None
+                    } else {
+                        self.items
+                            .iter()
+                            .zip(items_layout.children())
+                            .enumerate()
+                            .for_each(|(i, (item, layout))|{
+                                if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                                    println!("new active: {}", i);
+                                    menu_state.active = Some(i)
+                                }
+                            })
+                    }
+                } else {
+                    // *process_oce = true;
+
+                    println!("set prev none");
+                    *prev = None;
+                    menu_state.scroll_offset = 0.0
+                }
+            }
+            _ => ()
+        }
+    }
+
+    pub(super) fn open_event(
+        &self,
+        tree: &mut Tree,
+        layout: layout::Layout<'_>,
+        cursor: mouse::Cursor,
+    ) -> event::Status {
+        let mut lc = layout.children();
+        let items_layout = lc.next().unwrap();
+        // let prescroll = lc.next().unwrap().bounds();
+        // let offset_bounds = lc.next().unwrap().bounds();
+        // let check_bounds = lc.next().unwrap().bounds();
+
+        let menu_state = tree.state.downcast_mut::<MenuState>();
+        menu_state.active = None;
+
+        for (i, (item, layout)) in self.items
+            .iter()
+            .zip(items_layout.children())
+            .enumerate()
+        {
+            if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                println!("new active: {}", i);
+                menu_state.active = Some(i);
+                return event::Status::Captured;
+            }
+        }
+        event::Status::Ignored
+    }
+
+    pub(super) fn close_event(
+        &self,
+        tree: &mut Tree,
+        layout: layout::Layout<'_>,
+        cursor: mouse::Cursor,
+        parent_bounds: Rectangle,
+        prev_bounds_list: &[Rectangle],
+        prev: &mut Index
+    ) {
+        let mut lc = layout.children();
+        let _items_layout = lc.next().unwrap();
+        let prescroll = lc.next().unwrap().bounds();
+        let offset_bounds = lc.next().unwrap().bounds();
+        let check_bounds = lc.next().unwrap().bounds();
+
+        let open = {
+            if cursor.is_over(prescroll)
+            || cursor.is_over(parent_bounds) 
+            || cursor.is_over(offset_bounds) {
+                true
+            } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
+                false
+            } else if cursor.is_over(check_bounds) {
+                true
+            } else {
+                false
+            }
+        };
+
+        if !open {
+            *prev = None;
+            let menu_state = tree.state.downcast_mut::<MenuState>();
+            menu_state.scroll_offset = 0.0
+        }
+    }
+    
 }
 
-
-#[derive(Debug, Default)]
-pub(super) struct ItemState{
-    pub(super) open: bool
-}
+// #[derive(Debug, Default)]
+// pub(super) struct ItemState{
+//     pub(super) open: bool
+// }
 
 /// menu item
 pub struct Item<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
     pub(super) item: Element<'a, Message, Theme, Renderer>,
     pub(super) menu: Option<Box<Menu<'a, Message, Theme, Renderer>>>,
@@ -399,118 +503,91 @@ where
 #[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
-    pub fn new(item: impl Into<Element<'a, Message, Theme, Renderer>>) -> Self{
-        Self{
+    pub fn new(item: impl Into<Element<'a, Message, Theme, Renderer>>) -> Self {
+        Self {
             item: item.into(),
             menu: None,
         }
     }
 
-    pub fn with_menu(item: impl Into<Element<'a, Message, Theme, Renderer>>, menu: Menu<'a, Message, Theme, Renderer>) -> Self{
-        Self{
+    pub fn with_menu(
+        item: impl Into<Element<'a, Message, Theme, Renderer>>,
+        menu: Menu<'a, Message, Theme, Renderer>,
+    ) -> Self {
+        Self {
             item: item.into(),
             menu: Some(Box::new(menu)),
         }
     }
 
-    pub fn menu(mut self, menu: Menu<'a, Message, Theme, Renderer>) -> Self{
+    pub fn menu(mut self, menu: Menu<'a, Message, Theme, Renderer>) -> Self {
         self.menu = Some(Box::new(menu));
         self
     }
 
-    pub(super) fn tree(&self) -> Tree{
-        Tree{
+    pub(super) fn tree(&self) -> Tree {
+        Tree {
             tag: self.tag(),
             state: self.state(),
             children: self.children(),
         }
     }
 }
-impl<'a, Message, Theme, Renderer>
-    // Widget<Message, Theme, Renderer> for
-    Item<'a, Message, Theme, Renderer>
+impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
-    Renderer:renderer::Renderer
+    Renderer: renderer::Renderer,
 {
     pub(super) fn size(&self) -> Size<Length> {
         self.item.as_widget().size()
     }
-    
+
     pub(super) fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<ItemState>()
+        tree::Tag::stateless()
     }
 
     pub(super) fn state(&self) -> tree::State {
-        tree::State::Some(Box::new(ItemState::default()))
+        // tree::State::Some(Box::new(ItemState::default()))
+        tree::State::None
     }
 
     /// out: \[widget_tree, menu_tree]
     pub(super) fn children(&self) -> Vec<Tree> {
-        self.menu.as_ref().map_or(
-            [
-                Tree::new(&self.item),
-            ].into(),
-            |m|[
-                Tree::new(&self.item),
-                m.tree()
-            ].into(),
-        )
+        self.menu
+            .as_ref()
+            .map_or([Tree::new(&self.item)].into(), |m| {
+                [Tree::new(&self.item), m.tree()].into()
+            })
     }
 
-    /// tree: Tree{item_state, \[widget_tree, menu_tree]}
+    /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     pub(super) fn diff(&self, tree: &mut Tree) {
         tree.children[0].diff(&self.item);
-        self.menu.as_ref().map_or(
-            {}, 
-            |m| {
-                m.diff(&mut tree.children[1])
-            }
-        )
+        self.menu
+            .as_ref()
+            .map_or({}, |m| m.diff(&mut tree.children[1]))
     }
 
-    /// tree: Tree{item_state, \[widget_tree, menu_tree]}
-    /// 
-    /// out: Node{size:0, \[widget_node, menu_node]}
+    /// tree: Tree{stateless, \[widget_tree, menu_tree]}
+    ///
     pub(super) fn layout(
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &layout::Limits,
-        viewport: &Rectangle,
         // translation: Vector,
     ) -> layout::Node {
-        let state = tree.state.downcast_ref::<ItemState>();
-        let widget_node = self.item.as_widget().layout(&mut tree.children[0], renderer, limits);
-        let parent_bounds = widget_node.bounds();
-        Node::with_children(
-            Size::ZERO, 
-            [
-                widget_node,
-                if state.open{
-                    self.menu.as_ref().unwrap().layout(
-                        &mut tree.children[1], 
-                        renderer, 
-                        &Limits::NONE, 
-                        parent_bounds,
-                        // translation,
-                        viewport,
-                    )
-                }else{
-                    Node::default()
-                }
-            ].into()
-        )
+        // println!("Item layout");
+        self.item
+            .as_widget()
+            .layout(&mut tree.children[0], renderer, limits)
     }
 
-    /// tree: Tree{item_state, \[widget_tree, menu_tree]}
-    /// 
-    /// layout: Node{size:0, \[widget_node, menu_node]}
+    /// tree: Tree{stateless, \[widget_tree, menu_tree]}
+    ///
     pub(super) fn on_event(
         &mut self,
-        // index: usize, // within parent menu
-        // bar: &mut MenuBarState,
         tree: &mut Tree,
         event: Event,
         layout: layout::Layout<'_>,
@@ -520,68 +597,21 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        let mut lc = layout.children();
-        let widget_layout = lc.next().unwrap();
-        let status = self.item.as_widget_mut().on_event(
-            &mut tree.children[0], 
-            event.clone(), 
-            widget_layout, 
-            cursor, 
-            renderer, 
-            clipboard, 
-            shell, 
-            viewport
-        );
-
-        let item_state = tree.state.downcast_mut::<ItemState>();
-
-        let Some(menu) = self.menu.as_ref() else {
-            item_state.open = false;
-            return status
-        };
-        let menu_state = tree.children[1].state.downcast_mut::<MenuState>();
-        let widget_bounds = widget_layout.bounds();
-
-        use event::Status::*;
-        match menu.open_condition{
-            OpenCondition::Click => match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if cursor.is_over(widget_bounds) {
-                        if item_state.open == false {
-                            item_state.open = true;
-                            menu_state.scroll_offset = 0.0;
-                            // bar.indices.push(index);
-                        }
-                        Captured
-                    }else{
-                        Ignored
-                    }
-                }
-                _ => Ignored
-            }
-            OpenCondition::Hover => match event {
-                Event::Mouse(mouse::Event::CursorMoved { position }) => {
-                    if widget_bounds.contains(position) {
-                        if item_state.open == false {
-                            item_state.open = true;
-                            menu_state.scroll_offset = 0.0;
-                            // bar.indices.push(index);
-                        }
-                        Captured
-                    }else{
-                        Ignored
-                    }
-                }
-                _ => Ignored
-            }
-        }
-        .merge(status)
+        // println!("item event");
+        self.item.as_widget_mut().on_event(
+            &mut tree.children[0],
+            event,
+            layout,
+            cursor,
+            renderer,
+            clipboard,
+            shell,
+            viewport,
+        )
     }
 
-    /// tree: Tree{item_state, \[widget_tree, menu_tree]}
-    /// 
-    /// layout: Node{size:0, \[widget_node, menu_node]}
+    /// tree: Tree{stateless, \[widget_tree, menu_tree]}
+    ///
     pub(super) fn draw(
         &self,
         tree: &Tree,
@@ -592,19 +622,17 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        let item_layout = layout.children().next().unwrap();
         self.item.as_widget().draw(
-            tree, 
-            renderer, 
-            theme, 
-            style, 
-            item_layout, 
-            cursor, 
-            viewport
+            &tree.children[0],
+            renderer,
+            theme,
+            style,
+            layout,
+            cursor,
+            viewport,
         )
     }
 }
-
 
 /// Adaptive open direction
 #[derive(Debug)]
@@ -627,7 +655,7 @@ struct Aod {
     vertical_offset: f32,
 }
 impl Aod {
-    /// Returns child position and offset position
+    /// Returns child position. offset position, child direction
     #[allow(clippy::too_many_arguments)]
     fn adaptive(
         parent_pos: f32,
@@ -638,7 +666,7 @@ impl Aod {
         on: bool,
         overlap: bool,
         direction: Direction,
-    ) -> (f32, f32) {
+    ) -> (f32, f32, Direction) {
         /*
         Imagine there're two sticks, parent and child
         parent: o-----o
@@ -676,16 +704,16 @@ impl Aod {
                 if overlap {
                     let overshoot = child_size - parent_size;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos - overshoot, parent_pos - overshoot)
+                        (parent_pos - overshoot, parent_pos - overshoot, direction.flip())
                     } else {
-                        (parent_pos, parent_pos)
+                        (parent_pos, parent_pos, direction)
                     }
                 } else {
                     let overshoot = child_size + offset;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos - overshoot, parent_pos - offset)
+                        (parent_pos - overshoot, parent_pos - offset, direction.flip())
                     } else {
-                        (parent_pos + parent_size + offset, parent_pos + parent_size)
+                        (parent_pos + parent_size + offset, parent_pos + parent_size, direction)
                     }
                 }
             }
@@ -696,16 +724,16 @@ impl Aod {
                 if overlap {
                     let overshoot = child_size - parent_size;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos, parent_pos)
+                        (parent_pos, parent_pos, direction.flip())
                     } else {
-                        (parent_pos - overshoot, parent_pos - overshoot)
+                        (parent_pos - overshoot, parent_pos - overshoot, direction)
                     }
                 } else {
                     let overshoot = child_size + offset;
                     if on && space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos + parent_size + offset, parent_pos + parent_size)
+                        (parent_pos + parent_size + offset, parent_pos + parent_size, direction.flip())
                     } else {
-                        (parent_pos - overshoot, parent_pos - offset)
+                        (parent_pos - overshoot, parent_pos - offset, direction)
                     }
                 }
             }
@@ -718,8 +746,8 @@ impl Aod {
         parent_bounds: Rectangle,
         children_size: Size,
         viewport_size: Size,
-    ) -> (Point, Point) {
-        let (x, ox) = Self::adaptive(
+    ) -> (Point, Point, (Direction, Direction)) {
+        let (x, ox, dx) = Self::adaptive(
             parent_bounds.x,
             parent_bounds.width,
             children_size.width,
@@ -729,7 +757,7 @@ impl Aod {
             self.horizontal_overlap,
             self.horizontal_direction,
         );
-        let (y, oy) = Self::adaptive(
+        let (y, oy, dy) = Self::adaptive(
             parent_bounds.y,
             parent_bounds.height,
             children_size.height,
@@ -740,7 +768,61 @@ impl Aod {
             self.vertical_direction,
         );
 
-        ([x, y].into(), [ox, oy].into())
+        ([x, y].into(), [ox, oy].into(), (dx, dy))
+    }
+
+    fn new(
+        axis: Axis,
+        viewport: Size,
+        parent_bounds: Rectangle,
+        parent_direction: (Direction, Direction),
+        offset: f32,
+    ) -> Self{
+        let hcenter = viewport.width / 2.0;
+        let vcenter = viewport.height / 2.0;
+
+        let phcenter = parent_bounds.x + parent_bounds.width / 2.0;
+        let pvcenter = parent_bounds.y + parent_bounds.height / 2.0;
+
+        let (pdx, pdy) = parent_direction;
+        match axis {
+            Axis::Horizontal =>{
+                let horizontal_direction = pdx;
+                let vertical_direction = if pvcenter < vcenter {
+                    Direction::Positive
+                } else {
+                    Direction::Negative
+                };
+                Aod {
+                    horizontal: true,
+                    vertical: true,
+                    horizontal_overlap: false,
+                    vertical_overlap: true,
+                    horizontal_direction,
+                    vertical_direction,
+                    horizontal_offset: offset,
+                    vertical_offset: 0.0,
+                }
+            },
+            Axis::Vertical => {
+                let horizontal_direction = if phcenter < hcenter {
+                    Direction::Positive
+                } else {
+                    Direction::Negative
+                };
+                let vertical_direction = pdy;
+                Aod {
+                    horizontal: true,
+                    vertical: true,
+                    horizontal_overlap: true,
+                    vertical_overlap: false,
+                    horizontal_direction,
+                    vertical_direction,
+                    horizontal_offset: 0.0,
+                    vertical_offset: offset,
+                }
+            },
+        }
     }
 }
 
@@ -752,7 +834,6 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
         height: rect.height + padding.vertical(),
     }
 }
-
 
 fn search_bound(
     default: usize,
@@ -787,7 +868,7 @@ fn process_scroll_event(
     prescroll_children_bounds: Rectangle,
     delta: mouse::ScrollDelta,
     viewport_size: Size,
-) -> event::Status{
+){
     use mouse::ScrollDelta;
 
     let pcb = prescroll_children_bounds;
@@ -795,10 +876,8 @@ fn process_scroll_event(
     let delta_y = match delta {
         ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y,
     };
- 
+
     let max_offset = (0.0 - pcb.y).max(0.0);
     let min_offset = (viewport_size.height - (pcb.y + pcb.height)).min(0.0);
     menu_state.scroll_offset = (menu_state.scroll_offset + delta_y).clamp(min_offset, max_offset);
-
-    event::Status::Captured
 }
