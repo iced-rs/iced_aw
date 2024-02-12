@@ -253,9 +253,6 @@ where
             layout::Node::with_children(
                 Size::INFINITY,
                 [
-                    items_node
-                        .move_to(children_position)
-                        .translate([0.0, menu_state.scroll_offset]), // items layout
                     slice_node
                         .move_to(children_position)
                         .translate([0.0, menu_state.scroll_offset]), // slice layout
@@ -273,7 +270,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_boundss, check_bounds ]}
+    /// layout: Node{inf, \[ slice_node, prescroll, offset_boundss, check_bounds ]}
     pub(super) fn on_event(
         &mut self,
         tree: &mut Tree,
@@ -287,7 +284,6 @@ where
     ) -> event::Status {
         // println!("menu event");
         let mut lc = layout.children();
-        let _items_layout = lc.next().unwrap();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
@@ -347,7 +343,6 @@ where
         parent_bounds: Rectangle,
     ) {
         let mut lc = layout.children();
-        let _items_layout = lc.next().unwrap();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
@@ -439,14 +434,6 @@ where
         {
             item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
         }
-        // for ((item, tree), layout) in self
-        //     .items // [item...]
-        //     .iter()
-        //     .zip(tree.children.iter()) // [item_tree...]
-        //     .zip(items_layout.children())// [item_layout...]
-        // {
-        //     item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
-        // }
     }
 
     pub(super) fn open_event(
@@ -456,7 +443,6 @@ where
         cursor: mouse::Cursor,
     ) -> event::Status {
         let mut lc = layout.children();
-        let _items_layout = lc.next().unwrap();
         let slice_layout = lc.next().unwrap();
         // let prescroll = lc.next().unwrap().bounds();
         // let offset_bounds = lc.next().unwrap().bounds();
@@ -490,7 +476,6 @@ where
         prev: &mut Index
     ) {
         let mut lc = layout.children();
-        let _items_layout = lc.next().unwrap();
         let _slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
@@ -513,7 +498,8 @@ where
         if !open {
             *prev = None;
             let menu_state = tree.state.downcast_mut::<MenuState>();
-            menu_state.scroll_offset = 0.0
+            menu_state.scroll_offset = 0.0;
+            menu_state.active = None;
         }
     }
     

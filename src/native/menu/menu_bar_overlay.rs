@@ -97,7 +97,7 @@ where
             let menu_tree = &mut tree.children[1];
 
             let (menu_node, direction) = menu.layout(menu_tree, renderer, &Limits::NONE, parent_bounds, parent_direction, viewport); 
-                // Node{inf, [ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
+                // Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
             menu_nodes.push(menu_node);
             
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
@@ -106,10 +106,7 @@ where
             if let Some(active) = menu_state.active{
                 let next_item = &menu.items[active];
                 let next_tree = &mut menu_tree.children[active];
-                // let items_node = &menu_nodes.last().unwrap().children()[0];
-                // let next_parent_bounds = items_node.children()[active].bounds() + 
-                //     (items_node.bounds().position() - Point::ORIGIN);
-                let slice_node = &menu_nodes.last().unwrap().children()[1];
+                let slice_node = &menu_nodes.last().unwrap().children()[0];
                 let next_parent_bounds = slice_node.children()[active - slice.start_index].bounds() + 
                     (slice_node.bounds().position() - Point::ORIGIN);
                 
@@ -212,12 +209,12 @@ where
             let menu = item.menu.as_mut().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
 
-            let Some(menu_layout) = layout_iter.next() else { return RecEvent::None; }; // menu_node: Node{inf, [ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
+            let Some(menu_layout) = layout_iter.next() else { return RecEvent::None; }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
 
             let mut mc = menu_layout.children();
-            let items_layout = mc.next().unwrap(); // items_node
             let slice_layout = mc.next().unwrap(); // slice_node
             let prescroll = mc.next().unwrap().bounds();
+            let offset_bounds = mc.next().unwrap().bounds();
             prev_bounds_list.push(prescroll);
             
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
@@ -225,7 +222,6 @@ where
             if let Some(active) = menu_state.active{
                 let next_tree = &mut menu_tree.children[active];
                 let next_item = &mut menu.items[active];
-                // let next_parent_bounds = items_layout.children().nth(active).unwrap().bounds();
                 let next_parent_bounds = slice_layout.children().nth(active - menu_state.slice.start_index).unwrap().bounds();
 
                 let re = rec(
@@ -250,7 +246,11 @@ where
                     RecEvent::Close => {
                         menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
                         if prev.is_some(){
-                            RecEvent::None
+                            if cursor.is_over(offset_bounds){
+                                RecEvent::Event
+                            }else{
+                                RecEvent::None
+                            }
                         }else{
                             RecEvent::Close
                         }
@@ -275,7 +275,11 @@ where
                 }else{
                     menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
                     if prev.is_some(){
-                        RecEvent::None
+                        if cursor.is_over(offset_bounds){
+                            RecEvent::Event
+                        }else{
+                            RecEvent::None
+                        }
                     }else{
                         RecEvent::Close
                     }
@@ -283,7 +287,7 @@ where
             }
         }
         
-        rec(
+        let re = rec(
             active_tree, 
             active_root, 
             event, 
@@ -298,10 +302,17 @@ where
             &mut bar.active_root,
         );
 
-        if cursor.is_over(bar_bounds){
-            Ignored
-        }else{
-            Captured
+        match re {
+            RecEvent::Event => {
+                Captured
+            },
+            RecEvent::Close | RecEvent::None => {
+                if cursor.is_over(bar_bounds){
+                    Ignored
+                }else{
+                    Captured
+                }
+            },
         }
     }
 
@@ -370,7 +381,7 @@ where
             let menu = item.menu.as_ref().expect("No menu defined in this item");
             let menu_tree = &tree.children[1];
 
-            let Some(menu_layout) = layout_iter.next() else { return }; // menu_node: Node{inf, [ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
+            let Some(menu_layout) = layout_iter.next() else { return }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
             
             menu.draw(
                 menu_tree, 
@@ -384,7 +395,6 @@ where
             );
 
             let mut mc = menu_layout.children();
-            let items_layout = mc.next().unwrap(); // items_node
             let slice_layout = mc.next().unwrap(); // slice_node
             
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
@@ -392,7 +402,6 @@ where
             if let Some(active) = menu_state.active{
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
-                // let next_parent_bounds = items_layout.children().nth(active).unwrap().bounds();
                 let next_parent_bounds = slice_layout.children().nth(active - menu_state.slice.start_index).unwrap().bounds();
 
                 renderer.with_layer(

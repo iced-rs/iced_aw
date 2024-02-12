@@ -12,16 +12,8 @@ where
 {
     pub(super) state: &'b mut MenuTreeState,
     pub(super) tree: &'b mut Tree,
-    // pub(super) children: &'b mut [MenuTree<'a, Message, Theme, Renderer>],
-    pub(super) parent_bounds: Rectangle,
     pub(super) menu_tree: &'b MenuTree<'a, Message, Theme, Renderer>,
-    // pub(super) max_width: f32,
-    // pub(super) spacing: f32,
-    // pub(super) padding: Padding,
-    // pub(super) width: Length,
-    // pub(super) height: Length,
-    // pub(super) axis: Axis,
-    // pub(super) offset: f32,
+    pub(super) parent_bounds: Rectangle,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuTreeOverlay<'a, 'b, Message, Theme, Renderer>
 where
