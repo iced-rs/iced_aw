@@ -350,6 +350,17 @@ impl Application for App {
                         .into(),
                     ).max_width(180.0),
                 ),
+                Item::with_menu(
+                    debug_button("kjdfnh"),
+                    Menu::new(
+                        [
+                            Item::new(debug_button("dfths").width(Length::Fill).height(30.0)),
+                            Item::new(debug_button("iodfns").width(Length::Fill).height(50.0)),
+                            Item::new(debug_button("dfkmjk").width(Length::Fill).height(40.0)),
+                            Item::new(debug_button("uvbw").width(Length::Fill).height(60.0)),
+                        ].into()
+                    ).max_width(180.0)
+                )
             ]
             .into(),
         );

@@ -1,6 +1,7 @@
 //! doc
 //!
-use std::{any::Any, borrow::BorrowMut};
+use core::slice;
+use std::{any::Any, borrow::BorrowMut, iter::once};
 
 use super::types::*;
 use super::{flex, menu_bar::MenuBarState};
@@ -49,12 +50,19 @@ Tree{
 pub(super) struct MenuState {
     scroll_offset: f32,
     pub(super) active: Index,
+    pub(super) slice: MenuSlice,
 }
 impl Default for MenuState{
     fn default() -> Self {
         Self {
             scroll_offset: 0.0,
             active: None,
+            slice: MenuSlice{
+                start_index: 0,
+                end_index: usize::MAX,
+                lower_bound_rel: 0.0,
+                upper_bound_rel: f32::MAX,
+            }
         }
     }
 }
@@ -147,7 +155,6 @@ where
         limits: &layout::Limits,
         parent_bounds: Rectangle,
         parent_direction: (Direction, Direction),
-        translation: Vector,
         viewport: &Rectangle,
     ) -> (layout::Node, (Direction, Direction)) {
         let limits = limits.max_width(self.max_width);
@@ -187,7 +194,60 @@ where
         let bounds_expand = 30.0;
         let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
 
-        let menu_state = tree.state.downcast_ref::<MenuState>();
+        let menu_state = tree.state.downcast_mut::<MenuState>();
+
+        let slice = MenuSlice::new(
+            &items_node, 
+            children_position-Point::ORIGIN, 
+            viewport.size(), 
+            menu_state.scroll_offset
+        );
+        menu_state.slice = slice;
+        
+        let slice_node = {
+            let start_node = {
+                let node = &items_node.children()[slice.start_index];
+                let bounds = node.bounds();
+                let start_offset = slice.lower_bound_rel - bounds.y;
+                Node::with_children(
+                    Size::new(
+                        bounds.width, 
+                        bounds.height - start_offset
+                    ), 
+                    node.children().iter().map(Clone::clone).collect()
+                ).move_to(bounds.position())
+                .translate([0.0, start_offset])
+            };
+            
+            let end_node = {
+                let node = &items_node.children()[slice.end_index];
+                let bounds = node.bounds();
+                Node::with_children(
+                    Size::new(
+                        bounds.width, 
+                        slice.upper_bound_rel - bounds.y
+                    ), 
+                    node.children().iter().map(Clone::clone).collect()
+                ).move_to(bounds.position())
+            };
+            
+            Node::with_children(
+                Size::new(
+                    items_node.bounds().width, 
+                    slice.upper_bound_rel - slice.lower_bound_rel
+                ), 
+                once(start_node)
+                .chain(
+                    items_node.children()[
+                        slice.start_index + 1 .. slice.end_index
+                    ]
+                    .iter()
+                    .map(Clone::clone)
+                )
+                .chain(once(end_node))
+                .collect()
+            )
+        };
 
         (
             layout::Node::with_children(
@@ -196,14 +256,16 @@ where
                     items_node
                         .move_to(children_position)
                         .translate([0.0, menu_state.scroll_offset]), // items layout
+                    slice_node
+                        .move_to(children_position)
+                        .translate([0.0, menu_state.scroll_offset]), // slice layout
                     layout::Node::new(children_size)
                         .move_to(children_position), // prescroll bounds
                     layout::Node::new(offset_bounds.size())
                         .move_to(offset_bounds.position()), // offset boundss
                     layout::Node::new(check_bounds.size())
                         .move_to(check_bounds.position()), // check bounds
-                ]
-                .into(),
+                ].into(),
             ),
             child_direction
         )
@@ -211,7 +273,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// layout: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
+    /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_boundss, check_bounds ]}
     pub(super) fn on_event(
         &mut self,
         tree: &mut Tree,
@@ -225,17 +287,20 @@ where
     ) -> event::Status {
         // println!("menu event");
         let mut lc = layout.children();
-        let items_layout = lc.next().unwrap();
-
+        let _items_layout = lc.next().unwrap();
+        let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
 
+        let menu_state = tree.state.downcast_mut::<MenuState>();
+        let slice = &menu_state.slice;
+        
         let status = self
-            .items // [item...]
+            .items[ slice.start_index .. slice.end_index+1 ] // [item...]
             .iter_mut()
-            .zip(tree.children.iter_mut()) // [item_tree...]
-            .zip(items_layout.children()) // [item_layout...]
+            .zip(tree.children[ slice.start_index .. slice.end_index+1 ].iter_mut()) // [item_tree...]
+            .zip(slice_layout.children()) // [item_layout...]
             .map(|((item, tree), layout)| {
                 item.on_event(
                     tree,
@@ -250,12 +315,10 @@ where
             })
             .fold(event::Status::Ignored, event::Status::merge);
 
-        let menu_state = tree.state.downcast_mut::<MenuState>();
-
         use event::Status::*;
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                if cursor.is_over(items_layout.bounds()) {
+                if cursor.is_over(prescroll) {
                     process_scroll_event(menu_state, prescroll, delta, viewport.size());
                     Captured
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
@@ -271,7 +334,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// layout: Node{inf, \[ items_node, prescroll, offset_bounds, check_bounds ]}
+    /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn draw(
         &self,
         tree: &Tree,
@@ -284,13 +347,18 @@ where
         parent_bounds: Rectangle,
     ) {
         let mut lc = layout.children();
-        let items_layout = lc.next().unwrap();
+        let _items_layout = lc.next().unwrap();
+        let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
 
         // println!("prescroll: {:?}", prescroll);
         // println!("parent_bounds: {:?}", parent_bounds);
+
+        let menu_state = tree.state.downcast_ref::<MenuState>();
+        let slice = &menu_state.slice;
+        println!("slice: {:?}", slice);
 
         renderer.fill_quad(
             renderer::Quad{
@@ -305,6 +373,22 @@ where
             }, 
             Color::from([1.0, 0.0, 0.0, 0.1])
         );
+
+        // slice_layout.children().for_each(|l|{
+        //     renderer.fill_quad(
+        //         renderer::Quad{
+        //             bounds: l.bounds(),
+        //             border: Border{
+        //                 // color: todo!(),
+        //                 // width: todo!(),
+        //                 radius: 6.0.into(),
+        //                 ..Default::default()
+        //             },
+        //             ..Default::default()
+        //         }, 
+        //         Color::from([1.0, 1.0, 1.0, 1.0])
+        //     );
+        // });
         renderer.fill_quad(
             renderer::Quad{
                 bounds: prescroll,
@@ -318,6 +402,7 @@ where
             }, 
             Color::from([1.0, 1.0, 1.0, 1.0])
         );
+        
         renderer.fill_quad(
             renderer::Quad{
                 bounds: offset_bounds,
@@ -346,78 +431,22 @@ where
             Color::from([1.0, 1.0, 0.0, 0.5])
         );
 
+        
         for ((item, tree), layout) in self
-            .items // [item...]
-            .iter()
-            .zip(tree.children.iter()) // [item_tree...]
-            .zip(items_layout.children())
-        // [item_layout...]
+            .items[ slice.start_index .. slice.end_index+1 ].iter() // [item...].iter()
+            .zip(tree.children[ slice.start_index .. slice.end_index+1 ].iter()) // [item_tree...]
+            .zip(slice_layout.children()) // [item_layout...]
         {
             item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
         }
-    }
-
-    /// layout: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
-    pub(super) fn open_or_close_event(
-        &mut self,
-        // process_oce: &mut bool,
-        prev: &mut Index,
-        tree: &mut Tree,
-        event: Event,
-        layout: layout::Layout<'_>,
-        cursor: mouse::Cursor,
-        parent_bounds: Rectangle,
-        prev_bounds_list: &[Rectangle],
-    ){
-        let mut lc = layout.children();
-        let items_layout = lc.next().unwrap();
-        let prescroll = lc.next().unwrap().bounds();
-        let offset_bounds = lc.next().unwrap().bounds();
-        let check_bounds = lc.next().unwrap().bounds();
-        
-        let menu_state = tree.state.downcast_mut::<MenuState>();
-
-        match event {
-            Event::Mouse(mouse::Event::CursorMoved { .. }) => {
-                let open = {
-                    if cursor.is_over(prescroll)
-                    || cursor.is_over(parent_bounds) 
-                    || cursor.is_over(offset_bounds) {
-                        true
-                    } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
-                        false
-                    } else if cursor.is_over(check_bounds) {
-                        true
-                    } else {
-                        false
-                    }
-                };
-
-                if open {
-                    if !cursor.is_over(prescroll) {
-                        menu_state.active = None
-                    } else {
-                        self.items
-                            .iter()
-                            .zip(items_layout.children())
-                            .enumerate()
-                            .for_each(|(i, (item, layout))|{
-                                if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                                    println!("new active: {}", i);
-                                    menu_state.active = Some(i)
-                                }
-                            })
-                    }
-                } else {
-                    // *process_oce = true;
-
-                    println!("set prev none");
-                    *prev = None;
-                    menu_state.scroll_offset = 0.0
-                }
-            }
-            _ => ()
-        }
+        // for ((item, tree), layout) in self
+        //     .items // [item...]
+        //     .iter()
+        //     .zip(tree.children.iter()) // [item_tree...]
+        //     .zip(items_layout.children())// [item_layout...]
+        // {
+        //     item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
+        // }
     }
 
     pub(super) fn open_event(
@@ -427,22 +456,24 @@ where
         cursor: mouse::Cursor,
     ) -> event::Status {
         let mut lc = layout.children();
-        let items_layout = lc.next().unwrap();
+        let _items_layout = lc.next().unwrap();
+        let slice_layout = lc.next().unwrap();
         // let prescroll = lc.next().unwrap().bounds();
         // let offset_bounds = lc.next().unwrap().bounds();
         // let check_bounds = lc.next().unwrap().bounds();
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
+        let slice = &menu_state.slice;
         menu_state.active = None;
 
-        for (i, (item, layout)) in self.items
+        for (i, (item, layout)) in self.items[slice.start_index .. slice.end_index + 1]
             .iter()
-            .zip(items_layout.children())
+            .zip(slice_layout.children())
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
                 println!("new active: {}", i);
-                menu_state.active = Some(i);
+                menu_state.active = Some(i + slice.start_index);
                 return event::Status::Captured;
             }
         }
@@ -460,6 +491,7 @@ where
     ) {
         let mut lc = layout.children();
         let _items_layout = lc.next().unwrap();
+        let _slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
@@ -486,11 +518,6 @@ where
     }
     
 }
-
-// #[derive(Debug, Default)]
-// pub(super) struct ItemState{
-//     pub(super) open: bool
-// }
 
 /// menu item
 pub struct Item<'a, Message, Theme, Renderer>
@@ -576,7 +603,6 @@ where
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &layout::Limits,
-        // translation: Vector,
     ) -> layout::Node {
         // println!("Item layout");
         self.item
@@ -835,7 +861,151 @@ fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     }
 }
 
-fn search_bound(
+fn process_scroll_event(
+    menu_state: &mut MenuState,
+    prescroll_children_bounds: Rectangle,
+    delta: mouse::ScrollDelta,
+    viewport_size: Size,
+){
+    use mouse::ScrollDelta;
+
+    let pcb = prescroll_children_bounds;
+
+    let delta_y = match delta {
+        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y,
+    };
+
+    let max_offset = (0.0 - pcb.y).max(0.0);
+    let min_offset = (viewport_size.height - (pcb.y + pcb.height)).min(0.0);
+    menu_state.scroll_offset = (menu_state.scroll_offset + delta_y).clamp(min_offset, max_offset);
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(super) struct MenuSlice {
+    pub(super) start_index: usize,
+    pub(super) end_index: usize,
+    pub(super) lower_bound_rel: f32,
+    pub(super) upper_bound_rel: f32,
+}
+impl MenuSlice{
+    fn new(
+        items_node: &Node,
+        translation: Vector,
+        viewport: Size,
+        scroll_offset: f32,
+    ) -> Self {
+        let items_bounds = items_node.bounds() + translation;
+        let max_index = items_node.children().len().saturating_sub(1);
+        
+        // viewport space absolute bounds
+        let lower_bound = items_bounds.y.max(0.0);
+        let upper_bound = (items_bounds.y + items_bounds.height).min(viewport.height);
+    
+        // menu space relative bounds
+        let lower_bound_rel = lower_bound - (items_bounds.y + scroll_offset);
+        let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
+    
+        let start_index = items_node.children().iter().enumerate().find_map(|(i, n)|{
+            let bounds = n.bounds();
+            (bounds.y <= lower_bound_rel && bounds.y + bounds.height >= lower_bound_rel).then_some(i)
+        }).unwrap_or(0);
+
+        let end_index = items_node.children().iter().enumerate().find_map(|(i, n)|{
+            let bounds = n.bounds();
+            (bounds.y <= upper_bound_rel && bounds.y + bounds.height >= upper_bound_rel).then_some(i)
+        }).unwrap_or(max_index);
+
+        // let start_index = search_bound(
+        //     0, 
+        //     0, 
+        //     max_index, 
+        //     lower_bound_rel, 
+        //     items_node.children(),
+        //     |n| n.bounds().y,
+        //     |n| n.bounds().height
+        // );
+        // let end_index = search_bound(
+        //     max_index, 
+        //     start_index, 
+        //     max_index, 
+        //     upper_bound_rel, 
+        //     items_node.children(),
+        //     |n| n.bounds().y,
+        //     |n| n.bounds().height
+        // );
+    
+        Self {
+            start_index,
+            end_index,
+            lower_bound_rel,
+            upper_bound_rel,
+        }
+    }
+}
+
+fn search_bound<T>(
+    default: usize,
+    default_left: usize,
+    default_right: usize,
+    bound: f32,
+    list: &[T],
+    get_position: impl Fn(&T) -> f32,
+    get_size: impl Fn(&T) -> f32,
+) -> usize {
+    // binary search
+    let mut left = default_left;
+    let mut right = default_right;
+
+    let mut index = default;
+    while left != right {
+        let m = ((left + right) / 2) + 1;
+        if get_position(&list[m]) > bound {
+            right = m - 1;
+        } else {
+            left = m;
+        }
+    }
+    let height = get_size(&list[left]);
+    if get_position(&list[left]) + height > bound {
+        index = left;
+    }
+    index
+}
+
+/* fn slice(
+    // children_bounds: Rectangle,
+    items_node: &Node,
+    scroll_offset: f32,
+    viewport: Size,
+    translation: Vector,
+) -> MenuSlice {
+    let items_bounds = items_node.bounds() + translation;
+    let max_index = items_node.children().len().saturating_sub(1);
+
+    // viewport space absolute bounds
+    let lower_bound = items_bounds.y.max(0.0);
+    let upper_bound = (items_bounds.y + items_bounds.height).min(viewport.height);
+
+    // menu space relative bounds
+    let lower_bound_rel = lower_bound - (items_bounds.y + scroll_offset);
+    let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
+
+    // index range
+    // let positions = &child_positions;
+    // let sizes = &child_sizes;
+
+    // let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
+    // let end_index = search_bound(max_index, start_index, max_index, upper_bound_rel, positions, sizes).min(max_index);
+
+    MenuSlice {
+        start_index,
+        end_index,
+        lower_bound_rel,
+        upper_bound_rel,
+    }
+} */
+
+/* fn search_bound(
     default: usize,
     default_left: usize,
     default_right: usize,
@@ -861,23 +1031,5 @@ fn search_bound(
         index = left;
     }
     index
-}
+} */
 
-fn process_scroll_event(
-    menu_state: &mut MenuState,
-    prescroll_children_bounds: Rectangle,
-    delta: mouse::ScrollDelta,
-    viewport_size: Size,
-){
-    use mouse::ScrollDelta;
-
-    let pcb = prescroll_children_bounds;
-
-    let delta_y = match delta {
-        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y,
-    };
-
-    let max_offset = (0.0 - pcb.y).max(0.0);
-    let min_offset = (viewport_size.height - (pcb.y + pcb.height)).min(0.0);
-    menu_state.scroll_offset = (menu_state.scroll_offset + delta_y).clamp(min_offset, max_offset);
-}
