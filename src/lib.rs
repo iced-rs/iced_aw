@@ -61,7 +61,15 @@ mod platform {
     #[cfg(feature = "icons")]
     pub use {
         crate::graphics::icons::{nerd::NerdIcon, BootstrapIcon},
-        crate::graphics::icons::{BOOTSTRAP_FONT, NERD_FONT},
+        crate::graphics::icons::{
+            BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, NERD_FONT, NERD_FONT_BYTES,
+        },
+    };
+
+    #[cfg(not(feature = "icons"))]
+    pub use {
+        crate::graphics::icons::BootstrapIcon,
+        crate::graphics::icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES},
     };
 
     #[doc(no_inline)]

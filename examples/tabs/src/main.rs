@@ -74,6 +74,7 @@ enum Message {
     #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
+    TabClosed(TabId),
 }
 
 async fn load() -> Result<(), String> {
@@ -91,6 +92,7 @@ impl Application for TabBarExample {
             TabBarExample::Loading,
             Command::batch(vec![
                 font::load(ICON_BYTES).map(Message::FontLoaded),
+                font::load(iced_aw::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )
@@ -119,6 +121,7 @@ impl Application for TabBarExample {
                 Message::Ferris(message) => state.ferris_tab.update(message),
                 Message::Counter(message) => state.counter_tab.update(message),
                 Message::Settings(message) => state.settings_tab.update(message),
+                Message::TabClosed(id) => println!("Tab {:?} event hit", id),
                 _ => {}
             },
         }
@@ -153,6 +156,7 @@ impl Application for TabBarExample {
 
                 Tabs::new(Message::TabSelected)
                     .tab_icon_position(iced_aw::tabs::Position::Bottom)
+                    .on_close(Message::TabClosed)
                     .push(
                         TabId::Login,
                         state.login_tab.tab_label(),
