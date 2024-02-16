@@ -1,18 +1,28 @@
 use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_green};
 
-use iced_widget::{
-    canvas::{Cache, Fill, Geometry, Path},
-    core::{
-        event,
+use iced::{
+    self,
+    advanced::{
+        graphics::geometry::Renderer as _,
         layout::{self, Limits, Node},
-        mouse::{self, Cursor},
-        renderer, touch,
+        renderer,
         widget::tree::{State, Tag, Tree},
-        window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Renderer as _,
-        Shell, Size, Vector, Widget,
+        Clipboard, Layout, Renderer as _, Shell, Widget,
     },
-    graphics::geometry::Renderer as _,
-    renderer::Renderer,
+    event,
+    mouse::{self, Cursor},
+    touch,
+    widget::canvas::{Cache, Fill, Geometry, Path},
+    window,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Size,
+    Vector,
 };
 
 /**

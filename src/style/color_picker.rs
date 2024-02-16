@@ -4,10 +4,7 @@
 
 use std::rc::Rc;
 
-use iced_widget::{
-    core::{Background, Color},
-    style::Theme,
-};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 #[derive(Clone, Copy, Debug)]

@@ -1,6 +1,6 @@
 //! Helper struct for drawing
 
-use iced_widget::core::{Layout, Point, Rectangle};
+use iced::{advanced::Layout, Point, Rectangle};
 
 /// Collection of all necessary data to draw a widget.
 #[derive(Debug)]

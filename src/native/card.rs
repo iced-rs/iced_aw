@@ -4,19 +4,20 @@
 
 use crate::graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT};
 
-use iced_widget::{
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        renderer, touch,
+        renderer,
+        text::LineHeight,
         widget::{Operation, Tree},
-        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels,
-        Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    text::LineHeight,
+    alignment::{Horizontal, Vertical},
+    event,
+    mouse::{self, Cursor},
+    touch, Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle,
+    Shadow, Size, Vector,
 };
 
 pub use crate::style::card::{Appearance, StyleSheet};
@@ -45,9 +46,9 @@ const DEFAULT_PADDING: f32 = 10.0;
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct Card<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The width of the [`Card`].
@@ -80,7 +81,7 @@ where
 
 impl<'a, Message, Theme, Renderer> Card<'a, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`Card`] containing the given head and body.
@@ -210,7 +211,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Card<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -584,7 +585,7 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
         translation: Vector,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<iced::advanced::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = vec![&mut self.head, &mut self.body];
         if let Some(foot) = &mut self.foot {
             children.push(foot);
@@ -602,7 +603,8 @@ where
             })
             .collect::<Vec<_>>();
 
-        (!children.is_empty()).then(|| core::overlay::Group::with_children(children).overlay())
+        (!children.is_empty())
+            .then(|| iced::advanced::overlay::Group::with_children(children).overlay())
     }
 }
 
@@ -619,7 +621,7 @@ fn head_node<Message, Theme, Renderer>(
     tree: &mut Tree,
 ) -> Node
 where
-    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
 {
     let header_size = head.as_widget().size();
 
@@ -677,7 +679,7 @@ fn body_node<Message, Theme, Renderer>(
     tree: &mut Tree,
 ) -> Node
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let body_size = body.as_widget().size();
 
@@ -711,7 +713,7 @@ fn foot_node<Message, Theme, Renderer>(
     tree: &mut Tree,
 ) -> Node
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let foot_size = foot.as_widget().size();
 
@@ -748,7 +750,7 @@ fn draw_head<Message, Theme, Renderer>(
     style: &<Theme as StyleSheet>::Style,
     close_size: Option<f32>,
 ) where
-    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet,
 {
     let mut head_children = layout.children();
@@ -808,7 +810,7 @@ fn draw_head<Message, Theme, Renderer>(
         let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::text::Text {
                 content: &icon_to_string(BootstrapIcon::X),
                 bounds: Size::new(close_bounds.width, close_bounds.height),
                 size: Pixels(
@@ -819,7 +821,7 @@ fn draw_head<Message, Theme, Renderer>(
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
+                shaping: iced::advanced::text::Shaping::Advanced,
             },
             Point::new(close_bounds.center_x(), close_bounds.center_y()),
             style_sheet.close_color,
@@ -840,7 +842,7 @@ fn draw_body<Message, Theme, Renderer>(
     theme: &Theme,
     style: &<Theme as StyleSheet>::Style,
 ) where
-    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet,
 {
     let mut body_children = layout.children();
@@ -887,7 +889,7 @@ fn draw_foot<Message, Theme, Renderer>(
     theme: &Theme,
     style: &<Theme as StyleSheet>::Style,
 ) where
-    Renderer: core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet,
 {
     let mut foot_children = layout.children();
@@ -927,7 +929,7 @@ fn draw_foot<Message, Theme, Renderer>(
 impl<'a, Message, Theme, Renderer> From<Card<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = iced_widget::core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a + StyleSheet,
     Message: Clone + 'a,
 {
