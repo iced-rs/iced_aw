@@ -1,6 +1,3 @@
-use iced_widget::core::{overlay, renderer};
-
-// use super::menu_tree_overlay::MenuTreeOverlay;
 
 /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
@@ -14,38 +11,6 @@ pub struct CloseCondition {
     /// Close menus when the cursor clicks inside the check bounds
     pub click_inside: bool,
 }
-
-// /// The width of an item
-// #[derive(Debug, Clone, Copy)]
-// pub enum ItemWidth {
-//     /// Use uniform width
-//     Uniform(u16),
-//     /// Static tries to use the width value of each menu(menu tree with children),
-//     /// the widths of items(menu tree with empty children) will be the same as the menu they're in,
-//     /// if that value is None,
-//     /// the default value will be used instead,
-//     /// which is the value of the Static variant
-//     Static(u16),
-// }
-
-// /// The height of an item
-// #[derive(Debug, Clone, Copy)]
-// pub enum ItemHeight {
-//     /// Use uniform height.
-//     Uniform(u16),
-//     /// Static tries to use `MenuTree.height` as item height,
-//     /// when it's `None` it'll fallback to the value of the `Static` variant.
-//     Static(u16),
-//     /// Dynamic tries to automatically choose the proper item height for you,
-//     /// but it only works in certain cases:
-//     ///
-//     /// - Fixed height
-//     /// - Shrink height
-//     /// - Menu tree height
-//     ///
-//     /// If none of these is the case, it'll fallback to the value of the `Dynamic` variant.
-//     Dynamic(u16),
-// }
 
 // /// Methods for drawing path highlight
 // #[derive(Debug, Clone, Copy)]
@@ -76,24 +41,10 @@ impl Direction{
 /// Axis
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]
-pub enum Axis {
+pub(super) enum Axis {
     Horizontal,
     Vertical,
 }
 
-#[allow(missing_docs)]
-pub enum OpenCondition {
-    Hover,
-    Click,
-}
-
 pub(super) type Index = Option<usize>;
 
-
-/// Should be returned from the recursive event processing function, 
-/// tells the caller which type of event has been processed
-pub(super) enum RecEvent{
-    Event, 
-    Close,
-    None 
-}

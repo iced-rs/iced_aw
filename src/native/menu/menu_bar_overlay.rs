@@ -1,30 +1,32 @@
-use iced_widget::{core::{
+use iced_widget::core::{
     event,
-    layout::{self, Limits, Node},
-    mouse, overlay, renderer, touch,
-    widget::tree::{self, Tree},
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
+    widget::tree::Tree,
     Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
     Shell, Size, Vector, Widget,
-}, shader::wgpu::naga::Barrier};
+};
 
 use super::{menu_bar::MenuBarState, menu_tree::*, types::*};
+
+/// Should be returned from the recursive event processing function, 
+/// tells the caller which type of event has been processed
+enum RecEvent{
+    Event, 
+    Close,
+    None 
+}
 
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
-    // pub(super) active: usize,
     /// Tree{ bar_state, [item_tree...] }
     pub(super) tree: &'b mut Tree,
-    // pub(super) bar: &'b mut MenuBarState,
-    // pub(super) active_tree: &'b mut Tree,
-    // pub(super) active_root: &'b mut Item<'a, Message, Theme, Renderer>,
-    pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
     
-    // pub(super) bar_layout: Layout<'b>,
+    pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
     pub(super) init_bar_bounds: Rectangle,
     pub(super) init_root_bounds: Vec<Rectangle>,
-    // pub(super) init_parent_bounds: Option<Rectangle>,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
@@ -46,13 +48,11 @@ where
         position: Point,
         translation: Vector,
     ) -> Node {
-        println!();
-        println!("mbo layout");
-        // println!("translation: {:?}", translation);
+        // println!();
+        // println!("mbo layout");
 
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let bar_bounds = self.init_bar_bounds;
-        // println!("bar bounds: {:?}", bar_bounds);
 
         let bar_node = Node::with_children(
             bar_bounds.size(), 
@@ -67,7 +67,7 @@ where
         ).translate(translation);
 
         let Some(active) = bar.active_root else {
-            println!("no active");
+            // println!("no active");
             return Node::with_children(
                 bounds, 
                 [
@@ -80,7 +80,6 @@ where
         let active_root = &mut self.roots[active];
         let active_tree = &mut self.tree.children[active]; // item_tree: Tree{ stateless, [ widget_tree, menu_tree ] }
         let parent_bounds = self.init_root_bounds[active] + translation;
-        // println!("parent bounds: {:?}", parent_bounds);
         
         fn rec<'a, Message, Theme, Renderer: renderer::Renderer>(
             renderer: &Renderer,
@@ -170,8 +169,8 @@ where
     ) -> event::Status {
         use event::Status::*;
 
-        println!();
-        println!("mbo event");
+        // println!();
+        // println!("mbo event");
 
         let viewport = layout.bounds();
         let mut lc = layout.children();

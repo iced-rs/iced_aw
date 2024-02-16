@@ -1,21 +1,18 @@
-//! doc
+//! [`Item`] and [`Menu`]
 //!
-use core::slice;
-use std::{any::Any, borrow::BorrowMut, iter::once};
-
+use std::iter::once;
 use super::types::*;
-use super::{flex, menu_bar::MenuBarState};
+use super::flex;
 use iced_widget::core::{
     alignment, event,
-    layout::{self, Limits, Node},
-    mouse, overlay, renderer, touch,
+    layout::{Limits, Node, Layout},
+    mouse, overlay, renderer,
     widget::tree::{self, Tree},
     Alignment, Border, Clipboard, Color, Element, Event, Length, Padding, Point, Rectangle, Shell,
     Size, Vector, Widget,
 };
 
 /*
-
 menu tree:
 Item{
     widget
@@ -67,7 +64,7 @@ impl Default for MenuState{
     }
 }
 
-/// menu
+/// Menu
 pub struct Menu<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
@@ -80,13 +77,13 @@ where
     pub(super) height: Length,
     pub(super) axis: Axis,
     pub(super) offset: f32,
-    pub(super) open_condition: OpenCondition,
 }
 #[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
+    /// Creates a [`Menu`] with the given items.
     pub fn new(items: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             items,
@@ -96,22 +93,46 @@ where
             width: Length::Fill,
             height: Length::Shrink,
             axis: Axis::Horizontal,
-            offset: 20.0,
-            open_condition: OpenCondition::Click,
+            offset: 0.0,
         }
     }
 
-    pub fn tree(&self) -> Tree {
+    /// Sets the maximum width of the [`Menu`].
+    pub fn max_width(mut self, max_width: f32) -> Self{
+        self.max_width = max_width;
+        self
+    }
+
+    /// Sets the width of the [`Menu`].
+    pub fn width(mut self, width: impl Into<Length>) -> Self{
+        self.width = width.into();
+        self
+    }
+
+    /// Sets the spacing of the [`Menu`].
+    pub fn spacing(mut self, spacing: f32) -> Self{
+        self.spacing = spacing;
+        self
+    }
+
+    /// Sets the padding of the [`Menu`].
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self{
+        self.padding = padding.into();
+        self
+    }
+
+    /// The offset from the bounds of the menu's parent item.
+    pub fn offset(mut self, offset: f32) -> Self{
+        self.offset = offset;
+        self
+    }
+
+    pub(super) fn tree(&self) -> Tree {
         Tree {
             tag: self.tag(),
             state: self.state(),
             children: self.children(),
         }
-    }
-
-    pub fn max_width(mut self, max_width: f32) -> Self{
-        self.max_width = max_width;
-        self
     }
 }
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
@@ -152,11 +173,11 @@ where
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
-        limits: &layout::Limits,
+        limits: &Limits,
         parent_bounds: Rectangle,
         parent_direction: (Direction, Direction),
         viewport: &Rectangle,
-    ) -> (layout::Node, (Direction, Direction)) {
+    ) -> (Node, (Direction, Direction)) {
         let limits = limits.max_width(self.max_width);
 
         let items_node = flex::resolve(
@@ -250,24 +271,23 @@ where
         };
 
         (
-            layout::Node::with_children(
+            Node::with_children(
                 Size::INFINITY,
                 [
                     slice_node
                         .move_to(children_position)
                         .translate([0.0, menu_state.scroll_offset]), // slice layout
-                    layout::Node::new(children_size)
+                    Node::new(children_size)
                         .move_to(children_position), // prescroll bounds
-                    layout::Node::new(offset_bounds.size())
+                    Node::new(offset_bounds.size())
                         .move_to(offset_bounds.position()), // offset boundss
-                    layout::Node::new(check_bounds.size())
+                    Node::new(check_bounds.size())
                         .move_to(check_bounds.position()), // check bounds
                 ].into(),
             ),
             child_direction
         )
     }
-
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_boundss, check_bounds ]}
@@ -275,7 +295,7 @@ where
         &mut self,
         tree: &mut Tree,
         event: Event,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
@@ -337,7 +357,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
         parent_bounds: Rectangle,
@@ -353,7 +373,7 @@ where
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
-        println!("slice: {:?}", slice);
+        // println!("slice: {:?}", slice);
 
         renderer.fill_quad(
             renderer::Quad{
@@ -369,21 +389,6 @@ where
             Color::from([1.0, 0.0, 0.0, 0.1])
         );
 
-        // slice_layout.children().for_each(|l|{
-        //     renderer.fill_quad(
-        //         renderer::Quad{
-        //             bounds: l.bounds(),
-        //             border: Border{
-        //                 // color: todo!(),
-        //                 // width: todo!(),
-        //                 radius: 6.0.into(),
-        //                 ..Default::default()
-        //             },
-        //             ..Default::default()
-        //         }, 
-        //         Color::from([1.0, 1.0, 1.0, 1.0])
-        //     );
-        // });
         renderer.fill_quad(
             renderer::Quad{
                 bounds: prescroll,
@@ -439,7 +444,7 @@ where
     pub(super) fn open_event(
         &self,
         tree: &mut Tree,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
     ) -> event::Status {
         let mut lc = layout.children();
@@ -458,7 +463,7 @@ where
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                println!("new active: {}", i);
+                // println!("new active: {}", i);
                 menu_state.active = Some(i + slice.start_index);
                 return event::Status::Captured;
             }
@@ -469,7 +474,7 @@ where
     pub(super) fn close_event(
         &self,
         tree: &mut Tree,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
@@ -505,7 +510,7 @@ where
     
 }
 
-/// menu item
+/// Item inside a [`Menu`]
 pub struct Item<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
@@ -518,6 +523,7 @@ impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
+    /// Creates an [`Item`] with the given element.
     pub fn new(item: impl Into<Element<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             item: item.into(),
@@ -525,6 +531,7 @@ where
         }
     }
 
+    /// Creates an [`Item`] with the given element and menu.
     pub fn with_menu(
         item: impl Into<Element<'a, Message, Theme, Renderer>>,
         menu: Menu<'a, Message, Theme, Renderer>,
@@ -533,11 +540,6 @@ where
             item: item.into(),
             menu: Some(Box::new(menu)),
         }
-    }
-
-    pub fn menu(mut self, menu: Menu<'a, Message, Theme, Renderer>) -> Self {
-        self.menu = Some(Box::new(menu));
-        self
     }
 
     pub(super) fn tree(&self) -> Tree {
@@ -588,8 +590,8 @@ where
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+        limits: &Limits,
+    ) -> Node {
         // println!("Item layout");
         self.item
             .as_widget()
@@ -602,7 +604,7 @@ where
         &mut self,
         tree: &mut Tree,
         event: Event,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
@@ -630,7 +632,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
-        layout: layout::Layout<'_>,
+        layout: Layout<'_>,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
@@ -667,7 +669,7 @@ struct Aod {
     vertical_offset: f32,
 }
 impl Aod {
-    /// Returns child position. offset position, child direction
+    /// Returns (child position, offset position, child direction)
     #[allow(clippy::too_many_arguments)]
     fn adaptive(
         parent_pos: f32,
@@ -752,7 +754,7 @@ impl Aod {
         }
     }
 
-    /// Returns child position and offset position
+    /// Returns (child position, offset position, child direction)
     fn resolve(
         &self,
         parent_bounds: Rectangle,
@@ -957,65 +959,4 @@ fn search_bound<T>(
     }
     index
 }
-
-/* fn slice(
-    // children_bounds: Rectangle,
-    items_node: &Node,
-    scroll_offset: f32,
-    viewport: Size,
-    translation: Vector,
-) -> MenuSlice {
-    let items_bounds = items_node.bounds() + translation;
-    let max_index = items_node.children().len().saturating_sub(1);
-
-    // viewport space absolute bounds
-    let lower_bound = items_bounds.y.max(0.0);
-    let upper_bound = (items_bounds.y + items_bounds.height).min(viewport.height);
-
-    // menu space relative bounds
-    let lower_bound_rel = lower_bound - (items_bounds.y + scroll_offset);
-    let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
-
-    // index range
-    // let positions = &child_positions;
-    // let sizes = &child_sizes;
-
-    // let start_index = search_bound(0, 0, max_index, lower_bound_rel, positions, sizes);
-    // let end_index = search_bound(max_index, start_index, max_index, upper_bound_rel, positions, sizes).min(max_index);
-
-    MenuSlice {
-        start_index,
-        end_index,
-        lower_bound_rel,
-        upper_bound_rel,
-    }
-} */
-
-/* fn search_bound(
-    default: usize,
-    default_left: usize,
-    default_right: usize,
-    bound: f32,
-    positions: &[f32],
-    sizes: &[Size],
-) -> usize {
-    // binary search
-    let mut left = default_left;
-    let mut right = default_right;
-
-    let mut index = default;
-    while left != right {
-        let m = ((left + right) / 2) + 1;
-        if positions[m] > bound {
-            right = m - 1;
-        } else {
-            left = m;
-        }
-    }
-    let height = sizes[left].height;
-    if positions[left] + height > bound {
-        index = left;
-    }
-    index
-} */
 

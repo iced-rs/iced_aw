@@ -1,9 +1,9 @@
-//! menu bar
+//! [`MenuBar`]
 
 use iced_widget::core::{
     alignment, event,
-    layout::{self, Limits, Node},
-    mouse, overlay, renderer, touch,
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
     widget::{tree, Tree},
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
     Rectangle, Shell, Size, Widget,
@@ -15,8 +15,6 @@ pub(super) struct MenuBarState {
     pub(super) active_root: Index,
     pub(super) open: bool,
     pub(super) is_pressed: bool,
-    // pub(super) viewport: Rectangle,
-    // pub(super) indices: Vec<usize>,
 }
 impl Default for MenuBarState {
     fn default() -> Self {
@@ -24,8 +22,6 @@ impl Default for MenuBarState {
             active_root: None,
             open: false,
             is_pressed: false,
-            // viewport: Rectangle::default(),
-            // indices: Vec::new(),
         }
     }
 }
@@ -41,11 +37,11 @@ where
     width: Length,
     height: Length,
 }
-#[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
+    /// Creates a [`MenuBar`] with the given root items.
     pub fn new(mut roots: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
         roots.iter_mut().for_each(|i|{
             if let Some(m) = i.menu.as_mut(){
@@ -60,6 +56,31 @@ where
             height: Length::Shrink,
         }
     }
+
+    /// Sets the width of the [`MenuBar`].
+    pub fn width(mut self, width: impl Into<Length>) -> Self{
+        self.width = width.into();
+        self
+    }
+
+    /// Sets the height of the [`MenuBar`].
+    pub fn height(mut self, height: impl Into<Length>) -> Self{
+        self.height = height.into();
+        self
+    }
+
+    /// Sets the spacing of the [`MenuBar`].
+    pub fn spacing(mut self, spacing: f32) -> Self{
+        self.spacing = spacing;
+        self
+    }
+
+    /// Sets the padding of the [`MenuBar`].
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self{
+        self.padding = padding.into();
+        self
+    }
+
 }
 impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for MenuBar<'a, Message, Theme, Renderer>
@@ -102,8 +123,8 @@ where
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
+        limits: &Limits,
+    ) -> Node {
         // println!("bar layout");
         flex::resolve(
             flex::Axis::Horizontal,
@@ -192,7 +213,6 @@ where
                                 break;
                             }
                         }
-                        // println!("mbo bar.active: {:?}", bar.active_root)
                     }else{
                         bar.open = false
                     }
