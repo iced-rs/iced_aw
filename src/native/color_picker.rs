@@ -6,20 +6,28 @@ use super::overlay::color_picker::{
     self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
 };
 
-use iced_widget::{
-    button,
-    core::{
-        event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         overlay, renderer,
         widget::{
             self,
             tree::{self, Tag, Tree},
         },
-        Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    renderer::Renderer,
+    event,
+    mouse::{self, Cursor},
+    widget::button,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Vector,
 };
 
 pub use crate::style::color_picker::{Appearance, StyleSheet};
@@ -49,7 +57,7 @@ pub use crate::style::color_picker::{Appearance, StyleSheet};
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ColorPicker<'a, Message, Theme = iced_widget::style::Theme>
+pub struct ColorPicker<'a, Message, Theme = iced::Theme>
 where
     Message: Clone,
     Theme: StyleSheet + button::StyleSheet,
@@ -166,7 +174,7 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn size(&self) -> iced_widget::core::Size<Length> {
+    fn size(&self) -> iced::Size<Length> {
         self.underlay.as_widget().size()
     }
 

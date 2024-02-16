@@ -2,15 +2,18 @@
 //!
 //! *This API requires the following crate features to be activated: `quad`*
 
-use iced_widget::core::{
-    layout::{Limits, Node},
-    mouse::Cursor,
-    renderer,
-    widget::Tree,
-    Border, Color, Element, Layout, Length, Rectangle, Shadow, Size, Widget,
-};
-
 use crate::native::InnerBounds;
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::Tree,
+        Layout, Widget,
+    },
+    mouse::Cursor,
+    Border, Color, Element, Length, Rectangle, Shadow, Size,
+};
 
 /// A dummy widget that draws a quad
 #[allow(missing_debug_implementations)]

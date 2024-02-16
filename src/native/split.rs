@@ -2,21 +2,22 @@
 //!
 //! *This API requires the following crate features to be activated: split*
 
-use iced_widget::{
-    container,
-    core::{
-        self, event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        renderer, touch,
+        overlay, renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-        Shadow, Shell, Size, Vector, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    Container, Row,
+    event,
+    mouse::{self, Cursor},
+    touch,
+    widget::{container, Container, Row},
+    Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size, Vector,
 };
 
 pub use crate::style::split::{Appearance, StyleSheet};
@@ -42,7 +43,7 @@ pub use crate::style::split::{Appearance, StyleSheet};
 #[allow(missing_debug_implementations)]
 pub struct Split<'a, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The first element of the [`Split`].
@@ -75,7 +76,7 @@ where
 impl<'a, Message, Theme, Renderer> Split<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet + container::StyleSheet,
 {
     /// Creates a new [`Split`].
@@ -174,7 +175,7 @@ where
 impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Split<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     fn tag(&self) -> Tag {
@@ -499,7 +500,7 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
         translation: Vector,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = layout.children();
         let first_layout = children.next()?;
         let _divider_layout = children.next()?;
@@ -535,7 +536,7 @@ fn horizontal_split<'a, Message, Theme, Renderer>(
     space: &Node,
 ) -> Node
 where
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     if space.bounds().height
@@ -614,7 +615,7 @@ fn vertical_split<'a, Message, Theme, Renderer>(
     space: &Node,
 ) -> Node
 where
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     if space.bounds().width
@@ -688,7 +689,7 @@ impl<'a, Message, Theme, Renderer> From<Split<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     fn from(split_pane: Split<'a, Message, Theme, Renderer>) -> Self {

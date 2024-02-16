@@ -1,4 +1,5 @@
-use iced_widget::core::{
+use iced::{
+    advanced::renderer,
     alignment::{Horizontal, Vertical},
     Element, Length, Padding, Pixels,
 };
@@ -7,7 +8,7 @@ use iced_widget::core::{
 ///
 /// The number of columns is determined by the row with the most elements.
 #[allow(missing_debug_implementations)]
-pub struct Grid<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
+pub struct Grid<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
     pub(super) rows: Vec<GridRow<'a, Message, Theme, Renderer>>,
     pub(super) horizontal_alignment: Horizontal,
     pub(super) vertical_alignment: Vertical,
@@ -22,7 +23,7 @@ pub struct Grid<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget:
 
 impl<'a, Message, Theme, Renderer> Default for Grid<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     fn default() -> Self {
         Self {
@@ -42,7 +43,7 @@ where
 
 impl<'a, Message, Theme, Renderer> Grid<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     /// Creates a new [`Grid`].
     #[must_use]
@@ -202,13 +203,13 @@ where
 
 /// A container that distributes its contents in a row of a [`crate::Grid`].
 #[allow(missing_debug_implementations)]
-pub struct GridRow<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer> {
+pub struct GridRow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
     pub(crate) elements: Vec<Element<'a, Message, Theme, Renderer>>,
 }
 
 impl<'a, Message, Theme, Renderer> Default for GridRow<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     fn default() -> Self {
         Self {
@@ -219,7 +220,7 @@ where
 
 impl<'a, Message, Theme, Renderer> GridRow<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     /// Creates a new [`GridRow`].
     #[must_use]

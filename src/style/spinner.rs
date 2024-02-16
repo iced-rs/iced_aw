@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: spinner*
 
-use iced_widget::style::Theme;
+use iced::Theme;
 
 /// The style of a [`Spinner`](crate::native::spinner::Spinner).
 #[derive(Default)]

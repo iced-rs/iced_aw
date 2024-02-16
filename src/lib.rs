@@ -53,7 +53,7 @@ pub mod native;
 pub mod core;
 pub mod style;
 
-pub use iced_widget::core::Element;
+pub use iced::Element;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {

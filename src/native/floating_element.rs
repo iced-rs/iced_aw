@@ -4,13 +4,17 @@
 
 use super::overlay::floating_element::FloatingElementOverlay;
 
-use iced_widget::core::{
-    self, event,
-    layout::{Limits, Node},
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        overlay, renderer,
+        widget::{Operation, Tree},
+        Clipboard, Layout, Shell, Widget,
+    },
+    event,
     mouse::{self, Cursor},
-    overlay, renderer,
-    widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Vector, Widget,
+    Element, Event, Length, Rectangle, Size, Vector,
 };
 
 pub mod anchor;
@@ -39,13 +43,9 @@ pub use offset::Offset;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingElement<
-    'a,
-    Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
-> where
-    Renderer: core::Renderer,
+pub struct FloatingElement<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
+    Renderer: renderer::Renderer,
 {
     /// The anchor of the element.
     anchor: Anchor,
@@ -61,7 +61,7 @@ pub struct FloatingElement<
 
 impl<'a, Message, Theme, Renderer> FloatingElement<'a, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     /// Creates a new [`FloatingElement`] over some content,
     /// showing the given [`Element`].
@@ -113,7 +113,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for FloatingElement<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.underlay), Tree::new(&self.element)]
@@ -123,7 +123,7 @@ where
         tree.diff_children(&[&self.underlay, &self.element]);
     }
 
-    fn size(&self) -> core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -245,7 +245,7 @@ impl<'a, Message, Theme, Renderer> From<FloatingElement<'a, Message, Theme, Rend
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a,
 {
     fn from(floating_element: FloatingElement<'a, Message, Theme, Renderer>) -> Self {

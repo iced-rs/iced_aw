@@ -2,10 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `number_input`*
 
-use iced_widget::{
-    core::{Background, Color},
-    style::Theme,
-};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]

@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
 
-use iced_widget::core::Point;
+use iced::Point;
 
 /// The [`Offset`] for the [`FloatingElement`](super::FloatingElement).
 #[derive(Copy, Clone, Debug)]

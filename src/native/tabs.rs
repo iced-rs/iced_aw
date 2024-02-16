@@ -10,20 +10,21 @@ pub mod tab_bar_position;
 pub use crate::tab_bar::Position;
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
-use iced_widget::{
-    core::{
-        self, event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        renderer,
+        overlay, renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    runtime::Font,
-    text, Row,
+    event,
+    mouse::{self, Cursor},
+    widget::{text, Row},
+    Element, Event, Font, Length, Point, Rectangle, Size, Vector,
 };
 
 pub use tab_bar_position::TabBarPosition;
@@ -56,9 +57,9 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct Tabs<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
     Theme: StyleSheet,
     TabId: Eq + Clone,
 {
@@ -80,7 +81,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
@@ -291,7 +292,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
@@ -559,7 +560,7 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
         translation: Vector,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout.children().nth(1),
             TabBarPosition::Bottom => layout.children().next(),
@@ -606,7 +607,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: 'a + StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,

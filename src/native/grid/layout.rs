@@ -1,9 +1,12 @@
 use std::cmp::Ordering;
 
-use iced_widget::core::{
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::Tree,
+    },
     alignment::{Horizontal, Vertical},
-    layout::{Limits, Node},
-    widget::Tree,
     Length, Padding, Pixels, Point, Size,
 };
 use itertools::{Itertools, Position};
@@ -30,7 +33,7 @@ pub(super) fn layout<Message, Theme, Renderer>(
     row_lengths: &[Length],
 ) -> Node
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut column_widths = Vec::<f32>::with_capacity(column_count);
     let mut row_heights = Vec::<f32>::with_capacity(row_count);
@@ -89,7 +92,7 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
     row_heights: &mut Vec<f32>,
     rows: &[GridRow<'_, Message, Theme, Renderer>],
 ) where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut children = tree.children.iter_mut();
     for row in rows {
@@ -189,7 +192,7 @@ fn create_grid_layout<Message, Theme, Renderer>(
     grid_size: Size,
 ) -> Node
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut y = padding.top;
     let mut nodes = Vec::with_capacity(element_count);
