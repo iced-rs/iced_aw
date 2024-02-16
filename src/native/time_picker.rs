@@ -5,18 +5,21 @@
 use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButtons};
 
 use chrono::Local;
-use iced_widget::{
-    button, container,
-    core::{
-        event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        overlay, renderer,
+        overlay,
+        renderer,
         widget::tree::{self, Tag, Tree},
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
     },
-    renderer::Renderer,
-    text,
+    event, mouse::{self, Cursor}, widget::{button, container, text},
+    Renderer, // the actual type
+    Element, Event, Length, Point, Rectangle, Size, Vector,
 };
 
 pub use crate::{
@@ -187,7 +190,7 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn size(&self) -> iced_widget::core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         self.underlay.as_widget().size()
     }
 

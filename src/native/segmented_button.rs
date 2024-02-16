@@ -1,12 +1,18 @@
 //! Create choices using `segnmented_button` buttons.
-use iced_widget::core::{
-    event,
-    layout::{Limits, Node},
-    mouse::{self, Cursor},
-    renderer, touch,
-    widget::Tree,
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
-    Point, Rectangle, Shadow, Shell, Widget,
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::Tree,
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
+    },
+    event, mouse::{self, Cursor}, touch,
+    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    Shadow, Size,
 };
 
 pub use crate::style::segmented_button::StyleSheet;
@@ -27,7 +33,7 @@ pub use crate::style::segmented_button::StyleSheet;
 #[allow(missing_debug_implementations)]
 pub struct SegmentedButton<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     is_selected: bool,
@@ -50,7 +56,7 @@ where
 
 impl<'a, Message, Theme, Renderer> SegmentedButton<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`SegmentedButton`](SegmentedButton) with the given content.
@@ -123,7 +129,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for SegmentedButton<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_widget::core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -134,8 +140,8 @@ where
         tree.diff_children(std::slice::from_ref(&self.content));
     }
 
-    fn size(&self) -> iced_widget::core::Size<Length> {
-        iced_widget::core::Size::new(self.width, self.height)
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -290,7 +296,7 @@ impl<'a, Message, Theme, Renderer> From<SegmentedButton<'a, Message, Theme, Rend
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + iced_widget::core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     fn from(segmented_button: SegmentedButton<'a, Message, Theme, Renderer>) -> Self {

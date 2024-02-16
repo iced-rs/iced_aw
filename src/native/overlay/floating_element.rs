@@ -4,12 +4,20 @@
 
 use crate::native::floating_element::{Anchor, Offset};
 
-use iced_widget::core::{
-    self, event, layout,
-    mouse::{self, Cursor},
-    overlay, renderer,
-    widget::Tree,
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector,
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        overlay,
+        Overlay,
+        renderer,
+        widget::Tree,
+        Clipboard,
+        Layout,
+        Shell,
+    },
+    event, mouse::{self, Cursor},
+    Element, Event, Length, Point, Rectangle, Size, Vector,
 };
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
@@ -19,8 +27,8 @@ pub struct FloatingElementOverlay<
     'a,
     'b,
     Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
+    Theme = iced::Theme,
+    Renderer = iced::Renderer,
 > {
     // The position of the element
     position: Point,
@@ -38,7 +46,7 @@ pub struct FloatingElementOverlay<
 
 impl<'a, 'b, Message, Theme, Renderer> FloatingElementOverlay<'a, 'b, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     /// Creates a new [`FloatingElementOverlay`] containing the given
     /// [`Element`](iced_widget::core::Element).
@@ -61,14 +69,14 @@ where
     }
 }
 
-impl<'a, 'b, Message, Theme, Renderer> core::Overlay<Message, Theme, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> Overlay<Message, Theme, Renderer>
     for FloatingElementOverlay<'a, 'b, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
-    fn layout(&mut self, renderer: &Renderer, _bounds: Size) -> layout::Node {
+    fn layout(&mut self, renderer: &Renderer, _bounds: Size) -> Node {
         // Constrain overlay to fit inside the underlay's bounds
-        let limits = layout::Limits::new(Size::ZERO, self.underlay_bounds.size())
+        let limits = Limits::new(Size::ZERO, self.underlay_bounds.size())
             .width(Length::Fill)
             .height(Length::Fill);
         let node = self

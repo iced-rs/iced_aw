@@ -16,23 +16,27 @@ use crate::{
 };
 
 use chrono::{Datelike, Local, NaiveDate};
-use iced_widget::{
-    button, container,
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        overlay, renderer,
-        text::Renderer as _,
-        touch,
+        overlay,
+        renderer,
         widget::tree::Tree,
-        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
+        Clipboard,
+        Overlay,
+        Layout,
+        Shell,
+        Widget,
+        Renderer as _,
+        text::Renderer as _,
     },
-    renderer::Renderer,
-    text, Button, Column, Container, Row, Text,
+    alignment::{Horizontal, Vertical},
+    event, keyboard, mouse::{self, Cursor}, touch,
+    widget::{button, container, text, Button, Column, Container, Row, Text,},
+    Renderer, // the actual type
+    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle,
+    Shadow, Size,
 };
 use std::collections::HashMap;
 
@@ -1123,10 +1127,10 @@ fn month_year(
         // Left caret
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
-                size: core::Pixels(
+                size: Pixels(
                     renderer.default_size().0 + if left_arrow_hovered { 1.0 } else { 0.0 },
                 ),
                 font: BOOTSTRAP_FONT,
@@ -1145,7 +1149,7 @@ fn month_year(
 
         // Text
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: text,
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: renderer.default_size(),
@@ -1165,10 +1169,10 @@ fn month_year(
 
         // Right caret
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
-                size: core::Pixels(
+                size: Pixels(
                     renderer.default_size().0 + if right_arrow_hovered { 1.0 } else { 0.0 },
                 ),
                 font: BOOTSTRAP_FONT,
@@ -1224,7 +1228,7 @@ fn day_labels(
         let bounds = label.bounds();
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &crate::core::date::WEEKDAY_LABELS[i],
                 bounds: Size::new(bounds.width, bounds.height),
                 size: renderer.default_size(),
@@ -1313,7 +1317,7 @@ fn day_table(
             }
 
             renderer.fill_text(
-                core::text::Text {
+                iced::advanced::Text {
                     content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                     bounds: Size::new(bounds.width, bounds.height),
                     size: renderer.default_size(),

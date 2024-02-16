@@ -1,9 +1,7 @@
 //! Use a `segmented_button` as an alternative to radio button.
 
-use iced_widget::{
-    core::{Background, Color},
-    style::Theme,
-};
+use iced::{Background, Color, Theme,};
+
 /// The appearance of a [`SegmentedButton`]
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {

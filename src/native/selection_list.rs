@@ -2,25 +2,23 @@
 pub mod list;
 use crate::style::selection_list::StyleSheet;
 
-use iced_widget::{
-    container,
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event,
+use iced::{
+    self,
+    advanced::{
+        graphics,
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         renderer,
         text::{Paragraph, Text},
         widget::{tree, Tree},
-        Border, Clipboard, Element, Event, Layout, Length, Pixels, Rectangle, Shadow, Shell, Size,
+        Clipboard,
+        Layout,
+        Shell,
         Widget,
     },
-    graphics,
-    runtime::Font,
-    scrollable, text,
-    text::LineHeight,
-    Container, Scrollable,
+    alignment::{Horizontal, Vertical},
+    event, mouse::{self, Cursor},
+    widget::{container, scrollable, text, text::LineHeight, Container, Scrollable},
+    Border, Element, Event, Font, Length, Pixels, Rectangle, Shadow, Size,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
 
@@ -33,12 +31,12 @@ pub struct SelectionList<
     'a,
     T,
     Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
+    Theme = iced::Theme,
+    Renderer = iced::Renderer,
 > where
     T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
-    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet + container::StyleSheet,
 {
     /// Container for Rendering List.
@@ -63,7 +61,7 @@ pub struct SelectionList<
 impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a + StyleSheet + container::StyleSheet + scrollable::StyleSheet,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
@@ -160,7 +158,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: 'a + Clone + ToString + Eq + Hash + Display,
     Message: 'static,
-    Renderer: core::Renderer + core::text::Renderer<Font = core::Font> + 'a,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font> + 'a,
     Theme: StyleSheet + container::StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -312,7 +310,7 @@ impl<'a, T, Message, Theme, Renderer> From<SelectionList<'a, T, Message, Theme, 
 where
     T: Clone + ToString + Eq + Hash + Display,
     Message: 'static,
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a + StyleSheet + container::StyleSheet,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Theme, Renderer>) -> Self {

@@ -367,9 +367,11 @@ mod demo {
                         column![
                             scroll_to_end_button(),
                             text("Beginning!"),
-                            vertical_space(1200),
+                            //vertical_space(1200),
+                            vertical_space(),
                             text("Middle!"),
-                            vertical_space(1200),
+                            //vertical_space(1200),
+                            vertical_space(),
                             text("End!"),
                             scroll_to_beginning_button(),
                         ]
@@ -391,9 +393,11 @@ mod demo {
                         row![
                             scroll_to_end_button(),
                             text("Beginning!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("Middle!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("End!"),
                             scroll_to_beginning_button(),
                         ]
@@ -415,24 +419,33 @@ mod demo {
                     Direction::Multi => scrollable(
                         //horizontal content
                         row![
-                            column![text("Let's do some scrolling!"), vertical_space(2400)],
+                            column![
+                                text("Let's do some scrolling!"),
+                                //vertical_space(2400),
+                                vertical_space(),
+                            ],
                             scroll_to_end_button(),
                             text("Horizontal - Beginning!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             //vertical content
                             column![
                                 text("Horizontal - Middle!"),
                                 scroll_to_end_button(),
                                 text("Vertical - Beginning!"),
-                                vertical_space(1200),
+                                //vertical_space(1200),
+                                vertical_space(),
                                 text("Vertical - Middle!"),
-                                vertical_space(1200),
+                                //vertical_space(1200),
+                                vertical_space(),
                                 text("Vertical - End!"),
                                 scroll_to_beginning_button(),
-                                vertical_space(40),
+                                //vertical_space(40),
+                                vertical_space(),
                             ]
                             .spacing(40),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("Horizontal - End!"),
                             scroll_to_beginning_button(),
                         ]

@@ -1,14 +1,21 @@
 //! A widget that displays its children in multiple horizontal or vertical runs.
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
-use iced_widget::core::{
-    self, event,
-    layout::{Limits, Node},
-    mouse::{self, Cursor},
-    renderer,
-    widget::{Operation, Tree},
-    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Point, Rectangle, Shell, Size,
-    Vector, Widget,
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        overlay,
+        renderer,
+        widget::{Operation, Tree},
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
+    },
+    event, mouse::{self, Cursor},
+    Alignment, Element, Event, Length, Padding, Point, Rectangle,
+    Size, Vector,
 };
 use std::marker::PhantomData;
 
@@ -18,8 +25,8 @@ pub struct Wrap<
     'a,
     Message,
     Direction,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
+    Theme = iced::Theme,
+    Renderer = iced::Renderer,
 > {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Theme, Renderer>>,
@@ -164,7 +171,7 @@ impl<'a, Message, Renderer, Direction, Theme> Widget<Message, Theme, Renderer>
     for Wrap<'a, Message, Direction, Theme, Renderer>
 where
     Self: WrapLayout<Renderer>,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         self.elements.iter().map(Tree::new).collect()
@@ -218,7 +225,7 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
         translation: Vector,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         self.elements
             .iter_mut()
             .zip(&mut state.children)
@@ -296,7 +303,7 @@ where
 impl<'a, Message, Theme, Renderer> From<Wrap<'a, Message, direction::Vertical, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Message: 'a,
     Theme: 'a,
 {
@@ -310,7 +317,7 @@ where
 impl<'a, Message, Theme, Renderer> From<Wrap<'a, Message, direction::Horizontal, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Message: 'a,
     Theme: 'a,
 {
@@ -343,7 +350,7 @@ impl<'a, Message, Renderer, Direction, Theme> Default
 /// A inner layout of the [`Wrap`].
 pub trait WrapLayout<Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
 {
     /// A inner layout of the [`Wrap`].
     fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node;
@@ -352,7 +359,7 @@ where
 impl<'a, Message, Theme, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, direction::Horizontal, Theme, Renderer>
 where
-    Renderer: core::Renderer + 'a,
+    Renderer: renderer::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
@@ -439,7 +446,7 @@ where
 impl<'a, Message, Theme, Renderer> WrapLayout<Renderer>
     for Wrap<'a, Message, direction::Vertical, Theme, Renderer>
 where
-    Renderer: core::Renderer + 'a,
+    Renderer: renderer::Renderer + 'a,
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]

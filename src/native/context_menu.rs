@@ -1,12 +1,19 @@
 //! A context menu for showing actions on right click.
 //!
-use iced_widget::core::{
-    self, event,
-    layout::{Limits, Node},
-    mouse::{self, Button, Cursor},
-    overlay, renderer,
-    widget::{tree, Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        overlay,
+        renderer,
+        widget::{tree, Operation, Tree},
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
+    },
+    event, mouse::{self, Cursor, Button},
+    Element, Event, Length, Point, Rectangle, Vector,
 };
 
 use crate::native::overlay::ContextMenuOverlay;
@@ -37,12 +44,12 @@ pub struct ContextMenu<
     'a,
     Overlay,
     Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
+    Theme = iced::Theme,
+    Renderer = iced::Renderer,
 > where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The underlying element.
@@ -57,7 +64,7 @@ impl<'a, Overlay, Message, Theme, Renderer> ContextMenu<'a, Overlay, Message, Th
 where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`ContextMenu`]
@@ -89,10 +96,10 @@ impl<'a, Content, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
-    fn size(&self) -> core::Size<Length> {
+    fn size(&self) -> iced::Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -252,7 +259,7 @@ impl<'a, Content, Message, Theme, Renderer> From<ContextMenu<'a, Content, Messag
 where
     Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     fn from(modal: ContextMenu<'a, Content, Message, Theme, Renderer>) -> Self {

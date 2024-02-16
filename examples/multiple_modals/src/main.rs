@@ -169,9 +169,11 @@ impl Application for MultipleModalsExample {
             match foot_row {
                 Some(foot_row) => container(
                     column![
-                        vertical_space(Length::Fill),
+                        //vertical_space(Length::Fill),
+                        vertical_space(),
                         text(body_string),
-                        vertical_space(Length::Fill),
+                        //vertical_space(Length::Fill),
+                        vertical_space(),
                         foot_row.spacing(20)
                     ]
                     .spacing(20)

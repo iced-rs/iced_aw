@@ -1,26 +1,31 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
-use iced_widget::{
-    container,
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
-        Pixels, Point, Rectangle, Shadow, Shell, Size, Widget,
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
     },
-    text,
-    text::LineHeight,
-    text_input::{self, cursor, Value},
-    Column, Container, Row, Text, TextInput,
+    alignment::{Horizontal, Vertical},
+    event, keyboard, mouse::{self, Cursor},
+    widget::{
+        container,
+        text,
+        text::LineHeight,
+        text_input::{self, cursor, Value},
+        Column, Container, Row, Text, TextInput,
+    },
+    Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels,
+    Point, Rectangle, Shadow, Size,
 };
 use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};
@@ -56,9 +61,9 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct NumberInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: core::text::Renderer<Font = core::Font>,
+    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
@@ -90,7 +95,7 @@ impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Rendere
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: Clone,
-    Renderer: core::text::Renderer<Font = core::Font>,
+    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
@@ -253,7 +258,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::StyleSheet
         + text_input::StyleSheet
         + container::StyleSheet
@@ -707,7 +712,7 @@ where
         );
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::text::Text {
                 content: &icon_to_string(BootstrapIcon::CaretDownFill),
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
@@ -715,7 +720,7 @@ where
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
+                shaping: iced::advanced::text::Shaping::Advanced,
             },
             Point::new(dec_bounds.center_x(), dec_bounds.center_y()),
             decrease_btn_style.icon_color,
@@ -739,7 +744,7 @@ where
         );
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::text::Text {
                 content: &icon_to_string(BootstrapIcon::CaretUpFill),
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
@@ -747,7 +752,7 @@ where
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
+                shaping: iced::advanced::text::Shaping::Advanced,
             },
             Point::new(inc_bounds.center_x(), inc_bounds.center_y()),
             increase_btn_style.icon_color,
@@ -770,7 +775,7 @@ impl<'a, T, Message, Theme, Renderer> From<NumberInput<'a, T, Message, Theme, Re
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
     Message: 'a + Clone,
-    Renderer: 'a + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a
         + number_input::StyleSheet
         + text_input::StyleSheet

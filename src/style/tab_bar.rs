@@ -8,10 +8,7 @@
 
 use std::rc::Rc;
 
-use iced_widget::{
-    core::{border::Radius, Background, Color},
-    style::Theme,
-};
+use iced::{border::Radius, Background, Color, Theme,};
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]

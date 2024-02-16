@@ -4,16 +4,24 @@
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 
-use iced_widget::core::{
+use iced::{
     self,
+    advanced::{
+        layout::{Limits, Node},
+        overlay,
+        renderer,
+        widget::Tree,
+        Clipboard,
+        Layout,
+        Shell,
+    },
     event::Status,
     keyboard,
-    layout::{Limits, Node},
     mouse::{self, Cursor},
-    overlay, renderer, touch,
-    widget::tree::Tree,
-    window, Border, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shadow, Shell,
-    Size,
+    touch,
+    window,
+    Border, Color, Element, Event, Point, Rectangle,
+    Shadow, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
@@ -21,11 +29,11 @@ use iced_widget::core::{
 pub struct ContextMenuOverlay<
     'a,
     Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
+    Theme = iced::Theme,
+    Renderer = iced::Renderer,
 > where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     // The position of the element
@@ -43,7 +51,7 @@ pub struct ContextMenuOverlay<
 impl<'a, Message, Theme, Renderer> ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     /// Creates a new [`ContextMenuOverlay`].
@@ -76,7 +84,7 @@ impl<'a, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
     for ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {

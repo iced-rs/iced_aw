@@ -1,15 +1,20 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
-use iced_widget::core::{
-    self, alignment, event, keyboard, layout,
-    mouse::{self, Cursor},
-    renderer, touch,
-    widget::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Overlay, Rectangle, Shadow, Shell,
-    Size,
+use iced::{
+    self,
+    advanced::{
+        layout::{Limits, Node},
+        Overlay,
+        renderer,
+        widget::Tree,
+        Clipboard,
+        Layout,
+        Shell,
+    },
+    alignment, event, keyboard, mouse::{self, Cursor}, touch,
+    Alignment, Border, Color, Element, Event, Rectangle, Shadow, Size,
 };
-
 use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
@@ -17,7 +22,7 @@ use crate::style::modal::StyleSheet;
 pub struct ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The state of the [`ModalOverlay`](ModalOverlay).
@@ -37,7 +42,7 @@ where
 impl<'a, 'b, Message, Theme, Renderer> ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`ModalOverlay`](ModalOverlay).
@@ -66,11 +71,11 @@ impl<'a, 'b, Message, Theme, Renderer> Overlay<Message, Theme, Renderer>
     for ModalOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
-    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> layout::Node {
-        let limits = layout::Limits::new(Size::ZERO, bounds);
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
+        let limits = Limits::new(Size::ZERO, bounds);
         let mut content = self
             .content
             .as_widget()
@@ -83,7 +88,7 @@ where
             max_size,
         );
 
-        layout::Node::with_children(max_size, vec![content])
+        Node::with_children(max_size, vec![content])
     }
 
     fn on_event(

@@ -15,24 +15,35 @@ use crate::{
     },
 };
 
-use iced_widget::{
-    button,
-    canvas::{self, LineCap, Path, Stroke, Style},
-    core::{
-        alignment::{self, Horizontal, Vertical},
-        event, keyboard,
+use iced::{
+    self,
+    advanced::{
+        graphics::geometry::Renderer as _,
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        overlay, renderer, text,
-        text::Renderer as _,
-        touch,
+        overlay,
+        renderer,
         widget::{self, tree::Tree},
-        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Text, Vector, Widget,
+        Clipboard,
+        Layout,
+        Overlay,
+        Shell,
+        Widget,
+        Renderer as _,
+        text::Renderer as _,
+        Text,
     },
-    graphics::geometry::Renderer as _,
-    renderer::Renderer,
-    Button, Column, Row,
+    alignment::{self, Horizontal, Vertical},
+    event, mouse::{self, Cursor}, touch,
+    keyboard,
+    widget::{
+        button,
+        canvas::{self, LineCap, Path, Stroke, Style},
+        text,
+        Button, Column, Row,
+    },
+    Renderer, // the actual type
+    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    Shadow, Size, Vector,
 };
 use std::collections::HashMap;
 
@@ -93,7 +104,7 @@ where
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced_widget::Text::new(icon_to_string(BootstrapIcon::X))
+                iced::widget::Text::new(icon_to_string(BootstrapIcon::X))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
@@ -101,7 +112,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced_widget::Text::new(icon_to_string(BootstrapIcon::Check))
+                iced::widget::Text::new(icon_to_string(BootstrapIcon::Check))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
@@ -1492,8 +1503,8 @@ fn rgba_color(
                 font: renderer.default_font(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
-                line_height: iced_widget::text::LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
+                line_height: iced::widget::text::LineHeight::Relative(1.3),
+                shaping: iced::widget::text::Shaping::Advanced,
             },
             Point::new(
                 value_layout.bounds().center_x(),
@@ -1629,8 +1640,8 @@ fn hex_text(
             font: renderer.default_font(),
             horizontal_alignment: Horizontal::Center,
             vertical_alignment: Vertical::Center,
-            line_height: iced_widget::text::LineHeight::Relative(1.3),
-            shaping: iced_widget::text::Shaping::Basic,
+            line_height: text::LineHeight::Relative(1.3),
+            shaping: text::Shaping::Basic,
         },
         Point::new(layout.bounds().center_x(), layout.bounds().center_y()),
         Color {
@@ -1737,7 +1748,7 @@ where
         tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
-    fn size(&self) -> iced_widget::core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         unimplemented!("This should never be reached!")
     }
 

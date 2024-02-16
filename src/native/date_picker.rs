@@ -5,21 +5,23 @@
 use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
 
 use chrono::Local;
-use iced_widget::{
-    button, container,
-    core::{
-        self, event,
+use iced::{
+    self,
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         renderer,
         widget::{
             self,
             tree::{Tag, Tree},
         },
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+        Clipboard,
+        Layout,
+        Shell,
+        Widget,
     },
-    renderer::Renderer,
-    text,
+    event, mouse::{self, Cursor}, widget::button,
+    Renderer, // the actual type
+    Element, Event, Length, Point, Rectangle, Size, Vector,
 };
 
 pub use crate::{
@@ -77,7 +79,7 @@ where
 impl<'a, Message, Theme> DatePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
 {
     /// Creates a new [`DatePicker`] wrapping around the given underlay.
     ///
@@ -155,7 +157,7 @@ impl State {
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -173,7 +175,7 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn size(&self) -> core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -250,7 +252,7 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
         translation: Vector,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<iced::overlay::Element<'b, Message, Theme, Renderer>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
@@ -283,7 +285,7 @@ impl<'a, Message, Theme> From<DatePicker<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a + StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
 {
     fn from(date_picker: DatePicker<'a, Message, Theme>) -> Self {
         Element::new(date_picker)
