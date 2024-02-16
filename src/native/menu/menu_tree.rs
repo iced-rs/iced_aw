@@ -652,10 +652,6 @@ where
 #[derive(Debug)]
 #[allow(clippy::struct_excessive_bools)]
 struct Aod {
-    // whether or not to use aod
-    horizontal: bool,
-    vertical: bool,
-
     // whether or not to use overlap
     horizontal_overlap: bool,
     vertical_overlap: bool,
@@ -677,7 +673,6 @@ impl Aod {
         child_size: f32,
         max_size: f32,
         offset: f32,
-        on: bool,
         overlap: bool,
         direction: Direction,
     ) -> (f32, f32, Direction) {
@@ -717,14 +712,14 @@ impl Aod {
 
                 if overlap {
                     let overshoot = child_size - parent_size;
-                    if on && space_negative > space_positive && overshoot > space_positive {
+                    if space_negative > space_positive && overshoot > space_positive {
                         (parent_pos - overshoot, parent_pos - overshoot, direction.flip())
                     } else {
                         (parent_pos, parent_pos, direction)
                     }
                 } else {
                     let overshoot = child_size + offset;
-                    if on && space_negative > space_positive && overshoot > space_positive {
+                    if space_negative > space_positive && overshoot > space_positive {
                         (parent_pos - overshoot, parent_pos - offset, direction.flip())
                     } else {
                         (parent_pos + parent_size + offset, parent_pos + parent_size, direction)
@@ -737,14 +732,14 @@ impl Aod {
 
                 if overlap {
                     let overshoot = child_size - parent_size;
-                    if on && space_negative > space_positive && overshoot > space_positive {
+                    if space_negative > space_positive && overshoot > space_positive {
                         (parent_pos, parent_pos, direction.flip())
                     } else {
                         (parent_pos - overshoot, parent_pos - overshoot, direction)
                     }
                 } else {
                     let overshoot = child_size + offset;
-                    if on && space_negative > space_positive && overshoot > space_positive {
+                    if space_negative > space_positive && overshoot > space_positive {
                         (parent_pos + parent_size + offset, parent_pos + parent_size, direction.flip())
                     } else {
                         (parent_pos - overshoot, parent_pos - offset, direction)
@@ -767,7 +762,6 @@ impl Aod {
             children_size.width,
             viewport_size.width,
             self.horizontal_offset,
-            self.horizontal,
             self.horizontal_overlap,
             self.horizontal_direction,
         );
@@ -777,7 +771,6 @@ impl Aod {
             children_size.height,
             viewport_size.height,
             self.vertical_offset,
-            self.vertical,
             self.vertical_overlap,
             self.vertical_direction,
         );
@@ -808,8 +801,6 @@ impl Aod {
                     Direction::Negative
                 };
                 Aod {
-                    horizontal: true,
-                    vertical: true,
                     horizontal_overlap: false,
                     vertical_overlap: true,
                     horizontal_direction,
@@ -826,8 +817,6 @@ impl Aod {
                 };
                 let vertical_direction = pdy;
                 Aod {
-                    horizontal: true,
-                    vertical: true,
                     horizontal_overlap: true,
                     vertical_overlap: false,
                     horizontal_direction,
