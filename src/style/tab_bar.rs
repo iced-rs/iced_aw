@@ -8,7 +8,7 @@
 
 use std::rc::Rc;
 
-use iced::{border::Radius, Background, Color, Theme,};
+use iced::{border::Radius, Background, Color, Theme};
 
 /// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]

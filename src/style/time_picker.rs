@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `time_picker`*
 use std::rc::Rc;
 
-use iced::{Background, Color, Theme,};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`TimePicker`](crate::native::TimePicker).
 #[derive(Clone, Copy, Debug)]

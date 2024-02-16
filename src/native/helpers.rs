@@ -3,11 +3,7 @@
 //!
 
 #[allow(unused_imports)]
-use iced::{
-    self, 
-    advanced::renderer,
-    Color, Element
-};
+use iced::{self, advanced::renderer, Color, Element};
 #[allow(unused_imports)]
 use std::{borrow::Cow, fmt::Display, hash::Hash};
 

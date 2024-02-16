@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: badge*
 use super::colors;
 
-use iced::{Background, Color, Theme,};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`Badge`](crate::native::badge::Badge).
 #[derive(Clone, Copy, Debug)]

@@ -10,20 +10,24 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{
             self,
-            tree::{self, Tree, Tag}
+            tree::{self, Tag, Tree},
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, widget::button,
+    event,
+    mouse::{self, Cursor},
+    widget::button,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
     Renderer, // the actual type
-    Color, Element, Event, Length, Point, Rectangle, Vector
+    Vector,
 };
 
 pub use crate::style::color_picker::{Appearance, StyleSheet};

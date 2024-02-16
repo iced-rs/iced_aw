@@ -11,13 +11,11 @@ use iced::{
             tree::{State, Tag},
             Tree,
         },
-            Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event::Status, mouse::Cursor, window,
-    Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
+    event::Status,
+    mouse::Cursor,
+    window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
 };
 use std::time::{Duration, Instant};
 
@@ -83,7 +81,12 @@ fn is_visible(bounds: &Rectangle) -> bool {
     bounds.width > 0.0 && bounds.height > 0.0
 }
 
-fn fill_circle(renderer: &mut impl renderer::Renderer, position: Vector, radius: f32, color: Color) {
+fn fill_circle(
+    renderer: &mut impl renderer::Renderer,
+    position: Vector,
+    radius: f32,
+    color: Color,
+) {
     renderer.fill_quad(
         renderer::Quad {
             bounds: Rectangle {

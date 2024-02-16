@@ -8,15 +8,12 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor},
+    event,
+    mouse::{self, Cursor},
     Element, Event, Length, Rectangle, Size, Vector,
 };
 
@@ -46,12 +43,8 @@ pub use offset::Offset;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct FloatingElement<
-    'a,
-    Message,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> where
+pub struct FloatingElement<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
     Renderer: renderer::Renderer,
 {
     /// The anchor of the element.

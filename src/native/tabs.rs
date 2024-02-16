@@ -14,19 +14,17 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, widget::{Row, text,},
-    Element, Event, Font, Length, Point, Rectangle, Size, Vector
+    event,
+    mouse::{self, Cursor},
+    widget::{text, Row},
+    Element, Event, Font, Length, Point, Rectangle, Size, Vector,
 };
 
 pub use tab_bar_position::TabBarPosition;

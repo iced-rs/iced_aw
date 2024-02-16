@@ -8,30 +8,20 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
+        Clipboard, Layout, Shell,
     },
     event::Status,
     keyboard,
     mouse::{self, Cursor},
-    touch,
-    window,
-    Border, Color, Element, Event, Point, Rectangle,
-    Shadow, Size,
+    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<
-    'a,
-    Message,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> where
+pub struct ContextMenuOverlay<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,

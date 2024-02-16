@@ -10,13 +10,11 @@ use iced::{
         renderer,
         text::{Paragraph, Text},
         widget::{tree, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event, mouse::{self, Cursor},
+    event,
+    mouse::{self, Cursor},
     widget::{container, scrollable, text, text::LineHeight, Container, Scrollable},
     Border, Element, Event, Font, Length, Pixels, Rectangle, Shadow, Size,
 };
@@ -27,13 +25,8 @@ pub use list::List;
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
 #[allow(clippy::type_repetition_in_bounds)]
-pub struct SelectionList<
-    'a,
-    T,
-    Message,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> where
+pub struct SelectionList<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
     T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,

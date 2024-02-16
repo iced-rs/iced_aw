@@ -14,14 +14,19 @@ use iced::{
             self,
             tree::{Tag, Tree},
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, widget::button,
+    event,
+    mouse::{self, Cursor},
+    widget::button,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
     Renderer, // the actual type
-    Element, Event, Length, Point, Rectangle, Size, Vector,
+    Size,
+    Vector,
 };
 
 pub use crate::{
@@ -79,7 +84,11 @@ where
 impl<'a, Message, Theme> DatePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
+    Theme: 'a
+        + StyleSheet
+        + button::StyleSheet
+        + iced::widget::text::StyleSheet
+        + iced::widget::container::StyleSheet,
 {
     /// Creates a new [`DatePicker`] wrapping around the given underlay.
     ///
@@ -157,7 +166,10 @@ impl State {
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
+    Theme: StyleSheet
+        + button::StyleSheet
+        + iced::widget::text::StyleSheet
+        + iced::widget::container::StyleSheet,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -285,7 +297,11 @@ impl<'a, Message, Theme> From<DatePicker<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + iced::widget::text::StyleSheet + iced::widget::container::StyleSheet,
+    Theme: 'a
+        + StyleSheet
+        + button::StyleSheet
+        + iced::widget::text::StyleSheet
+        + iced::widget::container::StyleSheet,
 {
     fn from(date_picker: DatePicker<'a, Message, Theme>) -> Self {
         Element::new(date_picker)

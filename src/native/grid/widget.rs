@@ -1,18 +1,13 @@
 use iced::{
     advanced::{
         layout::{Limits, Node},
-        renderer,
         overlay::Group,
+        renderer,
         renderer::Style,
         widget::{Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event,
-    mouse, overlay,
-    Element, Event, Length, Rectangle, Size, Vector,
+    event, mouse, overlay, Element, Event, Length, Rectangle, Size, Vector,
 };
 
 use super::{layout::layout, types::Grid};

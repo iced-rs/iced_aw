@@ -5,13 +5,11 @@ use iced::{
         layout::{Limits, Node},
         renderer,
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, touch,
-    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    event,
+    mouse::{self, Cursor},
+    touch, Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
     Shadow, Size,
 };
 

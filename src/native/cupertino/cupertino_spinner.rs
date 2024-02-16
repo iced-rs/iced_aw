@@ -1,23 +1,25 @@
 use iced::{
     self,
     advanced::{
+        graphics::geometry::Renderer as _,
         layout::{Limits, Node},
         renderer,
         widget::tree::{State, Tag, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
-        graphics::geometry::Renderer as _,
-        Renderer as _,
+        Clipboard, Layout, Renderer as _, Shell, Widget,
     },
     event,
     mouse::Cursor,
     widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke},
     window,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
     Renderer, // the actual type
-    Color, Element, Event, Length, Point, Rectangle, 
-    Size, Vector
+    Size,
+    Vector,
 };
 use std::f32::consts::PI;
 

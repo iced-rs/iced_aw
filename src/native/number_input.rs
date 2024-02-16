@@ -10,22 +10,19 @@ use iced::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event, keyboard, mouse::{self, Cursor},
+    event, keyboard,
+    mouse::{self, Cursor},
     widget::{
-        container,
-        text,
+        container, text,
         text::LineHeight,
         text_input::{self, cursor, Value},
         Column, Container, Row, Text, TextInput,
     },
-    Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels,
-    Point, Rectangle, Shadow, Size,
+    Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Size,
 };
 use num_traits::{Num, NumAssignOps};
 use std::{fmt::Display, str::FromStr};

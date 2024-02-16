@@ -71,7 +71,7 @@ impl Tab for LoginTab {
                         .on_input(LoginMessage::PasswordChanged)
                         .padding(10)
                         .size(32)
-                        .secure(true)
+                        .secure(true),
                 )
                 .push(
                     Row::new()

@@ -7,20 +7,22 @@ use iced::{
         layout::{self, Limits, Node},
         renderer,
         widget::tree::{State, Tag, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
-        Renderer as _,
+        Clipboard, Layout, Renderer as _, Shell, Widget,
     },
     event,
     mouse::{self, Cursor},
     touch,
     widget::canvas::{Cache, Fill, Geometry, Path},
     window,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
     Renderer, // the actual type
-    Color, Element, Event, Length, Point, Rectangle,
-    Size, Vector
+    Size,
+    Vector,
 };
 
 /**

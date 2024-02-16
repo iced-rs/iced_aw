@@ -11,14 +11,12 @@ use iced::{
         renderer,
         text::LineHeight,
         widget::{Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event, mouse::{self, Cursor}, touch,
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle,
+    event,
+    mouse::{self, Cursor},
+    touch, Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle,
     Shadow, Size, Vector,
 };
 
@@ -605,7 +603,8 @@ where
             })
             .collect::<Vec<_>>();
 
-        (!children.is_empty()).then(|| iced::advanced::overlay::Group::with_children(children).overlay())
+        (!children.is_empty())
+            .then(|| iced::advanced::overlay::Group::with_children(children).overlay())
     }
 }
 

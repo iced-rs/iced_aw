@@ -8,15 +8,12 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, mouse::{self, Cursor},
+    alignment, event,
+    mouse::{self, Cursor},
     Element, Event, Length, Rectangle, Size, Vector,
 };
 

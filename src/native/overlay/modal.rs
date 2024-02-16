@@ -1,21 +1,19 @@
 //! A modal for showing elements as an overlay on top of another.
 //!
 //! *This API requires the following crate features to be activated: modal*
+use crate::style::modal::StyleSheet;
 use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        Overlay,
         renderer,
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
+        Clipboard, Layout, Overlay, Shell,
     },
-    alignment, event, keyboard, mouse::{self, Cursor}, touch,
-    Alignment, Border, Color, Element, Event, Rectangle, Shadow, Size,
+    alignment, event, keyboard,
+    mouse::{self, Cursor},
+    touch, Alignment, Border, Color, Element, Event, Rectangle, Shadow, Size,
 };
-use crate::style::modal::StyleSheet;
 
 /// The overlay of the modal.
 #[allow(missing_debug_implementations)]

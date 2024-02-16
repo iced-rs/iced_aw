@@ -11,13 +11,13 @@ use iced::{
             tree::{State, Tag},
             Tree,
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event, mouse::{self, Cursor}, touch, widget::text::LineHeight,
+    event,
+    mouse::{self, Cursor},
+    touch,
+    widget::text::LineHeight,
     Border, Color, Element, Event, Length, Pixels, Point, Rectangle, Shadow, Size,
 };
 use std::{
@@ -116,12 +116,7 @@ where
         Size::new(Length::Fill, Length::Shrink)
     }
 
-    fn layout(
-        &self,
-        _tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 

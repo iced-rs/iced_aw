@@ -4,15 +4,12 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{tree, Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor, Button},
+    event,
+    mouse::{self, Button, Cursor},
     Element, Event, Length, Point, Rectangle, Vector,
 };
 
@@ -40,13 +37,8 @@ pub use crate::style::context_menu::StyleSheet;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ContextMenu<
-    'a,
-    Overlay,
-    Message,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> where
+pub struct ContextMenu<'a, Overlay, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: renderer::Renderer,

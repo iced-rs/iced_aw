@@ -4,7 +4,7 @@
 
 use std::rc::Rc;
 
-use iced::{Background, Color, Theme,};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`DatePicker`](crate::native::DatePicker).
 #[derive(Clone, Copy, Debug)]

@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: badge*
 use std::rc::Rc;
 
-use iced::{Background, Color, Theme,};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
 #[derive(Clone, Copy, Debug)]

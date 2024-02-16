@@ -8,13 +8,11 @@ use iced::{
         layout::{Limits, Node},
         renderer,
         widget::tree::{self, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, touch,
-    Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
+    event,
+    mouse::{self, Cursor},
+    touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
 };
 
 use std::ops::RangeInclusive;

@@ -6,18 +6,17 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, touch, widget::{container, Container, Row},
+    event,
+    mouse::{self, Cursor},
+    touch,
+    widget::{container, Container, Row},
     Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size, Vector,
 };
 

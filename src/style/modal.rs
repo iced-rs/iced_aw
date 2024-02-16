@@ -3,8 +3,7 @@
 //! *This API requires the following crate features to be activated: badge*
 use std::rc::Rc;
 
-use iced::{Background, Color, Theme,};
-
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`Modal`](crate::native::Modal).
 #[derive(Clone, Copy, Debug)]

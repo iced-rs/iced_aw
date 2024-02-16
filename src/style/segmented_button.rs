@@ -1,6 +1,6 @@
 //! Use a `segmented_button` as an alternative to radio button.
 
-use iced::{Background, Color, Theme,};
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`SegmentedButton`]
 #[derive(Clone, Copy, Debug)]

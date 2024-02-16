@@ -7,18 +7,13 @@ use iced::{
         layout::{Limits, Node},
         renderer::{self, Quad},
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    application,
-    event,
+    application, event,
     mouse::{self, Cursor},
     touch,
     widget::{text, Text},
-    Background, Border, Color, Element, Event, Font, Length, Point, Rectangle,
-    Shadow, Size,
+    Background, Border, Color, Element, Event, Font, Length, Point, Rectangle, Shadow, Size,
 };
 
 /**

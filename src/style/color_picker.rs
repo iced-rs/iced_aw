@@ -4,8 +4,7 @@
 
 use std::rc::Rc;
 
-use iced::{Background, Color, Theme,};
-
+use iced::{Background, Color, Theme};
 
 /// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
 #[derive(Clone, Copy, Debug)]

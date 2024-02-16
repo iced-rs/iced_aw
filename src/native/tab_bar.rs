@@ -14,14 +14,15 @@ use iced::{
         layout::{Limits, Node},
         renderer,
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
     alignment::{self, Horizontal, Vertical},
-    event, mouse::{self, Cursor}, touch, widget::{Column, Row, text, text::LineHeight, Text},
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Pixels, Point, Rectangle, Shadow, Size,
+    event,
+    mouse::{self, Cursor},
+    touch,
+    widget::{text, text::LineHeight, Column, Row, Text},
+    Alignment, Background, Border, Color, Element, Event, Font, Length, Pixels, Point, Rectangle,
+    Shadow, Size,
 };
 
 use std::marker::PhantomData;
@@ -349,12 +350,7 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(
-        &self,
-        tree: &mut Tree,
-        renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         fn layout_icon<Theme, Renderer>(
             icon: &char,
             size: f32,

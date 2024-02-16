@@ -8,28 +8,19 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        Overlay,
-        renderer,
+        overlay, renderer,
         widget::Tree,
-        Clipboard,
-        Layout,
-        Shell,
+        Clipboard, Layout, Overlay, Shell,
     },
-    event, mouse::{self, Cursor},
+    event,
+    mouse::{self, Cursor},
     Element, Event, Length, Point, Rectangle, Size, Vector,
 };
 
 /// The internal overlay of a [`FloatingElement`](crate::FloatingElement) for
 /// rendering a [`Element`](iced_widget::core::Element) as an overlay.
 #[allow(missing_debug_implementations)]
-pub struct FloatingElementOverlay<
-    'a,
-    'b,
-    Message,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> {
+pub struct FloatingElementOverlay<'a, 'b, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
     // The position of the element
     position: Point,
     /// The state of the element.

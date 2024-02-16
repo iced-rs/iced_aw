@@ -23,27 +23,35 @@ use iced::{
     advanced::{
         graphics::geometry::Renderer as _,
         layout::{Limits, Node},
-        overlay,
-        renderer,
-        widget::tree::Tree,
-        Clipboard,
-        Overlay,
-        Layout,
-        Shell,
-        Widget,
-        Text,
-        Renderer as _,
+        overlay, renderer,
         text::Renderer as _,
+        widget::tree::Tree,
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event, keyboard, mouse::{self, Cursor}, touch,
-    Renderer, // the actual type
+    event,
+    keyboard,
+    mouse::{self, Cursor},
+    touch,
     widget::{
+        button,
         canvas::{self, LineCap, Path, Stroke, Style, Text as CanvasText},
-        button, container, text, Button, Column, Container, Row
+        container, text, Button, Column, Container, Row,
     },
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle,
-    Shadow, Size, Vector,
+    Alignment,
+    Border,
+    Color,
+    Element,
+    Event,
+    Length,
+    Padding,
+    Pixels,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Shadow,
+    Size,
+    Vector,
 };
 use std::collections::HashMap;
 
@@ -1466,9 +1474,7 @@ fn draw_digital_clock<Message, Theme>(
             Text {
                 content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
-                size: Pixels(
-                    renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 },
-                ),
+                size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
                 font: crate::graphics::icons::BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,

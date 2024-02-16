@@ -9,17 +9,21 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::tree::{self, Tag, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor}, widget::{button, container, text},
+    event,
+    mouse::{self, Cursor},
+    widget::{button, container, text},
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
     Renderer, // the actual type
-    Element, Event, Length, Point, Rectangle, Size, Vector,
+    Size,
+    Vector,
 };
 
 pub use crate::{

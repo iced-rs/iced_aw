@@ -5,29 +5,19 @@ use iced::{
     self,
     advanced::{
         layout::{Limits, Node},
-        overlay,
-        renderer,
+        overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard,
-        Layout,
-        Shell,
-        Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse::{self, Cursor},
-    Alignment, Element, Event, Length, Padding, Point, Rectangle,
-    Size, Vector,
+    event,
+    mouse::{self, Cursor},
+    Alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
 use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct Wrap<
-    'a,
-    Message,
-    Direction,
-    Theme = iced::Theme,
-    Renderer = iced::Renderer,
-> {
+pub struct Wrap<'a, Message, Direction, Theme = iced::Theme, Renderer = iced::Renderer> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The alignment of the [`Wrap`].
