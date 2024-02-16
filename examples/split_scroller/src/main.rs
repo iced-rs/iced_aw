@@ -208,12 +208,12 @@ mod router {
 }
 
 mod demo {
-    use iced::widget::scrollable::{Properties, Scrollbar, Scroller};
+    use iced::widget::scrollable::Properties;
     use iced::widget::{
         button, column, container, horizontal_space, progress_bar, radio, row, scrollable, slider,
         text, vertical_space,
     };
-    use iced::{theme, Alignment, Border, Color};
+    use iced::{theme, Alignment, Color};
     use iced::{Command, Element, Length, Theme};
     use once_cell::sync::Lazy;
 
@@ -495,31 +495,16 @@ mod demo {
     impl scrollable::StyleSheet for ScrollbarCustomStyle {
         type Style = Theme;
 
-        fn active(&self, style: &Self::Style) -> Scrollbar {
+        fn active(&self, style: &Self::Style) -> iced::widget::scrollable::Appearance {
             style.active(&theme::Scrollable::Default)
         }
 
-        fn hovered(&self, style: &Self::Style, is_mouse_over: bool) -> Scrollbar {
+        fn hovered(
+            &self,
+            style: &Self::Style,
+            is_mouse_over: bool,
+        ) -> iced::widget::scrollable::Appearance {
             style.hovered(&theme::Scrollable::Default, is_mouse_over)
-        }
-
-        fn hovered_horizontal(&self, style: &Self::Style, _is_mouse_over: bool) -> Scrollbar {
-            Scrollbar {
-                background: style.active(&theme::Scrollable::default()).background,
-                border: Border {
-                    color: Default::default(),
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                scroller: Scroller {
-                    color: Color::from_rgb8(250, 85, 134),
-                    border: Border {
-                        color: Default::default(),
-                        width: 0.0,
-                        radius: 0.0.into(),
-                    },
-                },
-            }
         }
     }
 
