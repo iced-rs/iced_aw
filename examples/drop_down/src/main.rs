@@ -1,7 +1,8 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{Button, Column, Row, Text}, Element, Length, Sandbox, Settings
+    widget::{Button, Column, Row, Text},
+    Element, Length, Sandbox, Settings,
 };
 
 use iced_aw::{drop_down, DropDown};
@@ -55,7 +56,7 @@ impl Sandbox for DropDownExample {
             Message::Select(choice) => {
                 self.selected = choice;
                 self.expanded = false;
-            },
+            }
             Message::Dismiss => self.expanded = false,
             Message::Expand => self.expanded = !self.expanded,
         }
@@ -78,7 +79,6 @@ impl Sandbox for DropDownExample {
             .on_dismiss(Message::Dismiss)
             .alignment(drop_down::Alignment::Bottom);
 
-        
         Column::new()
             .padding(20)
             .width(Length::Fill)

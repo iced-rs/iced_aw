@@ -86,7 +86,6 @@ where
     }
 }
 
-
 impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for DropDown<'a, Message, Theme, Renderer>
 where

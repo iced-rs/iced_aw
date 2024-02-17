@@ -170,9 +170,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
-    pub use {
-        crate::native::drop_down, drop_down::DropDown,
-    };
+    pub use {crate::native::drop_down, drop_down::DropDown};
 }
 
 #[doc(no_inline)]
