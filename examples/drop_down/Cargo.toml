@@ -1,5 +1,5 @@
 [package]
-name = "context_menu"
+name = "drop_down"
 version = "0.1.0"
 authors = ["wiiznokes <wiiznokes2@gmail.com>"]
 edition = "2021"
@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 iced_aw = { workspace = true, features = [
-    "context_menu",
+    "drop_down",
 ] }
 iced.workspace = true

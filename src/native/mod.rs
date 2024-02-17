@@ -143,3 +143,10 @@ pub type SegmentedButton<'a, Message, Theme, Renderer> =
 pub mod slide_bar;
 #[cfg(feature = "slide_bar")]
 pub use slide_bar::SlideBar;
+
+#[cfg(feature = "drop_down")]
+pub mod drop_down;
+#[cfg(feature = "drop_down")]
+/// A drop down menu
+pub type DropDown<'a, Overlay, Message, Renderer> =
+    drop_down::DropDown<'a, Overlay, Message, Renderer>;

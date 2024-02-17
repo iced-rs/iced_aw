@@ -167,6 +167,10 @@ mod platform {
     pub use {
         crate::native::context_menu, crate::style::ContextMenuStyle, context_menu::ContextMenu,
     };
+
+    #[doc(no_inline)]
+    #[cfg(feature = "drop_down")]
+    pub use {crate::native::drop_down, drop_down::DropDown};
 }
 
 #[doc(no_inline)]
