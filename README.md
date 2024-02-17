@@ -180,6 +180,13 @@ Please take a look into our examples on how to use slidebars.
 
 Enable this widget with the feature `slide_bar`.
 
+### Context Menu
+
+See the example [here](./examples/context_menu/src/main.rs)
+
+### Drop Down Menu
+
+See the example [here](./examples/drop_down/src/main.rs)
 
 ## Quickstart features
 
