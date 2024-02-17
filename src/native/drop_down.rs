@@ -1,4 +1,6 @@
-#![allow(missing_docs)]
+//! Drop down menu widget
+//!
+//! *This API requires the following crate features to be activated: `drop_down`*
 
 use iced::{
     self,
@@ -16,7 +18,7 @@ use iced::{
 
 pub use crate::core::{alignment::Alignment, offset::Offset};
 
-/// Drop down menu
+/// Customizable drop down menu widget
 pub struct DropDown<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Message: Clone,
@@ -37,7 +39,7 @@ where
     Message: Clone,
     Renderer: renderer::Renderer,
 {
-    /// Create a new DropDown
+    /// Create a new [`DropDown`]
     pub fn new<U, B>(underlay: U, overlay: B, expanded: bool) -> Self
     where
         U: Into<Element<'a, Message, Theme, Renderer>>,
@@ -56,30 +58,35 @@ where
     }
 
     /// The width of the overlay
+    #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = Some(width.into());
         self
     }
 
     /// The height of the overlay
+    #[must_use]
     pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
         self
     }
 
     /// The alignment of the overlay relative to the underlay
+    #[must_use]
     pub fn alignment(mut self, alignment: impl Into<Alignment>) -> Self {
         self.alignment = alignment.into();
         self
     }
 
     /// The offset of the overlay
+    #[must_use]
     pub fn offset(mut self, offset: impl Into<Offset>) -> Self {
         self.offset = offset.into();
         self
     }
 
     /// Send a message when a click occur outside of the overlay when expanded
+    #[must_use]
     pub fn on_dismiss(mut self, message: Message) -> Self {
         self.on_dismiss = Some(message);
         self
@@ -244,6 +251,7 @@ where
     Message: Clone,
     Renderer: renderer::Renderer,
 {
+    #[allow(clippy::too_many_arguments)]
     fn new(
         state: &'b mut Tree,
         element: &'b mut Element<'a, Message, Theme, Renderer>,
@@ -259,11 +267,11 @@ where
             state,
             element,
             on_dismiss,
-            underlay_bounds,
             width,
+            height,
             alignment,
             offset,
-            height,
+            underlay_bounds,
             position,
         }
     }

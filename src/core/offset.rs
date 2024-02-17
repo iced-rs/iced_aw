@@ -13,8 +13,9 @@ pub struct Offset {
 
 impl Offset {
     /// Construct a new [`Offset`]
+    #[must_use]
     pub fn new(x: f32, y: f32) -> Self {
-        Offset { x, y }
+        Self { x, y }
     }
 }
 
