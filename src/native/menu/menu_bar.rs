@@ -1,15 +1,16 @@
 //! [`MenuBar`]
 
-use iced_widget::core::{
+use iced_widget::{core::{
     alignment, event,
     layout::{Limits, Node},
     mouse, overlay, renderer,
     widget::{tree, Tree},
     Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
     Rectangle, Shell, Size, Widget,
-};
+}, Theme};
 
 use super::{flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*, types::*};
+use crate::style::menu_bar::*;
 
 pub(super) struct MenuBarState {
     pub(super) active_root: Index,
@@ -29,6 +30,7 @@ impl Default for MenuBarState {
 /// menu bar
 pub struct MenuBar<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     roots: Vec<Item<'a, Message, Theme, Renderer>>,
@@ -36,9 +38,11 @@ where
     padding: Padding,
     width: Length,
     height: Length,
+    style: Theme::Style,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     /// Creates a [`MenuBar`] with the given root items.
@@ -54,6 +58,7 @@ where
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
+            style: Theme::Style::default()
         }
     }
 
@@ -81,10 +86,16 @@ where
         self
     }
 
+    /// Sets the style variant of this [`MenuBar`].
+    pub fn style(mut self, style: impl Into<Theme::Style>) -> Self {
+        self.style = style.into();
+        self
+    }
 }
 impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for MenuBar<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     fn size(&self) -> Size<Length> {
@@ -269,6 +280,7 @@ where
                     init_bar_bounds,
                     // init_parent_bounds,
                     init_root_bounds,
+                    style: &self.style
                 }
                 .overlay_element(),
             )
@@ -282,9 +294,8 @@ impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
-    Theme: 'a,
+    Theme: 'a + StyleSheet,
     Renderer: 'a + renderer::Renderer,
-    // Renderer::Theme: StyleSheet,
 {
     fn from(value: MenuBar<'a, Message, Theme, Renderer>) -> Self {
         Self::new(value)

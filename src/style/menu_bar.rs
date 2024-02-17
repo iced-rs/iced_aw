@@ -1,31 +1,34 @@
 //! Change the appearance of menu bars and their menus.
-use iced_widget::{core::Color, style::Theme};
+use iced_widget::{
+    core::{
+        Color, Border, Background, Shadow, Padding
+    }, 
+    style::Theme
+};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]
 pub struct Appearance {
-    /// The background color of the menu bar and its menus.
-    pub background: Color,
-    /// The border width of the menu bar and its menus.
-    pub border_width: f32,
-    /// The border radius of the menu bar and its menus.
-    pub border_radius: [f32; 4],
-    /// The border [`Color`] of the menu bar and its menus.
-    pub border_color: Color,
-    /// The expand value of the menus' background
-    pub background_expand: [u16; 4],
-    /// The highlighted path [`Color`] of the the menu bar and its menus.
-    pub path: Color,
+    /// The background of the menus.
+    pub background: Background,
+    /// The border of the menus.
+    pub border: Border,
+    /// The shadow of the menus
+    pub shadow: Shadow,
+    /// Expand the background
+    pub background_expand: Padding,
 }
 impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
-            background: Color::from([0.85; 3]),
-            border_width: 1.0,
-            border_radius: [6.0; 4],
-            border_color: Color::from([0.5; 3]),
-            background_expand: [6; 4],
-            path: Color::from([0.3; 3]),
+            background: Color::from([0.85; 3]).into(),
+            border: Border{
+                color: Color::from([0.5; 3]),
+                width: 1.0,
+                radius: [6.0; 4].into(),
+            },
+            shadow: Shadow::default(),
+            background_expand: [6; 4].into(),
         }
     }
 }
@@ -72,12 +75,14 @@ impl StyleSheet for Theme {
 
         match style {
             MenuBarStyle::Default => Appearance {
-                background: palette.background.base.color,
-                border_width: 1.0,
-                border_radius: [6.0; 4],
-                border_color: palette.background.weak.color,
-                background_expand: [6; 4],
-                path: palette.primary.weak.color,
+                background: palette.background.base.color.into(),
+                border: Border{
+                    color: palette.background.weak.color.into(),
+                    width: 1.0,
+                    radius: [6.0; 4].into(),
+                },
+                shadow: Shadow::default(),
+                background_expand: [6; 4].into()
             },
             MenuBarStyle::Custom(c) => c.appearance(self),
         }

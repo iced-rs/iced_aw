@@ -8,6 +8,7 @@ use iced_widget::core::{
 };
 
 use super::{menu_bar::MenuBarState, menu_tree::*, types::*};
+use crate::style::menu_bar::*;
 
 /// Should be returned from the recursive event processing function, 
 /// tells the caller which type of event has been processed
@@ -19,17 +20,20 @@ enum RecEvent{
 
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     /// Tree{ bar_state, [item_tree...] }
     pub(super) tree: &'b mut Tree,
-    
+
     pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
     pub(super) init_bar_bounds: Rectangle,
     pub(super) init_root_bounds: Vec<Rectangle>,
+    pub(super) style: &'b Theme::Style,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     pub(super) fn overlay_element(self) -> overlay::Element<'b, Message, Theme, Renderer> {
@@ -39,6 +43,7 @@ where
 impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
     for MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     fn layout(
@@ -81,7 +86,7 @@ where
         let active_tree = &mut self.tree.children[active]; // item_tree: Tree{ stateless, [ widget_tree, menu_tree ] }
         let parent_bounds = self.init_root_bounds[active] + translation;
         
-        fn rec<'a, Message, Theme, Renderer: renderer::Renderer>(
+        fn rec<'a, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             renderer: &Renderer,
             item: &Item<'a, Message, Theme, Renderer>,
             tree: &mut Tree,
@@ -100,15 +105,17 @@ where
             menu_nodes.push(menu_node);
             
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
-            let slice = &menu_state.slice;
 
             if let Some(active) = menu_state.active{
                 let next_item = &menu.items[active];
                 let next_tree = &mut menu_tree.children[active];
-                let slice_node = &menu_nodes.last().unwrap().children()[0];
-                let next_parent_bounds = slice_node.children()[active - slice.start_index].bounds() + 
-                    (slice_node.bounds().position() - Point::ORIGIN);
-                
+                let next_parent_bounds = {
+                    let slice_node = &menu_nodes.last().unwrap().children()[0];
+                    let Some(node) = slice_node.children().get(active - menu_state.slice.start_index) 
+                    else { return; };
+
+                    node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
+                };
                 rec(renderer, next_item, next_tree, menu_nodes, next_parent_bounds, direction, viewport);
             }
         }
@@ -191,7 +198,7 @@ where
         let active_tree = &mut self.tree.children[active];
         let mut prev_bounds_list = vec![bar_bounds];
         
-        fn rec<'a, 'b, Message, Theme, Renderer: renderer::Renderer>(
+        fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             tree: &mut Tree,
             item: &mut Item<'a, Message, Theme, Renderer>,
             event: Event,
@@ -221,7 +228,12 @@ where
             if let Some(active) = menu_state.active{
                 let next_tree = &mut menu_tree.children[active];
                 let next_item = &mut menu.items[active];
-                let next_parent_bounds = slice_layout.children().nth(active - menu_state.slice.start_index).unwrap().bounds();
+                let next_parent_bounds = {
+                    let Some(layout) = slice_layout.children().nth(active - menu_state.slice.start_index) 
+                    else { return RecEvent::Event };
+                    
+                    layout.bounds()
+                };
 
                 let re = rec(
                     next_tree, 
@@ -323,50 +335,22 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
     ) {
+        let bar = self.tree.state.downcast_ref::<MenuBarState>();
+        let Some(active) = bar.active_root else { return; };
+
         let viewport = layout.bounds();
         let mut lc = layout.children();
         let _bar_bounds = lc.next().unwrap().bounds();
-        let roots_layout = lc.next().unwrap();
+        let _roots_layout = lc.next().unwrap();
 
-        let bar = self.tree.state.downcast_ref::<MenuBarState>();
-
-        let Some(active) = bar.active_root else {
-            return;
-        };
-
-        let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
+        // let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
         let menu_layouts_layout = lc.next().unwrap(); // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
 
         let active_root = &self.roots[active];
         let active_tree = &self.tree.children[active];
 
-        /* println!("bar bounds: {:?}", bar_bounds);
-        renderer.fill_quad(
-            renderer::Quad{
-                bounds: bar_bounds,
-                border: Border{
-                    // width: 6.0,
-                    radius: 6.0.into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }, 
-            Color::from([0.0, 1.0, 1.0, 0.3])
-        );
-
-        roots_layout.children().for_each(|l|{
-            println!("root bounds: {:?}", l.bounds());
-            renderer.fill_quad(
-                renderer::Quad{
-                    bounds: l.bounds(),
-                    ..Default::default()
-                }, 
-                Color::from([1.0, 0.0, 0.0, 0.6])
-            );
-        }); */
-
-        fn rec<'a, 'b, Message, Theme, Renderer: renderer::Renderer>(
+        fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator< Item = Layout<'b>>,
@@ -374,7 +358,7 @@ where
             renderer: &mut Renderer,
             theme: &Theme,
             style: &renderer::Style,
-            parent_bounds: Rectangle,
+            theme_style: &Theme::Style,
             viewport: &Rectangle,
         ) {
             let menu = item.menu.as_ref().expect("No menu defined in this item");
@@ -382,26 +366,39 @@ where
 
             let Some(menu_layout) = layout_iter.next() else { return }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
             
-            menu.draw(
-                menu_tree, 
-                renderer, 
-                theme, 
-                style, 
-                menu_layout, 
-                cursor, 
-                viewport, 
-                parent_bounds
-            );
-
-            let mut mc = menu_layout.children();
-            let slice_layout = mc.next().unwrap(); // slice_node
+            let mut draw_menu = |cursor| 
+                menu.draw(
+                    menu_tree, 
+                    renderer, 
+                    theme, 
+                    style, 
+                    theme_style,
+                    menu_layout, 
+                    cursor, 
+                    viewport, 
+                );
             
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
-
+            
             if let Some(active) = menu_state.active{
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
-                let next_parent_bounds = slice_layout.children().nth(active - menu_state.slice.start_index).unwrap().bounds();
+
+                let mut mc = menu_layout.children();
+                let slice_layout = mc.next().unwrap(); // slice_node
+                let active_bounds = {
+                    let Some(layout) = slice_layout.children().nth(active - menu_state.slice.start_index)
+                    else { return; };
+                    layout.bounds()
+                };
+
+                draw_menu(
+                    if cursor.is_over(active_bounds){
+                        cursor
+                    }else{
+                        mouse::Cursor::Available(active_bounds.center())
+                    }
+                );
 
                 renderer.with_layer(
                     *viewport, 
@@ -413,10 +410,12 @@ where
                         r, 
                         theme, 
                         style, 
-                        next_parent_bounds, 
+                        theme_style,
                         viewport
                     )
                 );
+            }else{
+                draw_menu(cursor)
             }
         }
     
@@ -428,7 +427,7 @@ where
             renderer, 
             theme, 
             style, 
-            parent_bounds, 
+            self.style,
             &viewport
         )
     

@@ -12,6 +12,8 @@ use iced_widget::core::{
     Size, Vector, Widget,
 };
 
+use crate::style::menu_bar::*;
+
 /*
 menu tree:
 Item{
@@ -67,6 +69,7 @@ impl Default for MenuState{
 /// Menu
 pub struct Menu<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
@@ -81,6 +84,7 @@ where
 #[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     /// Creates a [`Menu`] with the given items.
@@ -137,6 +141,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     pub(super) fn size(&self) -> Size<Length> {
@@ -357,80 +362,33 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
+        theme_style: &Theme::Style,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
-        parent_bounds: Rectangle,
+        // parent_bounds: Rectangle,
     ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
-        let offset_bounds = lc.next().unwrap().bounds();
-        let check_bounds = lc.next().unwrap().bounds();
-
-        // println!("prescroll: {:?}", prescroll);
-        // println!("parent_bounds: {:?}", parent_bounds);
+        // let offset_bounds = lc.next().unwrap().bounds();
+        // let check_bounds = lc.next().unwrap().bounds();
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
-        // println!("slice: {:?}", slice);
 
-        renderer.fill_quad(
-            renderer::Quad{
-                bounds: check_bounds,
-                border: Border{
-                    // color: todo!(),
-                    // width: todo!(),
-                    radius: 6.0.into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }, 
-            Color::from([1.0, 0.0, 0.0, 0.1])
-        );
-
-        renderer.fill_quad(
-            renderer::Quad{
-                bounds: prescroll,
-                border: Border{
-                    // color: todo!(),
-                    // width: todo!(),
-                    radius: 6.0.into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }, 
-            Color::from([1.0, 1.0, 1.0, 1.0])
-        );
+        let styling = theme.appearance(theme_style);
         
-        renderer.fill_quad(
-            renderer::Quad{
-                bounds: offset_bounds,
-                border: Border{
-                    // color: todo!(),
-                    // width: todo!(),
-                    radius: 6.0.into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }, 
-            Color::from([0.0, 0.0, 1.0, 0.3])
-        );
+        // debug_draw(renderer, check_bounds, offset_bounds, parent_bounds);
 
         renderer.fill_quad(
             renderer::Quad{
-                bounds: parent_bounds,
-                border: Border{
-                    // color: todo!(),
-                    // width: todo!(),
-                    radius: 6.0.into(),
-                    ..Default::default()
-                },
-                ..Default::default()
+                bounds: pad_rectangle(prescroll, styling.background_expand),
+                border: styling.border,
+                shadow: styling.shadow,
             }, 
-            Color::from([1.0, 1.0, 0.0, 0.5])
+            styling.background
         );
-
         
         for ((item, tree), layout) in self
             .items[ slice.start_index .. slice.end_index+1 ].iter() // [item...].iter()
@@ -510,9 +468,42 @@ where
     
 }
 
+/* fn debug_draw<Renderer: renderer::Renderer>(
+    renderer: &mut Renderer,
+    check_bounds: Rectangle,
+    offset_bounds: Rectangle,
+    parent_bounds: Rectangle,
+){
+    [
+        check_bounds,
+        offset_bounds,
+        parent_bounds
+    ].iter()
+    .zip([
+        Color::from([1.0, 0.0, 0.0, 0.1]),
+        Color::from([0.0, 0.0, 1.0, 0.3]),
+        Color::from([1.0, 1.0, 0.0, 0.5])
+    ])
+    .for_each(|(b, c)|{
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: *b,
+                border: Border{
+                    radius: 6.0.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }, 
+            c
+        );
+    });
+} */
+
+
 /// Item inside a [`Menu`]
 pub struct Item<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     pub(super) item: Element<'a, Message, Theme, Renderer>,
@@ -521,6 +512,7 @@ where
 #[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     /// Creates an [`Item`] with the given element.
@@ -552,6 +544,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
+    Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
     pub(super) fn size(&self) -> Size<Length> {
