@@ -38,6 +38,7 @@ spinner = []
 context_menu = []
 segmented_button = []
 slide_bar = []
+drop_down = []
 
 default = [
     "badge",
@@ -60,6 +61,7 @@ default = [
     "spinner",
     "cupertino",
     "segmented_button",
+    "drop_down",
     #"menu",
 ]
 
@@ -108,6 +110,7 @@ members = [
     "examples/cupertino/cupertino_switch",
     "examples/WidgetIDReturn",
     "examples/segmented_button",
+    "examples/drop_down",
     #"examples/menu",
 ]
 
