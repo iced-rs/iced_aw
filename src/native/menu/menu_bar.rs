@@ -9,7 +9,7 @@ use iced_widget::{core::{
     Rectangle, Shell, Size, Widget,
 }, Theme};
 
-use super::{flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*, types::*};
+use super::{flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*, common::*};
 use crate::style::menu_bar::*;
 
 pub(super) struct MenuBarState {
@@ -263,6 +263,16 @@ where
                 )
             }).unwrap_or(cursor)
         }else{ cursor };
+
+        let styling = theme.appearance(&self.style);
+        renderer.fill_quad(
+            renderer::Quad{
+                bounds: pad_rectangle(layout.bounds(), styling.bar_background_expand),
+                border: styling.bar_border,
+                shadow: styling.bar_shadow,
+            }, 
+            styling.bar_background
+        );
 
         // println!("bar draw");
         self.roots

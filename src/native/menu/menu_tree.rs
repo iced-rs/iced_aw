@@ -1,7 +1,7 @@
 //! [`Item`] and [`Menu`]
 //!
 use std::iter::once;
-use super::types::*;
+use super::common::*;
 use super::flex;
 use iced_widget::core::{
     alignment, event,
@@ -173,7 +173,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// out: Node{inf, \[ items_node, prescroll, offset_boundss, check_bounds ]}
+    /// out: Node{inf, \[ items_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn layout(
         &self,
         tree: &mut Tree,
@@ -353,7 +353,7 @@ where
     }
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// layout: Node{inf, \[ slice_node, prescroll, offset_boundss, check_bounds ]}
+    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn on_event(
         &mut self,
         tree: &mut Tree,
@@ -442,11 +442,11 @@ where
         // draw background
         renderer.fill_quad(
             renderer::Quad{
-                bounds: pad_rectangle(prescroll, styling.background_expand),
-                border: styling.border,
-                shadow: styling.shadow,
+                bounds: pad_rectangle(prescroll, styling.menu_background_expand),
+                border: styling.menu_border,
+                shadow: styling.menu_shadow,
             }, 
-            styling.background
+            styling.menu_background
         );
         
         let mut slc = slice_layout.children();
@@ -941,14 +941,6 @@ impl Aod {
     }
 }
 
-fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
-    Rectangle {
-        x: rect.x - padding.left,
-        y: rect.y - padding.top,
-        width: rect.width + padding.horizontal(),
-        height: rect.height + padding.vertical(),
-    }
-}
 
 fn process_scroll_event(
     menu_state: &mut MenuState,

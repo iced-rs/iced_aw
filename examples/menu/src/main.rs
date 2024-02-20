@@ -199,7 +199,7 @@ impl Application for App {
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
         // println!("app view");
-
+        
         let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(12.0);
         let menu_temp_2 = |items| Menu::new(items).max_width(180.0);
 
@@ -297,7 +297,7 @@ impl Application for App {
                         Message::ToggleChange,
                     ))
                     .padding([0, 8])
-                    .height(Length::Fill)
+                    .height(30.0)
                     .align_y(alignment::Vertical::Center),
                     menu_temp_2(menu_items!(
                         (debug_button("Item")),
@@ -306,13 +306,12 @@ impl Application for App {
                         (debug_button("Item")),
                     ))
                 ),
+                (debug_button("Separator")),
                 (separator()),
-                (debug_button("Seperators are also widgets")),
+                (debug_button("Labeled Separator")),
                 (labeled_separator("Separator")),
-                (debug_button("Item")),
-                (debug_button("Item")),
-                (dot_separator()),
-                (debug_button("Item")),
+                (debug_button("Dot Separator")),
+                (dot_separator(&self.theme)),
                 (debug_button("Item")),
             )).width(240.0)),
             (debug_button_s("Controls"), menu_temp_1(menu_items!(
@@ -493,11 +492,14 @@ impl Application for App {
                         ].spacing(spacing)
                         .height(100.0)
                     ),
+                    (separator()),
                     (debug_button("AABB").height(40)),
                     (debug_button("CCDD").height(140)),
                     (debug_button("EEFF").height(30)),
                     (debug_button("GGHH").height(100)),
                     (debug_button("IIJJ").height(60)),
+                    (debug_button("KKLL").height(120)),
+                    (debug_button("MMNN").height(50)),
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing)
             }),
             /* (debug_button_s("content"),
@@ -626,7 +628,7 @@ impl Application for App {
                 ))
             )
          */
-        ).check_bounds_width(80.0);
+        );
 
         /* let mb = row![
             Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
@@ -726,8 +728,8 @@ impl Application for App {
         .padding([2, 8])
         .align_items(alignment::Alignment::Center); */
 
-        let r = row![horizontal_space(400), mb, horizontal_space(400),]
-            .padding([2, 8])
+        let r = row![horizontal_space(295), mb, horizontal_space(295),]
+            // .padding([2, 8])
             .align_items(alignment::Alignment::Center);
 
         // let top_bar_style: fn(&iced::Theme) -> container::Appearance =
@@ -746,11 +748,16 @@ impl Application for App {
 
         c.into() */
 
-        let c = col![vertical_space(400), r, vertical_space(400),];
-
+        let c = col![vertical_space(450), r, vertical_space(450),];
+        
         let sc = scrollable(c)
+            // .direction(scrollable::Direction::Vertical(
+            //     scrollable::Properties::new()
+            //         .alignment(scrollable::Alignment::End)
+            // ));
             .direction(scrollable::Direction::Both {
-                vertical: scrollable::Properties::new(),
+                vertical: scrollable::Properties::new()
+                    .alignment(scrollable::Alignment::End),
                 horizontal: scrollable::Properties::new(),
             });
 
@@ -927,15 +934,19 @@ fn separator<'a>() -> quad::Quad {
     }
 }
 
-fn dot_separator<'a>() -> text::Text<'a, iced::Theme, iced::Renderer> {
-    text("···································")
-        .size(22)
-        // .shaping(text::Shaping::Advanced)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .horizontal_alignment(alignment::Horizontal::Center)
-        .vertical_alignment(alignment::Vertical::Center)
-        .height(30.0)
+fn dot_separator<'a>(theme: &iced::Theme) -> Element<'a, Message, iced::Theme, iced::Renderer> {
+    row(
+        (0..20).map(|_|{
+            quad::Quad {
+                color: theme.extended_palette().background.base.text,
+                border_radius: [4.0; 4],
+                inner_bounds: quad::InnerBounds::Square(4.0),
+                ..Default::default()
+            }.into()
+        })
+    )
+    .height(30.0)
+    .into()
 }
 
 fn labeled_separator(label: &'_ str) -> Element<'_, Message, iced::Theme, iced::Renderer> {
@@ -943,16 +954,12 @@ fn labeled_separator(label: &'_ str) -> Element<'_, Message, iced::Theme, iced::
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
-        // background: Some(Color::from([0.8;3]).into()),
-        // height: Length::Shrink,
         ..Default::default()
     };
     let q_2 = quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
         inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
-        // background: Some(Color::from([0.8;3]).into()),
-        // height: Length::Shrink,
         ..Default::default()
     };
 

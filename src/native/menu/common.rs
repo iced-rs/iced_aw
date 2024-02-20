@@ -1,3 +1,6 @@
+use iced_widget::core::{
+    Padding, Rectangle
+};
 
 /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
@@ -48,3 +51,11 @@ pub(super) enum Axis {
 
 pub(super) type Index = Option<usize>;
 
+pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
+    Rectangle {
+        x: rect.x - padding.left,
+        y: rect.y - padding.top,
+        width: rect.width + padding.horizontal(),
+        height: rect.height + padding.vertical(),
+    }
+}

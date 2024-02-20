@@ -7,7 +7,7 @@ use iced_widget::core::{
     Shell, Size, Vector, Widget,
 };
 
-use super::{menu_bar::MenuBarState, menu_tree::*, types::*};
+use super::{menu_bar::MenuBarState, menu_tree::*, common::*};
 use crate::style::menu_bar::*;
 
 /// Should be returned from the recursive event processing function, 

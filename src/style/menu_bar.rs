@@ -9,29 +9,46 @@ use iced_widget::{
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]
 pub struct Appearance {
+    /// The background of the menu bar.
+    pub bar_background: Background,
+    /// The border of the menu bar.
+    pub bar_border: Border,
+    /// The shadow of the menu bar.
+    pub bar_shadow: Shadow,
+    /// Expand the menu bar background
+    pub bar_background_expand: Padding,
+
     /// The background of the menus.
-    pub background: Background,
+    pub menu_background: Background,
     /// The border of the menus.
-    pub border: Border,
+    pub menu_border: Border,
     /// The shadow of the menus
-    pub shadow: Shadow,
-    /// Expand the background
-    pub background_expand: Padding,
+    pub menu_shadow: Shadow,
+    /// Expand the menu background
+    pub menu_background_expand: Padding,
 }
 impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
-            background: Color::from([0.85; 3]).into(),
-            border: Border{
+            bar_background: Color::from([0.85; 3]).into(),
+            bar_border: Border{
                 radius: [6.0; 4].into(),
                 ..Default::default()
             },
-            shadow: Shadow{
+            bar_shadow: Shadow::default(),
+            bar_background_expand: [3; 4].into(),
+
+            menu_background: Color::from([0.85; 3]).into(),
+            menu_border: Border{
+                radius: [6.0; 4].into(),
+                ..Default::default()
+            },
+            menu_shadow: Shadow{
                 color: Color::from([0.0, 0.0, 0.0, 0.5]),
                 offset: Vector::ZERO,
                 blur_radius: 10.0,
             },
-            background_expand: [6; 4].into(),
+            menu_background_expand: [6; 4].into(),
         }
     }
 }
@@ -78,7 +95,8 @@ impl StyleSheet for Theme {
 
         match style {
             MenuBarStyle::Default => Appearance {
-                background: palette.background.base.color.into(),
+                bar_background: palette.background.base.color.into(),
+                menu_background: palette.background.base.color.into(),
                 // border: Border{
                 //     color: palette.background.weak.color.into(),
                 //     width: 1.0,

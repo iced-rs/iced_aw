@@ -56,7 +56,7 @@ mod flex;
 mod menu_bar;
 mod menu_bar_overlay;
 mod menu_tree;
-mod types;
+mod common;
 
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
 pub use menu_bar::MenuBar;
