@@ -6,7 +6,6 @@ use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButt
 
 use chrono::Local;
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

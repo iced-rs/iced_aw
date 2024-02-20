@@ -2,7 +2,6 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

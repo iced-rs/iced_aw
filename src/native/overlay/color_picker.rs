@@ -16,7 +16,6 @@ use crate::{
 };
 
 use iced::{
-    self,
     advanced::{
         graphics::geometry::Renderer as _,
         layout::{Limits, Node},

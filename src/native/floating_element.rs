@@ -5,7 +5,6 @@
 use super::overlay::floating_element::FloatingElementOverlay;
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

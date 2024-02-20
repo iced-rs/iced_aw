@@ -1,6 +1,5 @@
 //! Create choices using `segnmented_button` buttons.
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

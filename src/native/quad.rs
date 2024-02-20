@@ -4,7 +4,6 @@
 
 use crate::native::InnerBounds;
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

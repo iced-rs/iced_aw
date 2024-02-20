@@ -17,7 +17,6 @@ use crate::{
 
 use chrono::{Datelike, Local, NaiveDate};
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

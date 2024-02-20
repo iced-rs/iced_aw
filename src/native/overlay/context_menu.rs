@@ -5,7 +5,6 @@ use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

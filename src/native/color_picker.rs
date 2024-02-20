@@ -7,7 +7,6 @@ use super::overlay::color_picker::{
 };
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

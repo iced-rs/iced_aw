@@ -126,7 +126,7 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
             #[allow(clippy::option_if_let_else)]
             match column_widths.get_mut(col_idx) {
                 Some(col_width) => {
-                    *col_width = max_allowed_size.width.min(col_width.max(min_width))
+                    *col_width = max_allowed_size.width.min(col_width.max(min_width));
                 }
                 None => column_widths.insert(col_idx, max_allowed_size.width.min(min_width)),
             }

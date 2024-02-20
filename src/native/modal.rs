@@ -5,7 +5,6 @@
 use super::overlay::modal::ModalOverlay;
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

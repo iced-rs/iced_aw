@@ -3,7 +3,6 @@
 //! *This API requires the following crate features to be activated: split*
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

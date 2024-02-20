@@ -11,7 +11,6 @@ pub use crate::tab_bar::Position;
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

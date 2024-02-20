@@ -5,7 +5,6 @@
 use crate::graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT};
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

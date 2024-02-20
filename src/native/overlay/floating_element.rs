@@ -5,7 +5,6 @@
 use crate::native::floating_element::{Anchor, Offset};
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

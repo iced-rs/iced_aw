@@ -2,7 +2,6 @@ use crate::graphics::SF_UI_ROUNDED;
 use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer::{self, Quad},

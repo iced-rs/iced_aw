@@ -3,7 +3,6 @@ pub mod list;
 use crate::style::selection_list::StyleSheet;
 
 use iced::{
-    self,
     advanced::{
         graphics,
         layout::{Limits, Node},

@@ -1,7 +1,6 @@
 //! A context menu for showing actions on right click.
 //!
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

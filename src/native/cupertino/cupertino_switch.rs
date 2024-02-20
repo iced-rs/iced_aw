@@ -1,7 +1,6 @@
 use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_green};
 
 use iced::{
-    self,
     advanced::{
         graphics::geometry::Renderer as _,
         layout::{self, Limits, Node},

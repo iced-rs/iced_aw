@@ -19,7 +19,6 @@ use crate::{
 
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced::{
-    self,
     advanced::{
         graphics::geometry::Renderer as _,
         layout::{Limits, Node},

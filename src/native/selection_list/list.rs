@@ -3,7 +3,6 @@
 use crate::selection_list::StyleSheet;
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,
@@ -222,10 +221,7 @@ where
         let list_state = state.state.downcast_ref::<ListState>();
 
         for i in start..end.min(self.options.len()) {
-            let is_selected = list_state
-                .last_selected_index
-                .map(|u| u.0 == i)
-                .unwrap_or_default();
+            let is_selected = list_state.last_selected_index.is_some_and(|u| u.0 == i);
             let is_hovered = list_state.hovered_option == Some(i);
 
             let bounds = Rectangle {

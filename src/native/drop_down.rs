@@ -3,7 +3,6 @@
 //! *This API requires the following crate features to be activated: `drop_down`*
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,

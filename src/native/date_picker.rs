@@ -6,7 +6,6 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 
 use chrono::Local;
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

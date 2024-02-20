@@ -3,7 +3,6 @@
 //! *This API requires the following crate features to be activated: modal*
 use crate::style::modal::StyleSheet;
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,

@@ -3,7 +3,6 @@
 use crate::style::spinner::StyleSheet;
 
 use iced::{
-    self,
     advanced::{
         layout::{Limits, Node},
         renderer,
