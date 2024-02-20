@@ -29,6 +29,7 @@ where
     pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
     pub(super) init_bar_bounds: Rectangle,
     pub(super) init_root_bounds: Vec<Rectangle>,
+    pub(super) check_bounds_width: f32,
     pub(super) style: &'b Theme::Style,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
@@ -91,6 +92,7 @@ where
             item: &Item<'a, Message, Theme, Renderer>,
             tree: &mut Tree,
             menu_nodes: &mut Vec<Node>,
+            check_bounds_width: f32,
             parent_bounds: Rectangle,
             parent_direction: (Direction, Direction),
             // translation: Vector,
@@ -100,7 +102,15 @@ where
             let menu = item.menu.as_ref().unwrap();
             let menu_tree = &mut tree.children[1];
 
-            let (menu_node, direction) = menu.layout(menu_tree, renderer, &Limits::NONE, parent_bounds, parent_direction, viewport); 
+            let (menu_node, direction) = menu.layout(
+                menu_tree, 
+                renderer, 
+                &Limits::NONE, 
+                check_bounds_width, 
+                parent_bounds, 
+                parent_direction, 
+                viewport
+            ); 
                 // Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
             menu_nodes.push(menu_node);
             
@@ -116,7 +126,16 @@ where
 
                     node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
                 };
-                rec(renderer, next_item, next_tree, menu_nodes, next_parent_bounds, direction, viewport);
+                rec(
+                    renderer, 
+                    next_item, 
+                    next_tree, 
+                    menu_nodes, 
+                    check_bounds_width, 
+                    next_parent_bounds, 
+                    direction, 
+                    viewport
+                );
             }
         }
 
@@ -148,6 +167,7 @@ where
             active_root,
             active_tree,
             &mut menu_nodes,
+            self.check_bounds_width,
             parent_bounds,
             parent_direction,
             // translation,
@@ -255,21 +275,27 @@ where
                 match re {
                     RecEvent::Event => RecEvent::Event,
                     RecEvent::Close => {
-                        menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
-                        if prev.is_some(){
-                            if cursor.is_over(offset_bounds){
-                                RecEvent::Event
-                            }else{
-                                RecEvent::None
-                            }
+                        if cursor.is_over(prescroll){
+                            menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
+                            menu.open_event(menu_tree, menu_layout, cursor);
+                            RecEvent::Event
+                        }else if cursor.is_over(offset_bounds){
+                            RecEvent::Event
                         }else{
-                            RecEvent::Close
+                            menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
+                            if prev.is_some(){
+                                RecEvent::None
+                            }else{
+                                RecEvent::Close
+                            }
                         }
                     }
                     RecEvent::None => {
                         if cursor.is_over(prescroll){
                             menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
                             menu.open_event(menu_tree, menu_layout, cursor);
+                            RecEvent::Event
+                        }else if cursor.is_over(offset_bounds){
                             RecEvent::Event
                         }else{
                             RecEvent::None
@@ -283,14 +309,12 @@ where
                     menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
                     menu.open_event(menu_tree, menu_layout, cursor);
                     RecEvent::Event
+                }else if cursor.is_over(offset_bounds){
+                    RecEvent::Event
                 }else{
                     menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
                     if prev.is_some(){
-                        if cursor.is_over(offset_bounds){
-                            RecEvent::Event
-                        }else{
-                            RecEvent::None
-                        }
+                        RecEvent::None
                     }else{
                         RecEvent::Close
                     }

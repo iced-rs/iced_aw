@@ -179,6 +179,7 @@ where
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &Limits,
+        check_bounds_width: f32,
         parent_bounds: Rectangle,
         parent_direction: (Direction, Direction),
         viewport: &Rectangle,
@@ -217,8 +218,7 @@ where
         
         let offset_bounds = Rectangle::new(offset_position, offset_size);
         let children_bounds = Rectangle::new(children_position, children_size);
-        let bounds_expand = 30.0;
-        let check_bounds = pad_rectangle(children_bounds, [bounds_expand; 4].into());
+        let check_bounds = pad_rectangle(children_bounds, [check_bounds_width; 4].into());
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
 
@@ -230,21 +230,78 @@ where
         );
         menu_state.slice = slice;
         
-        let slice_node = {
+        let slice_node = if slice.start_index == slice.end_index{
+            let node = &items_node.children()[slice.start_index];
+            let bounds = node.bounds();
+            let start_offset = slice.lower_bound_rel - bounds.y;
+            
+            Node::with_children(
+                Size::new(
+                    items_node.bounds().width, 
+                    slice.upper_bound_rel - slice.lower_bound_rel
+                ), 
+                once(
+                    Node::with_children(
+                        Size::new(
+                            bounds.width, 
+                            slice.upper_bound_rel - slice.lower_bound_rel
+                        ), 
+                        node.children().iter().map(Clone::clone).collect()
+                    ).move_to(bounds.position())
+                    .translate([0.0, start_offset])
+                ).collect()
+            )
+        }else{
+            // let start_node = {
+            //     let node = &items_node.children()[slice.start_index];
+            //     let bounds = node.bounds();
+            //     let start_offset = slice.lower_bound_rel - bounds.y;
+            //     Node::with_children(
+            //         Size::new(
+            //             bounds.width, 
+            //             bounds.height - start_offset
+            //         ), 
+            //         node.children().iter().map(Clone::clone).collect()
+            //     ).move_to(bounds.position())
+            //     .translate([0.0, start_offset])
+            // };
+
+            // let start_node = {
+            //     let node = &items_node.children()[slice.start_index];
+            //     let bounds = node.bounds();
+            //     clip_node(
+            //         node, 
+            //         Rectangle{
+            //             x: bounds.x,
+            //             y: slice.lower_bound_rel,
+            //             width: bounds.width,
+            //             height: bounds.height - (slice.lower_bound_rel - bounds.y),
+            //         }
+            //     )
+            // };
+            
+            // let start_node = {
+            //     let node = &items_node.children()[slice.start_index];
+            //     let bounds = node.bounds();
+            //     let start_offset = slice.lower_bound_rel - bounds.y;
+            //     Node::with_children(
+            //             bounds.size(), 
+            //             node.children().iter().map(Clone::clone).collect()
+            //         ).move_to(bounds.position())
+            //         .translate([0.0, start_offset])
+            // };
+            
             let start_node = {
                 let node = &items_node.children()[slice.start_index];
                 let bounds = node.bounds();
                 let start_offset = slice.lower_bound_rel - bounds.y;
-                Node::with_children(
-                    Size::new(
-                        bounds.width, 
-                        bounds.height - start_offset
-                    ), 
-                    node.children().iter().map(Clone::clone).collect()
-                ).move_to(bounds.position())
+                scale_node_y(
+                    node, 
+                    (bounds.height - start_offset) / bounds.height
+                )
                 .translate([0.0, start_offset])
             };
-            
+
             let end_node = {
                 let node = &items_node.children()[slice.end_index];
                 let bounds = node.bounds();
@@ -274,6 +331,7 @@ where
                 .collect()
             )
         };
+
 
         (
             Node::with_children(
@@ -371,16 +429,17 @@ where
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
-        // let offset_bounds = lc.next().unwrap().bounds();
-        // let check_bounds = lc.next().unwrap().bounds();
+        let offset_bounds = lc.next().unwrap().bounds();
+        let check_bounds = lc.next().unwrap().bounds();
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
 
         let styling = theme.appearance(theme_style);
         
-        // debug_draw(renderer, check_bounds, offset_bounds, parent_bounds);
+        // debug_draw(renderer, prescroll, check_bounds, offset_bounds);
 
+        // draw background
         renderer.fill_quad(
             renderer::Quad{
                 bounds: pad_rectangle(prescroll, styling.background_expand),
@@ -390,13 +449,69 @@ where
             styling.background
         );
         
-        for ((item, tree), layout) in self
-            .items[ slice.start_index .. slice.end_index+1 ].iter() // [item...].iter()
-            .zip(tree.children[ slice.start_index .. slice.end_index+1 ].iter()) // [item_tree...]
-            .zip(slice_layout.children()) // [item_layout...]
+        let mut slc = slice_layout.children();
+
+        // draw start
+        let Some(start) = self.items.get(slice.start_index)
+        else{ return };
+        let Some(start_tree) = tree.children.get(slice.start_index)
+        else { return };
+        let Some(start_layout) = slc.next()
+        else { return };
+        
+        let start_bounds = start_layout.bounds();
+        // if let Some(sec_layout) = slc.next(){
+        //     let sec_bounds = sec_layout.bounds();
+        //     renderer.with_layer(
+        //         Rectangle{
+        //             x: start_bounds.x,
+        //             y: start_bounds.y,
+        //             width: f32::MAX,
+        //             height: sec_bounds.y - start_bounds.y,
+        //         }, 
+        //         |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+        //     );
+        // }else{
+        //     start.draw(start_tree, renderer, theme, style, start_layout, cursor, viewport)
+        // }
+
+        renderer.with_layer(
+            start_bounds,
+            |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+        );
+
+
+        if slice.end_index == slice.start_index {
+            return
+        }
+
+        // draw the rest
+        let Some(items) = self.items.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
+        else { return; };
+
+        let Some(trees) = tree.children.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
+        else { return; };
+
+        for ((item, tree), layout) in items.iter() // [item...].iter()
+            .zip(trees.iter()) // [item_tree...]
+            .zip(slice_layout.children().skip(1)) // [item_layout...]
         {
             item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
         }
+
+
+        // let Some(items) = self.items.get(slice.start_index .. slice.end_index.saturating_add(1))
+        // else { return };
+
+        // let Some(trees) = tree.children.get(slice.start_index .. slice.end_index.saturating_add(1))
+        // else { return };
+
+        // for ((item, tree), layout) in items.iter() // [item...].iter()
+        //     .zip(trees.iter()) // [item_tree...]
+        //     .zip(slice_layout.children()) // [item_layout...]
+        // {
+        //     item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
+        // }
     }
 
     pub(super) fn open_event(
@@ -468,21 +583,25 @@ where
     
 }
 
-/* fn debug_draw<Renderer: renderer::Renderer>(
+fn debug_draw<Renderer: renderer::Renderer>(
     renderer: &mut Renderer,
+
+    prescroll: Rectangle,
     check_bounds: Rectangle,
     offset_bounds: Rectangle,
-    parent_bounds: Rectangle,
+    // parent_bounds: Rectangle,
 ){
     [
+        prescroll,
         check_bounds,
         offset_bounds,
-        parent_bounds
+        // parent_bounds
     ].iter()
     .zip([
+        Color::from([1.0, 1.0, 1.0, 0.8]),
         Color::from([1.0, 0.0, 0.0, 0.1]),
         Color::from([0.0, 0.0, 1.0, 0.3]),
-        Color::from([1.0, 1.0, 0.0, 0.5])
+        // Color::from([1.0, 1.0, 0.0, 0.5])
     ])
     .for_each(|(b, c)|{
         renderer.fill_quad(
@@ -497,7 +616,7 @@ where
             c
         );
     });
-} */
+}
 
 
 /// Item inside a [`Menu`]
@@ -942,3 +1061,59 @@ fn search_bound<T>(
     index
 }
 
+fn clip_node(
+    node: &Node,
+    bounds: Rectangle,
+) -> Node{
+    fn clip(
+        bounds: &Rectangle,
+        parent_offset: Vector,
+        node: &Node,
+    ) -> Node{
+        let node_bounds = node.bounds() + parent_offset;
+        bounds.intersection(&node_bounds)
+            .and_then(|new_bounds|{Some(
+                Node::with_children(
+                    new_bounds.size(), 
+                    node.children().iter().map(|n|{
+                        clip(
+                            bounds, 
+                            node_bounds.position() - Point::ORIGIN, 
+                            n
+                        ).translate(node_bounds.position() - new_bounds.position())
+                    }).collect()
+                ).move_to(new_bounds.position())
+                .translate(parent_offset * -1.0)
+            )})
+            .unwrap_or(
+                Node::with_children(
+                    Size::ZERO, 
+                    node.children().iter().map(Clone::clone).collect()
+                ).move_to(node.bounds().position())
+            )
+    }
+
+    clip(&bounds, Vector::ZERO, node)
+}
+
+
+fn scale_node_y(
+    node: &Node,
+    factor: f32,
+) -> Node{
+    let node_bounds = node.bounds();
+    Node::with_children(
+        Size::new(
+            node_bounds.width, 
+            node_bounds.height * factor
+        ), 
+        node.children().iter().map(|n|{
+            let n_bounds = n.bounds();
+            scale_node_y(n, factor)
+                .move_to(Point::new(
+                    n_bounds.x, 
+                    n_bounds.y * factor
+                ))
+        }).collect()
+    ).move_to(node_bounds.position())
+}

@@ -38,6 +38,7 @@ where
     padding: Padding,
     width: Length,
     height: Length,
+    check_bounds_width: f32,
     style: Theme::Style,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
@@ -58,6 +59,7 @@ where
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
+            check_bounds_width: 50.0,
             style: Theme::Style::default()
         }
     }
@@ -77,6 +79,12 @@ where
     /// Sets the spacing of the [`MenuBar`].
     pub fn spacing(mut self, spacing: f32) -> Self{
         self.spacing = spacing;
+        self
+    }
+
+    /// Sets the width of the check bounds of the [`Menu`]s in the [`MenuBar`].
+    pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self{
+        self.check_bounds_width = check_bounds_width;
         self
     }
 
@@ -247,6 +255,15 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
+        let state = tree.state.downcast_ref::<MenuBarState>();
+        let cursor = if state.open {
+            state.active_root.and_then(|active|{
+                layout.children().nth(active).and_then(|l|
+                    Some(mouse::Cursor::Available(l.bounds().center()))
+                )
+            }).unwrap_or(cursor)
+        }else{ cursor };
+
         // println!("bar draw");
         self.roots
             .iter() // [Item...]
@@ -261,14 +278,12 @@ where
         &'b mut self,
         tree: &'b mut Tree,
         layout: Layout<'_>,
-        renderer: &Renderer,
+        _renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         // println!("bar overlay");
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         let init_bar_bounds = layout.bounds();
-        // let init_parent_bounds = state.active_root
-        //     .map(|i| layout.children().nth(i).unwrap().bounds());
         let init_root_bounds = layout.children().map(|l| l.bounds() ).collect();
 
         if state.open {
@@ -278,8 +293,8 @@ where
                     tree,
                     roots: &mut self.roots,
                     init_bar_bounds,
-                    // init_parent_bounds,
                     init_root_bounds,
+                    check_bounds_width: self.check_bounds_width,
                     style: &self.style
                 }
                 .overlay_element(),
