@@ -103,14 +103,16 @@ impl StyleSheet for Theme {
 
     fn active(&self, style: &Self::Style, is_active: bool) -> Appearance {
         let mut appearance = Appearance::default();
+        let palette = self.extended_palette();
 
         match style {
             TabBarStyles::Default => {
                 appearance.tab_label_background = if is_active {
-                    Background::Color([0.9, 0.9, 0.9].into())
+                    Background::Color(palette.primary.base.color)
                 } else {
-                    Background::Color([0.87, 0.87, 0.87].into())
+                    Background::Color(palette.background.strong.color)
                 };
+                appearance.text_color = palette.background.base.text;
             }
             TabBarStyles::Dark => {
                 appearance.tab_label_background = if is_active {
@@ -186,9 +188,14 @@ impl StyleSheet for Theme {
     }
 
     fn hovered(&self, style: &Self::Style, is_active: bool) -> Appearance {
+        let palette = self.extended_palette();
         match style {
             TabBarStyles::Default => Appearance {
-                tab_label_background: Background::Color([0.9, 0.9, 0.9].into()),
+                tab_label_background: Background::Color(if is_active {
+                    palette.background.strong.color
+                } else {
+                    palette.primary.strong.color
+                }),
                 ..self.active(style, is_active)
             },
             TabBarStyles::Dark => Appearance {
