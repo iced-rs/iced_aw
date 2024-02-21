@@ -1,16 +1,16 @@
 //! [`Item`] and [`Menu`]
 //!
-use std::iter::once;
 use super::common::*;
 use super::flex;
 use iced_widget::core::{
     alignment, event,
-    layout::{Limits, Node, Layout},
+    layout::{Layout, Limits, Node},
     mouse, overlay, renderer,
     widget::tree::{self, Tree},
     Alignment, Border, Clipboard, Color, Element, Event, Length, Padding, Point, Rectangle, Shell,
     Size, Vector, Widget,
 };
+use std::iter::once;
 
 use crate::style::menu_bar::*;
 
@@ -51,17 +51,17 @@ pub(super) struct MenuState {
     pub(super) active: Index,
     pub(super) slice: MenuSlice,
 }
-impl Default for MenuState{
+impl Default for MenuState {
     fn default() -> Self {
         Self {
             scroll_offset: 0.0,
             active: None,
-            slice: MenuSlice{
+            slice: MenuSlice {
                 start_index: 0,
                 end_index: usize::MAX,
                 lower_bound_rel: 0.0,
                 upper_bound_rel: f32::MAX,
-            }
+            },
         }
     }
 }
@@ -102,31 +102,31 @@ where
     }
 
     /// Sets the maximum width of the [`Menu`].
-    pub fn max_width(mut self, max_width: f32) -> Self{
+    pub fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
     /// Sets the width of the [`Menu`].
-    pub fn width(mut self, width: impl Into<Length>) -> Self{
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
         self
     }
 
     /// Sets the spacing of the [`Menu`].
-    pub fn spacing(mut self, spacing: f32) -> Self{
+    pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Sets the padding of the [`Menu`].
-    pub fn padding(mut self, padding: impl Into<Padding>) -> Self{
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
         self.padding = padding.into();
         self
     }
 
     /// The offset from the bounds of the menu's parent item.
-    pub fn offset(mut self, offset: f32) -> Self{
+    pub fn offset(mut self, offset: f32) -> Self {
         self.offset = offset;
         self
     }
@@ -202,11 +202,18 @@ where
                 .collect::<Vec<_>>(),
         );
 
-        let aod = Aod::new(self.axis, viewport.size(), parent_bounds, parent_direction, self.offset);
+        let aod = Aod::new(
+            self.axis,
+            viewport.size(),
+            parent_bounds,
+            parent_direction,
+            self.offset,
+        );
 
         let children_size = items_node.bounds().size();
-        let (children_position, offset_position, child_direction) = aod.resolve(parent_bounds, children_size, viewport.size());
-        
+        let (children_position, offset_position, child_direction) =
+            aod.resolve(parent_bounds, children_size, viewport.size());
+
         // calc auxiliary bounds
         let delta = children_position - offset_position;
         let offset_size = if delta.x.abs() > delta.y.abs() {
@@ -214,7 +221,7 @@ where
         } else {
             Size::new(children_size.width, self.offset)
         };
-        
+
         let offset_bounds = Rectangle::new(offset_position, offset_size);
         let children_bounds = Rectangle::new(children_position, children_size);
         let check_bounds = pad_rectangle(children_bounds, [check_bounds_width; 4].into());
@@ -223,73 +230,60 @@ where
 
         // calc slice
         let slice = MenuSlice::new(
-            &items_node, 
-            children_position-Point::ORIGIN, 
-            viewport.size(), 
-            menu_state.scroll_offset
+            &items_node,
+            children_position - Point::ORIGIN,
+            viewport.size(),
+            menu_state.scroll_offset,
         );
         menu_state.slice = slice;
-        
-        let slice_node = if slice.start_index == slice.end_index{
+
+        let slice_node = if slice.start_index == slice.end_index {
             let node = &items_node.children()[slice.start_index];
             let bounds = node.bounds();
             let start_offset = slice.lower_bound_rel - bounds.y;
             let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
-            
+
             Node::with_children(
                 Size::new(
-                    items_node.bounds().width, 
-                    slice.upper_bound_rel - slice.lower_bound_rel
-                ), 
-                once(
-                    scale_node_y(
-                        node, 
-                        factor
-                    ).translate([0.0, start_offset])
-                ).collect()
+                    items_node.bounds().width,
+                    slice.upper_bound_rel - slice.lower_bound_rel,
+                ),
+                once(scale_node_y(node, factor).translate([0.0, start_offset])).collect(),
             )
-        }else{
+        } else {
             let start_node = {
                 let node = &items_node.children()[slice.start_index];
                 let bounds = node.bounds();
                 let start_offset = slice.lower_bound_rel - bounds.y;
                 let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
-                scale_node_y(
-                    node, 
-                    factor
-                ).translate([0.0, start_offset])
+                scale_node_y(node, factor).translate([0.0, start_offset])
             };
 
             let end_node = {
                 let node = &items_node.children()[slice.end_index];
                 let bounds = node.bounds();
                 Node::with_children(
-                    Size::new(
-                        bounds.width, 
-                        slice.upper_bound_rel - bounds.y
-                    ), 
-                    node.children().iter().map(Clone::clone).collect()
-                ).move_to(bounds.position())
+                    Size::new(bounds.width, slice.upper_bound_rel - bounds.y),
+                    node.children().iter().map(Clone::clone).collect(),
+                )
+                .move_to(bounds.position())
             };
-            
+
             Node::with_children(
                 Size::new(
-                    items_node.bounds().width, 
-                    slice.upper_bound_rel - slice.lower_bound_rel
-                ), 
+                    items_node.bounds().width,
+                    slice.upper_bound_rel - slice.lower_bound_rel,
+                ),
                 once(start_node)
-                .chain(
-                    items_node.children()[
-                        slice.start_index + 1 .. slice.end_index
-                    ]
-                    .iter()
-                    .map(Clone::clone)
-                )
-                .chain(once(end_node))
-                .collect()
+                    .chain(
+                        items_node.children()[slice.start_index + 1..slice.end_index]
+                            .iter()
+                            .map(Clone::clone),
+                    )
+                    .chain(once(end_node))
+                    .collect(),
             )
         };
-
 
         (
             Node::with_children(
@@ -298,15 +292,13 @@ where
                     slice_node
                         .move_to(children_position)
                         .translate([0.0, menu_state.scroll_offset]), // slice layout
-                    Node::new(children_size)
-                        .move_to(children_position), // prescroll bounds
-                    Node::new(offset_bounds.size())
-                        .move_to(offset_bounds.position()), // offset boundss
-                    Node::new(check_bounds.size())
-                        .move_to(check_bounds.position()), // check bounds
-                ].into(),
+                    Node::new(children_size).move_to(children_position), // prescroll bounds
+                    Node::new(offset_bounds.size()).move_to(offset_bounds.position()), // offset boundss
+                    Node::new(check_bounds.size()).move_to(check_bounds.position()), // check bounds
+                ]
+                .into(),
             ),
-            child_direction
+            child_direction,
         )
     }
     /// tree: Tree{menu_state, \[item_tree...]}
@@ -331,11 +323,10 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
-        
-        let status = self
-            .items[ slice.start_index .. slice.end_index+1 ] // [item...]
+
+        let status = self.items[slice.start_index..slice.end_index + 1] // [item...]
             .iter_mut()
-            .zip(tree.children[ slice.start_index .. slice.end_index+1 ].iter_mut()) // [item_tree...]
+            .zip(tree.children[slice.start_index..slice.end_index + 1].iter_mut()) // [item_tree...]
             .zip(slice_layout.children()) // [item_layout...]
             .map(|((item, tree), layout)| {
                 item.on_event(
@@ -392,48 +383,67 @@ where
         let slice = &menu_state.slice;
 
         let styling = theme.appearance(theme_style);
-        
+
         // debug_draw(renderer, prescroll, check_bounds, offset_bounds);
 
         // draw background
         renderer.fill_quad(
-            renderer::Quad{
+            renderer::Quad {
                 bounds: pad_rectangle(prescroll, styling.menu_background_expand),
                 border: styling.menu_border,
                 shadow: styling.menu_shadow,
-            }, 
-            styling.menu_background
+            },
+            styling.menu_background,
         );
-        
+
         let mut slc = slice_layout.children();
 
         // draw start
-        let Some(start) = self.items.get(slice.start_index)
-        else{ return };
-        let Some(start_tree) = tree.children.get(slice.start_index)
-        else { return };
-        let Some(start_layout) = slc.next()
-        else { return };
-        
+        let Some(start) = self.items.get(slice.start_index) else {
+            return;
+        };
+        let Some(start_tree) = tree.children.get(slice.start_index) else {
+            return;
+        };
+        let Some(start_layout) = slc.next() else {
+            return;
+        };
+
         if slice.end_index == slice.start_index {
-            start.draw(start_tree, renderer, theme, style, start_layout, cursor, viewport);
-        }else{
-            let start_bounds = start_layout.bounds();
-            renderer.with_layer(
-                start_bounds,
-                |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+            start.draw(
+                start_tree,
+                renderer,
+                theme,
+                style,
+                start_layout,
+                cursor,
+                viewport,
             );
-            
+        } else {
+            let start_bounds = start_layout.bounds();
+            renderer.with_layer(start_bounds, |r| {
+                start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+            });
+
             // draw the rest
-            let Some(items) = self.items.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
-            else { return; };
-    
-            let Some(trees) = tree.children.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
-            else { return; };
-    
-            for ((item, tree), layout) in items.iter() // [item...].iter()
-                .zip(trees.iter()) // [item_tree...]
-                .zip(slice_layout.children().skip(1)) // [item_layout...]
+            let Some(items) = self
+                .items
+                .get(slice.start_index + 1..slice.end_index.saturating_add(1))
+            else {
+                return;
+            };
+
+            let Some(trees) = tree
+                .children
+                .get(slice.start_index + 1..slice.end_index.saturating_add(1))
+            else {
+                return;
+            };
+
+            for ((item, tree), layout) in items
+                .iter()
+                .zip(trees.iter())
+                .zip(slice_layout.children().skip(1))
             {
                 item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
             }
@@ -456,7 +466,7 @@ where
         let slice = &menu_state.slice;
         menu_state.active = None;
 
-        for (i, (item, layout)) in self.items[slice.start_index .. slice.end_index + 1]
+        for (i, (item, layout)) in self.items[slice.start_index..slice.end_index + 1]
             .iter()
             .zip(slice_layout.children())
             .enumerate()
@@ -476,7 +486,7 @@ where
         cursor: mouse::Cursor,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
-        prev: &mut Index
+        prev: &mut Index,
     ) {
         let mut lc = layout.children();
         let _slice_layout = lc.next().unwrap();
@@ -486,8 +496,9 @@ where
 
         let open = {
             if cursor.is_over(prescroll)
-            || cursor.is_over(parent_bounds) 
-            || cursor.is_over(offset_bounds) {
+                || cursor.is_over(parent_bounds)
+                || cursor.is_over(offset_bounds)
+            {
                 true
             } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
                 false
@@ -505,7 +516,6 @@ where
             menu_state.active = None;
         }
     }
-    
 }
 
 /* fn debug_draw<Renderer: renderer::Renderer>(
@@ -533,7 +543,7 @@ where
                     ..Default::default()
                 },
                 ..Default::default()
-            }, 
+            },
             c
         );
     });
@@ -602,26 +612,23 @@ where
     pub(super) fn children(&self) -> Vec<Tree> {
         self.menu
             .as_ref()
-            .map_or([
-                Tree::new(&self.item)].into(), 
-                |m| [
-                    Tree::new(&self.item), m.tree()
-                ].into()
-            )
+            .map_or([Tree::new(&self.item)].into(), |m| {
+                [Tree::new(&self.item), m.tree()].into()
+            })
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     pub(super) fn diff(&self, tree: &mut Tree) {
         if let Some(t0) = tree.children.get_mut(0) {
             t0.diff(&self.item);
-            if let Some(m) = self.menu.as_ref(){
+            if let Some(m) = self.menu.as_ref() {
                 if let Some(t1) = tree.children.get_mut(1) {
                     m.diff(t1);
-                }else{
+                } else {
                     *tree = self.tree();
                 }
             }
-        }else{
+        } else {
             *tree = self.tree();
         }
     }
@@ -753,16 +760,28 @@ impl Aod {
                 if overlap {
                     let overshoot = child_size - parent_size;
                     if space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos - overshoot, parent_pos - overshoot, direction.flip())
+                        (
+                            parent_pos - overshoot,
+                            parent_pos - overshoot,
+                            direction.flip(),
+                        )
                     } else {
                         (parent_pos, parent_pos, direction)
                     }
                 } else {
                     let overshoot = child_size + offset;
                     if space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos - overshoot, parent_pos - offset, direction.flip())
+                        (
+                            parent_pos - overshoot,
+                            parent_pos - offset,
+                            direction.flip(),
+                        )
                     } else {
-                        (parent_pos + parent_size + offset, parent_pos + parent_size, direction)
+                        (
+                            parent_pos + parent_size + offset,
+                            parent_pos + parent_size,
+                            direction,
+                        )
                     }
                 }
             }
@@ -780,7 +799,11 @@ impl Aod {
                 } else {
                     let overshoot = child_size + offset;
                     if space_negative > space_positive && overshoot > space_positive {
-                        (parent_pos + parent_size + offset, parent_pos + parent_size, direction.flip())
+                        (
+                            parent_pos + parent_size + offset,
+                            parent_pos + parent_size,
+                            direction.flip(),
+                        )
                     } else {
                         (parent_pos - overshoot, parent_pos - offset, direction)
                     }
@@ -824,7 +847,7 @@ impl Aod {
         parent_bounds: Rectangle,
         parent_direction: (Direction, Direction),
         offset: f32,
-    ) -> Self{
+    ) -> Self {
         let hcenter = viewport.width / 2.0;
         let vcenter = viewport.height / 2.0;
 
@@ -833,7 +856,7 @@ impl Aod {
 
         let (pdx, pdy) = parent_direction;
         match axis {
-            Axis::Horizontal =>{
+            Axis::Horizontal => {
                 let horizontal_direction = pdx;
                 let vertical_direction = if pvcenter < vcenter {
                     Direction::Positive
@@ -848,7 +871,7 @@ impl Aod {
                     horizontal_offset: offset,
                     vertical_offset: 0.0,
                 }
-            },
+            }
             Axis::Vertical => {
                 let horizontal_direction = if phcenter < hcenter {
                     Direction::Positive
@@ -864,18 +887,17 @@ impl Aod {
                     horizontal_offset: 0.0,
                     vertical_offset: offset,
                 }
-            },
+            }
         }
     }
 }
-
 
 fn process_scroll_event(
     menu_state: &mut MenuState,
     prescroll_children_bounds: Rectangle,
     delta: mouse::ScrollDelta,
     viewport_size: Size,
-){
+) {
     use mouse::ScrollDelta;
 
     let pcb = prescroll_children_bounds;
@@ -896,40 +918,26 @@ pub(super) struct MenuSlice {
     pub(super) lower_bound_rel: f32,
     pub(super) upper_bound_rel: f32,
 }
-impl MenuSlice{
-    fn new(
-        items_node: &Node,
-        translation: Vector,
-        viewport: Size,
-        scroll_offset: f32,
-    ) -> Self {
+impl MenuSlice {
+    fn new(items_node: &Node, translation: Vector, viewport: Size, scroll_offset: f32) -> Self {
         let items_bounds = items_node.bounds() + translation;
         let max_index = items_node.children().len().saturating_sub(1);
-        
+
         // viewport space absolute bounds
         let lower_bound = items_bounds.y.max(0.0);
         let upper_bound = (items_bounds.y + items_bounds.height).min(viewport.height);
-    
+
         // menu space relative bounds
         let lower_bound_rel = lower_bound - (items_bounds.y + scroll_offset);
         let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
-    
+
         // let start_index = search_bound_lin(lower_bound_rel, items_node.children(), 0);
         // let end_index = search_bound_lin(upper_bound_rel, items_node.children(), start_index);
 
-        let start_index = search_bound(
-            0, 
-            max_index, 
-            lower_bound_rel, 
-            items_node.children(),
-        );
-        let end_index = search_bound(
-            start_index, 
-            max_index, 
-            upper_bound_rel, 
-            items_node.children(),
-        );
-    
+        let nodes = items_node.children();
+        let start_index = search_bound(0, max_index, lower_bound_rel, nodes);
+        let end_index = search_bound(start_index, max_index, upper_bound_rel, nodes);
+
         Self {
             start_index,
             end_index,
@@ -954,12 +962,7 @@ impl MenuSlice{
     start_index
 } */
 
-fn search_bound(
-    default_left: usize,
-    default_right: usize,
-    bound: f32,
-    list: &[Node],
-) -> usize {
+fn search_bound(default_left: usize, default_right: usize, bound: f32, list: &[Node]) -> usize {
     // binary search
     let mut left = default_left;
     let mut right = default_right;
@@ -975,23 +978,17 @@ fn search_bound(
     left
 }
 
-fn scale_node_y(
-    node: &Node,
-    factor: f32,
-) -> Node{
+fn scale_node_y(node: &Node, factor: f32) -> Node {
     let node_bounds = node.bounds();
     Node::with_children(
-        Size::new(
-            node_bounds.width, 
-            node_bounds.height * factor
-        ), 
-        node.children().iter().map(|n|{
-            let n_bounds = n.bounds();
-            scale_node_y(n, factor)
-                .move_to(Point::new(
-                    n_bounds.x, 
-                    n_bounds.y * factor
-                ))
-        }).collect()
-    ).move_to(node_bounds.position())
+        Size::new(node_bounds.width, node_bounds.height * factor),
+        node.children()
+            .iter()
+            .map(|n| {
+                let n_bounds = n.bounds();
+                scale_node_y(n, factor).move_to(Point::new(n_bounds.x, n_bounds.y * factor))
+            })
+            .collect(),
+    )
+    .move_to(node_bounds.position())
 }

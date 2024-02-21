@@ -1,9 +1,7 @@
 //! Change the appearance of menu bars and their menus.
 use iced_widget::{
-    core::{
-        Color, Border, Background, Shadow, Padding, Vector
-    }, 
-    style::Theme
+    core::{Background, Border, Color, Padding, Shadow, Vector},
+    style::Theme,
 };
 
 /// The appearance of a menu bar and its menus.
@@ -31,7 +29,7 @@ impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
             bar_background: Color::from([0.85; 3]).into(),
-            bar_border: Border{
+            bar_border: Border {
                 radius: [8.0; 4].into(),
                 ..Default::default()
             },
@@ -39,11 +37,11 @@ impl std::default::Default for Appearance {
             bar_background_expand: [5; 4].into(),
 
             menu_background: Color::from([0.85; 3]).into(),
-            menu_border: Border{
+            menu_border: Border {
                 radius: [8.0; 4].into(),
                 ..Default::default()
             },
-            menu_shadow: Shadow{
+            menu_shadow: Shadow {
                 color: Color::from([0.0, 0.0, 0.0, 0.5]),
                 offset: Vector::ZERO,
                 blur_radius: 10.0,

@@ -1,6 +1,4 @@
-use iced_widget::core::{
-    Padding, Rectangle
-};
+use iced_widget::core::{Padding, Rectangle};
 
 /* /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
@@ -16,14 +14,14 @@ pub struct CloseCondition {
 }
  */
 
- /// X+ goes right and Y+ goes down
+/// X+ goes right and Y+ goes down
 #[derive(Debug, Clone, Copy)]
 pub(super) enum Direction {
     Positive,
     Negative,
 }
-impl Direction{
-    pub(super) fn flip(&self) -> Direction{
+impl Direction {
+    pub(super) fn flip(&self) -> Direction {
         match self {
             Direction::Positive => Direction::Negative,
             Direction::Negative => Direction::Positive,

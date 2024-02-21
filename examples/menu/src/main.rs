@@ -1,15 +1,16 @@
 use iced::widget::{
-    button, checkbox, container, horizontal_space, row, scrollable, slider, svg, text,
-    text_input, toggler, vertical_slider,
+    button, checkbox, container, horizontal_space, row, scrollable, slider, svg, text, text_input,
+    toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Alignment, Application, Border, Color, Element, Length, Pixels, Size};
+use iced::{
+    alignment, theme, Alignment, Application, Border, Color, Element, Length, Pixels, Size,
+};
 
+use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{Item, Menu};
 use iced_aw::quad;
 use iced_aw::{menu_bar, menu_items};
-use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
-
 
 pub fn main() -> iced::Result {
     // std::env::set_var("RUST_BACKTRACE", "full");
@@ -69,7 +70,7 @@ impl Application for App {
                 dark_mode: false,
                 text: "Text Input".into(),
             },
-            iced::font::load(BOOTSTRAP_FONT_BYTES).map(|_| Message::None)
+            iced::font::load(BOOTSTRAP_FONT_BYTES).map(|_| Message::None),
         )
     }
 
@@ -142,306 +143,287 @@ impl Application for App {
         let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
         let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
-        let mb = menu_bar!(
-            (debug_button_s("Nested Menus"), {
-                let sub5 = menu_temp_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                ));
+        let mb = menu_bar!((debug_button_s("Nested Menus"), {
+            let sub5 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                debug_button("Item")
+            )(debug_button("Item"))(
+                debug_button("Item")
+            )));
 
-                let sub4 = menu_temp_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(200.0);
+            let sub4 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                debug_button("Item")
+            )(debug_button("Item"))))
+            .width(200.0);
 
-                let sub3 = menu_temp_2(menu_items!(
-                    (debug_button("You can"))
-                    (debug_button("nest menus"))
-                    (submenu_button("SUB"), sub4)
-                    (debug_button("how ever"))
-                    (debug_button("You like"))
-                    (submenu_button("SUB"), sub5)
-                )).width(180.0);
+            let sub3 = menu_temp_2(menu_items!((debug_button("You can"))(debug_button(
+                "nest menus"
+            ))(submenu_button("SUB"), sub4)(
+                debug_button("how ever")
+            )(debug_button("You like"))(
+                submenu_button("SUB"), sub5
+            )))
+            .width(180.0);
 
-                let sub2 = menu_temp_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("More sub menus"), sub3)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(160.0);
+            let sub2 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                debug_button("Item")
+            )(
+                submenu_button("More sub menus"), sub3
+            )(debug_button("Item"))(
+                debug_button("Item")
+            )(debug_button("Item"))))
+            .width(160.0);
 
-                let sub1 = menu_temp_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("Another sub menu"), sub2)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(220.0);
+            let sub1 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                submenu_button("Another sub menu"),
+                sub2
+            )(debug_button("Item"))(
+                debug_button("Item")
+            )(debug_button("Item"))))
+            .width(220.0);
 
-                menu_temp_1(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("A sub menu"), sub1)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(140.0)
-            })
-            (debug_button_s("Widgets"), menu_temp_1(menu_items!(
-                (debug_button("You can use any widget"))
-                (debug_button("as a menu item"))
-                (button(
+            menu_temp_1(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                submenu_button("A sub menu"),
+                sub1
+            )(debug_button("Item"))(
+                debug_button("Item")
+            )(debug_button("Item"))))
+            .width(140.0)
+        })(
+            debug_button_s("Widgets"),
+            menu_temp_1(menu_items!((debug_button("You can use any widget"))(
+                debug_button("as a menu item")
+            )(
+                button(
                     text("Button")
                         .width(Length::Fill)
                         .vertical_alignment(alignment::Vertical::Center),
-                    )
-                    .width(Length::Fill)
-                    .on_press(Message::Debug("Button".into()))
                 )
-                (checkbox("Checkbox", self.check, Message::CheckChange)
-                    .width(Length::Fill)
-                )
-                (
-                    row![
-                        "Slider",
-                        horizontal_space(Length::Fixed(8.0)),
-                        slider(0..=255, self.value, Message::ValueChange)
-                    ]
-                )
-                (text_input("", &self.text).on_input(Message::TextChange))
-                (container(toggler(
-                        Some("Or as a sub menu item".to_string()),
-                        self.toggle,
-                        Message::ToggleChange,
-                    ))
-                    .padding([0, 8])
-                    .height(30.0)
-                    .align_y(alignment::Vertical::Center),
-                    menu_temp_2(menu_items!(
-                        (debug_button("Item"))
-                        (debug_button("Item"))
-                        (debug_button("Item"))
-                        (debug_button("Item"))
-                    ))
-                )
-                (debug_button("Separator"))
-                (separator())
-                (debug_button("Labeled Separator"))
-                (labeled_separator("Separator"))
-                (debug_button("Dot Separator"))
-                (dot_separator(&self.theme))
-                (debug_button("Item"))
-            )).width(240.0))
-            (debug_button_s("Controls"), menu_temp_1(menu_items!(
-                (row![toggler(
-                        Some("Dark Mode".into()),
-                        self.dark_mode,
-                        Message::ThemeChange
-                    )].padding([0, 8])
-                )
-                (color_button([0.45, 0.25, 0.57]))
-                (color_button([0.15, 0.59, 0.64]))
-                (color_button([0.76, 0.82, 0.20]))
-                (color_button([0.17, 0.27, 0.33]))
-                (labeled_button("Primary", Message::None)
-                    .width(Length::Fill),
-                    {
-                        let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
-
-                        menu_temp_2(menu_items!(
-                            (slider(0..=255, r, move |x| {
-                                Message::ColorChange(Color::from_rgb8(x, g, b))
-                            }))
-                            (slider(0..=255, g, move |x| {
-                                Message::ColorChange(Color::from_rgb8(r, x, b))
-                            }))
-                            (slider(0..=255, b, move |x| {
-                                Message::ColorChange(Color::from_rgb8(r, g, x))
-                            }))
-                        ))
-                    }
-                )
+                .width(Length::Fill)
+                .on_press(Message::Debug("Button".into()))
+            )(
+                checkbox("Checkbox", self.check, Message::CheckChange).width(Length::Fill)
+            )(row![
+                "Slider",
+                horizontal_space(Length::Fixed(8.0)),
+                slider(0..=255, self.value, Message::ValueChange)
+            ])(
+                text_input("", &self.text).on_input(Message::TextChange)
+            )(
+                container(toggler(
+                    Some("Or as a sub menu item".to_string()),
+                    self.toggle,
+                    Message::ToggleChange,
+                ))
+                .padding([0, 8])
+                .height(30.0)
+                .align_y(alignment::Vertical::Center),
+                menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                    debug_button("Item")
+                )(debug_button("Item"))))
+            )(debug_button("Separator"))(
+                separator()
+            )(debug_button(
+                "Labeled Separator"
+            ))(labeled_separator("Separator"))(
+                debug_button("Dot Separator")
+            )(dot_separator(&self.theme))(
+                debug_button("Item")
             )))
-            (debug_button_s("Scroll"), menu_temp_1(menu_items!(
-                (debug_button("ajrs"))
-                (debug_button("bsdfho"))
-                (debug_button("clkjhbf"))
-                (debug_button("dekjdaud"))
-                (debug_button("ecsh"))
-                (debug_button("fweiu"))
-                (debug_button("giwe"))
-                (debug_button("heruyv"))
-                (debug_button("isabe"))
-                (submenu_button("jcsu"), menu_temp_2(menu_items!(
-                    (debug_button("ajrs"))
-                    (debug_button("bsdfho"))
-                    (debug_button("clkjhbf"))
-                    (debug_button("dekjdaud"))
-                    (debug_button("ecsh"))
-                    (debug_button("fweiu"))
-                    (debug_button("giwe"))
-                    (debug_button("heruyv"))
-                    (debug_button("isabe"))
-                    (debug_button("jcsu"))
-                    (debug_button("kaljkahd"))
-                    (submenu_button("luyortp"), menu_temp_2(menu_items!(
-                        (debug_button("ajrs"))
-                        (debug_button("bsdfho"))
-                        (debug_button("clkjhbf"))
-                        (debug_button("dekjdaud"))
-                        (debug_button("ecsh"))
-                        (debug_button("fweiu"))
-                        (debug_button("giwe"))
-                        (debug_button("heruyv"))
-                        (debug_button("isabe"))
-                        (debug_button("jcsu"))
-                        (debug_button("kaljkahd"))
-                        (debug_button("luyortp"))
-                        (debug_button("mmdyrc"))
-                        (debug_button("nquc"))
+            .width(240.0)
+        )(
+            debug_button_s("Controls"),
+            menu_temp_1(menu_items!((row![toggler(
+                Some("Dark Mode".into()),
+                self.dark_mode,
+                Message::ThemeChange
+            )]
+            .padding([0, 8]))(color_button([
+                0.45, 0.25, 0.57
+            ]))(color_button([
+                0.15, 0.59, 0.64
+            ]))(color_button([
+                0.76, 0.82, 0.20
+            ]))(color_button([
+                0.17, 0.27, 0.33
+            ]))(
+                labeled_button("Primary", Message::None).width(Length::Fill),
+                {
+                    let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
+
+                    menu_temp_2(menu_items!((slider(0..=255, r, move |x| {
+                        Message::ColorChange(Color::from_rgb8(x, g, b))
+                    }))(slider(
+                        0..=255,
+                        g,
+                        move |x| { Message::ColorChange(Color::from_rgb8(r, x, b)) }
+                    ))(slider(
+                        0..=255,
+                        b,
+                        move |x| { Message::ColorChange(Color::from_rgb8(r, g, x)) }
+                    ))))
+                }
+            )))
+        )(
+            debug_button_s("Scroll"),
+            menu_temp_1(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                debug_button("clkjhbf")
+            )(debug_button("dekjdaud"))(
+                debug_button("ecsh")
+            )(debug_button("fweiu"))(
+                debug_button("giwe")
+            )(debug_button("heruyv"))(
+                debug_button("isabe")
+            )(
+                submenu_button("jcsu"),
+                menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                    debug_button("clkjhbf")
+                )(debug_button("dekjdaud"))(
+                    debug_button("ecsh")
+                )(debug_button("fweiu"))(
+                    debug_button("giwe")
+                )(debug_button("heruyv"))(
+                    debug_button("isabe")
+                )(debug_button("jcsu"))(
+                    debug_button("kaljkahd")
+                )(
+                    submenu_button("luyortp"),
+                    menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                        debug_button("clkjhbf")
+                    )(debug_button("dekjdaud"))(
+                        debug_button("ecsh")
+                    )(debug_button("fweiu"))(
+                        debug_button("giwe")
+                    )(debug_button("heruyv"))(
+                        debug_button("isabe")
+                    )(debug_button("jcsu"))(
+                        debug_button("kaljkahd")
+                    )(debug_button("luyortp"))(
+                        debug_button("mmdyrc")
+                    )(debug_button("nquc"))))
+                )(debug_button("mmdyrc"))(
+                    debug_button("nquc")
+                )))
+            )(debug_button("kaljkahd"))(
+                debug_button("luyortp")
+            )(debug_button("mmdyrc"))(
+                debug_button("nquc")
+            )(debug_button("ajrs"))(
+                debug_button("bsdfho")
+            )(debug_button("clkjhbf"))(
+                debug_button("dekjdaud")
+            )(debug_button("ecsh"))(
+                debug_button("fweiu")
+            )(debug_button("giwe"))(
+                debug_button("heruyv")
+            )(debug_button("isabe"))(
+                debug_button("jcsu")
+            )(debug_button("kaljkahd"))(
+                debug_button("luyortp")
+            )(debug_button("mmdyrc"))(
+                debug_button("nquc")
+            )(debug_button("ajrs"))(
+                debug_button("bsdfho")
+            )(debug_button("clkjhbf"))(
+                submenu_button("dekjdaud"),
+                menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                    debug_button("clkjhbf")
+                )(debug_button("dekjdaud"))(
+                    debug_button("ecsh")
+                )(debug_button("fweiu"))(
+                    debug_button("giwe")
+                )(debug_button("heruyv"))(
+                    debug_button("isabe")
+                )(debug_button("jcsu"))(
+                    debug_button("kaljkahd")
+                )(debug_button("luyortp"))(
+                    debug_button("mmdyrc")
+                )(debug_button("nquc"))(
+                    debug_button("ajrs")
+                )(debug_button("bsdfho"))(
+                    debug_button("clkjhbf")
+                )(debug_button("dekjdaud"))(
+                    debug_button("ecsh")
+                )(debug_button("fweiu"))(
+                    debug_button("giwe")
+                )(debug_button("heruyv"))(
+                    debug_button("isabe")
+                )(debug_button("jcsu"))(
+                    debug_button("kaljkahd")
+                )(debug_button("luyortp"))(
+                    debug_button("mmdyrc")
+                )(debug_button("nquc"))))
+            )(debug_button("ecsh"))(
+                debug_button("fweiu")
+            )(debug_button("giwe"))(
+                debug_button("heruyv")
+            )(debug_button("isabe"))(
+                debug_button("jcsu")
+            )(debug_button("kaljkahd"))(
+                debug_button("luyortp")
+            )(debug_button("mmdyrc"))(
+                debug_button("nquc")
+            )(debug_button("ajrs"))(
+                debug_button("bsdfho")
+            )(debug_button("clkjhbf"))(
+                debug_button("dekjdaud")
+            )(debug_button("ecsh"))(
+                debug_button("fweiu")
+            )(debug_button("giwe"))(
+                debug_button("heruyv")
+            )(debug_button("isabe"))(
+                debug_button("jcsu")
+            )(debug_button("kaljkahd"))(
+                debug_button("luyortp")
+            )(debug_button("mmdyrc"))(
+                debug_button("nquc")
+            )))
+        )(debug_button_s("Dynamic height"), {
+            let slider_count = 3;
+            let slider_width = 30;
+            let spacing = 5;
+            let pad = 20;
+            let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
+
+            menu_temp_1(menu_items!((labeled_separator("Primary"))(
+                row![
+                    vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
+                        x, g, b
                     )))
-                    (debug_button("mmdyrc"))
-                    (debug_button("nquc"))
-                )))
-                (debug_button("kaljkahd"))
-                (debug_button("luyortp"))
-                (debug_button("mmdyrc"))
-                (debug_button("nquc"))
-                (debug_button("ajrs"))
-                (debug_button("bsdfho"))
-                (debug_button("clkjhbf"))
-                (debug_button("dekjdaud"))
-                (debug_button("ecsh"))
-                (debug_button("fweiu"))
-                (debug_button("giwe"))
-                (debug_button("heruyv"))
-                (debug_button("isabe"))
-                (debug_button("jcsu"))
-                (debug_button("kaljkahd"))
-                (debug_button("luyortp"))
-                (debug_button("mmdyrc"))
-                (debug_button("nquc"))
-                (debug_button("ajrs"))
-                (debug_button("bsdfho"))
-                (debug_button("clkjhbf"))
-                (submenu_button("dekjdaud"), menu_temp_2(menu_items!(
-                    (debug_button("ajrs"))
-                    (debug_button("bsdfho"))
-                    (debug_button("clkjhbf"))
-                    (debug_button("dekjdaud"))
-                    (debug_button("ecsh"))
-                    (debug_button("fweiu"))
-                    (debug_button("giwe"))
-                    (debug_button("heruyv"))
-                    (debug_button("isabe"))
-                    (debug_button("jcsu"))
-                    (debug_button("kaljkahd"))
-                    (debug_button("luyortp"))
-                    (debug_button("mmdyrc"))
-                    (debug_button("nquc"))
-                    (debug_button("ajrs"))
-                    (debug_button("bsdfho"))
-                    (debug_button("clkjhbf"))
-                    (debug_button("dekjdaud"))
-                    (debug_button("ecsh"))
-                    (debug_button("fweiu"))
-                    (debug_button("giwe"))
-                    (debug_button("heruyv"))
-                    (debug_button("isabe"))
-                    (debug_button("jcsu"))
-                    (debug_button("kaljkahd"))
-                    (debug_button("luyortp"))
-                    (debug_button("mmdyrc"))
-                    (debug_button("nquc"))
-                )))
-                (debug_button("ecsh"))
-                (debug_button("fweiu"))
-                (debug_button("giwe"))
-                (debug_button("heruyv"))
-                (debug_button("isabe"))
-                (debug_button("jcsu"))
-                (debug_button("kaljkahd"))
-                (debug_button("luyortp"))
-                (debug_button("mmdyrc"))
-                (debug_button("nquc"))
-                (debug_button("ajrs"))
-                (debug_button("bsdfho"))
-                (debug_button("clkjhbf"))
-                (debug_button("dekjdaud"))
-                (debug_button("ecsh"))
-                (debug_button("fweiu"))
-                (debug_button("giwe"))
-                (debug_button("heruyv"))
-                (debug_button("isabe"))
-                (debug_button("jcsu"))
-                (debug_button("kaljkahd"))
-                (debug_button("luyortp"))
-                (debug_button("mmdyrc"))
-                (debug_button("nquc"))
+                    .width(slider_width),
+                    vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
+                        r, x, b
+                    )))
+                    .width(slider_width),
+                    vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
+                        r, g, x
+                    )))
+                    .width(slider_width),
+                ]
+                .spacing(spacing)
+                .height(100.0)
+            )(separator())(
+                debug_button("AABB").height(40)
+            )(debug_button("CCDD").height(140))(
+                debug_button("EEFF").height(30)
+            )(debug_button("GGHH").height(100))(
+                debug_button("IIJJ").height(60)
+            )(debug_button("KKLL").height(120))(
+                debug_button("MMNN").height(50)
             )))
-            (debug_button_s("Dynamic height"), {
-                let slider_count = 3;
-                let slider_width = 30;
-                let spacing = 5;
-                let pad = 20;
-                let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
-
-                menu_temp_1(menu_items!(
-                    (labeled_separator("Primary"))
-                    (
-                        row![
-                            vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
-                                x, g, b
-                            )))
-                            .width(slider_width)
-                            ,
-                            vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
-                                r, x, b
-                            )))
-                            .width(slider_width)
-                            ,
-                            vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
-                                r, g, x
-                            )))
-                            .width(slider_width)
-                            ,
-                        ].spacing(spacing)
-                        .height(100.0)
-                    )
-                    (separator())
-                    (debug_button("AABB").height(40))
-                    (debug_button("CCDD").height(140))
-                    (debug_button("EEFF").height(30))
-                    (debug_button("GGHH").height(100))
-                    (debug_button("IIJJ").height(60))
-                    (debug_button("KKLL").height(120))
-                    (debug_button("MMNN").height(50))
-                )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
-            })
-        );
+            .width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
+        }));
 
         let r = row![horizontal_space(295), mb, horizontal_space(295),]
             .align_items(alignment::Alignment::Center);
 
         let c = col![vertical_space(500), r, vertical_space(500),];
-        
-        let sc = scrollable(c)
-            .direction(scrollable::Direction::Both {
-                vertical: scrollable::Properties::new()
-                    .alignment(scrollable::Alignment::End),
-                horizontal: scrollable::Properties::new(),
-            });
-        
-        fn back_style(theme: &iced::Theme) -> container::Appearance{
+
+        let sc = scrollable(c).direction(scrollable::Direction::Both {
+            vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+            horizontal: scrollable::Properties::new(),
+        });
+
+        fn back_style(theme: &iced::Theme) -> container::Appearance {
             container::Appearance {
                 background: Some(theme.extended_palette().primary.base.color.into()),
                 ..Default::default()
@@ -499,20 +481,17 @@ fn labeled_button<'a>(
     msg: Message,
 ) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     base_button(
-        text(label)
-            .vertical_alignment(alignment::Vertical::Center),
+        text(label).vertical_alignment(alignment::Vertical::Center),
         msg,
     )
 }
 
 fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
-    labeled_button(label, Message::Debug(label.into()))
-        .width(Length::Fill)
+    labeled_button(label, Message::Debug(label.into())).width(Length::Fill)
 }
 
 fn debug_button_s<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
-    labeled_button(label, Message::Debug(label.into()))
-        .width(Length::Shrink)
+    labeled_button(label, Message::Debug(label.into())).width(Length::Shrink)
 }
 
 fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
@@ -526,16 +505,17 @@ fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, i
                 .width(Length::Shrink)
                 .vertical_alignment(alignment::Vertical::Center),
         ]
-        .align_items(iced::Alignment::Center), 
-        Message::Debug(label.into())
-    ).width(Length::Fill)
+        .align_items(iced::Alignment::Center),
+        Message::Debug(label.into()),
+    )
+    .width(Length::Fill)
 }
 
-fn color_button<'a>(color: impl Into<Color>) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+fn color_button<'a>(
+    color: impl Into<Color>,
+) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
     let color = color.into();
-    base_button(
-        circle(color), Message::ColorChange(color)
-    )
+    base_button(circle(color), Message::ColorChange(color))
 }
 
 fn separator<'a>() -> quad::Quad {
@@ -549,16 +529,15 @@ fn separator<'a>() -> quad::Quad {
 }
 
 fn dot_separator<'a>(theme: &iced::Theme) -> Element<'a, Message, iced::Theme, iced::Renderer> {
-    row(
-        (0..20).map(|_|{
-            quad::Quad {
-                color: theme.extended_palette().background.base.text,
-                border_radius: [4.0; 4],
-                inner_bounds: quad::InnerBounds::Square(4.0),
-                ..Default::default()
-            }.into()
-        })
-    )
+    row((0..20).map(|_| {
+        quad::Quad {
+            color: theme.extended_palette().background.base.text,
+            border_radius: [4.0; 4],
+            inner_bounds: quad::InnerBounds::Square(4.0),
+            ..Default::default()
+        }
+        .into()
+    }))
     .height(30.0)
     .into()
 }

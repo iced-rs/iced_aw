@@ -1,15 +1,18 @@
 //! [`MenuBar`]
 
-use iced_widget::{core::{
-    alignment, event,
-    layout::{Limits, Node},
-    mouse, overlay, renderer,
-    widget::{tree, Tree},
-    Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-    Rectangle, Shell, Size, Widget,
-}, Theme};
+use iced_widget::{
+    core::{
+        alignment, event,
+        layout::{Limits, Node},
+        mouse, overlay, renderer,
+        widget::{tree, Tree},
+        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
+        Rectangle, Shell, Size, Widget,
+    },
+    Theme,
+};
 
-use super::{flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*, common::*};
+use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
 
 pub(super) struct MenuBarState {
@@ -48,8 +51,8 @@ where
 {
     /// Creates a [`MenuBar`] with the given root items.
     pub fn new(mut roots: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
-        roots.iter_mut().for_each(|i|{
-            if let Some(m) = i.menu.as_mut(){
+        roots.iter_mut().for_each(|i| {
+            if let Some(m) = i.menu.as_mut() {
                 m.axis = Axis::Vertical;
             }
         });
@@ -60,36 +63,36 @@ where
             width: Length::Shrink,
             height: Length::Shrink,
             check_bounds_width: 50.0,
-            style: Theme::Style::default()
+            style: Theme::Style::default(),
         }
     }
 
     /// Sets the width of the [`MenuBar`].
-    pub fn width(mut self, width: impl Into<Length>) -> Self{
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
         self
     }
 
     /// Sets the height of the [`MenuBar`].
-    pub fn height(mut self, height: impl Into<Length>) -> Self{
+    pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
         self
     }
 
     /// Sets the spacing of the [`MenuBar`].
-    pub fn spacing(mut self, spacing: f32) -> Self{
+    pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Sets the width of the check bounds of the [`Menu`]s in the [`MenuBar`].
-    pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self{
+    pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self {
         self.check_bounds_width = check_bounds_width;
         self
     }
 
     /// Sets the padding of the [`MenuBar`].
-    pub fn padding(mut self, padding: impl Into<Padding>) -> Self{
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
         self.padding = padding.into();
         self
     }
@@ -136,12 +139,7 @@ where
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
-    fn layout(
-        &self,
-        tree: &mut Tree,
-        renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         flex::resolve(
             flex::Axis::Horizontal,
             renderer,
@@ -220,7 +218,7 @@ where
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
-                if bar.open{
+                if bar.open {
                     if cursor.is_over(bar_bounds) {
                         for (i, l) in layout.children().enumerate() {
                             if cursor.is_over(l.bounds()) {
@@ -228,11 +226,11 @@ where
                                 break;
                             }
                         }
-                    }else{
+                    } else {
                         bar.open = false
                     }
                     Captured
-                }else{
+                } else {
                     Ignored
                 }
             }
@@ -253,21 +251,27 @@ where
     ) {
         let state = tree.state.downcast_ref::<MenuBarState>();
         let cursor = if state.open {
-            state.active_root.and_then(|active|{
-                layout.children().nth(active).and_then(|l|
-                    Some(mouse::Cursor::Available(l.bounds().center()))
-                )
-            }).unwrap_or(cursor)
-        }else{ cursor };
+            state
+                .active_root
+                .and_then(|active| {
+                    layout
+                        .children()
+                        .nth(active)
+                        .and_then(|l| Some(mouse::Cursor::Available(l.bounds().center())))
+                })
+                .unwrap_or(cursor)
+        } else {
+            cursor
+        };
 
         let styling = theme.appearance(&self.style);
         renderer.fill_quad(
-            renderer::Quad{
+            renderer::Quad {
                 bounds: pad_rectangle(layout.bounds(), styling.bar_background_expand),
                 border: styling.bar_border,
                 shadow: styling.bar_shadow,
-            }, 
-            styling.bar_background
+            },
+            styling.bar_background,
         );
 
         self.roots
@@ -288,7 +292,7 @@ where
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         let init_bar_bounds = layout.bounds();
-        let init_root_bounds = layout.children().map(|l| l.bounds() ).collect();
+        let init_root_bounds = layout.children().map(|l| l.bounds()).collect();
 
         if state.open {
             Some(
@@ -298,7 +302,7 @@ where
                     init_bar_bounds,
                     init_root_bounds,
                     check_bounds_width: self.check_bounds_width,
-                    style: &self.style
+                    style: &self.style,
                 }
                 .overlay_element(),
             )

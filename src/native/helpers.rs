@@ -67,7 +67,7 @@ macro_rules! wrap_vertical {
 /// Creates a vec of menu items
 ///
 /// [`Item`]: crate::menu::Item
-/// 
+///
 /// Syntax:
 /// ```
 /// menu_items!(
@@ -102,7 +102,7 @@ macro_rules! menu_items {
 /// Creates a [`Menu`] with the given items.
 ///
 /// [`Menu`]: crate::menu::Menu
-/// 
+///
 /// Syntax:
 /// ```
 /// menu!(
@@ -126,7 +126,7 @@ macro_rules! menu {
 /// Creates a [`MenuBar`] with the given children.
 ///
 /// [`MenuBar`]: crate::menu::MenuBar
-/// 
+///
 /// Syntax:
 /// ```
 /// menu_bar!(
