@@ -2,7 +2,7 @@ use iced_widget::core::{
     Padding, Rectangle
 };
 
-/// The condition of when to close a menu
+/* /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
 pub struct CloseCondition {
     /// Close menus when the cursor moves outside the check bounds
@@ -14,19 +14,9 @@ pub struct CloseCondition {
     /// Close menus when the cursor clicks inside the check bounds
     pub click_inside: bool,
 }
+ */
 
-// /// Methods for drawing path highlight
-// #[derive(Debug, Clone, Copy)]
-// pub enum PathHighlight {
-//     /// Draw the full path,
-//     Full,
-//     /// Omit the active item(the last item in the path)
-//     OmitActive,
-//     /// Omit the active item if it's not a menu
-//     MenuActive,
-// }
-
-/// X+ goes right and Y+ goes down
+ /// X+ goes right and Y+ goes down
 #[derive(Debug, Clone, Copy)]
 pub(super) enum Direction {
     Positive,

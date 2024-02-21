@@ -119,20 +119,6 @@ impl Application for App {
         self.title.clone()
     }
 
-    fn subscription(&self) -> iced::Subscription<Self::Message> {
-        use iced::keyboard;
-        use keyboard::key::Named;
-
-        iced::event::listen().map(|event| match event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => match key {
-                keyboard::Key::Named(Named::F1) => Message::FlipHorizontal,
-                keyboard::Key::Named(Named::F2) => Message::FlipVertical,
-                _ => Message::None,
-            },
-            _ => Message::None,
-        })
-    }
-
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
         // println!("app update");
         match message {
@@ -736,6 +722,8 @@ fn circle(color: Color) -> quad::Quad {
         ..Default::default()
     }
 }
+
+
 
 // fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
 //     let sub_5 = debug_sub_menu(
