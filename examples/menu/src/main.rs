@@ -207,71 +207,61 @@ impl Application for App {
             (debug_button_s("Nested Menus"),
             {
                 let sub5 = menu_temp_2(menu_items!(
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
                 ));
 
                 let sub4 = menu_temp_2(menu_items!(
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
                 )).width(180.0);
 
                 let sub3 = menu_temp_2(menu_items!(
-                    (debug_button("You can")),
-                    (debug_button("nest menus")),
-                    (submenu_button("SUB"),
-                        sub4
-                    ),
-                    (debug_button("how ever")),
-                    (debug_button("You like")),
-                    (submenu_button("SUB"),
-                        sub5
-                    ),
+                    (debug_button("You can"))
+                    (debug_button("nest menus"))
+                    (submenu_button("SUB"), sub4)
+                    (debug_button("how ever"))
+                    (debug_button("You like"))
+                    (submenu_button("SUB"), sub5)
                 )).width(160.0);
 
                 let sub2 = menu_temp_2(menu_items!(
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (submenu_button("More sub menus"),
-                        sub3
-                    ),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("More sub menus"), sub3)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
                 )).width(140.0);
 
                 let sub1 = menu_temp_2(menu_items!(
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (submenu_button("Another sub menu"),
-                        sub2
-                    ),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("Another sub menu"), sub2)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
                 )).width(220.0);
 
                 menu_temp_1(menu_items!(
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (submenu_button("A sub menu"),
-                        sub1
-                    ),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
-                    (debug_button("Item")),
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("A sub menu"), sub1)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
                 )).width(110.0)
             }
-            ),
+            )
             (debug_button_s("Widgets"), menu_temp_1(menu_items!(
-                (debug_button("You can use any widget")),
-                (debug_button("as a menu item")),
+                (debug_button("You can use any widget"))
+                (debug_button("as a menu item"))
                 (button(
                     text("Button")
                         .width(Length::Fill)
@@ -279,18 +269,18 @@ impl Application for App {
                     )
                     .width(Length::Fill)
                     .on_press(Message::Debug("Button".into()))
-                ),
+                )
                 (checkbox("Checkbox", self.check, Message::CheckChange)
                     .width(Length::Fill)
-                ),
+                )
                 (
                     row![
                         "Slider",
                         horizontal_space(Length::Fixed(8.0)),
                         slider(0..=255, self.value, Message::ValueChange)
                     ]
-                ),
-                (text_input("", &self.text).on_input(Message::TextChange)),
+                )
+                (text_input("", &self.text).on_input(Message::TextChange))
                 (container(toggler(
                         Some("Or as a sub menu item".to_string()),
                         self.toggle,
@@ -300,31 +290,31 @@ impl Application for App {
                     .height(30.0)
                     .align_y(alignment::Vertical::Center),
                     menu_temp_2(menu_items!(
-                        (debug_button("Item")),
-                        (debug_button("Item")),
-                        (debug_button("Item")),
-                        (debug_button("Item")),
+                        (debug_button("Item"))
+                        (debug_button("Item"))
+                        (debug_button("Item"))
+                        (debug_button("Item"))
                     ))
-                ),
-                (debug_button("Separator")),
-                (separator()),
-                (debug_button("Labeled Separator")),
-                (labeled_separator("Separator")),
-                (debug_button("Dot Separator")),
-                (dot_separator(&self.theme)),
-                (debug_button("Item")),
-            )).width(240.0)),
+                )
+                (debug_button("Separator"))
+                (separator())
+                (debug_button("Labeled Separator"))
+                (labeled_separator("Separator"))
+                (debug_button("Dot Separator"))
+                (dot_separator(&self.theme))
+                (debug_button("Item"))
+            )).width(240.0))
             (debug_button_s("Controls"), menu_temp_1(menu_items!(
                 (row![toggler(
                         Some("Dark Mode".into()),
                         self.dark_mode,
                         Message::ThemeChange
                     )].padding([0, 8])
-                ),
-                (color_button([0.45, 0.25, 0.57])),
-                (color_button([0.15, 0.59, 0.64])),
-                (color_button([0.76, 0.82, 0.20])),
-                (color_button([0.17, 0.27, 0.33])),
+                )
+                (color_button([0.45, 0.25, 0.57]))
+                (color_button([0.15, 0.59, 0.64]))
+                (color_button([0.76, 0.82, 0.20]))
+                (color_button([0.17, 0.27, 0.33]))
                 (labeled_button("Primary", Message::None)
                     .width(Length::Fill),
                     {
@@ -333,134 +323,134 @@ impl Application for App {
                         menu_temp_2(menu_items!(
                             (slider(0..=255, r, move |x| {
                                 Message::ColorChange(Color::from_rgb8(x, g, b))
-                            })),
+                            }))
                             (slider(0..=255, g, move |x| {
                                 Message::ColorChange(Color::from_rgb8(r, x, b))
-                            })),
+                            }))
                             (slider(0..=255, b, move |x| {
                                 Message::ColorChange(Color::from_rgb8(r, g, x))
-                            })),
+                            }))
                         ))
                     }
                 )
-            ))),
+            )))
             (debug_button_s("Scroll"), menu_temp_1(menu_items!(
-                (debug_button("ajrs")),
-                (debug_button("bsdfho")),
-                (debug_button("clkjhbf")),
-                (debug_button("dekjdaud")),
-                (debug_button("ecsh")),
-                (debug_button("fweiu")),
-                (debug_button("giwe")),
-                (debug_button("heruyv")),
-                (debug_button("isabe")),
+                (debug_button("ajrs"))
+                (debug_button("bsdfho"))
+                (debug_button("clkjhbf"))
+                (debug_button("dekjdaud"))
+                (debug_button("ecsh"))
+                (debug_button("fweiu"))
+                (debug_button("giwe"))
+                (debug_button("heruyv"))
+                (debug_button("isabe"))
                 (submenu_button("jcsu"), menu_temp_2(menu_items!(
-                    (debug_button("ajrs")),
-                    (debug_button("bsdfho")),
-                    (debug_button("clkjhbf")),
-                    (debug_button("dekjdaud")),
-                    (debug_button("ecsh")),
-                    (debug_button("fweiu")),
-                    (debug_button("giwe")),
-                    (debug_button("heruyv")),
-                    (debug_button("isabe")),
-                    (debug_button("jcsu")),
-                    (debug_button("kaljkahd")),
+                    (debug_button("ajrs"))
+                    (debug_button("bsdfho"))
+                    (debug_button("clkjhbf"))
+                    (debug_button("dekjdaud"))
+                    (debug_button("ecsh"))
+                    (debug_button("fweiu"))
+                    (debug_button("giwe"))
+                    (debug_button("heruyv"))
+                    (debug_button("isabe"))
+                    (debug_button("jcsu"))
+                    (debug_button("kaljkahd"))
                     (submenu_button("luyortp"), menu_temp_2(menu_items!(
-                        (debug_button("ajrs")),
-                        (debug_button("bsdfho")),
-                        (debug_button("clkjhbf")),
-                        (debug_button("dekjdaud")),
-                        (debug_button("ecsh")),
-                        (debug_button("fweiu")),
-                        (debug_button("giwe")),
-                        (debug_button("heruyv")),
-                        (debug_button("isabe")),
-                        (debug_button("jcsu")),
-                        (debug_button("kaljkahd")),
-                        (debug_button("luyortp")),
-                        (debug_button("mmdyrc")),
-                        (debug_button("nquc")),
-                    ))),
-                    (debug_button("mmdyrc")),
-                    (debug_button("nquc")),
-                ))),
-                (debug_button("kaljkahd")),
-                (debug_button("luyortp")),
-                (debug_button("mmdyrc")),
-                (debug_button("nquc")), // 13
-                (debug_button("ajrs")), // 14
-                (debug_button("bsdfho")),
-                (debug_button("clkjhbf")),
-                (debug_button("dekjdaud")),
-                (debug_button("ecsh")),
-                (debug_button("fweiu")),
-                (debug_button("giwe")),
-                (debug_button("heruyv")),
-                (debug_button("isabe")),
-                (debug_button("jcsu")),
-                (debug_button("kaljkahd")),
-                (debug_button("luyortp")),
-                (debug_button("mmdyrc")),
-                (debug_button("nquc")), // 27
-                (debug_button("ajrs")), // 28
-                (debug_button("bsdfho")),
-                (debug_button("clkjhbf")),
+                        (debug_button("ajrs"))
+                        (debug_button("bsdfho"))
+                        (debug_button("clkjhbf"))
+                        (debug_button("dekjdaud"))
+                        (debug_button("ecsh"))
+                        (debug_button("fweiu"))
+                        (debug_button("giwe"))
+                        (debug_button("heruyv"))
+                        (debug_button("isabe"))
+                        (debug_button("jcsu"))
+                        (debug_button("kaljkahd"))
+                        (debug_button("luyortp"))
+                        (debug_button("mmdyrc"))
+                        (debug_button("nquc"))
+                    )))
+                    (debug_button("mmdyrc"))
+                    (debug_button("nquc"))
+                )))
+                (debug_button("kaljkahd"))
+                (debug_button("luyortp"))
+                (debug_button("mmdyrc"))
+                (debug_button("nquc")) // 13
+                (debug_button("ajrs")) // 14
+                (debug_button("bsdfho"))
+                (debug_button("clkjhbf"))
+                (debug_button("dekjdaud"))
+                (debug_button("ecsh"))
+                (debug_button("fweiu"))
+                (debug_button("giwe"))
+                (debug_button("heruyv"))
+                (debug_button("isabe"))
+                (debug_button("jcsu"))
+                (debug_button("kaljkahd"))
+                (debug_button("luyortp"))
+                (debug_button("mmdyrc"))
+                (debug_button("nquc")) // 27
+                (debug_button("ajrs")) // 28
+                (debug_button("bsdfho"))
+                (debug_button("clkjhbf"))
                 (submenu_button("dekjdaud"), menu_temp_2(menu_items!(
-                    (debug_button("ajrs")),
-                    (debug_button("bsdfho")),
-                    (debug_button("clkjhbf")),
-                    (debug_button("dekjdaud")),
-                    (debug_button("ecsh")),
-                    (debug_button("fweiu")),
-                    (debug_button("giwe")),
-                    (debug_button("heruyv")),
-                    (debug_button("isabe")),
-                    (debug_button("jcsu")),
-                    (debug_button("kaljkahd")),
-                    (debug_button("luyortp")),
-                    (debug_button("mmdyrc")),
-                    (debug_button("nquc")),
-                    (debug_button("ajrs")),
-                    (debug_button("bsdfho")),
-                    (debug_button("clkjhbf")),
-                    (debug_button("dekjdaud")),
-                    (debug_button("ecsh")),
-                    (debug_button("fweiu")),
-                    (debug_button("giwe")),
-                    (debug_button("heruyv")),
-                    (debug_button("isabe")),
-                    (debug_button("jcsu")),
-                    (debug_button("kaljkahd")),
-                    (debug_button("luyortp")),
-                    (debug_button("mmdyrc")),
-                    (debug_button("nquc")),
-                ))),
-                (debug_button("ecsh")),
-                (debug_button("fweiu")),
-                (debug_button("giwe")),
-                (debug_button("heruyv")),
-                (debug_button("isabe")),
-                (debug_button("jcsu")),
-                (debug_button("kaljkahd")),
-                (debug_button("luyortp")),
-                (debug_button("mmdyrc")),
-                (debug_button("nquc")),
-                (debug_button("ajrs")),
-                (debug_button("bsdfho")),
-                (debug_button("clkjhbf")),
-                (debug_button("dekjdaud")),
-                (debug_button("ecsh")),
-                (debug_button("fweiu")),
-                (debug_button("giwe")),
-                (debug_button("heruyv")),
-                (debug_button("isabe")),
-                (debug_button("jcsu")),
-                (debug_button("kaljkahd")),
-                (debug_button("luyortp")),
-                (debug_button("mmdyrc")),
-                (debug_button("nquc")),
-            ))),
+                    (debug_button("ajrs"))
+                    (debug_button("bsdfho"))
+                    (debug_button("clkjhbf"))
+                    (debug_button("dekjdaud"))
+                    (debug_button("ecsh"))
+                    (debug_button("fweiu"))
+                    (debug_button("giwe"))
+                    (debug_button("heruyv"))
+                    (debug_button("isabe"))
+                    (debug_button("jcsu"))
+                    (debug_button("kaljkahd"))
+                    (debug_button("luyortp"))
+                    (debug_button("mmdyrc"))
+                    (debug_button("nquc"))
+                    (debug_button("ajrs"))
+                    (debug_button("bsdfho"))
+                    (debug_button("clkjhbf"))
+                    (debug_button("dekjdaud"))
+                    (debug_button("ecsh"))
+                    (debug_button("fweiu"))
+                    (debug_button("giwe"))
+                    (debug_button("heruyv"))
+                    (debug_button("isabe"))
+                    (debug_button("jcsu"))
+                    (debug_button("kaljkahd"))
+                    (debug_button("luyortp"))
+                    (debug_button("mmdyrc"))
+                    (debug_button("nquc"))
+                )))
+                (debug_button("ecsh"))
+                (debug_button("fweiu"))
+                (debug_button("giwe"))
+                (debug_button("heruyv"))
+                (debug_button("isabe"))
+                (debug_button("jcsu"))
+                (debug_button("kaljkahd"))
+                (debug_button("luyortp"))
+                (debug_button("mmdyrc"))
+                (debug_button("nquc"))
+                (debug_button("ajrs"))
+                (debug_button("bsdfho"))
+                (debug_button("clkjhbf"))
+                (debug_button("dekjdaud"))
+                (debug_button("ecsh"))
+                (debug_button("fweiu"))
+                (debug_button("giwe"))
+                (debug_button("heruyv"))
+                (debug_button("isabe"))
+                (debug_button("jcsu"))
+                (debug_button("kaljkahd"))
+                (debug_button("luyortp"))
+                (debug_button("mmdyrc"))
+                (debug_button("nquc"))
+            )))
             (debug_button_s("Dynamic height"), {
                 let slider_count = 3;
                 let slider_width = 30;
@@ -468,7 +458,7 @@ impl Application for App {
                 let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
                 menu_temp_1(menu_items!(
-                    (labeled_separator("Primary")),
+                    (labeled_separator("Primary"))
                     (
                         row![
                             vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
@@ -491,262 +481,21 @@ impl Application for App {
                             ,
                         ].spacing(spacing)
                         .height(100.0)
-                    ),
-                    (separator()),
-                    (debug_button("AABB").height(40)),
-                    (debug_button("CCDD").height(140)),
-                    (debug_button("EEFF").height(30)),
-                    (debug_button("GGHH").height(100)),
-                    (debug_button("IIJJ").height(60)),
-                    (debug_button("KKLL").height(120)),
-                    (debug_button("MMNN").height(50)),
+                    )
+                    (separator())
+                    (debug_button("AABB").height(40))
+                    (debug_button("CCDD").height(140))
+                    (debug_button("EEFF").height(30))
+                    (debug_button("GGHH").height(100))
+                    (debug_button("IIJJ").height(60))
+                    (debug_button("KKLL").height(120))
+                    (debug_button("MMNN").height(50))
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing)
-            }),
-            /* (debug_button_s("content"),
-                menu_temp_1(menu_items!(
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                    (submenu_button("htrsth"),
-                        menu_temp_2(menu_items!(
-                            (debug_button("ccgh")),
-                            (debug_button("kuyg")),
-                            (debug_button("vcsa")),
-                            (debug_button("kiug")),
-                        ))
-                    ),
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                ))
-            ),
-            (debug_button_s("aaa"),
-                menu_temp_1(menu_items!(
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                    (submenu_button("syjdtyjd"),
-                        menu_temp_2(menu_items!(
-                            (debug_button("hghg")),
-                            (debug_button("kuyg")),
-                            (debug_button("arga")),
-                            (debug_button("abcd")),
-                            (debug_button("vcsa")),
-                            (submenu_button("htrsthfs"), 
-                                menu_temp_2(menu_items!(
-                                    (debug_button("hghg")),
-                                    (debug_button("kuyg")),
-                                    (debug_button("vcsa")),
-                                    (debug_button("kiug")),
-                                )).max_width(220.0)
-                            ),
-                            (debug_button("kiug")),
-                        )).max_width(200.0)
-                    ),
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                )).max_width(180.0)
-            ),
-            (debug_button_s("pondjssbah"),
-                menu_temp_1(menu_items!(
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                    (debug_button("htrsrt")),
-                    (debug_button("htrdf")),
-                    (debug_button("ngfcgng")),
-                    (debug_button("hytfy")),
-                    (debug_button("kuyg")),
-                    (debug_button("qegvd")),
-                    (submenu_button("iuoiy"), 
-                        menu_temp_2(menu_items!(
-                            (debug_button("abc")),
-                            (debug_button("def")),
-                            (debug_button("xxx")),
-                            (debug_button("htrsrt")),
-                            (debug_button("htrdf")),
-                            (debug_button("ngfcgng")),
-                            (debug_button("hytfy")),
-                            (debug_button("kuyg")),
-                            (debug_button("qegvd")),
-                            (debug_button("iuoiy")),
-                            (debug_button("rzsajf")),
-                            (debug_button("pkmehs")),
-                            (debug_button("ivrye")),
-                            (debug_button("zhdkr")),
-                            (debug_button("vjdiwo")),
-                            (debug_button("abc")),
-                            (debug_button("def")),
-                            (debug_button("xxx")),
-                            (debug_button("htrsrt")),
-                            (debug_button("htrdf")),
-                            (debug_button("ngfcgng")),
-                            (debug_button("hytfy")),
-                            (debug_button("kuyg")),
-                            (debug_button("qegvd")),
-                            (debug_button("iuoiy")),
-                            (debug_button("rzsajf")),
-                            (debug_button("pkmehs")),
-                            (debug_button("ivrye")),
-                            (debug_button("zhdkr")),
-                            (debug_button("vjdiwo")),
-                        ))
-                    ),
-                    (debug_button("rzsajf")),
-                    (debug_button("pkmehs")),
-                    (debug_button("ivrye")),
-                    (debug_button("zhdkr")),
-                    (debug_button("vjdiwo")),
-                    (debug_button("abc")),
-                    (debug_button("def")),
-                    (debug_button("xxx")),
-                    (debug_button("htrsrt")),
-                    (debug_button("htrdf")),
-                    (debug_button("ngfcgng")),
-                    (debug_button("hytfy")),
-                    (debug_button("kuyg")),
-                    (debug_button("qegvd")),
-                    (debug_button("iuoiy")),
-                    (debug_button("rzsajf")),
-                    (debug_button("pkmehs")),
-                    (debug_button("ivrye")),
-                    (debug_button("zhdkr")),
-                    (debug_button("vjdiwo")),
-                ))
-            ),
-            (debug_button_s("kjdfnh"),
-                menu_temp_1(menu_items!(
-                    (debug_button("dfths").height(30.0)),
-                    (debug_button("iodfns").height(80.0)),
-                    (debug_button("dfkmjk").height(50.0)),
-                    (debug_button("uvbw").height(200.0)),
-                    (debug_button("ngxg").height(100.0)),
-                    (debug_button("udrth").height(80.0)),
-                    (debug_button("aervx").height(120.0)),
-                    (debug_button("iusdz").height(70.0)),
-                ))
-            )
-         */
+            })
         );
 
-        /* let mb = row![
-            Menux::new(button("content").on_press(Message::Debug("content".into())).into(), vec![
-                debug_button("abc").width(180.0).into(),
-                debug_button("def").width(180.0).into(),
-                debug_button("xxx").width(180.0).into(),
-                Menux::new(debug_button("htrsth").width(180.0).into(), vec![
-                    debug_button("ccgh").width(180.0).into(),
-                    debug_button("kuyg").width(180.0).into(),
-                    debug_button("vcsa").width(180.0).into(),
-                    debug_button("kiug").width(180.0).into(),
-                ]).axis(Axis::Horizontal).into()
-            ]).open_condition(OpenCondition::Click),
-            Menux::new(debug_button("aaa").into(), vec![
-                debug_button("abc").width(180.0).into(),
-                debug_button("def").width(180.0).into(),
-                debug_button("xxx").width(180.0).into(),
-                Menux::new(debug_button("syjdtyjd").width(180.0).into(), vec![
-                    debug_button("hghg").width(180.0).into(),
-                    debug_button("kuyg").width(180.0).into(),
-                    debug_button("arga").width(180.0).into(),
-                    debug_button("abcd").width(180.0).into(),
-                    debug_button("vcsa").width(180.0).into(),
-                    Menux::new(debug_button("htrsthfs").width(180.0).into(), vec![
-                        debug_button("hghg").width(180.0).into(),
-                        debug_button("kuyg").width(180.0).into(),
-                        debug_button("vcsa").width(180.0).into(),
-                        debug_button("kiug").width(180.0).into(),
-                    ]).axis(Axis::Horizontal).into(),
-                    debug_button("kiug").width(180.0).into(),
-                ]).axis(Axis::Horizontal).into(),
-                debug_button("abc").width(180.0).into(),
-                debug_button("def").width(180.0).into(),
-                debug_button("xxx").width(180.0).into(),
-            ]).open_condition(OpenCondition::Click),
-            Menux::new(debug_button("pondjssbah").into(), vec![
-                debug_button("abc").width(180.0).into(),
-                debug_button("def").width(180.0).into(),
-                debug_button("xxx").width(180.0).into(),
-                debug_button("htrsrt").width(180.0).into(),
-                debug_button("htrdf").width(180.0).into(),
-                debug_button("ngfcgng").width(180.0).into(),
-                debug_button("hytfy").width(180.0).into(),
-                debug_button("kuyg").width(180.0).into(),
-                debug_button("qegvd").width(180.0).into(),
-                debug_button("iuoiy").width(180.0).into(),
-                debug_button("rzsajf").width(180.0).into(),
-                debug_button("pkmehs").width(180.0).into(),
-                debug_button("ivrye").width(180.0).into(),
-                debug_button("zhdkr").width(180.0).into(),
-                debug_button("vjdiwo").width(180.0).into(),
-                Menux::new(debug_button("syjdtyjd").width(180.0).into(), vec![
-                    debug_button("hghg").width(180.0).into(),
-                    debug_button("kuyg").width(180.0).into(),
-                    debug_button("arga").width(180.0).into(),
-                    debug_button("abcd").width(180.0).into(),
-                    debug_button("vcsa").width(180.0).into(),
-                    Menux::new(debug_button("htrsthfs").width(180.0).into(), vec![
-                        debug_button("hghg").width(180.0).into(),
-                        debug_button("kuyg").width(180.0).into(),
-                        debug_button("vcsa").width(180.0).into(),
-                        debug_button("kiug").width(180.0).into(),
-                    ]).axis(Axis::Horizontal).into(),
-                    debug_button("kiug").width(180.0).into(),
-                ]).axis(Axis::Horizontal).into(),
-                debug_button("abc").width(180.0).into(),
-                debug_button("def").width(180.0).into(),
-                debug_button("xxx").width(180.0).into(),
-                debug_button("htrsrt").width(180.0).into(),
-                debug_button("htrdf").width(180.0).into(),
-                debug_button("ngfcgng").width(180.0).into(),
-                debug_button("hytfy").width(180.0).into(),
-                debug_button("kuyg").width(180.0).into(),
-                debug_button("qegvd").width(180.0).into(),
-                debug_button("iuoiy").width(180.0).into(),
-                debug_button("rzsajf").width(180.0).into(),
-                debug_button("pkmehs").width(180.0).into(),
-                debug_button("ivrye").width(180.0).into(),
-                debug_button("zhdkr").width(180.0).into(),
-                debug_button("vjdiwo").width(180.0).into(),
-            ]).open_condition(OpenCondition::Click),
-        ]; */
-
-        /* let r = if self.flip_h {
-            row!(
-                // pick_size_option,
-                horizontal_space(Length::Fill),
-                mb,
-            )
-        } else {
-            row!(
-                mb,
-                horizontal_space(Length::Fill),
-                // pick_size_option
-            )
-        }
-        .padding([2, 8])
-        .align_items(alignment::Alignment::Center); */
-
         let r = row![horizontal_space(295), mb, horizontal_space(295),]
-            // .padding([2, 8])
             .align_items(alignment::Alignment::Center);
-
-        // let top_bar_style: fn(&iced::Theme) -> container::Appearance =
-        //     |_theme| container::Appearance {
-        //         background: Some(Color::TRANSPARENT.into()),
-        //         ..Default::default()
-        //     };
-        // let top_bar = container(r).width(Length::Fill).style(top_bar_style);
-
-        /*
-        let c = if self.flip_v {
-            col![back, top_bar,]
-        } else {
-            col![top_bar, back,]
-        };
-
-        c.into() */
 
         let c = col![vertical_space(450), r, vertical_space(450),];
         
@@ -760,11 +509,13 @@ impl Application for App {
                     .alignment(scrollable::Alignment::End),
                 horizontal: scrollable::Properties::new(),
             });
-
-        let back_style: fn(&iced::Theme) -> container::Appearance = |theme| container::Appearance {
-            background: Some(theme.extended_palette().primary.base.color.into()),
-            ..Default::default()
-        };
+        
+        fn back_style(theme: &iced::Theme) -> container::Appearance{
+            container::Appearance {
+                background: Some(theme.extended_palette().primary.base.color.into()),
+                ..Default::default()
+            }
+        }
         let back = container(sc)
             .width(Length::Fill)
             .height(Length::Fill)
