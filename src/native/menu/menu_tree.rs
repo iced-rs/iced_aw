@@ -612,12 +612,12 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     pub(super) fn diff(&self, tree: &mut Tree) {
-        if let Some(t) = tree.children.get_mut(0) {
-            t.diff(&self.item);
-            if let Some(t) = tree.children.get_mut(1) {
-                self.menu.as_ref().map_or((), |m| m.diff(t) )
-            }else{
-                *tree = self.tree();
+        if let Some(t0) = tree.children.get_mut(0) {
+            t0.diff(&self.item);
+            if let Some(t1) = tree.children.get_mut(1) {
+                self.menu
+                    .as_ref()
+                    .map_or((), |m| m.diff(t1) )
             }
         }else{
             *tree = self.tree();
