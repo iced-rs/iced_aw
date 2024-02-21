@@ -54,9 +54,6 @@ where
         position: Point,
         translation: Vector,
     ) -> Node {
-        // println!();
-        // println!("mbo layout");
-
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let bar_bounds = self.init_bar_bounds;
 
@@ -73,7 +70,6 @@ where
         ).translate(translation);
 
         let Some(active) = bar.active_root else {
-            // println!("no active");
             return Node::with_children(
                 bounds, 
                 [
@@ -95,8 +91,6 @@ where
             check_bounds_width: f32,
             parent_bounds: Rectangle,
             parent_direction: (Direction, Direction),
-            // translation: Vector,
-            // parent_offset: Vector,
             viewport: &Rectangle,
         ) {
             let menu = item.menu.as_ref().unwrap();
@@ -170,7 +164,6 @@ where
             self.check_bounds_width,
             parent_bounds,
             parent_direction,
-            // translation,
             &Rectangle::new(position, bounds),
         );
 
@@ -195,9 +188,6 @@ where
         shell: &mut Shell<'_, Message>,
     ) -> event::Status {
         use event::Status::*;
-
-        // println!();
-        // println!("mbo event");
 
         let viewport = layout.bounds();
         let mut lc = layout.children();

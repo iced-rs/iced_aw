@@ -323,7 +323,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        // println!("menu event");
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
@@ -382,13 +381,12 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         viewport: &Rectangle,
-        // parent_bounds: Rectangle,
     ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
-        let offset_bounds = lc.next().unwrap().bounds();
-        let check_bounds = lc.next().unwrap().bounds();
+        // let offset_bounds = lc.next().unwrap().bounds();
+        // let check_bounds = lc.next().unwrap().bounds();
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
@@ -417,59 +415,29 @@ where
         let Some(start_layout) = slc.next()
         else { return };
         
-        let start_bounds = start_layout.bounds();
-        // if let Some(sec_layout) = slc.next(){
-        //     let sec_bounds = sec_layout.bounds();
-        //     renderer.with_layer(
-        //         Rectangle{
-        //             x: start_bounds.x,
-        //             y: start_bounds.y,
-        //             width: f32::MAX,
-        //             height: sec_bounds.y - start_bounds.y,
-        //         }, 
-        //         |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
-        //     );
-        // }else{
-        //     start.draw(start_tree, renderer, theme, style, start_layout, cursor, viewport)
-        // }
-
-        renderer.with_layer(
-            start_bounds,
-            |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
-        );
-
-
         if slice.end_index == slice.start_index {
-            return
+            start.draw(start_tree, renderer, theme, style, start_layout, cursor, viewport);
+        }else{
+            let start_bounds = start_layout.bounds();
+            renderer.with_layer(
+                start_bounds,
+                |r| start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+            );
+            
+            // draw the rest
+            let Some(items) = self.items.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
+            else { return; };
+    
+            let Some(trees) = tree.children.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
+            else { return; };
+    
+            for ((item, tree), layout) in items.iter() // [item...].iter()
+                .zip(trees.iter()) // [item_tree...]
+                .zip(slice_layout.children().skip(1)) // [item_layout...]
+            {
+                item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
+            }
         }
-
-        // draw the rest
-        let Some(items) = self.items.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
-        else { return; };
-
-        let Some(trees) = tree.children.get(slice.start_index+1 .. slice.end_index.saturating_add(1))
-        else { return; };
-
-        for ((item, tree), layout) in items.iter() // [item...].iter()
-            .zip(trees.iter()) // [item_tree...]
-            .zip(slice_layout.children().skip(1)) // [item_layout...]
-        {
-            item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
-        }
-
-
-        // let Some(items) = self.items.get(slice.start_index .. slice.end_index.saturating_add(1))
-        // else { return };
-
-        // let Some(trees) = tree.children.get(slice.start_index .. slice.end_index.saturating_add(1))
-        // else { return };
-
-        // for ((item, tree), layout) in items.iter() // [item...].iter()
-        //     .zip(trees.iter()) // [item_tree...]
-        //     .zip(slice_layout.children()) // [item_layout...]
-        // {
-        //     item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
-        // }
     }
 
     pub(super) fn open_event(
@@ -494,7 +462,6 @@ where
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                // println!("new active: {}", i);
                 menu_state.active = Some(i + slice.start_index);
                 return event::Status::Captured;
             }
@@ -541,25 +508,21 @@ where
     
 }
 
-fn debug_draw<Renderer: renderer::Renderer>(
+/* fn debug_draw<Renderer: renderer::Renderer>(
     renderer: &mut Renderer,
-
     prescroll: Rectangle,
     check_bounds: Rectangle,
     offset_bounds: Rectangle,
-    // parent_bounds: Rectangle,
 ){
     [
         prescroll,
         check_bounds,
         offset_bounds,
-        // parent_bounds
     ].iter()
     .zip([
         Color::from([1.0, 1.0, 1.0, 0.8]),
         Color::from([1.0, 0.0, 0.0, 0.1]),
         Color::from([0.0, 0.0, 1.0, 0.3]),
-        // Color::from([1.0, 1.0, 0.0, 0.5])
     ])
     .for_each(|(b, c)|{
         renderer.fill_quad(
@@ -574,8 +537,7 @@ fn debug_draw<Renderer: renderer::Renderer>(
             c
         );
     });
-}
-
+} */
 
 /// Item inside a [`Menu`]
 pub struct Item<'a, Message, Theme, Renderer>
@@ -633,7 +595,6 @@ where
     }
 
     pub(super) fn state(&self) -> tree::State {
-        // tree::State::Some(Box::new(ItemState::default()))
         tree::State::None
     }
 
@@ -654,9 +615,7 @@ where
         if let Some(t) = tree.children.get_mut(0) {
             t.diff(&self.item);
             if let Some(t) = tree.children.get_mut(1) {
-                self.menu
-                    .as_ref()
-                    .map_or({}, |m| m.diff(t) )
+                self.menu.as_ref().map_or((), |m| m.diff(t) )
             }else{
                 *tree = self.tree();
             }
@@ -667,17 +626,16 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     ///
-    pub(super) fn layout(
+    /* pub(super) fn layout(
         &self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &Limits,
     ) -> Node {
-        // println!("Item layout");
         self.item
             .as_widget()
             .layout(&mut tree.children[0], renderer, limits)
-    }
+    } */
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     ///
@@ -692,7 +650,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        // println!("item event");
         self.item.as_widget_mut().on_event(
             &mut tree.children[0],
             event,

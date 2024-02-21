@@ -1,17 +1,13 @@
 use iced::widget::{
-    button, checkbox, container, horizontal_space, pick_list, row, scrollable, slider, svg, text,
+    button, checkbox, container, horizontal_space, row, scrollable, slider, svg, text,
     text_input, toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Alignment, Application, Border, Color, Element, Event, Length, Pixels, Size, Theme};
+use iced::{alignment, theme, Alignment, Application, Border, Color, Element, Length, Pixels, Size};
 
-use iced_aw::menu::{Item, Menu, MenuBar};
+use iced_aw::menu::{Item, Menu};
 use iced_aw::quad;
-use iced_aw::{
-    menu_bar,
-    menu,
-    menu_items
-};
+use iced_aw::{menu_bar, menu_items};
 
 pub fn main() -> iced::Result {
     // std::env::set_var("RUST_BACKTRACE", "full");
@@ -32,8 +28,6 @@ enum Message {
     CheckChange(bool),
     ToggleChange(bool),
     ColorChange(Color),
-    FlipHorizontal,
-    FlipVertical,
     ThemeChange(bool),
     TextChange(String),
     None,
@@ -45,8 +39,6 @@ struct App {
     check: bool,
     toggle: bool,
     theme: iced::Theme,
-    flip_h: bool,
-    flip_v: bool,
     dark_mode: bool,
     text: String,
 }
@@ -72,8 +64,6 @@ impl Application for App {
                 check: false,
                 toggle: false,
                 theme,
-                flip_h: false,
-                flip_v: false,
                 dark_mode: false,
                 text: "Text Input".into(),
             },
@@ -90,7 +80,6 @@ impl Application for App {
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
-        // println!("app update");
         match message {
             Message::Debug(s) => {
                 self.title = s;
@@ -117,8 +106,6 @@ impl Application for App {
                 );
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
             }
-            Message::FlipHorizontal => self.flip_h = !self.flip_h,
-            Message::FlipVertical => self.flip_v = !self.flip_v,
             Message::ThemeChange(b) => {
                 self.dark_mode = b;
                 let primary = self.theme.palette().primary;
@@ -150,8 +137,8 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(12.0).spacing(6.0);
-        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(6.0);
+        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
+        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
         let mb = menu_bar!(
             (debug_button_s("Nested Menus"), {
@@ -253,7 +240,6 @@ impl Application for App {
                 (debug_button("Item"))
             )).width(240.0))
             (debug_button_s("Controls"), menu_temp_1(menu_items!(
-                (labeled_button("Flip", Message::FlipHorizontal).width(Length::Fill))
                 (row![toggler(
                         Some("Dark Mode".into()),
                         self.dark_mode,
@@ -327,8 +313,8 @@ impl Application for App {
                 (debug_button("kaljkahd"))
                 (debug_button("luyortp"))
                 (debug_button("mmdyrc"))
-                (debug_button("nquc")) // 13
-                (debug_button("ajrs")) // 14
+                (debug_button("nquc"))
+                (debug_button("ajrs"))
                 (debug_button("bsdfho"))
                 (debug_button("clkjhbf"))
                 (debug_button("dekjdaud"))
@@ -341,8 +327,8 @@ impl Application for App {
                 (debug_button("kaljkahd"))
                 (debug_button("luyortp"))
                 (debug_button("mmdyrc"))
-                (debug_button("nquc")) // 27
-                (debug_button("ajrs")) // 28
+                (debug_button("nquc"))
+                (debug_button("ajrs"))
                 (debug_button("bsdfho"))
                 (debug_button("clkjhbf"))
                 (submenu_button("dekjdaud"), menu_temp_2(menu_items!(
@@ -403,7 +389,8 @@ impl Application for App {
             (debug_button_s("Dynamic height"), {
                 let slider_count = 3;
                 let slider_width = 30;
-                let spacing = 4;
+                let spacing = 5;
+                // let pad = 20;
                 let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
                 menu_temp_1(menu_items!(
@@ -414,19 +401,16 @@ impl Application for App {
                                 x, g, b
                             )))
                             .width(slider_width)
-                            // .height(100.0)
                             ,
                             vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
                                 r, x, b
                             )))
                             .width(slider_width)
-                            // .height(100.0)
                             ,
                             vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
                                 r, g, x
                             )))
                             .width(slider_width)
-                            // .height(100.0)
                             ,
                         ].spacing(spacing)
                         .height(100.0)
@@ -480,7 +464,7 @@ impl button::StyleSheet for ButtonStyle {
             background: Some(Color::TRANSPARENT.into()),
             // background: Some(Color::from([1.0; 3]).into()),
             border: Border {
-                radius: [4.0; 4].into(),
+                radius: [6.0; 4].into(),
                 ..Default::default()
             },
             ..Default::default()
@@ -544,7 +528,6 @@ fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, i
         row![
             text(label)
                 .width(Length::Fill)
-                // .height(Length::Fill)
                 .vertical_alignment(alignment::Vertical::Center),
             arrow
         ]
@@ -559,66 +542,6 @@ fn color_button<'a>(color: impl Into<Color>) -> button::Button<'a, Message, iced
         circle(color), Message::ColorChange(color)
     )
 }
-
-// fn debug_item<'a>(label: &str) -> Item<'a, Message, iced::Theme, iced::Renderer> {
-//     menu_item!(debug_button(label).width(Length::Fill).height(Length::Fill))
-// }
-
-// fn debug_item2<'a>(label: &str) -> Item<'a, Message, iced::Theme, iced::Renderer> {
-//     menu_item!(debug_button(label)
-//         .width(Length::Fill)
-//         .height(Length::Shrink))
-// }
-
-// fn debug_item3<'a>(label: &str, h: f32) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     menu_tree!(debug_button(label)
-//         .width(Length::Fill)
-//         .height(Length::Fixed(h)))
-// }
-
-// fn color_item<'a>(color: impl Into<Color>) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let color = color.into();
-//     menu_tree!(base_button(circle(color), Message::ColorChange(color)))
-// }
-
-// fn sub_menu<'a>(
-//     label: &str,
-//     msg: Message,
-//     children: Vec<MenuTree<'a, Message, iced::Theme, iced::Renderer>>,
-// ) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let handle = svg::Handle::from_path(format!(
-//         "{}/caret-right-fill.svg",
-//         env!("CARGO_MANIFEST_DIR")
-//     ));
-//     let arrow = svg(handle)
-//         .width(Length::Shrink)
-//         .style(theme::Svg::custom_fn(|theme| svg::Appearance {
-//             color: Some(theme.extended_palette().background.base.text),
-//         }));
-//     menu_tree(
-//         base_button(
-//             row![
-//                 text(label)
-//                     .width(Length::Fill)
-//                     .height(Length::Fill)
-//                     .vertical_alignment(alignment::Vertical::Center),
-//                 arrow
-//             ]
-//             .align_items(iced::Alignment::Center),
-//             msg,
-//         )
-//         .width(Length::Fill)
-//         .height(Length::Fill),
-//         children,
-//     )
-// }
-
-// fn debug_sub_menu<'a>(
-//     label: &str,
-//     children: Vec<MenuTree<'a, Message, iced::Theme, iced::Renderer>>,
-// ) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     sub_menu(label, Message::Debug(label.into()), children)
-// }
 
 fn separator<'a>() -> quad::Quad {
     quad::Quad {
@@ -681,399 +604,3 @@ fn circle(color: Color) -> quad::Quad {
         ..Default::default()
     }
 }
-
-
-
-// fn menu_1<'a>(_app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let sub_5 = debug_sub_menu(
-//         "SUB",
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     );
-//     let sub_4 = debug_sub_menu(
-//         "SUB",
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     )
-//     .width(180);
-//     let sub_3 = debug_sub_menu(
-//         "More sub menus",
-//         vec![
-//             debug_item("You can"),
-//             debug_item("nest menus"),
-//             sub_4,
-//             debug_item("how ever"),
-//             debug_item("You like"),
-//             sub_5,
-//         ],
-//     );
-//     let sub_2 = debug_sub_menu(
-//         "Another sub menu",
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             sub_3,
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     )
-//     .width(140);
-//     let sub_1 = debug_sub_menu(
-//         "A sub menu",
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             sub_2,
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     )
-//     .width(220);
-//     let root = menu_tree(
-//         debug_button("Nested Menus"),
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             sub_1,
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     )
-//     .width(110);
-//     root
-// }
-
-// fn menu_2<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let sub_1 = menu_tree(
-//         container(toggler(
-//             Some("Or as a sub menu item".to_string()),
-//             app.toggle,
-//             Message::ToggleChange,
-//         ))
-//         .padding([0, 8])
-//         .height(Length::Fill)
-//         .align_y(alignment::Vertical::Center),
-//         vec![
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     );
-
-//     let bt = menu_tree!(button(
-//         text("Button")
-//             .width(Length::Fill)
-//             .height(Length::Fill)
-//             .vertical_alignment(alignment::Vertical::Center),
-//     )
-//     .width(Length::Fill)
-//     .height(Length::Fill)
-//     .on_press(Message::Debug("Button".into())));
-
-//     let cb = menu_tree!(checkbox("Checkbox", app.check, Message::CheckChange).width(Length::Fill));
-
-//     let sld = menu_tree!(row![
-//         "Slider",
-//         horizontal_space(Length::Fixed(8.0)),
-//         slider(0..=255, app.value, Message::ValueChange)
-//     ]);
-
-//     let txn = menu_tree!(text_input("", &app.text).on_input(Message::TextChange));
-
-//     let root = menu_tree(
-//         debug_button("Widgets"),
-//         vec![
-//             debug_item("You can use any widget"),
-//             debug_item("as a menu item"),
-//             bt,
-//             cb,
-//             sld,
-//             txn,
-//             sub_1,
-//             separator(),
-//             debug_item("Seperators are also widgets"),
-//             labeled_separator("Separator"),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//             dot_separator(),
-//             debug_item("Item"),
-//             debug_item("Item"),
-//         ],
-//     );
-
-//     root
-// }
-
-// fn menu_3<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let [r, g, b, _] = app.theme.palette().primary.into_rgba8();
-
-//     let primary = debug_sub_menu(
-//         "Primary",
-//         vec![
-//             menu_tree!(slider(0..=255, r, move |x| {
-//                 Message::ColorChange(Color::from_rgb8(x, g, b))
-//             })),
-//             menu_tree!(slider(0..=255, g, move |x| {
-//                 Message::ColorChange(Color::from_rgb8(r, x, b))
-//             })),
-//             menu_tree!(slider(0..=255, b, move |x| {
-//                 Message::ColorChange(Color::from_rgb8(r, g, x))
-//             })),
-//         ],
-//     );
-
-//     let root = menu_tree(
-//         debug_button("Controls"),
-//         vec![
-//             menu_tree!(labeled_button("Flip Horizontal", Message::FlipHorizontal)
-//                 .width(Length::Fill)
-//                 .height(Length::Fill)),
-//             menu_tree!(labeled_button("Flip Vertical", Message::FlipVertical)
-//                 .width(Length::Fill)
-//                 .height(Length::Fill)),
-//             separator(),
-//             menu_tree!(row![toggler(
-//                 Some("Dark Mode".into()),
-//                 app.dark_mode,
-//                 Message::ThemeChange
-//             )]
-//             .padding([0, 8])),
-//             color_item([0.45, 0.25, 0.57]),
-//             color_item([0.15, 0.59, 0.64]),
-//             color_item([0.76, 0.82, 0.20]),
-//             color_item([0.17, 0.27, 0.33]),
-//             primary,
-//         ],
-//     );
-
-//     root
-// }
-
-// fn menu_4<'a>(_app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let dekjdaud = debug_sub_menu(
-//         "dekjdaud",
-//         vec![
-//             debug_item("ajrs"),
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"),
-//             debug_item("ajrs"),
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"),
-//         ],
-//     );
-
-//     let luyortp = debug_sub_menu(
-//         "luyortp",
-//         vec![
-//             debug_item("ajrs"), // 0
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 13
-//         ],
-//     );
-
-//     let jcsu = debug_sub_menu(
-//         "jcsu",
-//         vec![
-//             debug_item("ajrs"), // 0
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             luyortp, // 11
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 13
-//         ],
-//     );
-
-//     let root = menu_tree(
-//         debug_button("Scroll"),
-//         vec![
-//             debug_item("ajrs"), // 0
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             jcsu, // 9
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 13
-//             debug_item("ajrs"), // 14
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 27
-//             debug_item("ajrs"), // 28
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             dekjdaud,
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"),
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 41
-//             debug_item("ajrs"), // 42
-//             debug_item("bsdfho"),
-//             debug_item("clkjhbf"),
-//             debug_item("dekjdaud"),
-//             debug_item("ecsh"),
-//             debug_item("fweiu"),
-//             debug_item("giwe"),
-//             debug_item("heruyv"),
-//             debug_item("isabe"),
-//             debug_item("jcsu"),
-//             debug_item("kaljkahd"), // 52
-//             debug_item("luyortp"),
-//             debug_item("mmdyrc"),
-//             debug_item("nquc"), // 55
-//         ],
-//     );
-
-//     root
-// }
-
-// fn menu_5<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let slider_count = 3;
-//     let slider_width = 30;
-//     let spacing = 4;
-
-//     let [r, g, b, _] = app.theme.palette().primary.into_rgba8();
-
-//     let sliders = menu_tree!(row![
-//         vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
-//             x, g, b
-//         )))
-//         .width(30),
-//         vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
-//             r, x, b
-//         )))
-//         .width(30),
-//         vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
-//             r, g, x
-//         )))
-//         .width(30),
-//     ]
-//     .spacing(4))
-//     .height(100);
-
-//     let root = menu_tree(
-//         debug_button("Static"),
-//         vec![labeled_separator("Primary"), sliders],
-//     )
-//     .width(slider_width * slider_count + (slider_count - 1) * spacing);
-
-//     root
-// }
-
-// fn menu_6<'a>(app: &App) -> MenuTree<'a, Message, iced::Theme, iced::Renderer> {
-//     let slider_count = 3;
-//     let slider_width = 30;
-//     let spacing = 4;
-
-//     let [r, g, b, _] = app.theme.palette().primary.into_rgba8();
-
-//     let sliders = menu_tree!(row![
-//         vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
-//             x, g, b
-//         )))
-//         .width(30),
-//         vertical_slider(0..=255, g, move |x| Message::ColorChange(Color::from_rgb8(
-//             r, x, b
-//         )))
-//         .width(30),
-//         vertical_slider(0..=255, b, move |x| Message::ColorChange(Color::from_rgb8(
-//             r, g, x
-//         )))
-//         .width(30),
-//     ]
-//     .spacing(4)
-//     .height(100));
-
-//     let root = menu_tree(
-//         debug_button("Dynamic Height"),
-//         vec![
-//             labeled_separator("Primary"),
-//             sliders,
-//             debug_item2("AABB"),
-//             debug_item3("CCDD", 50.0),
-//             debug_item2("EEFF"),
-//             debug_item("GGHH").height(100),
-//             debug_item2("IIJJ"),
-//         ],
-//     )
-//     .width(slider_width * slider_count + (slider_count - 1) * spacing);
-
-//     root
-// }
-

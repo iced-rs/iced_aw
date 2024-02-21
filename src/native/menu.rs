@@ -132,7 +132,8 @@
 //! ));
 //! ```
 //! 
-//! Checkout the menu example in the iced_aw repo for more detail
+//! For a more detailed example please 
+//! take a look at the menu example in the iced_aw repo
 //! 
 
 

@@ -120,7 +120,6 @@ where
 
     /// \[Tree{stateless, \[widget_state, menu_state]}...]
     fn children(&self) -> Vec<Tree> {
-        // println!("bar children");
         self.roots
             .iter()
             .map(|item| item.tree())
@@ -129,7 +128,6 @@ where
 
     /// tree: Tree{bar_state, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
-        // println!("bar diff");
         tree.diff_children_custom(
             &self.roots,
             |tree, item| item.diff(tree),
@@ -144,7 +142,6 @@ where
         renderer: &Renderer,
         limits: &Limits,
     ) -> Node {
-        // println!("bar layout");
         flex::resolve(
             flex::Axis::Horizontal,
             renderer,
@@ -174,7 +171,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        // println!("bar event");
         use event::Status::*;
 
         let status = self
@@ -274,7 +270,6 @@ where
             styling.bar_background
         );
 
-        // println!("bar draw");
         self.roots
             .iter() // [Item...]
             .zip(tree.children.iter()) // [item_tree...]
@@ -290,14 +285,12 @@ where
         layout: Layout<'_>,
         _renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        // println!("bar overlay");
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         let init_bar_bounds = layout.bounds();
         let init_root_bounds = layout.children().map(|l| l.bounds() ).collect();
 
         if state.open {
-            // println!("bar open");
             Some(
                 MenuBarOverlay {
                     tree,
@@ -310,7 +303,6 @@ where
                 .overlay_element(),
             )
         } else {
-            // println!("None");
             None
         }
     }
