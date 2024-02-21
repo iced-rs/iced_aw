@@ -234,6 +234,7 @@ where
             let node = &items_node.children()[slice.start_index];
             let bounds = node.bounds();
             let start_offset = slice.lower_bound_rel - bounds.y;
+            let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
             
             Node::with_children(
                 Size::new(
@@ -241,14 +242,10 @@ where
                     slice.upper_bound_rel - slice.lower_bound_rel
                 ), 
                 once(
-                    Node::with_children(
-                        Size::new(
-                            bounds.width, 
-                            slice.upper_bound_rel - slice.lower_bound_rel
-                        ), 
-                        node.children().iter().map(Clone::clone).collect()
-                    ).move_to(bounds.position())
-                    .translate([0.0, start_offset])
+                    scale_node_y(
+                        node, 
+                        factor
+                    ).translate([0.0, start_offset])
                 ).collect()
             )
         }else{
@@ -295,11 +292,11 @@ where
                 let node = &items_node.children()[slice.start_index];
                 let bounds = node.bounds();
                 let start_offset = slice.lower_bound_rel - bounds.y;
+                let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
                 scale_node_y(
                     node, 
-                    (bounds.height - start_offset) / bounds.height
-                )
-                .translate([0.0, start_offset])
+                    factor
+                ).translate([0.0, start_offset])
             };
 
             let end_node = {
@@ -986,34 +983,21 @@ impl MenuSlice{
         let lower_bound_rel = lower_bound - (items_bounds.y + scroll_offset);
         let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
     
-        let start_index = items_node.children().iter().enumerate().find_map(|(i, n)|{
-            let bounds = n.bounds();
-            (bounds.y <= lower_bound_rel && bounds.y + bounds.height >= lower_bound_rel).then_some(i)
-        }).unwrap_or(0);
+        // let start_index = search_bound_lin(lower_bound_rel, items_node.children(), 0);
+        // let end_index = search_bound_lin(upper_bound_rel, items_node.children(), start_index);
 
-        let end_index = items_node.children().iter().enumerate().find_map(|(i, n)|{
-            let bounds = n.bounds();
-            (bounds.y <= upper_bound_rel && bounds.y + bounds.height >= upper_bound_rel).then_some(i)
-        }).unwrap_or(max_index);
-
-        // let start_index = search_bound(
-        //     0, 
-        //     0, 
-        //     max_index, 
-        //     lower_bound_rel, 
-        //     items_node.children(),
-        //     |n| n.bounds().y,
-        //     |n| n.bounds().height
-        // );
-        // let end_index = search_bound(
-        //     max_index, 
-        //     start_index, 
-        //     max_index, 
-        //     upper_bound_rel, 
-        //     items_node.children(),
-        //     |n| n.bounds().y,
-        //     |n| n.bounds().height
-        // );
+        let start_index = search_bound(
+            0, 
+            max_index, 
+            lower_bound_rel, 
+            items_node.children(),
+        );
+        let end_index = search_bound(
+            start_index, 
+            max_index, 
+            upper_bound_rel, 
+            items_node.children(),
+        );
     
         Self {
             start_index,
@@ -1024,70 +1008,41 @@ impl MenuSlice{
     }
 }
 
-fn search_bound<T>(
-    default: usize,
+/* fn search_bound_lin(
+    bound: f32,
+    nodes: &[Node],
+    mut start_index: usize, // should be less than nodes.len()-1
+) -> usize{
+    for (i, n) in nodes.iter().enumerate().skip(start_index){
+        let b = n.bounds();
+        if !(bound > b.y + b.height){
+            start_index = i;
+            break;
+        }
+    }
+    start_index
+} */
+
+fn search_bound(
     default_left: usize,
     default_right: usize,
     bound: f32,
-    list: &[T],
-    get_position: impl Fn(&T) -> f32,
-    get_size: impl Fn(&T) -> f32,
+    list: &[Node],
 ) -> usize {
     // binary search
     let mut left = default_left;
     let mut right = default_right;
 
-    let mut index = default;
     while left != right {
         let m = ((left + right) / 2) + 1;
-        if get_position(&list[m]) > bound {
+        if list[m].bounds().y > bound {
             right = m - 1;
         } else {
             left = m;
         }
     }
-    let height = get_size(&list[left]);
-    if get_position(&list[left]) + height > bound {
-        index = left;
-    }
-    index
+    left
 }
-
-fn clip_node(
-    node: &Node,
-    bounds: Rectangle,
-) -> Node{
-    fn clip(
-        bounds: &Rectangle,
-        parent_offset: Vector,
-        node: &Node,
-    ) -> Node{
-        let node_bounds = node.bounds() + parent_offset;
-        bounds.intersection(&node_bounds)
-            .and_then(|new_bounds|{Some(
-                Node::with_children(
-                    new_bounds.size(), 
-                    node.children().iter().map(|n|{
-                        clip(
-                            bounds, 
-                            node_bounds.position() - Point::ORIGIN, 
-                            n
-                        ).translate(node_bounds.position() - new_bounds.position())
-                    }).collect()
-                ).move_to(new_bounds.position())
-                .translate(parent_offset * -1.0)
-            )})
-            .unwrap_or(
-                Node::with_children(
-                    Size::ZERO, 
-                    node.children().iter().map(Clone::clone).collect()
-                ).move_to(node.bounds().position())
-            )
-    }
-
-    clip(&bounds, Vector::ZERO, node)
-}
-
 
 fn scale_node_y(
     node: &Node,

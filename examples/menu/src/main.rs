@@ -18,7 +18,7 @@ pub fn main() -> iced::Result {
     App::run(iced::Settings {
         default_text_size: Pixels(15.0),
         window: iced::window::Settings {
-            size: Size::new(1000.0, 500.0),
+            size: Size::new(1000.0, 600.0),
             ..Default::default()
         },
         ..Default::default()
@@ -186,8 +186,8 @@ impl Application for App {
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
         // println!("app view");
         
-        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(12.0);
-        let menu_temp_2 = |items| Menu::new(items).max_width(180.0);
+        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(12.0).spacing(6.0);
+        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(6.0);
 
         let mb = menu_bar!(
             (debug_button_s("Nested Menus"),
@@ -483,7 +483,7 @@ impl Application for App {
         let r = row![horizontal_space(295), mb, horizontal_space(295),]
             .align_items(alignment::Alignment::Center);
 
-        let c = col![vertical_space(450), r, vertical_space(450),];
+        let c = col![vertical_space(500), r, vertical_space(500),];
         
         let sc = scrollable(c)
             // .direction(scrollable::Direction::Vertical(
