@@ -8,6 +8,8 @@ use iced::{alignment, theme, Alignment, Application, Border, Color, Element, Len
 use iced_aw::menu::{Item, Menu};
 use iced_aw::quad;
 use iced_aw::{menu_bar, menu_items};
+use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
+
 
 pub fn main() -> iced::Result {
     // std::env::set_var("RUST_BACKTRACE", "full");
@@ -67,7 +69,7 @@ impl Application for App {
                 dark_mode: false,
                 text: "Text Input".into(),
             },
-            iced::Command::none(),
+            iced::font::load(BOOTSTRAP_FONT_BYTES).map(|_| Message::None)
         )
     }
 
@@ -155,7 +157,7 @@ impl Application for App {
                     (debug_button("Item"))
                     (debug_button("Item"))
                     (debug_button("Item"))
-                )).width(180.0);
+                )).width(200.0);
 
                 let sub3 = menu_temp_2(menu_items!(
                     (debug_button("You can"))
@@ -164,7 +166,7 @@ impl Application for App {
                     (debug_button("how ever"))
                     (debug_button("You like"))
                     (submenu_button("SUB"), sub5)
-                )).width(160.0);
+                )).width(180.0);
 
                 let sub2 = menu_temp_2(menu_items!(
                     (debug_button("Item"))
@@ -174,7 +176,7 @@ impl Application for App {
                     (debug_button("Item"))
                     (debug_button("Item"))
                     (debug_button("Item"))
-                )).width(140.0);
+                )).width(160.0);
 
                 let sub1 = menu_temp_2(menu_items!(
                     (debug_button("Item"))
@@ -192,7 +194,7 @@ impl Application for App {
                     (debug_button("Item"))
                     (debug_button("Item"))
                     (debug_button("Item"))
-                )).width(110.0)
+                )).width(140.0)
             })
             (debug_button_s("Widgets"), menu_temp_1(menu_items!(
                 (debug_button("You can use any widget"))
@@ -390,7 +392,7 @@ impl Application for App {
                 let slider_count = 3;
                 let slider_width = 30;
                 let spacing = 5;
-                // let pad = 20;
+                let pad = 20;
                 let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
                 menu_temp_1(menu_items!(
@@ -423,7 +425,7 @@ impl Application for App {
                     (debug_button("IIJJ").height(60))
                     (debug_button("KKLL").height(120))
                     (debug_button("MMNN").height(50))
-                )).width(slider_width * slider_count + (slider_count - 1) * spacing)
+                )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
             })
         );
 
@@ -514,22 +516,15 @@ fn debug_button_s<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, i
 }
 
 fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
-    let handle = svg::Handle::from_path(format!(
-        "{}/caret-right-fill.svg",
-        env!("CARGO_MANIFEST_DIR")
-    ));
-    let arrow = svg(handle)
-        .width(Length::Shrink)
-        .style(theme::Svg::custom_fn(|theme| svg::Appearance {
-            color: Some(theme.extended_palette().background.base.text),
-        }));
-
     base_button(
         row![
             text(label)
                 .width(Length::Fill)
                 .vertical_alignment(alignment::Vertical::Center),
-            arrow
+            text(BootstrapIcon::CaretRightFill)
+                .font(BOOTSTRAP_FONT)
+                .width(Length::Shrink)
+                .vertical_alignment(alignment::Vertical::Center),
         ]
         .align_items(iced::Alignment::Center), 
         Message::Debug(label.into())
