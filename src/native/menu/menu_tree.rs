@@ -2,13 +2,18 @@
 //!
 use super::common::*;
 use super::flex;
-use iced_widget::core::{
+use iced::{
+    advanced::{
+        layout::{Layout, Limits, Node},
+        mouse, overlay, renderer,
+        widget::tree::{self, Tree},
+        Clipboard, 
+        Shell,
+        Widget,
+    },
     alignment, event,
-    layout::{Layout, Limits, Node},
-    mouse, overlay, renderer,
-    widget::tree::{self, Tree},
-    Alignment, Border, Clipboard, Color, Element, Event, Length, Padding, Point, Rectangle, Shell,
-    Size, Vector, Widget,
+    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, 
+    Size, Vector, 
 };
 use std::iter::once;
 

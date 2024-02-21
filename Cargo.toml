@@ -90,7 +90,7 @@ members = [
     "examples/date_picker",
     "examples/color_picker",
     "examples/floating_element",
-    "examples/floating_element multioverlay",
+    # "examples/floating_element multioverlay",
     "examples/floating_element_anchors",
     "examples/grid",
     "examples/modal",

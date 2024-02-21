@@ -1,14 +1,17 @@
 //! [`MenuBar`]
 
-use iced_widget::{
-    core::{
-        alignment, event,
+use iced::{
+    advanced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
         widget::{tree, Tree},
-        Alignment, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Point,
-        Rectangle, Shell, Size, Widget,
+        Clipboard, Shell, Layout, 
+        Overlay, Widget,
     },
+    alignment, event,
+    
+    Alignment, Color, Element, Event, Length, Padding, Point,
+    Rectangle, Size, 
     Theme,
 };
 
@@ -288,6 +291,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
+        translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state = tree.state.downcast_mut::<MenuBarState>();
 
@@ -297,6 +301,7 @@ where
         if state.open {
             Some(
                 MenuBarOverlay {
+                    translation,
                     tree,
                     roots: &mut self.roots,
                     init_bar_bounds,
@@ -310,6 +315,7 @@ where
             None
         }
     }
+
 }
 impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>

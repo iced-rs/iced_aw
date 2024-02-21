@@ -1,4 +1,4 @@
-use iced_widget::core::{Padding, Rectangle};
+use iced::{Padding, Rectangle};
 
 /* /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]

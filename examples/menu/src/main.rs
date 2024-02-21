@@ -1,5 +1,5 @@
 use iced::widget::{
-    button, checkbox, container, horizontal_space, row, scrollable, slider, svg, text, text_input,
+    button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input,
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
@@ -9,7 +9,7 @@ use iced::{
 
 use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{Item, Menu};
-use iced_aw::quad;
+use iced_aw::{quad, native::InnerBounds};
 use iced_aw::{menu_bar, menu_items};
 
 pub fn main() -> iced::Result {
@@ -140,8 +140,8 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
-        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
+        let menu_temp_1 = |items| {Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0)};
+        let menu_temp_2 = |items| {Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0)};
 
         let mb = menu_bar!((debug_button_s("Nested Menus"), {
             let sub5 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
@@ -201,10 +201,11 @@ impl Application for App {
                 .width(Length::Fill)
                 .on_press(Message::Debug("Button".into()))
             )(
-                checkbox("Checkbox", self.check, Message::CheckChange).width(Length::Fill)
+                // checkbox("Checkbox", self.check, Message::CheckChange).width(Length::Fill)
+                checkbox("Checkbox", self.check).on_toggle(|x| Message::CheckChange(x)).width(Length::Fill)
             )(row![
                 "Slider",
-                horizontal_space(Length::Fixed(8.0)),
+                horizontal_space().width(Length::Fixed(8.0)),
                 slider(0..=255, self.value, Message::ValueChange)
             ])(
                 text_input("", &self.text).on_input(Message::TextChange)
@@ -412,14 +413,21 @@ impl Application for App {
             )))
             .width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
         }));
-
-        let r = row![horizontal_space(295), mb, horizontal_space(295),]
-            .align_items(alignment::Alignment::Center);
-
-        let c = col![vertical_space(500), r, vertical_space(500),];
+        
+        let r = row![
+            horizontal_space().width(295), 
+            mb, 
+            horizontal_space().width(295),
+        ].align_items(alignment::Alignment::Center);
+        
+        let c = col![
+            vertical_space().height(500),
+            r, 
+            vertical_space().height(500),
+        ];
 
         let sc = scrollable(c).direction(scrollable::Direction::Both {
-            vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+            vertical: scrollable::Properties::new(),
             horizontal: scrollable::Properties::new(),
         });
 
@@ -522,7 +530,7 @@ fn separator<'a>() -> quad::Quad {
     quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
-        inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
+        inner_bounds: InnerBounds::Ratio(0.98, 0.1),
         height: Length::Fixed(30.0),
         ..Default::default()
     }
@@ -533,7 +541,7 @@ fn dot_separator<'a>(theme: &iced::Theme) -> Element<'a, Message, iced::Theme, i
         quad::Quad {
             color: theme.extended_palette().background.base.text,
             border_radius: [4.0; 4],
-            inner_bounds: quad::InnerBounds::Square(4.0),
+            inner_bounds: InnerBounds::Square(4.0),
             ..Default::default()
         }
         .into()
@@ -546,13 +554,13 @@ fn labeled_separator(label: &'_ str) -> Element<'_, Message, iced::Theme, iced::
     let q_1 = quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
-        inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
+        inner_bounds: InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
     let q_2 = quad::Quad {
         color: [0.5; 3].into(),
         border_radius: [4.0; 4],
-        inner_bounds: quad::InnerBounds::Ratio(0.98, 0.1),
+        inner_bounds: InnerBounds::Ratio(0.98, 0.1),
         ..Default::default()
     };
 
@@ -572,7 +580,7 @@ fn circle(color: Color) -> quad::Quad {
 
     quad::Quad {
         color,
-        inner_bounds: quad::InnerBounds::Square(radius * 2.0),
+        inner_bounds: InnerBounds::Square(radius * 2.0),
         border_radius: [radius; 4],
         height: 20.0.into(),
         ..Default::default()

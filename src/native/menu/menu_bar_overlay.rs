@@ -1,10 +1,18 @@
-use iced_widget::core::{
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        mouse, 
+        overlay, 
+        widget::Tree,
+        Clipboard,
+        Shell,
+        Layout, 
+        Widget,
+    },
     event,
-    layout::{Limits, Node},
-    mouse, overlay, renderer,
-    widget::tree::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-    Shell, Size, Vector, Widget,
+    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    Size, Vector, 
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -24,6 +32,7 @@ where
     Renderer: renderer::Renderer,
 {
     /// Tree{ bar_state, [item_tree...] }
+    pub(super) translation: Vector,
     pub(super) tree: &'b mut Tree,
 
     pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
@@ -38,7 +47,7 @@ where
     Renderer: renderer::Renderer,
 {
     pub(super) fn overlay_element(self) -> overlay::Element<'b, Message, Theme, Renderer> {
-        overlay::Element::new(Point::ORIGIN, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 }
 impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
@@ -51,9 +60,11 @@ where
         &mut self,
         renderer: &Renderer,
         bounds: Size,
-        position: Point,
-        translation: Vector,
+        // position: Point,
+        // translation: Vector,
     ) -> Node {
+        let translation = self.translation;
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let bar_bounds = self.init_bar_bounds;
 
@@ -162,7 +173,11 @@ where
             self.check_bounds_width,
             parent_bounds,
             parent_direction,
-            &Rectangle::new(position, bounds),
+            &Rectangle::new(
+                // Point::new(translation.x, translation.y),
+                Point::ORIGIN, 
+                bounds
+            ),
         );
 
         Node::with_children(

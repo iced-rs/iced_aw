@@ -16,9 +16,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use iced_widget::core::{
-    layout::{Limits, Node},
-    widget, Alignment, Element, Length, Padding, Point, Size,
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget,
+    },
+    Alignment, Element, Length, Padding, Point, Size,
 };
 
 /// The main axis of a flex layout.
@@ -74,7 +78,7 @@ where
     E: std::borrow::Borrow<Element<'a, Message, Theme, Renderer>>,
     T: std::borrow::BorrowMut<widget::Tree>,
 
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let limits = limits.width(width).height(height).shrink(padding);
     let total_spacing = spacing * items.len().saturating_sub(1) as f32;

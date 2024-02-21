@@ -88,7 +88,7 @@
 //! template function is one way to do that. If you find writing menu_template(menu_items!()) cumbersome,
 //! there is a menu! macro you can use to create template macros
 //!
-//! # Example 3
+//! ## Example 3
 //!
 //! ```
 //! use iced_aw::{menu};
@@ -114,6 +114,9 @@
 //! Technically You can create menu template functions with the menu! macro,
 //! but turns out closures can't infer the generic types,
 //! and creating a function for it involves writing a ton of generic annotations
+//! 
+//! ## Example 3
+//!
 //! ```
 //! fn menu_template<'a, Message, Theme, Renderer>(
 //! menu: Menu<'a, Message, Theme, Renderer>

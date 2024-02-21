@@ -1,8 +1,8 @@
 //! Change the appearance of menu bars and their menus.
-use iced_widget::{
-    core::{Background, Border, Color, Padding, Shadow, Vector},
-    style::Theme,
+use iced::{
+    Background, Border, Color, Padding, Shadow, Vector, Theme,
 };
+
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]
