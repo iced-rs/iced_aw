@@ -133,6 +133,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'multiple_modals'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=multiple_modals",
+                    "--package=multiple_modals"
+                ],
+                "filter": {
+                    "name": "multiple_modals",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'color_picker'",
             "cargo": {
                 "args": [

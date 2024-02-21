@@ -1,9 +1,12 @@
 use std::cmp::Ordering;
 
-use iced_widget::core::{
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::Tree,
+    },
     alignment::{Horizontal, Vertical},
-    layout::{Limits, Node},
-    widget::Tree,
     Length, Padding, Pixels, Point, Size,
 };
 use itertools::{Itertools, Position};
@@ -30,13 +33,20 @@ pub(super) fn layout<Message, Theme, Renderer>(
     row_lengths: &[Length],
 ) -> Node
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut column_widths = Vec::<f32>::with_capacity(column_count);
     let mut row_heights = Vec::<f32>::with_capacity(row_count);
-
+    let grid_limit = limits.shrink(padding);
     // Measure the minimum row and column size to fit the contents
-    minimum_row_column_sizes(tree, renderer, &mut column_widths, &mut row_heights, rows);
+    minimum_row_column_sizes(
+        tree,
+        renderer,
+        &mut column_widths,
+        &mut row_heights,
+        rows,
+        grid_limit.max(),
+    );
 
     // Adjust for fixed row and column sizes
     adjust_size_for_fixed_length(&mut column_widths, column_lengths);
@@ -48,8 +58,7 @@ where
         total_length(&row_heights, row_spacing),
     );
 
-    let grid_limits = limits
-        .shrink(padding)
+    let grid_limits = grid_limit
         .min_width(min_size.width)
         .min_height(min_size.height)
         .width(width)
@@ -88,12 +97,14 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
     column_widths: &mut Vec<f32>,
     row_heights: &mut Vec<f32>,
     rows: &[GridRow<'_, Message, Theme, Renderer>],
+    max_allowed_size: Size<f32>,
 ) where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut children = tree.children.iter_mut();
     for row in rows {
         let mut row_height = 0.0f32;
+        let mut min_width = 0.0f32;
 
         for (col_idx, element) in row.elements.iter().enumerate() {
             let child_limits = Limits::NONE.width(Length::Shrink).height(Length::Shrink);
@@ -106,10 +117,18 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
                 )
                 .size();
 
+            min_width = if width == f32::INFINITY {
+                min_width
+            } else {
+                min_width.max(width)
+            };
+
             #[allow(clippy::option_if_let_else)]
             match column_widths.get_mut(col_idx) {
-                Some(col_width) => *col_width = col_width.max(width),
-                None => column_widths.insert(col_idx, width),
+                Some(col_width) => {
+                    *col_width = max_allowed_size.width.min(col_width.max(min_width));
+                }
+                None => column_widths.insert(col_idx, max_allowed_size.width.min(min_width)),
             }
 
             row_height = row_height.max(height);
@@ -189,7 +208,7 @@ fn create_grid_layout<Message, Theme, Renderer>(
     grid_size: Size,
 ) -> Node
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     let mut y = padding.top;
     let mut nodes = Vec::with_capacity(element_count);

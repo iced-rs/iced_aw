@@ -2,18 +2,19 @@
 
 use crate::style::spinner::StyleSheet;
 
-use iced_widget::core::{
-    self,
-    event::Status,
-    layout::{Limits, Node},
-    mouse::Cursor,
-    renderer,
-    widget::{
-        tree::{State, Tag},
-        Tree,
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::{
+            tree::{State, Tag},
+            Tree,
+        },
+        Clipboard, Layout, Shell, Widget,
     },
-    window, Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shadow, Shell,
-    Size, Vector, Widget,
+    event::Status,
+    mouse::Cursor,
+    window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
 };
 use std::time::{Duration, Instant};
 
@@ -79,7 +80,12 @@ fn is_visible(bounds: &Rectangle) -> bool {
     bounds.width > 0.0 && bounds.height > 0.0
 }
 
-fn fill_circle(renderer: &mut impl core::Renderer, position: Vector, radius: f32, color: Color) {
+fn fill_circle(
+    renderer: &mut impl renderer::Renderer,
+    position: Vector,
+    radius: f32,
+    color: Color,
+) {
     renderer.fill_quad(
         renderer::Quad {
             bounds: Rectangle {
@@ -101,7 +107,7 @@ fn fill_circle(renderer: &mut impl core::Renderer, position: Vector, radius: f32
 
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Spinner
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     fn size(&self) -> Size<Length> {
@@ -206,7 +212,7 @@ where
 
 impl<'a, Message, Theme, Renderer> From<Spinner> for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer + 'a,
+    Renderer: renderer::Renderer + 'a,
     Theme: 'a + StyleSheet,
 {
     fn from(spinner: Spinner) -> Self {

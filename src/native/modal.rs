@@ -4,13 +4,16 @@
 
 use super::overlay::modal::ModalOverlay;
 
-use iced_widget::core::{
-    self, alignment, event,
-    layout::{Limits, Node},
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        overlay, renderer,
+        widget::{Operation, Tree},
+        Clipboard, Layout, Shell, Widget,
+    },
+    alignment, event,
     mouse::{self, Cursor},
-    overlay, renderer,
-    widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+    Element, Event, Length, Rectangle, Size, Vector,
 };
 
 pub use crate::style::modal::StyleSheet;
@@ -37,10 +40,10 @@ pub use crate::style::modal::StyleSheet;
 /// .backdrop(Message::CloseModal);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Modal<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct Modal<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The underlying element.
@@ -60,7 +63,7 @@ where
 impl<'a, Message, Theme, Renderer> Modal<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`Modal`] wrapping the underlying element to show some content as an overlay.
@@ -130,7 +133,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Modal<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -148,7 +151,7 @@ where
         }
     }
 
-    fn size(&self) -> core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -232,28 +235,27 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if let Some(overlay) = &mut self.overlay {
-            let bounds = layout.bounds();
-            let position = Point::new(bounds.x, bounds.y);
             overlay.as_widget().diff(&mut state.children[1]);
 
-            Some(overlay::Element::new(
-                position,
-                Box::new(ModalOverlay::new(
-                    &mut state.children[1],
-                    overlay,
-                    self.backdrop.clone(),
-                    self.esc.clone(),
-                    self.style.clone(),
-                    self.horizontal_alignment,
-                    self.vertical_alignment,
-                )),
-            ))
+            Some(overlay::Element::new(Box::new(ModalOverlay::new(
+                &mut state.children[1],
+                overlay,
+                self.backdrop.clone(),
+                self.esc.clone(),
+                self.style.clone(),
+                self.horizontal_alignment,
+                self.vertical_alignment,
+            ))))
         } else {
-            self.underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer)
+            self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            )
         }
     }
 
@@ -282,7 +284,7 @@ impl<'a, Message, Theme, Renderer> From<Modal<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     fn from(modal: Modal<'a, Message, Theme, Renderer>) -> Self {

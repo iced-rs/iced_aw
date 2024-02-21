@@ -16,23 +16,33 @@ use crate::{
 };
 
 use chrono::{Datelike, Local, NaiveDate};
-use iced_widget::{
-    button, container,
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard,
+use iced::{
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         overlay, renderer,
         text::Renderer as _,
-        touch,
         widget::tree::Tree,
-        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Vector, Widget,
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Widget,
     },
-    renderer::Renderer,
-    text, Button, Column, Container, Row, Text,
+    alignment::{Horizontal, Vertical},
+    event,
+    keyboard,
+    mouse::{self, Cursor},
+    touch,
+    widget::{button, container, text, Button, Column, Container, Row, Text},
+    Alignment,
+    Border,
+    Color,
+    Element,
+    Event,
+    Length,
+    Padding,
+    Pixels,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Shadow,
+    Size,
 };
 use std::collections::HashMap;
 
@@ -113,7 +123,7 @@ where
     /// Turn this [`DatePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(self.position, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 
     /// String representation of the current year.
@@ -369,13 +379,7 @@ where
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
     #[allow(clippy::too_many_lines)]
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)
@@ -528,7 +532,7 @@ where
             ),
             vec![col, cancel_button, submit_button],
         );
-        node.center_and_bounce(position, bounds);
+        node.center_and_bounce(self.position, bounds);
         node
     }
 
@@ -1129,10 +1133,10 @@ fn month_year(
         // Left caret
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
-                size: core::Pixels(
+                size: Pixels(
                     renderer.default_size().0 + if left_arrow_hovered { 1.0 } else { 0.0 },
                 ),
                 font: BOOTSTRAP_FONT,
@@ -1151,7 +1155,7 @@ fn month_year(
 
         // Text
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: text,
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: renderer.default_size(),
@@ -1171,10 +1175,10 @@ fn month_year(
 
         // Right caret
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
-                size: core::Pixels(
+                size: Pixels(
                     renderer.default_size().0 + if right_arrow_hovered { 1.0 } else { 0.0 },
                 ),
                 font: BOOTSTRAP_FONT,
@@ -1230,7 +1234,7 @@ fn day_labels(
         let bounds = label.bounds();
 
         renderer.fill_text(
-            core::text::Text {
+            iced::advanced::Text {
                 content: &crate::core::date::WEEKDAY_LABELS[i],
                 bounds: Size::new(bounds.width, bounds.height),
                 size: renderer.default_size(),
@@ -1319,7 +1323,7 @@ fn day_table(
             }
 
             renderer.fill_text(
-                core::text::Text {
+                iced::advanced::Text {
                     content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                     bounds: Size::new(bounds.width, bounds.height),
                     size: renderer.default_size(),

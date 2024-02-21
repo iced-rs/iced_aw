@@ -4,30 +4,29 @@
 use crate::context_menu;
 use crate::style::context_menu::StyleSheet;
 
-use iced_widget::core::{
-    self,
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        overlay, renderer,
+        widget::Tree,
+        Clipboard, Layout, Shell,
+    },
     event::Status,
     keyboard,
-    layout::{Limits, Node},
     mouse::{self, Cursor},
-    overlay, renderer, touch,
-    widget::tree::Tree,
-    window, Border, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shadow, Shell,
-    Size, Vector,
+    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<
-    'a,
-    Message,
-    Theme = iced_widget::Theme,
-    Renderer = iced_widget::Renderer,
-> where
+pub struct ContextMenuOverlay<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
+    // The position of the element
+    position: Point,
     /// The state of the [`ContextMenuOverlay`].
     tree: &'a mut Tree,
     /// The content of the [`ContextMenuOverlay`].
@@ -41,11 +40,12 @@ pub struct ContextMenuOverlay<
 impl<'a, Message, Theme, Renderer> ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     /// Creates a new [`ContextMenuOverlay`].
     pub(crate) fn new<C>(
+        position: Point,
         tree: &'a mut Tree,
         content: C,
         style: <Theme as StyleSheet>::Style,
@@ -55,6 +55,7 @@ where
         C: Into<Element<'a, Message, Theme, Renderer>>,
     {
         ContextMenuOverlay {
+            position,
             tree,
             content: content.into(),
             style,
@@ -63,8 +64,8 @@ where
     }
 
     /// Turn this [`ContextMenuOverlay`] into an overlay [`Element`](overlay::Element).
-    pub fn overlay(self, position: Point) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(position, Box::new(self))
+    pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
+        overlay::Element::new(Box::new(self))
     }
 }
 
@@ -72,16 +73,10 @@ impl<'a, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
     for ContextMenuOverlay<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
         let max_size = limits.max();
 
@@ -91,7 +86,7 @@ where
             .layout(self.tree, renderer, &limits);
 
         // Try to stay inside borders
-        let mut position = position;
+        let mut position = self.position;
         if position.x + content.size().width > bounds.width {
             position.x = f32::max(0.0, position.x - content.size().width);
         }

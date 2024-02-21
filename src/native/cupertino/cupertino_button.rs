@@ -1,20 +1,18 @@
 use crate::graphics::SF_UI_ROUNDED;
 use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
 
-use iced_widget::core::{Border, Shadow};
-use iced_widget::{
-    core::{
-        self, event,
+use iced::{
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         renderer::{self, Quad},
-        touch,
         widget::Tree,
-        Background, Clipboard, Color, Element, Event, Font, Layout, Length, Point, Rectangle,
-        Shell, Size, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    style::application,
-    text, Text,
+    application, event,
+    mouse::{self, Cursor},
+    touch,
+    widget::{text, Text},
+    Background, Border, Color, Element, Event, Font, Length, Point, Rectangle, Shadow, Size,
 };
 
 /**
@@ -35,7 +33,7 @@ use iced_widget::{
 pub struct CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: application::StyleSheet,
 {
     on_pressed: Option<Message>,
@@ -52,7 +50,7 @@ where
 impl<'a, Message, Theme, Renderer> Default for CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font> + 'a,
     Theme: 'a + application::StyleSheet + text::StyleSheet,
 {
     fn default() -> Self {
@@ -68,7 +66,7 @@ where
 impl<'a, Message, Theme, Renderer> CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font> + 'a,
     Theme: 'a + application::StyleSheet + text::StyleSheet,
 {
     /// Creates a new [`CupertinoButton`] widget.
@@ -119,7 +117,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for CupertinoButton<'a, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: core::Renderer + core::text::Renderer,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer,
     Theme: application::StyleSheet,
 {
     fn size(&self) -> Size<Length> {
@@ -259,7 +257,7 @@ impl<'a, Message, Theme, Renderer> From<CupertinoButton<'a, Message, Theme, Rend
     for Element<'a, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: core::Renderer + core::text::Renderer<Font = Font> + 'a,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font> + 'a,
     Theme: 'a + application::StyleSheet,
 {
     fn from(alert: CupertinoButton<'a, Message, Theme, Renderer>) -> Self {

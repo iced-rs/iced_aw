@@ -10,20 +10,20 @@ pub mod tab_bar_position;
 pub use crate::tab_bar::Position;
 use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
 
-use iced_widget::{
-    core::{
-        self, event,
+use iced::{
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
-        renderer,
+        overlay, renderer,
         widget::{
             tree::{State, Tag},
             Operation, Tree,
         },
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    runtime::Font,
-    text, Row,
+    event,
+    mouse::{self, Cursor},
+    widget::{text, Row},
+    Element, Event, Font, Length, Point, Rectangle, Size, Vector,
 };
 
 pub use tab_bar_position::TabBarPosition;
@@ -56,9 +56,9 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct Tabs<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
     Theme: StyleSheet,
     TabId: Eq + Clone,
 {
@@ -80,7 +80,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
@@ -291,7 +291,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: StyleSheet + text::StyleSheet,
     TabId: Eq + Clone,
 {
@@ -325,7 +325,10 @@ where
             self.tab_bar
                 .layout(&mut tree.children[0], renderer, &tab_bar_limits);
 
-        let tab_content_limits = limits.width(self.width).height(self.height);
+        let tab_content_limits = limits
+            .width(self.width)
+            .height(self.height)
+            .shrink([0.0, tab_bar_node.size().height]);
 
         let mut tab_content_node =
             if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab_idx()) {
@@ -348,7 +351,7 @@ where
                 + match self.tab_bar_position {
                     TabBarPosition::Top => 0.0,
                     TabBarPosition::Bottom => {
-                        tab_content_node.bounds().height - tab_bar_bounds.height
+                        tab_content_node.bounds().height
                     }
                 },
         ));
@@ -558,7 +561,8 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-    ) -> Option<core::overlay::Element<'b, Message, Theme, Renderer>> {
+        translation: Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.tab_bar_position {
             TabBarPosition::Top => layout.children().nth(1),
             TabBarPosition::Bottom => layout.children().next(),
@@ -569,7 +573,14 @@ where
             self.tabs
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
-                .and_then(|w| w.overlay(&mut state.children[1].children[idx], layout, renderer))
+                .and_then(|w| {
+                    w.overlay(
+                        &mut state.children[1].children[idx],
+                        layout,
+                        renderer,
+                        translation,
+                    )
+                })
         })
     }
 
@@ -598,7 +609,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + core::Renderer + core::text::Renderer<Font = core::Font>,
+    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: 'a + StyleSheet + text::StyleSheet,
     Message: 'a,
     TabId: 'a + Eq + Clone,

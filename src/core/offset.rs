@@ -1,16 +1,22 @@
-//! Use a floating element to overlay a button over some content
-//!
-//! *This API requires the following crate features to be activated: `floating_element`*
+//! Offset struct
 
 use iced::Point;
 
-/// The [`Offset`] for the [`FloatingElement`](super::FloatingElement).
+/// Represents an offset in a two-dimensional space.
 #[derive(Copy, Clone, Debug)]
 pub struct Offset {
-    /// Offset on the x-axis from the [`Anchor`](super::Anchor)
+    /// Offset on the x-axis
     pub x: f32,
-    /// Offset on the y-axis from the [`Anchor`](super::Anchor)
+    /// Offset on the y-axis
     pub y: f32,
+}
+
+impl Offset {
+    /// Construct a new [`Offset`]
+    #[must_use]
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
 }
 
 impl From<f32> for Offset {

@@ -1,16 +1,24 @@
-use iced_widget::{
-    canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke},
-    core::{
-        event,
+use iced::{
+    advanced::{
+        graphics::geometry::Renderer as _,
         layout::{Limits, Node},
-        mouse::Cursor,
         renderer,
         widget::tree::{State, Tag, Tree},
-        window, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Renderer as _,
-        Shell, Size, Vector, Widget,
+        Clipboard, Layout, Renderer as _, Shell, Widget,
     },
-    graphics::geometry::Renderer as _,
-    renderer::Renderer,
+    event,
+    mouse::Cursor,
+    widget::canvas::{stroke, Cache, Geometry, LineCap, Path, Stroke},
+    window,
+    Color,
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Size,
+    Vector,
 };
 use std::f32::consts::PI;
 

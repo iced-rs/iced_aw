@@ -1,11 +1,13 @@
-use iced_widget::core::{
-    event,
-    layout::{Limits, Node},
-    mouse, overlay,
-    overlay::Group,
-    renderer::Style,
-    widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Rectangle, Shell, Size, Widget,
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        overlay::Group,
+        renderer,
+        renderer::Style,
+        widget::{Operation, Tree},
+        Clipboard, Layout, Shell, Widget,
+    },
+    event, mouse, overlay, Element, Event, Length, Rectangle, Size, Vector,
 };
 
 use super::{layout::layout, types::Grid};
@@ -13,7 +15,7 @@ use super::{layout::layout, types::Grid};
 impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Grid<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer,
+    Renderer: renderer::Renderer,
 {
     fn size(&self) -> Size<Length> {
         Size {
@@ -159,13 +161,16 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let children = self
             .elements_iter_mut()
             .zip(&mut tree.children)
             .zip(layout.children())
             .filter_map(|((child, state), layout)| {
-                child.as_widget_mut().overlay(state, layout, renderer)
+                child
+                    .as_widget_mut()
+                    .overlay(state, layout, renderer, translation)
             })
             .collect::<Vec<_>>();
 
@@ -176,7 +181,7 @@ where
 impl<'a, Message, Theme, Renderer> From<Grid<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: iced_widget::core::Renderer + 'a,
+    Renderer: renderer::Renderer + 'a,
     Message: 'static,
     Theme: 'a,
 {

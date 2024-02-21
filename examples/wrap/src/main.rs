@@ -186,7 +186,7 @@ impl Application for RandStrings {
                 .width(iced::Length::FillPortion(5));
                 let align_picklist = PickList::new(
                     vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
-                    Some(state.align.into()),
+                    Some(Into::<WrapAlign>::into(state.align)),
                     Message::ChangeAlign,
                 );
                 let spacing_input =

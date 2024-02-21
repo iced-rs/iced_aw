@@ -18,26 +18,39 @@ use crate::{
 };
 
 use chrono::{Duration, Local, NaiveTime, Timelike};
-use iced_widget::{
-    button,
-    canvas::{self, LineCap, Path, Stroke, Style, Text},
-    container,
-    core::{
-        self,
-        alignment::{Horizontal, Vertical},
-        event, keyboard,
+use iced::{
+    advanced::{
+        graphics::geometry::Renderer as _,
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         overlay, renderer,
         text::Renderer as _,
-        touch,
         widget::tree::Tree,
-        Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding,
-        Point, Rectangle, Renderer as _, Shadow, Shell, Size, Vector, Widget,
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
     },
-    graphics::geometry::Renderer as _,
-    renderer::Renderer,
-    text, Button, Column, Container, Row,
+    alignment::{Horizontal, Vertical},
+    event,
+    keyboard,
+    mouse::{self, Cursor},
+    touch,
+    widget::{
+        button,
+        canvas::{self, LineCap, Path, Stroke, Style, Text as CanvasText},
+        container, text, Button, Column, Container, Row,
+    },
+    Alignment,
+    Border,
+    Color,
+    Element,
+    Event,
+    Length,
+    Padding,
+    Pixels,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Shadow,
+    Size,
+    Vector,
 };
 use std::collections::HashMap;
 
@@ -121,7 +134,7 @@ where
     /// Turn this [`TimePickerOverlay`] into an overlay [`Element`](overlay::Element).
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
-        overlay::Element::new(self.position, Box::new(self))
+        overlay::Element::new(Box::new(self))
     }
 
     /// The event handling for the clock.
@@ -509,13 +522,7 @@ where
     Message: 'static + Clone,
     Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-        position: Point,
-        _translation: Vector,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Fill)
@@ -603,7 +610,7 @@ where
             vec![clock, digital_clock, cancel_button, submit_button],
         );
 
-        node.center_and_bounce(position, bounds);
+        node.center_and_bounce(self.position, bounds);
         node
     }
 
@@ -1224,14 +1231,14 @@ fn draw_clock<Message, Theme>(
                 NearestRadius::None => {}
             }
 
-            let period_text = Text {
+            let period_text = CanvasText {
                 content: format!("{period}"),
                 position: center,
                 color: style
                     .get(&clock_style_state)
                     .expect("Style Sheet not found.")
                     .clock_number_color,
-                size: core::Pixels(period_size),
+                size: Pixels(period_size),
                 font: renderer.default_font(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1260,7 +1267,7 @@ fn draw_clock<Message, Theme>(
                     style_state = style_state.max(StyleState::Selected);
                 }
 
-                let text = Text {
+                let text = CanvasText {
                     content: format!(
                         "{}",
                         if pm && time_picker.state.use_24h {
@@ -1276,7 +1283,7 @@ fn draw_clock<Message, Theme>(
                         .get(&style_state)
                         .expect("Style Sheet not found.")
                         .clock_number_color,
-                    size: core::Pixels(number_size),
+                    size: Pixels(number_size),
                     font: renderer.default_font(),
                     horizontal_alignment: Horizontal::Center,
                     vertical_alignment: Vertical::Center,
@@ -1304,14 +1311,14 @@ fn draw_clock<Message, Theme>(
                 }
 
                 if i % 5 == 0 {
-                    let text = Text {
+                    let text = CanvasText {
                         content: format!("{i:02}"),
                         position: *p,
                         color: style
                             .get(&style_state)
                             .expect("Style Sheet not found.")
                             .clock_number_color,
-                        size: core::Pixels(number_size),
+                        size: Pixels(number_size),
                         font: renderer.default_font(),
                         horizontal_alignment: Horizontal::Center,
                         vertical_alignment: Vertical::Center,
@@ -1350,14 +1357,14 @@ fn draw_clock<Message, Theme>(
                     }
 
                     if i % 10 == 0 {
-                        let text = Text {
+                        let text = CanvasText {
                             content: format!("{i:02}"),
                             position: *p,
                             color: style
                                 .get(&style_state)
                                 .expect("Style Sheet not found.")
                                 .clock_number_color,
-                            size: core::Pixels(number_size),
+                            size: Pixels(number_size),
                             font: renderer.default_font(),
                             horizontal_alignment: Horizontal::Center,
                             vertical_alignment: Vertical::Center,
@@ -1463,12 +1470,10 @@ fn draw_digital_clock<Message, Theme>(
 
         // Caret up
         renderer.fill_text(
-            core::Text {
+            Text {
                 content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
-                size: core::Pixels(
-                    renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 },
-                ),
+                size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
                 font: crate::graphics::icons::BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1485,7 +1490,7 @@ fn draw_digital_clock<Message, Theme>(
 
         // Text
         renderer.fill_text(
-            core::Text {
+            Text {
                 content: &text,
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: renderer.default_size(),
@@ -1505,10 +1510,10 @@ fn draw_digital_clock<Message, Theme>(
 
         // Down caret
         renderer.fill_text(
-            core::Text {
+            Text {
                 content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
                 bounds: Size::new(down_bounds.width, down_bounds.height),
-                size: core::Pixels(
+                size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
                 ),
                 font: crate::graphics::icons::BOOTSTRAP_FONT,
@@ -1555,7 +1560,7 @@ fn draw_digital_clock<Message, Theme>(
         .expect("Graphics: Layout should have a hour/minute separator layout");
 
     renderer.fill_text(
-        core::Text {
+        Text {
             content: ":",
             bounds: Size::new(
                 hour_minute_separator.bounds().width,
@@ -1593,7 +1598,7 @@ fn draw_digital_clock<Message, Theme>(
             .next()
             .expect("Graphics: Layout should have a minute/second separator layout");
         renderer.fill_text(
-            core::Text {
+            Text {
                 content: ":",
                 bounds: Size::new(
                     minute_second_separator.bounds().width,
@@ -1632,7 +1637,7 @@ fn draw_digital_clock<Message, Theme>(
             .next()
             .expect("Graphics: Layout should have a period layout");
         renderer.fill_text(
-            core::Text {
+            Text {
                 content: if time_picker.state.time.hour12().0 {
                     "PM"
                 } else {

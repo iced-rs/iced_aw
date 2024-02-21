@@ -86,11 +86,11 @@ impl Sandbox for App {
         let col_spacing_slider =
             slider(0.0..=100.0, self.column_spacing, Message::ColumnSpacing).width(Length::Fill);
 
-        let debug_mode_check = checkbox("", self.debug_layout, Message::DebugToggled);
+        let debug_mode_check = checkbox("", self.debug_layout).on_toggle(Message::DebugToggled);
 
         let fill_checkboxes = row![
-            checkbox("Width", self.fill_width, Message::FillWidth),
-            checkbox("Height", self.fill_height, Message::FillHeight)
+            checkbox("Width", self.fill_width).on_toggle(Message::FillWidth),
+            checkbox("Height", self.fill_height).on_toggle(Message::FillHeight)
         ]
         .spacing(10);
 

@@ -5,18 +5,24 @@
 use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButtons};
 
 use chrono::Local;
-use iced_widget::{
-    button, container,
-    core::{
-        event,
+use iced::{
+    advanced::{
         layout::{Limits, Node},
-        mouse::{self, Cursor},
         overlay, renderer,
         widget::tree::{self, Tag, Tree},
-        Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    renderer::Renderer,
-    text,
+    event,
+    mouse::{self, Cursor},
+    widget::{button, container, text},
+    Element,
+    Event,
+    Length,
+    Point,
+    Rectangle,
+    Renderer, // the actual type
+    Size,
+    Vector,
 };
 
 pub use crate::{
@@ -187,7 +193,7 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn size(&self) -> iced_widget::core::Size<Length> {
+    fn size(&self) -> Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -263,14 +269,17 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let picker_state: &mut State = state.state.downcast_mut();
 
         if !self.show_picker {
-            return self
-                .underlay
-                .as_widget_mut()
-                .overlay(&mut state.children[0], layout, renderer);
+            return self.underlay.as_widget_mut().overlay(
+                &mut state.children[0],
+                layout,
+                renderer,
+                translation,
+            );
         }
 
         let bounds = layout.bounds();

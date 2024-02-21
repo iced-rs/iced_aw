@@ -1,14 +1,17 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use iced_widget::core::{
-    self, event,
-    layout::{Limits, Node},
+
+use iced::{
+    advanced::{
+        layout::{Limits, Node},
+        renderer,
+        widget::Tree,
+        Clipboard, Layout, Shell, Widget,
+    },
+    event,
     mouse::{self, Cursor},
-    renderer,
-    widget::tree::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-    Shadow, Shell, Size, Widget,
+    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
 };
 
 pub use crate::style::badge::{Appearance, StyleSheet};
@@ -30,9 +33,9 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
+pub struct Badge<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// The padding of the [`Badge`].
@@ -53,7 +56,7 @@ where
 
 impl<'a, Message, Theme, Renderer> Badge<'a, Message, Theme, Renderer>
 where
-    Renderer: core::Renderer,
+    Renderer: renderer::Renderer,
     Theme: StyleSheet,
 {
     /// Creates a new [`Badge`] with the given content.
@@ -122,7 +125,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Badge<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: StyleSheet,
 {
     fn children(&self) -> Vec<Tree> {
@@ -263,7 +266,7 @@ impl<'a, Message, Theme, Renderer> From<Badge<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + core::Renderer,
+    Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,
 {
     fn from(badge: Badge<'a, Message, Theme, Renderer>) -> Self {

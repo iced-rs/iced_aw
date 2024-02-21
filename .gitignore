@@ -3,4 +3,5 @@ pkg/
 .idea
 *.lock
 .DS_Store
+.vscode/settings.json
 

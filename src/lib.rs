@@ -53,7 +53,7 @@ pub mod native;
 pub mod core;
 pub mod style;
 
-pub use iced_widget::core::Element;
+pub use iced::Element;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
@@ -61,7 +61,15 @@ mod platform {
     #[cfg(feature = "icons")]
     pub use {
         crate::graphics::icons::{nerd::NerdIcon, BootstrapIcon},
-        crate::graphics::icons::{BOOTSTRAP_FONT, NERD_FONT},
+        crate::graphics::icons::{
+            BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, NERD_FONT, NERD_FONT_BYTES,
+        },
+    };
+
+    #[cfg(not(feature = "icons"))]
+    pub use {
+        crate::graphics::icons::BootstrapIcon,
+        crate::graphics::icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES},
     };
 
     #[doc(no_inline)]
@@ -154,6 +162,10 @@ mod platform {
     pub use {
         crate::native::context_menu, crate::style::ContextMenuStyle, context_menu::ContextMenu,
     };
+
+    #[doc(no_inline)]
+    #[cfg(feature = "drop_down")]
+    pub use {crate::native::drop_down, drop_down::DropDown};
 }
 
 #[doc(no_inline)]

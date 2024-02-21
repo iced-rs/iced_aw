@@ -208,12 +208,12 @@ mod router {
 }
 
 mod demo {
-    use iced::widget::scrollable::{Properties, Scrollbar, Scroller};
+    use iced::widget::scrollable::Properties;
     use iced::widget::{
         button, column, container, horizontal_space, progress_bar, radio, row, scrollable, slider,
         text, vertical_space,
     };
-    use iced::{theme, Alignment, Border, Color};
+    use iced::{theme, Alignment, Color};
     use iced::{Command, Element, Length, Theme};
     use once_cell::sync::Lazy;
 
@@ -367,9 +367,11 @@ mod demo {
                         column![
                             scroll_to_end_button(),
                             text("Beginning!"),
-                            vertical_space(1200),
+                            //vertical_space(1200),
+                            vertical_space(),
                             text("Middle!"),
-                            vertical_space(1200),
+                            //vertical_space(1200),
+                            vertical_space(),
                             text("End!"),
                             scroll_to_beginning_button(),
                         ]
@@ -391,9 +393,11 @@ mod demo {
                         row![
                             scroll_to_end_button(),
                             text("Beginning!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("Middle!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("End!"),
                             scroll_to_beginning_button(),
                         ]
@@ -415,24 +419,33 @@ mod demo {
                     Direction::Multi => scrollable(
                         //horizontal content
                         row![
-                            column![text("Let's do some scrolling!"), vertical_space(2400)],
+                            column![
+                                text("Let's do some scrolling!"),
+                                //vertical_space(2400),
+                                vertical_space(),
+                            ],
                             scroll_to_end_button(),
                             text("Horizontal - Beginning!"),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             //vertical content
                             column![
                                 text("Horizontal - Middle!"),
                                 scroll_to_end_button(),
                                 text("Vertical - Beginning!"),
-                                vertical_space(1200),
+                                //vertical_space(1200),
+                                vertical_space(),
                                 text("Vertical - Middle!"),
-                                vertical_space(1200),
+                                //vertical_space(1200),
+                                vertical_space(),
                                 text("Vertical - End!"),
                                 scroll_to_beginning_button(),
-                                vertical_space(40),
+                                //vertical_space(40),
+                                vertical_space(),
                             ]
                             .spacing(40),
-                            horizontal_space(1200),
+                            //horizontal_space(1200),
+                            horizontal_space(),
                             text("Horizontal - End!"),
                             scroll_to_beginning_button(),
                         ]
@@ -495,31 +508,16 @@ mod demo {
     impl scrollable::StyleSheet for ScrollbarCustomStyle {
         type Style = Theme;
 
-        fn active(&self, style: &Self::Style) -> Scrollbar {
+        fn active(&self, style: &Self::Style) -> iced::widget::scrollable::Appearance {
             style.active(&theme::Scrollable::Default)
         }
 
-        fn hovered(&self, style: &Self::Style, is_mouse_over: bool) -> Scrollbar {
+        fn hovered(
+            &self,
+            style: &Self::Style,
+            is_mouse_over: bool,
+        ) -> iced::widget::scrollable::Appearance {
             style.hovered(&theme::Scrollable::Default, is_mouse_over)
-        }
-
-        fn hovered_horizontal(&self, style: &Self::Style, _is_mouse_over: bool) -> Scrollbar {
-            Scrollbar {
-                background: style.active(&theme::Scrollable::default()).background,
-                border: Border {
-                    color: Default::default(),
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                scroller: Scroller {
-                    color: Color::from_rgb8(250, 85, 134),
-                    border: Border {
-                        color: Default::default(),
-                        width: 0.0,
-                        radius: 0.0.into(),
-                    },
-                },
-            }
         }
     }
 
