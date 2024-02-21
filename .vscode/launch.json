@@ -205,6 +205,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug executable 'floating_element_overlay'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=floating_element_overlay",
+                    "--package=floating_element_overlay"
+                ],
+                "filter": {
+                    "name": "floating_element_overlay",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug executable 'floating_element_anchors'",
             "cargo": {
                 "args": [

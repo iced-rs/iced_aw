@@ -7,7 +7,8 @@ use super::overlay::floating_element::FloatingElementOverlay;
 use iced::{
     advanced::{
         layout::{Limits, Node},
-        overlay, renderer,
+        overlay::{self, Group},
+        renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
@@ -212,31 +213,40 @@ where
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        if self.hidden {
-            return self.underlay.as_widget_mut().overlay(
-                &mut state.children[0],
-                layout,
-                renderer,
-                translation,
-            );
+        let mut group = Group::new();
+        let mut children = state.children.iter_mut();
+
+        if let Some(underlay) = self.underlay
+        .as_widget_mut()
+        .overlay(
+            children
+                .next()
+                .expect("missing underlay in floating element"),
+            layout,
+            renderer,
+            translation,
+        ) {
+            group = group.push(underlay);
         }
 
-        if state.children.len() == 2 {
-            let bounds = layout.bounds();
+        if !self.hidden {
+            if let Some(el) = children.next() {
+                let bounds = layout.bounds();
 
-            Some(overlay::Element::new(Box::new(
-                FloatingElementOverlay::new(
-                    layout.position() + translation,
-                    &mut state.children[1],
-                    &mut self.element,
-                    &self.anchor,
-                    &self.offset,
-                    bounds,
-                ),
-            )))
-        } else {
-            None
+                group = group.push(overlay::Element::new(Box::new(
+                    FloatingElementOverlay::new(
+                        layout.position() + translation,
+                        el,
+                        &mut self.element,
+                        &self.anchor,
+                        &self.offset,
+                        bounds,
+                    ),
+                )));
+            }
         }
+
+        Some(group.overlay())
     }
 }
 
