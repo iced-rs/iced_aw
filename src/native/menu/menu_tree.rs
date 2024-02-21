@@ -163,7 +163,6 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     pub(super) fn diff(&self, tree: &mut Tree) {
-        // tree.diff_children(&self.items.iter().map(|i| &i.item ).collect::<Vec<_>>());
         tree.diff_children_custom(
             &self.items,
             |tree, item| item.diff(tree),
@@ -208,7 +207,7 @@ where
         let children_size = items_node.bounds().size();
         let (children_position, offset_position, child_direction) = aod.resolve(parent_bounds, children_size, viewport.size());
         
-        // calc offset bounds
+        // calc auxiliary bounds
         let delta = children_position - offset_position;
         let offset_size = if delta.x.abs() > delta.y.abs() {
             Size::new(self.offset, children_size.height)
@@ -222,6 +221,7 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
 
+        // calc slice
         let slice = MenuSlice::new(
             &items_node, 
             children_position-Point::ORIGIN, 
@@ -249,45 +249,6 @@ where
                 ).collect()
             )
         }else{
-            // let start_node = {
-            //     let node = &items_node.children()[slice.start_index];
-            //     let bounds = node.bounds();
-            //     let start_offset = slice.lower_bound_rel - bounds.y;
-            //     Node::with_children(
-            //         Size::new(
-            //             bounds.width, 
-            //             bounds.height - start_offset
-            //         ), 
-            //         node.children().iter().map(Clone::clone).collect()
-            //     ).move_to(bounds.position())
-            //     .translate([0.0, start_offset])
-            // };
-
-            // let start_node = {
-            //     let node = &items_node.children()[slice.start_index];
-            //     let bounds = node.bounds();
-            //     clip_node(
-            //         node, 
-            //         Rectangle{
-            //             x: bounds.x,
-            //             y: slice.lower_bound_rel,
-            //             width: bounds.width,
-            //             height: bounds.height - (slice.lower_bound_rel - bounds.y),
-            //         }
-            //     )
-            // };
-            
-            // let start_node = {
-            //     let node = &items_node.children()[slice.start_index];
-            //     let bounds = node.bounds();
-            //     let start_offset = slice.lower_bound_rel - bounds.y;
-            //     Node::with_children(
-            //             bounds.size(), 
-            //             node.children().iter().map(Clone::clone).collect()
-            //         ).move_to(bounds.position())
-            //         .translate([0.0, start_offset])
-            // };
-            
             let start_node = {
                 let node = &items_node.children()[slice.start_index];
                 let bounds = node.bounds();
@@ -680,17 +641,28 @@ where
     pub(super) fn children(&self) -> Vec<Tree> {
         self.menu
             .as_ref()
-            .map_or([Tree::new(&self.item)].into(), |m| {
-                [Tree::new(&self.item), m.tree()].into()
-            })
+            .map_or([
+                Tree::new(&self.item)].into(), 
+                |m| [
+                    Tree::new(&self.item), m.tree()
+                ].into()
+            )
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.children[0].diff(&self.item);
-        self.menu
-            .as_ref()
-            .map_or({}, |m| m.diff(&mut tree.children[1]))
+        if let Some(t) = tree.children.get_mut(0) {
+            t.diff(&self.item);
+            if let Some(t) = tree.children.get_mut(1) {
+                self.menu
+                    .as_ref()
+                    .map_or({}, |m| m.diff(t) )
+            }else{
+                *tree = self.tree();
+            }
+        }else{
+            *tree = self.tree();
+        }
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}

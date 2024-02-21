@@ -25,33 +25,6 @@ pub fn main() -> iced::Result {
     })
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum SizeOption {
-    Uniform,
-    Static,
-    DynamicHeight,
-}
-impl SizeOption {
-    const ALL: [SizeOption; 3] = [
-        SizeOption::Uniform,
-        SizeOption::Static,
-        SizeOption::DynamicHeight,
-    ];
-}
-impl std::fmt::Display for SizeOption {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Self::Uniform => "Uniform",
-                Self::Static => "Static",
-                Self::DynamicHeight => "DynamicHeight",
-            }
-        )
-    }
-}
-
 #[derive(Debug, Clone)]
 enum Message {
     Debug(String),
@@ -63,7 +36,6 @@ enum Message {
     FlipVertical,
     ThemeChange(bool),
     TextChange(String),
-    SizeOption(SizeOption),
     None,
 }
 
@@ -77,7 +49,6 @@ struct App {
     flip_v: bool,
     dark_mode: bool,
     text: String,
-    size_option: SizeOption,
 }
 impl Application for App {
     type Executor = iced::executor::Default;
@@ -105,7 +76,6 @@ impl Application for App {
                 flip_v: false,
                 dark_mode: false,
                 text: "Text Input".into(),
-                size_option: SizeOption::DynamicHeight,
             },
             iced::Command::none(),
         )
@@ -174,24 +144,17 @@ impl Application for App {
                 self.text = s.clone();
                 self.title = s;
             }
-            Message::SizeOption(so) => {
-                self.size_option = so;
-                self.title = self.size_option.to_string();
-            }
             Message::None => {}
         }
         iced::Command::none()
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        // println!("app view");
-        
         let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(12.0).spacing(6.0);
         let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(6.0);
 
         let mb = menu_bar!(
-            (debug_button_s("Nested Menus"),
-            {
+            (debug_button_s("Nested Menus"), {
                 let sub5 = menu_temp_2(menu_items!(
                     (debug_button("Item"))
                     (debug_button("Item"))
@@ -243,8 +206,7 @@ impl Application for App {
                     (debug_button("Item"))
                     (debug_button("Item"))
                 )).width(110.0)
-            }
-            )
+            })
             (debug_button_s("Widgets"), menu_temp_1(menu_items!(
                 (debug_button("You can use any widget"))
                 (debug_button("as a menu item"))
@@ -291,6 +253,7 @@ impl Application for App {
                 (debug_button("Item"))
             )).width(240.0))
             (debug_button_s("Controls"), menu_temp_1(menu_items!(
+                (labeled_button("Flip", Message::FlipHorizontal).width(Length::Fill))
                 (row![toggler(
                         Some("Dark Mode".into()),
                         self.dark_mode,
@@ -486,10 +449,6 @@ impl Application for App {
         let c = col![vertical_space(500), r, vertical_space(500),];
         
         let sc = scrollable(c)
-            // .direction(scrollable::Direction::Vertical(
-            //     scrollable::Properties::new()
-            //         .alignment(scrollable::Alignment::End)
-            // ));
             .direction(scrollable::Direction::Both {
                 vertical: scrollable::Properties::new()
                     .alignment(scrollable::Alignment::End),
