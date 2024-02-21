@@ -325,7 +325,10 @@ where
             self.tab_bar
                 .layout(&mut tree.children[0], renderer, &tab_bar_limits);
 
-        let tab_content_limits = limits.width(self.width).height(self.height);
+        let tab_content_limits = limits
+            .width(self.width)
+            .height(self.height)
+            .shrink([0.0, tab_bar_node.size().height]);
 
         let mut tab_content_node =
             if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab_idx()) {
@@ -348,7 +351,7 @@ where
                 + match self.tab_bar_position {
                     TabBarPosition::Top => 0.0,
                     TabBarPosition::Bottom => {
-                        tab_content_node.bounds().height - tab_bar_bounds.height
+                        tab_content_node.bounds().height
                     }
                 },
         ));
