@@ -614,10 +614,12 @@ where
     pub(super) fn diff(&self, tree: &mut Tree) {
         if let Some(t0) = tree.children.get_mut(0) {
             t0.diff(&self.item);
-            if let Some(t1) = tree.children.get_mut(1) {
-                self.menu
-                    .as_ref()
-                    .map_or((), |m| m.diff(t1) )
+            if let Some(m) = self.menu.as_ref(){
+                if let Some(t1) = tree.children.get_mut(1) {
+                    m.diff(t1);
+                }else{
+                    *tree = self.tree();
+                }
             }
         }else{
             *tree = self.tree();
