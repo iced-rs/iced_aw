@@ -21,10 +21,10 @@ pub(super) enum Direction {
     Negative,
 }
 impl Direction {
-    pub(super) fn flip(&self) -> Direction {
+    pub(super) fn flip(self) -> Self {
         match self {
-            Direction::Positive => Direction::Negative,
-            Direction::Negative => Direction::Positive,
+            Self::Positive => Self::Negative,
+            Self::Negative => Self::Positive,
         }
     }
 }

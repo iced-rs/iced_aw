@@ -1,8 +1,5 @@
 //! Change the appearance of menu bars and their menus.
-use iced::{
-    Background, Border, Color, Padding, Shadow, Vector, Theme,
-};
-
+use iced::{Background, Border, Color, Padding, Shadow, Theme, Vector};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]

@@ -1,39 +1,32 @@
 //! [`MenuBar`]
 
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::wildcard_imports)]
+#![allow(clippy::enum_glob_use)]
+
 use iced::{
     advanced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
         widget::{tree, Tree},
-        Clipboard, Shell, Layout, 
-        Overlay, Widget,
+        Clipboard, Layout, Shell, Widget,
     },
-    alignment, event,
-    
-    Alignment, Color, Element, Event, Length, Padding, Point,
-    Rectangle, Size, 
-    Theme,
-};
+    alignment, event, Element, Event, Length, Padding, Rectangle, Size,
+    };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
 
+#[derive(Default)]
 pub(super) struct MenuBarState {
     pub(super) active_root: Index,
     pub(super) open: bool,
     pub(super) is_pressed: bool,
 }
-impl Default for MenuBarState {
-    fn default() -> Self {
-        Self {
-            active_root: None,
-            open: false,
-            is_pressed: false,
-        }
-    }
-}
 
 /// menu bar
+#[must_use]
 pub struct MenuBar<'a, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -54,11 +47,12 @@ where
 {
     /// Creates a [`MenuBar`] with the given root items.
     pub fn new(mut roots: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
-        roots.iter_mut().for_each(|i| {
+        for i in &mut roots {
             if let Some(m) = i.menu.as_mut() {
                 m.axis = Axis::Vertical;
             }
-        });
+        }
+
         Self {
             roots,
             spacing: 0.0,
@@ -121,14 +115,14 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::Some(Box::new(MenuBarState::default()))
+        tree::State::Some(Box::<MenuBarState>::default())
     }
 
     /// \[Tree{stateless, \[widget_state, menu_state]}...]
     fn children(&self) -> Vec<Tree> {
         self.roots
             .iter()
-            .map(|item| item.tree())
+            .map(Item::tree)
             .collect::<Vec<_>>()
     }
 
@@ -137,8 +131,8 @@ where
         tree.diff_children_custom(
             &self.roots,
             |tree, item| item.diff(tree),
-            |item| item.tree(),
-        )
+            Item::tree,
+        );
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
@@ -191,7 +185,7 @@ where
                     viewport,
                 )
             })
-            .fold(Ignored, |acc, x| acc.merge(x));
+            .fold(Ignored, event::Status::merge);
 
         let bar = tree.state.downcast_mut::<MenuBarState>();
         let bar_bounds = layout.bounds();
@@ -230,7 +224,7 @@ where
                             }
                         }
                     } else {
-                        bar.open = false
+                        bar.open = false;
                     }
                     Captured
                 } else {
@@ -260,7 +254,7 @@ where
                     layout
                         .children()
                         .nth(active)
-                        .and_then(|l| Some(mouse::Cursor::Available(l.bounds().center())))
+                        .map(|l| mouse::Cursor::Available(l.bounds().center()))
                 })
                 .unwrap_or(cursor)
         } else {
@@ -282,7 +276,7 @@ where
             .zip(tree.children.iter()) // [item_tree...]
             .zip(layout.children()) // [widget_node...]
             .for_each(|((item, tree), layout)| {
-                item.draw(tree, renderer, theme, style, layout, cursor, viewport)
+                item.draw(tree, renderer, theme, style, layout, cursor, viewport);
             });
     }
 
@@ -315,7 +309,6 @@ where
             None
         }
     }
-
 }
 impl<'a, Message, Theme, Renderer> From<MenuBar<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>

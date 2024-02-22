@@ -1,19 +1,25 @@
 //! [`Item`] and [`Menu`]
 //!
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::wildcard_imports)]
+#![allow(clippy::enum_glob_use)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::unused_self)]
+#![allow(clippy::return_self_not_must_use)]
+#![allow(clippy::pedantic)]
+#![allow(clippy::similar_names)]
+
 use super::common::*;
 use super::flex;
 use iced::{
     advanced::{
         layout::{Layout, Limits, Node},
-        mouse, overlay, renderer,
+        mouse, renderer,
         widget::tree::{self, Tree},
-        Clipboard, 
-        Shell,
-        Widget,
-    },
-    alignment, event,
-    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, 
-    Size, Vector, 
+        Clipboard, Shell, },
+    alignment, event, Element, Event, Length, Padding, Point, Rectangle,
+    Size, Vector,
 };
 use std::iter::once;
 
@@ -72,6 +78,7 @@ impl Default for MenuState {
 }
 
 /// Menu
+#[must_use]
 pub struct Menu<'a, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -86,7 +93,6 @@ where
     pub(super) axis: Axis,
     pub(super) offset: f32,
 }
-#[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -136,6 +142,7 @@ where
         self
     }
 
+    /// rebuild state tree
     pub(super) fn tree(&self) -> Tree {
         Tree {
             tag: self.tag(),
@@ -149,21 +156,21 @@ where
     Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
-    pub(super) fn size(&self) -> Size<Length> {
-        Size::new(self.width, self.height)
-    }
+    // pub(super) fn size(&self) -> Size<Length> {
+    //     Size::new(self.width, self.height)
+    // }
 
     pub(super) fn tag(&self) -> tree::Tag {
         tree::Tag::of::<MenuState>()
     }
 
     pub(super) fn state(&self) -> tree::State {
-        tree::State::Some(Box::new(MenuState::default()))
+        tree::State::Some(Box::<MenuState>::default())
     }
 
     /// out: \[item_tree...]
     pub(super) fn children(&self) -> Vec<Tree> {
-        self.items.iter().map(|i| i.tree()).collect()
+        self.items.iter().map(Item::tree).collect()
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
@@ -171,11 +178,11 @@ where
         tree.diff_children_custom(
             &self.items,
             |tree, item| item.diff(tree),
-            |item| item.tree(),
-        )
+            Item::tree,
+        );
     }
 
-    /// tree: Tree{menu_state, \[item_tree...]}
+    /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// out: Node{inf, \[ items_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn layout(
@@ -306,13 +313,13 @@ where
             child_direction,
         )
     }
-    /// tree: Tree{menu_state, \[item_tree...]}
+    /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn on_event(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -320,6 +327,8 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
+        use event::Status::*;
+
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
@@ -329,9 +338,9 @@ where
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
 
-        let status = self.items[slice.start_index..slice.end_index + 1] // [item...]
+        let status = self.items[slice.start_index..=slice.end_index] // [item...]
             .iter_mut()
-            .zip(tree.children[slice.start_index..slice.end_index + 1].iter_mut()) // [item_tree...]
+            .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
             .zip(slice_layout.children()) // [item_layout...]
             .map(|((item, tree), layout)| {
                 item.on_event(
@@ -345,13 +354,12 @@ where
                     viewport,
                 )
             })
-            .fold(event::Status::Ignored, event::Status::merge);
-
-        use event::Status::*;
+            .fold(Ignored, event::Status::merge);
+        
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
-                    process_scroll_event(menu_state, prescroll, delta, viewport.size());
+                    process_scroll_event(menu_state, prescroll, *delta, viewport.size());
                     Captured
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
                     Captured
@@ -427,7 +435,7 @@ where
         } else {
             let start_bounds = start_layout.bounds();
             renderer.with_layer(start_bounds, |r| {
-                start.draw(start_tree, r, theme, style, start_layout, cursor, viewport)
+                start.draw(start_tree, r, theme, style, start_layout, cursor, viewport);
             });
 
             // draw the rest
@@ -450,7 +458,7 @@ where
                 .zip(trees.iter())
                 .zip(slice_layout.children().skip(1))
             {
-                item.draw(tree, renderer, theme, style, layout, cursor, &viewport);
+                item.draw(tree, renderer, theme, style, layout, cursor, viewport);
             }
         }
     }
@@ -471,7 +479,7 @@ where
         let slice = &menu_state.slice;
         menu_state.active = None;
 
-        for (i, (item, layout)) in self.items[slice.start_index..slice.end_index + 1]
+        for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
             .zip(slice_layout.children())
             .enumerate()
@@ -507,10 +515,8 @@ where
                 true
             } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
                 false
-            } else if cursor.is_over(check_bounds) {
-                true
             } else {
-                false
+                cursor.is_over(check_bounds)
             }
         };
 
@@ -555,6 +561,7 @@ where
 } */
 
 /// Item inside a [`Menu`]
+#[must_use]
 pub struct Item<'a, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -563,7 +570,6 @@ where
     pub(super) item: Element<'a, Message, Theme, Renderer>,
     pub(super) menu: Option<Box<Menu<'a, Message, Theme, Renderer>>>,
 }
-#[allow(missing_docs)]
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -588,6 +594,7 @@ where
         }
     }
 
+    /// rebuild state tree
     pub(super) fn tree(&self) -> Tree {
         Tree {
             tag: self.tag(),
@@ -601,9 +608,9 @@ where
     Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
-    pub(super) fn size(&self) -> Size<Length> {
-        self.item.as_widget().size()
-    }
+    // pub(super) fn size(&self) -> Size<Length> {
+    //     self.item.as_widget().size()
+    // }
 
     pub(super) fn tag(&self) -> tree::Tag {
         tree::Tag::stateless()
@@ -623,6 +630,7 @@ where
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
+    #[allow(clippy::option_if_let_else)]
     pub(super) fn diff(&self, tree: &mut Tree) {
         if let Some(t0) = tree.children.get_mut(0) {
             t0.diff(&self.item);
@@ -696,7 +704,7 @@ where
             layout,
             cursor,
             viewport,
-        )
+        );
     }
 }
 
@@ -718,7 +726,6 @@ struct Aod {
 }
 impl Aod {
     /// Returns (child position, offset position, child direction)
-    #[allow(clippy::too_many_arguments)]
     fn adaptive(
         parent_pos: f32,
         parent_size: f32,
@@ -868,7 +875,7 @@ impl Aod {
                 } else {
                     Direction::Negative
                 };
-                Aod {
+                Self {
                     horizontal_overlap: false,
                     vertical_overlap: true,
                     horizontal_direction,
@@ -884,7 +891,7 @@ impl Aod {
                     Direction::Negative
                 };
                 let vertical_direction = pdy;
-                Aod {
+                Self {
                     horizontal_overlap: true,
                     vertical_overlap: false,
                     horizontal_direction,

@@ -4,13 +4,13 @@ use iced::widget::{
 };
 use iced::widget::{column as col, vertical_space};
 use iced::{
-    alignment, theme, Alignment, Application, Border, Color, Element, Length, Pixels, Size,
+    alignment, theme, Application, Border, Color, Element, Length, Pixels, Size,
 };
 
 use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{Item, Menu};
-use iced_aw::{quad, native::InnerBounds};
 use iced_aw::{menu_bar, menu_items};
+use iced_aw::{native::InnerBounds, quad};
 
 pub fn main() -> iced::Result {
     // std::env::set_var("RUST_BACKTRACE", "full");
@@ -140,8 +140,8 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        let menu_temp_1 = |items| {Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0)};
-        let menu_temp_2 = |items| {Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0)};
+        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
+        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
         let mb = menu_bar!((debug_button_s("Nested Menus"), {
             let sub5 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
@@ -202,7 +202,9 @@ impl Application for App {
                 .on_press(Message::Debug("Button".into()))
             )(
                 // checkbox("Checkbox", self.check, Message::CheckChange).width(Length::Fill)
-                checkbox("Checkbox", self.check).on_toggle(|x| Message::CheckChange(x)).width(Length::Fill)
+                checkbox("Checkbox", self.check)
+                    .on_toggle(|x| Message::CheckChange(x))
+                    .width(Length::Fill)
             )(row![
                 "Slider",
                 horizontal_space().width(Length::Fixed(8.0)),
@@ -413,21 +415,22 @@ impl Application for App {
             )))
             .width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
         }));
-        
+
         let r = row![
-            horizontal_space().width(295), 
-            mb, 
             horizontal_space().width(295),
-        ].align_items(alignment::Alignment::Center);
-        
+            mb,
+            horizontal_space().width(295),
+        ]
+        .align_items(alignment::Alignment::Center);
+
         let c = col![
             vertical_space().height(500),
-            r, 
+            r,
             vertical_space().height(500),
         ];
 
         let sc = scrollable(c).direction(scrollable::Direction::Both {
-            vertical: scrollable::Properties::new(),
+            vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
             horizontal: scrollable::Properties::new(),
         });
 

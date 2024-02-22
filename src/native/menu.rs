@@ -1,3 +1,5 @@
+#![allow(clippy::doc_markdown)]
+
 //! A [`MenuBar`] widget for displaying menu trees created with [`Item`]s and [`Menu`]s
 //!
 //! *This API requires the following crate features to be activated: `menu`*
@@ -84,9 +86,11 @@
 //! )
 //! ```
 //!
-//! Notice a menu_template function/closure is used in example 2. Usually some properties are sync across all menus while others are not,
-//! template function is one way to do that. If you find writing menu_template(menu_items!()) cumbersome,
-//! there is a menu! macro you can use to create template macros
+//! Here a menu_template function/closure is used in example 2, 
+//! usually some properties are sync across all menus while others are not,
+//! using template functions can reduce the repeated code. 
+//! If you find writing menu_template(menu_items!()) too cumbersome,
+//! there's a menu! macro you can use to create template macros
 //!
 //! ## Example 3
 //!
@@ -111,11 +115,11 @@
 //! );
 //! ```
 //!
-//! Technically You can create menu template functions with the menu! macro,
-//! but turns out closures can't infer the generic types,
-//! and creating a function for it involves writing a ton of generic annotations
+//! Technically you can create menu template functions with the menu! macro,
+//! but turns out closures can't infer the proper generic types in this case,
+//! and creating a function for it you have to write a bunch of generic annotations
 //! 
-//! ## Example 3
+//! ## Example 4
 //!
 //! ```
 //! fn menu_template<'a, Message, Theme, Renderer>(

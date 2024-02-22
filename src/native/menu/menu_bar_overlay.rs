@@ -1,18 +1,19 @@
+#![allow(clippy::unwrap_used)]
+#![allow(clippy::doc_markdown)]
+#![allow(clippy::wildcard_imports)]
+#![allow(clippy::enum_glob_use)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::items_after_statements)]
+#![allow(clippy::similar_names)]
+
 use iced::{
     advanced::{
         layout::{Limits, Node},
-        renderer,
-        mouse, 
-        overlay, 
+        mouse, overlay, renderer,
         widget::Tree,
-        Clipboard,
-        Shell,
-        Layout, 
-        Widget,
-    },
-    event,
-    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
-    Size, Vector, 
+        Clipboard, Layout, Shell, },
+    event, Event, Point, Rectangle, Size,
+    Vector,
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -88,9 +89,9 @@ where
         let active_tree = &mut self.tree.children[active]; // item_tree: Tree{ stateless, [ widget_tree, menu_tree ] }
         let parent_bounds = self.init_root_bounds[active] + translation;
 
-        fn rec<'a, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+        fn rec<Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             renderer: &Renderer,
-            item: &Item<'a, Message, Theme, Renderer>,
+            item: &Item<'_, Message, Theme, Renderer>,
             tree: &mut Tree,
             menu_nodes: &mut Vec<Node>,
             check_bounds_width: f32,
@@ -175,8 +176,8 @@ where
             parent_direction,
             &Rectangle::new(
                 // Point::new(translation.x, translation.y),
-                Point::ORIGIN, 
-                bounds
+                Point::ORIGIN,
+                bounds,
             ),
         );
 
@@ -227,7 +228,7 @@ where
         fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             tree: &mut Tree,
             item: &mut Item<'a, Message, Theme, Renderer>,
-            event: Event,
+            event: &Event,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
             cursor: mouse::Cursor,
             renderer: &Renderer,
@@ -270,7 +271,7 @@ where
                 let re = rec(
                     next_tree,
                     next_item,
-                    event.clone(),
+                    event,
                     layout_iter,
                     cursor,
                     renderer,
@@ -378,7 +379,7 @@ where
         let re = rec(
             active_tree,
             active_root,
-            event,
+            &event,
             &mut menu_layouts,
             cursor,
             renderer,
@@ -455,7 +456,7 @@ where
                     menu_layout,
                     cursor,
                     viewport,
-                )
+                );
             };
 
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
@@ -493,10 +494,10 @@ where
                         style,
                         theme_style,
                         viewport,
-                    )
+                    );
                 });
             } else {
-                draw_menu(cursor)
+                draw_menu(cursor);
             }
         }
 
@@ -510,7 +511,7 @@ where
             style,
             self.style,
             &viewport,
-        )
+        );
     }
 
     fn is_over(&self, _layout: Layout<'_>, _renderer: &Renderer, _cursor_position: Point) -> bool {
