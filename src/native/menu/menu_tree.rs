@@ -86,7 +86,6 @@ where
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
     pub(super) spacing: f32,
-    pub(super) padding: Padding,
     pub(super) max_width: f32,
     pub(super) width: Length,
     pub(super) height: Length,
@@ -103,7 +102,6 @@ where
         Self {
             items,
             spacing: 0.0,
-            padding: Padding::ZERO,
             max_width: f32::MAX,
             width: Length::Fill,
             height: Length::Shrink,
@@ -130,19 +128,13 @@ where
         self
     }
 
-    /// Sets the padding of the [`Menu`].
-    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
-        self.padding = padding.into();
-        self
-    }
-
-    /// The offset from the bounds of the menu's parent item.
+    /// The offset from the menu's parent item.
     pub fn offset(mut self, offset: f32) -> Self {
         self.offset = offset;
         self
     }
 
-    /// rebuild state tree
+    /// Rebuild state tree
     pub(super) fn tree(&self) -> Tree {
         Tree {
             tag: self.tag(),
@@ -203,7 +195,7 @@ where
             &limits,
             self.width,
             self.height,
-            self.padding,
+            Padding::ZERO,
             self.spacing,
             alignment::Alignment::Center,
             &self.items.iter().map(|i| &i.item).collect::<Vec<_>>(),
@@ -594,7 +586,7 @@ where
         }
     }
 
-    /// rebuild state tree
+    /// Rebuild state tree
     pub(super) fn tree(&self) -> Tree {
         Tree {
             tag: self.tag(),

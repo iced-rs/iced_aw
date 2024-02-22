@@ -140,22 +140,22 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
-        let menu_temp_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
-        let menu_temp_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
+        let menu_tpl_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
+        let menu_tpl_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
         let mb = menu_bar!((debug_button_s("Nested Menus"), {
-            let sub5 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+            let sub5 = menu_tpl_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
                 debug_button("Item")
             )(debug_button("Item"))(
                 debug_button("Item")
             )));
 
-            let sub4 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+            let sub4 = menu_tpl_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
                 debug_button("Item")
             )(debug_button("Item"))))
             .width(200.0);
 
-            let sub3 = menu_temp_2(menu_items!((debug_button("You can"))(debug_button(
+            let sub3 = menu_tpl_2(menu_items!((debug_button("You can"))(debug_button(
                 "nest menus"
             ))(submenu_button("SUB"), sub4)(
                 debug_button("how ever")
@@ -164,7 +164,7 @@ impl Application for App {
             )))
             .width(180.0);
 
-            let sub2 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+            let sub2 = menu_tpl_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
                 debug_button("Item")
             )(
                 submenu_button("More sub menus"), sub3
@@ -173,7 +173,7 @@ impl Application for App {
             )(debug_button("Item"))))
             .width(160.0);
 
-            let sub1 = menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+            let sub1 = menu_tpl_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
                 submenu_button("Another sub menu"),
                 sub2
             )(debug_button("Item"))(
@@ -181,7 +181,7 @@ impl Application for App {
             )(debug_button("Item"))))
             .width(220.0);
 
-            menu_temp_1(menu_items!((debug_button("Item"))(debug_button("Item"))(
+            menu_tpl_1(menu_items!((debug_button("Item"))(debug_button("Item"))(
                 submenu_button("A sub menu"),
                 sub1
             )(debug_button("Item"))(
@@ -190,7 +190,7 @@ impl Application for App {
             .width(140.0)
         })(
             debug_button_s("Widgets"),
-            menu_temp_1(menu_items!((debug_button("You can use any widget"))(
+            menu_tpl_1(menu_items!((debug_button("You can use any widget"))(
                 debug_button("as a menu item")
             )(
                 button(
@@ -220,7 +220,7 @@ impl Application for App {
                 .padding([0, 8])
                 .height(30.0)
                 .align_y(alignment::Vertical::Center),
-                menu_temp_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
+                menu_tpl_2(menu_items!((debug_button("Item"))(debug_button("Item"))(
                     debug_button("Item")
                 )(debug_button("Item"))))
             )(debug_button("Separator"))(
@@ -235,7 +235,7 @@ impl Application for App {
             .width(240.0)
         )(
             debug_button_s("Controls"),
-            menu_temp_1(menu_items!((row![toggler(
+            menu_tpl_1(menu_items!((row![toggler(
                 Some("Dark Mode".into()),
                 self.dark_mode,
                 Message::ThemeChange
@@ -253,7 +253,7 @@ impl Application for App {
                 {
                     let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
-                    menu_temp_2(menu_items!((slider(0..=255, r, move |x| {
+                    menu_tpl_2(menu_items!((slider(0..=255, r, move |x| {
                         Message::ColorChange(Color::from_rgb8(x, g, b))
                     }))(slider(
                         0..=255,
@@ -268,7 +268,7 @@ impl Application for App {
             )))
         )(
             debug_button_s("Scroll"),
-            menu_temp_1(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+            menu_tpl_1(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
                 debug_button("clkjhbf")
             )(debug_button("dekjdaud"))(
                 debug_button("ecsh")
@@ -278,7 +278,7 @@ impl Application for App {
                 debug_button("isabe")
             )(
                 submenu_button("jcsu"),
-                menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                menu_tpl_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
                     debug_button("clkjhbf")
                 )(debug_button("dekjdaud"))(
                     debug_button("ecsh")
@@ -290,7 +290,7 @@ impl Application for App {
                     debug_button("kaljkahd")
                 )(
                     submenu_button("luyortp"),
-                    menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                    menu_tpl_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
                         debug_button("clkjhbf")
                     )(debug_button("dekjdaud"))(
                         debug_button("ecsh")
@@ -328,7 +328,7 @@ impl Application for App {
                 debug_button("bsdfho")
             )(debug_button("clkjhbf"))(
                 submenu_button("dekjdaud"),
-                menu_temp_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
+                menu_tpl_2(menu_items!((debug_button("ajrs"))(debug_button("bsdfho"))(
                     debug_button("clkjhbf")
                 )(debug_button("dekjdaud"))(
                     debug_button("ecsh")
@@ -387,7 +387,7 @@ impl Application for App {
             let pad = 20;
             let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
-            menu_temp_1(menu_items!((labeled_separator("Primary"))(
+            menu_tpl_1(menu_items!((labeled_separator("Primary"))(
                 row![
                     vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
                         x, g, b

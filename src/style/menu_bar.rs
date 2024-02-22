@@ -92,11 +92,6 @@ impl StyleSheet for Theme {
             MenuBarStyle::Default => Appearance {
                 bar_background: palette.background.base.color.into(),
                 menu_background: palette.background.base.color.into(),
-                // border: Border{
-                //     color: palette.background.weak.color.into(),
-                //     width: 1.0,
-                //     radius: [6.0; 4].into(),
-                // },
                 ..Default::default()
             },
             MenuBarStyle::Custom(c) => c.appearance(self),

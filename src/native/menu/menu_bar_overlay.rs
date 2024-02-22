@@ -61,8 +61,6 @@ where
         &mut self,
         renderer: &Renderer,
         bounds: Size,
-        // position: Point,
-        // translation: Vector,
     ) -> Node {
         let translation = self.translation;
 
@@ -175,7 +173,6 @@ where
             parent_bounds,
             parent_direction,
             &Rectangle::new(
-                // Point::new(translation.x, translation.y),
                 Point::ORIGIN,
                 bounds,
             ),
