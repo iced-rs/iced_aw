@@ -17,9 +17,9 @@ use iced::{
         layout::{Layout, Limits, Node},
         mouse, renderer,
         widget::tree::{self, Tree},
-        Clipboard, Shell, },
-    alignment, event, Element, Event, Length, Padding, Point, Rectangle,
-    Size, Vector,
+        Clipboard, Shell,
+    },
+    alignment, event, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
 use std::iter::once;
 
@@ -167,11 +167,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(
-            &self.items,
-            |tree, item| item.diff(tree),
-            Item::tree,
-        );
+        tree.diff_children_custom(&self.items, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
@@ -347,7 +343,7 @@ where
                 )
             })
             .fold(Ignored, event::Status::merge);
-        
+
         match event {
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
@@ -369,13 +365,14 @@ where
     /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn draw(
         &self,
+        draw_path: &DrawPath,
         tree: &Tree,
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
         theme_style: &Theme::Style,
         layout: Layout<'_>,
-        cursor: mouse::Cursor,
+        mut cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
         let mut lc = layout.children();
@@ -401,8 +398,35 @@ where
             styling.menu_background,
         );
 
-        let mut slc = slice_layout.children();
+        // draw path
+        if let Some(active) = menu_state.active {
+            let Some(active_bounds) = slice_layout.children()
+                .nth(active - menu_state.slice.start_index)
+                .map(|l| l.bounds())
+            else {
+                return;
+            };
 
+            match draw_path {
+                DrawPath::Backdrop => {
+                    renderer.fill_quad(
+                        renderer::Quad {
+                            bounds: active_bounds,
+                            border: styling.path_border,
+                            ..Default::default()
+                        },
+                        styling.path,
+                    );
+                }
+                DrawPath::FakeHovering => {
+                    if !cursor.is_over(active_bounds) {
+                        cursor = mouse::Cursor::Available(active_bounds.center());
+                    }
+                }
+            }
+        }
+            
+        
         // draw start
         let Some(start) = self.items.get(slice.start_index) else {
             return;
@@ -410,7 +434,7 @@ where
         let Some(start_tree) = tree.children.get(slice.start_index) else {
             return;
         };
-        let Some(start_layout) = slc.next() else {
+        let Some(start_layout) = slice_layout.children().next() else {
             return;
         };
 
@@ -433,14 +457,14 @@ where
             // draw the rest
             let Some(items) = self
                 .items
-                .get(slice.start_index + 1..slice.end_index.saturating_add(1))
+                .get(slice.start_index + 1..=slice.end_index)
             else {
                 return;
             };
 
             let Some(trees) = tree
                 .children
-                .get(slice.start_index + 1..slice.end_index.saturating_add(1))
+                .get(slice.start_index + 1..=slice.end_index)
             else {
                 return;
             };

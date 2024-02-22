@@ -21,6 +21,11 @@ pub struct Appearance {
     pub menu_shadow: Shadow,
     /// Expand the menu background
     pub menu_background_expand: Padding,
+
+    /// The backgraound of the path
+    pub path: Background,
+    /// The border of the path
+    pub path_border: Border,
 }
 impl std::default::Default for Appearance {
     fn default() -> Self {
@@ -44,6 +49,11 @@ impl std::default::Default for Appearance {
                 blur_radius: 10.0,
             },
             menu_background_expand: [5; 4].into(),
+            path: Color::from([0.3;3]).into(),
+            path_border: Border{
+                radius: [6.0; 4].into(),
+                ..Default::default()
+            }
         }
     }
 }
@@ -92,6 +102,7 @@ impl StyleSheet for Theme {
             MenuBarStyle::Default => Appearance {
                 bar_background: palette.background.base.color.into(),
                 menu_background: palette.background.base.color.into(),
+                path: palette.primary.weak.color.into(),
                 ..Default::default()
             },
             MenuBarStyle::Custom(c) => c.appearance(self),

@@ -86,9 +86,9 @@
 //! )
 //! ```
 //!
-//! Here a menu_template function/closure is used in example 2, 
+//! Here a menu_template function/closure is used in example 2,
 //! usually some properties are sync across all menus while others are not,
-//! using template functions can reduce the repeated code. 
+//! using template functions can reduce the repeated code.
 //! If you find writing menu_template(menu_items!()) too cumbersome,
 //! there's a menu! macro you can use to create template macros
 //!
@@ -118,7 +118,7 @@
 //! Technically you can create menu template functions with the menu! macro,
 //! but turns out closures can't infer the proper generic types in this case,
 //! and creating a function for it you have to write a bunch of generic annotations
-//! 
+//!
 //! ## Example 4
 //!
 //! ```
@@ -152,3 +152,4 @@ mod menu_tree;
 pub use crate::style::menu_bar::{Appearance, StyleSheet};
 pub use menu_bar::MenuBar;
 pub use menu_tree::{Item, Menu};
+pub use common::DrawPath;

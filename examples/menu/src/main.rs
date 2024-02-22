@@ -3,9 +3,7 @@ use iced::widget::{
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{
-    alignment, theme, Application, Border, Color, Element, Length, Pixels, Size,
-};
+use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
 
 use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{Item, Menu};

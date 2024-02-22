@@ -13,7 +13,7 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment, event, Element, Event, Length, Padding, Rectangle, Size,
-    };
+};
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
@@ -38,6 +38,7 @@ where
     width: Length,
     height: Length,
     check_bounds_width: f32,
+    draw_path: DrawPath,
     style: Theme::Style,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
@@ -60,6 +61,7 @@ where
             width: Length::Shrink,
             height: Length::Shrink,
             check_bounds_width: 50.0,
+            draw_path: DrawPath::FakeHovering,
             style: Theme::Style::default(),
         }
     }
@@ -120,19 +122,12 @@ where
 
     /// \[Tree{stateless, \[widget_state, menu_state]}...]
     fn children(&self) -> Vec<Tree> {
-        self.roots
-            .iter()
-            .map(Item::tree)
-            .collect::<Vec<_>>()
+        self.roots.iter().map(Item::tree).collect::<Vec<_>>()
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(
-            &self.roots,
-            |tree, item| item.diff(tree),
-            Item::tree,
-        );
+        tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
@@ -243,24 +238,9 @@ where
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
-        cursor: mouse::Cursor,
+        mut cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        let state = tree.state.downcast_ref::<MenuBarState>();
-        let cursor = if state.open {
-            state
-                .active_root
-                .and_then(|active| {
-                    layout
-                        .children()
-                        .nth(active)
-                        .map(|l| mouse::Cursor::Available(l.bounds().center()))
-                })
-                .unwrap_or(cursor)
-        } else {
-            cursor
-        };
-
         let styling = theme.appearance(&self.style);
         renderer.fill_quad(
             renderer::Quad {
@@ -270,6 +250,36 @@ where
             },
             styling.bar_background,
         );
+
+        let state = tree.state.downcast_ref::<MenuBarState>();
+        if state.open {
+            if let Some(active) = state.active_root{
+                let Some(active_bounds) = layout.children()
+                    .nth(active)
+                    .map(|l| l.bounds())
+                else{
+                    return;
+                };
+
+                match self.draw_path{
+                    DrawPath::Backdrop => {
+                        renderer.fill_quad(
+                            renderer::Quad {
+                                bounds: active_bounds,
+                                border: styling.path_border,
+                                ..Default::default()
+                            },
+                            styling.path
+                        );
+                    }
+                    DrawPath::FakeHovering => {
+                        if !cursor.is_over(active_bounds){
+                            cursor = mouse::Cursor::Available(active_bounds.center())
+                        }
+                    }
+                }
+            }
+        }
 
         self.roots
             .iter() // [Item...]
@@ -301,6 +311,7 @@ where
                     init_bar_bounds,
                     init_root_bounds,
                     check_bounds_width: self.check_bounds_width,
+                    draw_path: &self.draw_path,
                     style: &self.style,
                 }
                 .overlay_element(),

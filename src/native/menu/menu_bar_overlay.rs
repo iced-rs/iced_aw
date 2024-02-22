@@ -11,9 +11,9 @@ use iced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
         widget::Tree,
-        Clipboard, Layout, Shell, },
-    event, Event, Point, Rectangle, Size,
-    Vector,
+        Clipboard, Layout, Shell,
+    },
+    event, Event, Point, Rectangle, Size, Vector,
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -40,6 +40,7 @@ where
     pub(super) init_bar_bounds: Rectangle,
     pub(super) init_root_bounds: Vec<Rectangle>,
     pub(super) check_bounds_width: f32,
+    pub(super) draw_path: &'b DrawPath,
     pub(super) style: &'b Theme::Style,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
@@ -57,11 +58,7 @@ where
     Theme: StyleSheet,
     Renderer: renderer::Renderer,
 {
-    fn layout(
-        &mut self,
-        renderer: &Renderer,
-        bounds: Size,
-    ) -> Node {
+    fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let translation = self.translation;
 
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
@@ -172,10 +169,7 @@ where
             self.check_bounds_width,
             parent_bounds,
             parent_direction,
-            &Rectangle::new(
-                Point::ORIGIN,
-                bounds,
-            ),
+            &Rectangle::new(Point::ORIGIN, bounds),
         );
 
         Node::with_children(
@@ -426,6 +420,7 @@ where
         let active_tree = &self.tree.children[active];
 
         fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+            draw_path: &DrawPath,
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
@@ -443,8 +438,11 @@ where
                 return;
             }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
 
-            let mut draw_menu = |cursor| {
+            let menu_state = menu_tree.state.downcast_ref::<MenuState>();
+
+            let mut draw_menu = || {
                 menu.draw(
+                    draw_path,
                     menu_tree,
                     renderer,
                     theme,
@@ -456,32 +454,27 @@ where
                 );
             };
 
-            let menu_state = menu_tree.state.downcast_ref::<MenuState>();
-
             if let Some(active) = menu_state.active {
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
 
-                let mut mc = menu_layout.children();
-                let slice_layout = mc.next().unwrap(); // slice_node
-                let active_bounds = {
-                    let Some(layout) = slice_layout
-                        .children()
-                        .nth(active - menu_state.slice.start_index)
-                    else {
-                        return;
-                    };
-                    layout.bounds()
-                };
+                // let mut mc = menu_layout.children();
+                // let slice_layout = mc.next().unwrap(); // slice_node
+                // let active_bounds = {
+                //     let Some(layout) = slice_layout
+                //         .children()
+                //         .nth(active - menu_state.slice.start_index)
+                //     else {
+                //         return;
+                //     };
+                //     layout.bounds()
+                // };
 
-                draw_menu(if cursor.is_over(active_bounds) {
-                    cursor
-                } else {
-                    mouse::Cursor::Available(active_bounds.center())
-                });
+                draw_menu();
 
                 renderer.with_layer(*viewport, |r| {
                     rec(
+                        draw_path,
                         next_tree,
                         next_item,
                         layout_iter,
@@ -494,11 +487,12 @@ where
                     );
                 });
             } else {
-                draw_menu(cursor);
+                draw_menu();
             }
         }
 
         rec(
+            &self.draw_path,
             active_tree,
             active_root,
             &mut menu_layouts,
