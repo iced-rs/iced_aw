@@ -78,13 +78,13 @@ pub enum MenuBarStyle {
     Custom(Box<dyn StyleSheet<Style = Theme>>),
 }
 
-impl From<fn(&Theme) -> Appearance> for MenuBarStyle {
-    fn from(f: fn(&Theme) -> Appearance) -> Self {
+impl<F: Fn(&Theme) -> Appearance + 'static> From<F> for MenuBarStyle {
+    fn from(f: F) -> Self {
         Self::Custom(Box::new(f))
     }
 }
 
-impl StyleSheet for fn(&Theme) -> Appearance {
+impl<F: Fn(&Theme) -> Appearance> StyleSheet for F {
     type Style = Theme;
 
     fn appearance(&self, style: &Self::Style) -> Appearance {

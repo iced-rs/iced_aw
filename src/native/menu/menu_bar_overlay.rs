@@ -217,6 +217,7 @@ where
         let active_tree = &mut self.tree.children[active];
         let mut prev_bounds_list = vec![bar_bounds];
 
+        #[rustfmt::skip]
         fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
             tree: &mut Tree,
             item: &mut Item<'a, Message, Theme, Renderer>,
@@ -281,29 +282,13 @@ where
                     RecEvent::Event => RecEvent::Event,
                     RecEvent::Close => {
                         if cursor.is_over(prescroll) {
-                            menu.on_event(
-                                menu_tree,
-                                event,
-                                menu_layout,
-                                cursor,
-                                renderer,
-                                clipboard,
-                                shell,
-                                viewport,
-                            );
+                            menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
                             menu.open_event(menu_tree, menu_layout, cursor);
                             RecEvent::Event
                         } else if cursor.is_over(offset_bounds) {
                             RecEvent::Event
                         } else {
-                            menu.close_event(
-                                menu_tree,
-                                menu_layout,
-                                cursor,
-                                parent_bounds,
-                                prev_bounds_list,
-                                prev,
-                            );
+                            menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
                             if prev.is_some() {
                                 RecEvent::None
                             } else {
@@ -313,16 +298,7 @@ where
                     }
                     RecEvent::None => {
                         if cursor.is_over(prescroll) {
-                            menu.on_event(
-                                menu_tree,
-                                event,
-                                menu_layout,
-                                cursor,
-                                renderer,
-                                clipboard,
-                                shell,
-                                viewport,
-                            );
+                            menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
                             menu.open_event(menu_tree, menu_layout, cursor);
                             RecEvent::Event
                         } else if cursor.is_over(offset_bounds) {
@@ -336,29 +312,13 @@ where
                 prev_bounds_list.pop();
 
                 if cursor.is_over(prescroll) {
-                    menu.on_event(
-                        menu_tree,
-                        event,
-                        menu_layout,
-                        cursor,
-                        renderer,
-                        clipboard,
-                        shell,
-                        viewport,
-                    );
+                    menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
                     menu.open_event(menu_tree, menu_layout, cursor);
                     RecEvent::Event
                 } else if cursor.is_over(offset_bounds) {
                     RecEvent::Event
                 } else {
-                    menu.close_event(
-                        menu_tree,
-                        menu_layout,
-                        cursor,
-                        parent_bounds,
-                        prev_bounds_list,
-                        prev,
-                    );
+                    menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
                     if prev.is_some() {
                         RecEvent::None
                     } else {

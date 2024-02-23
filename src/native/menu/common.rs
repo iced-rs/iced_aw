@@ -17,7 +17,7 @@ pub struct CloseCondition {
 ///
 /// ## FakeHovering:
 ///
-/// Places cursors at the path items, 
+/// Places cursors at the path items,
 /// useful when you want to customize the styling of each item in the path,
 /// or you simple want the look of the items when they are hovered over.
 ///
@@ -32,9 +32,9 @@ pub struct CloseCondition {
 /// useful when you want uniform path styling.
 ///
 /// The downside is,
-/// depend on the style you're going for,
-/// oftentimes manually syncing the path's styling to the path items' is necessary
-///
+/// depending on the style you're going for,
+/// oftentimes manually syncing the path's styling to the path items' is necessary,
+/// the default styling simply can't cover most use cases.
 pub enum DrawPath {
     /// FakeHovering
     FakeHovering,

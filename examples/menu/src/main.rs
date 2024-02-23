@@ -6,7 +6,8 @@ use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
 
 use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
-use iced_aw::menu::{Item, Menu};
+use iced_aw::menu::{self, Item, Menu, StyleSheet};
+use iced_aw::style::MenuBarStyle;
 use iced_aw::{menu_bar, menu_items};
 use iced_aw::{native::InnerBounds, quad};
 
@@ -428,7 +429,15 @@ impl Application for App {
                     (debug_button("MMNN").height(50))
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
             })
-        );
+        )
+        .draw_path(menu::DrawPath::Backdrop)
+        .style(|theme:&iced::Theme| menu::Appearance{
+            path_border: Border{
+                radius: [6.0; 4].into(),
+                ..Default::default()
+            },
+            ..theme.appearance(&MenuBarStyle::Default)
+        });
 
         let r = row![
             horizontal_space().width(295),

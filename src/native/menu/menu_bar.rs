@@ -89,6 +89,12 @@ where
         self.check_bounds_width = check_bounds_width;
         self
     }
+    
+    /// Sets the draw path option of the [`MenuBar`]
+    pub fn draw_path(mut self, draw_path: DrawPath) -> Self {
+        self.draw_path = draw_path;
+        self
+    }
 
     /// Sets the padding of the [`MenuBar`].
     pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
