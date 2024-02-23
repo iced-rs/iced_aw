@@ -344,7 +344,6 @@ where
                     draw_path: &self.draw_path,
                     scroll_speed: self.scroll_speed,
                     style: &self.style,
-                    // is_over: false,
                 }
                 .overlay_element(),
             )

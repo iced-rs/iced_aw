@@ -264,7 +264,7 @@ where
             let end_node = {
                 let node = &items_node.children()[slice.end_index];
                 let bounds = node.bounds();
-                let factor = ((slice.upper_bound_rel - bounds.y)/bounds.height).max(0.0);
+                let factor = ((slice.upper_bound_rel - bounds.y) / bounds.height).max(0.0);
                 scale_node_y(node, factor)
             };
 
@@ -358,7 +358,13 @@ where
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
-                    process_scroll_event(menu_state, prescroll, *delta, scroll_speed, viewport.size());
+                    process_scroll_event(
+                        menu_state,
+                        prescroll,
+                        *delta,
+                        scroll_speed,
+                        viewport.size(),
+                    );
                     Captured
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
                     Captured
@@ -478,8 +484,16 @@ where
         };
 
         if slice.end_index == slice.start_index {
-            start.draw(start_tree, renderer, theme, style, start_layout, cursor, viewport);
-        }else{
+            start.draw(
+                start_tree,
+                renderer,
+                theme,
+                style,
+                start_layout,
+                cursor,
+                viewport,
+            );
+        } else {
             // prep end
             let Some(end) = self.items.get(slice.end_index) else {
                 return;
@@ -487,7 +501,7 @@ where
             let Some(end_tree) = tree.children.get(slice.end_index) else {
                 return;
             };
-            let Some(end_layout) = slice_layout.children().last() else{
+            let Some(end_layout) = slice_layout.children().last() else {
                 return;
             };
 
@@ -498,14 +512,18 @@ where
 
             // draw middle
             if (slice.end_index - slice.start_index) > 1 {
-                let Some(items) = self.items.get(slice.start_index + 1..=slice.end_index-1) else {
+                let Some(items) = self.items.get(slice.start_index + 1..=slice.end_index - 1)
+                else {
                     return;
                 };
-    
-                let Some(trees) = tree.children.get(slice.start_index + 1..=slice.end_index-1) else {
+
+                let Some(trees) = tree
+                    .children
+                    .get(slice.start_index + 1..=slice.end_index - 1)
+                else {
                     return;
                 };
-    
+
                 for ((item, tree), layout) in items
                     .iter()
                     .zip(trees.iter())
@@ -516,7 +534,7 @@ where
             }
 
             // draw end
-            renderer.with_layer(end_layout.bounds(), |r|{
+            renderer.with_layer(end_layout.bounds(), |r| {
                 end.draw(end_tree, r, theme, style, end_layout, cursor, viewport)
             })
         }

@@ -35,7 +35,6 @@ where
     pub(super) draw_path: &'b DrawPath,
     pub(super) scroll_speed: f32,
     pub(super) style: &'b Theme::Style,
-    // pub(super) is_over: bool,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
@@ -322,7 +321,7 @@ where
             &viewport,
             &mut prev_bounds_list,
             &mut bar.active_root,
-            self.scroll_speed
+            self.scroll_speed,
         );
 
         match re {
