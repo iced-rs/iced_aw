@@ -277,7 +277,7 @@ where
                     }
                     DrawPath::FakeHovering => {
                         if !cursor.is_over(active_bounds) {
-                            cursor = mouse::Cursor::Available(active_bounds.center())
+                            cursor = mouse::Cursor::Available(active_bounds.center());
                         }
                     }
                 }

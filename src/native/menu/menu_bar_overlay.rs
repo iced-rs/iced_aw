@@ -483,7 +483,7 @@ where
         }
 
         rec(
-            &self.draw_path,
+            self.draw_path,
             active_tree,
             active_root,
             &mut menu_layouts,
@@ -500,7 +500,7 @@ where
         let mut lc = layout.children();
         let _bar_bounds = lc.next().unwrap().bounds();
         let _roots_layout = lc.next().unwrap();
-        let Some(menu_layouts) = lc.next().map(|l| l.children()) else {
+        let Some(menu_layouts) = lc.next().map(Layout::children) else {
             return false;
         }; // [menu_node...]
 
