@@ -376,7 +376,7 @@ where
 
             let i = menu.mouse_interaction(menu_tree, menu_layout, cursor, viewport, renderer);
 
-            if let Some(active) = menu_state.active {
+            menu_state.active.map_or(i, |active| {
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
                 rec(
@@ -388,9 +388,7 @@ where
                     viewport,
                 )
                 .max(i)
-            } else {
-                i
-            }
+            })
         }
 
         rec(
