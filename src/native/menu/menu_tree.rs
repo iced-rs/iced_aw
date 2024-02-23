@@ -314,6 +314,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
+        scroll_speed: f32,
     ) -> event::Status {
         use event::Status::*;
 
@@ -357,7 +358,7 @@ where
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
-                    process_scroll_event(menu_state, prescroll, *delta, viewport.size());
+                    process_scroll_event(menu_state, prescroll, *delta, scroll_speed, viewport.size());
                     Captured
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
                     Captured
@@ -991,6 +992,7 @@ fn process_scroll_event(
     menu_state: &mut MenuState,
     prescroll_children_bounds: Rectangle,
     delta: mouse::ScrollDelta,
+    scroll_speed: f32,
     viewport_size: Size,
 ) {
     use mouse::ScrollDelta;
@@ -998,7 +1000,7 @@ fn process_scroll_event(
     let pcb = prescroll_children_bounds;
 
     let delta_y = match delta {
-        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y,
+        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y * scroll_speed,
     };
 
     let max_offset = (0.0 - pcb.y).max(0.0);

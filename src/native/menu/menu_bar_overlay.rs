@@ -33,6 +33,7 @@ where
     pub(super) init_root_bounds: Vec<Rectangle>,
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: &'b DrawPath,
+    pub(super) scroll_speed: f32,
     pub(super) style: &'b Theme::Style,
     // pub(super) is_over: bool,
 }
@@ -223,6 +224,7 @@ where
             viewport: &Rectangle,
             prev_bounds_list: &mut Vec<Rectangle>,
             prev: &mut Index,
+            scroll_speed: f32,
         ) -> RecEvent {
             let menu = item.menu.as_mut().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
@@ -267,6 +269,7 @@ where
                     viewport,
                     prev_bounds_list,
                     &mut menu_state.active,
+                    scroll_speed,
                 )
             } else {
                 RecEvent::Close
@@ -278,7 +281,7 @@ where
                 RecEvent::Event => RecEvent::Event,
                 RecEvent::Close => {
                     if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
+                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
                         menu.open_event(menu_tree, menu_layout, cursor);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
@@ -294,7 +297,7 @@ where
                 }
                 RecEvent::None => {
                     if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
+                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
                         menu.open_event(menu_tree, menu_layout, cursor);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
@@ -319,6 +322,7 @@ where
             &viewport,
             &mut prev_bounds_list,
             &mut bar.active_root,
+            self.scroll_speed
         );
 
         match re {

@@ -39,6 +39,7 @@ where
     height: Length,
     check_bounds_width: f32,
     draw_path: DrawPath,
+    scroll_speed: f32,
     style: Theme::Style,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
@@ -62,6 +63,7 @@ where
             height: Length::Shrink,
             check_bounds_width: 50.0,
             draw_path: DrawPath::FakeHovering,
+            scroll_speed: 1.0,
             style: Theme::Style::default(),
         }
     }
@@ -93,6 +95,12 @@ where
     /// Sets the draw path option of the [`MenuBar`]
     pub fn draw_path(mut self, draw_path: DrawPath) -> Self {
         self.draw_path = draw_path;
+        self
+    }
+
+    /// Sets the scroll speed of the [`Menu`]s in the [`MenuBar`]
+    pub fn scroll_speed(mut self, scroll_speed: f32) -> Self {
+        self.scroll_speed = scroll_speed;
         self
     }
 
@@ -334,6 +342,7 @@ where
                     init_root_bounds,
                     check_bounds_width: self.check_bounds_width,
                     draw_path: &self.draw_path,
+                    scroll_speed: self.scroll_speed,
                     style: &self.style,
                     // is_over: false,
                 }
