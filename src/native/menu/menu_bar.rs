@@ -253,15 +253,12 @@ where
 
         let state = tree.state.downcast_ref::<MenuBarState>();
         if state.open {
-            if let Some(active) = state.active_root{
-                let Some(active_bounds) = layout.children()
-                    .nth(active)
-                    .map(|l| l.bounds())
-                else{
+            if let Some(active) = state.active_root {
+                let Some(active_bounds) = layout.children().nth(active).map(|l| l.bounds()) else {
                     return;
                 };
 
-                match self.draw_path{
+                match self.draw_path {
                     DrawPath::Backdrop => {
                         renderer.fill_quad(
                             renderer::Quad {
@@ -269,11 +266,11 @@ where
                                 border: styling.path_border,
                                 ..Default::default()
                             },
-                            styling.path
+                            styling.path,
                         );
                     }
                     DrawPath::FakeHovering => {
-                        if !cursor.is_over(active_bounds){
+                        if !cursor.is_over(active_bounds) {
                             cursor = mouse::Cursor::Available(active_bounds.center())
                         }
                     }
@@ -313,6 +310,7 @@ where
                     check_bounds_width: self.check_bounds_width,
                     draw_path: &self.draw_path,
                     style: &self.style,
+                    // is_over: false,
                 }
                 .overlay_element(),
             )

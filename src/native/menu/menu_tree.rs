@@ -301,6 +301,7 @@ where
             child_direction,
         )
     }
+
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
@@ -360,6 +361,34 @@ where
         .merge(status)
     }
 
+    /// tree: Tree{ menu_state, \[item_tree...] }
+    ///
+    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
+    pub(super) fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        let mut lc = layout.children();
+        let slice_layout = lc.next().unwrap();
+
+        let menu_state = tree.state.downcast_ref::<MenuState>();
+        let slice = &menu_state.slice;
+
+        self.items[slice.start_index..=slice.end_index]
+            .iter()
+            .zip(tree.children[slice.start_index..=slice.end_index].iter()) // [item_tree...]
+            .zip(slice_layout.children()) // [item_layout...]
+            .map(|((item, tree), layout)| {
+                item.mouse_interaction(tree, layout, cursor, viewport, renderer)
+            })
+            .max()
+            .unwrap_or_default()
+    }
+
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
     /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_bounds, check_bounds ]}
@@ -400,7 +429,8 @@ where
 
         // draw path
         if let Some(active) = menu_state.active {
-            let Some(active_bounds) = slice_layout.children()
+            let Some(active_bounds) = slice_layout
+                .children()
                 .nth(active - menu_state.slice.start_index)
                 .map(|l| l.bounds())
             else {
@@ -425,8 +455,7 @@ where
                 }
             }
         }
-            
-        
+
         // draw start
         let Some(start) = self.items.get(slice.start_index) else {
             return;
@@ -455,17 +484,11 @@ where
             });
 
             // draw the rest
-            let Some(items) = self
-                .items
-                .get(slice.start_index + 1..=slice.end_index)
-            else {
+            let Some(items) = self.items.get(slice.start_index + 1..=slice.end_index) else {
                 return;
             };
 
-            let Some(trees) = tree
-                .children
-                .get(slice.start_index + 1..=slice.end_index)
-            else {
+            let Some(trees) = tree.children.get(slice.start_index + 1..=slice.end_index) else {
                 return;
             };
 
@@ -697,6 +720,25 @@ where
             clipboard,
             shell,
             viewport,
+        )
+    }
+
+    /// tree: Tree{stateless, \[widget_tree, menu_tree]}
+    ///
+    pub(super) fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.item.as_widget().mouse_interaction(
+            &tree.children[0],
+            layout,
+            cursor,
+            viewport,
+            renderer,
         )
     }
 

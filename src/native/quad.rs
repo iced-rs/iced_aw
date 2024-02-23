@@ -11,7 +11,7 @@ use iced::{
         Layout, Widget,
     },
     mouse::Cursor,
-    Border, Color, Element, Length, Rectangle, Shadow, Size,
+    Background, Border, Color, Element, Length, Rectangle, Shadow, Size,
 };
 
 /// A dummy widget that draws a quad
@@ -21,30 +21,46 @@ pub struct Quad {
     pub width: Length,
     /// Height of the quad
     pub height: Length,
-    /// Color of the quad
-    pub color: Color,
-    /// Background color of the quad
-    pub background: Option<Color>,
+
     /// Methods for creating inner bounds
     pub inner_bounds: InnerBounds,
-    /// Border radius of the Quad
-    pub border_radius: [f32; 4],
-    /// Border width of the quad
-    pub border_width: f32,
-    /// Border color of the quad
-    pub border_color: Color,
+
+    /// Color of the quad
+    pub quad_color: Background,
+    /// Border of the quad
+    pub quad_border: Border,
+    /// Shadow of the quad
+    pub quad_shadow: Shadow,
+
+    /// Background color of the quad
+    pub bg_color: Option<Background>,
+    /// Border of the background
+    pub bg_border: Border,
+    /// Shadow of the background
+    pub bg_shadow: Shadow,
 }
 impl Default for Quad {
     fn default() -> Self {
         Self {
             width: Length::Fill,
             height: Length::Fill,
-            color: Color::from([0.5; 3]),
-            background: None,
             inner_bounds: InnerBounds::Ratio(0.5, 0.5),
-            border_radius: [0.0, 0.0, 0.0, 0.0],
-            border_width: 0.0,
-            border_color: Color::TRANSPARENT,
+
+            quad_color: Color::from([0.5; 3]).into(),
+            quad_border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: [0.0, 0.0, 0.0, 0.0].into(),
+            },
+            quad_shadow: Shadow::default(),
+
+            bg_color: None,
+            bg_border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: [0.0, 0.0, 0.0, 0.0].into(),
+            },
+            bg_shadow: Shadow::default(),
         }
     }
 }
@@ -72,16 +88,12 @@ where
         _cursor: Cursor,
         _viewport: &Rectangle,
     ) {
-        if let Some(b) = self.background {
+        if let Some(b) = self.bg_color {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: layout.bounds(),
-                    border: Border {
-                        radius: self.border_radius.into(),
-                        width: self.border_width,
-                        color: self.border_color,
-                    },
-                    shadow: Shadow::default(),
+                    border: self.bg_border,
+                    shadow: self.bg_shadow,
                 },
                 b,
             );
@@ -89,14 +101,10 @@ where
         renderer.fill_quad(
             renderer::Quad {
                 bounds: self.inner_bounds.get_bounds(layout.bounds()),
-                border: Border {
-                    radius: self.border_radius.into(),
-                    width: self.border_width,
-                    color: self.border_color,
-                },
-                shadow: Shadow::default(),
+                border: self.quad_border,
+                shadow: self.quad_shadow,
             },
-            self.color,
+            self.quad_color,
         );
     }
 }

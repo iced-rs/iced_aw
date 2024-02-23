@@ -15,27 +15,27 @@ pub struct CloseCondition {
  */
 
 ///
-/// ## FakeHovering: 
+/// ## FakeHovering:
 ///
-/// Places cursors at the path items, i.e. fake hovering, 
-/// useful when you want to customize the styling of each item in the path, 
-/// or you simple want the look of the items when they are hovered over. 
-/// 
-/// The downside is when some widgets in the path don't response to hovering, 
-/// the path won't be fully drawn, and when you want uniform path styling 
+/// Places cursors at the path items, 
+/// useful when you want to customize the styling of each item in the path,
+/// or you simple want the look of the items when they are hovered over.
+///
+/// The downside is when some widgets in the path don't response to hovering,
+/// the path won't be fully drawn, and when you want uniform path styling
 /// but some widgets response to hovering differently.
-/// 
+///
 /// ## Backdrop:
 ///
-/// Draws a rectangle behind each path item, 
-/// requires path items to have transparent backgrounds, 
-/// useful when you want uniform path styling. 
-/// 
-/// The downside is, 
-/// depend on the style you're going for, 
-/// sometimes manually syncing the path styling to the path items is needed
+/// Draws a rectangle behind each path item,
+/// requires path items to have transparent backgrounds,
+/// useful when you want uniform path styling.
 ///
-pub enum DrawPath{
+/// The downside is,
+/// depend on the style you're going for,
+/// oftentimes manually syncing the path's styling to the path items' is necessary
+///
+pub enum DrawPath {
     /// FakeHovering
     FakeHovering,
     /// Backdrop

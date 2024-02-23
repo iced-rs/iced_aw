@@ -49,11 +49,11 @@ impl std::default::Default for Appearance {
                 blur_radius: 10.0,
             },
             menu_background_expand: [5; 4].into(),
-            path: Color::from([0.3;3]).into(),
-            path_border: Border{
+            path: Color::from([0.3; 3]).into(),
+            path_border: Border {
                 radius: [6.0; 4].into(),
                 ..Default::default()
-            }
+            },
         }
     }
 }
