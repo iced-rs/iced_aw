@@ -19,14 +19,6 @@ use iced::{
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
 use crate::style::menu_bar::*;
 
-/// Should be returned from the recursive event processing function,
-/// tells the caller which type of event has been processed
-enum RecEvent {
-    Event,
-    Close,
-    None,
-}
-
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Theme: StyleSheet,
@@ -247,7 +239,7 @@ where
 
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
 
-            if let Some(active) = menu_state.active {
+            let rec_event = if let Some(active) = menu_state.active {
                 let next_tree = &mut menu_tree.children[active];
                 let next_item = &mut menu.items[active];
                 let next_parent_bounds = {
@@ -255,13 +247,14 @@ where
                         .children()
                         .nth(active - menu_state.slice.start_index)
                     else {
+                        prev_bounds_list.pop();
                         return RecEvent::Event;
                     };
 
                     layout.bounds()
                 };
 
-                let re = rec(
+                rec(
                     next_tree,
                     next_item,
                     event,
@@ -274,55 +267,40 @@ where
                     viewport,
                     prev_bounds_list,
                     &mut menu_state.active,
-                );
+                )
+            } else {
+                RecEvent::Close
+            };
 
-                prev_bounds_list.pop();
+            prev_bounds_list.pop();
 
-                match re {
-                    RecEvent::Event => RecEvent::Event,
-                    RecEvent::Close => {
-                        if cursor.is_over(prescroll) {
-                            menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
-                            menu.open_event(menu_tree, menu_layout, cursor);
-                            RecEvent::Event
-                        } else if cursor.is_over(offset_bounds) {
-                            RecEvent::Event
-                        } else {
-                            menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
-                            if prev.is_some() {
-                                RecEvent::None
-                            } else {
-                                RecEvent::Close
-                            }
-                        }
-                    }
-                    RecEvent::None => {
-                        if cursor.is_over(prescroll) {
-                            menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
-                            menu.open_event(menu_tree, menu_layout, cursor);
-                            RecEvent::Event
-                        } else if cursor.is_over(offset_bounds) {
-                            RecEvent::Event
-                        } else {
+            match rec_event {
+                RecEvent::Event => RecEvent::Event,
+                RecEvent::Close => {
+                    if menu_state.pressed || cursor.is_over(prescroll){
+                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
+                        menu.open_event(menu_tree, menu_layout, cursor);
+                        RecEvent::Event
+                    } else if cursor.is_over(offset_bounds) {
+                        RecEvent::Event
+                    } else {
+                        menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
+                        if prev.is_some() {
                             RecEvent::None
+                        } else {
+                            RecEvent::Close
                         }
                     }
                 }
-            } else {
-                prev_bounds_list.pop();
-
-                if cursor.is_over(prescroll) {
-                    menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
-                    menu.open_event(menu_tree, menu_layout, cursor);
-                    RecEvent::Event
-                } else if cursor.is_over(offset_bounds) {
-                    RecEvent::Event
-                } else {
-                    menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
-                    if prev.is_some() {
-                        RecEvent::None
+                RecEvent::None => {
+                    if menu_state.pressed || cursor.is_over(prescroll){
+                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport);
+                        menu.open_event(menu_tree, menu_layout, cursor);
+                        RecEvent::Event
+                    } else if cursor.is_over(offset_bounds) {
+                        RecEvent::Event
                     } else {
-                        RecEvent::Close
+                        RecEvent::None
                     }
                 }
             }

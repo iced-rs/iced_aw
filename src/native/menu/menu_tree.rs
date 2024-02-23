@@ -61,6 +61,7 @@ pub(super) struct MenuState {
     scroll_offset: f32,
     pub(super) active: Index,
     pub(super) slice: MenuSlice,
+    pub(super) pressed: bool,
 }
 impl Default for MenuState {
     fn default() -> Self {
@@ -73,6 +74,7 @@ impl Default for MenuState {
                 lower_bound_rel: 0.0,
                 upper_bound_rel: f32::MAX,
             },
+            pressed: false,
         }
     }
 }
@@ -346,6 +348,16 @@ where
             .fold(Ignored, event::Status::merge);
 
         match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                if cursor.is_over(prescroll) {
+                    menu_state.pressed = true;
+                }
+                Ignored
+            }
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                menu_state.pressed = false;
+                Ignored
+            }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
                     process_scroll_event(menu_state, prescroll, *delta, viewport.size());
@@ -546,6 +558,12 @@ where
         let offset_bounds = lc.next().unwrap().bounds();
         let check_bounds = lc.next().unwrap().bounds();
 
+        let menu_state = tree.state.downcast_mut::<MenuState>();
+
+        if menu_state.pressed {
+            return;
+        }
+
         let open = {
             if cursor.is_over(prescroll)
                 || cursor.is_over(parent_bounds)
@@ -561,9 +579,9 @@ where
 
         if !open {
             *prev = None;
-            let menu_state = tree.state.downcast_mut::<MenuState>();
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
+            menu_state.pressed = false;
         }
     }
 }

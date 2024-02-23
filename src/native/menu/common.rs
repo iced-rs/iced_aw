@@ -67,6 +67,14 @@ pub(super) enum Axis {
 
 pub(super) type Index = Option<usize>;
 
+/// Should be returned from the recursive event processing function,
+/// tells the caller which type of event has been processed
+pub(super) enum RecEvent {
+    Event,
+    Close,
+    None,
+}
+
 pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     Rectangle {
         x: rect.x - padding.left,
