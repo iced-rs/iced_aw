@@ -237,6 +237,25 @@ where
         .merge(status)
     }
 
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.roots
+            .iter()
+            .zip(&tree.children)
+            .zip(layout.children())
+            .map(|((item, tree), layout)| {
+                item.mouse_interaction(tree, layout, cursor, viewport, renderer)
+            })
+            .max()
+            .unwrap_or_default()
+    }
+
     fn draw(
         &self,
         tree: &Tree,
