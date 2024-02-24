@@ -311,7 +311,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-        scroll_speed: f32,
+        scroll_speed: ScrollSpeed,
     ) -> event::Status {
         use event::Status::*;
 
@@ -1002,7 +1002,7 @@ fn process_scroll_event(
     menu_state: &mut MenuState,
     prescroll_children_bounds: Rectangle,
     delta: mouse::ScrollDelta,
-    scroll_speed: f32,
+    scroll_speed: ScrollSpeed,
     viewport_size: Size,
 ) {
     use mouse::ScrollDelta;
@@ -1010,7 +1010,8 @@ fn process_scroll_event(
     let pcb = prescroll_children_bounds;
 
     let delta_y = match delta {
-        ScrollDelta::Lines { y, .. } | ScrollDelta::Pixels { y, .. } => y * scroll_speed,
+        ScrollDelta::Lines { y, .. } => y * scroll_speed.line,
+        ScrollDelta::Pixels { y, .. } => y * scroll_speed.pixel,
     };
 
     let max_offset = (0.0 - pcb.y).max(0.0);

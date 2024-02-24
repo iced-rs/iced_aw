@@ -33,7 +33,7 @@ where
     pub(super) init_root_bounds: Vec<Rectangle>,
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: &'b DrawPath,
-    pub(super) scroll_speed: f32,
+    pub(super) scroll_speed: ScrollSpeed,
     pub(super) style: &'b Theme::Style,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
@@ -223,7 +223,7 @@ where
             viewport: &Rectangle,
             prev_bounds_list: &mut Vec<Rectangle>,
             prev: &mut Index,
-            scroll_speed: f32,
+            scroll_speed: ScrollSpeed,
         ) -> RecEvent {
             let menu = item.menu.as_mut().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];

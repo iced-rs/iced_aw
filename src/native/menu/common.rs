@@ -75,6 +75,15 @@ pub(super) enum RecEvent {
     None,
 }
 
+#[derive(Debug, Clone, Copy)]
+/// Scroll speed
+pub struct ScrollSpeed {
+    /// Speed of line-based scroll movement
+    pub line: f32,
+    /// Speed of Pixel scroll movement
+    pub pixel: f32,
+}
+
 pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     Rectangle {
         x: rect.x - padding.left,
