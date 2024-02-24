@@ -208,7 +208,7 @@ impl Application for App {
                     .width(Length::Fill)
                     .on_press(Message::Debug("Button".into()))
                 )
-                (checkbox("Checkbox", self.check).on_toggle(|x| Message::CheckChange(x))
+                (checkbox("Checkbox", self.check).on_toggle(Message::CheckChange)
                     .width(Length::Fill)
                 )
                 (
@@ -552,7 +552,7 @@ fn color_button<'a>(
     base_button(circle(color), Message::ColorChange(color))
 }
 
-fn separator<'a>() -> quad::Quad {
+fn separator() -> quad::Quad {
     quad::Quad {
         quad_color: Color::from([0.5; 3]).into(),
         quad_border: Border {

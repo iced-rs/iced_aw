@@ -243,29 +243,26 @@ where
             let node = &items_node.children()[slice.start_index];
             let bounds = node.bounds();
             let start_offset = slice.lower_bound_rel - bounds.y;
-            let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
+            let height = slice.upper_bound_rel - slice.lower_bound_rel;
 
             Node::with_children(
-                Size::new(
-                    items_node.bounds().width,
-                    slice.upper_bound_rel - slice.lower_bound_rel,
-                ),
-                once(scale_node_y(node, factor).translate([0.0, start_offset])).collect(),
+                Size::new(items_node.bounds().width, height),
+                once(clip_node_y(node, height, start_offset)).collect(),
             )
         } else {
             let start_node = {
                 let node = &items_node.children()[slice.start_index];
                 let bounds = node.bounds();
                 let start_offset = slice.lower_bound_rel - bounds.y;
-                let factor = ((bounds.height - start_offset) / bounds.height).max(0.0);
-                scale_node_y(node, factor).translate([0.0, start_offset])
+                let height = bounds.height - start_offset;
+                clip_node_y(node, height, start_offset)
             };
 
             let end_node = {
                 let node = &items_node.children()[slice.end_index];
                 let bounds = node.bounds();
-                let factor = ((slice.upper_bound_rel - bounds.y) / bounds.height).max(0.0);
-                scale_node_y(node, factor)
+                let height = slice.upper_bound_rel - bounds.y;
+                clip_node_y(node, height, 0.0)
             };
 
             Node::with_children(
@@ -484,15 +481,10 @@ where
         };
 
         if slice.end_index == slice.start_index {
-            start.draw(
-                start_tree,
-                renderer,
-                theme,
-                style,
-                start_layout,
-                cursor,
-                viewport,
-            );
+            // draw start
+            renderer.with_layer(start_layout.bounds(), |r| {
+                start.draw(start_tree, r, theme, style, start_layout, cursor, viewport);
+            });
         } else {
             // prep end
             let Some(end) = self.items.get(slice.end_index) else {
@@ -1093,17 +1085,15 @@ fn search_bound(default_left: usize, default_right: usize, bound: f32, list: &[N
     left
 }
 
-fn scale_node_y(node: &Node, factor: f32) -> Node {
+fn clip_node_y(node: &Node, height: f32, offset: f32) -> Node {
     let node_bounds = node.bounds();
     Node::with_children(
-        Size::new(node_bounds.width, node_bounds.height * factor),
+        Size::new(node_bounds.width, height),
         node.children()
             .iter()
-            .map(|n| {
-                let n_bounds = n.bounds();
-                scale_node_y(n, factor).move_to(Point::new(n_bounds.x, n_bounds.y * factor))
-            })
+            .map(|n| n.clone().translate([0.0, -offset]))
             .collect(),
     )
     .move_to(node_bounds.position())
+    .translate([0.0, offset])
 }
