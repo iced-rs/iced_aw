@@ -142,12 +142,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "menu")]
-    pub use {
-        crate::native::menu,
-        crate::native::menu::{
-            CloseCondition, ItemHeight, ItemWidth, MenuBar, MenuTree, PathHighlight,
-        },
-    };
+    pub use crate::native::menu;
 
     #[doc(no_inline)]
     #[cfg(feature = "quad")]

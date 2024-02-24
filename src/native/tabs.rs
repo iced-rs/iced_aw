@@ -350,9 +350,7 @@ where
             tab_bar_bounds.y
                 + match self.tab_bar_position {
                     TabBarPosition::Top => 0.0,
-                    TabBarPosition::Bottom => {
-                        tab_content_node.bounds().height
-                    }
+                    TabBarPosition::Bottom => tab_content_node.bounds().height,
                 },
         ));
 

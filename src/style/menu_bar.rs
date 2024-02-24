@@ -1,31 +1,59 @@
 //! Change the appearance of menu bars and their menus.
-use iced_widget::{core::Color, style::Theme};
+use iced::{Background, Border, Color, Padding, Shadow, Theme, Vector};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]
 pub struct Appearance {
-    /// The background color of the menu bar and its menus.
-    pub background: Color,
-    /// The border width of the menu bar and its menus.
-    pub border_width: f32,
-    /// The border radius of the menu bar and its menus.
-    pub border_radius: [f32; 4],
-    /// The border [`Color`] of the menu bar and its menus.
-    pub border_color: Color,
-    /// The expand value of the menus' background
-    pub background_expand: [u16; 4],
-    /// The highlighted path [`Color`] of the the menu bar and its menus.
-    pub path: Color,
+    /// The background of the menu bar.
+    pub bar_background: Background,
+    /// The border of the menu bar.
+    pub bar_border: Border,
+    /// The shadow of the menu bar.
+    pub bar_shadow: Shadow,
+    /// Expand the menu bar background
+    pub bar_background_expand: Padding,
+
+    /// The background of the menus.
+    pub menu_background: Background,
+    /// The border of the menus.
+    pub menu_border: Border,
+    /// The shadow of the menus
+    pub menu_shadow: Shadow,
+    /// Expand the menu background
+    pub menu_background_expand: Padding,
+
+    /// The backgraound of the path
+    pub path: Background,
+    /// The border of the path
+    pub path_border: Border,
 }
 impl std::default::Default for Appearance {
     fn default() -> Self {
         Self {
-            background: Color::from([0.85; 3]),
-            border_width: 1.0,
-            border_radius: [6.0; 4],
-            border_color: Color::from([0.5; 3]),
-            background_expand: [6; 4],
-            path: Color::from([0.3; 3]),
+            bar_background: Color::from([0.85; 3]).into(),
+            bar_border: Border {
+                radius: [8.0; 4].into(),
+                ..Default::default()
+            },
+            bar_shadow: Shadow::default(),
+            bar_background_expand: [5; 4].into(),
+
+            menu_background: Color::from([0.85; 3]).into(),
+            menu_border: Border {
+                radius: [8.0; 4].into(),
+                ..Default::default()
+            },
+            menu_shadow: Shadow {
+                color: Color::from([0.0, 0.0, 0.0, 0.5]),
+                offset: Vector::ZERO,
+                blur_radius: 10.0,
+            },
+            menu_background_expand: [5; 4].into(),
+            path: Color::from([0.3; 3]).into(),
+            path_border: Border {
+                radius: [6.0; 4].into(),
+                ..Default::default()
+            },
         }
     }
 }
@@ -50,13 +78,13 @@ pub enum MenuBarStyle {
     Custom(Box<dyn StyleSheet<Style = Theme>>),
 }
 
-impl From<fn(&Theme) -> Appearance> for MenuBarStyle {
-    fn from(f: fn(&Theme) -> Appearance) -> Self {
+impl<F: Fn(&Theme) -> Appearance + 'static> From<F> for MenuBarStyle {
+    fn from(f: F) -> Self {
         Self::Custom(Box::new(f))
     }
 }
 
-impl StyleSheet for fn(&Theme) -> Appearance {
+impl<F: Fn(&Theme) -> Appearance> StyleSheet for F {
     type Style = Theme;
 
     fn appearance(&self, style: &Self::Style) -> Appearance {
@@ -72,12 +100,10 @@ impl StyleSheet for Theme {
 
         match style {
             MenuBarStyle::Default => Appearance {
-                background: palette.background.base.color,
-                border_width: 1.0,
-                border_radius: [6.0; 4],
-                border_color: palette.background.weak.color,
-                background_expand: [6; 4],
-                path: palette.primary.weak.color,
+                bar_background: palette.background.base.color.into(),
+                menu_background: palette.background.base.color.into(),
+                path: palette.primary.weak.color.into(),
+                ..Default::default()
             },
             MenuBarStyle::Custom(c) => c.appearance(self),
         }

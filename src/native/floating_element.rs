@@ -206,6 +206,7 @@ where
             .operate(&mut state.children[0], layout, renderer, operation);
     }
 
+    #[allow(clippy::unwrap_in_result)]
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
@@ -216,9 +217,7 @@ where
         let mut group = Group::new();
         let mut children = state.children.iter_mut();
 
-        if let Some(underlay) = self.underlay
-        .as_widget_mut()
-        .overlay(
+        if let Some(underlay) = self.underlay.as_widget_mut().overlay(
             children
                 .next()
                 .expect("missing underlay in floating element"),

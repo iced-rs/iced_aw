@@ -62,7 +62,7 @@ default = [
     "cupertino",
     "segmented_button",
     "drop_down",
-    #"menu",
+    "menu",
 ]
 
 [dependencies]
@@ -90,7 +90,7 @@ members = [
     "examples/date_picker",
     "examples/color_picker",
     "examples/floating_element",
-    "examples/floating_element multioverlay",
+    # "examples/floating_element multioverlay",
     "examples/floating_element_anchors",
     "examples/grid",
     "examples/modal",
@@ -112,7 +112,7 @@ members = [
     "examples/WidgetIDReturn",
     "examples/segmented_button",
     "examples/drop_down",
-    #"examples/menu",
+    "examples/menu",
 ]
 
 [workspace.dependencies.iced]

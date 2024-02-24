@@ -64,62 +64,84 @@ macro_rules! wrap_vertical {
     );
 }
 
-/// Creates a [`MenuTree`] with the given children.
+/// Creates a vec of menu items
 ///
-/// [`MenuTree`]: crate::MenuTree
+/// [`Item`]: crate::menu::Item
+///
+/// Syntax:
+/// ```
+/// menu_items!(
+///     (widget)
+///     (widget)
+///     (widget, menu)
+///     (widget)
+///     (widget, menu)
+///     (widget)
+///     ...
+/// )
+/// ```
 #[cfg(feature = "menu")]
 #[macro_export]
-macro_rules! menu_tree {
-    ($x:expr) => (
-        $crate::menu::menu_tree::MenuTree::new($x)
-    );
-    ($x:expr, $($y:expr),+ $(,)?) => (
-        $crate::menu::menu_tree::MenuTree::with_children($x, vec![$($y),+])
-    );
+macro_rules! menu_items {
+    ($($x:tt)+) => {
+        {
+            macro_rules! wrap_item {
+                (($i:expr , $m:expr)) => (
+                    $crate::menu::Item::with_menu($i, $m)
+                );
+                (($i:expr)) => (
+                    $crate::menu::Item::new($i)
+                );
+            }
+
+            vec![ $( wrap_item!($x) ),+ ]
+        }
+    }
+}
+
+/// Creates a [`Menu`] with the given items.
+///
+/// [`Menu`]: crate::menu::Menu
+///
+/// Syntax:
+/// ```
+/// menu!(
+///     (widget)
+///     (widget)
+///     (widget, menu)
+///     (widget)
+///     (widget, menu)
+///     (widget)
+///     ...
+/// )
+/// ```
+#[cfg(feature = "menu")]
+#[macro_export]
+macro_rules! menu {
+    ($($x:tt)+) => {
+        $crate::menu::Menu::new( $crate::menu_items!( $($x)+ ) )
+    }
 }
 
 /// Creates a [`MenuBar`] with the given children.
 ///
-/// [`MenuBar`]: crate::MenuBar
+/// [`MenuBar`]: crate::menu::MenuBar
+///
+/// Syntax:
+/// ```
+/// menu_bar!(
+///     (widget, menu)
+///     (widget, menu)
+///     (widget, menu)
+///     ...
+/// )
+/// ```
 #[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_bar {
-    () => (
-        $crate::menu::menu_bar::MenuBar::new(vec![])
+    ($(($x:expr, $m:expr))+) => (
+        $crate::menu::MenuBar::new(vec![ $( Item::with_menu($x, $m) ),+ ])
     );
-    ($($x:expr),+ $(,)?) => (
-        $crate::menu::menu_bar::MenuBar::new(vec![$($x),+])
-    );
-}
-
-#[cfg(feature = "menu")]
-/// Shortcut helper to create a [`MenuBar`] Widget.
-///
-/// [`MenuBar`]: crate::MenuBar
-#[must_use]
-pub fn menu_bar<Message, Renderer>(
-    menu_roots: Vec<crate::menu::menu_tree::MenuTree<Message, Renderer>>,
-) -> crate::menu::menu_bar::MenuBar<Message, Renderer>
-where
-    Renderer: renderer::Renderer,
-    Renderer::Theme: crate::style::menu_bar::StyleSheet,
-{
-    crate::menu::menu_bar::MenuBar::new(menu_roots)
-}
-
-#[cfg(feature = "menu")]
-/// Shortcut helper to create a [`MenuTree`] Widget.
-///
-/// [`MenuTree`]: crate::MenuTree
-#[must_use]
-pub fn menu_tree<'a, Message, Renderer>(
-    item: impl Into<Element<'a, Message, Renderer>>,
-    children: Vec<impl Into<crate::menu::menu_tree::MenuTree<'a, Message, Renderer>>>,
-) -> crate::menu::menu_tree::MenuTree<'a, Message, Renderer>
-where
-    Renderer: renderer::Renderer,
-{
-    crate::menu::menu_tree::MenuTree::with_children(item, children)
 }
 
 #[cfg(feature = "badge")]
