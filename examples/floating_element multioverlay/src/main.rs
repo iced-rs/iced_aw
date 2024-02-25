@@ -2,7 +2,7 @@ use iced::widget::button;
 use iced::widget::button::Appearance;
 use iced::{
     alignment, font, theme,
-    widget::{container, text, Button, Column, Container, PickList, Scrollable, Text},
+    widget::{container, text, Button, Container, PickList, Text},
     Application, Command, Element, Length, Settings, Theme,
 };
 

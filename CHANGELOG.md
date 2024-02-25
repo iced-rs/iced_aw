@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-02-24
+### Added
+- Tab bar now follows native iced theme @Redhawk.
+- Added nerd fonts @RedHawk
+- Slider Bar widget.
+- DropDown Widget @wiiznokes.
+
+### Changed
+- Updated `Menu` @latidoremi.
+- Updated to latest iced 0.12.0.
+- Updated bootstrap fonts @RedHawk.
+- Updated to support latest winit changes for input.
+
+### Fixed
+- Tabs Icons and text not rendering correctly.
+- use_24h not working on time picker.
+- Tabs content offset not taking into consideration the Tabs height.
+- Grid not rendering and aligning correctly.
+- Floating Element now can use other overlay widgets inside its content.
+
 ## [0.7.0] - 2023-08-30
 
 ### Added
