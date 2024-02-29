@@ -5,13 +5,13 @@ use crate::style::modal::StyleSheet;
 use iced::{
     advanced::{
         layout::{Limits, Node},
-        renderer,
-        widget::Tree,
+        overlay, renderer,
+        widget::{Operation, Tree},
         Clipboard, Layout, Overlay, Shell,
     },
     alignment, event, keyboard,
     mouse::{self, Cursor},
-    touch, Alignment, Border, Color, Element, Event, Rectangle, Shadow, Size,
+    touch, Alignment, Border, Color, Element, Event, Rectangle, Shadow, Size, Vector,
 };
 
 /// The overlay of the modal.
@@ -211,5 +211,35 @@ where
             cursor,
             &bounds,
         );
+    }
+
+    fn overlay<'c>(
+        &'c mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+    ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
+        let content_layout = layout.children().next()?;
+        self.content.as_widget_mut().overlay(
+            self.state,
+            content_layout,
+            renderer,
+            Vector::new(0.0, 0.0),
+        )
+    }
+
+    fn operate(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("Native: Layout should have a content layout.");
+
+        self.content
+            .as_widget()
+            .operate(self.state, content_layout, renderer, operation);
     }
 }

@@ -7,7 +7,8 @@ use super::overlay::modal::ModalOverlay;
 use iced::{
     advanced::{
         layout::{Limits, Node},
-        overlay, renderer,
+        overlay::{self, Group},
+        renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
@@ -237,26 +238,34 @@ where
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        if let Some(overlay) = &mut self.overlay {
-            overlay.as_widget().diff(&mut state.children[1]);
+        let mut group = Group::new();
+        let mut children = state.children.iter_mut();
 
-            Some(overlay::Element::new(Box::new(ModalOverlay::new(
-                &mut state.children[1],
-                overlay,
-                self.backdrop.clone(),
-                self.esc.clone(),
-                self.style.clone(),
-                self.horizontal_alignment,
-                self.vertical_alignment,
-            ))))
-        } else {
-            self.underlay.as_widget_mut().overlay(
-                &mut state.children[0],
-                layout,
-                renderer,
-                translation,
-            )
+        if let Some(underlay) =
+            self.underlay
+                .as_widget_mut()
+                .overlay(children.next()?, layout, renderer, translation)
+        {
+            group = group.push(underlay);
         }
+
+        if let Some(overlay) = &mut self.overlay {
+            if let Some(el) = children.next() {
+                overlay.as_widget().diff(el);
+
+                group = group.push(overlay::Element::new(Box::new(ModalOverlay::new(
+                    el,
+                    overlay,
+                    self.backdrop.clone(),
+                    self.esc.clone(),
+                    self.style.clone(),
+                    self.horizontal_alignment,
+                    self.vertical_alignment,
+                ))));
+            }
+        }
+
+        Some(group.overlay())
     }
 
     fn operate<'b>(
