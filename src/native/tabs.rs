@@ -312,7 +312,7 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if !tree.children.contains(1) && !tree.children.contains(1) {
+        if !tree.children.is_empty() {
             let tabs = Tree {
                 tag: Tag::stateless(),
                 state: State::None,
@@ -328,7 +328,7 @@ where
             tree.children = vec![bar, tabs];
         }
 
-        if let Some(tabs) = tree.children.get(1) {
+        if let Some(tabs) = tree.children.get_mut(1) {
             tabs.diff_children(&self.tabs);
         }
     }
