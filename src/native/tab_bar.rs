@@ -523,16 +523,16 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if layout
-                    .bounds()
-                    .contains(cursor.position().unwrap_or_default())
+                if cursor
+                    .position()
+                    .map_or(false, |pos| layout.bounds().contains(pos))
                 {
                     let tabs_map: Vec<bool> = layout
                         .children()
                         .map(|layout| {
-                            layout
-                                .bounds()
-                                .contains(cursor.position().unwrap_or_default())
+                            cursor
+                                .position()
+                                .map_or(false, |pos| layout.bounds().contains(pos))
                         })
                         .collect();
 
@@ -544,7 +544,7 @@ where
                                     let tab_layout = layout.children().nth(new_selected).expect("Native: Layout should have a tab layout at the selected index");
                                     let cross_layout = tab_layout.children().nth(1).expect("Native: Layout should have a close layout");
 
-                                    cross_layout.bounds().contains(cursor.position().unwrap_or_default())
+                                    cursor.position().map_or(false, |pos| cross_layout.bounds().contains(pos) )
                                 })
                                 .map_or_else(
                                     || (self.on_select)(self.tab_indices[new_selected].clone()),
@@ -572,9 +572,9 @@ where
         let mut mouse_interaction = mouse::Interaction::default();
 
         for layout in children {
-            let is_mouse_over = layout
-                .bounds()
-                .contains(cursor.position().unwrap_or_default());
+            let is_mouse_over = cursor
+                .position()
+                .map_or(false, |pos| layout.bounds().contains(pos));
             let new_mouse_interaction = if is_mouse_over {
                 mouse::Interaction::Pointer
             } else {
@@ -601,7 +601,7 @@ where
     ) {
         let bounds = layout.bounds();
         let children = layout.children();
-        let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
+        let is_mouse_over = cursor.position().map_or(false, |pos| bounds.contains(pos));
         let style_sheet = if is_mouse_over {
             theme.hovered(&self.style, false)
         } else {
@@ -672,16 +672,15 @@ fn draw_tab<Theme, Renderer>(
         item.expect("Graphics: Layout should have an texts layout for an IconText")
             .bounds()
     }
-    let is_mouse_over = layout
-        .bounds()
-        .contains(cursor.position().unwrap_or_default());
+
+    let bounds = layout.bounds();
+    let is_mouse_over = cursor.position().map_or(false, |pos| bounds.contains(pos));
     let style = if is_mouse_over {
         theme.hovered(style, is_selected)
     } else {
         theme.active(style, is_selected)
     };
 
-    let bounds = layout.bounds();
     let mut children = layout.children();
     let label_layout = children
         .next()
