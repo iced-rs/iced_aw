@@ -672,9 +672,9 @@ fn draw_tab<Theme, Renderer>(
         item.expect("Graphics: Layout should have an texts layout for an IconText")
             .bounds()
     }
-    let is_mouse_over = layout
-        .bounds()
-        .contains(cursor.position().unwrap_or_default());
+    let is_mouse_over = cursor
+        .position()
+        .map_or(false, |pos| layout.bounds().contains(pos));
     let style = if is_mouse_over {
         theme.hovered(style, is_selected)
     } else {
