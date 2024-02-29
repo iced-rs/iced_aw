@@ -312,7 +312,25 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.children[1].diff_children(&self.tabs);
+        if !tree.children.contains(1) && !tree.children.contains(1) {
+            let tabs = Tree {
+                tag: Tag::stateless(),
+                state: State::None,
+                children: self.tabs.iter().map(Tree::new).collect(),
+            };
+
+            let bar = Tree {
+                tag: self.tab_bar.tag(),
+                state: self.tab_bar.state(),
+                children: self.tab_bar.children(),
+            };
+
+            tree.children = vec![bar, tabs];
+        }
+
+        if let Some(tabs) = tree.children.get(1) {
+            tabs.diff_children(&self.tabs);
+        }
     }
 
     fn size(&self) -> Size<Length> {
