@@ -191,11 +191,7 @@ impl StyleSheet for Theme {
         let palette = self.extended_palette();
         match style {
             TabBarStyles::Default => Appearance {
-                tab_label_background: Background::Color(if is_active {
-                    palette.background.strong.color
-                } else {
-                    palette.primary.strong.color
-                }),
+                tab_label_background: Background::Color(palette.primary.strong.color),
                 ..self.active(style, is_active)
             },
             TabBarStyles::Dark => Appearance {
