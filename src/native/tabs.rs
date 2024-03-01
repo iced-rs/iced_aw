@@ -312,20 +312,8 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if !tree.children.is_empty() {
-            let tabs = Tree {
-                tag: Tag::stateless(),
-                state: State::None,
-                children: self.tabs.iter().map(Tree::new).collect(),
-            };
-
-            let bar = Tree {
-                tag: self.tab_bar.tag(),
-                state: self.tab_bar.state(),
-                children: self.tab_bar.children(),
-            };
-
-            tree.children = vec![bar, tabs];
+        if tree.children.is_empty() {
+            tree.children = self.children();
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
