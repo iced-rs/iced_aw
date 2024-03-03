@@ -384,7 +384,7 @@ where
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
             .width(Length::Shrink)
-            .height(Length::Fill);
+            .height(Length::Shrink);
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
@@ -417,7 +417,7 @@ where
                     )
                     .push(
                         // Month
-                        Text::new("September").width(Length::Shrink),
+                        Text::new("September").size(font_size).width(Length::Shrink),
                     )
                     .push(
                         // Right Month arrow
@@ -447,7 +447,7 @@ where
                     )
                     .push(
                         // Year
-                        Text::new("9999").width(Length::Shrink),
+                        Text::new("9999").size(font_size).width(Length::Shrink),
                     )
                     .push(
                         // Right Year arrow
