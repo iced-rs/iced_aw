@@ -76,6 +76,8 @@ where
     style: <Theme as StyleSheet>::Style,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
+    /// The font size of text and icons in the [`DatePickerOverlay`]
+    font_size: Pixels,
 }
 
 impl<'a, Message, Theme> DatePickerOverlay<'a, Message, Theme>
@@ -92,6 +94,7 @@ where
         style: <Theme as StyleSheet>::Style,
         tree: &'a mut Tree,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
+        font_size: Pixels,
     ) -> Self {
         let date_picker::State { overlay_state } = state;
 
@@ -100,6 +103,7 @@ where
             cancel_button: Button::new(
                 text::Text::new(icon_to_string(BootstrapIcon::X))
                     .font(crate::BOOTSTRAP_FONT)
+                    .size(font_size)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -108,6 +112,7 @@ where
             submit_button: Button::new(
                 text::Text::new(icon_to_string(BootstrapIcon::Check))
                     .font(crate::BOOTSTRAP_FONT)
+                    .size(font_size)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -117,6 +122,7 @@ where
             position,
             style,
             tree,
+            font_size,
         }
     }
 
@@ -126,14 +132,9 @@ where
         overlay::Element::new(Box::new(self))
     }
 
-    /// String representation of the current year.
-    fn year_as_string(&self) -> String {
-        crate::core::date::year_as_string(self.state.date)
-    }
-
-    /// String representation of the current month.
-    fn month_as_string(&self) -> String {
-        crate::core::date::month_as_string(self.state.date)
+    /// String representation of the current month and year.
+    fn date_as_string(&self) -> String {
+        crate::core::date::date_as_string(self.state.date)
     }
 
     /// The event handling for the month / year bar.
@@ -382,10 +383,8 @@ where
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(Padding::from(PADDING))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .max_width(300.0)
-            .max_height(300.0);
+            .width(Length::Shrink)
+            .height(Length::Fill);
 
         // Pre-Buttons TODO: get rid of it
         let cancel_limits = limits;
@@ -396,24 +395,29 @@ where
         let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height + SPACING));
 
         // Month/Year
-        let font_size = renderer.default_size();
+        let font_size = self.font_size;
 
         let month_year = Row::<Message, Theme, Renderer>::new()
-            .width(Length::Fill)
+            .width(Length::Shrink)
             .spacing(SPACING)
             .push(
                 Row::new()
-                    .width(Length::Fill)
-                    .push(Container::new(
-                        Row::new().push(
+                    .width(Length::Shrink)
+                    .spacing(SPACING)
+                    .align_items(Alignment::Center)
+                    .push(
+                        // Left Month arrow
+                        Container::new(
                             Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
-                        ),
-                    ))
+                        )
+                        .height(Length::Shrink)
+                        .width(Length::Shrink),
+                    )
                     .push(
                         // Month
-                        Text::new("October").width(Length::Fill),
+                        Text::new("September").width(Length::Shrink),
                     )
                     .push(
                         // Right Month arrow
@@ -428,26 +432,29 @@ where
             )
             .push(
                 Row::new()
-                    .width(Length::Fill)
-                    .push(Container::new(
-                        Row::new().push(
+                    .width(Length::Shrink)
+                    .spacing(SPACING)
+                    .align_items(Alignment::Center)
+                    .push(
+                        // Left Year arrow
+                        Container::new(
                             Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(BOOTSTRAP_FONT),
-                        ),
-                    ))
+                        )
+                        .height(Length::Shrink)
+                        .width(Length::Shrink),
+                    )
                     .push(
                         // Year
-                        Text::new("9999").width(Length::Fill),
+                        Text::new("9999").width(Length::Shrink),
                     )
                     .push(
                         // Right Year arrow
                         Container::new(
-                            Row::new().push(
-                                Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
-                                    .size(font_size.0 + 1.0)
-                                    .font(BOOTSTRAP_FONT),
-                            ),
+                            Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
+                                .size(font_size.0 + 1.0)
+                                .font(BOOTSTRAP_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -455,27 +462,28 @@ where
             );
 
         let days = Container::<Message, Theme, Renderer>::new((0..7).fold(
-            Column::new().width(Length::Fill).height(Length::Fill),
+            Column::new().width(Length::Shrink).height(Length::Shrink),
             |column, _y| {
                 column.push(
                     (0..7).fold(
                         Row::new()
-                            .height(Length::Fill)
-                            .width(Length::Fill)
-                            .padding(DAY_CELL_PADDING),
+                            .height(Length::Shrink)
+                            .width(Length::Shrink)
+                            .spacing(SPACING),
                         |row, _x| {
                             row.push(
                                 Container::new(Row::new().push(Text::new("31").size(font_size)))
-                                    .width(Length::Fill)
-                                    .height(Length::Fill),
+                                    .width(Length::Shrink)
+                                    .height(Length::Shrink)
+                                    .padding(DAY_CELL_PADDING),
                             )
                         },
                     ),
                 )
             },
         ))
-        .width(Length::Fill)
-        .height(Length::Fill)
+        .width(Length::Shrink)
+        .height(Length::Shrink)
         .center_y();
 
         let col = Column::<Message, Theme, Renderer>::new()
@@ -790,11 +798,11 @@ where
         month_year(
             renderer,
             month_year_layout,
-            &self.month_as_string(),
-            &self.year_as_string(),
+            &self.date_as_string(),
             cursor.position().unwrap_or_default(),
             &style_sheet,
             self.state.focus,
+            self.font_size,
         );
 
         // ----------- Days ---------------------------
@@ -812,6 +820,7 @@ where
             cursor.position().unwrap_or_default(),
             &style_sheet,
             self.state.focus,
+            self.font_size,
         );
 
         // ----------- Buttons ------------------------
@@ -1061,12 +1070,12 @@ impl Default for Focus {
 fn month_year(
     renderer: &mut Renderer,
     layout: Layout<'_>,
-    month: &str,
-    year: &str,
+    date: &str,
     cursor: Point,
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
+    font_size: Pixels,
 ) {
     let mut children = layout.children();
 
@@ -1077,7 +1086,7 @@ fn month_year(
         .next()
         .expect("Graphics: Layout should have a year layout");
 
-    let mut f = |layout: Layout<'_>, text: &str, target: Focus| {
+    let mut f = |layout: Layout<'_>, text: &str, target: Focus, font_size: Pixels| {
         let style_state = if focus == target {
             StyleState::Focused
         } else {
@@ -1131,14 +1140,11 @@ fn month_year(
         }
 
         // Left caret
-
         renderer.fill_text(
             iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
-                size: Pixels(
-                    renderer.default_size().0 + if left_arrow_hovered { 1.0 } else { 0.0 },
-                ),
+                size: Pixels(font_size.0 + if left_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1158,7 +1164,7 @@ fn month_year(
             iced::advanced::Text {
                 content: text,
                 bounds: Size::new(center_bounds.width, center_bounds.height),
-                size: renderer.default_size(),
+                size: font_size,
                 font: renderer.default_font(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1178,9 +1184,7 @@ fn month_year(
             iced::advanced::Text {
                 content: &icon_to_string(BootstrapIcon::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
-                size: Pixels(
-                    renderer.default_size().0 + if right_arrow_hovered { 1.0 } else { 0.0 },
-                ),
+                size: Pixels(font_size.0 + if right_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1196,11 +1200,13 @@ fn month_year(
         );
     };
 
+    let (year, month) = date.split_once(' ').expect("Date must contain space");
+
     // Draw month
-    f(month_layout, month, Focus::Month);
+    f(month_layout, month, Focus::Month, font_size);
 
     // Draw year
-    f(year_layout, year, Focus::Year);
+    f(year_layout, year, Focus::Year, font_size);
 }
 
 /// Draws the days
@@ -1212,15 +1218,24 @@ fn days(
     //style: &Style,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
+    font_size: Pixels,
 ) {
     let mut children = layout.children();
 
     let day_labels_layout = children
         .next()
         .expect("Graphics: Layout should have a day labels layout");
-    day_labels(renderer, day_labels_layout, style, focus);
+    day_labels(renderer, day_labels_layout, style, focus, font_size);
 
-    day_table(renderer, &mut children, date, cursor, style, focus);
+    day_table(
+        renderer,
+        &mut children,
+        date,
+        cursor,
+        style,
+        focus,
+        font_size,
+    );
 }
 
 /// Draws the day labels
@@ -1229,6 +1244,7 @@ fn day_labels(
     layout: Layout<'_>,
     style: &HashMap<StyleState, Appearance>,
     _focus: Focus,
+    font_size: Pixels,
 ) {
     for (i, label) in layout.children().enumerate() {
         let bounds = label.bounds();
@@ -1237,7 +1253,7 @@ fn day_labels(
             iced::advanced::Text {
                 content: &crate::core::date::WEEKDAY_LABELS[i],
                 bounds: Size::new(bounds.width, bounds.height),
-                size: renderer.default_size(),
+                size: font_size,
                 font: renderer.default_font(),
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
@@ -1262,6 +1278,7 @@ fn day_table(
     cursor: Point,
     style: &HashMap<StyleState, Appearance>,
     focus: Focus,
+    font_size: Pixels,
 ) {
     for (y, row) in children.enumerate() {
         for (x, label) in row.children().enumerate() {
@@ -1326,7 +1343,7 @@ fn day_table(
                 iced::advanced::Text {
                     content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                     bounds: Size::new(bounds.width, bounds.height),
-                    size: renderer.default_size(),
+                    size: font_size,
                     font: renderer.default_font(),
                     horizontal_alignment: Horizontal::Center,
                     vertical_alignment: Vertical::Center,
