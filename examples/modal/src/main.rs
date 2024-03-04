@@ -1,7 +1,7 @@
 use iced::{
     alignment::{self, Horizontal},
     font,
-    widget::{container, text, Button, Container, Row, Text},
+    widget::{container, pick_list, text, Button, Container, Row, Text},
     Alignment, Application, Command, Element, Length, Settings, Theme,
 };
 
@@ -17,6 +17,7 @@ enum Message {
     CloseModal,
     CancelButtonPressed,
     OkButtonPressed,
+    ChangeTheme(Theme),
     #[allow(dead_code)]
     Loaded(Result<(), String>),
     FontLoaded(Result<(), font::Error>),
@@ -32,6 +33,7 @@ enum ModalExample {
 struct State {
     show_modal: bool,
     last_message: Option<Message>,
+    theme: Theme,
 }
 
 async fn load() -> Result<(), String> {
@@ -71,6 +73,7 @@ impl Application for ModalExample {
                     Message::CloseModal => state.show_modal = false,
                     Message::CancelButtonPressed => state.show_modal = false,
                     Message::OkButtonPressed => state.show_modal = false,
+                    Message::ChangeTheme(ref t) => state.theme = t.clone(),
                     _ => {}
                 }
 
@@ -99,6 +102,11 @@ impl Application for ModalExample {
                         .spacing(10)
                         .align_items(Alignment::Center)
                         .push(Button::new(Text::new("Open modal!")).on_press(Message::OpenModal))
+                        .push(pick_list(
+                            Theme::ALL,
+                            Some(&state.theme),
+                            Message::ChangeTheme,
+                        ))
                         .push(Text::new(format!(
                             "Last message: {}",
                             match state.last_message.as_ref() {
@@ -107,6 +115,7 @@ impl Application for ModalExample {
                                     Message::CloseModal => "Modal closed",
                                     Message::CancelButtonPressed => "Modal canceled",
                                     Message::OkButtonPressed => "Modal accepted",
+                                    Message::ChangeTheme(_) => "Changed Theme",
                                     _ => "None",
                                 },
                                 None => "None",
@@ -125,6 +134,11 @@ impl Application for ModalExample {
                                 .spacing(10)
                                 .padding(5)
                                 .width(Length::Fill)
+                                .push(pick_list(
+                                    Theme::ALL,
+                                    Some(&state.theme),
+                                    Message::ChangeTheme,
+                                ))
                                 .push(
                                     Button::new(
                                         Text::new("Cancel")
@@ -141,7 +155,7 @@ impl Application for ModalExample {
                                     .on_press(Message::OkButtonPressed),
                                 ),
                         )
-                        .max_width(300.0)
+                        .max_width(500.0)
                         //.width(Length::Shrink)
                         .on_close(Message::CloseModal),
                     )
@@ -155,6 +169,13 @@ impl Application for ModalExample {
                     .align_y(alignment::Vertical::Center)
                     .into()
             }
+        }
+    }
+
+    fn theme(&self) -> Theme {
+        match self {
+            ModalExample::Loading => Theme::Light,
+            ModalExample::Loaded(state) => state.theme.clone(),
         }
     }
 }

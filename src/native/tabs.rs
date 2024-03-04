@@ -312,7 +312,13 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.children[1].diff_children(&self.tabs);
+        if tree.children.is_empty() {
+            tree.children = self.children();
+        }
+
+        if let Some(tabs) = tree.children.get_mut(1) {
+            tabs.diff_children(&self.tabs);
+        }
     }
 
     fn size(&self) -> Size<Length> {
