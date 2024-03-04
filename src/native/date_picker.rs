@@ -9,6 +9,7 @@ use iced::{
     advanced::{
         layout::{Limits, Node},
         renderer,
+        text::Renderer as _,
         widget::{
             self,
             tree::{Tag, Tree},
@@ -21,6 +22,7 @@ use iced::{
     Element,
     Event,
     Length,
+    Pixels,
     Point,
     Rectangle,
     Renderer, // the actual type
@@ -78,6 +80,8 @@ where
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Theme, Renderer>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
+    /// The font and icon size of the [`DatePickerOverlay`] or `None` for the default
+    font_size: Option<Pixels>,
 }
 
 impl<'a, Message, Theme> DatePicker<'a, Message, Theme>
@@ -120,6 +124,7 @@ where
             style: <Theme as StyleSheet>::Style::default(),
             overlay_state: DatePickerOverlayButtons::default().into(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
+            font_size: None,
         }
     }
 
@@ -128,6 +133,13 @@ where
     pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
         self.style = style;
         //self.button_style = style.into();
+        self
+    }
+
+    /// Sets the font and icon size of the [`DatePicker`].
+    #[must_use]
+    pub fn font_size<P: Into<Pixels>>(mut self, size: P) -> Self {
+        self.font_size = Some(size.into());
         self
     }
 }
@@ -286,6 +298,7 @@ where
                 position,
                 self.style.clone(),
                 &mut state.children[1],
+                self.font_size.unwrap_or_else(|| renderer.default_size()),
             )
             .overlay(),
         )

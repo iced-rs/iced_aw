@@ -204,18 +204,10 @@ const fn num_days_of_month(year: i32, month: u32) -> u32 {
     }
 }
 
-/// Gets the string representation of the year of the given date.
-
+/// Gets the string representation of the date of the given month and date.
 #[must_use]
-pub fn year_as_string(date: NaiveDate) -> String {
-    date.format("%Y").to_string()
-}
-
-/// Gets the string representation of the month of the given date.
-
-#[must_use]
-pub fn month_as_string(date: NaiveDate) -> String {
-    date.format("%B").to_string()
+pub fn date_as_string(date: NaiveDate) -> String {
+    date.format("%Y %B").to_string()
 }
 
 /// Gets the length of the longest month name.
@@ -237,8 +229,11 @@ pub static MAX_MONTH_STR_LEN: Lazy<usize> = Lazy::new(|| {
 
     let max = months
         .iter()
-        .map(|m| month_as_string(*m))
-        .map(|s| s.len())
+        .map(|m| {
+            let d = date_as_string(*m);
+            let (_, s) = d.split_once(' ').expect("Date must contain space");
+            s.len()
+        })
         .max()
         .expect("There should be a maximum element");
 
