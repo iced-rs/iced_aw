@@ -8,6 +8,6 @@ edition = "2021"
 
 [dependencies]
 iced_aw = { workspace = true, features = [
-    "card",
+    "card", "icons"
 ] }
 iced.workspace = true
