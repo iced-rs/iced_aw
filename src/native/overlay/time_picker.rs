@@ -10,8 +10,8 @@ use crate::{
     },
     core::{clock, overlay::Position, time::Period},
     graphics::icons::{
-        bootstrap::{icon_to_string, BootstrapIcon},
-        BOOTSTRAP_FONT,
+        bootstrap::icon_to_string,
+        {Bootstrap, BOOTSTRAP_FONT},
     },
     style::style_state::StyleState,
     time_picker::{self, Time},
@@ -109,7 +109,7 @@ where
         TimePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::X))
+                text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
@@ -117,7 +117,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
@@ -1471,7 +1471,7 @@ fn draw_digital_clock<Message, Theme>(
         // Caret up
         renderer.fill_text(
             Text {
-                content: char::from(BootstrapIcon::CaretUpFill).encode_utf8(&mut buffer),
+                content: char::from(Bootstrap::CaretUpFill).encode_utf8(&mut buffer),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
                 size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
                 font: crate::graphics::icons::BOOTSTRAP_FONT,
@@ -1511,7 +1511,7 @@ fn draw_digital_clock<Message, Theme>(
         // Down caret
         renderer.fill_text(
             Text {
-                content: char::from(BootstrapIcon::CaretDownFill).encode_utf8(&mut buffer),
+                content: char::from(Bootstrap::CaretDownFill).encode_utf8(&mut buffer),
                 bounds: Size::new(down_bounds.width, down_bounds.height),
                 size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
@@ -1728,14 +1728,14 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::X))
+                text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),

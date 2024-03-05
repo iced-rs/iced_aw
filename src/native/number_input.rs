@@ -28,7 +28,7 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::style;
 pub use crate::{
-    graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT},
+    graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 
@@ -709,7 +709,7 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(BootstrapIcon::CaretDownFill),
+                content: &icon_to_string(Bootstrap::CaretDownFill),
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
                 font: BOOTSTRAP_FONT,
@@ -741,7 +741,7 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(BootstrapIcon::CaretUpFill),
+                content: &icon_to_string(Bootstrap::CaretUpFill),
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
                 font: BOOTSTRAP_FONT,

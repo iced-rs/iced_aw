@@ -5,7 +5,7 @@ use iced::widget::{
 use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
 
-use iced_aw::graphics::icons::{BootstrapIcon, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
+use iced_aw::graphics::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{self, Item, Menu, StyleSheet};
 use iced_aw::style::MenuBarStyle;
 use iced_aw::{menu_bar, menu_items};
@@ -534,7 +534,7 @@ fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, i
             text(label)
                 .width(Length::Fill)
                 .vertical_alignment(alignment::Vertical::Center),
-            text(BootstrapIcon::CaretRightFill)
+            text(Bootstrap::CaretRightFill)
                 .font(BOOTSTRAP_FONT)
                 .width(Length::Shrink)
                 .vertical_alignment(alignment::Vertical::Center),

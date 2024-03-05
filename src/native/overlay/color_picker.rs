@@ -8,7 +8,7 @@ use crate::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    graphics::icons::bootstrap::{icon_to_string, BootstrapIcon},
+    graphics::icons::bootstrap::{icon_to_string, Bootstrap},
     style::{
         color_picker::{Appearance, StyleSheet},
         style_state::StyleState,
@@ -107,7 +107,7 @@ where
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced::widget::Text::new(icon_to_string(BootstrapIcon::X))
+                iced::widget::Text::new(icon_to_string(Bootstrap::X))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
@@ -115,7 +115,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced::widget::Text::new(icon_to_string(BootstrapIcon::Check))
+                iced::widget::Text::new(icon_to_string(Bootstrap::Check))
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
@@ -1722,11 +1722,11 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                widget::Text::new(icon_to_string(BootstrapIcon::X)).font(crate::BOOTSTRAP_FONT),
+                widget::Text::new(icon_to_string(Bootstrap::X)).font(crate::BOOTSTRAP_FONT),
             )
             .into(),
             submit_button: Button::new(
-                widget::Text::new(icon_to_string(BootstrapIcon::Check)).font(crate::BOOTSTRAP_FONT),
+                widget::Text::new(icon_to_string(Bootstrap::Check)).font(crate::BOOTSTRAP_FONT),
             )
             .into(),
         }

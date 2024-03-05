@@ -8,7 +8,7 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT},
+    graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::{
         date_picker::{Appearance, StyleSheet},
         style_state::StyleState,
@@ -101,7 +101,7 @@ where
         DatePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::X))
+                text::Text::new(icon_to_string(Bootstrap::X))
                     .font(crate::BOOTSTRAP_FONT)
                     .size(font_size)
                     .horizontal_alignment(Horizontal::Center)
@@ -110,7 +110,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(crate::BOOTSTRAP_FONT)
                     .size(font_size)
                     .horizontal_alignment(Horizontal::Center)
@@ -408,7 +408,7 @@ where
                     .push(
                         // Left Month arrow
                         Container::new(
-                            Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
+                            Text::new(icon_to_string(Bootstrap::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
                         )
@@ -422,7 +422,7 @@ where
                     .push(
                         // Right Month arrow
                         Container::new(
-                            Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
+                            Text::new(icon_to_string(Bootstrap::CaretRightFill))
                                 .size(font_size.0 + 1.0)
                                 .font(crate::BOOTSTRAP_FONT),
                         )
@@ -438,7 +438,7 @@ where
                     .push(
                         // Left Year arrow
                         Container::new(
-                            Text::new(icon_to_string(BootstrapIcon::CaretLeftFill))
+                            Text::new(icon_to_string(Bootstrap::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
                                 .font(BOOTSTRAP_FONT),
                         )
@@ -452,7 +452,7 @@ where
                     .push(
                         // Right Year arrow
                         Container::new(
-                            Text::new(icon_to_string(BootstrapIcon::CaretRightFill))
+                            Text::new(icon_to_string(Bootstrap::CaretRightFill))
                                 .size(font_size.0 + 1.0)
                                 .font(BOOTSTRAP_FONT),
                         )
@@ -938,14 +938,14 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::X))
+                text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(BootstrapIcon::Check))
+                text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill),
@@ -1142,7 +1142,7 @@ fn month_year(
         // Left caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: &icon_to_string(BootstrapIcon::CaretLeftFill),
+                content: &icon_to_string(Bootstrap::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
                 size: Pixels(font_size.0 + if left_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
@@ -1182,7 +1182,7 @@ fn month_year(
         // Right caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: &icon_to_string(BootstrapIcon::CaretRightFill),
+                content: &icon_to_string(Bootstrap::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
                 size: Pixels(font_size.0 + if right_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,

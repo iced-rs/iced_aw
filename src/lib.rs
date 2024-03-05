@@ -57,20 +57,21 @@ pub use iced::Element;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
-    #[doc(no_inline)]
-    #[cfg(feature = "icons")]
-    pub use {
-        crate::graphics::icons::{nerd::NerdIcon, BootstrapIcon},
-        crate::graphics::icons::{
-            BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, NERD_FONT, NERD_FONT_BYTES,
-        },
-    };
 
-    #[cfg(not(feature = "icons"))]
-    pub use {
-        crate::graphics::icons::BootstrapIcon,
-        crate::graphics::icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES},
-    };
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "icons")] {
+            pub use {
+                crate::graphics::icons::{
+                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,
+                },
+            };
+
+        } else {
+            pub use {
+                crate::graphics::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES},
+            };
+        }
+    }
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
