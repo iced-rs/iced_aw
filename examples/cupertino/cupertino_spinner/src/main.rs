@@ -1,7 +1,7 @@
 use iced::alignment;
 use iced::widget::{column, container, text};
 use iced::{executor, Application, Command, Element, Length, Settings, Theme};
-use iced_aw::native::cupertino::cupertino_spinner::CupertinoSpinner;
+use iced_aw::widgets::cupertino::cupertino_spinner::CupertinoSpinner;
 
 pub fn main() -> iced::Result {
     Spinner::run(Settings {

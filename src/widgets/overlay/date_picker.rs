@@ -3,12 +3,12 @@
 //! *This API requires the following crate features to be activated: `date_picker`*
 
 use crate::{
+    core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     core::{
         date::{Date, IsInMonth},
         overlay::Position,
     },
     date_picker,
-    graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::{
         date_picker::{Appearance, StyleSheet},
         style_state::StyleState,

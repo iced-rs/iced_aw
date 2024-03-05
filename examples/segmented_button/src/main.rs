@@ -2,7 +2,7 @@ use iced::widget::container;
 use iced::widget::{column, row, text};
 use iced::{Element, Length, Sandbox, Settings};
 
-use iced_aw::native::segmented_button;
+use iced_aw::widgets::segmented_button;
 use segmented_button::SegmentedButton;
 
 pub fn main() -> iced::Result {

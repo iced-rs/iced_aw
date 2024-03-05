@@ -6,8 +6,8 @@ use iced::{
     Application, Command, Element, Length, Settings, Theme,
 };
 
+use iced_aw::core::icons::bootstrap::icon_to_string;
 use iced_aw::floating_element::Anchor;
-use iced_aw::graphics::icons::bootstrap::icon_to_string;
 use iced_aw::Bootstrap;
 use iced_aw::{helpers::floating_element, BOOTSTRAP_FONT};
 
@@ -48,7 +48,7 @@ impl Application for FloatingElementExample {
         (
             FloatingElementExample::Loading,
             Command::batch(vec![
-                font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
+                font::load(iced_aw::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )

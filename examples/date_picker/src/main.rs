@@ -44,7 +44,7 @@ impl Application for DatePickerExample {
         (
             DatePickerExample::Loading,
             Command::batch(vec![
-                font::load(iced_aw::graphics::icons::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
+                font::load(iced_aw::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
                 Command::perform(load(), Message::Loaded),
             ]),
         )

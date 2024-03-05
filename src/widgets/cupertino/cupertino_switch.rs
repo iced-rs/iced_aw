@@ -1,4 +1,4 @@
-use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_green};
+use crate::widgets::cupertino::cupertino_colors::{secondary_system_fill, system_green};
 
 use iced::{
     advanced::{

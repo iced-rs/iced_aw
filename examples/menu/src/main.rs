@@ -5,11 +5,11 @@ use iced::widget::{
 use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
 
-use iced_aw::graphics::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 use iced_aw::menu::{self, Item, Menu, StyleSheet};
 use iced_aw::style::MenuBarStyle;
 use iced_aw::{menu_bar, menu_items};
-use iced_aw::{native::InnerBounds, quad};
+use iced_aw::{quad, widgets::InnerBounds};
+use iced_aw::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 
 pub fn main() -> iced::Result {
     // std::env::set_var("RUST_BACKTRACE", "full");

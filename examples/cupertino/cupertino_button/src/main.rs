@@ -4,7 +4,7 @@ use iced::{
     Application, Command, Element, Length, Settings, Theme,
 };
 
-use iced_aw::native::cupertino::cupertino_button::CupertinoButton;
+use iced_aw::widgets::cupertino::cupertino_button::CupertinoButton;
 
 pub fn main() -> iced::Result {
     ButtonApp::run(Settings {
@@ -42,7 +42,7 @@ impl Application for ButtonApp {
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (ButtonApp::Loading, Command::batch(vec![
-            font::load(iced_aw::graphics::SF_UI_ROUNDED_BYTES).map(Message::FontLoaded),
+            font::load(iced_aw::SF_UI_ROUNDED_BYTES).map(Message::FontLoaded),
             Command::perform(load(), Message::Loaded),
         ]))
     }

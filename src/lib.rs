@@ -46,9 +46,7 @@
     clippy::missing_docs_in_private_items
 )]
 
-pub mod graphics;
-
-pub mod native;
+pub mod widgets;
 
 pub mod core;
 pub mod style;
@@ -57,116 +55,112 @@ pub use iced::Element;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
+    pub use crate::widgets::helpers;
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "icons")] {
-            pub use {
-                crate::graphics::icons::{
-                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,
-                },
-            };
-
+            pub use
+                crate::core::icons::{
+                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,SF_UI_ROUNDED_BYTES, SF_UI_ROUNDED,
+                };
         } else {
-            pub use {
-                crate::graphics::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES},
-            };
+            pub use crate::core::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
         }
     }
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
-    pub use {crate::native::badge, crate::style::BadgeStyles, badge::Badge};
+    pub use {crate::style::BadgeStyles, crate::widgets::badge, badge::Badge};
 
     #[doc(no_inline)]
     #[cfg(feature = "card")]
-    pub use {crate::native::card, crate::style::CardStyles, card::Card};
+    pub use {crate::style::CardStyles, crate::widgets::card, card::Card};
 
     #[doc(no_inline)]
     #[cfg(feature = "color_picker")]
-    pub use {crate::native::color_picker, color_picker::ColorPicker};
+    pub use {crate::widgets::color_picker, color_picker::ColorPicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
-    pub use {crate::native::date_picker, date_picker::DatePicker};
+    pub use {crate::widgets::date_picker, date_picker::DatePicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "floating_element")]
-    pub use {crate::native::floating_element, floating_element::FloatingElement};
+    pub use {crate::widgets::floating_element, floating_element::FloatingElement};
 
     #[doc(no_inline)]
     #[cfg(feature = "grid")]
-    pub use crate::native::grid::{Grid, GridRow};
+    pub use crate::widgets::grid::{Grid, GridRow};
 
     #[doc(no_inline)]
     #[cfg(feature = "modal")]
-    pub use {crate::native::modal, crate::style::ModalStyles, modal::Modal};
+    pub use {crate::style::ModalStyles, crate::widgets::modal, modal::Modal};
 
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use {
-        crate::native::tab_bar,
         crate::style::TabBarStyles,
+        crate::widgets::tab_bar,
         tab_bar::{TabBar, TabLabel},
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "tabs")]
     pub use {
-        crate::native::tabs,
+        crate::widgets::tabs,
         tabs::{TabBarPosition, Tabs},
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "time_picker")]
-    pub use {crate::native::time_picker, time_picker::TimePicker};
+    pub use {crate::widgets::time_picker, time_picker::TimePicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "wrap")]
-    pub use {crate::native::wrap, wrap::direction, wrap::Wrap};
+    pub use {crate::widgets::wrap, wrap::direction, wrap::Wrap};
 
     #[doc(no_inline)]
     #[cfg(feature = "number_input")]
     pub use {
-        crate::native::number_input, crate::style::NumberInputStyles, number_input::NumberInput,
+        crate::style::NumberInputStyles, crate::widgets::number_input, number_input::NumberInput,
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
     pub use {
-        crate::native::selection_list, crate::style::SelectionListStyles,
+        crate::style::SelectionListStyles, crate::widgets::selection_list,
         selection_list::SelectionList,
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "split")]
-    pub use {crate::native::split, crate::style::SplitStyles, split::Split};
+    pub use {crate::style::SplitStyles, crate::widgets::split, split::Split};
 
     #[doc(no_inline)]
     #[cfg(feature = "menu")]
-    pub use crate::native::menu;
+    pub use crate::widgets::menu;
 
     #[doc(no_inline)]
     #[cfg(feature = "quad")]
-    pub use crate::native::quad;
+    pub use crate::widgets::quad;
 
-    pub use crate::native::helpers;
     #[doc(no_inline)]
     #[cfg(feature = "spinner")]
-    pub use {crate::native::spinner, crate::style::SpinnerStyle, spinner::Spinner};
+    pub use {crate::style::SpinnerStyle, crate::widgets::spinner, spinner::Spinner};
 
     #[doc(no_inline)]
     #[cfg(feature = "slide_bar")]
-    pub use crate::native::SlideBar;
+    pub use crate::widgets::SlideBar;
 
     #[doc(no_inline)]
     #[cfg(feature = "context_menu")]
     pub use {
-        crate::native::context_menu, crate::style::ContextMenuStyle, context_menu::ContextMenu,
+        crate::style::ContextMenuStyle, crate::widgets::context_menu, context_menu::ContextMenu,
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
-    pub use {crate::native::drop_down, drop_down::DropDown};
+    pub use {crate::widgets::drop_down, drop_down::DropDown};
 }
 
 #[doc(no_inline)]

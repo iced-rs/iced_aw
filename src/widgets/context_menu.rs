@@ -12,8 +12,8 @@ use iced::{
     Element, Event, Length, Point, Rectangle, Vector,
 };
 
-use crate::native::overlay::ContextMenuOverlay;
 pub use crate::style::context_menu::StyleSheet;
+use crate::widgets::overlay::ContextMenuOverlay;
 
 /// A context menu
 ///

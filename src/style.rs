@@ -15,9 +15,13 @@ pub use card::CardStyles;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;
+#[cfg(feature = "color_picker")]
+pub use color_picker::ColorPickerStyles;
 
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
+#[cfg(feature = "date_picker")]
+pub use date_picker::DatePickerStyle;
 
 #[cfg(feature = "modal")]
 pub mod modal;
@@ -31,6 +35,8 @@ pub use tab_bar::TabBarStyles;
 
 #[cfg(feature = "time_picker")]
 pub mod time_picker;
+#[cfg(feature = "time_picker")]
+pub use time_picker::TimePickerStyle;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;

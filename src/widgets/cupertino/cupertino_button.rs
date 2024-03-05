@@ -1,5 +1,5 @@
-use crate::graphics::SF_UI_ROUNDED;
-use crate::native::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
+use crate::core::SF_UI_ROUNDED;
+use crate::widgets::cupertino::cupertino_colors::{secondary_system_fill, system_blue};
 
 use iced::{
     advanced::{

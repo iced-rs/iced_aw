@@ -1,6 +1,6 @@
 use iced::widget::{column, container, row, text};
 use iced::{alignment, executor, Application, Color, Command, Element, Length, Settings, Theme};
-use iced_aw::native::cupertino::cupertino_switch::CupertinoSwitch;
+use iced_aw::widgets::cupertino::cupertino_switch::CupertinoSwitch;
 
 pub fn main() -> iced::Result {
     Switch::run(Settings {

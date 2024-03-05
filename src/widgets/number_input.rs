@@ -28,7 +28,7 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::style;
 pub use crate::{
-    graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
+    core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::number_input::{self, Appearance, StyleSheet},
 };
 

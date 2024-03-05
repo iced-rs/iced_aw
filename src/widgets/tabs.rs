@@ -8,7 +8,7 @@
 
 pub mod tab_bar_position;
 pub use crate::tab_bar::Position;
-use crate::{native::tab_bar::TabBar, style::tab_bar::StyleSheet, TabLabel};
+use crate::{style::tab_bar::StyleSheet, widgets::tab_bar::TabBar, TabLabel};
 
 use iced::{
     advanced::{

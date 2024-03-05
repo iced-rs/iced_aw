@@ -8,11 +8,11 @@ use crate::{
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
-    core::{clock, overlay::Position, time::Period},
-    graphics::icons::{
+    core::icons::{
         bootstrap::icon_to_string,
         {Bootstrap, BOOTSTRAP_FONT},
     },
+    core::{clock, overlay::Position, time::Period},
     style::style_state::StyleState,
     time_picker::{self, Time},
 };
@@ -1474,7 +1474,7 @@ fn draw_digital_clock<Message, Theme>(
                 content: char::from(Bootstrap::CaretUpFill).encode_utf8(&mut buffer),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
                 size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
-                font: crate::graphics::icons::BOOTSTRAP_FONT,
+                font: crate::core::icons::BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
@@ -1516,7 +1516,7 @@ fn draw_digital_clock<Message, Theme>(
                 size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
                 ),
-                font: crate::graphics::icons::BOOTSTRAP_FONT,
+                font: crate::core::icons::BOOTSTRAP_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),

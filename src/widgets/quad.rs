@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `quad`*
 
-use crate::native::InnerBounds;
+use crate::widgets::InnerBounds;
 use iced::{
     advanced::{
         layout::{Limits, Node},

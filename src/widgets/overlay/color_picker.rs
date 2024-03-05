@@ -4,11 +4,11 @@
 
 use crate::{
     color_picker,
+    core::icons::bootstrap::{icon_to_string, Bootstrap},
     core::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    graphics::icons::bootstrap::{icon_to_string, Bootstrap},
     style::{
         color_picker::{Appearance, StyleSheet},
         style_state::StyleState,

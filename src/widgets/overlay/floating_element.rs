@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
 
-use crate::native::floating_element::{Anchor, Offset};
+use crate::widgets::floating_element::{Anchor, Offset};
 
 use iced::{
     advanced::{
