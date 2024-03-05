@@ -7,8 +7,8 @@ use iced::{
 };
 
 use iced_aw::floating_element::Anchor;
-use iced_aw::graphics::icons::icon_to_string;
-use iced_aw::BootstrapIcon;
+use iced_aw::graphics::icons::bootstrap::icon_to_string;
+use iced_aw::Bootstrap;
 use iced_aw::{helpers::floating_element, BOOTSTRAP_FONT};
 
 fn main() -> iced::Result {
@@ -109,7 +109,7 @@ impl Application for FloatingElementExample {
                         .max_height(600)
                         .style(theme::Container::Box),
                     Button::new(
-                        Text::new(icon_to_string(BootstrapIcon::Plus))
+                        Text::new(icon_to_string(Bootstrap::Plus))
                             .font(BOOTSTRAP_FONT)
                             .size(35)
                             .line_height(1.0)

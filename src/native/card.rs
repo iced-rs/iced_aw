@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 
-use crate::graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT};
+use crate::graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT};
 
 use iced::{
     advanced::{
@@ -810,7 +810,7 @@ fn draw_head<Message, Theme, Renderer>(
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(BootstrapIcon::X),
+                content: &icon_to_string(Bootstrap::X),
                 bounds: Size::new(close_bounds.width, close_bounds.height),
                 size: Pixels(
                     close_size.unwrap_or_else(|| renderer.default_size().0)

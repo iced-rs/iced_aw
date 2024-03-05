@@ -6,7 +6,7 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
 pub mod tab_label;
-use crate::graphics::icons::{icon_to_string, BootstrapIcon, BOOTSTRAP_FONT};
+use crate::graphics::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT};
 
 use iced::{
     advanced::{
@@ -811,7 +811,7 @@ fn draw_tab<Theme, Renderer>(
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(BootstrapIcon::X),
+                content: &icon_to_string(Bootstrap::X),
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
