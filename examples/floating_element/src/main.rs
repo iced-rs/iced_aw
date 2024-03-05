@@ -7,7 +7,7 @@ use iced::{
 };
 
 use iced_aw::floating_element::Anchor;
-use iced_aw::graphics::icons::icon_to_string;
+use iced_aw::graphics::icons::bootstrap::icon_to_string;
 use iced_aw::Bootstrap;
 use iced_aw::{helpers::floating_element, BOOTSTRAP_FONT};
 
