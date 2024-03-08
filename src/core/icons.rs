@@ -18,7 +18,7 @@ cfg_if! {
         /// The bootstrap icon font.
         pub const BOOTSTRAP_FONT: Font = Font::with_name("bootstrap-icons");
         /// The nerd icon font.
-        pub const NERD_FONT: Font = Font::with_name("nerd-icons");
+        pub const NERD_FONT: Font = Font::with_name("Symbols Nerd Font");
 
         /// The default cupertino font bytes for loading the font into the system.
         pub const SF_UI_ROUNDED_BYTES: &[u8] = include_bytes!("./fonts/SFUIRounded.ttf");
