@@ -92,6 +92,7 @@ members = [
     "examples/floating_element",
     "examples/floating_element multioverlay",
     "examples/floating_element_anchors",
+    "examples/font_loading",
     "examples/grid",
     "examples/modal",
     "examples/modal_component",
