@@ -10,6 +10,7 @@ edition = "2021"
 iced_aw = { workspace = true, features = [
     "wrap",
     "number_input",
+    "icons",
 ] }
 rand = "0.8"
 iced.workspace = true

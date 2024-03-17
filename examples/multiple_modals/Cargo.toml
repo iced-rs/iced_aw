@@ -7,5 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced_aw = { workspace = true, features = ["card", "modal"] }
-iced.workspace = true
+iced_aw = { workspace = true, features = ["card", "modal", "icons"] }
+iced = { workspace = true, features = [
+    "wgpu",
+] }

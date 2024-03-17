@@ -5,5 +5,5 @@ authors = ["Alexander van Saase <avsaase [at] gmail.com>"]
 edition = "2021"
 
 [dependencies]
-iced_aw = { workspace = true, features = ["grid"] }
+iced_aw = { workspace = true, features = ["grid", "icons"] }
 iced.workspace = true

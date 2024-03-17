@@ -10,4 +10,6 @@ edition = "2021"
 iced_aw = { workspace = true, features = [
     "color_picker",
 ] }
-iced.workspace = true
+iced = { workspace = true, features = [
+    "wgpu",
+] }

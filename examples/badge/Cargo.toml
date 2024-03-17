@@ -9,5 +9,9 @@ edition = "2021"
 [dependencies]
 iced_aw = { workspace = true, features = [
     "badge",
+    "icons",
 ] }
-iced.workspace = true
+
+iced = { workspace = true, features = [
+    "wgpu",
+] }
