@@ -10,5 +10,8 @@ edition = "2021"
 iced_aw = { workspace = true, features = [
     "card",
     "modal",
+    "icons",
 ] }
-iced.workspace = true
+iced = { workspace = true, features = [
+    "lazy",
+] }
