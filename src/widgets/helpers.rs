@@ -261,9 +261,9 @@ where
 ///
 /// [`Grid`]: crate::grid::Grid
 #[must_use]
-pub fn grid<Message, Renderer>(
-    rows: Vec<crate::GridRow<'_, Message, Renderer>>,
-) -> crate::Grid<'_, Message, Renderer>
+pub fn grid<Message, Theme, Renderer>(
+    rows: Vec<crate::GridRow<Message, Theme, Renderer>>,
+) -> crate::Grid<Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
