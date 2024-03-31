@@ -11,7 +11,5 @@ iced_aw = { workspace = true, features = [
     "number_input",
     "icons",
 ] }
-iced = { workspace = true, features = [
-    "wgpu",
-] }
+iced.workspace=true
 num-traits = "0.2.16"

@@ -12,6 +12,4 @@ iced_aw = { workspace = true, features = [
     "icons",
 ] }
 
-iced = { workspace = true, features = [
-    "wgpu",
-] }
+iced.workspace=true

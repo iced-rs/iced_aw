@@ -10,6 +10,5 @@ edition = "2021"
 iced_aw = { workspace = true, features = [
     "card", "icons"
 ] }
-iced = { workspace = true, features = [
-    "wgpu",
-] }
+iced.workspace=true
+
