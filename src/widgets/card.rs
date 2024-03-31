@@ -502,34 +502,36 @@ where
         let mut children = layout.children();
         let style_sheet = theme.active(&self.style);
 
-        // Background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: style_sheet.border_radius.into(),
-                    width: style_sheet.border_width,
-                    color: style_sheet.border_color,
+        if bounds.intersects(viewport) {
+            // Background
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet.border_radius.into(),
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet.background,
-        );
+                style_sheet.background,
+            );
 
-        // Border
-        renderer.fill_quad(
-            // TODO: fill not necessary
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: style_sheet.border_radius.into(),
-                    width: style_sheet.border_width,
-                    color: style_sheet.border_color,
+            // Border
+            renderer.fill_quad(
+                // TODO: fill not necessary
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet.border_radius.into(),
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            Color::TRANSPARENT,
-        );
+                Color::TRANSPARENT,
+            );
+        }
 
         // ----------- Head ----------------------
         let head_layout = children
@@ -758,37 +760,42 @@ fn draw_head<Message, Theme, Renderer>(
     let border_radius = style_sheet.border_radius;
 
     // Head background
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds,
-            border: Border {
-                radius: border_radius.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
+    if bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: border_radius.into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        style_sheet.head_background,
-    );
+            style_sheet.head_background,
+        );
+    }
 
     // cover rounded button of header
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: Rectangle {
-                x: bounds.x,
-                y: bounds.y + bounds.height - border_radius,
-                width: bounds.width,
-                height: border_radius,
+    let button_bounds = Rectangle {
+        x: bounds.x,
+        y: bounds.y + bounds.height - border_radius,
+        width: bounds.width,
+        height: border_radius,
+    };
+    if button_bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: button_bounds,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
-            border: Border {
-                radius: (0.0).into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            shadow: Shadow::default(),
-        },
-        style_sheet.head_background,
-    );
+            style_sheet.head_background,
+        );
+    }
 
     head.as_widget().draw(
         state,
@@ -846,20 +853,23 @@ fn draw_body<Message, Theme, Renderer>(
 {
     let mut body_children = layout.children();
     let style_sheet = theme.active(style);
+    let bounds = layout.bounds();
 
     // Body background
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: layout.bounds(),
-            border: Border {
-                radius: (0.0).into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
+    if bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        style_sheet.body_background,
-    );
+            style_sheet.body_background,
+        );
+    }
 
     body.as_widget().draw(
         state,
@@ -893,20 +903,23 @@ fn draw_foot<Message, Theme, Renderer>(
 {
     let mut foot_children = layout.children();
     let style_sheet = theme.active(style);
+    let bounds = layout.bounds();
 
     // Foot background
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: layout.bounds(),
-            border: Border {
-                radius: style_sheet.border_radius.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
+    if bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: style_sheet.border_radius.into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        style_sheet.foot_background,
-    );
+            style_sheet.foot_background,
+        );
+    }
 
     if let Some((foot, state)) = foot.as_ref().zip(state) {
         foot.as_widget().draw(

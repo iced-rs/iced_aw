@@ -353,57 +353,63 @@ where
         let mut children = layout.children();
 
         // Background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border: Border {
-                    radius: (0.0).into(),
-                    width: theme.active(&self.style).border_width,
-                    color: theme.active(&self.style).border_color,
+        let bounds = layout.bounds();
+        if bounds.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: theme.active(&self.style).border_width,
+                        color: theme.active(&self.style).border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            theme
-                .active(&self.style)
-                .background
-                .unwrap_or_else(|| Color::TRANSPARENT.into()),
-        );
+                theme
+                    .active(&self.style)
+                    .background
+                    .unwrap_or_else(|| Color::TRANSPARENT.into()),
+            );
+        }
 
         let first_layout = children
             .next()
             .expect("Graphics: Layout should have a first layout");
 
         // First
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: first_layout.bounds(),
-                border: Border {
-                    radius: (0.0).into(),
-                    width: 0.0,
-                    color: Color::TRANSPARENT,
+        let first_layout_bounds = first_layout.bounds();
+        if let Some(clipped_viewport) = first_layout_bounds.intersection(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: first_layout_bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            if first_layout
-                .bounds()
-                .contains(cursor.position().unwrap_or_default())
-            {
-                theme.hovered(&self.style).first_background
-            } else {
-                theme.active(&self.style).first_background
-            }
-            .unwrap_or_else(|| Color::TRANSPARENT.into()),
-        );
+                if first_layout
+                    .bounds()
+                    .contains(cursor.position().unwrap_or_default())
+                {
+                    theme.hovered(&self.style).first_background
+                } else {
+                    theme.active(&self.style).first_background
+                }
+                .unwrap_or_else(|| Color::TRANSPARENT.into()),
+            );
 
-        self.first.as_widget().draw(
-            &state.children[0],
-            renderer,
-            theme,
-            style,
-            first_layout,
-            cursor,
-            viewport,
-        );
+            self.first.as_widget().draw(
+                &state.children[0],
+                renderer,
+                theme,
+                style,
+                first_layout,
+                cursor,
+                &clipped_viewport,
+            );
+        }
 
         let divider_layout = children
             .next()
@@ -414,61 +420,67 @@ where
             .next()
             .expect("Graphics: Layout should have a second layout");
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: second_layout.bounds(),
-                border: Border {
-                    radius: (0.0).into(),
-                    width: 0.0,
-                    color: Color::TRANSPARENT,
+        let second_layout_bounds = second_layout.bounds();
+        if let Some(clipped_viewport) = second_layout_bounds.intersection(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: second_layout_bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            if second_layout
+                if second_layout
+                    .bounds()
+                    .contains(cursor.position().unwrap_or_default())
+                {
+                    theme.hovered(&self.style).second_background
+                } else {
+                    theme.active(&self.style).second_background
+                }
+                .unwrap_or_else(|| Color::TRANSPARENT.into()),
+            );
+
+            self.second.as_widget().draw(
+                &state.children[1],
+                renderer,
+                theme,
+                style,
+                second_layout,
+                cursor,
+                &clipped_viewport,
+            );
+        }
+
+        // Divider
+        let divider_layout_bounds = divider_layout.bounds();
+        if divider_layout_bounds.intersects(viewport) {
+            let divider_style = if split_state.dragging {
+                theme.dragged(&self.style)
+            } else if divider_layout
                 .bounds()
                 .contains(cursor.position().unwrap_or_default())
             {
-                theme.hovered(&self.style).second_background
+                theme.hovered(&self.style)
             } else {
-                theme.active(&self.style).second_background
-            }
-            .unwrap_or_else(|| Color::TRANSPARENT.into()),
-        );
+                theme.active(&self.style)
+            };
 
-        self.second.as_widget().draw(
-            &state.children[1],
-            renderer,
-            theme,
-            style,
-            second_layout,
-            cursor,
-            viewport,
-        );
-
-        // Divider
-        let divider_style = if split_state.dragging {
-            theme.dragged(&self.style)
-        } else if divider_layout
-            .bounds()
-            .contains(cursor.position().unwrap_or_default())
-        {
-            theme.hovered(&self.style)
-        } else {
-            theme.active(&self.style)
-        };
-
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: divider_layout.bounds(),
-                border: Border {
-                    radius: (0.0).into(),
-                    width: divider_style.divider_border_width,
-                    color: divider_style.divider_border_color,
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: divider_layout_bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: divider_style.divider_border_width,
+                        color: divider_style.divider_border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            divider_style.divider_background,
-        );
+                divider_style.divider_background,
+            );
+        }
     }
 
     fn operate<'b>(

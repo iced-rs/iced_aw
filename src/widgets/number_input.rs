@@ -692,20 +692,22 @@ where
         let icon_size = Pixels(txt_size * 2.5 / 4.0);
 
         // decrease button section
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: dec_bounds,
-                border: Border {
-                    radius: (3.0).into(),
-                    width: 0.0,
-                    color: Color::TRANSPARENT,
+        if dec_bounds.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: dec_bounds,
+                    border: Border {
+                        radius: (3.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            decrease_btn_style
-                .button_background
-                .unwrap_or(Background::Color(Color::TRANSPARENT)),
-        );
+                decrease_btn_style
+                    .button_background
+                    .unwrap_or(Background::Color(Color::TRANSPARENT)),
+            );
+        }
 
         renderer.fill_text(
             iced::advanced::text::Text {
@@ -724,20 +726,22 @@ where
         );
 
         // increase button section
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: inc_bounds,
-                border: Border {
-                    radius: (3.0).into(),
-                    width: 0.0,
-                    color: Color::TRANSPARENT,
+        if inc_bounds.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: inc_bounds,
+                    border: Border {
+                        radius: (3.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            increase_btn_style
-                .button_background
-                .unwrap_or(Background::Color(Color::TRANSPARENT)),
-        );
+                increase_btn_style
+                    .button_background
+                    .unwrap_or(Background::Color(Color::TRANSPARENT)),
+            );
+        }
 
         renderer.fill_text(
             iced::advanced::text::Text {

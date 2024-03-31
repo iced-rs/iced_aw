@@ -149,66 +149,68 @@ where
         cursor: Cursor,
         viewport: &Rectangle,
     ) {
-        if self.is_filled {
-            let colour: Color = if self.on_pressed.is_none() {
-                secondary_system_fill()
-            } else {
-                system_blue(1.0)
-            };
+        let bounds: Rectangle = layout.bounds();
+        if let Some(clipped_viewport) = layout.bounds().intersection(viewport) {
+            if self.is_filled {
+                let colour: Color = if self.on_pressed.is_none() {
+                    secondary_system_fill()
+                } else {
+                    system_blue(1.0)
+                };
 
-            let bounds: Rectangle = layout.bounds();
-            let center: Point = bounds.center();
+                let center: Point = bounds.center();
 
-            let rectangle: Rectangle = Rectangle::new(
-                Point {
-                    x: bounds.x,
-                    y: center.y - 3.0 * VERTICAL_PADDING,
-                },
-                Size {
-                    width: bounds.width,
-                    height: bounds.height + VERTICAL_PADDING,
-                },
-            );
-
-            renderer.fill_quad(
-                Quad {
-                    bounds: rectangle,
-                    border: Border {
-                        radius: (16.0).into(),
-                        width: 5.0,
-                        color: Color::TRANSPARENT,
+                let rectangle: Rectangle = Rectangle::new(
+                    Point {
+                        x: bounds.x,
+                        y: center.y - 3.0 * VERTICAL_PADDING,
                     },
-                    shadow: Shadow::default(),
-                },
-                Background::Color(colour),
+                    Size {
+                        width: bounds.width,
+                        height: bounds.height + VERTICAL_PADDING,
+                    },
+                );
+
+                renderer.fill_quad(
+                    Quad {
+                        bounds: rectangle,
+                        border: Border {
+                            radius: (16.0).into(),
+                            width: 5.0,
+                            color: Color::TRANSPARENT,
+                        },
+                        shadow: Shadow::default(),
+                    },
+                    Background::Color(colour),
+                );
+            }
+
+            let new_style: &mut renderer::Style = &mut renderer::Style::default();
+
+            new_style.clone_from(style);
+
+            if self.colour.is_some() {
+                new_style.text_color = self.colour.expect("Unable to retrieve the text colour");
+            } else if self.is_filled && self.on_pressed.is_some() {
+                new_style.text_color = Color::WHITE;
+            } else if !self.is_filled && self.on_pressed.is_some() {
+                new_style.text_color = system_blue(1.0);
+            } else if self.is_filled && self.on_pressed.is_none() {
+                new_style.text_color = Color::WHITE;
+            } else {
+                new_style.text_color = secondary_system_fill();
+            }
+
+            self.body.as_widget().draw(
+                &state.children[0],
+                renderer,
+                theme,
+                new_style,
+                layout,
+                cursor,
+                &clipped_viewport,
             );
         }
-
-        let new_style: &mut renderer::Style = &mut renderer::Style::default();
-
-        new_style.clone_from(style);
-
-        if self.colour.is_some() {
-            new_style.text_color = self.colour.expect("Unable to retrieve the text colour");
-        } else if self.is_filled && self.on_pressed.is_some() {
-            new_style.text_color = Color::WHITE;
-        } else if !self.is_filled && self.on_pressed.is_some() {
-            new_style.text_color = system_blue(1.0);
-        } else if self.is_filled && self.on_pressed.is_none() {
-            new_style.text_color = Color::WHITE;
-        } else {
-            new_style.text_color = secondary_system_fill();
-        }
-
-        self.body.as_widget().draw(
-            &state.children[0],
-            renderer,
-            theme,
-            new_style,
-            layout,
-            cursor,
-            viewport,
-        );
     }
 
     fn on_event(

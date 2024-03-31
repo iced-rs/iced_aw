@@ -86,23 +86,25 @@ fn fill_circle(
     radius: f32,
     color: Color,
 ) {
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: Rectangle {
-                x: position.x,
-                y: position.y,
-                width: radius * 2.0,
-                height: radius * 2.0,
+    if radius > 0. {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds: Rectangle {
+                    x: position.x,
+                    y: position.y,
+                    width: radius * 2.0,
+                    height: radius * 2.0,
+                },
+                border: Border {
+                    radius: radius.into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
             },
-            border: Border {
-                radius: radius.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            shadow: Shadow::default(),
-        },
-        color,
-    );
+            color,
+        );
+    }
 }
 
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Spinner

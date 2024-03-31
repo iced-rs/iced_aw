@@ -198,9 +198,9 @@ where
         _style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) {
-        draw(renderer, layout, self);
+        draw(renderer, layout, viewport, self);
     }
 }
 
@@ -291,8 +291,12 @@ where
 }
 
 /// Draws a [`SliderBar`].
-pub fn draw<T, R, Message>(renderer: &mut R, layout: Layout<'_>, slider: &SlideBar<T, Message>)
-where
+pub fn draw<T, R, Message>(
+    renderer: &mut R,
+    layout: Layout<'_>,
+    viewport: &Rectangle,
+    slider: &SlideBar<T, Message>,
+) where
     T: Into<f64> + Copy,
     Message: Clone,
     R: renderer::Renderer,
@@ -319,20 +323,22 @@ where
 
     let background = slider.background.unwrap_or_else(|| Color::from([1.0; 3]));
 
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: layout.bounds(),
-            border: Border {
-                radius: slider.border_radius.into(),
-                width: slider.border_width,
-                color: slider.border_color,
+    if bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: slider.border_radius.into(),
+                    width: slider.border_width,
+                    color: slider.border_color,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        background,
-    );
+            background,
+        );
+    }
 
-    if active_progress_bounds.width > 0.0 {
+    if active_progress_bounds.intersects(viewport) {
         renderer.fill_quad(
             renderer::Quad {
                 bounds: active_progress_bounds,

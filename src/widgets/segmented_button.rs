@@ -221,61 +221,63 @@ where
             theme.active(&self.style)
         };
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: 2.0.into(),
-                    width: style_sheet.border_width,
-                    color: style_sheet.border_color.unwrap_or(Color::BLACK),
-                },
-                shadow: Shadow::default(),
-            },
-            style_sheet.background,
-        );
-        if self.is_selected {
+        if let Some(clipped_viewport) = bounds.intersection(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds,
                     border: Border {
                         radius: 2.0.into(),
-                        width: 0.0,
-                        color: Color::TRANSPARENT,
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color.unwrap_or(Color::BLACK),
                     },
                     shadow: Shadow::default(),
                 },
-                style_sheet.selected_color,
+                style_sheet.background,
             );
-        }
-        //just for the testing as of now needs to clearup and make styling based of basecolor
-        if is_mouse_over && !self.is_selected {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds,
-                    border: Border {
-                        radius: 2.0.into(),
-                        width: 0.0,
-                        color: Color::TRANSPARENT,
+            if self.is_selected {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds,
+                        border: Border {
+                            radius: 2.0.into(),
+                            width: 0.0,
+                            color: Color::TRANSPARENT,
+                        },
+                        shadow: Shadow::default(),
                     },
-                    shadow: Shadow::default(),
-                },
-                Background::Color([0.0, 0.0, 0.0, 0.5].into()),
-            );
-        }
+                    style_sheet.selected_color,
+                );
+            }
+            //just for the testing as of now needs to clearup and make styling based of basecolor
+            if is_mouse_over && !self.is_selected {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds,
+                        border: Border {
+                            radius: 2.0.into(),
+                            width: 0.0,
+                            color: Color::TRANSPARENT,
+                        },
+                        shadow: Shadow::default(),
+                    },
+                    Background::Color([0.0, 0.0, 0.0, 0.5].into()),
+                );
+            }
 
-        self.content.as_widget().draw(
-            &tree.children[0],
-            renderer,
-            theme,
-            &renderer::Style {
-                text_color: style_sheet.text_color,
-            },
-            children
-                .next()
-                .expect("Graphics: Layout should have a children layout for SegmentedButton"),
-            cursor,
-            viewport,
-        );
+            self.content.as_widget().draw(
+                &tree.children[0],
+                renderer,
+                theme,
+                &renderer::Style {
+                    text_color: style_sheet.text_color,
+                },
+                children
+                    .next()
+                    .expect("Graphics: Layout should have a children layout for SegmentedButton"),
+                cursor,
+                &clipped_viewport,
+            );
+        }
     }
 }
 
