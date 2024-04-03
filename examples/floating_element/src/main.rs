@@ -156,4 +156,25 @@ impl button::StyleSheet for CircleButtonStyle {
 
         appearance
     }
+
+    fn hovered(&self, style: &Self::Style) -> Appearance {
+        let mut appearance = style.hovered(&self.theme);
+        appearance.border.radius = 25.0.into();
+
+        appearance
+    }
+
+    fn pressed(&self, style: &Self::Style) -> Appearance {
+        let mut appearance = style.pressed(&self.theme);
+        appearance.border.radius = 25.0.into();
+
+        appearance
+    }
+
+    fn disabled(&self, style: &Self::Style) -> Appearance {
+        let mut appearance = style.disabled(&self.theme);
+        appearance.border.radius = 25.0.into();
+
+        appearance
+    }
 }
