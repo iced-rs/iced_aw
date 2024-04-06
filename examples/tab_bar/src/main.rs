@@ -162,6 +162,7 @@ impl Application for TabBarExample {
                                     tab_bar.push(idx, TabLabel::Text(tab_label.to_owned()))
                                 },
                             )
+                            .set_active_tab(&state.active_tab)
                             .on_close(Message::TabClosed)
                             .tab_width(Length::Shrink)
                             .spacing(5.0)
