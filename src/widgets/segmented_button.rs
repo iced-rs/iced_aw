@@ -236,12 +236,7 @@ where
         if self.is_selected {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: Rectangle {
-                        x: bounds.x,
-                        y: bounds.y,
-                        width: bounds.width,
-                        height: bounds.height,
-                    },
+                    bounds,
                     border: Border {
                         radius: 2.0.into(),
                         width: 0.0,
@@ -256,12 +251,7 @@ where
         if is_mouse_over && !self.is_selected {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: Rectangle {
-                        x: bounds.x,
-                        y: bounds.y,
-                        width: bounds.width,
-                        height: bounds.height,
-                    },
+                    bounds,
                     border: Border {
                         radius: 2.0.into(),
                         width: 0.0,
