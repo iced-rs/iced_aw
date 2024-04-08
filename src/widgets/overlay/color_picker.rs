@@ -867,18 +867,20 @@ where
             style_state = style_state.max(StyleState::Hovered);
         }
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: style_sheet[&style_state].border_radius.into(),
-                    width: style_sheet[&style_state].border_width,
-                    color: style_sheet[&style_state].border_color,
+        if (bounds.width > 0.) && (bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet[&style_state].border_radius.into(),
+                        width: style_sheet[&style_state].border_width,
+                        color: style_sheet[&style_state].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet[&style_state].background,
-        );
+                style_sheet[&style_state].background,
+            );
+        }
 
         // ----------- Block 1 ----------------------
         let block1_layout = children
@@ -1174,33 +1176,39 @@ fn block2<Message, Theme>(
 
     // Buttons are not focusable right now...
     if color_picker.state.focus == Focus::Cancel {
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: cancel_button_layout.bounds(),
-                border: Border {
-                    radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    width: style_sheet[&StyleState::Focused].border_width,
-                    color: style_sheet[&StyleState::Focused].border_color,
+        let bounds = cancel_button_layout.bounds();
+        if (bounds.width > 0.) && (bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            Color::TRANSPARENT,
-        );
+                Color::TRANSPARENT,
+            );
+        }
     }
 
     if color_picker.state.focus == Focus::Submit {
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: submit_button_layout.bounds(),
-                border: Border {
-                    radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                    width: style_sheet[&StyleState::Focused].border_width,
-                    color: style_sheet[&StyleState::Focused].border_color,
+        let bounds = submit_button_layout.bounds();
+        if (bounds.width > 0.) && (bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
+                        width: style_sheet[&StyleState::Focused].border_width,
+                        color: style_sheet[&StyleState::Focused].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            Color::TRANSPARENT,
-        );
+                Color::TRANSPARENT,
+            );
+        }
     }
     // ----------- Block 2 end ------------------
 }
@@ -1439,63 +1447,68 @@ fn rgba_color(
             label_layout.bounds(),
         );
 
-        let bounds = bar_layout.bounds();
+        let bar_bounds = bar_layout.bounds();
 
-        let bar_style_state = if cursor.is_over(bar_layout.bounds()) {
+        let bar_style_state = if cursor.is_over(bar_bounds) {
             StyleState::Hovered
         } else {
             StyleState::Active
         };
 
         // Bar background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: Rectangle {
-                    x: bounds.x,
-                    y: bounds.y,
-                    width: bounds.width * value,
-                    height: bounds.height,
+        let background_bounds = Rectangle {
+            x: bar_bounds.x,
+            y: bar_bounds.y,
+            width: bar_bounds.width * value,
+            height: bar_bounds.height,
+        };
+        if (background_bounds.width > 0.) && (background_bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: background_bounds,
+                    border: Border {
+                        radius: style_sheet
+                            .get(&bar_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_radius
+                            .into(),
+                        width: style_sheet
+                            .get(&bar_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_width,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                border: Border {
-                    radius: style_sheet
-                        .get(&bar_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_radius
-                        .into(),
-                    width: style_sheet
-                        .get(&bar_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_width,
-                    color: Color::TRANSPARENT,
-                },
-                shadow: Shadow::default(),
-            },
-            color,
-        );
+                color,
+            );
+        }
 
         // Bar
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: style_sheet
-                        .get(&bar_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_radius
-                        .into(),
-                    width: style_sheet
-                        .get(&bar_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_width,
-                    color: style_sheet
-                        .get(&bar_style_state)
-                        .expect("Style Sheet not found.")
-                        .bar_border_color,
+        if (bar_bounds.width > 0.) && (bar_bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: bar_bounds,
+                    border: Border {
+                        radius: style_sheet
+                            .get(&bar_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_radius
+                            .into(),
+                        width: style_sheet
+                            .get(&bar_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_width,
+                        color: style_sheet
+                            .get(&bar_style_state)
+                            .expect("Style Sheet not found.")
+                            .bar_border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            Color::TRANSPARENT,
-        );
+                Color::TRANSPARENT,
+            );
+        }
 
         // Value
         renderer.fill_text(
@@ -1517,10 +1530,11 @@ fn rgba_color(
             value_layout.bounds(),
         );
 
-        if focus == target {
+        let bounds = layout.bounds();
+        if (focus == target) && (bounds.width > 0.) && (bounds.height > 0.) {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: layout.bounds(),
+                    bounds,
                     border: Border {
                         radius: style_sheet
                             .get(&StyleState::Focused)
@@ -1622,23 +1636,26 @@ fn hex_text(
         StyleState::Active
     };
 
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds: layout.bounds(),
-            border: Border {
-                radius: style_sheet[&hex_text_style_state].bar_border_radius.into(),
-                width: style_sheet[&hex_text_style_state].bar_border_width,
-                color: style_sheet[&hex_text_style_state].bar_border_color,
+    let bounds = layout.bounds();
+    if (bounds.width > 0.) && (bounds.height > 0.) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: style_sheet[&hex_text_style_state].bar_border_radius.into(),
+                    width: style_sheet[&hex_text_style_state].bar_border_width,
+                    color: style_sheet[&hex_text_style_state].bar_border_color,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        *color,
-    );
+            *color,
+        );
+    }
 
     renderer.fill_text(
         Text {
             content: &color.as_hex_string(),
-            bounds: Size::new(layout.bounds().width, layout.bounds().height),
+            bounds: Size::new(bounds.width, bounds.height),
             size: renderer.default_size(),
             font: renderer.default_font(),
             horizontal_alignment: Horizontal::Center,
@@ -1646,7 +1663,7 @@ fn hex_text(
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
         },
-        Point::new(layout.bounds().center_x(), layout.bounds().center_y()),
+        Point::new(bounds.center_x(), bounds.center_y()),
         Color {
             a: 1.0,
             ..Hsv {
@@ -1656,7 +1673,7 @@ fn hex_text(
             }
             .into()
         },
-        layout.bounds(),
+        bounds,
     );
 }
 

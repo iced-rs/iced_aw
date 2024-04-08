@@ -866,18 +866,20 @@ where
         }
 
         // Background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: style_sheet[&style_state].border_radius.into(),
-                    width: style_sheet[&style_state].border_width,
-                    color: style_sheet[&style_state].border_color,
+        if (bounds.width > 0.) && (bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: style_sheet[&style_state].border_radius.into(),
+                        width: style_sheet[&style_state].border_width,
+                        color: style_sheet[&style_state].border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet[&style_state].background,
-        );
+                style_sheet[&style_state].background,
+            );
+        }
 
         // ----------- Clock canvas --------------------
         let clock_layout = children
@@ -921,10 +923,14 @@ where
         );
 
         // Buttons are not focusable right now...
-        if self.state.focus == Focus::Cancel {
+        let cancel_button_bounds = cancel_button_layout.bounds();
+        if (self.state.focus == Focus::Cancel)
+            && (cancel_button_bounds.width > 0.)
+            && (cancel_button_bounds.height > 0.)
+        {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: cancel_button_layout.bounds(),
+                    bounds: cancel_button_bounds,
                     border: Border {
                         radius: style_sheet[&StyleState::Focused].border_radius.into(),
                         width: style_sheet[&StyleState::Focused].border_width,
@@ -936,10 +942,14 @@ where
             );
         }
 
-        if self.state.focus == Focus::Submit {
+        let submit_button_bounds = submit_button_layout.bounds();
+        if (self.state.focus == Focus::Submit)
+            && (submit_button_bounds.width > 0.)
+            && (submit_button_bounds.height > 0.)
+        {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: submit_button_layout.bounds(),
+                    bounds: submit_button_bounds,
                     border: Border {
                         radius: style_sheet[&StyleState::Focused].border_radius.into(),
                         width: style_sheet[&StyleState::Focused].border_width,

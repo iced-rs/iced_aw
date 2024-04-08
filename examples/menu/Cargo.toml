@@ -10,4 +10,4 @@ iced_aw = { workspace = true, features = [
     "quad",
     "icons"
 ] }
-iced = {workspace = true, features = ["svg", "wgpu"]}
+iced = {workspace = true, features = ["svg"]}

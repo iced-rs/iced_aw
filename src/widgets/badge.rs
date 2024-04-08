@@ -233,18 +233,20 @@ where
             .border_radius
             .unwrap_or(bounds.height / BORDER_RADIUS_RATIO);
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: border_radius.into(),
-                    width: style_sheet.border_width,
-                    color: style_sheet.border_color.unwrap_or(Color::BLACK),
+        if bounds.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: border_radius.into(),
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color.unwrap_or(Color::BLACK),
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet.background,
-        );
+                style_sheet.background,
+            );
+        }
 
         self.content.as_widget().draw(
             &tree.children[0],

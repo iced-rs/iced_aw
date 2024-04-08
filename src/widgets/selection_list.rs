@@ -267,33 +267,36 @@ where
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) {
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: layout.bounds(),
-                border: Border {
-                    radius: (0.0).into(),
-                    width: theme.style(&self.style).border_width,
-                    color: theme.style(&self.style).border_color,
+        let bounds = layout.bounds();
+        if let Some(clipped_viewport) = bounds.intersection(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: theme.style(&self.style).border_width,
+                        color: theme.style(&self.style).border_color,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            theme.style(&self.style).background,
-        );
+                theme.style(&self.style).background,
+            );
 
-        self.container.draw(
-            &state.children[0],
-            renderer,
-            theme,
-            style,
-            layout
-                .children()
-                .next()
-                .expect("Scrollable Child Missing in Selection List"),
-            cursor,
-            &layout.bounds(),
-        );
+            self.container.draw(
+                &state.children[0],
+                renderer,
+                theme,
+                style,
+                layout
+                    .children()
+                    .next()
+                    .expect("Scrollable Child Missing in Selection List"),
+                cursor,
+                &clipped_viewport,
+            );
+        }
     }
 }
 

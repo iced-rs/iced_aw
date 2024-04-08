@@ -8,7 +8,7 @@ fn main() -> iced::Result {
         window: window::Settings {
             size: iced::Size {
                 width: 500.0,
-                height: 150.0,
+                height: 175.0,
             },
             position: window::Position::Centered,
             ..Default::default()

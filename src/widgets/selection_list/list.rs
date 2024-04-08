@@ -231,7 +231,7 @@ where
                 height: self.text_size + (self.padding * 2.0),
             };
 
-            if is_selected || is_hovered {
+            if (is_selected || is_hovered) && (bounds.width > 0.) && (bounds.height > 0.) {
                 renderer.fill_quad(
                     renderer::Quad {
                         bounds,

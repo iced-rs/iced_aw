@@ -431,14 +431,17 @@ where
         // debug_draw(renderer, prescroll, check_bounds, offset_bounds);
 
         // draw background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: pad_rectangle(prescroll, styling.menu_background_expand),
-                border: styling.menu_border,
-                shadow: styling.menu_shadow,
-            },
-            styling.menu_background,
-        );
+        let pad_rectangle = pad_rectangle(prescroll, styling.menu_background_expand);
+        if pad_rectangle.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: pad_rectangle,
+                    border: styling.menu_border,
+                    shadow: styling.menu_shadow,
+                },
+                styling.menu_background,
+            );
+        }
 
         // draw path
         if let Some(active) = menu_state.active {
@@ -452,14 +455,16 @@ where
 
             match draw_path {
                 DrawPath::Backdrop => {
-                    renderer.fill_quad(
-                        renderer::Quad {
-                            bounds: active_bounds,
-                            border: styling.path_border,
-                            ..Default::default()
-                        },
-                        styling.path,
-                    );
+                    if active_bounds.intersects(viewport) {
+                        renderer.fill_quad(
+                            renderer::Quad {
+                                bounds: active_bounds,
+                                border: styling.path_border,
+                                ..Default::default()
+                            },
+                            styling.path,
+                        );
+                    }
                 }
                 DrawPath::FakeHovering => {
                     if !cursor.is_over(active_bounds) {
@@ -621,17 +626,19 @@ where
         Color::from([0.0, 0.0, 1.0, 0.3]),
     ])
     .for_each(|(b, c)|{
-        renderer.fill_quad(
-            renderer::Quad{
-                bounds: *b,
-                border: Border{
-                    radius: 6.0.into(),
+        if (b.width > 0.) && (b.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad{
+                    bounds: *b,
+                    border: Border{
+                        radius: 6.0.into(),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
-                ..Default::default()
-            },
-            c
-        );
+                c
+            );
+        }
     });
 } */
 

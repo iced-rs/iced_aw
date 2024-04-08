@@ -86,26 +86,29 @@ where
         _style: &renderer::Style,
         layout: Layout<'_>,
         _cursor: Cursor,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) {
-        if let Some(b) = self.bg_color {
+        let bounds = layout.bounds();
+        if bounds.intersects(viewport) {
+            if let Some(b) = self.bg_color {
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds,
+                        border: self.bg_border,
+                        shadow: self.bg_shadow,
+                    },
+                    b,
+                );
+            }
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: layout.bounds(),
-                    border: self.bg_border,
-                    shadow: self.bg_shadow,
+                    bounds: self.inner_bounds.get_bounds(bounds),
+                    border: self.quad_border,
+                    shadow: self.quad_shadow,
                 },
-                b,
+                self.quad_color,
             );
         }
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds: self.inner_bounds.get_bounds(layout.bounds()),
-                border: self.quad_border,
-                shadow: self.quad_shadow,
-            },
-            self.quad_color,
-        );
     }
 }
 

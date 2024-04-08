@@ -597,7 +597,7 @@ where
         _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
         let children = layout.children();
@@ -608,20 +608,22 @@ where
             theme.active(&self.style, false)
         };
 
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: (0.0).into(),
-                    width: style_sheet.border_width,
-                    color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
+        if bounds.intersects(viewport) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet
-                .background
-                .unwrap_or_else(|| Color::TRANSPARENT.into()),
-        );
+                style_sheet
+                    .background
+                    .unwrap_or_else(|| Color::TRANSPARENT.into()),
+            );
+        }
 
         for ((i, tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
             draw_tab(
@@ -636,6 +638,7 @@ where
                 (self.font.unwrap_or(BOOTSTRAP_FONT), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
+                viewport,
             );
         }
     }
@@ -659,6 +662,7 @@ fn draw_tab<Theme, Renderer>(
     icon_data: (Font, f32),
     text_data: (Font, f32),
     close_size: f32,
+    viewport: &Rectangle,
 ) where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: StyleSheet + text::StyleSheet,
@@ -687,18 +691,20 @@ fn draw_tab<Theme, Renderer>(
         .expect("Graphics: Layout should have a label layout");
     let mut label_layout_children = label_layout.children();
 
-    renderer.fill_quad(
-        renderer::Quad {
-            bounds,
-            border: Border {
-                radius: (0.0).into(),
-                width: style.tab_label_border_width,
-                color: style.tab_label_border_color,
+    if bounds.intersects(viewport) {
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: style.tab_label_border_width,
+                    color: style.tab_label_border_color,
+                },
+                shadow: Shadow::default(),
             },
-            shadow: Shadow::default(),
-        },
-        style.tab_label_background,
-    );
+            style.tab_label_background,
+        );
+    }
 
     match tab {
         TabLabel::Icon(icon) => {
@@ -825,7 +831,7 @@ fn draw_tab<Theme, Renderer>(
             cross_bounds,
         );
 
-        if is_mouse_over_cross {
+        if is_mouse_over_cross && cross_bounds.intersects(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: cross_bounds,

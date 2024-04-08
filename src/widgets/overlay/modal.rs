@@ -183,18 +183,20 @@ where
         let style_sheet = theme.active(&self.style);
 
         // Background
-        renderer.fill_quad(
-            renderer::Quad {
-                bounds,
-                border: Border {
-                    radius: (0.0).into(),
-                    width: 0.0,
-                    color: Color::TRANSPARENT,
+        if (bounds.width > 0.) && (bounds.height > 0.) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds,
+                    border: Border {
+                        radius: (0.0).into(),
+                        width: 0.0,
+                        color: Color::TRANSPARENT,
+                    },
+                    shadow: Shadow::default(),
                 },
-                shadow: Shadow::default(),
-            },
-            style_sheet.background,
-        );
+                style_sheet.background,
+            );
+        }
 
         let content_layout = layout
             .children()
