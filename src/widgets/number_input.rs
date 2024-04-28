@@ -227,7 +227,7 @@ where
         if self.bounds.1 - self.bounds.0 < self.step || self.value < self.bounds.0 + self.step {
             self.value = self.bounds.0;
         } else {
-            self.value = self.value - self.step;
+            self.value -= self.step;
         }
         shell.publish((self.on_change)(self.value));
     }
@@ -237,7 +237,7 @@ where
         if self.bounds.1 - self.bounds.0 < self.step || self.value > self.bounds.1 - self.step {
             self.value = self.bounds.1;
         } else {
-            self.value = self.value + self.step;
+            self.value += self.step;
         }
         shell.publish((self.on_change)(self.value));
     }
