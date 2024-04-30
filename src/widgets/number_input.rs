@@ -217,8 +217,8 @@ where
 
     /// Sets the width of the [`NumberInput`].
     #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
+        self.width = width.into();
         self
     }
 
