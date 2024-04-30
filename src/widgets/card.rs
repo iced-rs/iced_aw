@@ -129,8 +129,8 @@ where
 
     /// Sets the height of the [`Card`].
     #[must_use]
-    pub fn height(mut self, height: Length) -> Self {
-        self.height = height;
+    pub fn height(mut self, height: impl Into<Length>) -> Self {
+        self.height = height.into();
         self
     }
 
@@ -200,8 +200,8 @@ where
 
     /// Sets the width of the [`Card`].
     #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.width = width;
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
+        self.width = width.into();
         self
     }
 }
