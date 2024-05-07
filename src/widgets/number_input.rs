@@ -77,13 +77,13 @@ where
     size: Option<f32>,
     /// The underlying element of the [`NumberInput`].
     content: TextInput<'a, Message, Theme, Renderer>,
-    /// The on_change event of the [`NumberInput`].
+    /// The ``on_change`` event of the [`NumberInput`].
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`].
     style: <Theme as number_input::StyleSheet>::Style,
     /// The font text of the [`NumberInput`].
     font: Renderer::Font,
-    /// The Width to use for the NumberBox Default is Length::Fill
+    /// The Width to use for the ``NumberBox`` Default is ``Length::Fill``
     width: Length,
 }
 

@@ -296,9 +296,7 @@ where
     Message: 'a,
     Theme: 'a,
 {
-    fn from(
-        wrap: Wrap<'a, Message, direction::Vertical, Theme, Renderer>,
-    ) -> Element<'a, Message, Theme, Renderer> {
+    fn from(wrap: Wrap<'a, Message, direction::Vertical, Theme, Renderer>) -> Self {
         Element::new(wrap)
     }
 }
@@ -310,9 +308,7 @@ where
     Message: 'a,
     Theme: 'a,
 {
-    fn from(
-        wrap: Wrap<'a, Message, direction::Horizontal, Theme, Renderer>,
-    ) -> Element<'a, Message, Theme, Renderer> {
+    fn from(wrap: Wrap<'a, Message, direction::Horizontal, Theme, Renderer>) -> Self {
         Element::new(wrap)
     }
 }

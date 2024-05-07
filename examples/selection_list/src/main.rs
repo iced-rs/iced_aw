@@ -62,7 +62,7 @@ impl Sandbox for Example {
             }
             Message::ManualSelection => {
                 if let Some(option) = self.vec.get(2) {
-                    self.selected_language = option.to_owned();
+                    option.clone_into(&mut self.selected_language);
                     self.selected_index = 2;
                     self.manual_select = Some(2);
                 }

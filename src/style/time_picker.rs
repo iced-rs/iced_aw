@@ -1,6 +1,7 @@
 //! Use a time picker as an input element for picking times.
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
+#![allow(clippy::doc_markdown)]
 use std::rc::Rc;
 
 use iced::{Background, Color, Theme};

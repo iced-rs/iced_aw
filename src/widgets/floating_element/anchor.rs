@@ -1,7 +1,7 @@
 //! Use a floating element to overlay a button over some content
 //!
 //! *This API requires the following crate features to be activated: `floating_element`*
-
+#![allow(clippy::doc_markdown)]
 /// Positional [`Anchor`] for the [`FloatingElement`](super::FloatingElement).
 #[derive(Copy, Clone, Debug, Hash)]
 pub enum Anchor {

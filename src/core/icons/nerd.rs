@@ -1,6 +1,6 @@
 //! This file was automatically generated
 //! by [Mamba Bronze](https://github.com/Redhawk18/mamba-bronze)
-
+#![allow(clippy::doc_markdown)]
 use crate::NERD_FONT;
 use std::{
     fmt::{Display, Formatter, Result},

@@ -130,7 +130,7 @@ impl Application for App {
                 }
             }
             Message::TextChange(s) => {
-                self.text = s.clone();
+                self.text.clone_from(&s);
                 self.title = s;
             }
             Message::None => {}

@@ -57,7 +57,7 @@ where
 /// The Private [`ListState`] Handles the State of the inner list.
 #[derive(Debug, Clone, Default)]
 pub struct ListState {
-    /// Statehood of hovered_option
+    /// Statehood of ``hovered_option``
     pub hovered_option: Option<usize>,
     /// The index in the list of options of the last chosen Item Clicked for Processing
     pub last_selected_index: Option<(usize, u64)>,
@@ -285,7 +285,7 @@ where
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a + StyleSheet,
 {
-    fn from(list: List<'a, T, Message, Theme, Renderer>) -> Element<'a, Message, Theme, Renderer> {
+    fn from(list: List<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(list)
     }
 }

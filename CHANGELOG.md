@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2024-05-07
+
+### Added
+- font loading example @Redhawk18
+- Add font size to date_picker @Strosel
+
+### Changed
+- Replace Length with impl Into<Length> in width/height APIs @TitouanReal
+- use bounds directly for segmented_button @spamviech
+- Updated bootstrap fonts @RedHawk.
+- Migrated SF_UI fonts under extended fonts type removing cupertino feature requirement to use them.
+
+### Fixed
+- number input over/underflow @TitouanReal
+- Numberinput fixes & shortcut support @the-marenga
+- hide all fill_quad-calls behind intersects(viewport) or width/height>0 checks @spamviech
+- add missing set_active_tab @spamviech
+- button doesn't highlight when it is hovered @Sherlock-Holo
+- broken grid generic parameters @Exidex
+- nerd font not being loaded by using font family name @Redhawk18
+- font Icon enums @Redhawk18
+- modal overlay fixed
+- fixed tabs
+
 ## [0.8.0] - 2024-02-24
 ### Added
 - Tab bar now follows native iced theme @Redhawk.

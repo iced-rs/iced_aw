@@ -248,7 +248,7 @@ where
 impl<'a, Content, Message, Theme, Renderer> From<ContextMenu<'a, Content, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
+    Content: 'a + Fn() -> Self,
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
     Theme: 'a + StyleSheet,

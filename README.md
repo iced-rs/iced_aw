@@ -24,7 +24,7 @@ iced_aw = { version = "0.8.0", default-features = false, features = [...] }
 | 0.8            | 0.4               |
 | 0.9            | 0.5               |
 | 0.10           | 0.6, 0.7          |
-| 0.12           | 0.8,              |
+| 0.12           | 0.8, 0.9          |
 
 ## Widgets
 
@@ -82,7 +82,8 @@ Enable this widget with the feature `date_picker`.
 
 Please take a look into our examples on how to use floating elements.
 
-Enable this widget with the feature `floating_element`.
+Enable this widget with the feature `floating_element`. 
+This will be depreciated in the next Release in palce of using the stack widget
 
 ### Modal
 
@@ -97,6 +98,7 @@ Modals are useful for showing some content as an overlay on top. In combination 
 Please take a look into our examples on how to use modals.
 
 Enable this widget with the feature `modal`.
+This will be depreciated in the next Release in palce of using the stack widget
 
 ### NumberInput
 
