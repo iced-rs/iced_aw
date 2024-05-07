@@ -85,6 +85,8 @@ where
     font: Renderer::Font,
     /// The Width to use for the ``NumberBox`` Default is ``Length::Fill``
     width: Length,
+    /// Ignore mouse scroll events for the [`NumberInput`] Default is ``false``.
+    ignore_scroll_events: bool,
 }
 
 impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Renderer>
@@ -128,6 +130,7 @@ where
             style: <Theme as number_input::StyleSheet>::Style::default(),
             font: Renderer::Font::default(),
             width: Length::Shrink,
+            ignore_scroll_events: false,
         }
     }
 
@@ -219,6 +222,14 @@ where
     #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
+        self
+    }
+
+    /// Enable or disable mouse scrolling events of the [`NumberInput`], by default this is set to
+    /// ``false``.
+    #[must_use]
+    pub fn ignore_scroll(mut self, ignore: bool) -> Self {
+        self.ignore_scroll_events = ignore;
         self
     }
 
@@ -516,7 +527,9 @@ where
                     }
                 }
             }
-            Event::Mouse(mouse::Event::WheelScrolled { delta }) if mouse_over_widget => {
+            Event::Mouse(mouse::Event::WheelScrolled { delta })
+                if mouse_over_widget && !self.ignore_scroll_events =>
+            {
                 match delta {
                     mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                         if y.is_sign_positive() {
