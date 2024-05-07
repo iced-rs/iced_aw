@@ -235,17 +235,18 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_val(&mut self, shell: &mut Shell<Message>) {
-        if self.bounds.1 - self.bounds.0 < self.step || self.value < self.bounds.0 + self.step {
+        if self.value < self.bounds.0 + self.step {
             self.value = self.bounds.0;
         } else {
             self.value -= self.step;
         }
+
         shell.publish((self.on_change)(self.value));
     }
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_val(&mut self, shell: &mut Shell<Message>) {
-        if self.bounds.1 - self.bounds.0 < self.step || self.value > self.bounds.1 - self.step {
+        if self.value > self.bounds.1 - self.step {
             self.value = self.bounds.1;
         } else {
             self.value += self.step;
