@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2024-05-07
+
+### Added
+- ability to disable scroll events for NumberInput. @airblast-dev 
+
+### Fixed
+- number input over/underflow when T is set to Max and Min and T is signed.
+
 ## [0.9.0] - 2024-05-07
 
 ### Added
