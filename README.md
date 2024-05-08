@@ -14,7 +14,7 @@ Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
 iced = "0.12.0"
-iced_aw = { version = "0.9.2", default-features = false, features = [...] }
+iced_aw = { version = "0.9.3", default-features = false, features = [...] }
 ```
 
 ## Versioning

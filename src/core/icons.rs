@@ -26,8 +26,9 @@ cfg_if! {
         /// The default cupertino font for alerts and button.
         pub const SF_UI_ROUNDED: iced::Font = iced::Font::with_name(".SF UI Rounded");
     } else {
-        pub mod required;
-        pub use required::Bootstrap;
+        #[path = "icons/required.rs"]
+        pub mod bootstrap;
+        pub use bootstrap::Bootstrap;
         // pub use required::{Bootstrap, icon_to_char, icon_to_string};
         /// The default icon font bytes for loading the font into iced.
         pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");

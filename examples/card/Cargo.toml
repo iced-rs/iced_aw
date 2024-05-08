@@ -7,8 +7,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced_aw = { workspace = true, features = [
-    "card", "icons"
+iced_aw = { workspace = true, default-features = false , features = [
+    "card"
 ] }
 iced.workspace=true
 
