@@ -169,7 +169,7 @@ where
     #[must_use]
     pub fn min(mut self, min: T) -> Self {
         if min <= *self.bounds.end() {
-            self.bounds = RangeInclusive::new(min, *self.bounds.end())
+            self.bounds = RangeInclusive::new(min, *self.bounds.end());
         }
         self
     }
@@ -178,7 +178,7 @@ where
     #[must_use]
     pub fn max(mut self, max: T) -> Self {
         if max >= *self.bounds.start() {
-            self.bounds = RangeInclusive::new(*self.bounds.start(), max)
+            self.bounds = RangeInclusive::new(*self.bounds.start(), max);
         }
         self
     }
