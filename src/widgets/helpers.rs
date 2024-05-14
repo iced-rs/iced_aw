@@ -337,7 +337,6 @@ where
 #[must_use]
 pub fn number_input<'a, T, Message, Theme, Renderer, F>(
     value: T,
-    max: T,
     on_changed: F,
 ) -> crate::NumberInput<'a, T, Message, Theme, Renderer>
 where
@@ -356,7 +355,7 @@ where
         + std::str::FromStr
         + Copy,
 {
-    crate::NumberInput::new(value, max, on_changed)
+    crate::NumberInput::new(value, on_changed)
 }
 
 #[cfg(feature = "selection_list")]

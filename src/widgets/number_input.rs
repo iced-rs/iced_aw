@@ -24,7 +24,7 @@ use iced::{
     Rectangle, Shadow, Size,
 };
 use num_traits::{Num, NumAssignOps};
-use std::{fmt::Display, str::FromStr};
+use std::{fmt::Display, ops::RangeInclusive, str::FromStr};
 
 use crate::style;
 pub use crate::{
@@ -70,7 +70,7 @@ where
     /// The step for each modify of the [`NumberInput`].
     step: T,
     /// The min and max value of the [`NumberInput`].
-    bounds: (T, T),
+    bounds: RangeInclusive<T>,
     /// The content padding of the [`NumberInput`].
     padding: f32,
     /// The text size of the [`NumberInput`].
@@ -106,7 +106,7 @@ where
     /// - the current value
     /// - the max value
     /// - a function that produces a message when the [`NumberInput`] changes
-    pub fn new<F>(value: T, max: T, on_changed: F) -> Self
+    pub fn new<F>(value: T, on_changed: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
@@ -119,7 +119,7 @@ where
         Self {
             value,
             step: T::one(),
-            bounds: (T::zero(), max),
+            bounds: RangeInclusive::new(T::zero(), T::one()),
             padding,
             size: None,
             content: TextInput::new("", format!("{value}").as_str())
@@ -135,11 +135,14 @@ where
     }
 
     /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
+    /// # Example
+    /// ```
+    /// // Creates a range from -5 till 5.
+    /// number_input(my_value, my_message).bounds(-5..=5)
+    /// ```
     #[must_use]
-    pub fn bounds(mut self, bounds: (T, T)) -> Self {
-        if bounds.0 <= bounds.1 {
-            self.bounds = bounds;
-        }
+    pub fn bounds(mut self, bounds: RangeInclusive<T>) -> Self {
+        self.bounds = bounds;
         self
     }
 
@@ -165,8 +168,8 @@ where
     /// Sets the minimum value of the [`NumberInput`].
     #[must_use]
     pub fn min(mut self, min: T) -> Self {
-        if min <= self.bounds.1 {
-            self.bounds.0 = min;
+        if min <= *self.bounds.end() {
+            self.bounds = RangeInclusive::new(min, *self.bounds.end())
         }
         self
     }
@@ -174,8 +177,8 @@ where
     /// Sets the maximum value of the [`NumberInput`].
     #[must_use]
     pub fn max(mut self, max: T) -> Self {
-        if max >= self.bounds.0 {
-            self.bounds.1 = max;
+        if max >= *self.bounds.start() {
+            self.bounds = RangeInclusive::new(*self.bounds.start(), max)
         }
         self
     }
@@ -235,8 +238,8 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_val(&mut self, shell: &mut Shell<Message>) {
-        if self.value < self.bounds.0 + self.step {
-            self.value = self.bounds.0;
+        if self.value < *self.bounds.start() + self.step {
+            self.value = *self.bounds.start();
         } else {
             self.value -= self.step;
         }
@@ -246,8 +249,8 @@ where
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_val(&mut self, shell: &mut Shell<Message>) {
-        if self.value > self.bounds.1 - self.step {
-            self.value = self.bounds.1;
+        if self.value > *self.bounds.end() - self.step {
+            self.value = *self.bounds.end();
         } else {
             self.value += self.step;
         }
@@ -404,7 +407,7 @@ where
             .expect("fail to get decreate mod layout")
             .bounds();
 
-        if self.bounds.0 == self.bounds.1 {
+        if self.bounds.start() == self.bounds.end() {
             return event::Status::Ignored;
         }
 
@@ -472,10 +475,7 @@ where
                         }
 
                         match T::from_str(&new_val) {
-                            Ok(val)
-                                if (self.bounds.0..=self.bounds.1).contains(&val)
-                                    && val != self.value =>
-                            {
+                            Ok(val) if self.bounds.contains(&val) && val != self.value => {
                                 self.value = val;
                                 forward_to_text(event, shell, child, clipboard)
                             }
@@ -515,10 +515,7 @@ where
                         }
 
                         match T::from_str(&new_val) {
-                            Ok(val)
-                                if (self.bounds.0..=self.bounds.1).contains(&val)
-                                    && val != self.value =>
-                            {
+                            Ok(val) if self.bounds.contains(&val) && val != self.value => {
                                 self.value = val;
                                 forward_to_text(event, shell, child, clipboard)
                             }
@@ -590,8 +587,10 @@ where
             .expect("fail to get decreate mod layout")
             .bounds();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
-        let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
-        let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
+        let is_decrease_disabled =
+            self.value <= *self.bounds.start() || self.bounds.start() == self.bounds.end();
+        let is_increase_disabled =
+            self.value >= *self.bounds.end() || self.bounds.start() == self.bounds.end();
         let mouse_over_decrease = dec_bounds.contains(cursor.position().unwrap_or_default());
         let mouse_over_increase = inc_bounds.contains(cursor.position().unwrap_or_default());
 
@@ -639,8 +638,10 @@ where
             None,
             viewport,
         );
-        let is_decrease_disabled = self.value <= self.bounds.0 || self.bounds.0 == self.bounds.1;
-        let is_increase_disabled = self.value >= self.bounds.1 || self.bounds.0 == self.bounds.1;
+        let is_decrease_disabled =
+            self.value <= *self.bounds.start() || self.bounds.start() == self.bounds.end();
+        let is_increase_disabled =
+            self.value >= *self.bounds.end() || self.bounds.start() == self.bounds.end();
 
         let decrease_btn_style = if is_decrease_disabled {
             style::number_input::StyleSheet::disabled(theme, &self.style)
