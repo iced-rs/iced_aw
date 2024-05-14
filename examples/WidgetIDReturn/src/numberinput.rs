@@ -65,9 +65,9 @@ where
         V: 'static,
         M: 'static,
     {
-        let mut input = NumberInput::new(self.value, max, NumInputMessage::Change)
+        let mut input = NumberInput::new(self.value, NumInputMessage::Change)
             .step(step)
-            .min(min)
+            .bounds(min..=max)
             .width(Length::Shrink);
 
         if let Some(style) = style {
