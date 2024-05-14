@@ -93,7 +93,8 @@ impl Application for NumberInputDemo {
             .into(),
             NumberInputDemo::Loaded(State { value }) => {
                 let lb_minute = Text::new("Number Input:");
-                let txt_minute = number_input(*value, 255.0, Message::NumInpChanged)
+                let txt_minute = number_input(*value, Message::NumInpChanged)
+                    .max(255.0)
                     .style(NumberInputStyles::Default)
                     .step(0.5);
 
