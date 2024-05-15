@@ -93,6 +93,8 @@ where
     width: Length,
     /// Ignore mouse scroll events for the [`NumberInput`] Default is ``false``.
     ignore_scroll_events: bool,
+    /// Ignore drawing increase and decrease buttons [`NumberInput`] Default is ``false``.
+    ignore_buttons: bool,
 }
 
 impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Renderer>
@@ -138,6 +140,7 @@ where
             font: Renderer::Font::default(),
             width: Length::Shrink,
             ignore_scroll_events: false,
+            ignore_buttons: false,
         }
     }
 
@@ -171,6 +174,22 @@ where
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.font = font;
         self.content = self.content.font(font);
+        self
+    }
+
+    /// Enable or disable increase and decrease buttons of the [`NumberInput`], by default this is set to
+    /// ``false``.
+    #[must_use]
+    pub fn ignore_buttons(mut self, ignore: bool) -> Self {
+        self.ignore_buttons = ignore;
+        self
+    }
+
+    /// Enable or disable mouse scrolling events of the [`NumberInput`], by default this is set to
+    /// ``false``.
+    #[must_use]
+    pub fn ignore_scroll(mut self, ignore: bool) -> Self {
+        self.ignore_scroll_events = ignore;
         self
     }
 
@@ -216,14 +235,6 @@ where
     #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
-        self
-    }
-
-    /// Enable or disable mouse scrolling events of the [`NumberInput`], by default this is set to
-    /// ``false``.
-    #[must_use]
-    pub fn ignore_scroll(mut self, ignore: bool) -> Self {
-        self.ignore_scroll_events = ignore;
         self
     }
 
@@ -545,7 +556,9 @@ where
                 }
                 event::Status::Captured
             }
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) if mouse_over_button => {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                if mouse_over_button && !self.ignore_buttons =>
+            {
                 if mouse_over_dec {
                     modifiers.decrease_pressed = true;
                     self.decrease_value(shell);
@@ -599,7 +612,7 @@ where
         let mouse_over_increase = inc_bounds.contains(cursor.position().unwrap_or_default());
 
         if (mouse_over_decrease && !is_decrease_disabled)
-            || (mouse_over_increase && !is_increase_disabled)
+            || (mouse_over_increase && !is_increase_disabled) && !self.ignore_buttons
         {
             mouse::Interaction::Pointer
         } else if is_mouse_over {
@@ -666,6 +679,9 @@ where
 
         let icon_size = Pixels(txt_size * 2.5 / 4.0);
 
+        if self.ignore_buttons {
+            return;
+        }
         // decrease button section
         if dec_bounds.intersects(viewport) {
             renderer.fill_quad(
