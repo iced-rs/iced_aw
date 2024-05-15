@@ -4,8 +4,9 @@
 
 #[allow(unused_imports)]
 use iced::{self, advanced::renderer, Color, Element};
+use num_traits::bounds::Bounded;
 #[allow(unused_imports)]
-use std::{borrow::Cow, fmt::Display, hash::Hash};
+use std::{borrow::Cow, fmt::Display, hash::Hash, ops::RangeBounds};
 
 /// Creates a [`Grid`] with the given [`GridRow`]s.
 ///
@@ -337,6 +338,7 @@ where
 #[must_use]
 pub fn number_input<'a, T, Message, Theme, Renderer, F>(
     value: T,
+    bounds: impl RangeBounds<T>,
     on_changed: F,
 ) -> crate::NumberInput<'a, T, Message, Theme, Renderer>
 where
@@ -353,9 +355,10 @@ where
         + PartialOrd
         + std::fmt::Display
         + std::str::FromStr
-        + Copy,
+        + Copy
+        + Bounded,
 {
-    crate::NumberInput::new(value, on_changed)
+    crate::NumberInput::new(value, bounds, on_changed)
 }
 
 #[cfg(feature = "selection_list")]
@@ -409,7 +412,7 @@ where
         + crate::style::selection_list::StyleSheet
         + iced::widget::container::StyleSheet
         + iced::widget::scrollable::StyleSheet,
-    T: Clone + Display + Eq + Hash,
+    T: Clone + Display + Eq + Hash + Bounded,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     crate::SelectionList::new(options, on_selected)

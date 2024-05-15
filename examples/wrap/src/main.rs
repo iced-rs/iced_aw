@@ -189,17 +189,29 @@ impl Application for RandStrings {
                     Some(Into::<WrapAlign>::into(state.align)),
                     Message::ChangeAlign,
                 );
-                let spacing_input = Column::new()
-                    .push(Text::new("spacing"))
-                    .push(NumberInput::new(state.spacing, Message::ChangeSpacing).max(500.0));
-                let line_spacing_input = Column::new().push(Text::new("line spacing")).push(
-                    NumberInput::new(state.line_spacing, Message::ChangeLineSpacing).max(500.0),
-                );
-                let line_minimal_length_input =
-                    Column::new().push(Text::new("line minimal length")).push(
-                        NumberInput::new(state.line_minimal_length, Message::ChangeMinimalLength)
-                            .max(999.0),
-                    );
+                let spacing_input =
+                    Column::new()
+                        .push(Text::new("spacing"))
+                        .push(NumberInput::new(
+                            state.spacing,
+                            0.0..500.0,
+                            Message::ChangeSpacing,
+                        ));
+                let line_spacing_input =
+                    Column::new()
+                        .push(Text::new("line spacing"))
+                        .push(NumberInput::new(
+                            state.line_spacing,
+                            0.0..500.0,
+                            Message::ChangeLineSpacing,
+                        ));
+                let line_minimal_length_input = Column::new()
+                    .push(Text::new("line minimal length"))
+                    .push(NumberInput::new(
+                        state.line_minimal_length,
+                        0.0..999.9,
+                        Message::ChangeMinimalLength,
+                    ));
                 let ctrls = Column::new()
                     .push(align_picklist)
                     .push(spacing_input)

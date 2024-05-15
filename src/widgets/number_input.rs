@@ -23,8 +23,12 @@ use iced::{
     Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels, Point,
     Rectangle, Shadow, Size,
 };
-use num_traits::{Num, NumAssignOps};
-use std::{fmt::Display, ops::RangeInclusive, str::FromStr};
+use num_traits::{bounds::Bounded, Num, NumAssignOps};
+use std::{
+    fmt::Display,
+    ops::{Bound, RangeBounds},
+    str::FromStr,
+};
 
 use crate::style;
 pub use crate::{
@@ -51,7 +55,7 @@ const DEFAULT_PADDING: f32 = 5.0;
 ///
 /// let input = NumberInput::new(
 ///     value,
-///     max,
+///     0..=max,
 ///     Message::NumberInputChanged,
 /// )
 /// .step(2);
@@ -69,8 +73,10 @@ where
     value: T,
     /// The step for each modify of the [`NumberInput`].
     step: T,
-    /// The min and max value of the [`NumberInput`].
-    bounds: RangeInclusive<T>,
+    /// The min value of the [`NumberInput`].
+    min: T,
+    /// The max value of the [`NumberInput`].
+    max: T,
     /// The content padding of the [`NumberInput`].
     padding: f32,
     /// The text size of the [`NumberInput`].
@@ -91,7 +97,7 @@ where
 
 impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Renderer>
 where
-    T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
+    T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: Clone,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::StyleSheet
@@ -106,7 +112,7 @@ where
     /// - the current value
     /// - the max value
     /// - a function that produces a message when the [`NumberInput`] changes
-    pub fn new<F>(value: T, on_changed: F) -> Self
+    pub fn new<F>(value: T, bounds: impl RangeBounds<T>, on_changed: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
@@ -119,7 +125,8 @@ where
         Self {
             value,
             step: T::one(),
-            bounds: RangeInclusive::new(T::zero(), T::one()),
+            min: Self::set_min(bounds.start_bound()),
+            max: Self::set_max(bounds.end_bound()),
             padding,
             size: None,
             content: TextInput::new("", format!("{value}").as_str())
@@ -141,8 +148,10 @@ where
     /// number_input(my_value, my_message).bounds(-5..=5)
     /// ```
     #[must_use]
-    pub fn bounds(mut self, bounds: RangeInclusive<T>) -> Self {
-        self.bounds = bounds;
+    pub fn bounds(mut self, bounds: impl RangeBounds<T>) -> Self {
+        self.min = Self::set_min(bounds.start_bound());
+        self.max = Self::set_max(bounds.end_bound());
+
         self
     }
 
@@ -162,24 +171,6 @@ where
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.font = font;
         self.content = self.content.font(font);
-        self
-    }
-
-    /// Sets the minimum value of the [`NumberInput`].
-    #[must_use]
-    pub fn min(mut self, min: T) -> Self {
-        if min <= *self.bounds.end() {
-            self.bounds = RangeInclusive::new(min, *self.bounds.end());
-        }
-        self
-    }
-
-    /// Sets the maximum value of the [`NumberInput`].
-    #[must_use]
-    pub fn max(mut self, max: T) -> Self {
-        if max >= *self.bounds.start() {
-            self.bounds = RangeInclusive::new(*self.bounds.start(), max);
-        }
         self
     }
 
@@ -237,9 +228,9 @@ where
     }
 
     /// Decrease current value by step of the [`NumberInput`].
-    fn decrease_val(&mut self, shell: &mut Shell<Message>) {
-        if self.value < *self.bounds.start() + self.step {
-            self.value = *self.bounds.start();
+    fn decrease_value(&mut self, shell: &mut Shell<Message>) {
+        if self.value < self.min + self.step {
+            self.value = self.min;
         } else {
             self.value -= self.step;
         }
@@ -248,20 +239,35 @@ where
     }
 
     /// Increase current value by step of the [`NumberInput`].
-    fn increase_val(&mut self, shell: &mut Shell<Message>) {
-        if self.value > *self.bounds.end() - self.step {
-            self.value = *self.bounds.end();
+    fn increase_value(&mut self, shell: &mut Shell<Message>) {
+        if self.value > self.max - self.step {
+            self.value = self.max;
         } else {
             self.value += self.step;
         }
         shell.publish((self.on_change)(self.value));
+    }
+
+    fn set_min(min: Bound<&T>) -> T {
+        match min {
+            Bound::Included(n) | Bound::Excluded(n) => *n,
+            Bound::Unbounded => T::min_value(),
+        }
+    }
+
+    fn set_max(max: Bound<&T>) -> T {
+        match max {
+            Bound::Included(n) => *n,
+            Bound::Excluded(n) => *n - T::one(),
+            Bound::Unbounded => T::max_value(),
+        }
     }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for NumberInput<'a, T, Message, Theme, Renderer>
 where
-    T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy,
+    T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::StyleSheet
@@ -407,7 +413,7 @@ where
             .expect("fail to get decreate mod layout")
             .bounds();
 
-        if self.bounds.start() == self.bounds.end() {
+        if self.min == self.max {
             return event::Status::Ignored;
         }
 
@@ -444,11 +450,11 @@ where
 
                 match key {
                     keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
-                        self.decrease_val(shell);
+                        self.decrease_value(shell);
                         event::Status::Captured
                     }
                     keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
-                        self.increase_val(shell);
+                        self.increase_value(shell);
                         event::Status::Captured
                     }
                     keyboard::Key::Named(
@@ -475,7 +481,7 @@ where
                         }
 
                         match T::from_str(&new_val) {
-                            Ok(val) if self.bounds.contains(&val) && val != self.value => {
+                            Ok(val) if (self.min..self.max).contains(&val) && val != self.value => {
                                 self.value = val;
                                 forward_to_text(event, shell, child, clipboard)
                             }
@@ -515,7 +521,7 @@ where
                         }
 
                         match T::from_str(&new_val) {
-                            Ok(val) if self.bounds.contains(&val) && val != self.value => {
+                            Ok(val) if (self.min..self.max).contains(&val) && val != self.value => {
                                 self.value = val;
                                 forward_to_text(event, shell, child, clipboard)
                             }
@@ -531,9 +537,9 @@ where
                 match delta {
                     mouse::ScrollDelta::Lines { y, .. } | mouse::ScrollDelta::Pixels { y, .. } => {
                         if y.is_sign_positive() {
-                            self.increase_val(shell);
+                            self.increase_value(shell);
                         } else {
-                            self.decrease_val(shell);
+                            self.decrease_value(shell);
                         }
                     }
                 }
@@ -542,10 +548,10 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) if mouse_over_button => {
                 if mouse_over_dec {
                     modifiers.decrease_pressed = true;
-                    self.decrease_val(shell);
+                    self.decrease_value(shell);
                 } else {
                     modifiers.increase_pressed = true;
-                    self.increase_val(shell);
+                    self.increase_value(shell);
                 }
                 event::Status::Captured
             }
@@ -587,10 +593,8 @@ where
             .expect("fail to get decreate mod layout")
             .bounds();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
-        let is_decrease_disabled =
-            self.value <= *self.bounds.start() || self.bounds.start() == self.bounds.end();
-        let is_increase_disabled =
-            self.value >= *self.bounds.end() || self.bounds.start() == self.bounds.end();
+        let is_decrease_disabled = self.value <= self.min || self.min == self.max;
+        let is_increase_disabled = self.value >= self.max || self.min == self.max;
         let mouse_over_decrease = dec_bounds.contains(cursor.position().unwrap_or_default());
         let mouse_over_increase = inc_bounds.contains(cursor.position().unwrap_or_default());
 
@@ -638,10 +642,8 @@ where
             None,
             viewport,
         );
-        let is_decrease_disabled =
-            self.value <= *self.bounds.start() || self.bounds.start() == self.bounds.end();
-        let is_increase_disabled =
-            self.value >= *self.bounds.end() || self.bounds.start() == self.bounds.end();
+        let is_decrease_disabled = self.value <= self.min || self.min == self.max;
+        let is_increase_disabled = self.value >= self.max || self.min == self.max;
 
         let decrease_btn_style = if is_decrease_disabled {
             style::number_input::StyleSheet::disabled(theme, &self.style)
@@ -746,7 +748,7 @@ pub struct ModifierState {
 impl<'a, T, Message, Theme, Renderer> From<NumberInput<'a, T, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
+    T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a
