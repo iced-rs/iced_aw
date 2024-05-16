@@ -611,8 +611,9 @@ where
         let mouse_over_decrease = dec_bounds.contains(cursor.position().unwrap_or_default());
         let mouse_over_increase = inc_bounds.contains(cursor.position().unwrap_or_default());
 
-        if (mouse_over_decrease && !is_decrease_disabled)
-            || (mouse_over_increase && !is_increase_disabled) && !self.ignore_buttons
+        if ((mouse_over_decrease && !is_decrease_disabled)
+            || (mouse_over_increase && !is_increase_disabled))
+            && !self.ignore_buttons
         {
             mouse::Interaction::Pointer
         } else if is_mouse_over {
