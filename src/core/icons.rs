@@ -19,12 +19,6 @@ cfg_if! {
         pub const BOOTSTRAP_FONT: Font = Font::with_name("bootstrap-icons");
         /// The nerd icon font.
         pub const NERD_FONT: Font = Font::with_name("Symbols Nerd Font");
-
-        /// The default cupertino font bytes for loading the font into the system.
-        pub const SF_UI_ROUNDED_BYTES: &[u8] = include_bytes!("./fonts/SFUIRounded.ttf");
-
-        /// The default cupertino font for alerts and button.
-        pub const SF_UI_ROUNDED: iced::Font = iced::Font::with_name(".SF UI Rounded");
     } else {
         #[path = "icons/required.rs"]
         pub mod bootstrap;

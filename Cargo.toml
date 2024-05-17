@@ -20,23 +20,19 @@ card = []
 date_picker = ["chrono", "once_cell", "icons"]
 color_picker = ["icons", "iced/canvas"]
 cupertino = ["time", "iced/canvas", "icons"]
-floating_element = []
 grid = ["itertools"]
 glow = []                                                   # TODO
 icons = []
-modal = []
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icons", "iced/canvas"]
 wrap = []
 number_input = ["num-format", "num-traits"]
 selection_list = []
-split = []
 menu = []
 quad = []
 spinner = []
 context_menu = []
-segmented_button = []
 slide_bar = []
 drop_down = []
 
@@ -46,21 +42,16 @@ default = [
     #"number_input",
     #"date_picker",
     #"color_picker",
-    #"floating_element",
     #"grid",
-    #"modal",
     #"tab_bar",
     #"tabs",
     #"time_picker",
     #"slide_bar",
     #"wrap",
     #"selection_list",
-    #"split",
     #"quad",
     #"context_menu",
     #"spinner",
-    #"cupertino",
-    #"segmented_button",
     #"drop_down",
     #"menu",
 ]
@@ -90,29 +81,17 @@ members = [
     #"examples/card",
     #"examples/number_input",
     #"examples/color_picker",
-    #"examples/floating_element",
-    #"examples/floating_element multioverlay",
-    #"examples/floating_element_anchors",
     #"examples/font_loading",
     #"examples/grid",
-    #"examples/modal",
-    #"examples/modal_component",
-    #"examples/multiple_modals",
     #"examples/tab_bar",
     #"examples/tabs",
     #"examples/time_picker",
     #"examples/sliderbar",
     #"examples/wrap",
     #"examples/selection_list",
-    #"examples/split",
-    #"examples/split_scroller",
     #"examples/context_menu",
     #"examples/spinner",
-    #"examples/cupertino/cupertino_button",
-    #"examples/cupertino/cupertino_spinner",
-    #"examples/cupertino/cupertino_switch",
     #"examples/WidgetIDReturn",
-    #"examples/segmented_button",
     #"examples/drop_down",
     #"examples/menu",
 ]

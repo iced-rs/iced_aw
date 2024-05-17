@@ -34,12 +34,6 @@ pub mod color_picker;
 #[cfg(feature = "color_picker")]
 pub use color_picker::ColorPicker;
 
-#[cfg(feature = "cupertino")]
-/// Cupertino-style widgets
-pub mod cupertino;
-#[cfg(feature = "cupertino")]
-pub use crate::widgets::cupertino::cupertino_spinner::CupertinoSpinner;
-
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
 #[cfg(feature = "date_picker")]
@@ -54,13 +48,6 @@ pub type SelectionList<'a, T, Message, Theme, Renderer> =
 #[cfg(feature = "selection_list")]
 pub use selection_list::List;
 
-#[cfg(feature = "floating_element")]
-pub mod floating_element;
-#[cfg(feature = "floating_element")]
-/// A floating element floating over some content.
-pub type FloatingElement<'a, Message, Theme, Renderer> =
-    floating_element::FloatingElement<'a, Message, Theme, Renderer>;
-
 #[cfg(feature = "grid")]
 pub mod grid;
 #[cfg(feature = "grid")]
@@ -68,18 +55,6 @@ pub mod grid;
 pub type Grid<'a, Message, Theme, Renderer> = grid::Grid<'a, Message, Theme, Renderer>;
 #[cfg(feature = "grid")]
 pub use grid::GridRow;
-
-#[cfg(feature = "modal")]
-pub mod modal;
-#[cfg(feature = "modal")]
-/// A modal content as an overlay.
-pub type Modal<'a, Message, Theme, Renderer> = modal::Modal<'a, Message, Theme, Renderer>;
-
-#[cfg(feature = "split")]
-pub mod split;
-#[cfg(feature = "split")]
-/// A split can divide the available space by half to display two different elements.
-pub type Split<'a, Message, Theme, Renderer> = split::Split<'a, Message, Theme, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
@@ -131,13 +106,6 @@ pub mod context_menu;
 /// A context menu
 pub type ContextMenu<'a, Overlay, Message, Renderer> =
     context_menu::ContextMenu<'a, Overlay, Message, Renderer>;
-
-#[cfg(feature = "segmented_button")]
-pub mod segmented_button;
-#[cfg(feature = "segmented_button")]
-/// A badge for color highlighting small information.
-pub type SegmentedButton<'a, Message, Theme, Renderer> =
-    segmented_button::SegmentedButton<'a, Message, Theme, Renderer>;
 
 #[cfg(feature = "slide_bar")]
 pub mod slide_bar;

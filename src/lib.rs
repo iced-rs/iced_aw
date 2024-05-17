@@ -63,7 +63,7 @@ mod platform {
         if #[cfg(feature = "icons")] {
             pub use
                 crate::core::icons::{
-                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,SF_UI_ROUNDED_BYTES, SF_UI_ROUNDED,
+                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,
                 };
         } else {
             pub use crate::core::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
@@ -87,16 +87,8 @@ mod platform {
     pub use {crate::widgets::date_picker, date_picker::DatePicker};
 
     #[doc(no_inline)]
-    #[cfg(feature = "floating_element")]
-    pub use {crate::widgets::floating_element, floating_element::FloatingElement};
-
-    #[doc(no_inline)]
     #[cfg(feature = "grid")]
     pub use crate::widgets::grid::{Grid, GridRow};
-
-    #[doc(no_inline)]
-    #[cfg(feature = "modal")]
-    pub use {crate::style::ModalStyles, crate::widgets::modal, modal::Modal};
 
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
@@ -133,10 +125,6 @@ mod platform {
         crate::style::SelectionListStyles, crate::widgets::selection_list,
         selection_list::SelectionList,
     };
-
-    #[doc(no_inline)]
-    #[cfg(feature = "split")]
-    pub use {crate::style::SplitStyles, crate::widgets::split, split::Split};
 
     #[doc(no_inline)]
     #[cfg(feature = "menu")]
