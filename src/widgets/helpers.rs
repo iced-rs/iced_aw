@@ -4,6 +4,7 @@
 
 #[allow(unused_imports)]
 use iced::{self, advanced::renderer, Color, Element};
+#[cfg(feature = "number_input")]
 use num_traits::bounds::Bounded;
 #[allow(unused_imports)]
 use std::{borrow::Cow, fmt::Display, hash::Hash, ops::RangeBounds};
