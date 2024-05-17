@@ -121,7 +121,7 @@ members = [
 git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
 version = "0.13.0-dev"
-default-features = false
+#default-features = false
 features = ["advanced"]
 
 [workspace.dependencies.iced_aw]

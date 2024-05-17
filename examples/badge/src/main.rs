@@ -8,9 +8,7 @@ use iced_aw::{helpers::badge, style, style::status::Status};
 const BADGE_TEXT_SIZE: u16 = 15;
 
 fn main() -> iced::Result {
-    iced::program("Badge example", BadgeExample::update, BadgeExample::view)
-        .centered()
-        .run()
+    iced::program("Badge example", BadgeExample::update, BadgeExample::view).run()
 }
 
 #[derive(Debug, Clone)]
