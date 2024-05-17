@@ -1,6 +1,6 @@
 use iced::{Element, Length};
 use iced_aw::{NumberInput, NumberInputStyles};
-use num_traits::{Num, NumAssignOps};
+use num_traits::{bounds::Bounded, Num, NumAssignOps};
 use std::fmt::Display;
 use std::marker::PhantomData;
 use std::str::FromStr;
@@ -18,7 +18,7 @@ pub enum NumInputMessage<V> {
 
 impl<V> NumInputMessage<V>
 where
-    V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
+    V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
 {
     pub fn get_data(&self) -> V {
         let NumInputMessage::Change(data) = self;
@@ -38,7 +38,7 @@ where
 
 impl<V, M> NumInput<V, M>
 where
-    V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy,
+    V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     M: Clone,
 {
     pub fn new(value: V) -> NumInput<V, M>
@@ -65,9 +65,8 @@ where
         V: 'static,
         M: 'static,
     {
-        let mut input = NumberInput::new(self.value, max, NumInputMessage::Change)
+        let mut input = NumberInput::new(self.value, min..max, NumInputMessage::Change)
             .step(step)
-            .min(min)
             .width(Length::Shrink);
 
         if let Some(style) = style {

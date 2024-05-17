@@ -194,7 +194,7 @@ impl Application for RandStrings {
                         .push(Text::new("spacing"))
                         .push(NumberInput::new(
                             state.spacing,
-                            500.0,
+                            0.0..500.0,
                             Message::ChangeSpacing,
                         ));
                 let line_spacing_input =
@@ -202,14 +202,14 @@ impl Application for RandStrings {
                         .push(Text::new("line spacing"))
                         .push(NumberInput::new(
                             state.line_spacing,
-                            500.0,
+                            0.0..500.0,
                             Message::ChangeLineSpacing,
                         ));
                 let line_minimal_length_input = Column::new()
                     .push(Text::new("line minimal length"))
                     .push(NumberInput::new(
                         state.line_minimal_length,
-                        999.0,
+                        0.0..999.9,
                         Message::ChangeMinimalLength,
                     ));
                 let ctrls = Column::new()
