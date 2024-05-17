@@ -28,7 +28,6 @@ iced_aw = { version = "0.9.3", default-features = false, features = [...] }
 
 ## Widgets
 
-
 ### Badge
 
 <div align="center">
@@ -66,39 +65,12 @@ Enable this widget with the feature `color_picker`.
 
 <div align="center">
   
-  ![Modal showcase](./images/showcase/date_picker.png)
+  ![Date Picker showcase](./images/showcase/date_picker.png)
 </div>
 
 Please take a look into our examples on how to use date pickers.
 
 Enable this widget with the feature `date_picker`.
-
-### Floating Action Button
-
-<div align="center">
-
-![Floating Element showcase](./images/showcase/floating_button.png)
-</div>
-
-Please take a look into our examples on how to use floating elements.
-
-Enable this widget with the feature `floating_element`. 
-This will be depreciated in the next Release in palce of using the stack widget
-
-### Modal
-
-Modals are useful for showing some content as an overlay on top. In combination with the Card widget, modals can be used to create some kind of dialog panels.
-
-<div align="center">
-
-![Modal showcase](./images/showcase/modal.png)
-</div>
-
-
-Please take a look into our examples on how to use modals.
-
-Enable this widget with the feature `modal`.
-This will be depreciated in the next Release in palce of using the stack widget
 
 ### NumberInput
 
@@ -126,21 +98,6 @@ A selection space to show any options passed in.
 
 Enable this widget with the feature `selection_list`.
 
-### Split
-
-A split divides the available space to display two different elements.
-
-<div align="center">
-
-![Split showcase](./images/showcase/split_example.gif)
-</div>
-
-Please take a look into our examples on how to use Splits.
-
-Enable Splits with the feature `split`.
-
-*This widget is currently not supporting web*
-
 ### TabBar and Tabs
 
 <div align="center">
@@ -162,7 +119,6 @@ Enable TabBars with the feature `tab_bar` and Tabs with `tabs`.
 Please take a look into our examples on how to use time pickers.
 
 Enable this widget with the feature `time_picker`.
-
 
 ### Menu
 
