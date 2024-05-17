@@ -14,7 +14,10 @@ use iced::{
     Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
 };
 
-pub use crate::style::badge::{Appearance, StyleSheet};
+pub use crate::style::{
+    badge::{Catalog, Style, StyleFn},
+    status::Status,
+};
 
 /// The ratio of the border radius.
 const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
@@ -36,7 +39,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 pub struct Badge<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// The padding of the [`Badge`].
     padding: u16,
@@ -49,7 +52,7 @@ where
     /// The vertical alignment of the [`Badge`].
     vertical_alignment: Alignment,
     /// The style of the [`Badge`].
-    style: <Theme as StyleSheet>::Style,
+    class: Theme::Class<'a>,
     /// The content [`Element`] of the [`Badge`].
     content: Element<'a, Message, Theme, Renderer>,
 }
@@ -57,7 +60,7 @@ where
 impl<'a, Message, Theme, Renderer> Badge<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// Creates a new [`Badge`] with the given content.
     ///
@@ -73,7 +76,7 @@ where
             height: Length::Shrink,
             horizontal_alignment: Alignment::Center,
             vertical_alignment: Alignment::Center,
-            style: <Theme as StyleSheet>::Style::default(),
+            class: Theme::default(),
             content: content.into(),
         }
     }
@@ -108,8 +111,11 @@ where
 
     /// Sets the style of the [`Badge`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        Theme::Class<'a>: From<StyleFn<'a, Theme>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme>).into();
         self
     }
 
@@ -126,7 +132,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.content)]
@@ -220,11 +226,13 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
-        let style_sheet = if is_mouse_over {
-            theme.hovered(&self.style)
+        let status = if is_mouse_over {
+            Status::Hovered
         } else {
-            theme.active(&self.style)
+            Status::Active
         };
+
+        let style_sheet = theme.style(&self.class, status);
 
         //println!("height: {}", bounds.height);
         // 34 15
@@ -269,7 +277,7 @@ impl<'a, Message, Theme, Renderer> From<Badge<'a, Message, Theme, Renderer>>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: 'a + StyleSheet,
+    Theme: 'a + Catalog,
 {
     fn from(badge: Badge<'a, Message, Theme, Renderer>) -> Self {
         Self::new(badge)

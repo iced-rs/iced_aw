@@ -1,12 +1,11 @@
 //! The appearance of the widgets
 
 pub mod colors;
+pub mod status;
 pub mod style_state;
 
 #[cfg(feature = "badge")]
 pub mod badge;
-#[cfg(feature = "badge")]
-pub use badge::BadgeStyles;
 
 #[cfg(feature = "card")]
 pub mod card;

@@ -4,6 +4,8 @@
 
 #[allow(unused_imports)]
 use iced::{self, advanced::renderer, Color, Element};
+
+#[cfg(feature = "number_input")]
 use num_traits::bounds::Bounded;
 #[allow(unused_imports)]
 use std::{borrow::Cow, fmt::Display, hash::Hash, ops::RangeBounds};
@@ -154,7 +156,7 @@ pub fn badge<'a, Message, Theme, Renderer>(
 ) -> crate::Badge<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: crate::style::badge::StyleSheet,
+    Theme: crate::style::badge::Catalog,
 {
     crate::Badge::new(content)
 }

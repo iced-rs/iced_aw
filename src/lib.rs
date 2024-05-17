@@ -55,6 +55,8 @@ pub use iced::Element;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
+    #[allow(unused_imports)]
+    pub use crate::style;
     pub use crate::widgets::helpers;
 
     cfg_if::cfg_if! {
@@ -70,7 +72,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
-    pub use {crate::style::BadgeStyles, crate::widgets::badge, badge::Badge};
+    pub use {crate::widgets::badge, badge::Badge};
 
     #[doc(no_inline)]
     #[cfg(feature = "card")]
