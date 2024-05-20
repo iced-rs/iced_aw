@@ -15,8 +15,8 @@ use iced::{
 };
 
 pub use crate::style::{
-    badge::{Catalog, Style, StyleFn},
-    status::Status,
+    badge::{Catalog, Style},
+    status::{Status, StyleFn},
 };
 
 /// The ratio of the border radius.
@@ -113,9 +113,9 @@ where
     #[must_use]
     pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
     where
-        Theme::Class<'a>: From<StyleFn<'a, Theme>>,
+        Theme::Class<'a>: From<StyleFn<'a, Theme, Style>>,
     {
-        self.class = (Box::new(style) as StyleFn<'a, Theme>).into();
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
 

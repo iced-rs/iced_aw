@@ -76,7 +76,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "card")]
-    pub use {crate::style::CardStyles, crate::widgets::card, card::Card};
+    pub use {crate::widgets::card, card::Card};
 
     #[doc(no_inline)]
     #[cfg(feature = "color_picker")]

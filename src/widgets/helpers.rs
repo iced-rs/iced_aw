@@ -171,7 +171,7 @@ pub fn card<'a, Message, Theme, Renderer>(
 ) -> crate::Card<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: crate::style::card::StyleSheet,
+    Theme: crate::style::card::Catalog,
 {
     crate::Card::new(head, body)
 }

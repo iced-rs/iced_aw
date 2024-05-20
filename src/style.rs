@@ -9,8 +9,6 @@ pub mod badge;
 
 #[cfg(feature = "card")]
 pub mod card;
-#[cfg(feature = "card")]
-pub use card::CardStyles;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;
@@ -56,4 +54,3 @@ pub use spinner::SpinnerStyle;
 pub mod context_menu;
 #[cfg(feature = "context_menu")]
 pub use context_menu::ContextMenuStyle;
-

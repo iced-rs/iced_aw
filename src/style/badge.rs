@@ -1,7 +1,10 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use super::{colors, status::Status};
+use super::{
+    colors,
+    status::{Status, StyleFn},
+};
 use iced::{theme::palette, Background, Color, Theme};
 
 /// The style of a [`Badge`](crate::native::badge::Badge).
@@ -23,9 +26,6 @@ pub struct Style {
     /// The default text color of the [`Badge`](crate::native::badge::Badge).
     pub text_color: Color,
 }
-
-/// The style function of a [`Badge`](crate::native::badge::Badge).
-pub type StyleFn<'a, Theme> = Box<dyn Fn(&Theme, Status) -> Style + 'a>;
 
 /// The Catalog of a [`Badge`](crate::native::badge::Badge).
 pub trait Catalog {
@@ -52,7 +52,7 @@ impl std::default::Default for Style {
 }
 
 impl Catalog for Theme {
-    type Class<'a> = StyleFn<'a, Self>;
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
     fn default<'a>() -> Self::Class<'a> {
         Box::new(primary)
@@ -70,7 +70,7 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.primary.strong);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
@@ -86,7 +86,7 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.secondary.strong);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
@@ -102,7 +102,7 @@ pub fn success(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.success.strong);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
@@ -118,7 +118,7 @@ pub fn danger(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.danger.strong);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
@@ -133,7 +133,7 @@ pub fn warning(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WARNING, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
@@ -148,7 +148,7 @@ pub fn info(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::INFO, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
@@ -163,7 +163,7 @@ pub fn light(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::LIGHT, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
@@ -178,7 +178,7 @@ pub fn dark(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::DARK, colors::WHITE);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
@@ -193,7 +193,7 @@ pub fn white(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WHITE, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed => base,
+        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base

@@ -38,7 +38,7 @@ drop_down = []
 
 default = [
     "badge",
-    #"card",
+    "card",
     #"number_input",
     #"date_picker",
     #"color_picker",
@@ -78,7 +78,7 @@ opt-level = 2
 [workspace]
 members = [
     "examples/badge",
-    #"examples/card",
+    "examples/card",
     #"examples/number_input",
     #"examples/color_picker",
     #"examples/font_loading",
@@ -101,7 +101,7 @@ git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
 version = "0.13.0-dev"
 #default-features = false
-features = ["advanced"]
+features = ["advanced", "wgpu"]
 
 [workspace.dependencies.iced_aw]
 path = "./"

@@ -11,4 +11,9 @@ pub enum Status {
     Pressed,
     /// cannot be pressed.
     Disabled,
+    /// is focused.
+    Focused,
 }
+
+/// The style function of widgets.
+pub type StyleFn<'a, Theme, Style> = Box<dyn Fn(&Theme, Status) -> Style + 'a>;
