@@ -15,7 +15,6 @@ use iced::{
     event, keyboard,
     mouse::{self, Cursor},
     widget::{
-        container, text,
         text::LineHeight,
         text_input::{self, cursor, Value},
         Column, Container, Row, Text, TextInput,
@@ -67,7 +66,7 @@ const DEFAULT_PADDING: f32 = 5.0;
 pub struct NumberInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::Catalog + text_input::Catalog + container::Catalog + text::Catalog,
+    Theme: number_input::ExtendedCatalog,
 {
     /// The current value of the [`NumberInput`].
     value: T,
@@ -102,7 +101,7 @@ where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: Clone,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::Catalog + text_input::Catalog + container::Catalog + text::Catalog,
+    Theme: number_input::ExtendedCatalog,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -131,7 +130,8 @@ where
             content: TextInput::new("", format!("{value}").as_str())
                 .on_input(convert_to_num)
                 .padding(padding)
-                .width(Length::Fixed(127.0)),
+                .width(Length::Fixed(127.0))
+                .class(Theme::default_input()),
             on_change: Box::new(on_changed),
             class: <Theme as style::number_input::Catalog>::default(),
             font: Renderer::Font::default(),
@@ -281,7 +281,7 @@ where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::Catalog + text_input::Catalog + container::Catalog + text::Catalog,
+    Theme: number_input::ExtendedCatalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<ModifierState>()
@@ -332,6 +332,7 @@ where
             Container::<Message, Theme, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y(Length::Shrink)
                 .center_x(Length::Shrink)
+                .class(Theme::default_container())
         };
 
         let element = if self.padding < DEFAULT_PADDING {
@@ -764,7 +765,7 @@ where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a + number_input::Catalog + text_input::Catalog + container::Catalog + text::Catalog,
+    Theme: 'a + number_input::ExtendedCatalog,
 {
     fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(num_input)

@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 
 use super::{Status, StyleFn};
-use iced::{Background, Color, Theme};
+use iced::{widget, Background, Color, Theme};
 
 /// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
@@ -47,18 +47,36 @@ impl Catalog for Theme {
     }
 }
 
-/// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub trait StyleSheet {
-    type Style: Default;
-    /// The normal appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-    fn active(&self, style: &Self::Style) -> Style;
+/// The Extended Catalog of a [`NumberInput`](crate::native::number_input::NumberInput).
+pub trait ExtendedCatalog:
+    widget::text_input::Catalog + widget::container::Catalog + widget::text::Catalog + self::Catalog
+{
+    /// The default class produced by the [`Catalog`].
+    #[must_use]
+    fn default_input<'a>() -> <Self as widget::text_input::Catalog>::Class<'a> {
+        <Self as widget::text_input::Catalog>::default()
+    }
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
-    fn pressed(&self, style: &Self::Style) -> Style;
+    /// The default class produced by the [`Catalog`].
+    #[must_use]
+    fn default_container<'a>() -> <Self as widget::container::Catalog>::Class<'a> {
+        <Self as widget::container::Catalog>::default()
+    }
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
-    fn disabled(&self, style: &Self::Style) -> Style;
+    /// The default class produced by the [`Catalog`].
+    #[must_use]
+    fn default_text<'a>() -> <Self as widget::text::Catalog>::Class<'a> {
+        <Self as widget::text::Catalog>::default()
+    }
+
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &<Self as self::Catalog>::Class<'_>, status: Status) -> Style;
+}
+
+impl ExtendedCatalog for Theme {
+    fn style(&self, class: &<Self as self::Catalog>::Class<'_>, status: Status) -> Style {
+        class(self, status)
+    }
 }
 
 /// The primary theme of a [`Badge`](crate::native::badge::Badge).
