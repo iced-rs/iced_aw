@@ -9,10 +9,7 @@ use crate::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    style::{
-        color_picker::{Appearance, StyleSheet},
-        style_state::StyleState,
-    },
+    style::{self, color_picker::Style, style_state::StyleState, Status},
 };
 
 use iced::{
@@ -30,8 +27,7 @@ use iced::{
     mouse::{self, Cursor},
     touch,
     widget::{
-        button,
-        canvas::{self, LineCap, Path, Stroke, Style},
+        canvas::{self, LineCap, Path, Stroke},
         text, Button, Column, Row,
     },
     Alignment,
@@ -66,10 +62,11 @@ const RGBA_STEP: i16 = 1;
 
 /// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
 #[allow(missing_debug_implementations)]
-pub struct ColorPickerOverlay<'a, Message, Theme>
+pub struct ColorPickerOverlay<'a, 'b, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
+    'b: 'a,
 {
     /// The state of the [`ColorPickerOverlay`].
     state: &'a mut State,
@@ -82,15 +79,19 @@ where
     /// The position of the [`ColorPickerOverlay`].
     position: Point,
     /// The style of the [`ColorPickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
 }
 
-impl<'a, Message, Theme> ColorPickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> ColorPickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
+    'b: 'a,
 {
     /// Creates a new [`ColorPickerOverlay`] on the given position.
     pub fn new(
@@ -98,7 +99,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
         position: Point,
-        style: <Theme as StyleSheet>::Style,
+        class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
         tree: &'a mut Tree,
     ) -> Self {
         //state.color_hex = color_picker::State::color_as_string(state.color);
@@ -124,7 +125,7 @@ where
             .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style,
+            class,
             tree,
         }
     }
@@ -560,11 +561,14 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Theme, Renderer>
-    for ColorPickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> Overlay<Message, Theme, Renderer>
+    for ColorPickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
@@ -850,14 +854,23 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, &self.style));
+        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style_sheet.insert(
+            StyleState::Active,
+            style::color_picker::Catalog::style(theme, self.class, Status::Active),
+        );
         let _ = style_sheet.insert(
             StyleState::Selected,
-            StyleSheet::selected(theme, &self.style),
+            style::color_picker::Catalog::style(theme, self.class, Status::Selected),
         );
-        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, &self.style));
-        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, &self.style));
+        let _ = style_sheet.insert(
+            StyleState::Hovered,
+            style::color_picker::Catalog::style(theme, self.class, Status::Hovered),
+        );
+        let _ = style_sheet.insert(
+            StyleState::Focused,
+            style::color_picker::Catalog::style(theme, self.class, Status::Focused),
+        );
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -907,14 +920,17 @@ where
 
 /// Defines the layout of the 1. block of the color picker containing the HSV part.
 fn block1_layout<'a, Message, Theme>(
-    color_picker: &mut ColorPickerOverlay<'a, Message, Theme>,
+    color_picker: &mut ColorPickerOverlay<'_, '_, Message, Theme>,
     renderer: &Renderer,
     bounds: Rectangle,
     _position: Point,
 ) -> Node
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     let block1_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -939,14 +955,17 @@ where
 
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
 fn block2_layout<'a, Message, Theme>(
-    color_picker: &mut ColorPickerOverlay<'a, Message, Theme>,
+    color_picker: &mut ColorPickerOverlay<'_, '_, Message, Theme>,
     renderer: &Renderer,
     bounds: Rectangle,
     _position: Point,
 ) -> Node
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     let block2_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -1075,13 +1094,14 @@ where
 /// Draws the 1. block of the color picker containing the HSV part.
 fn block1<Message, Theme>(
     renderer: &mut Renderer,
-    color_picker: &ColorPickerOverlay<'_, Message, Theme>,
+    color_picker: &ColorPickerOverlay<'_, '_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
-    style_sheet: &HashMap<StyleState, Appearance>,
+    style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme:
+        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
 {
     // ----------- Block 1 ----------------------
     let hsv_color_layout = layout;
@@ -1103,16 +1123,17 @@ fn block1<Message, Theme>(
 #[allow(clippy::too_many_arguments)]
 fn block2<Message, Theme>(
     renderer: &mut Renderer,
-    color_picker: &ColorPickerOverlay<'_, Message, Theme>,
+    color_picker: &ColorPickerOverlay<'_, '_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
     theme: &Theme,
     style: &renderer::Style,
     viewport: &Rectangle,
-    style_sheet: &HashMap<StyleState, Appearance>,
+    style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme:
+        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
 {
     // ----------- Block 2 ----------------------
     let mut block2_children = layout.children();
@@ -1217,13 +1238,14 @@ fn block2<Message, Theme>(
 #[allow(clippy::too_many_lines)]
 fn hsv_color<Message, Theme>(
     renderer: &mut Renderer,
-    color_picker: &ColorPickerOverlay<'_, Message, Theme>,
+    color_picker: &ColorPickerOverlay<'_, '_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
-    style_sheet: &HashMap<StyleState, Appearance>,
+    style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme:
+        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
 {
     let mut hsv_color_children = layout.children();
     let hsv_color: Hsv = color_picker.state.color.into();
@@ -1260,7 +1282,7 @@ fn hsv_color<Message, Theme>(
             }
 
             let stroke = Stroke {
-                style: Style::Solid(
+                style: canvas::Style::Solid(
                     Hsv {
                         hue: 0,
                         saturation: 0.0,
@@ -1290,7 +1312,7 @@ fn hsv_color<Message, Theme>(
             );
 
             let stroke = Stroke {
-                style: Style::Solid(
+                style: canvas::Style::Solid(
                     style_sheet
                         .get(&sat_value_style_state)
                         .expect("Style Sheet not found.")
@@ -1313,7 +1335,7 @@ fn hsv_color<Message, Theme>(
 
     let translation = Vector::new(sat_value_layout.bounds().x, sat_value_layout.bounds().y);
     renderer.with_translation(translation, |renderer| {
-        renderer.draw(vec![geometry]);
+        renderer.draw_geometry(geometry);
     });
 
     let hue_layout = hsv_color_children
@@ -1339,7 +1361,7 @@ fn hsv_color<Message, Theme>(
 
                     let hsv_color = Hsv::from_hsv(hue, 1.0, 1.0);
                     let stroke = Stroke {
-                        style: Style::Solid(hsv_color.into()),
+                        style: canvas::Style::Solid(hsv_color.into()),
                         width: 1.0,
                         line_cap: LineCap::Round,
                         ..Stroke::default()
@@ -1355,7 +1377,7 @@ fn hsv_color<Message, Theme>(
                 }
 
                 let stroke = Stroke {
-                    style: Style::Solid(Color::BLACK),
+                    style: canvas::Style::Solid(Color::BLACK),
                     width: 3.0,
                     line_cap: LineCap::Round,
                     ..Stroke::default()
@@ -1369,7 +1391,7 @@ fn hsv_color<Message, Theme>(
                 );
 
                 let stroke = Stroke {
-                    style: Style::Solid(
+                    style: canvas::Style::Solid(
                         style_sheet
                             .get(&hue_style_state)
                             .expect("Style Sheet not found.")
@@ -1391,7 +1413,7 @@ fn hsv_color<Message, Theme>(
 
     let translation = Vector::new(hue_layout.bounds().x, hue_layout.bounds().y);
     renderer.with_translation(translation, |renderer| {
-        renderer.draw(vec![geometry]);
+        renderer.draw_geometry(geometry);
     });
 }
 
@@ -1403,7 +1425,7 @@ fn rgba_color(
     color: &Color,
     cursor: Cursor,
     style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, Appearance>,
+    style_sheet: &HashMap<StyleState, Style>,
     focus: Focus,
 ) {
     let mut rgba_color_children = layout.children();
@@ -1430,7 +1452,7 @@ fn rgba_color(
         // Label
         renderer.fill_text(
             Text {
-                content: label,
+                content: label.to_owned(),
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
                 font: crate::BOOTSTRAP_FONT,
@@ -1513,7 +1535,7 @@ fn rgba_color(
         // Value
         renderer.fill_text(
             Text {
-                content: &format!("{}", (255.0 * value) as u8),
+                content: format!("{}", (255.0 * value) as u8),
                 bounds: Size::new(value_layout.bounds().width, value_layout.bounds().height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
@@ -1625,7 +1647,7 @@ fn hex_text(
     color: &Color,
     cursor: Cursor,
     _style: &renderer::Style,
-    style_sheet: &HashMap<StyleState, Appearance>,
+    style_sheet: &HashMap<StyleState, Style>,
     _focus: Focus,
 ) {
     let hsv: Hsv = (*color).into();
@@ -1654,7 +1676,7 @@ fn hex_text(
 
     renderer.fill_text(
         Text {
-            content: &color.as_hex_string(),
+            content: color.as_hex_string(),
             bounds: Size::new(bounds.width, bounds.height),
             size: renderer.default_size(),
             font: renderer.default_font(),
@@ -1723,7 +1745,7 @@ impl Default for State {
 pub struct ColorPickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
 {
     /// The cancel button of the [`ColorPickerOverlay`].
     cancel_button: Element<'a, Message, Theme, Renderer>,
@@ -1734,7 +1756,10 @@ where
 impl<'a, Message, Theme> Default for ColorPickerOverlayButtons<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     fn default() -> Self {
         Self {
@@ -1755,7 +1780,8 @@ impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for ColorPickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme:
+        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![
@@ -1794,7 +1820,10 @@ impl<'a, Message, Theme> From<ColorPickerOverlayButtons<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     fn from(overlay: ColorPickerOverlayButtons<'a, Message, Theme>) -> Self {
         Self::new(overlay)

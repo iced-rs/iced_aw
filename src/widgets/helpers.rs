@@ -190,9 +190,9 @@ pub fn color_picker<'a, Message, Theme, F>(
 where
     Message: 'a + Clone,
     Theme: 'a
-        + crate::style::color_picker::StyleSheet
-        + iced::widget::button::StyleSheet
-        + iced::widget::text::StyleSheet,
+        + crate::style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
     F: 'static + Fn(Color) -> Message,
 {
     crate::ColorPicker::new(show_picker, color, underlay, on_cancel, on_submit)

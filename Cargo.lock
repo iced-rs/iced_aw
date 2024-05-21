@@ -562,6 +562,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "color_picker"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+]
+
+[[package]]
 name = "com"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

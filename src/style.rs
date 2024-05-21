@@ -14,8 +14,6 @@ pub mod card;
 
 #[cfg(feature = "color_picker")]
 pub mod color_picker;
-#[cfg(feature = "color_picker")]
-pub use color_picker::ColorPickerStyles;
 
 #[cfg(feature = "date_picker")]
 pub mod date_picker;

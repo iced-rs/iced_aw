@@ -43,78 +43,6 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'segmented_button'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=segmented_button",
-                    "--package=segmented_button"
-                ],
-                "filter": {
-                    "name": "segmented_button",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'cupertino-spinner'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=cupertino-spinner",
-                    "--package=cupertino-spinner"
-                ],
-                "filter": {
-                    "name": "cupertino-spinner",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'cupertino-button'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=cupertino-button",
-                    "--package=cupertino-button"
-                ],
-                "filter": {
-                    "name": "cupertino-button",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'cupertino-switch'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=cupertino-switch",
-                    "--package=cupertino-switch"
-                ],
-                "filter": {
-                    "name": "cupertino-switch",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug executable 'card'",
             "cargo": {
                 "args": [
@@ -124,24 +52,6 @@
                 ],
                 "filter": {
                     "name": "card",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'multiple_modals'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=multiple_modals",
-                    "--package=multiple_modals"
-                ],
-                "filter": {
-                    "name": "multiple_modals",
                     "kind": "bin"
                 }
             },
@@ -187,60 +97,6 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'floating_element'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=floating_element",
-                    "--package=floating_element"
-                ],
-                "filter": {
-                    "name": "floating_element",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'floating_element_overlay'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=floating_element_overlay",
-                    "--package=floating_element_overlay"
-                ],
-                "filter": {
-                    "name": "floating_element_overlay",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'floating_element_anchors'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=floating_element_anchors",
-                    "--package=floating_element_anchors"
-                ],
-                "filter": {
-                    "name": "floating_element_anchors",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug executable 'grid'",
             "cargo": {
                 "args": [
@@ -250,42 +106,6 @@
                 ],
                 "filter": {
                     "name": "grid",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'modal'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=modal",
-                    "--package=modal"
-                ],
-                "filter": {
-                    "name": "modal",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'modal_component'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=modal_component",
-                    "--package=modal_component"
-                ],
-                "filter": {
-                    "name": "modal_component",
                     "kind": "bin"
                 }
             },
@@ -430,42 +250,6 @@
                 ],
                 "filter": {
                     "name": "selection_list",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'split'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=split",
-                    "--package=split"
-                ],
-                "filter": {
-                    "name": "split",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'split scroller'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=split_scroller",
-                    "--package=split_scroller"
-                ],
-                "filter": {
-                    "name": "split_scroller",
                     "kind": "bin"
                 }
             },
