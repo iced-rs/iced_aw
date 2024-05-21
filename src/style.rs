@@ -19,8 +19,6 @@ pub use color_picker::ColorPickerStyles;
 
 #[cfg(feature = "date_picker")]
 pub mod date_picker;
-#[cfg(feature = "date_picker")]
-pub use date_picker::DatePickerStyle;
 
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;

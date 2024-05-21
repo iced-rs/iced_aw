@@ -212,10 +212,10 @@ pub fn date_picker<'a, Message, Theme, F>(
 where
     Message: 'a + Clone,
     Theme: 'a
-        + crate::style::date_picker::StyleSheet
-        + iced::widget::button::StyleSheet
-        + iced::widget::text::StyleSheet
-        + iced::widget::container::StyleSheet,
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
     F: 'static + Fn(crate::core::date::Date) -> Message,
 {
     crate::DatePicker::new(show_picker, date, underlay, on_cancel, on_submit)

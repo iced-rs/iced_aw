@@ -13,6 +13,8 @@ pub enum Status {
     Disabled,
     /// is focused.
     Focused,
+    /// is Selected.
+    Selected,
 }
 
 /// The style function of widgets.

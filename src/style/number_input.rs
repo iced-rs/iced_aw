@@ -77,7 +77,6 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     };
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused | Status::Hovered => base,
         Status::Disabled => Style {
             button_background: base.button_background.map(|bg| match bg {
                 Background::Color(color) => Background::Color(Color {
@@ -91,5 +90,6 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
                 ..base.icon_color
             },
         },
+        _ => base,
     }
 }

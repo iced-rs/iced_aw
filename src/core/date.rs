@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use std::fmt::Display;
 
 /// The date value
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct Date {
     /// The year value of the date.
     pub year: i32,
@@ -13,6 +13,12 @@ pub struct Date {
     pub month: u32,
     /// The day value of the date (1 - 31).
     pub day: u32,
+}
+
+impl Default for Date {
+    fn default() -> Self {
+        Self { year: 2024, month: 1, day: 1 }
+    }
 }
 
 impl Date {

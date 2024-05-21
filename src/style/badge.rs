@@ -67,12 +67,12 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.primary.strong);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -83,12 +83,12 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.secondary.strong);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -99,12 +99,12 @@ pub fn success(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.success.strong);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -115,12 +115,12 @@ pub fn danger(theme: &Theme, status: Status) -> Style {
     let base = styled(palette.danger.strong);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: Background::Color(palette.primary.base.color),
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -130,12 +130,12 @@ pub fn warning(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WARNING, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -145,12 +145,12 @@ pub fn info(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::INFO, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -160,12 +160,12 @@ pub fn light(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::LIGHT, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -175,12 +175,12 @@ pub fn dark(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::DARK, colors::WHITE);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 
@@ -190,12 +190,12 @@ pub fn white(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WHITE, colors::BLACK);
 
     match status {
-        Status::Active | Status::Pressed | Status::Focused => base,
         Status::Hovered => Style {
             background: base.background,
             ..base
         },
         Status::Disabled => disabled(base),
+        _ => base,
     }
 }
 

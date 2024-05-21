@@ -756,6 +756,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "date_picker"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+]
+
+[[package]]
 name = "dconf_rs"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
