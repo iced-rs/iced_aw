@@ -332,7 +332,6 @@ where
             Container::<Message, Theme, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
                 .center_y(Length::Shrink)
                 .center_x(Length::Shrink)
-                .class(Theme::default_container())
         };
 
         let element = if self.padding < DEFAULT_PADDING {

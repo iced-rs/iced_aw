@@ -57,18 +57,6 @@ pub trait ExtendedCatalog:
         <Self as widget::text_input::Catalog>::default()
     }
 
-    /// The default class produced by the [`Catalog`].
-    #[must_use]
-    fn default_container<'a>() -> <Self as widget::container::Catalog>::Class<'a> {
-        <Self as widget::container::Catalog>::default()
-    }
-
-    /// The default class produced by the [`Catalog`].
-    #[must_use]
-    fn default_text<'a>() -> <Self as widget::text::Catalog>::Class<'a> {
-        <Self as widget::text::Catalog>::default()
-    }
-
     /// The [`Style`] of a class with the given status.
     fn style(&self, class: &<Self as self::Catalog>::Class<'_>, status: Status) -> Style;
 }
