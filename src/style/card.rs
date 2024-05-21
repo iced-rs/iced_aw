@@ -2,10 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: card*
 
-use super::{
-    colors,
-    status::{Status, StyleFn},
-};
+use super::{colors, Status, StyleFn};
 use iced::{Background, Color, Theme};
 
 /// The appearance of a [`Card`](crate::native::card::Card).

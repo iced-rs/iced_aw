@@ -4,6 +4,8 @@ pub mod colors;
 pub mod status;
 pub mod style_state;
 
+pub use status::{Status, StyleFn};
+
 #[cfg(feature = "badge")]
 pub mod badge;
 
@@ -32,8 +34,6 @@ pub use time_picker::TimePickerStyle;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;
-#[cfg(feature = "number_input")]
-pub use number_input::NumberInputStyles;
 
 #[cfg(feature = "selection_list")]
 pub mod selection_list;

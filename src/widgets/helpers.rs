@@ -346,10 +346,10 @@ pub fn number_input<'a, T, Message, Theme, Renderer, F>(
 where
     Message: Clone,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: crate::style::number_input::StyleSheet
-        + iced::widget::text_input::StyleSheet
-        + iced::widget::container::StyleSheet
-        + iced::widget::text::StyleSheet,
+    Theme: crate::style::number_input::Catalog
+        + iced::widget::text_input::Catalog
+        + iced::widget::container::Catalog
+        + iced::widget::text::Catalog,
     F: 'static + Fn(T) -> Message + Copy,
     T: 'static
         + num_traits::Num

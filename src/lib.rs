@@ -115,9 +115,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "number_input")]
-    pub use {
-        crate::style::NumberInputStyles, crate::widgets::number_input, number_input::NumberInput,
-    };
+    pub use {crate::widgets::number_input, number_input::NumberInput};
 
     #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
