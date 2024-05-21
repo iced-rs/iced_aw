@@ -204,6 +204,13 @@ where
         self
     }
 
+    /// Sets the class of the input of the [`Card`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
+        self.class = class.into();
+        self
+    }
+
     /// Sets the width of the [`Card`].
     #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {

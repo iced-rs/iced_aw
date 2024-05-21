@@ -119,6 +119,13 @@ where
         self
     }
 
+    /// Sets the class of the input of the [`Badge`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
+        self.class = class.into();
+        self
+    }
+
     /// Sets the width of the [`Badge`].
     #[must_use]
     pub fn width(mut self, width: impl Into<Length>) -> Self {

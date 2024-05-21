@@ -273,6 +273,29 @@ where
             Bound::Unbounded => T::max_value(),
         }
     }
+
+    /// Sets the style of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn input_style(
+        mut self,
+        style: impl Fn(&Theme, text_input::Status) -> text_input::Style + 'a,
+    ) -> Self
+    where
+        <Theme as text_input::Catalog>::Class<'a>: From<text_input::StyleFn<'a, Theme>>,
+    {
+        self.content = self.content.style(style);
+        self
+    }
+
+    /// Sets the class of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn class(
+        mut self,
+        class: impl Into<<Theme as style::number_input::Catalog>::Class<'a>>,
+    ) -> Self {
+        self.class = class.into();
+        self
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
