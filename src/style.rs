@@ -33,18 +33,11 @@ pub mod number_input;
 
 #[cfg(feature = "selection_list")]
 pub mod selection_list;
-#[cfg(feature = "selection_list")]
-pub use selection_list::SelectionListStyles;
 
 #[cfg(feature = "menu")]
 pub mod menu_bar;
 #[cfg(feature = "menu")]
 pub use menu_bar::MenuBarStyle;
-
-#[cfg(feature = "spinner")]
-pub mod spinner;
-#[cfg(feature = "spinner")]
-pub use spinner::SpinnerStyle;
 
 #[cfg(feature = "context_menu")]
 pub mod context_menu;

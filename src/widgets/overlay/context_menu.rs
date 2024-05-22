@@ -17,7 +17,7 @@ use iced::{
     touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
 };
 
-/// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
+/// The overlay of the [`ContextMenu`](crate::widgets::ContextMenu).
 #[allow(missing_debug_implementations)]
 pub struct ContextMenuOverlay<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
@@ -33,7 +33,7 @@ where
     content: Element<'a, Message, Theme, Renderer>,
     /// The style of the [`ContextMenuOverlay`].
     style: <Theme as StyleSheet>::Style,
-    /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`].
+    /// The state shared between [`ContextMenu`](crate::widgets::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
 }
 
@@ -130,7 +130,7 @@ where
         let content_layout = layout
             .children()
             .next()
-            .expect("Native: Layout should have a content layout.");
+            .expect("widgets: Layout should have a content layout.");
 
         // Modal
         self.content.as_widget().draw(
@@ -156,7 +156,7 @@ where
         let layout_children = layout
             .children()
             .next()
-            .expect("Native: Layout should have a content layout.");
+            .expect("widgets: Layout should have a content layout.");
 
         let mut forward_event_to_children = true;
 
@@ -230,7 +230,7 @@ where
             layout
                 .children()
                 .next()
-                .expect("Native: Layout should have a content layout."),
+                .expect("widgets: Layout should have a content layout."),
             cursor,
             viewport,
             renderer,

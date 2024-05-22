@@ -60,7 +60,7 @@ const HUE_STEP: i32 = 1;
 /// The step value of the keyboard change of the RGBA color values.
 const RGBA_STEP: i16 = 1;
 
-/// The overlay of the [`ColorPicker`](crate::native::ColorPicker).
+/// The overlay of the [`ColorPicker`](crate::widgets::ColorPicker).
 #[allow(missing_debug_implementations)]
 pub struct ColorPickerOverlay<'a, 'b, Message, Theme>
 where
@@ -153,11 +153,11 @@ where
 
         let sat_value_bounds = hsv_color_children
             .next()
-            .expect("Native: Layout should have a sat/value layout")
+            .expect("widgets: Layout should have a sat/value layout")
             .bounds();
         let hue_bounds = hsv_color_children
             .next()
-            .expect("Native: Layout should have a hue layout")
+            .expect("widgets: Layout should have a hue layout")
             .bounds();
 
         match event {
@@ -267,42 +267,42 @@ where
 
         let mut red_row_children = rgba_color_children
             .next()
-            .expect("Native: Layout should have a red row layout")
+            .expect("widgets: Layout should have a red row layout")
             .children();
         let _ = red_row_children.next();
         let red_bar_bounds = red_row_children
             .next()
-            .expect("Native: Layout should have a red bar layout")
+            .expect("widgets: Layout should have a red bar layout")
             .bounds();
 
         let mut green_row_children = rgba_color_children
             .next()
-            .expect("Native: Layout should have a green row layout")
+            .expect("widgets: Layout should have a green row layout")
             .children();
         let _ = green_row_children.next();
         let green_bar_bounds = green_row_children
             .next()
-            .expect("Native: Layout should have a green bar layout")
+            .expect("widgets: Layout should have a green bar layout")
             .bounds();
 
         let mut blue_row_children = rgba_color_children
             .next()
-            .expect("Native: Layout should have a blue row layout")
+            .expect("widgets: Layout should have a blue row layout")
             .children();
         let _ = blue_row_children.next();
         let blue_bar_bounds = blue_row_children
             .next()
-            .expect("Native: Layout should have a blue bar layout")
+            .expect("widgets: Layout should have a blue bar layout")
             .bounds();
 
         let mut alpha_row_children = rgba_color_children
             .next()
-            .expect("Native: Layout should have an alpha row layout")
+            .expect("widgets: Layout should have an alpha row layout")
             .children();
         let _ = alpha_row_children.next();
         let alpha_bar_bounds = alpha_row_children
             .next()
-            .expect("Native: Layout should have an alpha bar layout")
+            .expect("widgets: Layout should have an alpha bar layout")
             .bounds();
 
         match event {
@@ -658,7 +658,7 @@ where
         // ----------- Block 1 ----------------------
         let block1_layout = children
             .next()
-            .expect("Native: Layout should have a 1. block layout");
+            .expect("widgets: Layout should have a 1. block layout");
         let hsv_color_status =
             self.on_event_hsv_color(&event, block1_layout, cursor, shell, renderer, clipboard);
         // ----------- Block 1 end ------------------
@@ -666,13 +666,13 @@ where
         // ----------- Block 2 ----------------------
         let mut block2_children = children
             .next()
-            .expect("Native: Layout should have a 2. block layout")
+            .expect("widgets: Layout should have a 2. block layout")
             .children();
 
         // ----------- RGB Color -----------------------
         let rgba_color_layout = block2_children
             .next()
-            .expect("Native: Layout should have a RGBA color layout");
+            .expect("widgets: Layout should have a RGBA color layout");
         let rgba_color_status = self.on_event_rgba_color(
             &event,
             rgba_color_layout,
@@ -687,12 +687,12 @@ where
         // ----------- Text input ----------------------
         let _text_input_layout = block2_children
             .next()
-            .expect("Native: Layout should have a hex text layout");
+            .expect("widgets: Layout should have a hex text layout");
 
         // ----------- Buttons -------------------------
         let cancel_button_layout = block2_children
             .next()
-            .expect("Native: Layout should have a cancel button layout for a ColorPicker");
+            .expect("widgets: Layout should have a cancel button layout for a ColorPicker");
         let cancel_button_status = self.cancel_button.on_event(
             &mut self.tree.children[0],
             event.clone(),
@@ -706,7 +706,7 @@ where
 
         let submit_button_layout = block2_children
             .next()
-            .expect("Native: Layout should have a submit button layout for a ColorPicker");
+            .expect("widgets: Layout should have a submit button layout for a ColorPicker");
         let submit_button_status = self.submit_button.on_event(
             &mut self.tree.children[1],
             event,

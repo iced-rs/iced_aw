@@ -52,7 +52,7 @@ const DAY_CELL_PADDING: f32 = 7.0;
 /// The spacing between the buttons.
 const BUTTON_SPACING: f32 = 5.0;
 
-/// The overlay of the [`DatePicker`](crate::native::DatePicker).
+/// The overlay of the [`DatePicker`](crate::widgets::DatePicker).
 #[allow(missing_debug_implementations)]
 pub struct DatePickerOverlay<'a, 'b, Message, Theme>
 where
@@ -157,20 +157,20 @@ where
         // ----------- Month ----------------------
         let month_layout = children
             .next()
-            .expect("Native: Layout should have a month layout");
+            .expect("widgets: Layout should have a month layout");
         let mut month_children = month_layout.children();
 
         let left_bounds = month_children
             .next()
-            .expect("Native: Layout should have a left month arrow layout")
+            .expect("widgets: Layout should have a left month arrow layout")
             .bounds();
         let _center_bounds = month_children
             .next()
-            .expect("Native: Layout should have a center month layout")
+            .expect("widgets: Layout should have a center month layout")
             .bounds();
         let right_bounds = month_children
             .next()
-            .expect("Native: Layout should have a right month arrow layout")
+            .expect("widgets: Layout should have a right month arrow layout")
             .bounds();
 
         match event {
@@ -194,20 +194,20 @@ where
         // ----------- Year -----------------------
         let year_layout = children
             .next()
-            .expect("Native: Layout should have a year layout");
+            .expect("widgets: Layout should have a year layout");
         let mut year_children = year_layout.children();
 
         let left_bounds = year_children
             .next()
-            .expect("Native: Layout should have a left year arrow layout")
+            .expect("widgets: Layout should have a left year arrow layout")
             .bounds();
         let _center_bounds = year_children
             .next()
-            .expect("Native: Layout should have a center year layout")
+            .expect("widgets: Layout should have a center year layout")
             .bounds();
         let right_bounds = year_children
             .next()
-            .expect("Native: Layout should have a right year arrow layout")
+            .expect("widgets: Layout should have a right year arrow layout")
             .bounds();
 
         match event {
@@ -245,7 +245,7 @@ where
 
         let _day_labels_layout = children
             .next()
-            .expect("Native: Layout should have a day label layout");
+            .expect("widgets: Layout should have a day label layout");
 
         let mut status = event::Status::Ignored;
 
@@ -572,13 +572,13 @@ where
 
         let mut date_children = children
             .next()
-            .expect("Native: Layout should have date children")
+            .expect("widgets: Layout should have date children")
             .children();
 
         // ----------- Year/Month----------------------
         let month_year_layout = date_children
             .next()
-            .expect("Native: Layout should have a month/year layout");
+            .expect("widgets: Layout should have a month/year layout");
         let month_year_status = self.on_event_month_year(
             &event,
             month_year_layout,
@@ -591,17 +591,17 @@ where
         // ----------- Days ----------------------
         let days_layout = date_children
             .next()
-            .expect("Native: Layout should have a days table parent")
+            .expect("widgets: Layout should have a days table parent")
             .children()
             .next()
-            .expect("Native: Layout should have a days table layout");
+            .expect("widgets: Layout should have a days table layout");
         let days_status =
             self.on_event_days(&event, days_layout, cursor, shell, renderer, clipboard);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
             .next()
-            .expect("Native: Layout should have a cancel button layout for a DatePicker");
+            .expect("widgets: Layout should have a cancel button layout for a DatePicker");
 
         let cancel_status = self.cancel_button.on_event(
             &mut self.tree.children[0],
@@ -616,7 +616,7 @@ where
 
         let submit_button_layout = children
             .next()
-            .expect("Native: Layout should have a submit button layout for a DatePicker");
+            .expect("widgets: Layout should have a submit button layout for a DatePicker");
 
         let mut fake_messages: Vec<Message> = Vec::new();
 

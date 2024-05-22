@@ -4,27 +4,27 @@
 use super::{colors, Status, StyleFn};
 use iced::{theme::palette, Background, Color, Theme};
 
-/// The style of a [`Badge`](crate::native::badge::Badge).
+/// The style of a [`Badge`](crate::widgets::badge::Badge).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`Badge`](crate::native::badge::Badge).
+    /// The background of the [`Badge`](crate::widgets::badge::Badge).
     pub background: Background,
 
-    /// The border radius of the [`Badge`](crate::native::badge::Badge).
+    /// The border radius of the [`Badge`](crate::widgets::badge::Badge).
     /// If no radius is specified the default one will be used.
     pub border_radius: Option<f32>,
 
-    /// The border with of the [`Badge`](crate::native::badge::Badge).
+    /// The border with of the [`Badge`](crate::widgets::badge::Badge).
     pub border_width: f32,
 
-    /// The border color of the [`Badge`](crate::native::badge::Badge).
+    /// The border color of the [`Badge`](crate::widgets::badge::Badge).
     pub border_color: Option<Color>,
 
-    /// The default text color of the [`Badge`](crate::native::badge::Badge).
+    /// The default text color of the [`Badge`](crate::widgets::badge::Badge).
     pub text_color: Color,
 }
 
-/// The Catalog of a [`Badge`](crate::native::badge::Badge).
+/// The Catalog of a [`Badge`](crate::widgets::badge::Badge).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -60,7 +60,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::native::badge::Badge).
+/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();
@@ -76,7 +76,7 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The secondary theme of a [`Badge`](crate::native::badge::Badge).
+/// The secondary theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn secondary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();
@@ -92,7 +92,7 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The success theme of a [`Badge`](crate::native::badge::Badge).
+/// The success theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn success(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();
@@ -108,7 +108,7 @@ pub fn success(theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The danger theme of a [`Badge`](crate::native::badge::Badge).
+/// The danger theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn danger(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();
@@ -124,7 +124,7 @@ pub fn danger(theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The warning theme of a [`Badge`](crate::native::badge::Badge).
+/// The warning theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn warning(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WARNING, colors::BLACK);
@@ -139,7 +139,7 @@ pub fn warning(_theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The info theme of a [`Badge`](crate::native::badge::Badge).
+/// The info theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn info(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::INFO, colors::BLACK);
@@ -154,7 +154,7 @@ pub fn info(_theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The light theme of a [`Badge`](crate::native::badge::Badge).
+/// The light theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn light(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::LIGHT, colors::BLACK);
@@ -169,7 +169,7 @@ pub fn light(_theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The dark theme of a [`Badge`](crate::native::badge::Badge).
+/// The dark theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn dark(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::DARK, colors::WHITE);
@@ -184,7 +184,7 @@ pub fn dark(_theme: &Theme, status: Status) -> Style {
     }
 }
 
-/// The white theme of a [`Badge`](crate::native::badge::Badge).
+/// The white theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn white(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WHITE, colors::BLACK);

@@ -194,7 +194,7 @@ where
             layout
                 .children()
                 .next()
-                .expect("Native: Layout should have a children layout for a badge."),
+                .expect("widgets: Layout should have a children layout for a badge."),
             cursor,
             renderer,
             clipboard,

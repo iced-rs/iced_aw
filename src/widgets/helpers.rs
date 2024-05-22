@@ -1,7 +1,8 @@
 //! widget Helpers.
 //!
 //!
-
+#[cfg(feature = "selection_list")]
+use crate::style::{Status, StyleFn};
 #[allow(unused_imports)]
 use iced::{self, advanced::renderer, Color, Element};
 
@@ -370,7 +371,7 @@ pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
     on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
     padding: f32,
-    style: <Theme as crate::style::selection_list::StyleSheet>::Style,
+    style: impl Fn(&Theme, Status) -> crate::style::selection_list::Style + 'a + Clone,
     selected: Option<usize>,
     font: iced::Font,
 ) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
@@ -378,11 +379,13 @@ where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a
-        + crate::style::selection_list::StyleSheet
-        + iced::widget::container::StyleSheet
-        + iced::widget::scrollable::StyleSheet,
+        + crate::style::selection_list::Catalog
+        + iced::widget::container::Catalog
+        + iced::widget::scrollable::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
+    <Theme as crate::style::selection_list::Catalog>::Class<'a>:
+        From<StyleFn<'a, Theme, crate::style::selection_list::Style>>,
 {
     crate::SelectionList::new_with(
         options,
@@ -408,10 +411,10 @@ where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: 'a
-        + crate::style::selection_list::StyleSheet
-        + iced::widget::container::StyleSheet
-        + iced::widget::scrollable::StyleSheet,
-    T: Clone + Display + Eq + Hash + Bounded,
+        + crate::style::selection_list::Catalog
+        + iced::widget::container::Catalog
+        + iced::widget::scrollable::Catalog,
+    T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     crate::SelectionList::new(options, on_selected)

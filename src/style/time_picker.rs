@@ -6,66 +6,66 @@ use std::rc::Rc;
 
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`TimePicker`](crate::native::TimePicker).
+/// The appearance of a [`TimePicker`](crate::widgets::TimePicker).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
-    /// The background of the [`TimePicker`](crate::native::TimePicker).
+    /// The background of the [`TimePicker`](crate::widgets::TimePicker).
     pub background: Background,
 
-    /// The border radius of the [`TimePicker`](crate::native::TimePicker).
+    /// The border radius of the [`TimePicker`](crate::widgets::TimePicker).
     pub border_radius: f32,
 
-    /// The border width of the [`TimePicker`](crate::native::TimePicker).
+    /// The border width of the [`TimePicker`](crate::widgets::TimePicker).
     pub border_width: f32,
 
-    /// The border color of the [`TimePicker`](crate::native::TimePicker).
+    /// The border color of the [`TimePicker`](crate::widgets::TimePicker).
     pub border_color: Color,
 
-    /// The text color of the [`TimePicker`](crate::native::TimePicker).
+    /// The text color of the [`TimePicker`](crate::widgets::TimePicker).
     pub text_color: Color,
 
     /// The color of the clock numbers of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     pub clock_number_color: Color,
 
     /// The background of the clock numbers of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     pub clock_number_background: Color,
 
     /// The color of the dots on the clock of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     pub clock_dots_color: Color,
 
     /// The color of the hands of the clock of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     pub clock_hand_color: Color,
 
     /// The with of the hands of the clock of the
-    /// [`TimePicker](crate::native::TimePicker).
+    /// [`TimePicker](crate::widgets::TimePicker).
     pub clock_hand_width: f32,
 }
 
-/// The appearance of a [`TimePicker`](crate::native::TimePicker).
+/// The appearance of a [`TimePicker`](crate::widgets::TimePicker).
 pub trait StyleSheet {
     /// The style type of this stylesheet
     type Style: Default + Clone;
-    /// The normal appearance of a [`TimePicker`](crate::native::TimePicker).
+    /// The normal appearance of a [`TimePicker`](crate::widgets::TimePicker).
     fn active(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is selected of the
-    /// [`TimePicker`](crate::native::TimePicker)
+    /// [`TimePicker`](crate::widgets::TimePicker)
     fn selected(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is hovered of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     fn hovered(&self, style: &Self::Style) -> Appearance;
 
     /// The appearance when something is focused of the
-    /// [`TimePicker`](crate::native::TimePicker).
+    /// [`TimePicker`](crate::widgets::TimePicker).
     fn focused(&self, style: &Self::Style) -> Appearance;
 }
 
-/// The style appearance of the [`TimePicker`](crate::native::TimePicker)
+/// The style appearance of the [`TimePicker`](crate::widgets::TimePicker)
 #[derive(Clone, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub enum TimePickerStyle {

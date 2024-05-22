@@ -541,8 +541,8 @@ where
                             self.on_close
                                 .as_ref()
                                 .filter(|_on_close| {
-                                    let tab_layout = layout.children().nth(new_selected).expect("Native: Layout should have a tab layout at the selected index");
-                                    let cross_layout = tab_layout.children().nth(1).expect("Native: Layout should have a close layout");
+                                    let tab_layout = layout.children().nth(new_selected).expect("widgets: Layout should have a tab layout at the selected index");
+                                    let cross_layout = tab_layout.children().nth(1).expect("widgets: Layout should have a close layout");
 
                                     cursor.position().map_or(false, |pos| cross_layout.bounds().contains(pos) )
                                 })

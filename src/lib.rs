@@ -119,10 +119,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
-    pub use {
-        crate::style::SelectionListStyles, crate::widgets::selection_list,
-        selection_list::SelectionList,
-    };
+    pub use {crate::widgets::selection_list, selection_list::SelectionList};
 
     #[doc(no_inline)]
     #[cfg(feature = "menu")]
@@ -134,7 +131,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "spinner")]
-    pub use {crate::style::SpinnerStyle, crate::widgets::spinner, spinner::Spinner};
+    pub use {crate::widgets::spinner, spinner::Spinner};
 
     #[doc(no_inline)]
     #[cfg(feature = "slide_bar")]

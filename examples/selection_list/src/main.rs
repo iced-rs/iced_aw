@@ -1,19 +1,37 @@
 use iced::{
     widget::{button, Column, Container, Text},
-    Alignment, Element, Font, Length, Sandbox, Settings,
+    Alignment, Element, Font, Length,
 };
-use iced_aw::{selection_list::SelectionList, SelectionListStyles};
+use iced_aw::{selection_list::SelectionList, style::selection_list::primary};
 
 pub fn main() -> iced::Result {
-    Example::run(Settings::default())
+    iced::program("Selection list example", Example::update, Example::view)
+        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+        .run()
 }
 
-#[derive(Default)]
 struct Example {
     vec: Vec<String>,
     selected_language: String,
     selected_index: usize,
     manual_select: Option<usize>,
+}
+
+impl Default for Example {
+    fn default() -> Self {
+        let mut vec = Vec::with_capacity(10);
+
+        for i in Language::ALL.iter() {
+            vec.push(i.name())
+        }
+
+        Self {
+            vec,
+            selected_language: "".to_string(),
+            selected_index: 0,
+            manual_select: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -23,26 +41,7 @@ enum Message {
     ManualSelection,
 }
 
-impl Sandbox for Example {
-    type Message = Message;
-
-    fn new() -> Self {
-        let mut vec = Vec::with_capacity(10);
-
-        for i in Language::ALL.iter() {
-            vec.push(format!("{i}"))
-        }
-
-        Self {
-            vec,
-            ..Default::default()
-        }
-    }
-
-    fn title(&self) -> String {
-        String::from("Selection list - Iced")
-    }
-
+impl Example {
     fn update(&mut self, message: Message) {
         match message {
             Message::LanguageSelected(index, language) => {
@@ -76,7 +75,7 @@ impl Sandbox for Example {
             Message::LanguageSelected,
             12.0,
             5.0,
-            SelectionListStyles::Default,
+            primary,
             self.manual_select,
             Font::default(),
         )
@@ -99,8 +98,8 @@ impl Sandbox for Example {
         Container::new(content)
             .width(Length::Fill)
             .height(Length::Fill)
-            .center_x()
-            .center_y()
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
             .into()
     }
 }
@@ -127,22 +126,16 @@ impl Language {
         Language::Javascript,
         Language::Other,
     ];
-}
 
-impl std::fmt::Display for Language {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Language::Rust => "Rust",
-                Language::Elm => "Elm",
-                Language::Ruby => "Ruby",
-                Language::Haskell => "Haskell",
-                Language::C => "C",
-                Language::Javascript => "Javascript",
-                Language::Other => "Some other language",
-            }
-        )
+    pub fn name(&self) -> String {
+        match self {
+            Language::Rust => "Rust".to_owned(),
+            Language::Elm => "Elm".to_owned(),
+            Language::Ruby => "Ruby".to_owned(),
+            Language::Haskell => "Haskell".to_owned(),
+            Language::C => "C".to_owned(),
+            Language::Javascript => "Javascript".to_owned(),
+            Language::Other => "Some other language".to_owned(),
+        }
     }
 }

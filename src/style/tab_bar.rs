@@ -1,8 +1,8 @@
-//! Displays a [`TabBar`](crate::native::tab_bar::TabBar) to select the content
+//! Displays a [`TabBar`](crate::widgets::tab_bar::TabBar) to select the content
 //! to be displayed.
 //!
 //! You have to manage the logic to show the contend by yourself or you may want
-//! to use the [`Tabs`](crate::native::tabs::Tabs) widget instead.
+//! to use the [`Tabs`](crate::widgets::tabs::Tabs) widget instead.
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use iced::{border::Radius, Background, Color, Theme};
 
-/// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
+/// The appearance of a [`TabBar`](crate::widgets::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
     /// The background of the tab bar.
@@ -44,7 +44,7 @@ pub struct Appearance {
     pub text_color: Color,
 }
 
-/// The appearance of a [`TabBar`](crate::native::tab_bar::TabBar).
+/// The appearance of a [`TabBar`](crate::widgets::tab_bar::TabBar).
 pub trait StyleSheet {
     ///Style for the trait to use.
     type Style: Default;

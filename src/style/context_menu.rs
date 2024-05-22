@@ -5,10 +5,10 @@ use std::rc::Rc;
 
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
+/// The appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
 #[derive(Clone, Copy, Debug)]
 pub struct Appearance {
-    /// The background of the [`ContextMenu`](crate::native::ContextMenu).
+    /// The background of the [`ContextMenu`](crate::widgets::ContextMenu).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,
@@ -22,15 +22,15 @@ impl Default for Appearance {
     }
 }
 
-/// The appearance of a [`ContextMenu`](crate::native::ContextMenu).
+/// The appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
 pub trait StyleSheet {
     ///Style for the trait to use.
     type Style: Default + Clone;
-    /// The normal appearance of a [`ContextMenu`](crate::native::ContextMenu).
+    /// The normal appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
     fn active(&self, style: &Self::Style) -> Appearance;
 }
 
-/// The default appearance of a [`ContextMenu`](crate::native::ContextMenu).
+/// The default appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
 #[derive(Clone, Default)]
 #[allow(missing_docs, clippy::missing_docs_in_private_items)]
 pub enum ContextMenuStyle {

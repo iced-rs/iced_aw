@@ -1,7 +1,4 @@
 //! A spinner to suggest something is loading.
-
-use crate::style::spinner::StyleSheet;
-
 use iced::{
     advanced::{
         layout::{Limits, Node},
@@ -110,7 +107,6 @@ fn fill_circle(
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for Spinner
 where
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
 {
     fn size(&self) -> Size<Length> {
         Size::new(self.width, self.height)
@@ -215,7 +211,6 @@ where
 impl<'a, Message, Theme, Renderer> From<Spinner> for Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
-    Theme: 'a + StyleSheet,
 {
     fn from(spinner: Spinner) -> Self {
         Self::new(spinner)

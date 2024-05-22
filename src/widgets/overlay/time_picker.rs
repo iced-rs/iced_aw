@@ -67,7 +67,7 @@ const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
 /// The percentage size of the period.
 const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
-/// The overlay of the [`TimePicker`](crate::native::TimePicker).
+/// The overlay of the [`TimePicker`](crate::widgets::TimePicker).
 #[allow(missing_debug_implementations)]
 pub struct TimePickerOverlay<'a, Message, Theme>
 where
@@ -330,31 +330,31 @@ where
 
         let hour_layout = digital_clock_children
             .next()
-            .expect("Native: Layout should have a hour layout");
+            .expect("widgets: Layout should have a hour layout");
         let mut hour_children = hour_layout.children();
 
         let hour_up_arrow = hour_children
             .next()
-            .expect("Native: Layout should have an up arrow for hours");
+            .expect("widgets: Layout should have an up arrow for hours");
         let _ = hour_children.next();
         let hour_down_arrow = hour_children
             .next()
-            .expect("Native: Layout should have a down arrow for hours");
+            .expect("widgets: Layout should have a down arrow for hours");
 
         let _ = digital_clock_children.next();
 
         let minute_layout = digital_clock_children
             .next()
-            .expect("Native: Layout should have a minute layout");
+            .expect("widgets: Layout should have a minute layout");
         let mut minute_children = minute_layout.children();
 
         let minute_up_arrow = minute_children
             .next()
-            .expect("Native: Layout should have an up arrow for minutes");
+            .expect("widgets: Layout should have an up arrow for minutes");
         let _ = minute_children.next();
         let minute_down_arrow = minute_children
             .next()
-            .expect("Native: Layout should have a down arrow for minutes");
+            .expect("widgets: Layout should have a down arrow for minutes");
 
         let calculate_time = |time: &mut NaiveTime,
                               up_arrow: Layout<'_>,
@@ -404,16 +404,16 @@ where
 
             let second_layout = digital_clock_children
                 .next()
-                .expect("Native: Layout should have a second layout");
+                .expect("widgets: Layout should have a second layout");
             let mut second_children = second_layout.children();
 
             let second_up_arrow = second_children
                 .next()
-                .expect("Native: Layout should have an up arrow for seconds");
+                .expect("widgets: Layout should have an up arrow for seconds");
             let _ = second_children.next();
             let second_down_arrow = second_children
                 .next()
-                .expect("Native: Layout should have a down arrow for seconds");
+                .expect("widgets: Layout should have a down arrow for seconds");
 
             match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -634,17 +634,17 @@ where
         // Clock canvas
         let clock_layout = children
             .next()
-            .expect("Native: Layout should have a clock canvas layout");
+            .expect("widgets: Layout should have a clock canvas layout");
         let clock_status =
             self.on_event_clock(&event, clock_layout, cursor, shell, renderer, clipboard);
 
         // ----------- Digital clock ------------------
         let digital_clock_layout = children
             .next()
-            .expect("Native: Layout should have a digital clock parent")
+            .expect("widgets: Layout should have a digital clock parent")
             .children()
             .next()
-            .expect("Native: Layout should have a digital clock layout");
+            .expect("widgets: Layout should have a digital clock layout");
         let digital_clock_status = self.on_event_digital_clock(
             &event,
             digital_clock_layout,
@@ -657,7 +657,7 @@ where
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
             .next()
-            .expect("Native: Layout should have a cancel button layout for a TimePicker");
+            .expect("widgets: Layout should have a cancel button layout for a TimePicker");
 
         let cancel_status = self.cancel_button.on_event(
             &mut self.tree.children[0],
@@ -672,7 +672,7 @@ where
 
         let submit_button_layout = children
             .next()
-            .expect("Native: Layout should have a submit button layout for a TimePicker");
+            .expect("widgets: Layout should have a submit button layout for a TimePicker");
 
         let mut fake_messages: Vec<Message> = Vec::new();
 

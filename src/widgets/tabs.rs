@@ -62,15 +62,15 @@ where
     Theme: StyleSheet,
     TabId: Eq + Clone,
 {
-    /// The [`TabBar`](crate::native::TabBar) of the [`Tabs`].
+    /// The [`TabBar`](crate::widgets::TabBar) of the [`Tabs`].
     tab_bar: TabBar<Message, TabId, Theme, Renderer>,
     /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The vector containing the indices of the tabs.
     indices: Vec<TabId>,
-    /// The position of the [`TabBar`](crate::native::TabBar).
+    /// The position of the [`TabBar`](crate::widgets::TabBar).
     tab_bar_position: TabBarPosition,
-    /// The position of the [`TabBar`](crate::native::TabBar) Icon.
+    /// The position of the [`TabBar`](crate::widgets::TabBar) Icon.
     tab_icon_position: Position,
     /// the width of the [`Tabs`].
     width: Length,
@@ -398,19 +398,19 @@ where
             TabBarPosition::Top => {
                 let tab_bar_layout = children
                     .next()
-                    .expect("Native: Layout should have a TabBar layout at top position");
+                    .expect("widgets: Layout should have a TabBar layout at top position");
                 let tab_content_layout = children
                     .next()
-                    .expect("Native: Layout should have a tab content layout at top position");
+                    .expect("widgets: Layout should have a tab content layout at top position");
                 (tab_bar_layout, tab_content_layout)
             }
             TabBarPosition::Bottom => {
                 let tab_content_layout = children
                     .next()
-                    .expect("Native: Layout should have a tab content layout at bottom position");
+                    .expect("widgets: Layout should have a tab content layout at bottom position");
                 let tab_bar_layout = children
                     .next()
-                    .expect("Native: Layout should have a TabBar layout at bottom position");
+                    .expect("widgets: Layout should have a TabBar layout at bottom position");
                 (tab_bar_layout, tab_content_layout)
             }
         };
@@ -458,10 +458,10 @@ where
         let tab_bar_layout = match self.tab_bar_position {
             TabBarPosition::Top => children
                 .next()
-                .expect("Native: There should be a TabBar at the top position"),
+                .expect("widgets: There should be a TabBar at the top position"),
             TabBarPosition::Bottom => children
                 .last()
-                .expect("Native: There should be a TabBar at the bottom position"),
+                .expect("widgets: There should be a TabBar at the bottom position"),
         };
 
         let mut mouse_interaction = mouse::Interaction::default();
@@ -519,10 +519,10 @@ where
         let tab_bar_layout = match self.tab_bar_position {
             TabBarPosition::Top => children
                 .next()
-                .expect("Native: There should be a TabBar at the top position"),
+                .expect("widgets: There should be a TabBar at the top position"),
             TabBarPosition::Bottom => children
                 .last()
-                .expect("Native: There should be a TabBar at the bottom position"),
+                .expect("widgets: There should be a TabBar at the bottom position"),
         };
 
         self.tab_bar.draw(

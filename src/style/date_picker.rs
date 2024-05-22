@@ -4,34 +4,34 @@
 use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`DatePicker`](crate::native::DatePicker).
+/// The appearance of a [`DatePicker`](crate::widgets::DatePicker).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`DatePicker`](crate::native::DatePicker).
+    /// The background of the [`DatePicker`](crate::widgets::DatePicker).
     pub background: Background,
 
-    /// The border radius of the [`DatePicker`](crate::native::DatePicker).
+    /// The border radius of the [`DatePicker`](crate::widgets::DatePicker).
     pub border_radius: f32,
 
-    /// The border with of the [`DatePicker`](crate::native::DatePicker).
+    /// The border with of the [`DatePicker`](crate::widgets::DatePicker).
     pub border_width: f32,
 
-    /// The border color of the [`DatePicker`](crate::native::DatePicker).
+    /// The border color of the [`DatePicker`](crate::widgets::DatePicker).
     pub border_color: Color,
 
-    /// The text color of the [`DatePicker`](crate::native::DatePicker).
+    /// The text color of the [`DatePicker`](crate::widgets::DatePicker).
     pub text_color: Color,
 
     /// The attenuated color of the days which are not in the selected month
-    /// of the [`DatePicker`](crate::native::DatePicker).
+    /// of the [`DatePicker`](crate::widgets::DatePicker).
     pub text_attenuated_color: Color,
 
     /// The background of the days in the calender of the
-    /// [`DatePicker`](crate::native::DatePicker).
+    /// [`DatePicker`](crate::widgets::DatePicker).
     pub day_background: Background,
 }
 
-/// The Catalog of a [`DatePicker`](crate::native::DatePicker).
+/// The Catalog of a [`DatePicker`](crate::widgets::DatePicker).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -55,7 +55,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::native::badge::Badge).
+/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();

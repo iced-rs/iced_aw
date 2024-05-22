@@ -318,14 +318,14 @@ where
 
         let head_layout = children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let mut head_children = head_layout.children();
         let head_status = self.head.as_widget_mut().on_event(
             &mut state.children[0],
             event.clone(),
             head_children
                 .next()
-                .expect("Native: Layout should have a head content layout"),
+                .expect("widgets: Layout should have a head content layout"),
             cursor,
             renderer,
             clipboard,
@@ -358,14 +358,14 @@ where
 
         let body_layout = children
             .next()
-            .expect("Native: Layout should have a body layout");
+            .expect("widgets: Layout should have a body layout");
         let mut body_children = body_layout.children();
         let body_status = self.body.as_widget_mut().on_event(
             &mut state.children[1],
             event.clone(),
             body_children
                 .next()
-                .expect("Native: Layout should have a body content layout"),
+                .expect("widgets: Layout should have a body content layout"),
             cursor,
             renderer,
             clipboard,
@@ -375,7 +375,7 @@ where
 
         let foot_layout = children
             .next()
-            .expect("Native: Layout should have a foot layout");
+            .expect("widgets: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
             foot.as_widget_mut().on_event(
@@ -383,7 +383,7 @@ where
                 event,
                 foot_children
                     .next()
-                    .expect("Native: Layout should have a foot content layout"),
+                    .expect("widgets: Layout should have a foot content layout"),
                 cursor,
                 renderer,
                 clipboard,
@@ -410,12 +410,12 @@ where
 
         let head_layout = children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let mut head_children = head_layout.children();
 
         let head = head_children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let close_layout = head_children.next();
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
@@ -431,12 +431,12 @@ where
 
         let body_layout = children
             .next()
-            .expect("Native: Layout should have a body layout");
+            .expect("widgets: Layout should have a body layout");
         let mut body_children = body_layout.children();
 
         let foot_layout = children
             .next()
-            .expect("Native: Layout should have a foot layout");
+            .expect("widgets: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
 
         mouse_interaction
@@ -452,7 +452,7 @@ where
                     &state.children[1],
                     body_children
                         .next()
-                        .expect("Native: Layout should have a body content layout"),
+                        .expect("widgets: Layout should have a body content layout"),
                     cursor,
                     viewport,
                     renderer,
@@ -466,7 +466,7 @@ where
                             &state.children[2],
                             foot_children
                                 .next()
-                                .expect("Native: Layout should have a foot content layout"),
+                                .expect("widgets: Layout should have a foot content layout"),
                             cursor,
                             viewport,
                             renderer,
