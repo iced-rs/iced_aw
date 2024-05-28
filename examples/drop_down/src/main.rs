@@ -2,13 +2,19 @@ use std::fmt::Display;
 
 use iced::{
     widget::{Button, Column, Row, Text},
-    Element, Length, Sandbox, Settings,
+    Element, Length,
 };
 
 use iced_aw::{drop_down, DropDown};
 
 fn main() -> iced::Result {
-    DropDownExample::run(Settings::default())
+    iced::program(
+        "ContextMenu example",
+        DropDownExample::update,
+        DropDownExample::view,
+    )
+    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .run()
 }
 
 #[derive(Clone, Debug, Default)]
@@ -40,18 +46,8 @@ struct DropDownExample {
     expanded: bool,
 }
 
-impl Sandbox for DropDownExample {
-    type Message = Message;
-
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn title(&self) -> String {
-        String::from("ContextMenu example")
-    }
-
-    fn update(&mut self, message: Self::Message) {
+impl DropDownExample {
+    fn update(&mut self, message: Message) {
         match message {
             Message::Select(choice) => {
                 self.selected = choice;
@@ -62,7 +58,7 @@ impl Sandbox for DropDownExample {
         }
     }
 
-    fn view(&self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Message> {
         let underlay = Row::new()
             .push(Text::new(format!("Selected: {}", self.selected)))
             .push(Button::new(Text::new("expand")).on_press(Message::Expand));

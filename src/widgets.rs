@@ -60,7 +60,8 @@ pub use grid::GridRow;
 pub mod tab_bar;
 #[cfg(feature = "tab_bar")]
 /// A tab bar to show tabs.
-pub type TabBar<Message, TabId, Theme, Renderer> = tab_bar::TabBar<Message, TabId, Theme, Renderer>;
+pub type TabBar<'a, Message, TabId, Theme, Renderer> =
+    tab_bar::TabBar<'a, Message, TabId, Theme, Renderer>;
 
 #[cfg(feature = "tab_bar")]
 pub use tab_bar::TabLabel;

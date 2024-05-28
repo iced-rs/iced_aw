@@ -93,7 +93,6 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use {
-        crate::style::TabBarStyles,
         crate::widgets::tab_bar,
         tab_bar::{TabBar, TabLabel},
     };

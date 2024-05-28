@@ -43,7 +43,7 @@ default = [
     "date_picker",
     "color_picker",
     "grid",
-    #"tab_bar",
+    "tab_bar",
     #"tabs",
     "time_picker",
     "slide_bar",
@@ -52,7 +52,7 @@ default = [
     #"quad",
     #"context_menu",
     "spinner",
-    #"drop_down",
+    "drop_down",
     #"menu",
 ]
 
@@ -83,7 +83,7 @@ members = [
     "examples/date_picker",
     "examples/color_picker",
     "examples/grid",
-    #"examples/tab_bar",
+    "examples/tab_bar",
     #"examples/tabs",
     "examples/time_picker",
     "examples/sliderbar",
@@ -91,8 +91,8 @@ members = [
     "examples/selection_list",
     #"examples/context_menu",
     "examples/spinner",
-    #"examples/WidgetIDReturn",
-    #"examples/drop_down",
+    "examples/WidgetIDReturn",
+    "examples/drop_down",
     #"examples/menu",
 ]
 

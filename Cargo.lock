@@ -894,6 +894,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "drop_down"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+]
+
+[[package]]
 name = "either"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2927,6 +2935,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tab_bar"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3536,6 +3552,15 @@ name = "widestring"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7219d36b6eac893fa81e84ebe06485e7dcbb616177469b142df14f1f4deb1311"
+
+[[package]]
+name = "widget_id"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+ "num-traits",
+]
 
 [[package]]
 name = "winapi"

@@ -6,13 +6,12 @@
 //!
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
-use std::rc::Rc;
-
+use super::{Status, StyleFn};
 use iced::{border::Radius, Background, Color, Theme};
 
 /// The appearance of a [`TabBar`](crate::widgets::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
+pub struct Style {
     /// The background of the tab bar.
     pub background: Option<Background>,
 
@@ -44,23 +43,7 @@ pub struct Appearance {
     pub text_color: Color,
 }
 
-/// The appearance of a [`TabBar`](crate::widgets::tab_bar::TabBar).
-pub trait StyleSheet {
-    ///Style for the trait to use.
-    type Style: Default;
-
-    /// The normal appearance of a tab bar and its tab labels.
-    ///
-    /// `is_active` is true if the tab is selected.
-    fn active(&self, style: &Self::Style, is_active: bool) -> Appearance;
-
-    /// The appearance when the tab bar and/or a tab label is hovered.
-    ///
-    /// `is_active` is true if the tab is selected.
-    fn hovered(&self, style: &Self::Style, is_active: bool) -> Appearance;
-}
-
-impl Default for Appearance {
+impl Default for Style {
     fn default() -> Self {
         Self {
             background: None,
@@ -76,154 +59,172 @@ impl Default for Appearance {
         }
     }
 }
+/// The Catalog of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+pub trait Catalog {
+    ///Style for the trait to use.
+    type Class<'a>;
 
-#[derive(Clone, Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``TabBar`` Styles
-pub enum TabBarStyles {
-    #[default]
-    Default,
-    Dark,
-    Red,
-    Blue,
-    Green,
-    Purple,
-    Custom(Rc<dyn StyleSheet<Style = Theme>>),
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
+
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-impl TabBarStyles {
-    /// Creates a custom [`TabBarStyles`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Rc::new(style_sheet))
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
+
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = TabBarStyles;
+/// The primary theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let mut base = Style::default();
+    let palette = theme.extended_palette();
 
-    fn active(&self, style: &Self::Style, is_active: bool) -> Appearance {
-        let mut appearance = Appearance::default();
-        let palette = self.extended_palette();
+    base.text_color = palette.background.base.text;
 
-        match style {
-            TabBarStyles::Default => {
-                appearance.tab_label_background = if is_active {
-                    Background::Color(palette.primary.base.color)
-                } else {
-                    Background::Color(palette.background.strong.color)
-                };
-                appearance.text_color = palette.background.base.text;
-            }
-            TabBarStyles::Dark => {
-                appearance.tab_label_background = if is_active {
-                    Background::Color([0.1, 0.1, 0.1].into())
-                } else {
-                    Background::Color([0.13, 0.13, 0.13].into())
-                };
-                appearance.tab_label_border_color = [0.3, 0.3, 0.3].into();
-                appearance.icon_color = Color::WHITE;
-                appearance.text_color = Color::WHITE;
-            }
-            TabBarStyles::Red => {
-                let text_color = if is_active {
-                    Color::WHITE
-                } else {
-                    Color::BLACK
-                };
-
-                appearance.tab_label_background = if is_active {
-                    Background::Color([1.0, 0.0, 0.0].into())
-                } else {
-                    Background::Color(Color::WHITE)
-                };
-                appearance.tab_label_border_width = 0.0;
-                appearance.tab_label_border_color = Color::TRANSPARENT;
-                appearance.icon_color = text_color;
-                appearance.text_color = text_color;
-            }
-            TabBarStyles::Blue => {
-                appearance.tab_label_background = if is_active {
-                    Background::Color([0.0, 0.0, 1.0].into())
-                } else {
-                    Background::Color([0.5, 0.5, 1.0].into())
-                };
-                appearance.tab_label_border_color = if is_active {
-                    [0.0, 0.0, 1.0].into()
-                } else {
-                    [0.5, 0.5, 1.0].into()
-                };
-                appearance.icon_color = Color::WHITE;
-                appearance.text_color = Color::WHITE;
-            }
-            TabBarStyles::Green => {
-                let color = if is_active {
-                    [0.0, 0.5, 0.0]
-                } else {
-                    [0.7, 0.7, 0.7]
-                }
-                .into();
-
-                appearance.tab_label_border_color = color;
-                appearance.tab_label_background = Color::WHITE.into();
-                appearance.icon_color = color;
-                appearance.text_color = color;
-            }
-            TabBarStyles::Purple => {
-                let text_color = if is_active {
-                    [0.7, 0.0, 1.0].into()
-                } else {
-                    Color::BLACK
-                };
-
-                appearance.tab_label_background = Color::WHITE.into();
-                appearance.tab_label_border_color = Color::TRANSPARENT;
-                appearance.tab_label_border_width = 0.0;
-                appearance.icon_color = text_color;
-                appearance.text_color = text_color;
-            }
-            TabBarStyles::Custom(custom) => return custom.active(self, is_active),
+    match status {
+        Status::Disabled => {
+            base.tab_label_background = Background::Color(palette.background.strong.color);
         }
-
-        appearance
-    }
-
-    fn hovered(&self, style: &Self::Style, is_active: bool) -> Appearance {
-        let palette = self.extended_palette();
-        match style {
-            TabBarStyles::Default => Appearance {
-                tab_label_background: Background::Color(palette.primary.strong.color),
-                ..self.active(style, is_active)
-            },
-            TabBarStyles::Dark => Appearance {
-                tab_label_background: Background::Color([0.1, 0.1, 0.1].into()),
-                ..self.active(style, is_active)
-            },
-            TabBarStyles::Red => Appearance {
-                tab_label_background: Background::Color([1.0, 0.0, 0.0].into()),
-                icon_color: Color::WHITE,
-                text_color: Color::WHITE,
-                ..self.active(style, is_active)
-            },
-            TabBarStyles::Blue => Appearance {
-                tab_label_background: Background::Color([0.0, 0.0, 1.0].into()),
-                tab_label_border_color: [0.0, 0.0, 1.0].into(),
-                ..self.active(style, is_active)
-            },
-            TabBarStyles::Green => Appearance {
-                tab_label_border_color: [0.0, 0.4, 0.0].into(),
-                icon_color: [0.0, 0.4, 0.0].into(),
-                text_color: [0.0, 0.4, 0.0].into(),
-                ..self.active(style, is_active)
-            },
-            TabBarStyles::Purple => {
-                let text_color = [0.7, 0.0, 1.0].into();
-                Appearance {
-                    icon_color: text_color,
-                    text_color,
-                    ..self.active(style, is_active)
-                }
-            }
-            TabBarStyles::Custom(custom) => custom.hovered(self, is_active),
+        Status::Hovered => {
+            base.tab_label_background = Background::Color(palette.primary.strong.color);
+        }
+        _ => {
+            base.tab_label_background = Background::Color(palette.primary.base.color);
         }
     }
+
+    base
+}
+
+/// The dark theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn dark(theme: &Theme, status: Status) -> Style {
+    let mut base = Style::default();
+    let palette = theme.extended_palette();
+
+    base.tab_label_border_color = [0.3, 0.3, 0.3].into();
+    base.icon_color = Color::WHITE;
+    base.text_color = Color::WHITE;
+
+    match status {
+        Status::Disabled => {
+            base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
+        }
+        Status::Hovered => {
+            base.tab_label_background = Background::Color(palette.primary.strong.color);
+        }
+        _ => {
+            base.tab_label_background = Background::Color([0.1, 0.1, 0.1].into());
+        }
+    }
+
+    base
+}
+
+/// The red theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn red(_theme: &Theme, status: Status) -> Style {
+    let mut base = Style {
+        tab_label_background: Background::Color([0.0, 0.0, 1.0].into()),
+        tab_label_border_color: [0.0, 0.0, 1.0].into(),
+        tab_label_border_width: 0.0,
+        icon_color: Color::WHITE,
+        text_color: Color::WHITE,
+        ..Default::default()
+    };
+
+    match status {
+        Status::Disabled => {
+            base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
+            base.icon_color = Color::BLACK;
+            base.text_color = Color::BLACK;
+        }
+        Status::Hovered => {
+            base.tab_label_background = Background::Color([1.0, 0.0, 0.0].into());
+        }
+        _ => {
+            base.tab_label_background = Background::Color([0.1, 0.1, 0.1].into());
+        }
+    }
+
+    base
+}
+
+/// The blue theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn blue(_theme: &Theme, status: Status) -> Style {
+    let mut base = Style {
+        tab_label_background: Background::Color([0.0, 0.0, 1.0].into()),
+        tab_label_border_color: [0.0, 0.0, 1.0].into(),
+        icon_color: Color::WHITE,
+        text_color: Color::WHITE,
+        ..Default::default()
+    };
+
+    if status == Status::Disabled {
+        base.tab_label_background = Background::Color([0.5, 0.5, 1.0].into());
+        base.tab_label_border_color = [0.5, 0.5, 1.0].into();
+    } else {
+        base.tab_label_background = Background::Color([0.0, 0.0, 1.0].into());
+        base.tab_label_border_color = [0.0, 0.0, 1.0].into();
+    }
+
+    base
+}
+
+/// The blue theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn green(_theme: &Theme, status: Status) -> Style {
+    let mut base = Style {
+        tab_label_background: Color::WHITE.into(),
+        icon_color: [0.0, 0.5, 0.0].into(),
+        text_color: [0.0, 0.5, 0.0].into(),
+        ..Default::default()
+    };
+
+    match status {
+        Status::Disabled => {
+            base.tab_label_background = Background::Color([0.5, 0.5, 1.0].into());
+            base.icon_color = [0.7, 0.7, 0.7].into();
+            base.text_color = [0.7, 0.7, 0.7].into();
+            base.tab_label_border_color = [0.7, 0.7, 0.7].into();
+        }
+        Status::Hovered => {
+            base.tab_label_border_color = [0.0, 0.0, 1.0].into();
+        }
+        _ => {
+            base.tab_label_border_color = [0.0, 0.5, 0.0].into();
+        }
+    }
+
+    base
+}
+
+/// The purple theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
+#[must_use]
+pub fn purple(_theme: &Theme, status: Status) -> Style {
+    let mut base = Style {
+        tab_label_background: Color::WHITE.into(),
+        tab_label_border_color: Color::TRANSPARENT,
+        icon_color: [0.7, 0.0, 1.0].into(),
+        text_color: [0.7, 0.0, 1.0].into(),
+        ..Default::default()
+    };
+
+    if status == Status::Disabled {
+        base.icon_color = Color::BLACK;
+        base.text_color = Color::BLACK;
+    }
+
+    base
 }

@@ -1,121 +1,66 @@
 use iced::{
-    alignment, font,
-    theme::Theme,
-    widget::{container, text, Column, Container, Row, Text},
-    window, Alignment, Application, Command, Element, Length, Settings, Size,
+    widget::{Column, Container, Row, Text},
+    Alignment, Element, Length,
 };
 
 #[derive(Debug)]
-enum NumberInputDemo {
-    Loading,
-    Loaded(State),
+pub struct NumberInputDemo {
+    value: [NumInput<f32, Message>; 2],
 }
 
-#[derive(Debug)]
-pub struct State {
-    value: [NumInput<f32, Message>; 2],
+impl Default for NumberInputDemo {
+    fn default() -> Self {
+        Self {
+            value: [NumInput::new(32.0), NumInput::new(12.0)],
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Loaded(Result<(), String>),
     GenericF32Input((usize, NumInputMessage<f32>)),
-    FontLoaded(Result<(), font::Error>),
 }
 
 fn main() -> iced::Result {
-    NumberInputDemo::run(Settings {
-        default_text_size: iced::Pixels(12.0),
-        window: window::Settings {
-            size: Size::new(500.0, 400.0),
-            ..Default::default()
-        },
-        ..Settings::default()
-    })
+    iced::program(
+        "NumberInput example",
+        NumberInputDemo::update,
+        NumberInputDemo::view,
+    )
+    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .run()
 }
 
 mod numberinput;
-
 use numberinput::*;
 
-async fn load() -> Result<(), String> {
-    Ok(())
-}
-
-impl Application for NumberInputDemo {
-    type Message = Message;
-    type Theme = Theme;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (NumberInputDemo, Command<Message>) {
-        (
-            NumberInputDemo::Loading,
-            Command::batch(vec![
-                font::load(iced_aw::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
-                Command::perform(load(), Message::Loaded),
-            ]),
-        )
-    }
-
-    fn title(&self) -> String {
-        String::from("Number Input Demo")
-    }
-
-    fn update(&mut self, message: self::Message) -> Command<Message> {
-        match self {
-            NumberInputDemo::Loading => {
-                if let Message::Loaded(_) = message {
-                    *self = NumberInputDemo::Loaded(State {
-                        value: [NumInput::new(27.0), NumInput::new(5.0)],
-                    })
-                }
-            }
-            NumberInputDemo::Loaded(State { value }) => {
-                if let Message::GenericF32Input((id, val)) = message {
-                    value[id].value = val.get_data();
-                }
-            }
-        }
-
-        Command::none()
+impl NumberInputDemo {
+    fn update(&mut self, message: self::Message) {
+        let Message::GenericF32Input((id, val)) = message;
+        self.value[id].value = val.get_data();
     }
 
     fn view(&self) -> Element<Message> {
-        match self {
-            NumberInputDemo::Loading => container(
-                text("Loading...")
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .size(50),
-            )
+        let mut column1 = Column::new();
+
+        for (id, val) in self.value.iter().enumerate() {
+            let lb_minute = Text::new(format!("Number Input {}:", id));
+            let txt_minute = val.view(id, 1.0, 255.0, 0.5, Message::GenericF32Input, None);
+
+            column1 = column1.push(
+                Row::new()
+                    .spacing(10)
+                    .align_items(Alignment::Center)
+                    .push(lb_minute)
+                    .push(txt_minute),
+            );
+        }
+
+        Container::new(column1)
             .width(Length::Fill)
             .height(Length::Fill)
-            .center_y()
-            .center_x()
-            .into(),
-            NumberInputDemo::Loaded(State { value }) => {
-                let mut column1 = Column::new();
-
-                for (id, val) in value.iter().enumerate() {
-                    let lb_minute = Text::new(format!("Number Input {}:", id));
-                    let txt_minute = val.view(id, 1.0, 255.0, 0.5, Message::GenericF32Input, None);
-
-                    column1 = column1.push(
-                        Row::new()
-                            .spacing(10)
-                            .align_items(Alignment::Center)
-                            .push(lb_minute)
-                            .push(txt_minute),
-                    );
-                }
-
-                Container::new(column1)
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x()
-                    .center_y()
-                    .into()
-            }
-        }
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
+            .into()
     }
 }
