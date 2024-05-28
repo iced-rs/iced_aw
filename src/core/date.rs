@@ -17,7 +17,11 @@ pub struct Date {
 
 impl Default for Date {
     fn default() -> Self {
-        Self { year: 2024, month: 1, day: 1 }
+        Self {
+            year: 2024,
+            month: 1,
+            day: 1,
+        }
     }
 }
 
