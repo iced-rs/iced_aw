@@ -236,9 +236,9 @@ pub fn time_picker<'a, Message, Theme, U, F>(
 where
     Message: 'a + Clone,
     Theme: 'a
-        + crate::style::time_picker::StyleSheet
-        + iced::widget::button::StyleSheet
-        + iced::widget::text::StyleSheet,
+        + crate::style::time_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
     U: Into<Element<'a, Message, Theme, iced::Renderer>>,
     F: 'static + Fn(crate::core::time::Time) -> Message,
 {

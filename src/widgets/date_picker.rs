@@ -134,7 +134,6 @@ where
         <Theme as crate::style::date_picker::Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
     {
         self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
-        //self.button_style = style.into();
         self
     }
 

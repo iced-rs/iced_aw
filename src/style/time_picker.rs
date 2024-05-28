@@ -2,13 +2,12 @@
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
 #![allow(clippy::doc_markdown)]
-use std::rc::Rc;
-
+use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`TimePicker`](crate::widgets::TimePicker).
+/// The style of a [`TimePicker`](crate::widgets::TimePicker).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
+pub struct Style {
     /// The background of the [`TimePicker`](crate::widgets::TimePicker).
     pub background: Background,
 
@@ -45,103 +44,64 @@ pub struct Appearance {
     pub clock_hand_width: f32,
 }
 
-/// The appearance of a [`TimePicker`](crate::widgets::TimePicker).
-pub trait StyleSheet {
-    /// The style type of this stylesheet
-    type Style: Default + Clone;
-    /// The normal appearance of a [`TimePicker`](crate::widgets::TimePicker).
-    fn active(&self, style: &Self::Style) -> Appearance;
+/// The Catalog of a [`TimePicker`](crate::widgets::TimePicker).
+pub trait Catalog {
+    ///Style for the trait to use.
+    type Class<'a>;
 
-    /// The appearance when something is selected of the
-    /// [`TimePicker`](crate::widgets::TimePicker)
-    fn selected(&self, style: &Self::Style) -> Appearance;
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
 
-    /// The appearance when something is hovered of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
-    fn hovered(&self, style: &Self::Style) -> Appearance;
-
-    /// The appearance when something is focused of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
-    fn focused(&self, style: &Self::Style) -> Appearance;
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-/// The style appearance of the [`TimePicker`](crate::widgets::TimePicker)
-#[derive(Clone, Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub enum TimePickerStyle {
-    #[default]
-    Default,
-    Custom(Rc<dyn StyleSheet<Style = Theme>>),
-}
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
-impl TimePickerStyle {
-    /// Creates a custom [`TimePickerStyle`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Rc::new(style_sheet))
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = TimePickerStyle;
+/// The primary theme of a [`TimePicker`](crate::widgets::TimePicker).
+#[must_use]
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let foreground = theme.palette();
 
-    fn active(&self, style: &Self::Style) -> Appearance {
-        if let TimePickerStyle::Custom(custom) = style {
-            return custom.active(self);
-        }
+    let base = Style {
+        background: palette.background.base.color.into(),
+        border_radius: 15.0,
+        border_width: 1.0,
+        border_color: foreground.text,
+        text_color: foreground.text,
+        clock_number_color: foreground.text,
+        clock_number_background: palette.background.base.color,
+        clock_dots_color: [0.87, 0.87, 0.87].into(),
+        clock_hand_color: [0.87, 0.87, 0.87].into(),
+        clock_hand_width: 3.0,
+    };
 
-        let palette = self.extended_palette();
-        let foreground = self.palette();
-
-        Appearance {
-            background: palette.background.base.color.into(),
-            border_radius: 15.0,
-            border_width: 1.0,
-            border_color: foreground.text,
-            text_color: foreground.text,
-            clock_number_color: foreground.text,
-            clock_number_background: palette.background.base.color,
-            clock_dots_color: [0.87, 0.87, 0.87].into(),
-            clock_hand_color: [0.87, 0.87, 0.87].into(),
-            clock_hand_width: 3.0,
-        }
-    }
-
-    fn selected(&self, style: &Self::Style) -> Appearance {
-        if let TimePickerStyle::Custom(custom) = style {
-            return custom.selected(self);
-        }
-
-        let palette = self.extended_palette();
-
-        Appearance {
-            clock_number_color: palette.primary.strong.text,
-            clock_number_background: palette.primary.strong.color,
-            ..self.active(style)
-        }
-    }
-
-    fn hovered(&self, style: &Self::Style) -> Appearance {
-        if let TimePickerStyle::Custom(custom) = style {
-            return custom.hovered(self);
-        }
-
-        let palette = self.extended_palette();
-
-        Appearance {
+    match status {
+        Status::Focused => Style {
+            border_color: Color::from_rgb(0.5, 0.5, 0.5),
+            ..base
+        },
+        Status::Hovered => Style {
             clock_number_color: palette.primary.weak.text,
             clock_number_background: palette.primary.weak.color,
-            ..self.active(style)
-        }
-    }
-
-    fn focused(&self, style: &Self::Style) -> Appearance {
-        if let TimePickerStyle::Custom(custom) = style {
-            return custom.focused(self);
-        }
-
-        Appearance {
-            border_color: Color::from_rgb(0.5, 0.5, 0.5),
-            ..self.active(style)
-        }
+            ..base
+        },
+        Status::Selected => Style {
+            clock_number_color: palette.primary.strong.text,
+            clock_number_background: palette.primary.strong.color,
+            ..base
+        },
+        _ => base,
     }
 }

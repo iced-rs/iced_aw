@@ -13,7 +13,11 @@ use crate::{
         {Bootstrap, BOOTSTRAP_FONT},
     },
     core::{clock, overlay::Position, time::Period},
-    style::style_state::StyleState,
+    style::{
+        style_state::StyleState,
+        time_picker::{Catalog, Style},
+        Status,
+    },
     time_picker::{self, Time},
 };
 
@@ -34,7 +38,7 @@ use iced::{
     touch,
     widget::{
         button,
-        canvas::{self, LineCap, Path, Stroke, Style, Text as CanvasText},
+        canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
         container, text, Button, Column, Container, Row,
     },
     Alignment,
@@ -54,8 +58,6 @@ use iced::{
 };
 use std::collections::HashMap;
 
-pub use crate::style::time_picker::{Appearance, StyleSheet};
-
 /// The padding around the elements.
 const PADDING: f32 = 10.0;
 /// The spacing between the elements.
@@ -69,10 +71,11 @@ const PERIOD_SIZE_PERCENTAGE: f32 = 0.2;
 
 /// The overlay of the [`TimePicker`](crate::widgets::TimePicker).
 #[allow(missing_debug_implementations)]
-pub struct TimePickerOverlay<'a, Message, Theme>
+pub struct TimePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: Catalog + button::Catalog,
+    'b: 'a,
 {
     /// The state of the [`TimePickerOverlay`].
     state: &'a mut State,
@@ -85,15 +88,16 @@ where
     /// The position of the [`TimePickerOverlay`].
     position: Point,
     /// The style of the [`TimePickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: &'a <Theme as Catalog>::Class<'b>,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
 }
 
-impl<'a, Message, Theme> TimePickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> TimePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog + text::Catalog + container::Catalog,
+    'b: 'a,
 {
     /// Creates a new [`TimePickerOverlay`] on the given position.
     pub fn new(
@@ -101,7 +105,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Time) -> Message,
         position: Point,
-        style: <Theme as StyleSheet>::Style,
+        class: &'a <Theme as Catalog>::Class<'b>,
         tree: &'a mut Tree,
     ) -> Self {
         let time_picker::State { overlay_state } = state;
@@ -126,7 +130,7 @@ where
             .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style,
+            class,
             tree,
         }
     }
@@ -517,10 +521,12 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Theme, Renderer> for TimePickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> Overlay<Message, Theme, Renderer>
+    for TimePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog + text::Catalog + container::Catalog,
+    'b: 'a,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
@@ -848,14 +854,23 @@ where
         let bounds = layout.bounds();
         let mut children = layout.children();
 
-        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, &self.style));
+        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style_sheet.insert(
+            StyleState::Active,
+            Catalog::style(theme, self.class, Status::Active),
+        );
         let _ = style_sheet.insert(
             StyleState::Selected,
-            StyleSheet::selected(theme, &self.style),
+            Catalog::style(theme, self.class, Status::Selected),
         );
-        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, &self.style));
-        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, &self.style));
+        let _ = style_sheet.insert(
+            StyleState::Hovered,
+            Catalog::style(theme, self.class, Status::Hovered),
+        );
+        let _ = style_sheet.insert(
+            StyleState::Focused,
+            Catalog::style(theme, self.class, Status::Focused),
+        );
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -965,13 +980,13 @@ where
 
 /// Defines the layout of the digital clock of the time picker.
 fn digital_clock<Message, Theme>(
-    time_picker: &mut TimePickerOverlay<'_, Message, Theme>,
+    time_picker: &mut TimePickerOverlay<'_, '_, Message, Theme>,
     renderer: &Renderer,
     limits: Limits,
 ) -> Node
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: Catalog + button::Catalog + text::Catalog + container::Catalog,
 {
     let arrow_size = renderer.default_size().0;
     let font_size = 1.2 * renderer.default_size().0;
@@ -1081,8 +1096,8 @@ where
     let container = Container::new(digital_clock_row)
         .width(Length::Fill)
         .height(Length::Shrink)
-        .center_x()
-        .center_y();
+        .center_x(Length::Fill)
+        .center_y(Length::Shrink);
 
     let element: Element<Message, Theme, Renderer> = Element::new(container);
     let container_tree = if let Some(child_tree) = time_picker.tree.children.get_mut(2) {
@@ -1103,13 +1118,13 @@ where
 #[allow(clippy::too_many_lines)]
 fn draw_clock<Message, Theme>(
     renderer: &mut Renderer,
-    time_picker: &TimePickerOverlay<'_, Message, Theme>,
+    time_picker: &TimePickerOverlay<'_, '_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
 ) where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + text::StyleSheet,
+    Theme: Catalog + button::Catalog + text::Catalog,
 {
     let mut clock_style_state = StyleState::Active;
     if cursor.is_over(layout.bounds()) {
@@ -1178,7 +1193,7 @@ fn draw_clock<Message, Theme>(
             let second_points = crate::core::clock::circle_points(second_radius, center, 60);
 
             let hand_stroke = Stroke {
-                style: Style::Solid(
+                style: canvas::Style::Solid(
                     style
                         .get(&clock_style_state)
                         .expect("Style Sheet not found.")
@@ -1399,7 +1414,7 @@ fn draw_clock<Message, Theme>(
 
     let translation = Vector::new(layout.bounds().x, layout.bounds().y);
     renderer.with_translation(translation, |renderer| {
-        renderer.draw(vec![geometry]);
+        renderer.draw_geometry(geometry);
     });
 }
 
@@ -1407,13 +1422,13 @@ fn draw_clock<Message, Theme>(
 #[allow(clippy::too_many_lines)]
 fn draw_digital_clock<Message, Theme>(
     renderer: &mut Renderer,
-    time_picker: &TimePickerOverlay<'_, Message, Theme>,
+    time_picker: &TimePickerOverlay<'_, '_, Message, Theme>,
     layout: Layout<'_>,
     cursor: Cursor,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
 ) where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + text::StyleSheet,
+    Theme: Catalog + button::Catalog + text::Catalog,
 {
     //println!("layout: {:#?}", layout);
     let mut children = layout
@@ -1481,7 +1496,7 @@ fn draw_digital_clock<Message, Theme>(
         // Caret up
         renderer.fill_text(
             Text {
-                content: char::from(Bootstrap::CaretUpFill).encode_utf8(&mut buffer),
+                content: (*char::from(Bootstrap::CaretUpFill).encode_utf8(&mut buffer)).to_string(),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
                 size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
                 font: crate::core::icons::BOOTSTRAP_FONT,
@@ -1501,7 +1516,7 @@ fn draw_digital_clock<Message, Theme>(
         // Text
         renderer.fill_text(
             Text {
-                content: &text,
+                content: text,
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
@@ -1521,7 +1536,8 @@ fn draw_digital_clock<Message, Theme>(
         // Down caret
         renderer.fill_text(
             Text {
-                content: char::from(Bootstrap::CaretDownFill).encode_utf8(&mut buffer),
+                content: (*char::from(Bootstrap::CaretDownFill).encode_utf8(&mut buffer))
+                    .to_string(),
                 bounds: Size::new(down_bounds.width, down_bounds.height),
                 size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
@@ -1571,7 +1587,7 @@ fn draw_digital_clock<Message, Theme>(
 
     renderer.fill_text(
         Text {
-            content: ":",
+            content: ":".to_owned(),
             bounds: Size::new(
                 hour_minute_separator.bounds().width,
                 hour_minute_separator.bounds().height,
@@ -1609,7 +1625,7 @@ fn draw_digital_clock<Message, Theme>(
             .expect("Graphics: Layout should have a minute/second separator layout");
         renderer.fill_text(
             Text {
-                content: ":",
+                content: ":".to_owned(),
                 bounds: Size::new(
                     minute_second_separator.bounds().width,
                     minute_second_separator.bounds().height,
@@ -1649,9 +1665,9 @@ fn draw_digital_clock<Message, Theme>(
         renderer.fill_text(
             Text {
                 content: if time_picker.state.time.hour12().0 {
-                    "PM"
+                    "PM".to_owned()
                 } else {
-                    "AM"
+                    "AM".to_owned()
                 },
                 bounds: Size::new(period.bounds().width, period.bounds().height),
                 size: renderer.default_size(),
@@ -1722,7 +1738,7 @@ impl Default for State {
 pub struct TimePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: Catalog + button::Catalog,
 {
     /// The cancel button of the [`TimePickerOverlay`].
     cancel_button: Element<'a, Message, Theme, Renderer>,
@@ -1733,7 +1749,7 @@ where
 impl<'a, Message, Theme> Default for TimePickerOverlayButtons<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog + text::Catalog,
 {
     fn default() -> Self {
         Self {
@@ -1760,7 +1776,7 @@ impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for TimePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: Catalog + button::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![
@@ -1799,7 +1815,7 @@ impl<'a, Message, Theme> From<TimePickerOverlayButtons<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog,
 {
     fn from(overlay: TimePickerOverlayButtons<'a, Message, Theme>) -> Self {
         Self::new(overlay)

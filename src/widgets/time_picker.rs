@@ -27,7 +27,10 @@ use iced::{
 
 pub use crate::{
     core::time::{Period, Time},
-    style::time_picker::{Appearance, StyleSheet},
+    style::{
+        time_picker::{Catalog, Style},
+        Status, StyleFn,
+    },
 };
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
@@ -58,7 +61,7 @@ pub use crate::{
 pub struct TimePicker<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: Catalog + button::Catalog,
 {
     /// Show the picker.
     show_picker: bool,
@@ -71,7 +74,7 @@ where
     /// The function that produces a message when the submit button of the [`TimePickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Time) -> Message>,
     /// The style of the [`TimePickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: <Theme as Catalog>::Class<'a>,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Theme, Renderer>,
     /// Toggle the use of the 24h clock of the [`TimePickerOverlay`].
@@ -83,7 +86,7 @@ where
 impl<'a, Message, Theme> TimePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog + text::Catalog,
 {
     /// Creates a new [`TimePicker`] wrapping around the given underlay.
     ///
@@ -112,7 +115,7 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Theme as StyleSheet>::Style::default(),
+            class: <Theme as Catalog>::default(),
             overlay_state: TimePickerOverlayButtons::default().into(),
             use_24h: false,
             show_seconds: false,
@@ -128,8 +131,11 @@ where
 
     /// Sets the style of the [`TimePicker`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
 
@@ -137,6 +143,13 @@ where
     #[must_use]
     pub fn use_24h(mut self) -> Self {
         self.use_24h = true;
+        self
+    }
+
+    /// Sets the class of the input of the [`DatePicker`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<<Theme as Catalog>::Class<'a>>) -> Self {
+        self.class = class.into();
         self
     }
 }
@@ -175,7 +188,7 @@ impl State {
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for TimePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: Catalog + button::Catalog + text::Catalog + container::Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -291,7 +304,7 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                self.style.clone(),
+                &self.class,
                 &mut state.children[1],
             )
             .overlay(),
@@ -303,7 +316,7 @@ impl<'a, Message, Theme> From<TimePicker<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a + Catalog + button::Catalog + text::Catalog + container::Catalog,
 {
     fn from(time_picker: TimePicker<'a, Message, Theme>) -> Self {
         Element::new(time_picker)

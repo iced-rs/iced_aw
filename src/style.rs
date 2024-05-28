@@ -25,8 +25,6 @@ pub use tab_bar::TabBarStyles;
 
 #[cfg(feature = "time_picker")]
 pub mod time_picker;
-#[cfg(feature = "time_picker")]
-pub use time_picker::TimePickerStyle;
 
 #[cfg(feature = "number_input")]
 pub mod number_input;
