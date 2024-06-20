@@ -12,6 +12,7 @@ pub enum CounterMessage {
     Decrease,
 }
 
+#[derive(Default)]
 pub struct CounterTab {
     value: i32,
 }

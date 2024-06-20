@@ -1,9 +1,9 @@
 mod login;
 use iced::{
-    alignment::{self, Horizontal, Vertical},
+    alignment::{Horizontal, Vertical},
     font,
-    widget::{container, text, Column, Container, Text},
-    Application, Command, Element, Font, Length, Settings, Theme,
+    widget::{Column, Container, Text},
+    Element, Font, Length,
 };
 use iced_aw::{TabLabel, Tabs};
 use login::{LoginMessage, LoginTab};
@@ -15,12 +15,12 @@ mod counter;
 use counter::{CounterMessage, CounterTab};
 
 mod settings;
-use settings::{SettingsMessage, SettingsTab, TabBarPosition};
+use settings::{style_from_index, SettingsMessage, SettingsTab, TabBarPosition};
 
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
 const ICON_BYTES: &[u8] = include_bytes!("../fonts/icons.ttf");
-const ICON: Font = Font::with_name("icons");
+const ICON: Font = Font::with_name("en icons");
 
 enum Icon {
     User,
@@ -41,23 +41,23 @@ impl From<Icon> for char {
 }
 
 fn main() -> iced::Result {
-    TabBarExample::run(Settings::default())
+    iced::application("Tabs example", TabBarExample::update, TabBarExample::view)
+        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+        .font(ICON_BYTES)
+        .run()
 }
 
-enum TabBarExample {
-    Loading,
-    Loaded(State),
-}
-
-struct State {
+#[derive(Default)]
+struct TabBarExample {
     active_tab: TabId,
     login_tab: LoginTab,
     ferris_tab: FerrisTab,
     counter_tab: CounterTab,
     settings_tab: SettingsTab,
 }
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Default)]
 enum TabId {
+    #[default]
     Login,
     Ferris,
     Counter,
@@ -71,122 +71,64 @@ enum Message {
     Ferris(FerrisMessage),
     Counter(CounterMessage),
     Settings(SettingsMessage),
-    #[allow(dead_code)]
-    Loaded(Result<(), String>),
-    FontLoaded(Result<(), font::Error>),
     TabClosed(TabId),
 }
 
-async fn load() -> Result<(), String> {
-    Ok(())
-}
-
-impl Application for TabBarExample {
-    type Message = Message;
-    type Theme = Theme;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-
-    fn new(_flags: ()) -> (TabBarExample, Command<Message>) {
-        (
-            TabBarExample::Loading,
-            Command::batch(vec![
-                font::load(ICON_BYTES).map(Message::FontLoaded),
-                font::load(iced_aw::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
-                Command::perform(load(), Message::Loaded),
-            ]),
-        )
-    }
-
-    fn title(&self) -> String {
-        String::from("TabBar Example")
-    }
-
-    fn update(&mut self, message: Self::Message) -> Command<Message> {
-        match self {
-            TabBarExample::Loading => {
-                if let Message::Loaded(_) = message {
-                    *self = TabBarExample::Loaded(State {
-                        active_tab: TabId::Login,
-                        login_tab: LoginTab::new(),
-                        ferris_tab: FerrisTab::new(),
-                        counter_tab: CounterTab::new(),
-                        settings_tab: SettingsTab::new(),
-                    })
-                }
-            }
-            TabBarExample::Loaded(state) => match message {
-                Message::TabSelected(selected) => state.active_tab = selected,
-                Message::Login(message) => state.login_tab.update(message),
-                Message::Ferris(message) => state.ferris_tab.update(message),
-                Message::Counter(message) => state.counter_tab.update(message),
-                Message::Settings(message) => state.settings_tab.update(message),
-                Message::TabClosed(id) => println!("Tab {:?} event hit", id),
-                _ => {}
-            },
+impl TabBarExample {
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::TabSelected(selected) => self.active_tab = selected,
+            Message::Login(message) => self.login_tab.update(message),
+            Message::Ferris(message) => self.ferris_tab.update(message),
+            Message::Counter(message) => self.counter_tab.update(message),
+            Message::Settings(message) => self.settings_tab.update(message),
+            Message::TabClosed(id) => println!("Tab {:?} event hit", id),
         }
-
-        Command::none()
     }
 
-    fn view(&self) -> Element<'_, Self::Message> {
-        match self {
-            TabBarExample::Loading => container(
-                text("Loading...")
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .size(50),
+    fn view(&self) -> Element<'_, Message> {
+        let position = self
+            .settings_tab
+            .settings()
+            .tab_bar_position
+            .unwrap_or_default();
+        let theme = self
+            .settings_tab
+            .settings()
+            .tab_bar_theme
+            .unwrap_or_default();
+
+        Tabs::new(Message::TabSelected)
+            .tab_icon_position(iced_aw::tabs::Position::Bottom)
+            .on_close(Message::TabClosed)
+            .push(
+                TabId::Login,
+                self.login_tab.tab_label(),
+                self.login_tab.view(),
             )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_y()
-            .center_x()
-            .into(),
-            TabBarExample::Loaded(state) => {
-                let position = state
-                    .settings_tab
-                    .settings()
-                    .tab_bar_position
-                    .unwrap_or_default();
-                let theme = state
-                    .settings_tab
-                    .settings()
-                    .tab_bar_theme
-                    .clone()
-                    .unwrap_or_default();
-
-                Tabs::new(Message::TabSelected)
-                    .tab_icon_position(iced_aw::tabs::Position::Bottom)
-                    .on_close(Message::TabClosed)
-                    .push(
-                        TabId::Login,
-                        state.login_tab.tab_label(),
-                        state.login_tab.view(),
-                    )
-                    .push(
-                        TabId::Ferris,
-                        state.ferris_tab.tab_label(),
-                        state.ferris_tab.view(),
-                    )
-                    .push(
-                        TabId::Counter,
-                        state.counter_tab.tab_label(),
-                        state.counter_tab.view(),
-                    )
-                    .push(
-                        TabId::Settings,
-                        state.settings_tab.tab_label(),
-                        state.settings_tab.view(),
-                    )
-                    .set_active_tab(&state.active_tab)
-                    .tab_bar_style(theme.clone())
-                    .icon_font(ICON)
-                    .tab_bar_position(match position {
-                        TabBarPosition::Top => iced_aw::TabBarPosition::Top,
-                        TabBarPosition::Bottom => iced_aw::TabBarPosition::Bottom,
-                    })
-                    .into()
-            }
-        }
+            .push(
+                TabId::Ferris,
+                self.ferris_tab.tab_label(),
+                self.ferris_tab.view(),
+            )
+            .push(
+                TabId::Counter,
+                self.counter_tab.tab_label(),
+                self.counter_tab.view(),
+            )
+            .push(
+                TabId::Settings,
+                self.settings_tab.tab_label(),
+                self.settings_tab.view(),
+            )
+            .set_active_tab(&self.active_tab)
+            .tab_bar_style(style_from_index(theme))
+            .icon_font(ICON)
+            .tab_bar_position(match position {
+                TabBarPosition::Top => iced_aw::TabBarPosition::Top,
+                TabBarPosition::Bottom => iced_aw::TabBarPosition::Bottom,
+            })
+            .into()
     }
 }
 

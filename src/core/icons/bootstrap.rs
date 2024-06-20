@@ -6142,7 +6142,7 @@ pub const fn icon_to_char(icon: Bootstrap) -> char {
         Bootstrap::WrenchAdjustable => '\u{f790}',
         Bootstrap::WrenchAdjustableCircle => '\u{f78f}',
         Bootstrap::WrenchAdjustableCircleFill => '\u{f78e}',
-        Bootstrap::X => '\u{f62a}',
+        Bootstrap::X => '\u{f62A}',
         Bootstrap::XCircle => '\u{f623}',
         Bootstrap::XCircleFill => '\u{f622}',
         Bootstrap::XDiamond => '\u{f625}',

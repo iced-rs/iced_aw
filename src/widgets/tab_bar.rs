@@ -840,7 +840,7 @@ fn draw_tab<Theme, Renderer>(
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
-                shaping: iced::advanced::text::Shaping::Basic,
+                shaping: iced::advanced::text::Shaping::Advanced,
             },
             Point::new(cross_bounds.center_x(), cross_bounds.center_y()),
             style.text_color,

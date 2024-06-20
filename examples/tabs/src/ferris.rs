@@ -11,6 +11,7 @@ pub enum FerrisMessage {
     ImageWidthChanged(f32),
 }
 
+#[derive(Default)]
 pub struct FerrisTab {
     ferris_width: f32,
 }
@@ -74,5 +75,5 @@ fn ferris<'a>(width: f32) -> Container<'a, FerrisMessage> {
             .width(Length::Fixed(width))
     })
     .width(Length::Fill)
-    .center_x()
+    .center_x(Length::Fill)
 }

@@ -8,7 +8,14 @@
 
 pub mod tab_bar_position;
 pub use crate::tab_bar::Position;
-use crate::{style::tab_bar::StyleSheet, widgets::tab_bar::TabBar, TabLabel};
+use crate::{
+    style::{
+        tab_bar::{Catalog, Style},
+        Status, StyleFn,
+    },
+    widgets::tab_bar::TabBar,
+    TabLabel,
+};
 
 use iced::{
     advanced::{
@@ -59,11 +66,11 @@ pub use tab_bar_position::TabBarPosition;
 pub struct Tabs<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
     TabId: Eq + Clone,
 {
     /// The [`TabBar`](crate::widgets::TabBar) of the [`Tabs`].
-    tab_bar: TabBar<Message, TabId, Theme, Renderer>,
+    tab_bar: TabBar<'a, Message, TabId, Theme, Renderer>,
     /// The vector containing the content of the tabs.
     tabs: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The vector containing the indices of the tabs.
@@ -81,7 +88,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
-    Theme: StyleSheet + text::StyleSheet,
+    Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
     /// Creates a new [`Tabs`] widget with the index of the selected tab and a
@@ -243,7 +250,10 @@ where
 
     /// Sets the style of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_bar_style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
+    pub fn tab_bar_style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
         self.tab_bar = self.tab_bar.style(style);
         self
     }
@@ -292,7 +302,7 @@ impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Tabs<'a, Message, TabId, Theme, Renderer>
 where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
-    Theme: StyleSheet + text::StyleSheet,
+    Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
     fn children(&self) -> Vec<Tree> {
@@ -593,7 +603,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation<()>,
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
@@ -614,7 +624,7 @@ impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, R
     for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
-    Theme: 'a + StyleSheet + text::StyleSheet,
+    Theme: 'a + Catalog + text::Catalog,
     Message: 'a,
     TabId: 'a + Eq + Clone,
 {

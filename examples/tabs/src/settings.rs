@@ -3,7 +3,7 @@ use iced::{
     widget::{Column, Container, Radio, Text},
     Element,
 };
-use iced_aw::style::TabBarStyles;
+use iced_aw::style::{tab_bar, StyleFn};
 use iced_aw::tab_bar::TabLabel;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TabBarPosition {
@@ -26,9 +26,10 @@ impl From<TabBarPosition> for String {
 }
 
 //#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub struct TabSettings {
     pub tab_bar_position: Option<TabBarPosition>,
-    pub tab_bar_theme: Option<TabBarStyles>,
+    pub tab_bar_theme: Option<usize>,
     pub tab_bar_theme_id: Option<usize>,
 }
 
@@ -36,7 +37,7 @@ impl TabSettings {
     pub fn new() -> Self {
         TabSettings {
             tab_bar_position: Some(TabBarPosition::Top),
-            tab_bar_theme: Some(TabBarStyles::default()),
+            tab_bar_theme: Some(0),
             tab_bar_theme_id: Some(0),
         }
     }
@@ -48,6 +49,7 @@ pub enum SettingsMessage {
     ThemeSelected(usize),
 }
 
+#[derive(Default)]
 pub struct SettingsTab {
     settings: TabSettings,
 }
@@ -70,15 +72,7 @@ impl SettingsTab {
             }
             SettingsMessage::ThemeSelected(index) => {
                 self.settings.tab_bar_theme_id = Some(index);
-                self.settings.tab_bar_theme = Some(match index {
-                    0 => TabBarStyles::Default,
-                    1 => TabBarStyles::Dark,
-                    2 => TabBarStyles::Red,
-                    3 => TabBarStyles::Blue,
-                    4 => TabBarStyles::Green,
-                    5 => TabBarStyles::Purple,
-                    _ => TabBarStyles::Default,
-                })
+                self.settings.tab_bar_theme = Some(index)
             }
         }
     }
@@ -144,5 +138,17 @@ fn predefined_style(index: usize) -> String {
         4 => "Green".to_owned(),
         5 => "Purple".to_owned(),
         _ => "Default".to_owned(),
+    }
+}
+
+pub fn style_from_index(index: usize) -> StyleFn<'static, iced::Theme, tab_bar::Style> {
+    match index {
+        0 => Box::new(tab_bar::primary),
+        1 => Box::new(tab_bar::dark),
+        2 => Box::new(tab_bar::red),
+        3 => Box::new(tab_bar::blue),
+        4 => Box::new(tab_bar::green),
+        5 => Box::new(tab_bar::purple),
+        _ => Box::new(tab_bar::primary),
     }
 }
