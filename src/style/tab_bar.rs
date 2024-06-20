@@ -108,24 +108,17 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
 
 /// The dark theme of a [`TabBar`](crate::widgets::tab_bar::TabBar).
 #[must_use]
-pub fn dark(theme: &Theme, status: Status) -> Style {
-    let mut base = Style::default();
-    let palette = theme.extended_palette();
+pub fn dark(_theme: &Theme, status: Status) -> Style {
+    let mut base = Style {
+        tab_label_background: Background::Color([0.1, 0.1, 0.1].into()),
+        tab_label_border_color: [0.3, 0.3, 0.3].into(),
+        icon_color: Color::WHITE,
+        text_color: Color::WHITE,
+        ..Default::default()
+    };
 
-    base.tab_label_border_color = [0.3, 0.3, 0.3].into();
-    base.icon_color = Color::WHITE;
-    base.text_color = Color::WHITE;
-
-    match status {
-        Status::Disabled => {
-            base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
-        }
-        Status::Hovered => {
-            base.tab_label_background = Background::Color(palette.primary.strong.color);
-        }
-        _ => {
-            base.tab_label_background = Background::Color([0.1, 0.1, 0.1].into());
-        }
+    if status == Status::Disabled {
+        base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
     }
 
     base
@@ -135,26 +128,18 @@ pub fn dark(theme: &Theme, status: Status) -> Style {
 #[must_use]
 pub fn red(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
-        tab_label_background: Background::Color([0.0, 0.0, 1.0].into()),
-        tab_label_border_color: [0.0, 0.0, 1.0].into(),
+        tab_label_background: Background::Color([1.0, 0.0, 0.0].into()),
+        tab_label_border_color: Color::TRANSPARENT,
         tab_label_border_width: 0.0,
         icon_color: Color::WHITE,
         text_color: Color::WHITE,
         ..Default::default()
     };
 
-    match status {
-        Status::Disabled => {
-            base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
-            base.icon_color = Color::BLACK;
-            base.text_color = Color::BLACK;
-        }
-        Status::Hovered => {
-            base.tab_label_background = Background::Color([1.0, 0.0, 0.0].into());
-        }
-        _ => {
-            base.tab_label_background = Background::Color([0.1, 0.1, 0.1].into());
-        }
+    if status == Status::Disabled {
+        base.tab_label_background = Background::Color([0.13, 0.13, 0.13].into());
+        base.icon_color = Color::BLACK;
+        base.text_color = Color::BLACK;
     }
 
     base
@@ -174,9 +159,6 @@ pub fn blue(_theme: &Theme, status: Status) -> Style {
     if status == Status::Disabled {
         base.tab_label_background = Background::Color([0.5, 0.5, 1.0].into());
         base.tab_label_border_color = [0.5, 0.5, 1.0].into();
-    } else {
-        base.tab_label_background = Background::Color([0.0, 0.0, 1.0].into());
-        base.tab_label_border_color = [0.0, 0.0, 1.0].into();
     }
 
     base
@@ -194,13 +176,9 @@ pub fn green(_theme: &Theme, status: Status) -> Style {
 
     match status {
         Status::Disabled => {
-            base.tab_label_background = Background::Color([0.5, 0.5, 1.0].into());
             base.icon_color = [0.7, 0.7, 0.7].into();
             base.text_color = [0.7, 0.7, 0.7].into();
             base.tab_label_border_color = [0.7, 0.7, 0.7].into();
-        }
-        Status::Hovered => {
-            base.tab_label_border_color = [0.0, 0.0, 1.0].into();
         }
         _ => {
             base.tab_label_border_color = [0.0, 0.5, 0.0].into();
