@@ -480,7 +480,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation<()>,
     ) {
         let mut children = layout.children();
         let head_layout = children.next().expect("Missing Head Layout");

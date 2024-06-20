@@ -6,7 +6,7 @@ use iced::{
 use iced_aw::helpers::color_picker;
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "Color Picker example",
         ColorPickerExample::update,
         ColorPickerExample::view,

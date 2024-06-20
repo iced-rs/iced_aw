@@ -5,7 +5,7 @@ use iced::{
 use iced_aw::{date_picker::Date, helpers::date_picker};
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "DatePicker example",
         DatePickerExample::update,
         DatePickerExample::view,

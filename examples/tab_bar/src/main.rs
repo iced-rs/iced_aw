@@ -5,7 +5,7 @@ use iced::{
 use iced_aw::{TabBar, TabLabel};
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "Tab Bar example",
         TabBarExample::update,
         TabBarExample::view,

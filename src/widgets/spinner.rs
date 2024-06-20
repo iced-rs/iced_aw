@@ -179,7 +179,7 @@ where
 
         let bounds = layout.bounds();
 
-        if let Event::Window(_id, window::Event::RedrawRequested(now)) = event {
+        if let Event::Window(window::Event::RedrawRequested(now)) = event {
             if is_visible(&bounds) {
                 let state = state.state.downcast_mut::<SpinnerState>();
                 let duration = (now - state.last_update).as_secs_f32();

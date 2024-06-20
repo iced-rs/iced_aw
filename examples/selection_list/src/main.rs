@@ -5,7 +5,7 @@ use iced::{
 use iced_aw::{selection_list::SelectionList, style::selection_list::primary};
 
 pub fn main() -> iced::Result {
-    iced::program("Selection list example", Example::update, Example::view)
+    iced::application("Selection list example", Example::update, Example::view)
         .font(iced_aw::BOOTSTRAP_FONT_BYTES)
         .run()
 }

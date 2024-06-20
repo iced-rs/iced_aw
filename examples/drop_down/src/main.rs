@@ -8,7 +8,7 @@ use iced::{
 use iced_aw::{drop_down, DropDown};
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "ContextMenu example",
         DropDownExample::update,
         DropDownExample::view,

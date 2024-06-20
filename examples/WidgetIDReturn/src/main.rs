@@ -22,7 +22,7 @@ pub enum Message {
 }
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "NumberInput example",
         NumberInputDemo::update,
         NumberInputDemo::view,

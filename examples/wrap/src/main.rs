@@ -8,7 +8,7 @@ use iced_aw::{NumberInput, Wrap};
 use rand::Rng;
 
 fn main() -> iced::Result {
-    iced::program("Wrap example", RandStrings::update, RandStrings::view)
+    iced::application("Wrap example", RandStrings::update, RandStrings::view)
         .font(iced_aw::BOOTSTRAP_FONT_BYTES)
         .run()
 }

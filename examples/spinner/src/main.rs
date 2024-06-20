@@ -49,7 +49,7 @@ impl SpinnerExample {
 }
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "Spinner example",
         SpinnerExample::update,
         SpinnerExample::view,

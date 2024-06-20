@@ -6,7 +6,7 @@ use iced::{
 use iced_aw::SlideBar;
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "Slider Bar example",
         SlideBarExample::update,
         SlideBarExample::view,

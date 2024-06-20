@@ -245,21 +245,6 @@ where
     crate::TimePicker::new(show_picker, time, underlay, on_cancel, on_submit)
 }
 
-#[cfg(feature = "floating_element")]
-/// Shortcut helper to create a [`FloatingElement`] Widget.
-///
-/// [`FloatingElement`]: crate::FloatingElement
-pub fn floating_element<'a, Message, Theme, Renderer>(
-    underlay: impl Into<Element<'a, Message, Theme, Renderer>>,
-    element: impl Into<Element<'a, Message, Theme, Renderer>>,
-) -> crate::FloatingElement<'a, Message, Theme, Renderer>
-where
-    Message: 'a + Clone,
-    Renderer: renderer::Renderer,
-{
-    crate::FloatingElement::new(underlay, element)
-}
-
 #[cfg(feature = "grid")]
 /// Shortcut helper to create a [`Grid`] Widget.
 ///
@@ -315,23 +300,6 @@ where
     Renderer: renderer::Renderer,
 {
     crate::Wrap::with_elements_vertical(children)
-}
-
-#[cfg(feature = "modal")]
-/// Shortcut helper to create a [`Modal`] Widget.
-///
-/// [`Modal`]: crate::Modal
-#[must_use]
-pub fn modal<'a, Message, Theme, Renderer>(
-    underlay: impl Into<Element<'a, Message, Theme, Renderer>>,
-    overlay: Option<impl Into<Element<'a, Message, Theme, Renderer>>>,
-) -> crate::Modal<'a, Message, Theme, Renderer>
-where
-    Message: Clone,
-    Renderer: renderer::Renderer,
-    Theme: crate::style::modal::StyleSheet,
-{
-    crate::Modal::new(underlay, overlay)
 }
 
 #[cfg(feature = "number_input")]

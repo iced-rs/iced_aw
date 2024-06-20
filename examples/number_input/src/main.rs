@@ -15,7 +15,7 @@ pub enum Message {
 }
 
 fn main() -> iced::Result {
-    iced::program(
+    iced::application(
         "Number Input example",
         NumberInputDemo::update,
         NumberInputDemo::view,
