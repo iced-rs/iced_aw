@@ -68,7 +68,7 @@ impl Tab for FerrisTab {
 }
 
 fn ferris<'a>(width: f32) -> Container<'a, FerrisMessage> {
-    Container::new(if cfg!(target_carch = "wasm32") {
+    Container::new(if cfg!(target_arch = "wasm32") {
         Image::new("images/ferris.png")
     } else {
         Image::new(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))

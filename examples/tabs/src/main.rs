@@ -1,7 +1,6 @@
 mod login;
 use iced::{
     alignment::{Horizontal, Vertical},
-    font,
     widget::{Column, Container, Text},
     Element, Font, Length,
 };
@@ -20,7 +19,7 @@ use settings::{style_from_index, SettingsMessage, SettingsTab, TabBarPosition};
 const HEADER_SIZE: u16 = 32;
 const TAB_PADDING: u16 = 16;
 const ICON_BYTES: &[u8] = include_bytes!("../fonts/icons.ttf");
-const ICON: Font = Font::with_name("en icons");
+const ICON: Font = Font::with_name("icons");
 
 enum Icon {
     User,
