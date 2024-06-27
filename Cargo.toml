@@ -53,7 +53,7 @@ default = [
     "context_menu",
     "spinner",
     "drop_down",
-    #"menu",
+    "menu",
 ]
 
 [dependencies]
@@ -93,7 +93,7 @@ members = [
     "examples/spinner",
     "examples/WidgetIDReturn",
     "examples/drop_down",
-    #"examples/menu",
+    "examples/menu",
 ]
 
 [workspace.dependencies.iced]

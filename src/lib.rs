@@ -63,10 +63,10 @@ mod platform {
         if #[cfg(feature = "icons")] {
             pub use
                 crate::core::icons::{
-                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES,
+                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES, bootstrap, nerd
                 };
         } else {
-            pub use crate::core::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
+            pub use crate::core::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, bootstrap};
         }
     }
 

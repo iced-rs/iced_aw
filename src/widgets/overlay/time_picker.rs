@@ -1281,7 +1281,7 @@ fn draw_clock<Message, Theme>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
-                    frame.stroke(&Path::line(center, *p), hand_stroke.clone());
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     frame.fill(
                         &Path::circle(*p, number_size * 0.8),
                         style
@@ -1324,7 +1324,7 @@ fn draw_clock<Message, Theme>(
 
                 let mut style_state = StyleState::Active;
                 if selected {
-                    frame.stroke(&Path::line(center, *p), hand_stroke.clone());
+                    frame.stroke(&Path::line(center, *p), hand_stroke);
                     frame.fill(
                         &Path::circle(*p, number_size * 0.6),
                         style
@@ -1370,7 +1370,7 @@ fn draw_clock<Message, Theme>(
 
                     let mut style_state = StyleState::Active;
                     if selected {
-                        frame.stroke(&Path::line(center, *p), hand_stroke.clone());
+                        frame.stroke(&Path::line(center, *p), hand_stroke);
                         frame.fill(
                             &Path::circle(*p, number_size * 0.6),
                             style

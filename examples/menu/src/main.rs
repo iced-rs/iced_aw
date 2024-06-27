@@ -3,7 +3,7 @@ use iced::widget::{
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Application, Border, Color, Element, Length, Pixels, Size};
+use iced::{alignment, theme, Border, Color, Element, Length, Size};
 
 use iced_aw::menu::{self, Item, Menu, StyleSheet};
 use iced_aw::style::MenuBarStyle;
@@ -12,15 +12,10 @@ use iced_aw::{quad, widgets::InnerBounds};
 use iced_aw::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 
 pub fn main() -> iced::Result {
-    // std::env::set_var("RUST_BACKTRACE", "full");
-    App::run(iced::Settings {
-        default_text_size: Pixels(15.0),
-        window: iced::window::Settings {
-            size: Size::new(1000.0, 600.0),
-            ..Default::default()
-        },
-        ..Default::default()
-    })
+    iced::application(App::title, App::update, App::view)
+        .font(BOOTSTRAP_FONT_BYTES)
+        .window_size(Size::new(1000.0, 600.0))
+        .run()
 }
 
 #[derive(Debug, Clone)]
@@ -44,13 +39,9 @@ struct App {
     dark_mode: bool,
     text: String,
 }
-impl Application for App {
-    type Executor = iced::executor::Default;
-    type Message = Message;
-    type Theme = iced::Theme;
-    type Flags = ();
 
-    fn new(_flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
+impl Default for App {
+    fn default() -> Self {
         let theme = iced::Theme::custom(
             "Custom Theme".into(),
             theme::Palette {
@@ -59,29 +50,24 @@ impl Application for App {
             },
         );
 
-        (
-            Self {
-                title: "Menu Test".to_string(),
-                value: 0,
-                check: false,
-                toggle: false,
-                theme,
-                dark_mode: false,
-                text: "Text Input".into(),
-            },
-            iced::font::load(BOOTSTRAP_FONT_BYTES).map(|_| Message::None),
-        )
+        Self {
+            title: "Menu Test".to_string(),
+            value: 0,
+            check: false,
+            toggle: false,
+            theme,
+            dark_mode: false,
+            text: "Text Input".into(),
+        }
     }
+}
 
-    fn theme(&self) -> Self::Theme {
-        self.theme.clone()
-    }
-
+impl App {
     fn title(&self) -> String {
         self.title.clone()
     }
 
-    fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
+    fn update(&mut self, message: Message) {
         match message {
             Message::Debug(s) => {
                 self.title = s;
@@ -135,10 +121,9 @@ impl Application for App {
             }
             Message::None => {}
         }
-        iced::Command::none()
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message, iced::Theme, iced::Renderer> {
+    fn view(&self) -> iced::Element<'_, Message> {
         let menu_tpl_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
@@ -452,13 +437,13 @@ impl Application for App {
             vertical_space().height(500),
         ];
 
-        let sc = scrollable(c).direction(scrollable::Direction::Both {
-            vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
-            horizontal: scrollable::Properties::new(),
-        });
+        let sc = scrollable(c); /*.direction(scrollable::Direction::Both {
+                                    vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+                                    horizontal: scrollable::Properties::new(),
+                                });*/
 
-        fn back_style(theme: &iced::Theme) -> container::Appearance {
-            container::Appearance {
+        fn back_style(theme: &iced::Theme) -> container::Style {
+            container::Style {
                 background: Some(theme.extended_palette().primary.base.color.into()),
                 ..Default::default()
             }
@@ -472,72 +457,46 @@ impl Application for App {
     }
 }
 
-struct ButtonStyle;
-impl button::StyleSheet for ButtonStyle {
-    type Style = iced::Theme;
-
-    fn active(&self, style: &Self::Style) -> button::Appearance {
-        button::Appearance {
-            text_color: style.extended_palette().background.base.text,
-            background: Some(Color::TRANSPARENT.into()),
-            // background: Some(Color::from([1.0; 3]).into()),
-            border: Border {
-                radius: [6.0; 4].into(),
-                ..Default::default()
-            },
-            ..Default::default()
-        }
-    }
-
-    fn hovered(&self, style: &Self::Style) -> button::Appearance {
-        let plt = style.extended_palette();
-
-        button::Appearance {
-            background: Some(plt.primary.weak.color.into()),
-            text_color: plt.primary.weak.text,
-            ..self.active(style)
-        }
-    }
-}
-
 fn base_button<'a>(
-    content: impl Into<Element<'a, Message, iced::Theme, iced::Renderer>>,
+    content: impl Into<Element<'a, Message>>,
     msg: Message,
-) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+) -> button::Button<'a, Message> {
     button(content)
         .padding([4, 8])
-        .style(iced::theme::Button::Custom(Box::new(ButtonStyle {})))
+        .style(iced::widget::button::primary)
         .on_press(msg)
 }
 
-fn labeled_button<'a>(
+fn labeled_button(
     label: &str,
     msg: Message,
-) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+) -> button::Button<Message, iced::Theme, iced::Renderer> {
     base_button(
         text(label).vertical_alignment(alignment::Vertical::Center),
         msg,
     )
 }
 
-fn debug_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+fn debug_button(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
     labeled_button(label, Message::Debug(label.into())).width(Length::Fill)
 }
 
-fn debug_button_s<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+fn debug_button_s(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
     labeled_button(label, Message::Debug(label.into())).width(Length::Shrink)
 }
 
-fn submenu_button<'a>(label: &str) -> button::Button<'a, Message, iced::Theme, iced::Renderer> {
+fn submenu_button(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
     base_button(
         row![
             text(label)
                 .width(Length::Fill)
                 .vertical_alignment(alignment::Vertical::Center),
-            text(Bootstrap::CaretRightFill)
-                .font(BOOTSTRAP_FONT)
-                .width(Length::Shrink)
-                .vertical_alignment(alignment::Vertical::Center),
+            text(iced_aw::bootstrap::icon_to_string(
+                Bootstrap::CaretRightFill
+            ))
+            .font(BOOTSTRAP_FONT)
+            .width(Length::Shrink)
+            .vertical_alignment(alignment::Vertical::Center),
         ]
         .align_items(iced::Alignment::Center),
         Message::Debug(label.into()),

@@ -8,7 +8,7 @@ cfg_if! {
         pub mod bootstrap;
         pub mod nerd;
 
-        pub use bootstrap::Bootstrap;
+        pub use bootstrap::{Bootstrap};
         pub use nerd::Nerd;
         /// The default icon font bytes for loading the font into iced.
         pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
@@ -22,7 +22,7 @@ cfg_if! {
     } else {
         #[path = "icons/required.rs"]
         pub mod bootstrap;
-        pub use bootstrap::Bootstrap;
+        pub use bootstrap::{Bootstrap};
         // pub use required::{Bootstrap, icon_to_char, icon_to_string};
         /// The default icon font bytes for loading the font into iced.
         pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");

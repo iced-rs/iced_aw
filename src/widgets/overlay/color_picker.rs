@@ -1303,7 +1303,7 @@ fn hsv_color<Message, Theme>(
                     Point::new(saturation, 0.0),
                     Point::new(saturation, frame.height()),
                 ),
-                stroke.clone(),
+                stroke,
             );
 
             frame.stroke(
