@@ -607,6 +607,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "context_menu"
+version = "0.1.0"
+dependencies = [
+ "iced",
+ "iced_aw",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

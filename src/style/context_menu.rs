@@ -1,20 +1,19 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use std::rc::Rc;
-
+use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
+/// The style of a [`ContextMenu`](crate::widgets::ContextMenu).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
+pub struct Style {
     /// The background of the [`ContextMenu`](crate::widgets::ContextMenu).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,
 }
 
-impl Default for Appearance {
+impl Default for Style {
     fn default() -> Self {
         Self {
             background: Background::Color([0.87, 0.87, 0.87, 0.30].into()),
@@ -22,42 +21,39 @@ impl Default for Appearance {
     }
 }
 
-/// The appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
-pub trait StyleSheet {
+/// The Catalog of a [`ContextMenu`](crate::widgets::ContextMenu).
+pub trait Catalog {
     ///Style for the trait to use.
-    type Style: Default + Clone;
-    /// The normal appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
-    fn active(&self, style: &Self::Style) -> Appearance;
+    type Class<'a>;
+
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
+
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-/// The default appearance of a [`ContextMenu`](crate::widgets::ContextMenu).
-#[derive(Clone, Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub enum ContextMenuStyle {
-    #[default]
-    Default,
-    Custom(Rc<dyn StyleSheet<Style = Theme>>),
-}
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
-impl ContextMenuStyle {
-    /// Creates a custom [`ContextMenuStyle`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Rc::new(style_sheet))
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = ContextMenuStyle;
+/// The primary theme of a [`ContextMenu`](crate::widgets::ContextMenu).
+#[must_use]
+pub fn primary(theme: &Theme, _status: Status) -> Style {
+    let palette = theme.extended_palette();
 
-    fn active(&self, _style: &Self::Style) -> Appearance {
-        let palette = self.extended_palette();
-
-        Appearance {
-            background: Color {
-                a: 0f32,
-                ..palette.background.base.color
-            }
-            .into(),
-        }
+    Style {
+        background: Background::Color(Color {
+            a: 0f32,
+            ..palette.background.base.color
+        }),
     }
 }

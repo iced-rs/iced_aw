@@ -138,9 +138,7 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "context_menu")]
-    pub use {
-        crate::style::ContextMenuStyle, crate::widgets::context_menu, context_menu::ContextMenu,
-    };
+    pub use {crate::widgets::context_menu, context_menu::ContextMenu};
 
     #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
