@@ -43,7 +43,10 @@
     clippy::missing_const_for_fn,
     clippy::too_many_lines,
     clippy::cast_precision_loss,
-    clippy::missing_docs_in_private_items
+    clippy::missing_docs_in_private_items,
+    clippy::unit_arg,
+    clippy::trivially_copy_pass_by_ref,
+    clippy::let_unit_value
 )]
 
 pub mod widgets;

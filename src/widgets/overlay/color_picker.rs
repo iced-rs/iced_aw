@@ -142,9 +142,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
@@ -258,9 +255,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
         let mut color_changed = false;
@@ -424,15 +418,7 @@ where
     }
 
     /// The even handling for the keyboard input.
-    fn on_event_keyboard(
-        &mut self,
-        event: &Event,
-        _layout: Layout<'_>,
-        _cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
-    ) -> event::Status {
+    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -610,10 +596,10 @@ where
             .bounds();
 
         // ----------- Block 1 ----------------------
-        let block1_node = block1_layout(self, renderer, block1_bounds, self.position);
+        let block1_node = block1_layout(self, renderer, block1_bounds);
 
         // ----------- Block 2 ----------------------
-        let block2_node = block2_layout(self, renderer, block2_bounds, self.position);
+        let block2_node = block2_layout(self, renderer, block2_bounds);
 
         let (width, height) = if bounds.width > bounds.height {
             (
@@ -643,9 +629,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured
-            == self.on_event_keyboard(&event, layout, cursor, shell, renderer, clipboard)
-        {
+        if event::Status::Captured == self.on_event_keyboard(&event) {
             self.state.sat_value_canvas_cache.clear();
             self.state.hue_canvas_cache.clear();
             return event::Status::Captured;
@@ -659,8 +643,7 @@ where
         let block1_layout = children
             .next()
             .expect("widgets: Layout should have a 1. block layout");
-        let hsv_color_status =
-            self.on_event_hsv_color(&event, block1_layout, cursor, shell, renderer, clipboard);
+        let hsv_color_status = self.on_event_hsv_color(&event, block1_layout, cursor);
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -673,14 +656,7 @@ where
         let rgba_color_layout = block2_children
             .next()
             .expect("widgets: Layout should have a RGBA color layout");
-        let rgba_color_status = self.on_event_rgba_color(
-            &event,
-            rgba_color_layout,
-            cursor,
-            shell,
-            renderer,
-            clipboard,
-        );
+        let rgba_color_status = self.on_event_rgba_color(&event, rgba_color_layout, cursor);
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
@@ -923,7 +899,6 @@ fn block1_layout<'a, Message, Theme>(
     color_picker: &mut ColorPickerOverlay<'_, '_, Message, Theme>,
     renderer: &Renderer,
     bounds: Rectangle,
-    _position: Point,
 ) -> Node
 where
     Message: 'static + Clone,
@@ -958,7 +933,6 @@ fn block2_layout<'a, Message, Theme>(
     color_picker: &mut ColorPickerOverlay<'_, '_, Message, Theme>,
     renderer: &Renderer,
     bounds: Rectangle,
-    _position: Point,
 ) -> Node
 where
     Message: 'static + Clone,

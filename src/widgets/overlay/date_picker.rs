@@ -146,9 +146,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -237,9 +234,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -296,15 +290,7 @@ where
     }
 
     /// The event handling for the keyboard input.
-    fn on_event_keyboard(
-        &mut self,
-        event: &Event,
-        _layout: Layout<'_>,
-        _cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
-    ) -> event::Status {
+    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -562,9 +548,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured
-            == self.on_event_keyboard(&event, layout, cursor, shell, renderer, clipboard)
-        {
+        if event::Status::Captured == self.on_event_keyboard(&event) {
             return event::Status::Captured;
         }
 
@@ -579,14 +563,7 @@ where
         let month_year_layout = date_children
             .next()
             .expect("widgets: Layout should have a month/year layout");
-        let month_year_status = self.on_event_month_year(
-            &event,
-            month_year_layout,
-            cursor,
-            shell,
-            renderer,
-            clipboard,
-        );
+        let month_year_status = self.on_event_month_year(&event, month_year_layout, cursor);
 
         // ----------- Days ----------------------
         let days_layout = date_children
@@ -595,8 +572,7 @@ where
             .children()
             .next()
             .expect("widgets: Layout should have a days table layout");
-        let days_status =
-            self.on_event_days(&event, days_layout, cursor, shell, renderer, clipboard);
+        let days_status = self.on_event_days(&event, days_layout, cursor);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children

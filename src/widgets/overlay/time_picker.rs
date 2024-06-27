@@ -148,9 +148,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         if cursor.is_over(layout.bounds()) {
             self.state.clock_cache_needs_clearance = true;
@@ -321,9 +318,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut digital_clock_children = layout.children();
 
@@ -451,15 +445,7 @@ where
     }
 
     /// The event handling for the keyboard input.
-    fn on_event_keyboard(
-        &mut self,
-        event: &Event,
-        _layout: Layout<'_>,
-        _cursor: Cursor,
-        _shell: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
-    ) -> event::Status {
+    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -629,9 +615,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured
-            == self.on_event_keyboard(&event, layout, cursor, shell, renderer, clipboard)
-        {
+        if event::Status::Captured == self.on_event_keyboard(&event) {
             return event::Status::Captured;
         }
 
@@ -641,8 +625,7 @@ where
         let clock_layout = children
             .next()
             .expect("widgets: Layout should have a clock canvas layout");
-        let clock_status =
-            self.on_event_clock(&event, clock_layout, cursor, shell, renderer, clipboard);
+        let clock_status = self.on_event_clock(&event, clock_layout, cursor);
 
         // ----------- Digital clock ------------------
         let digital_clock_layout = children
@@ -651,14 +634,8 @@ where
             .children()
             .next()
             .expect("widgets: Layout should have a digital clock layout");
-        let digital_clock_status = self.on_event_digital_clock(
-            &event,
-            digital_clock_layout,
-            cursor,
-            shell,
-            renderer,
-            clipboard,
-        );
+        let digital_clock_status =
+            self.on_event_digital_clock(&event, digital_clock_layout, cursor);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
