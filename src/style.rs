@@ -32,8 +32,6 @@ pub mod selection_list;
 
 #[cfg(feature = "menu")]
 pub mod menu_bar;
-#[cfg(feature = "menu")]
-pub use menu_bar::MenuBarStyle;
 
 #[cfg(feature = "context_menu")]
 pub mod context_menu;

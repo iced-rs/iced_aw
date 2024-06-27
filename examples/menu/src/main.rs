@@ -5,8 +5,8 @@ use iced::widget::{
 use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Border, Color, Element, Length, Size};
 
-use iced_aw::menu::{self, Item, Menu, StyleSheet};
-use iced_aw::style::MenuBarStyle;
+use iced_aw::menu::{self, Item, Menu};
+use iced_aw::style::{menu_bar::primary, Status};
 use iced_aw::{menu_bar, menu_items};
 use iced_aw::{quad, widgets::InnerBounds};
 use iced_aw::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
@@ -416,12 +416,12 @@ impl App {
             })
         )
         .draw_path(menu::DrawPath::Backdrop)
-        .style(|theme:&iced::Theme| menu::Appearance{
+        .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
                 radius: [6.0; 4].into(),
                 ..Default::default()
             },
-            ..theme.appearance(&MenuBarStyle::Default)
+            ..primary(theme, status)
         });
 
         let r = row![
