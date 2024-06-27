@@ -9,10 +9,7 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    style::{
-        date_picker::{Appearance, StyleSheet},
-        style_state::StyleState,
-    },
+    style::{date_picker::Style, style_state::StyleState, Status},
 };
 
 use chrono::{Datelike, Local, NaiveDate};
@@ -29,7 +26,7 @@ use iced::{
     keyboard,
     mouse::{self, Cursor},
     touch,
-    widget::{button, container, text, Button, Column, Container, Row, Text},
+    widget::{text, Button, Column, Container, Row, Text},
     Alignment,
     Border,
     Color,
@@ -55,12 +52,13 @@ const DAY_CELL_PADDING: f32 = 7.0;
 /// The spacing between the buttons.
 const BUTTON_SPACING: f32 = 5.0;
 
-/// The overlay of the [`DatePicker`](crate::native::DatePicker).
+/// The overlay of the [`DatePicker`](crate::widgets::DatePicker).
 #[allow(missing_debug_implementations)]
-pub struct DatePickerOverlay<'a, Message, Theme>
+pub struct DatePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
+    'b: 'a,
 {
     /// The state of the [`DatePickerOverlay`].
     state: &'a mut State,
@@ -73,17 +71,22 @@ where
     /// The position of the [`DatePickerOverlay`].
     position: Point,
     /// The style of the [`DatePickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: &'a <Theme as crate::style::date_picker::Catalog>::Class<'b>,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
     /// The font size of text and icons in the [`DatePickerOverlay`]
     font_size: Pixels,
 }
 
-impl<'a, Message, Theme> DatePickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> DatePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
+    'b: 'a,
 {
     /// Creates a new [`DatePickerOverlay`] on the given position.
     pub fn new(
@@ -91,7 +94,7 @@ where
         on_cancel: Message,
         on_submit: &'a dyn Fn(Date) -> Message,
         position: Point,
-        style: <Theme as StyleSheet>::Style,
+        class: &'a <Theme as crate::style::date_picker::Catalog>::Class<'b>,
         tree: &'a mut Tree,
         //button_style: impl Clone +  Into<<Renderer as button::Renderer>::Style>, // clone not satisfied
         font_size: Pixels,
@@ -120,7 +123,7 @@ where
             .on_press(on_cancel), // Sending a fake message
             on_submit,
             position,
-            style,
+            class,
             tree,
             font_size,
         }
@@ -143,9 +146,6 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
 
@@ -154,20 +154,20 @@ where
         // ----------- Month ----------------------
         let month_layout = children
             .next()
-            .expect("Native: Layout should have a month layout");
+            .expect("widgets: Layout should have a month layout");
         let mut month_children = month_layout.children();
 
         let left_bounds = month_children
             .next()
-            .expect("Native: Layout should have a left month arrow layout")
+            .expect("widgets: Layout should have a left month arrow layout")
             .bounds();
         let _center_bounds = month_children
             .next()
-            .expect("Native: Layout should have a center month layout")
+            .expect("widgets: Layout should have a center month layout")
             .bounds();
         let right_bounds = month_children
             .next()
-            .expect("Native: Layout should have a right month arrow layout")
+            .expect("widgets: Layout should have a right month arrow layout")
             .bounds();
 
         match event {
@@ -191,20 +191,20 @@ where
         // ----------- Year -----------------------
         let year_layout = children
             .next()
-            .expect("Native: Layout should have a year layout");
+            .expect("widgets: Layout should have a year layout");
         let mut year_children = year_layout.children();
 
         let left_bounds = year_children
             .next()
-            .expect("Native: Layout should have a left year arrow layout")
+            .expect("widgets: Layout should have a left year arrow layout")
             .bounds();
         let _center_bounds = year_children
             .next()
-            .expect("Native: Layout should have a center year layout")
+            .expect("widgets: Layout should have a center year layout")
             .bounds();
         let right_bounds = year_children
             .next()
-            .expect("Native: Layout should have a right year arrow layout")
+            .expect("widgets: Layout should have a right year arrow layout")
             .bounds();
 
         match event {
@@ -234,15 +234,12 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
     ) -> event::Status {
         let mut children = layout.children();
 
         let _day_labels_layout = children
             .next()
-            .expect("Native: Layout should have a day label layout");
+            .expect("widgets: Layout should have a day label layout");
 
         let mut status = event::Status::Ignored;
 
@@ -293,15 +290,7 @@ where
     }
 
     /// The event handling for the keyboard input.
-    fn on_event_keyboard(
-        &mut self,
-        event: &Event,
-        _layout: Layout<'_>,
-        _cursor: Cursor,
-        _messages: &mut Shell<Message>,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
-    ) -> event::Status {
+    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -374,10 +363,16 @@ where
     }
 }
 
-impl<'a, Message, Theme> Overlay<Message, Theme, Renderer> for DatePickerOverlay<'a, Message, Theme>
+impl<'a, 'b, Message, Theme> Overlay<Message, Theme, Renderer>
+    for DatePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
+    'b: 'a,
 {
     #[allow(clippy::too_many_lines)]
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
@@ -484,7 +479,7 @@ where
         ))
         .width(Length::Shrink)
         .height(Length::Shrink)
-        .center_y();
+        .center_y(Length::Shrink);
 
         let col = Column::<Message, Theme, Renderer>::new()
             .spacing(SPACING)
@@ -553,9 +548,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured
-            == self.on_event_keyboard(&event, layout, cursor, shell, renderer, clipboard)
-        {
+        if event::Status::Captured == self.on_event_keyboard(&event) {
             return event::Status::Captured;
         }
 
@@ -563,36 +556,28 @@ where
 
         let mut date_children = children
             .next()
-            .expect("Native: Layout should have date children")
+            .expect("widgets: Layout should have date children")
             .children();
 
         // ----------- Year/Month----------------------
         let month_year_layout = date_children
             .next()
-            .expect("Native: Layout should have a month/year layout");
-        let month_year_status = self.on_event_month_year(
-            &event,
-            month_year_layout,
-            cursor,
-            shell,
-            renderer,
-            clipboard,
-        );
+            .expect("widgets: Layout should have a month/year layout");
+        let month_year_status = self.on_event_month_year(&event, month_year_layout, cursor);
 
         // ----------- Days ----------------------
         let days_layout = date_children
             .next()
-            .expect("Native: Layout should have a days table parent")
+            .expect("widgets: Layout should have a days table parent")
             .children()
             .next()
-            .expect("Native: Layout should have a days table layout");
-        let days_status =
-            self.on_event_days(&event, days_layout, cursor, shell, renderer, clipboard);
+            .expect("widgets: Layout should have a days table layout");
+        let days_status = self.on_event_days(&event, days_layout, cursor);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
             .next()
-            .expect("Native: Layout should have a cancel button layout for a DatePicker");
+            .expect("widgets: Layout should have a cancel button layout for a DatePicker");
 
         let cancel_status = self.cancel_button.on_event(
             &mut self.tree.children[0],
@@ -607,7 +592,7 @@ where
 
         let submit_button_layout = children
             .next()
-            .expect("Native: Layout should have a submit button layout for a DatePicker");
+            .expect("widgets: Layout should have a submit button layout for a DatePicker");
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
@@ -759,14 +744,23 @@ where
             .expect("Graphics: Layout should have a date layout")
             .children();
 
-        let mut style_sheet: HashMap<StyleState, Appearance> = HashMap::new();
-        let _ = style_sheet.insert(StyleState::Active, StyleSheet::active(theme, &self.style));
+        let mut style_sheet: HashMap<StyleState, Style> = HashMap::new();
+        let _ = style_sheet.insert(
+            StyleState::Active,
+            crate::style::date_picker::Catalog::style(theme, self.class, Status::Active),
+        );
         let _ = style_sheet.insert(
             StyleState::Selected,
-            StyleSheet::selected(theme, &self.style),
+            crate::style::date_picker::Catalog::style(theme, self.class, Status::Selected),
         );
-        let _ = style_sheet.insert(StyleState::Hovered, StyleSheet::hovered(theme, &self.style));
-        let _ = style_sheet.insert(StyleState::Focused, StyleSheet::focused(theme, &self.style));
+        let _ = style_sheet.insert(
+            StyleState::Hovered,
+            crate::style::date_picker::Catalog::style(theme, self.class, Status::Hovered),
+        );
+        let _ = style_sheet.insert(
+            StyleState::Focused,
+            crate::style::date_picker::Catalog::style(theme, self.class, Status::Focused),
+        );
 
         let mut style_state = StyleState::Active;
         if self.state.focus == Focus::Overlay {
@@ -932,7 +926,7 @@ impl Default for State {
 pub struct DatePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
 {
     /// The cancel button of the [`DatePickerOverlay`].
     cancel_button: Element<'a, Message, Theme, Renderer>,
@@ -943,7 +937,11 @@ where
 impl<'a, Message, Theme> Default for DatePickerOverlayButtons<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + text::StyleSheet + container::StyleSheet,
+    Theme: 'a
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
 {
     fn default() -> Self {
         Self {
@@ -970,7 +968,9 @@ impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
     for DatePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet + container::StyleSheet,
+    Theme: crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::container::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![
@@ -1009,7 +1009,10 @@ impl<'a, Message, Theme> From<DatePickerOverlayButtons<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + container::StyleSheet,
+    Theme: 'a
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::container::Catalog,
 {
     fn from(overlay: DatePickerOverlayButtons<'a, Message, Theme>) -> Self {
         Self::new(overlay)
@@ -1083,7 +1086,7 @@ fn month_year(
     date: &str,
     cursor: Point,
     //style: &Style,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
     focus: Focus,
     font_size: Pixels,
 ) {
@@ -1153,7 +1156,7 @@ fn month_year(
         // Left caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: &icon_to_string(Bootstrap::CaretLeftFill),
+                content: icon_to_string(Bootstrap::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
                 size: Pixels(font_size.0 + if left_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
@@ -1173,7 +1176,7 @@ fn month_year(
         // Text
         renderer.fill_text(
             iced::advanced::Text {
-                content: text,
+                content: text.to_owned(),
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: font_size,
                 font: renderer.default_font(),
@@ -1193,7 +1196,7 @@ fn month_year(
         // Right caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: &icon_to_string(Bootstrap::CaretRightFill),
+                content: icon_to_string(Bootstrap::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
                 size: Pixels(font_size.0 + if right_arrow_hovered { 1.0 } else { 0.0 }),
                 font: BOOTSTRAP_FONT,
@@ -1227,7 +1230,7 @@ fn days(
     date: chrono::NaiveDate,
     cursor: Point,
     //style: &Style,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
     focus: Focus,
     font_size: Pixels,
 ) {
@@ -1253,7 +1256,7 @@ fn days(
 fn day_labels(
     renderer: &mut Renderer,
     layout: Layout<'_>,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
     _focus: Focus,
     font_size: Pixels,
 ) {
@@ -1262,7 +1265,7 @@ fn day_labels(
 
         renderer.fill_text(
             iced::advanced::Text {
-                content: &crate::core::date::WEEKDAY_LABELS[i],
+                content: crate::core::date::WEEKDAY_LABELS[i].clone(),
                 bounds: Size::new(bounds.width, bounds.height),
                 size: font_size,
                 font: renderer.default_font(),
@@ -1287,7 +1290,7 @@ fn day_table(
     children: &mut dyn Iterator<Item = Layout<'_>>,
     date: chrono::NaiveDate,
     cursor: Point,
-    style: &HashMap<StyleState, Appearance>,
+    style: &HashMap<StyleState, Style>,
     focus: Focus,
     font_size: Pixels,
 ) {
@@ -1354,7 +1357,7 @@ fn day_table(
 
             renderer.fill_text(
                 iced::advanced::Text {
-                    content: &format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
+                    content: format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                     bounds: Size::new(bounds.width, bounds.height),
                     size: font_size,
                     font: renderer.default_font(),

@@ -1,124 +1,60 @@
-//! Displays a [`Card`](crate::native::Card).
+//! Displays a [`Card`](crate::widgets::Card).
 //!
 //! *This API requires the following crate features to be activated: card*
 
-use super::colors;
+use super::{colors, Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`Card`](crate::native::card::Card).
+/// The appearance of a [`Card`](crate::widgets::card::Card).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
-    /// The background of the [`Card`](crate::native::card::Card).
+pub struct Style {
+    /// The background of the [`Card`](crate::widgets::card::Card).
     pub background: Background,
 
-    /// The border radius of the [`Card`](crate::native::card::Card).
+    /// The border radius of the [`Card`](crate::widgets::card::Card).
     pub border_radius: f32,
 
-    /// The border width of the [`Card`](crate::native::card::Card).
+    /// The border width of the [`Card`](crate::widgets::card::Card).
     pub border_width: f32,
 
-    /// The border color of the [`Card`](crate::native::card::Card).
+    /// The border color of the [`Card`](crate::widgets::card::Card).
     pub border_color: Color,
 
-    /// The background of the head of the [`Card`](crate::native::card::Card).
+    /// The background of the head of the [`Card`](crate::widgets::card::Card).
     pub head_background: Background,
 
-    /// The text color of the head of the [`Card`](crate::native::card::Card).
+    /// The text color of the head of the [`Card`](crate::widgets::card::Card).
     pub head_text_color: Color,
 
-    /// The background of the body of the [`Card`](crate::native::card::Card).
+    /// The background of the body of the [`Card`](crate::widgets::card::Card).
     pub body_background: Background,
 
-    /// The text color of the body of the [`Card`](crate::native::card::Card).
+    /// The text color of the body of the [`Card`](crate::widgets::card::Card).
     pub body_text_color: Color,
 
-    /// The background of the foot of the [`Card`](crate::native::card::Card).
+    /// The background of the foot of the [`Card`](crate::widgets::card::Card).
     pub foot_background: Background,
 
-    /// The text color of the foot of the [`Card`](crate::native::card::Card).
+    /// The text color of the foot of the [`Card`](crate::widgets::card::Card).
     pub foot_text_color: Color,
 
-    /// The color of the close icon of the [`Card`](crate::native::card::Card).
+    /// The color of the close icon of the [`Card`](crate::widgets::card::Card).
     pub close_color: Color,
 }
 
-/// The appearance of a [`Card`](crate::native::card::Card).
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub trait StyleSheet {
-    type Style: Default;
-    /// The normal appearance of a [`Card`](crate::native::card::Card).
-    fn active(&self, style: &Self::Style) -> Appearance;
+/// The appearance of a [`Card`](crate::widgets::card::Card).
+pub trait Catalog {
+    ///Style for the trait to use.
+    type Class<'a>;
+
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
+
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-#[derive(Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``Card`` Styles
-pub enum CardStyles {
-    Primary,
-    Secondary,
-    Success,
-    Danger,
-    Warning,
-    Info,
-    Light,
-    Dark,
-    White,
-    #[default]
-    Default,
-    Custom(Box<dyn StyleSheet<Style = Theme>>),
-}
-
-impl CardStyles {
-    /// Creates a custom [`BadgeStyles`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Box::new(style_sheet))
-    }
-}
-
-impl StyleSheet for Theme {
-    type Style = CardStyles;
-
-    fn active(&self, style: &Self::Style) -> Appearance {
-        let palette = self.extended_palette();
-        let foreground = self.palette();
-
-        let backing_with_text = |color: Color, text_color: Color| Appearance {
-            border_color: color,
-            head_background: color.into(),
-            head_text_color: text_color,
-            close_color: text_color,
-            background: palette.background.base.color.into(),
-            body_text_color: foreground.text,
-            foot_text_color: foreground.text,
-            ..Appearance::default()
-        };
-
-        let backing_only = |color: Color| Appearance {
-            border_color: color,
-            head_background: color.into(),
-            background: palette.background.base.color.into(),
-            body_text_color: foreground.text,
-            foot_text_color: foreground.text,
-            ..Appearance::default()
-        };
-
-        match style {
-            CardStyles::Primary => backing_with_text(colors::PRIMARY, colors::WHITE),
-            CardStyles::Secondary => backing_with_text(colors::SECONDARY, colors::WHITE),
-            CardStyles::Success => backing_with_text(colors::SUCCESS, colors::WHITE),
-            CardStyles::Danger => backing_with_text(colors::DANGER, colors::WHITE),
-            CardStyles::Warning => backing_only(colors::WARNING),
-            CardStyles::Info => backing_only(colors::INFO),
-            CardStyles::Light => backing_only(colors::LIGHT),
-            CardStyles::Dark => backing_with_text(colors::DARK, colors::WHITE),
-            CardStyles::White => backing_only(colors::WHITE),
-            CardStyles::Default => backing_only([0.87, 0.87, 0.87].into()),
-            CardStyles::Custom(custom) => custom.active(self),
-        }
-    }
-}
-
-impl Default for Appearance {
+impl Default for Style {
     fn default() -> Self {
         Self {
             background: Color::WHITE.into(),
@@ -133,5 +69,101 @@ impl Default for Appearance {
             foot_text_color: Color::BLACK,
             close_color: Color::BLACK,
         }
+    }
+}
+
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
+
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
+    }
+}
+
+/// The primary theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn primary(theme: &Theme, _status: Status) -> Style {
+    backing_with_text(theme, colors::PRIMARY, colors::WHITE)
+}
+
+/// The secondary theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn secondary(theme: &Theme, _status: Status) -> Style {
+    backing_with_text(theme, colors::SECONDARY, colors::WHITE)
+}
+
+/// The success theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn success(theme: &Theme, _status: Status) -> Style {
+    backing_with_text(theme, colors::SUCCESS, colors::WHITE)
+}
+
+/// The danger theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn danger(theme: &Theme, _status: Status) -> Style {
+    backing_with_text(theme, colors::DANGER, colors::WHITE)
+}
+
+/// The warning theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn warning(theme: &Theme, _status: Status) -> Style {
+    backing_only(theme, colors::WARNING)
+}
+
+/// The info theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn info(theme: &Theme, _status: Status) -> Style {
+    backing_only(theme, colors::INFO)
+}
+
+/// The light theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn light(theme: &Theme, _status: Status) -> Style {
+    backing_only(theme, colors::LIGHT)
+}
+
+/// The dark theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn dark(theme: &Theme, _status: Status) -> Style {
+    backing_with_text(theme, colors::DARK, colors::WHITE)
+}
+
+/// The white theme of a [`Card`](crate::widgets::card::Card).
+#[must_use]
+pub fn white(theme: &Theme, _status: Status) -> Style {
+    backing_only(theme, colors::WHITE)
+}
+
+fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
+    let palette = theme.extended_palette();
+    let foreground = theme.palette();
+
+    Style {
+        border_color: color,
+        head_background: color.into(),
+        head_text_color: text_color,
+        close_color: text_color,
+        background: palette.background.base.color.into(),
+        body_text_color: foreground.text,
+        foot_text_color: foreground.text,
+        ..Style::default()
+    }
+}
+
+fn backing_only(theme: &Theme, color: Color) -> Style {
+    let palette = theme.extended_palette();
+    let foreground = theme.palette();
+
+    Style {
+        border_color: color,
+        head_background: color.into(),
+        background: palette.background.base.color.into(),
+        body_text_color: foreground.text,
+        foot_text_color: foreground.text,
+        ..Style::default()
     }
 }

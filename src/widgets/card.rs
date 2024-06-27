@@ -19,7 +19,10 @@ use iced::{
     Shadow, Size, Vector,
 };
 
-pub use crate::style::card::{Appearance, StyleSheet};
+pub use crate::style::{
+    card::{Catalog, Style},
+    status::{Status, StyleFn},
+};
 
 /// The default padding of a [`Card`].
 const DEFAULT_PADDING: f32 = 10.0;
@@ -48,7 +51,7 @@ const DEFAULT_PADDING: f32 = 10.0;
 pub struct Card<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// The width of the [`Card`].
     width: Length,
@@ -75,13 +78,13 @@ where
     /// The optional foot [`Element`] of the [`Card`].
     foot: Option<Element<'a, Message, Theme, Renderer>>,
     /// The style of the [`Card`].
-    style: <Theme as StyleSheet>::Style,
+    class: Theme::Class<'a>,
 }
 
 impl<'a, Message, Theme, Renderer> Card<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// Creates a new [`Card`] containing the given head and body.
     ///
@@ -106,7 +109,7 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
-            style: <Theme as StyleSheet>::Style::default(),
+            class: Theme::default(),
         }
     }
 
@@ -193,8 +196,18 @@ where
 
     /// Sets the style of the [`Card`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        Theme::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+        self
+    }
+
+    /// Sets the class of the input of the [`Card`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
+        self.class = class.into();
         self
     }
 
@@ -211,7 +224,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         self.foot.as_ref().map_or_else(
@@ -305,14 +318,14 @@ where
 
         let head_layout = children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let mut head_children = head_layout.children();
         let head_status = self.head.as_widget_mut().on_event(
             &mut state.children[0],
             event.clone(),
             head_children
                 .next()
-                .expect("Native: Layout should have a head content layout"),
+                .expect("widgets: Layout should have a head content layout"),
             cursor,
             renderer,
             clipboard,
@@ -345,14 +358,14 @@ where
 
         let body_layout = children
             .next()
-            .expect("Native: Layout should have a body layout");
+            .expect("widgets: Layout should have a body layout");
         let mut body_children = body_layout.children();
         let body_status = self.body.as_widget_mut().on_event(
             &mut state.children[1],
             event.clone(),
             body_children
                 .next()
-                .expect("Native: Layout should have a body content layout"),
+                .expect("widgets: Layout should have a body content layout"),
             cursor,
             renderer,
             clipboard,
@@ -362,7 +375,7 @@ where
 
         let foot_layout = children
             .next()
-            .expect("Native: Layout should have a foot layout");
+            .expect("widgets: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
             foot.as_widget_mut().on_event(
@@ -370,7 +383,7 @@ where
                 event,
                 foot_children
                     .next()
-                    .expect("Native: Layout should have a foot content layout"),
+                    .expect("widgets: Layout should have a foot content layout"),
                 cursor,
                 renderer,
                 clipboard,
@@ -397,12 +410,12 @@ where
 
         let head_layout = children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let mut head_children = head_layout.children();
 
         let head = head_children
             .next()
-            .expect("Native: Layout should have a head layout");
+            .expect("widgets: Layout should have a head layout");
         let close_layout = head_children.next();
 
         let is_mouse_over_close = close_layout.map_or(false, |layout| {
@@ -418,12 +431,12 @@ where
 
         let body_layout = children
             .next()
-            .expect("Native: Layout should have a body layout");
+            .expect("widgets: Layout should have a body layout");
         let mut body_children = body_layout.children();
 
         let foot_layout = children
             .next()
-            .expect("Native: Layout should have a foot layout");
+            .expect("widgets: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
 
         mouse_interaction
@@ -439,7 +452,7 @@ where
                     &state.children[1],
                     body_children
                         .next()
-                        .expect("Native: Layout should have a body content layout"),
+                        .expect("widgets: Layout should have a body content layout"),
                     cursor,
                     viewport,
                     renderer,
@@ -453,7 +466,7 @@ where
                             &state.children[2],
                             foot_children
                                 .next()
-                                .expect("Native: Layout should have a foot content layout"),
+                                .expect("widgets: Layout should have a foot content layout"),
                             cursor,
                             viewport,
                             renderer,
@@ -467,7 +480,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation<()>,
     ) {
         let mut children = layout.children();
         let head_layout = children.next().expect("Missing Head Layout");
@@ -500,7 +513,7 @@ where
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
-        let style_sheet = theme.active(&self.style);
+        let style_sheet = theme.style(&self.class, Status::Active);
 
         if bounds.intersects(viewport) {
             // Background
@@ -545,7 +558,7 @@ where
             cursor,
             viewport,
             theme,
-            &self.style,
+            &style_sheet,
             self.close_size,
         );
 
@@ -561,7 +574,7 @@ where
             cursor,
             viewport,
             theme,
-            &self.style,
+            &style_sheet,
         );
 
         // ----------- Foot ----------------------
@@ -576,7 +589,7 @@ where
             cursor,
             viewport,
             theme,
-            &self.style,
+            &style_sheet,
         );
     }
 
@@ -748,16 +761,15 @@ fn draw_head<Message, Theme, Renderer>(
     cursor: Cursor,
     viewport: &Rectangle,
     theme: &Theme,
-    style: &<Theme as StyleSheet>::Style,
+    style: &Style,
     close_size: Option<f32>,
 ) where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     let mut head_children = layout.children();
-    let style_sheet = theme.active(style);
     let bounds = layout.bounds();
-    let border_radius = style_sheet.border_radius;
+    let border_radius = style.border_radius;
 
     // Head background
     if bounds.intersects(viewport) {
@@ -771,7 +783,7 @@ fn draw_head<Message, Theme, Renderer>(
                 },
                 shadow: Shadow::default(),
             },
-            style_sheet.head_background,
+            style.head_background,
         );
     }
 
@@ -793,7 +805,7 @@ fn draw_head<Message, Theme, Renderer>(
                 },
                 shadow: Shadow::default(),
             },
-            style_sheet.head_background,
+            style.head_background,
         );
     }
 
@@ -802,7 +814,7 @@ fn draw_head<Message, Theme, Renderer>(
         renderer,
         theme,
         &renderer::Style {
-            text_color: style_sheet.head_text_color,
+            text_color: style.head_text_color,
         },
         head_children
             .next()
@@ -817,7 +829,7 @@ fn draw_head<Message, Theme, Renderer>(
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(Bootstrap::X),
+                content: icon_to_string(Bootstrap::X),
                 bounds: Size::new(close_bounds.width, close_bounds.height),
                 size: Pixels(
                     close_size.unwrap_or_else(|| renderer.default_size().0)
@@ -830,7 +842,7 @@ fn draw_head<Message, Theme, Renderer>(
                 shaping: iced::advanced::text::Shaping::Advanced,
             },
             Point::new(close_bounds.center_x(), close_bounds.center_y()),
-            style_sheet.close_color,
+            style.close_color,
             close_bounds,
         );
     }
@@ -846,13 +858,12 @@ fn draw_body<Message, Theme, Renderer>(
     cursor: Cursor,
     viewport: &Rectangle,
     theme: &Theme,
-    style: &<Theme as StyleSheet>::Style,
+    style: &Style,
 ) where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     let mut body_children = layout.children();
-    let style_sheet = theme.active(style);
     let bounds = layout.bounds();
 
     // Body background
@@ -867,7 +878,7 @@ fn draw_body<Message, Theme, Renderer>(
                 },
                 shadow: Shadow::default(),
             },
-            style_sheet.body_background,
+            style.body_background,
         );
     }
 
@@ -876,7 +887,7 @@ fn draw_body<Message, Theme, Renderer>(
         renderer,
         theme,
         &renderer::Style {
-            text_color: style_sheet.body_text_color,
+            text_color: style.body_text_color,
         },
         body_children
             .next()
@@ -896,13 +907,12 @@ fn draw_foot<Message, Theme, Renderer>(
     cursor: Cursor,
     viewport: &Rectangle,
     theme: &Theme,
-    style: &<Theme as StyleSheet>::Style,
+    style: &Style,
 ) where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     let mut foot_children = layout.children();
-    let style_sheet = theme.active(style);
     let bounds = layout.bounds();
 
     // Foot background
@@ -911,13 +921,13 @@ fn draw_foot<Message, Theme, Renderer>(
             renderer::Quad {
                 bounds,
                 border: Border {
-                    radius: style_sheet.border_radius.into(),
+                    radius: style.border_radius.into(),
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
                 shadow: Shadow::default(),
             },
-            style_sheet.foot_background,
+            style.foot_background,
         );
     }
 
@@ -927,7 +937,7 @@ fn draw_foot<Message, Theme, Renderer>(
             renderer,
             theme,
             &renderer::Style {
-                text_color: style_sheet.foot_text_color,
+                text_color: style.foot_text_color,
             },
             foot_children
                 .next()
@@ -942,7 +952,7 @@ impl<'a, Message, Theme, Renderer> From<Card<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a + StyleSheet,
+    Theme: 'a + Catalog,
     Message: Clone + 'a,
 {
     fn from(card: Card<'a, Message, Theme, Renderer>) -> Self {

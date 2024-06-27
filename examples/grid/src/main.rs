@@ -2,7 +2,7 @@ use iced::widget::{checkbox, container, pick_list, row, slider};
 use iced::Padding;
 use iced::{
     alignment::{Horizontal, Vertical},
-    Color, Element, Length, Sandbox, Settings,
+    Color, Element, Length,
 };
 use iced_aw::{grid, grid_row};
 
@@ -17,6 +17,21 @@ struct App {
     debug_layout: bool,
 }
 
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            horizontal_alignment: Horizontal::Left,
+            vertical_alignment: Vertical::Center,
+            column_spacing: 5.0,
+            row_spacing: 5.0,
+            fill_width: false,
+            fill_height: false,
+            padding: 0.0,
+            debug_layout: false,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Message {
     HorizontalAlignment(Horizontal),
@@ -29,27 +44,8 @@ enum Message {
     DebugToggled(bool),
 }
 
-impl Sandbox for App {
-    type Message = Message;
-
-    fn new() -> Self {
-        Self {
-            horizontal_alignment: Horizontal::Left,
-            vertical_alignment: Vertical::Center,
-            column_spacing: 5.0,
-            row_spacing: 5.0,
-            fill_width: false,
-            fill_height: false,
-            padding: 0.0,
-            debug_layout: false,
-        }
-    }
-
-    fn title(&self) -> String {
-        "Iced Grid widget example".into()
-    }
-
-    fn update(&mut self, message: Self::Message) {
+impl App {
+    fn update(&mut self, message: Message) {
         match message {
             Message::HorizontalAlignment(align) => self.horizontal_alignment = align,
             Message::VerticalAlignment(align) => self.vertical_alignment = align,
@@ -62,7 +58,7 @@ impl Sandbox for App {
         }
     }
 
-    fn view(&self) -> iced::Element<'_, Self::Message> {
+    fn view(&self) -> iced::Element<'_, Message> {
         let horizontal_align_pick = pick_list(
             HORIZONTAL_ALIGNMENTS
                 .iter()
@@ -126,8 +122,8 @@ impl Sandbox for App {
         container(contents)
             .width(Length::Fill)
             .height(Length::Fill)
-            .center_x()
-            .center_y()
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
             .into()
     }
 }
@@ -174,5 +170,7 @@ fn string_to_vertical_align(input: &str) -> Vertical {
 }
 
 fn main() -> iced::Result {
-    App::run(Settings::default())
+    iced::application("Grid example", App::update, App::view)
+        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+        .run()
 }

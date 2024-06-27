@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changes
+- Split removed in favor of Iced pane grid
+- Modal and Floating element removed in favor of Iced Stack.
+- Segmented Button Removed use iced button. 
+- cupertino Removed as we are not going to support these anymore.
+
 ## [0.9.3] - 2024-05-08
 
 ### Fixed

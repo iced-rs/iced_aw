@@ -2,119 +2,80 @@
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
 
-use std::rc::Rc;
-
+use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
+/// The appearance of a [`ColorPicker`](crate::widgets::ColorPicker).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
-    /// The background of the [`ColorPicker`](crate::native::ColorPicker).
+pub struct Style {
+    /// The background of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub background: Background,
 
-    /// The border radius of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border radius of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub border_radius: f32,
 
-    /// The border with of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border with of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub border_width: f32,
 
-    /// The border color of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border color of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub border_color: Color,
 
-    /// The border radius of the bars of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border radius of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub bar_border_radius: f32,
 
-    /// The border width of the bars of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border width of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub bar_border_width: f32,
 
-    /// The border color of the bars of the [`ColorPicker`](crate::native::ColorPicker).
+    /// The border color of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
     pub bar_border_color: Color,
 }
 
-/// The appearance of a [`ColorPicker`](crate::native::ColorPicker).
-pub trait StyleSheet {
-    /// The style type of this stylesheet
-    type Style: Default + Clone;
-    /// The normal appearance of a [`ColorPicker`](crate::native::ColorPicker).
-    fn active(&self, style: &Self::Style) -> Appearance;
+/// The Catalog of a [`ColorPicker`](crate::widgets::ColorPicker).
+pub trait Catalog {
+    ///Style for the trait to use.
+    type Class<'a>;
 
-    /// The appearance when something is selected of the
-    /// [`ColorPicker`](crate::native::ColorPicker).
-    fn selected(&self, style: &Self::Style) -> Appearance;
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
 
-    /// The appearance when something is hovered of the
-    /// [`ColorPicker`](crate::native::ColorPicker).
-    fn hovered(&self, style: &Self::Style) -> Appearance;
-
-    /// The appearance when something is focused of the
-    /// [`ColorPicker`](crate::native::ColorPicker).
-    fn focused(&self, style: &Self::Style) -> Appearance;
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-/// The default appearance of the [`ColorPicker`](crate::native::ColorPicker).
-#[derive(Clone, Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub enum ColorPickerStyles {
-    #[default]
-    Default,
-    Custom(Rc<dyn StyleSheet<Style = Theme>>),
-}
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
-impl ColorPickerStyles {
-    /// Creates a custom [`ColorPickerStyles`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Rc::new(style_sheet))
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = ColorPickerStyles;
+/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let foreground = theme.palette();
 
-    fn active(&self, style: &Self::Style) -> Appearance {
-        if let ColorPickerStyles::Custom(custom) = style {
-            return custom.active(self);
-        }
+    let base = Style {
+        background: palette.background.base.color.into(),
+        border_radius: 15.0,
+        border_width: 1.0,
+        border_color: foreground.text,
+        bar_border_radius: 5.0,
+        bar_border_width: 1.0,
+        bar_border_color: foreground.text,
+    };
 
-        let palette = self.extended_palette();
-        let foreground = self.palette();
-
-        Appearance {
-            background: palette.background.base.color.into(),
-            border_radius: 15.0,
-            border_width: 1.0,
-            border_color: foreground.text,
-            bar_border_radius: 5.0,
-            bar_border_width: 1.0,
-            bar_border_color: foreground.text,
-        }
-    }
-
-    fn selected(&self, style: &Self::Style) -> Appearance {
-        if let ColorPickerStyles::Custom(custom) = style {
-            return custom.selected(self);
-        }
-
-        self.active(style)
-    }
-
-    fn hovered(&self, style: &Self::Style) -> Appearance {
-        if let ColorPickerStyles::Custom(custom) = style {
-            return custom.hovered(self);
-        }
-
-        self.active(style)
-    }
-
-    fn focused(&self, style: &Self::Style) -> Appearance {
-        if let ColorPickerStyles::Custom(custom) = style {
-            return custom.focused(self);
-        }
-
-        let palette = self.extended_palette();
-        Appearance {
+    match status {
+        Status::Focused => Style {
             border_color: palette.background.strong.color,
             bar_border_color: palette.background.strong.color,
-            ..self.active(style)
-        }
+            ..base
+        },
+        _ => base,
     }
 }

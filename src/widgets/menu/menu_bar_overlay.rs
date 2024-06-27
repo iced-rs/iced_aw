@@ -17,11 +17,11 @@ use iced::{
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
-use crate::style::menu_bar::*;
+use crate::style::{menu_bar::*, Status};
 
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     /// Tree{ bar_state, [item_tree...] }
@@ -34,11 +34,11 @@ where
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: &'b DrawPath,
     pub(super) scroll_speed: ScrollSpeed,
-    pub(super) style: &'b Theme::Style,
+    pub(super) class: &'b Theme::Class<'a>,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     pub(super) fn overlay_element(self) -> overlay::Element<'b, Message, Theme, Renderer> {
@@ -48,7 +48,7 @@ where
 impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
     for MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
@@ -77,7 +77,7 @@ where
         let active_tree = &mut self.tree.children[active]; // item_tree: Tree{ stateless, [ widget_tree, menu_tree ] }
         let parent_bounds = self.init_root_bounds[active] + translation;
 
-        fn rec<Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+        fn rec<Message, Theme: Catalog, Renderer: renderer::Renderer>(
             renderer: &Renderer,
             item: &Item<'_, Message, Theme, Renderer>,
             tree: &mut Tree,
@@ -210,7 +210,7 @@ where
         let mut prev_bounds_list = vec![bar_bounds];
 
         #[rustfmt::skip]
-        fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             tree: &mut Tree,
             item: &mut Item<'a, Message, Theme, Renderer>,
             event: &Event,
@@ -360,7 +360,7 @@ where
         let active_root = &self.roots[active];
         let active_tree = &self.tree.children[active];
 
-        fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
@@ -429,7 +429,7 @@ where
         let active_root = &self.roots[active];
         let active_tree = &self.tree.children[active];
 
-        fn rec<'a, 'b, Message, Theme: StyleSheet, Renderer: renderer::Renderer>(
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             draw_path: &DrawPath,
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
@@ -438,7 +438,7 @@ where
             renderer: &mut Renderer,
             theme: &Theme,
             style: &renderer::Style,
-            theme_style: &Theme::Style,
+            theme_style: &Style,
             viewport: &Rectangle,
         ) {
             let menu = item.menu.as_ref().expect("No menu defined in this item");
@@ -483,6 +483,8 @@ where
             }
         }
 
+        let theme_style = theme.style(self.class, Status::Active);
+
         rec(
             self.draw_path,
             active_tree,
@@ -492,7 +494,7 @@ where
             renderer,
             theme,
             style,
-            self.style,
+            &theme_style,
             &viewport,
         );
     }

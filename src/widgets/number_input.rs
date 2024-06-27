@@ -15,7 +15,6 @@ use iced::{
     event, keyboard,
     mouse::{self, Cursor},
     widget::{
-        container, text,
         text::LineHeight,
         text_input::{self, cursor, Value},
         Column, Container, Row, Text, TextInput,
@@ -30,10 +29,13 @@ use std::{
     str::FromStr,
 };
 
-use crate::style;
+use crate::style::{self, Status};
 pub use crate::{
     core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
-    style::number_input::{self, Appearance, StyleSheet},
+    style::{
+        number_input::{self, Catalog, Style},
+        StyleFn,
+    },
 };
 
 /// The default padding
@@ -64,10 +66,7 @@ const DEFAULT_PADDING: f32 = 5.0;
 pub struct NumberInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::StyleSheet
-        + text_input::StyleSheet
-        + container::StyleSheet
-        + text::StyleSheet,
+    Theme: number_input::ExtendedCatalog,
 {
     /// The current value of the [`NumberInput`].
     value: T,
@@ -86,7 +85,7 @@ where
     /// The ``on_change`` event of the [`NumberInput`].
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`].
-    style: <Theme as number_input::StyleSheet>::Style,
+    class: <Theme as style::number_input::Catalog>::Class<'a>,
     /// The font text of the [`NumberInput`].
     font: Renderer::Font,
     /// The Width to use for the ``NumberBox`` Default is ``Length::Fill``
@@ -102,10 +101,7 @@ where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: Clone,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::StyleSheet
-        + text_input::StyleSheet
-        + container::StyleSheet
-        + text::StyleSheet,
+    Theme: number_input::ExtendedCatalog,
 {
     /// Creates a new [`NumberInput`].
     ///
@@ -134,9 +130,10 @@ where
             content: TextInput::new("", format!("{value}").as_str())
                 .on_input(convert_to_num)
                 .padding(padding)
-                .width(Length::Fixed(127.0)),
+                .width(Length::Fixed(127.0))
+                .class(Theme::default_input()),
             on_change: Box::new(on_changed),
-            style: <Theme as number_input::StyleSheet>::Style::default(),
+            class: <Theme as style::number_input::Catalog>::default(),
             font: Renderer::Font::default(),
             width: Length::Shrink,
             ignore_scroll_events: false,
@@ -226,8 +223,11 @@ where
 
     /// Sets the style of the [`NumberInput`].
     #[must_use]
-    pub fn style(mut self, style: impl Into<<Theme as number_input::StyleSheet>::Style>) -> Self {
-        self.style = style.into();
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as style::number_input::Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
 
@@ -273,6 +273,29 @@ where
             Bound::Unbounded => T::max_value(),
         }
     }
+
+    /// Sets the style of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn input_style(
+        mut self,
+        style: impl Fn(&Theme, text_input::Status) -> text_input::Style + 'a,
+    ) -> Self
+    where
+        <Theme as text_input::Catalog>::Class<'a>: From<text_input::StyleFn<'a, Theme>>,
+    {
+        self.content = self.content.style(style);
+        self
+    }
+
+    /// Sets the class of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn class(
+        mut self,
+        class: impl Into<<Theme as style::number_input::Catalog>::Class<'a>>,
+    ) -> Self {
+        self.class = class.into();
+        self
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -281,10 +304,7 @@ where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: number_input::StyleSheet
-        + text_input::StyleSheet
-        + container::StyleSheet
-        + text::StyleSheet,
+    Theme: number_input::ExtendedCatalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<ModifierState>()
@@ -333,8 +353,8 @@ where
         let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
             Container::<Message, Theme, Renderer>::new(Text::new(format!(" {c} ")).size(icon_size))
-                .center_y()
-                .center_x()
+                .center_y(Length::Shrink)
+                .center_x(Length::Shrink)
         };
 
         let element = if self.padding < DEFAULT_PADDING {
@@ -382,7 +402,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation<()>,
     ) {
         operation.container(None, layout.bounds(), &mut |operation| {
             self.content.operate(
@@ -660,20 +680,19 @@ where
         let is_increase_disabled = self.value >= self.max || self.min == self.max;
 
         let decrease_btn_style = if is_decrease_disabled {
-            style::number_input::StyleSheet::disabled(theme, &self.style)
-            //theme.disabled(&self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Disabled)
         } else if state.state.downcast_ref::<ModifierState>().decrease_pressed {
-            style::number_input::StyleSheet::pressed(theme, &self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Pressed)
         } else {
-            style::number_input::StyleSheet::active(theme, &self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Active)
         };
 
         let increase_btn_style = if is_increase_disabled {
-            style::number_input::StyleSheet::disabled(theme, &self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Disabled)
         } else if state.state.downcast_ref::<ModifierState>().increase_pressed {
-            style::number_input::StyleSheet::pressed(theme, &self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Pressed)
         } else {
-            style::number_input::StyleSheet::active(theme, &self.style)
+            style::number_input::Catalog::style(theme, &self.class, Status::Active)
         };
 
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
@@ -703,7 +722,7 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(Bootstrap::CaretDownFill),
+                content: icon_to_string(Bootstrap::CaretDownFill),
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
                 font: BOOTSTRAP_FONT,
@@ -737,7 +756,7 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: &icon_to_string(Bootstrap::CaretUpFill),
+                content: icon_to_string(Bootstrap::CaretUpFill),
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
                 font: BOOTSTRAP_FONT,
@@ -768,11 +787,7 @@ where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
     Message: 'a + Clone,
     Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a
-        + number_input::StyleSheet
-        + text_input::StyleSheet
-        + container::StyleSheet
-        + text::StyleSheet,
+    Theme: 'a + number_input::ExtendedCatalog,
 {
     fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(num_input)

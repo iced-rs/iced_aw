@@ -18,7 +18,6 @@ use iced::{
     },
     event,
     mouse::{self, Cursor},
-    widget::button,
     Element,
     Event,
     Length,
@@ -32,7 +31,7 @@ use iced::{
 
 pub use crate::{
     core::date::Date,
-    style::date_picker::{Appearance, StyleSheet},
+    style::{date_picker::Style, Status, StyleFn},
 };
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
@@ -63,7 +62,7 @@ pub use crate::{
 pub struct DatePicker<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
 {
     /// Show the picker.
     show_picker: bool,
@@ -76,7 +75,7 @@ where
     /// The function that produces a message when the submit button of the [`DatePickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Date) -> Message>,
     /// The style of the [`DatePickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: <Theme as crate::style::date_picker::Catalog>::Class<'a>,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Theme, Renderer>,
     //button_style: <Renderer as button::Renderer>::Style, // clone not satisfied
@@ -88,10 +87,10 @@ impl<'a, Message, Theme> DatePicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
     Theme: 'a
-        + StyleSheet
-        + button::StyleSheet
-        + iced::widget::text::StyleSheet
-        + iced::widget::container::StyleSheet,
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
 {
     /// Creates a new [`DatePicker`] wrapping around the given underlay.
     ///
@@ -121,7 +120,7 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Theme as StyleSheet>::Style::default(),
+            class: <Theme as crate::style::date_picker::Catalog>::default(),
             overlay_state: DatePickerOverlayButtons::default().into(),
             //button_style: <Renderer as button::Renderer>::Style::default(),
             font_size: None,
@@ -130,9 +129,11 @@ where
 
     /// Sets the style of the [`DatePicker`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
-        //self.button_style = style.into();
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as crate::style::date_picker::Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
 
@@ -140,6 +141,16 @@ where
     #[must_use]
     pub fn font_size<P: Into<Pixels>>(mut self, size: P) -> Self {
         self.font_size = Some(size.into());
+        self
+    }
+
+    /// Sets the class of the input of the [`DatePicker`].
+    #[must_use]
+    pub fn class(
+        mut self,
+        class: impl Into<<Theme as crate::style::date_picker::Catalog>::Class<'a>>,
+    ) -> Self {
+        self.class = class.into();
         self
     }
 }
@@ -177,10 +188,10 @@ impl State {
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: StyleSheet
-        + button::StyleSheet
-        + iced::widget::text::StyleSheet
-        + iced::widget::container::StyleSheet,
+    Theme: crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -296,7 +307,7 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                self.style.clone(),
+                &self.class,
                 &mut state.children[1],
                 self.font_size.unwrap_or_else(|| renderer.default_size()),
             )
@@ -310,10 +321,10 @@ impl<'a, Message, Theme> From<DatePicker<'a, Message, Theme>>
 where
     Message: 'static + Clone,
     Theme: 'a
-        + StyleSheet
-        + button::StyleSheet
-        + iced::widget::text::StyleSheet
-        + iced::widget::container::StyleSheet,
+        + crate::style::date_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog
+        + iced::widget::container::Catalog,
 {
     fn from(date_picker: DatePicker<'a, Message, Theme>) -> Self {
         Element::new(date_picker)

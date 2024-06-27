@@ -8,7 +8,7 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-    - uses: hecrj/setup-rust-action@v1
+    - uses: hecrj/setup-rust-action@v2
       with:
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master
@@ -29,7 +29,7 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-    - uses: hecrj/setup-rust-action@v1
+    - uses: hecrj/setup-rust-action@v2
       with:
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master
@@ -45,7 +45,7 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-    - uses: hecrj/setup-rust-action@v1
+    - uses: hecrj/setup-rust-action@v2
       with:
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@master

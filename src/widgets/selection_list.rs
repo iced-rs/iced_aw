@@ -1,6 +1,9 @@
 //! Display a dropdown list of selectable values.
 pub mod list;
-use crate::style::selection_list::StyleSheet;
+use crate::style::{
+    selection_list::{Catalog, Style},
+    Status, StyleFn,
+};
 
 use iced::{
     advanced::{
@@ -29,7 +32,7 @@ where
     T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet + container::StyleSheet,
+    Theme: Catalog + container::Catalog,
 {
     /// Container for Rendering List.
     container: Container<'a, Message, Theme, Renderer>,
@@ -46,7 +49,7 @@ where
     /// The Text Size
     text_size: f32,
     /// Style for Looks
-    style: <Theme as StyleSheet>::Style,
+    class: <Theme as Catalog>::Class<'a>,
 }
 
 #[allow(clippy::type_repetition_in_bounds)]
@@ -54,7 +57,7 @@ impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Rende
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a + StyleSheet + container::StyleSheet + scrollable::StyleSheet,
+    Theme: 'a + Catalog + container::Catalog + scrollable::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
@@ -68,7 +71,7 @@ where
             font: Font::default(),
             text_size: 12.0,
             padding: 5.0,
-            style: <Theme as StyleSheet>::Style::default(),
+            class: <Theme as Catalog>::default(),
             on_selected: Box::new(on_selected),
             selected: None,
             phantomdata: PhantomData,
@@ -78,7 +81,7 @@ where
         Self {
             options,
             font: Font::default(),
-            style: <Theme as StyleSheet>::Style::default(),
+            class: <Theme as Catalog>::default(),
             container,
             width: Length::Fill,
             height: Length::Fill,
@@ -95,16 +98,24 @@ where
         on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
         padding: f32,
-        style: <Theme as StyleSheet>::Style,
+        style: impl Fn(&Theme, Status) -> Style + 'a + Clone,
         selected: Option<usize>,
         font: Font,
-    ) -> Self {
+    ) -> Self
+    where
+        <Theme as Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        let class: <Theme as Catalog>::Class<'a> =
+            (Box::new(style.clone()) as StyleFn<'a, Theme, Style>).into();
+        let class2: <Theme as Catalog>::Class<'a> =
+            (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+
         let container = Container::new(Scrollable::new(List {
             options,
             font,
             text_size,
             padding,
-            style: style.clone(),
+            class: class2,
             selected,
             on_selected: Box::new(on_selected),
             phantomdata: PhantomData,
@@ -114,7 +125,7 @@ where
         Self {
             options,
             font,
-            style,
+            class,
             container,
             width: Length::Fill,
             height: Length::Fill,
@@ -139,8 +150,18 @@ where
 
     /// Sets the style of the [`SelectionList`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+        self
+    }
+
+    /// Sets the class of the input of the [`SelectionList`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<<Theme as Catalog>::Class<'a>>) -> Self {
+        self.class = class.into();
         self
     }
 }
@@ -151,7 +172,7 @@ where
     T: 'a + Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font> + 'a,
-    Theme: StyleSheet + container::StyleSheet,
+    Theme: Catalog + container::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
@@ -193,8 +214,9 @@ where
                 .iter()
                 .enumerate()
                 .map(|(id, val)| {
+                    let s: &str = &val.to_string();
                     let text = Text {
-                        content: &val.to_string(),
+                        content: s,
                         size: Pixels(self.text_size),
                         line_height: LineHeight::default(),
                         bounds: Size::INFINITY,
@@ -270,18 +292,20 @@ where
         viewport: &Rectangle,
     ) {
         let bounds = layout.bounds();
+        let style_sheet = <Theme as Catalog>::style(theme, &self.class, Status::Active);
+
         if let Some(clipped_viewport) = bounds.intersection(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds,
                     border: Border {
                         radius: (0.0).into(),
-                        width: theme.style(&self.style).border_width,
-                        color: theme.style(&self.style).border_color,
+                        width: style_sheet.border_width,
+                        color: style_sheet.border_color,
                     },
                     shadow: Shadow::default(),
                 },
-                theme.style(&self.style).background,
+                style_sheet.background,
             );
 
             self.container.draw(
@@ -306,7 +330,7 @@ where
     T: Clone + ToString + Eq + Hash + Display,
     Message: 'static,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a + StyleSheet + container::StyleSheet,
+    Theme: 'a + Catalog + container::Catalog,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(selection_list)

@@ -12,7 +12,11 @@ use iced::{
     Element, Event, Length, Point, Rectangle, Vector,
 };
 
-pub use crate::style::context_menu::StyleSheet;
+pub use crate::style::{
+    context_menu::{Catalog, Style},
+    status::{Status, StyleFn},
+};
+
 use crate::widgets::overlay::ContextMenuOverlay;
 
 /// A context menu
@@ -41,14 +45,14 @@ where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// The underlying element.
     underlay: Element<'a, Message, Theme, Renderer>,
     /// The content of [`ContextMenuOverlay`].
     overlay: Overlay,
     /// The style of the [`ContextMenu`].
-    style: <Theme as StyleSheet>::Style,
+    class: Theme::Class<'a>,
 }
 
 impl<'a, Overlay, Message, Theme, Renderer> ContextMenu<'a, Overlay, Message, Theme, Renderer>
@@ -56,7 +60,7 @@ where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// Creates a new [`ContextMenu`]
     ///
@@ -70,14 +74,24 @@ where
         ContextMenu {
             underlay: underlay.into(),
             overlay,
-            style: <Theme as StyleSheet>::Style::default(),
+            class: Theme::default(),
         }
     }
 
     /// Sets the style of the [`ContextMenu`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        Theme::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+        self
+    }
+
+    /// Sets the class of the input of the [`Badge`].
+    #[must_use]
+    pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
+        self.class = class.into();
         self
     }
 }
@@ -88,7 +102,7 @@ where
     Content: 'a + Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     fn size(&self) -> iced::Size<Length> {
         self.underlay.as_widget().size()
@@ -130,7 +144,7 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&(self.overlay)())]
+        vec![Tree::new(&self.underlay), Tree::new((self.overlay)())]
     }
 
     fn diff(&self, tree: &mut Tree) {
@@ -142,7 +156,7 @@ where
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation<()>,
     ) {
         let s: &mut State = state.state.downcast_mut();
 
@@ -237,7 +251,7 @@ where
                 position + translation,
                 &mut state.children[1],
                 content,
-                self.style.clone(),
+                &self.class,
                 s,
             )
             .overlay(),
@@ -251,7 +265,7 @@ where
     Content: 'a + Fn() -> Self,
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: 'a + StyleSheet,
+    Theme: 'a + Catalog,
 {
     fn from(modal: ContextMenu<'a, Content, Message, Theme, Renderer>) -> Self {
         Element::new(modal)

@@ -1,12 +1,17 @@
 use iced::{
     widget::{column, Button, Container, Row, Text},
-    Alignment, Element, Sandbox, Settings,
+    Alignment, Element,
 };
 
 use iced_aw::ContextMenu;
 
 fn main() -> iced::Result {
-    ContextMenuExample::run(Settings::default())
+    iced::application(
+        "ContextMenu example",
+        ContextMenuExample::update,
+        ContextMenuExample::view,
+    )
+    .run()
 }
 
 #[derive(Clone, Debug)]
@@ -23,22 +28,12 @@ struct ContextMenuExample {
     last_message: Option<Message>,
 }
 
-impl Sandbox for ContextMenuExample {
-    type Message = Message;
-
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn title(&self) -> String {
-        String::from("ContextMenu example")
-    }
-
-    fn update(&mut self, message: Self::Message) {
+impl ContextMenuExample {
+    fn update(&mut self, message: Message) {
         self.last_message = Some(message);
     }
 
-    fn view(&self) -> Element<'_, Self::Message> {
+    fn view(&self) -> Element<'_, Message> {
         let underlay = Container::new(
             Row::new()
                 .spacing(10)

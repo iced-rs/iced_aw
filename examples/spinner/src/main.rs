@@ -1,90 +1,60 @@
 use iced::widget::PickList;
 use iced::{
     widget::{column, container},
-    Application, Command, Element, Length, Settings, Theme,
+    Element, Length, Theme,
 };
 use iced_aw::Spinner;
-use std::fmt::{Display, Formatter};
 
 struct SpinnerExample {
-    theme: ThemeSelection,
+    theme: Theme,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum ThemeSelection {
-    Dark,
-    Light,
-}
-
-impl Display for ThemeSelection {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ThemeSelection::Dark => write!(f, "Dark"),
-            ThemeSelection::Light => write!(f, "Light"),
+impl Default for SpinnerExample {
+    fn default() -> Self {
+        Self {
+            theme: Theme::Light,
         }
     }
 }
 
 #[derive(Clone, Debug)]
 enum Message {
-    ThemeChanged(ThemeSelection),
+    ThemeChanged(Theme),
 }
 
-const AVAILABLE_THEMES: [ThemeSelection; 2] = [ThemeSelection::Light, ThemeSelection::Dark];
-
-impl Application for SpinnerExample {
-    type Executor = iced::executor::Default;
-    type Message = Message;
-    type Theme = Theme;
-    type Flags = ();
-
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        (
-            Self {
-                theme: ThemeSelection::Light,
-            },
-            Command::none(),
-        )
-    }
-
-    fn title(&self) -> String {
-        String::from("Spinner")
-    }
-
-    fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
+impl SpinnerExample {
+    fn update(&mut self, message: Message) {
         match message {
             Message::ThemeChanged(theme) => {
                 self.theme = theme;
             }
         }
-
-        Command::none()
     }
 
-    fn view(&self) -> Element<Self::Message> {
+    fn view(&self) -> Element<Message> {
         column![
             container(Spinner::new())
                 .width(Length::Fill)
                 .height(Length::Fill)
-                .center_x()
-                .center_y(),
-            PickList::new(
-                AVAILABLE_THEMES.as_slice(),
-                Some(self.theme),
-                Message::ThemeChanged
-            ),
+                .center_x(Length::Fill)
+                .center_y(Length::Fill),
+            PickList::new(Theme::ALL, Some(&self.theme), Message::ThemeChanged),
         ]
         .into()
     }
 
-    fn theme(&self) -> Self::Theme {
-        match self.theme {
-            ThemeSelection::Dark => Theme::Dark,
-            ThemeSelection::Light => Theme::Light,
-        }
+    fn theme(&self) -> Theme {
+        self.theme.clone()
     }
 }
 
 fn main() -> iced::Result {
-    SpinnerExample::run(Settings::default())
+    iced::application(
+        "Spinner example",
+        SpinnerExample::update,
+        SpinnerExample::view,
+    )
+    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .theme(SpinnerExample::theme)
+    .run()
 }

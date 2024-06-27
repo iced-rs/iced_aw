@@ -2,6 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `color_picker`*
 
+use self::style::{Status, StyleFn};
+
 use super::overlay::color_picker::{
     self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
 };
@@ -10,15 +12,11 @@ use iced::{
     advanced::{
         layout::{Limits, Node},
         overlay, renderer,
-        widget::{
-            self,
-            tree::{self, Tag, Tree},
-        },
+        widget::tree::{self, Tag, Tree},
         Clipboard, Layout, Shell, Widget,
     },
     event,
     mouse::{self, Cursor},
-    widget::button,
     Color,
     Element,
     Event,
@@ -29,7 +27,7 @@ use iced::{
     Vector,
 };
 
-pub use crate::style::color_picker::{Appearance, StyleSheet};
+pub use crate::style::{self, color_picker::Style};
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
 /// An input element for picking colors.
@@ -59,7 +57,7 @@ pub use crate::style::color_picker::{Appearance, StyleSheet};
 pub struct ColorPicker<'a, Message, Theme = iced::Theme>
 where
     Message: Clone,
-    Theme: StyleSheet + button::StyleSheet,
+    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
 {
     /// Show the picker.
     show_picker: bool,
@@ -72,7 +70,7 @@ where
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
     /// The style of the [`ColorPickerOverlay`].
-    style: <Theme as StyleSheet>::Style,
+    class: <Theme as style::color_picker::Catalog>::Class<'a>,
     /// The buttons of the overlay.
     overlay_state: Element<'a, Message, Theme, Renderer>,
 }
@@ -80,7 +78,10 @@ where
 impl<'a, Message, Theme> ColorPicker<'a, Message, Theme>
 where
     Message: 'a + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     /// Creates a new [`ColorPicker`] wrapping around the given underlay.
     ///
@@ -110,15 +111,28 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
-            style: <Theme as StyleSheet>::Style::default(),
+            class: <Theme as style::color_picker::Catalog>::default(),
             overlay_state: ColorPickerOverlayButtons::default().into(),
         }
     }
 
     /// Sets the style of the [`ColorPicker`].
     #[must_use]
-    pub fn style(mut self, style: <Theme as StyleSheet>::Style) -> Self {
-        self.style = style;
+    pub fn style(mut self, style: impl Fn(&Theme, Status) -> Style + 'a) -> Self
+    where
+        <Theme as style::color_picker::Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
+    {
+        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+        self
+    }
+
+    /// Sets the class of the input of the [`ColorPicker`].
+    #[must_use]
+    pub fn class(
+        mut self,
+        class: impl Into<<Theme as style::color_picker::Catalog>::Class<'a>>,
+    ) -> Self {
+        self.class = class.into();
         self
     }
 }
@@ -149,7 +163,10 @@ impl State {
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for ColorPicker<'a, Message, Theme>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -271,7 +288,7 @@ where
                 self.on_cancel.clone(),
                 &self.on_submit,
                 position,
-                self.style.clone(),
+                &self.class,
                 &mut state.children[1],
             )
             .overlay(),
@@ -283,7 +300,10 @@ impl<'a, Message, Theme> From<ColorPicker<'a, Message, Theme>>
     for Element<'a, Message, Theme, Renderer>
 where
     Message: 'static + Clone,
-    Theme: 'a + StyleSheet + button::StyleSheet + widget::text::StyleSheet,
+    Theme: 'a
+        + style::color_picker::Catalog
+        + iced::widget::button::Catalog
+        + iced::widget::text::Catalog,
 {
     fn from(color_picker: ColorPicker<'a, Message, Theme>) -> Self {
         Element::new(color_picker)

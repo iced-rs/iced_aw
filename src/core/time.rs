@@ -31,6 +31,16 @@ pub enum Time {
     },
 }
 
+impl Default for Time {
+    fn default() -> Self {
+        Self::Hm {
+            hour: 1,
+            minute: 0,
+            period: Period::Am,
+        }
+    }
+}
+
 impl Time {
     /// Creates a new time (hours, minutes) from the current timestamp.
     #[must_use]

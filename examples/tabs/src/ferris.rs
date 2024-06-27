@@ -11,6 +11,7 @@ pub enum FerrisMessage {
     ImageWidthChanged(f32),
 }
 
+#[derive(Default)]
 pub struct FerrisTab {
     ferris_width: f32,
 }
@@ -67,12 +68,12 @@ impl Tab for FerrisTab {
 }
 
 fn ferris<'a>(width: f32) -> Container<'a, FerrisMessage> {
-    Container::new(if cfg!(target_carch = "wasm32") {
+    Container::new(if cfg!(target_arch = "wasm32") {
         Image::new("images/ferris.png")
     } else {
         Image::new(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))
             .width(Length::Fixed(width))
     })
     .width(Length::Fill)
-    .center_x()
+    .center_x(Length::Fill)
 }

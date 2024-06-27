@@ -27,8 +27,8 @@ pub mod icons;
 
 cfg_if! {
     if #[cfg(feature = "icons")] {
-        pub use icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, NERD_FONT, NERD_FONT_BYTES, SF_UI_ROUNDED_BYTES, SF_UI_ROUNDED, Bootstrap, Nerd};
+        pub use icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, NERD_FONT, NERD_FONT_BYTES, Bootstrap, Nerd, bootstrap, nerd};
     } else {
-        pub use icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Bootstrap};
+        pub use icons::{BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Bootstrap, bootstrap};
     }
 }

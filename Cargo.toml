@@ -20,23 +20,19 @@ card = []
 date_picker = ["chrono", "once_cell", "icons"]
 color_picker = ["icons", "iced/canvas"]
 cupertino = ["time", "iced/canvas", "icons"]
-floating_element = []
 grid = ["itertools"]
 glow = []                                                   # TODO
 icons = []
-modal = []
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icons", "iced/canvas"]
 wrap = []
 number_input = ["num-format", "num-traits"]
 selection_list = []
-split = []
 menu = []
 quad = []
 spinner = []
 context_menu = []
-segmented_button = []
 slide_bar = []
 drop_down = []
 
@@ -46,21 +42,16 @@ default = [
     "number_input",
     "date_picker",
     "color_picker",
-    "floating_element",
     "grid",
-    "modal",
     "tab_bar",
     "tabs",
     "time_picker",
     "slide_bar",
     "wrap",
     "selection_list",
-    "split",
     "quad",
     "context_menu",
     "spinner",
-    "cupertino",
-    "segmented_button",
     "drop_down",
     "menu",
 ]
@@ -75,9 +66,9 @@ time = { version = "0.3.34", features = ["local-offset"], optional = true }
 once_cell = { version = "1.19.0", optional = true }
 
 [dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
+git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.12.1"
+version = "0.13.0-dev"
 default-features = false
 features = ["advanced"]
 
@@ -91,39 +82,26 @@ members = [
     "examples/number_input",
     "examples/date_picker",
     "examples/color_picker",
-    "examples/floating_element",
-    "examples/floating_element multioverlay",
-    "examples/floating_element_anchors",
-    "examples/font_loading",
     "examples/grid",
-    "examples/modal",
-    "examples/modal_component",
-    "examples/multiple_modals",
     "examples/tab_bar",
     "examples/tabs",
     "examples/time_picker",
     "examples/sliderbar",
     "examples/wrap",
     "examples/selection_list",
-    "examples/split",
-    "examples/split_scroller",
     "examples/context_menu",
     "examples/spinner",
-    "examples/cupertino/cupertino_button",
-    "examples/cupertino/cupertino_spinner",
-    "examples/cupertino/cupertino_switch",
     "examples/WidgetIDReturn",
-    "examples/segmented_button",
     "examples/drop_down",
     "examples/menu",
 ]
 
 [workspace.dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
+git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.12.1"
-default-features = false
-features = ["advanced"]
+version = "0.13.0-dev"
+#default-features = false
+features = ["advanced", "wgpu"]
 
 [workspace.dependencies.iced_aw]
 path = "./"

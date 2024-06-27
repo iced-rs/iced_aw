@@ -2,18 +2,19 @@
 //!
 //! *This API requires the following crate features to be activated: `number_input`*
 
-use iced::{Background, Color, Theme};
+use super::{Status, StyleFn};
+use iced::{widget, Background, Color, Theme};
 
-/// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
+/// The appearance of a [`NumberInput`](crate::widgets::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
-    /// The background of the [`NumberInput`](crate::native::number_input::NumberInput).
+pub struct Style {
+    /// The background of the [`NumberInput`](crate::widgets::number_input::NumberInput).
     pub button_background: Option<Background>,
-    /// The Color of the arrows of [`NumberInput`](crate::native::number_input::NumberInput).
+    /// The Color of the arrows of [`NumberInput`](crate::widgets::number_input::NumberInput).
     pub icon_color: Color,
 }
 
-impl Default for Appearance {
+impl Default for Style {
     fn default() -> Self {
         Self {
             button_background: None,
@@ -22,69 +23,62 @@ impl Default for Appearance {
     }
 }
 
-/// The appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-pub trait StyleSheet {
-    type Style: Default;
-    /// The normal appearance of a [`NumberInput`](crate::native::number_input::NumberInput).
-    fn active(&self, style: &Self::Style) -> Appearance;
+/// The Catalog of a [`NumberInput`](crate::widgets::number_input::NumberInput).
+pub trait Catalog {
+    ///Style for the trait to use.
+    type Class<'a>;
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
-    fn pressed(&self, style: &Self::Style) -> Appearance;
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
-    fn disabled(&self, style: &Self::Style) -> Appearance;
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-#[derive(Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``NumberInput`` Styles
-pub enum NumberInputStyles {
-    #[default]
-    Default,
-    Custom(Box<dyn StyleSheet<Style = Theme>>),
-}
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
-impl NumberInputStyles {
-    /// Creates a custom [`NumberInputStyles`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Box::new(style_sheet))
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = NumberInputStyles;
-
-    fn active(&self, style: &Self::Style) -> Appearance {
-        if let NumberInputStyles::Custom(custom) = style {
-            return custom.active(self);
-        }
-
-        let palette = self.extended_palette();
-
-        Appearance {
-            button_background: Some(palette.primary.strong.color.into()),
-            icon_color: palette.primary.strong.text,
-        }
+/// The Extended Catalog of a [`NumberInput`](crate::widgets::number_input::NumberInput).
+pub trait ExtendedCatalog:
+    widget::text_input::Catalog + widget::container::Catalog + widget::text::Catalog + self::Catalog
+{
+    /// The default class produced by the [`Catalog`].
+    #[must_use]
+    fn default_input<'a>() -> <Self as widget::text_input::Catalog>::Class<'a> {
+        <Self as widget::text_input::Catalog>::default()
     }
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is pressed.
-    fn pressed(&self, style: &Self::Style) -> Appearance {
-        if let NumberInputStyles::Custom(custom) = style {
-            return custom.pressed(self);
-        }
-        self.active(style)
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &<Self as self::Catalog>::Class<'_>, status: Status) -> Style;
+}
+
+impl ExtendedCatalog for Theme {
+    fn style(&self, class: &<Self as self::Catalog>::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
+}
 
-    /// The appearance when the [`NumberInput`](crate::native::number_input::NumberInput) is disabled.
-    fn disabled(&self, style: &Self::Style) -> Appearance {
-        if let NumberInputStyles::Custom(custom) = style {
-            return custom.disabled(self);
-        }
+/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let base = Style {
+        button_background: Some(palette.primary.strong.color.into()),
+        icon_color: palette.primary.strong.text,
+    };
 
-        let active = self.active(style);
-        Appearance {
-            button_background: active.button_background.map(|bg| match bg {
+    match status {
+        Status::Disabled => Style {
+            button_background: base.button_background.map(|bg| match bg {
                 Background::Color(color) => Background::Color(Color {
                     a: color.a * 0.5,
                     ..color
@@ -92,9 +86,10 @@ impl StyleSheet for Theme {
                 Background::Gradient(grad) => Background::Gradient(grad),
             }),
             icon_color: Color {
-                a: active.icon_color.a * 0.5,
-                ..active.icon_color
+                a: base.icon_color.a * 0.5,
+                ..base.icon_color
             },
-        }
+        },
+        _ => base,
     }
 }

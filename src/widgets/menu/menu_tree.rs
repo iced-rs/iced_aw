@@ -83,7 +83,7 @@ impl Default for MenuState {
 #[must_use]
 pub struct Menu<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
@@ -96,7 +96,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     /// Creates a [`Menu`] with the given items.
@@ -147,7 +147,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     // pub(super) fn size(&self) -> Size<Length> {
@@ -412,7 +412,7 @@ where
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
-        theme_style: &Theme::Style,
+        theme_style: &Style,
         layout: Layout<'_>,
         mut cursor: mouse::Cursor,
         viewport: &Rectangle,
@@ -426,20 +426,18 @@ where
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
 
-        let styling = theme.appearance(theme_style);
-
         // debug_draw(renderer, prescroll, check_bounds, offset_bounds);
 
         // draw background
-        let pad_rectangle = pad_rectangle(prescroll, styling.menu_background_expand);
+        let pad_rectangle = pad_rectangle(prescroll, theme_style.menu_background_expand);
         if pad_rectangle.intersects(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
                     bounds: pad_rectangle,
-                    border: styling.menu_border,
-                    shadow: styling.menu_shadow,
+                    border: theme_style.menu_border,
+                    shadow: theme_style.menu_shadow,
                 },
-                styling.menu_background,
+                theme_style.menu_background,
             );
         }
 
@@ -459,10 +457,10 @@ where
                         renderer.fill_quad(
                             renderer::Quad {
                                 bounds: active_bounds,
-                                border: styling.path_border,
+                                border: theme_style.path_border,
                                 ..Default::default()
                             },
-                            styling.path,
+                            theme_style.path,
                         );
                     }
                 }
@@ -609,44 +607,11 @@ where
     }
 }
 
-/* fn debug_draw<Renderer: renderer::Renderer>(
-    renderer: &mut Renderer,
-    prescroll: Rectangle,
-    check_bounds: Rectangle,
-    offset_bounds: Rectangle,
-){
-    [
-        prescroll,
-        check_bounds,
-        offset_bounds,
-    ].iter()
-    .zip([
-        Color::from([1.0, 1.0, 1.0, 0.8]),
-        Color::from([1.0, 0.0, 0.0, 0.1]),
-        Color::from([0.0, 0.0, 1.0, 0.3]),
-    ])
-    .for_each(|(b, c)|{
-        if (b.width > 0.) && (b.height > 0.) {
-            renderer.fill_quad(
-                renderer::Quad{
-                    bounds: *b,
-                    border: Border{
-                        radius: 6.0.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                },
-                c
-            );
-        }
-    });
-} */
-
 /// Item inside a [`Menu`]
 #[must_use]
 pub struct Item<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     pub(super) item: Element<'a, Message, Theme, Renderer>,
@@ -654,7 +619,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     /// Creates an [`Item`] with the given element.
@@ -687,7 +652,7 @@ where
 }
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
-    Theme: StyleSheet,
+    Theme: Catalog,
     Renderer: renderer::Renderer,
 {
     // pub(super) fn size(&self) -> Size<Length> {

@@ -1,6 +1,6 @@
 //! Build and show dropdown `ListMenus`.
 
-use crate::selection_list::StyleSheet;
+use crate::selection_list::Catalog;
 
 use iced::{
     advanced::{
@@ -33,7 +33,7 @@ where
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     /// Options pointer to hold all rendered strings
     pub options: &'a [T],
@@ -41,7 +41,7 @@ where
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
-    pub style: <Theme as StyleSheet>::Style,
+    pub class: <Theme as Catalog>::Class<'a>,
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(usize, T) -> Message>,
     /// The padding Width
@@ -61,8 +61,8 @@ pub struct ListState {
     pub hovered_option: Option<usize>,
     /// The index in the list of options of the last chosen Item Clicked for Processing
     pub last_selected_index: Option<(usize, u64)>,
-    /// String Build Cache
-    pub options: Vec<String>,
+    // String Build Cache
+    //pub options: Vec<String>,
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -70,17 +70,14 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: StyleSheet,
+    Theme: Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<ListState>()
     }
 
     fn state(&self) -> State {
-        State::new(ListState {
-            options: self.options.iter().map(ToString::to_string).collect(),
-            ..ListState::default()
-        })
+        State::new(ListState::default())
     }
 
     fn diff(&self, state: &mut Tree) {
@@ -108,7 +105,7 @@ where
             }
         }
 
-        list_state.options = self.options.iter().map(ToString::to_string).collect();
+        //list_state.options = self.options.iter().map(ToString::to_string).collect();
     }
 
     fn size(&self) -> Size<Length> {
@@ -243,24 +240,34 @@ where
                         shadow: Shadow::default(),
                     },
                     if is_selected {
-                        theme.style(&self.style).selected_background
+                        theme
+                            .style(&self.class, crate::style::Status::Selected)
+                            .background
                     } else {
-                        theme.style(&self.style).hovered_background
+                        theme
+                            .style(&self.class, crate::style::Status::Hovered)
+                            .background
                     },
                 );
             }
 
             let text_color = if is_selected {
-                theme.style(&self.style).selected_text_color
+                theme
+                    .style(&self.class, crate::style::Status::Selected)
+                    .text_color
             } else if is_hovered {
-                theme.style(&self.style).hovered_text_color
+                theme
+                    .style(&self.class, crate::style::Status::Hovered)
+                    .text_color
             } else {
-                theme.style(&self.style).text_color
+                theme
+                    .style(&self.class, crate::style::Status::Active)
+                    .text_color
             };
 
             renderer.fill_text(
                 iced::advanced::text::Text {
-                    content: &list_state.options[i],
+                    content: self.options[i].to_string(),
                     bounds: Size::new(f32::INFINITY, bounds.height),
                     size: Pixels(self.text_size),
                     font: self.font,
@@ -283,7 +290,7 @@ where
     T: Clone + Display + Eq + Hash,
     Message: 'a,
     Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: 'a + StyleSheet,
+    Theme: 'a + Catalog,
 {
     fn from(list: List<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(list)

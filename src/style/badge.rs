@@ -1,44 +1,42 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use super::colors;
+use super::{colors, Status, StyleFn};
+use iced::{theme::palette, Background, Color, Theme};
 
-use iced::{Background, Color, Theme};
-
-/// The appearance of a [`Badge`](crate::native::badge::Badge).
+/// The style of a [`Badge`](crate::widgets::badge::Badge).
 #[derive(Clone, Copy, Debug)]
-pub struct Appearance {
-    /// The background of the [`Badge`](crate::native::badge::Badge).
+pub struct Style {
+    /// The background of the [`Badge`](crate::widgets::badge::Badge).
     pub background: Background,
 
-    /// The border radius of the [`Badge`](crate::native::badge::Badge).
+    /// The border radius of the [`Badge`](crate::widgets::badge::Badge).
     /// If no radius is specified the default one will be used.
     pub border_radius: Option<f32>,
 
-    /// The border with of the [`Badge`](crate::native::badge::Badge).
+    /// The border with of the [`Badge`](crate::widgets::badge::Badge).
     pub border_width: f32,
 
-    /// The border color of the [`Badge`](crate::native::badge::Badge).
+    /// The border color of the [`Badge`](crate::widgets::badge::Badge).
     pub border_color: Option<Color>,
 
-    /// The default text color of the [`Badge`](crate::native::badge::Badge).
+    /// The default text color of the [`Badge`](crate::widgets::badge::Badge).
     pub text_color: Color,
 }
 
-/// The appearance of a [`Badge`](crate::native::badge::Badge).
-pub trait StyleSheet {
+/// The Catalog of a [`Badge`](crate::widgets::badge::Badge).
+pub trait Catalog {
     ///Style for the trait to use.
-    type Style: Default;
-    /// The normal appearance of a [`Badge`](crate::native::badge::Badge).
-    fn active(&self, style: &Self::Style) -> Appearance;
+    type Class<'a>;
 
-    /// The appearance when the [`Badge`](crate::native::badge::Badge) is hovered.
-    fn hovered(&self, style: &Self::Style) -> Appearance {
-        self.active(style)
-    }
+    /// The default class produced by the [`Catalog`].
+    fn default<'a>() -> Self::Class<'a>;
+
+    /// The [`Style`] of a class with the given status.
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style;
 }
 
-impl std::default::Default for Appearance {
+impl std::default::Default for Style {
     fn default() -> Self {
         Self {
             background: Background::Color([0.87, 0.87, 0.87].into()),
@@ -50,62 +48,179 @@ impl std::default::Default for Appearance {
     }
 }
 
-#[derive(Default)]
-#[allow(missing_docs, clippy::missing_docs_in_private_items)]
-/// Default Prebuilt ``Badge`` Styles
-pub enum BadgeStyles {
-    Primary,
-    Secondary,
-    Success,
-    Danger,
-    Warning,
-    Info,
-    Light,
-    Dark,
-    White,
-    #[default]
-    Default,
-    Custom(Box<dyn StyleSheet<Style = Theme>>),
-}
+impl Catalog for Theme {
+    type Class<'a> = StyleFn<'a, Self, Style>;
 
-impl BadgeStyles {
-    /// Creates a custom [`BadgeStyles`] style variant.
-    pub fn custom(style_sheet: impl StyleSheet<Style = Theme> + 'static) -> Self {
-        Self::Custom(Box::new(style_sheet))
+    fn default<'a>() -> Self::Class<'a> {
+        Box::new(primary)
+    }
+
+    fn style(&self, class: &Self::Class<'_>, status: Status) -> Style {
+        class(self, status)
     }
 }
 
-impl StyleSheet for Theme {
-    type Style = BadgeStyles;
+/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let base = styled(palette.primary.strong);
 
-    fn active(&self, style: &Self::Style) -> Appearance {
-        let from_colors = |color: Color, text_color: Color| Appearance {
-            background: Background::Color(color),
-            border_color: Some(color),
-            text_color,
-            ..Appearance::default()
-        };
-
-        match style {
-            BadgeStyles::Primary => from_colors(colors::PRIMARY, colors::WHITE),
-            BadgeStyles::Secondary => from_colors(colors::SECONDARY, colors::WHITE),
-            BadgeStyles::Success => from_colors(colors::SUCCESS, colors::WHITE),
-            BadgeStyles::Danger => from_colors(colors::DANGER, colors::WHITE),
-            BadgeStyles::Warning => from_colors(colors::WARNING, colors::BLACK),
-            BadgeStyles::Info => from_colors(colors::INFO, colors::BLACK),
-            BadgeStyles::Light => from_colors(colors::LIGHT, colors::BLACK),
-            BadgeStyles::Dark => from_colors(colors::DARK, colors::WHITE),
-            BadgeStyles::White => from_colors(colors::WHITE, colors::BLACK),
-            BadgeStyles::Default => Appearance::default(),
-            BadgeStyles::Custom(custom) => custom.active(self),
-        }
+    match status {
+        Status::Hovered => Style {
+            background: Background::Color(palette.primary.base.color),
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
     }
+}
 
-    fn hovered(&self, style: &Self::Style) -> Appearance {
-        if let BadgeStyles::Custom(custom) = style {
-            return custom.hovered(self);
-        }
+/// The secondary theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn secondary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let base = styled(palette.secondary.strong);
 
-        self.active(style)
+    match status {
+        Status::Hovered => Style {
+            background: Background::Color(palette.primary.base.color),
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The success theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn success(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let base = styled(palette.success.strong);
+
+    match status {
+        Status::Hovered => Style {
+            background: Background::Color(palette.primary.base.color),
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The danger theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn danger(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+    let base = styled(palette.danger.strong);
+
+    match status {
+        Status::Hovered => Style {
+            background: Background::Color(palette.primary.base.color),
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The warning theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn warning(_theme: &Theme, status: Status) -> Style {
+    let base = from_color(colors::WARNING, colors::BLACK);
+
+    match status {
+        Status::Hovered => Style {
+            background: base.background,
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The info theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn info(_theme: &Theme, status: Status) -> Style {
+    let base = from_color(colors::INFO, colors::BLACK);
+
+    match status {
+        Status::Hovered => Style {
+            background: base.background,
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The light theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn light(_theme: &Theme, status: Status) -> Style {
+    let base = from_color(colors::LIGHT, colors::BLACK);
+
+    match status {
+        Status::Hovered => Style {
+            background: base.background,
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The dark theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn dark(_theme: &Theme, status: Status) -> Style {
+    let base = from_color(colors::DARK, colors::WHITE);
+
+    match status {
+        Status::Hovered => Style {
+            background: base.background,
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+/// The white theme of a [`Badge`](crate::widgets::badge::Badge).
+#[must_use]
+pub fn white(_theme: &Theme, status: Status) -> Style {
+    let base = from_color(colors::WHITE, colors::BLACK);
+
+    match status {
+        Status::Hovered => Style {
+            background: base.background,
+            ..base
+        },
+        Status::Disabled => disabled(base),
+        _ => base,
+    }
+}
+
+fn from_color(color: Color, text_color: Color) -> Style {
+    Style {
+        background: Background::Color(color),
+        border_color: Some(color),
+        text_color,
+        ..Style::default()
+    }
+}
+
+fn styled(pair: palette::Pair) -> Style {
+    Style {
+        background: Background::Color(pair.color),
+        border_color: Some(pair.color),
+        text_color: pair.text,
+        ..Style::default()
+    }
+}
+
+fn disabled(style: Style) -> Style {
+    Style {
+        background: style.background.scale_alpha(0.5),
+        text_color: style.text_color.scale_alpha(0.5),
+        ..style
     }
 }

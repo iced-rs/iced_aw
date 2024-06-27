@@ -8,7 +8,7 @@ cfg_if! {
         pub mod bootstrap;
         pub mod nerd;
 
-        pub use bootstrap::Bootstrap;
+        pub use bootstrap::{Bootstrap};
         pub use nerd::Nerd;
         /// The default icon font bytes for loading the font into iced.
         pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/bootstrap-icons.ttf");
@@ -19,16 +19,10 @@ cfg_if! {
         pub const BOOTSTRAP_FONT: Font = Font::with_name("bootstrap-icons");
         /// The nerd icon font.
         pub const NERD_FONT: Font = Font::with_name("Symbols Nerd Font");
-
-        /// The default cupertino font bytes for loading the font into the system.
-        pub const SF_UI_ROUNDED_BYTES: &[u8] = include_bytes!("./fonts/SFUIRounded.ttf");
-
-        /// The default cupertino font for alerts and button.
-        pub const SF_UI_ROUNDED: iced::Font = iced::Font::with_name(".SF UI Rounded");
     } else {
         #[path = "icons/required.rs"]
         pub mod bootstrap;
-        pub use bootstrap::Bootstrap;
+        pub use bootstrap::{Bootstrap};
         // pub use required::{Bootstrap, icon_to_char, icon_to_string};
         /// The default icon font bytes for loading the font into iced.
         pub const BOOTSTRAP_FONT_BYTES: &[u8] = include_bytes!("./fonts/required-icons.ttf");

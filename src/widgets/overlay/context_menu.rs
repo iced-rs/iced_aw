@@ -2,7 +2,10 @@
 //!
 //! *This API requires the following crate features to be activated: ``context_menu``*
 use crate::context_menu;
-use crate::style::context_menu::StyleSheet;
+pub use crate::style::{
+    context_menu::{Catalog, Style},
+    status::{self, StyleFn},
+};
 
 use iced::{
     advanced::{
@@ -17,13 +20,14 @@ use iced::{
     touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
 };
 
-/// The overlay of the [`ContextMenu`](crate::native::ContextMenu).
+/// The overlay of the [`ContextMenu`](crate::widgets::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct ContextMenuOverlay<'a, 'b, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: Catalog,
+    'b: 'a,
 {
     // The position of the element
     position: Point,
@@ -32,23 +36,24 @@ where
     /// The content of the [`ContextMenuOverlay`].
     content: Element<'a, Message, Theme, Renderer>,
     /// The style of the [`ContextMenuOverlay`].
-    style: <Theme as StyleSheet>::Style,
-    /// The state shared between [`ContextMenu`](crate::native::ContextMenu) and [`ContextMenuOverlay`].
+    class: &'a Theme::Class<'b>,
+    /// The state shared between [`ContextMenu`](crate::widgets::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
 }
 
-impl<'a, Message, Theme, Renderer> ContextMenuOverlay<'a, Message, Theme, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> ContextMenuOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: renderer::Renderer,
-    Theme: 'a + StyleSheet,
+    Theme: 'a + Catalog,
+    'b: 'a,
 {
     /// Creates a new [`ContextMenuOverlay`].
     pub(crate) fn new<C>(
         position: Point,
         tree: &'a mut Tree,
         content: C,
-        style: <Theme as StyleSheet>::Style,
+        class: &'a <Theme as Catalog>::Class<'b>,
         state: &'a mut context_menu::State,
     ) -> Self
     where
@@ -58,23 +63,25 @@ where
             position,
             tree,
             content: content.into(),
-            style,
+            class,
             state,
         }
     }
 
     /// Turn this [`ContextMenuOverlay`] into an overlay [`Element`](overlay::Element).
+    #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(Box::new(self))
     }
 }
 
-impl<'a, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
-    for ContextMenuOverlay<'a, Message, Theme, Renderer>
+impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+    for ContextMenuOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
-    Theme: StyleSheet,
+    Theme: 'a + Catalog,
+    'b: 'a,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds);
@@ -109,7 +116,7 @@ where
     ) {
         let bounds = layout.bounds();
 
-        let style_sheet = theme.active(&self.style);
+        let style_sheet = theme.style(self.class, status::Status::Active);
 
         // Background
         if (bounds.width > 0.) && (bounds.height > 0.) {
@@ -130,7 +137,7 @@ where
         let content_layout = layout
             .children()
             .next()
-            .expect("Native: Layout should have a content layout.");
+            .expect("widgets: Layout should have a content layout.");
 
         // Modal
         self.content.as_widget().draw(
@@ -156,7 +163,7 @@ where
         let layout_children = layout
             .children()
             .next()
-            .expect("Native: Layout should have a content layout.");
+            .expect("widgets: Layout should have a content layout.");
 
         let mut forward_event_to_children = true;
 
@@ -188,7 +195,7 @@ where
                 Status::Captured
             }
 
-            Event::Window(_id, window::Event::Resized { .. }) => {
+            Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
                 forward_event_to_children = false;
                 Status::Captured
@@ -230,7 +237,7 @@ where
             layout
                 .children()
                 .next()
-                .expect("Native: Layout should have a content layout."),
+                .expect("widgets: Layout should have a content layout."),
             cursor,
             viewport,
             renderer,

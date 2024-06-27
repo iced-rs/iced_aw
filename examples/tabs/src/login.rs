@@ -15,6 +15,7 @@ pub enum LoginMessage {
     LoginPressed,
 }
 
+#[derive(Default)]
 pub struct LoginTab {
     username: String,
     password: String,
