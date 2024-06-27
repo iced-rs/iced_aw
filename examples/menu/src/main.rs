@@ -3,7 +3,7 @@ use iced::widget::{
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Border, Color, Element, Length, Size};
+use iced::{alignment, theme, Border, Color, Element, Length, Size, Theme};
 
 use iced_aw::menu::{self, Item, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
@@ -13,6 +13,7 @@ use iced_aw::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
 
 pub fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
+        .theme(App::theme)
         .font(BOOTSTRAP_FONT_BYTES)
         .window_size(Size::new(1000.0, 600.0))
         .run()
@@ -454,6 +455,10 @@ impl App {
             .style(back_style);
 
         back.into()
+    }
+
+    fn theme(&self) -> Theme {
+        self.theme.clone()
     }
 }
 
