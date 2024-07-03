@@ -115,15 +115,18 @@ where
     ///     * the function that will be called if a tab is selected by the user.
     ///         It takes the index of the selected tab.
     pub fn new_with_tabs<F>(
-        tabs: Vec<(TabId, TabLabel, Element<'a, Message, Theme, Renderer>)>,
+        tabs: impl IntoIterator<Item = (TabId, TabLabel, Element<'a, Message, Theme, Renderer>)>,
         on_select: F,
     ) -> Self
     where
         F: 'static + Fn(TabId) -> Message,
     {
-        let mut tab_labels = Vec::with_capacity(tabs.len());
-        let mut elements = Vec::with_capacity(tabs.len());
-        let mut indices = Vec::with_capacity(tabs.len());
+        let tabs = tabs.into_iter();
+        let n_tabs = tabs.size_hint().0;
+
+        let mut tab_labels = Vec::with_capacity(n_tabs);
+        let mut elements = Vec::with_capacity(n_tabs);
+        let mut indices = Vec::with_capacity(n_tabs);
 
         for (id, tab_label, element) in tabs {
             tab_labels.push((id.clone(), tab_label));
