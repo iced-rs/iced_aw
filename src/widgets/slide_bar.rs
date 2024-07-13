@@ -34,7 +34,7 @@ where
     /// Background color of the bar
     pub background: Option<Color>,
     /// Border radius of the bar
-    pub border_radius: [f32; 4],
+    pub border_radius: f32,
     /// Border width of the bar
     pub border_width: f32,
     /// Border color of the bar
@@ -85,7 +85,7 @@ where
             height: None,
             color: Color::from([0.5; 3]),
             background: None,
-            border_radius: [5.0; 4],
+            border_radius: 5.0,
             border_width: 1.0,
             border_color: Color::BLACK,
             step: T::from(1),

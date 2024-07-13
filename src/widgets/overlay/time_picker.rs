@@ -115,7 +115,7 @@ where
             cancel_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
@@ -123,7 +123,7 @@ where
             submit_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
@@ -969,7 +969,7 @@ where
     let font_size = 1.2 * renderer.default_size().0;
 
     let mut digital_clock_row = Row::<Message, Theme, Renderer>::new()
-        .align_items(Alignment::Center)
+        .align_y(Alignment::Center)
         .height(Length::Shrink)
         .width(Length::Shrink)
         .spacing(1);
@@ -986,7 +986,7 @@ where
         .push(
             // Hour
             Column::new()
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Hour arrow
@@ -1012,7 +1012,7 @@ where
         )
         .push(
             Column::new()
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .height(Length::Shrink)
                 .push(
                     // Up Minute arrow
@@ -1041,7 +1041,7 @@ where
             )
             .push(
                 Column::new()
-                    .align_items(Alignment::Center)
+                    .align_x(Alignment::Center)
                     .height(Length::Shrink)
                     .push(
                         // Up Minute arrow
@@ -1733,14 +1733,14 @@ where
             cancel_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),

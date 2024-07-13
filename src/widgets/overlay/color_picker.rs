@@ -21,7 +21,7 @@ use iced::{
         widget::{self, tree::Tree},
         Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
     },
-    alignment::{self, Horizontal, Vertical},
+    alignment::{Horizontal, Vertical},
     event,
     keyboard,
     mouse::{self, Cursor},
@@ -109,7 +109,7 @@ where
             state: overlay_state,
             cancel_button: Button::new(
                 iced::widget::Text::new(icon_to_string(Bootstrap::X))
-                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
             )
@@ -117,7 +117,7 @@ where
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
                 iced::widget::Text::new(icon_to_string(Bootstrap::Check))
-                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill)
                     .font(crate::BOOTSTRAP_FONT),
             )
@@ -972,14 +972,14 @@ where
     for _ in 0..4 {
         rgba_colors = rgba_colors.push(
             Row::new()
-                .align_items(Alignment::Center)
+                .align_y(Alignment::Center)
                 .spacing(SPACING)
                 .padding(PADDING)
                 .height(Length::Fill)
                 .push(
                     widget::Text::new("X:")
-                        .horizontal_alignment(Horizontal::Center)
-                        .vertical_alignment(Vertical::Center),
+                        .align_x(Horizontal::Center)
+                        .align_y(Vertical::Center),
                 )
                 .push(
                     Row::new()
@@ -988,8 +988,8 @@ where
                 )
                 .push(
                     widget::Text::new("XXX")
-                        .horizontal_alignment(Horizontal::Center)
-                        .vertical_alignment(Vertical::Center),
+                        .align_x(Horizontal::Center)
+                        .align_y(Vertical::Center),
                 ),
         );
     }

@@ -376,8 +376,8 @@ where
             Text::<Theme, Renderer>::new(icon.to_string())
                 .size(size)
                 .font(font.unwrap_or_default())
-                .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Center)
+                .align_x(alignment::Horizontal::Center)
+                // .align_y(alignment::Horizontal::Center)
                 .shaping(iced::advanced::text::Shaping::Advanced)
                 .width(Length::Shrink)
         }
@@ -395,8 +395,7 @@ where
             Text::<Theme, Renderer>::new(text)
                 .size(size)
                 .font(font.unwrap_or_default())
-                .horizontal_alignment(alignment::Horizontal::Center)
-                .vertical_alignment(alignment::Vertical::Center)
+                .align_x(alignment::Horizontal::Center)
                 .shaping(text::Shaping::Advanced)
                 .width(Length::Shrink)
         }
@@ -409,16 +408,16 @@ where
                     .push(
                         match tab_label {
                             TabLabel::Icon(icon) => Column::new()
-                                .align_items(Alignment::Center)
+                                .align_x(Alignment::Center)
                                 .push(layout_icon(icon, self.icon_size + 1.0, self.font)),
 
                             TabLabel::Text(text) => Column::new()
                                 .padding(5.0)
-                                .align_items(Alignment::Center)
+                                .align_x(Alignment::Center)
                                 .push(layout_text(text, self.text_size + 1.0, self.text_font)),
 
                             TabLabel::IconText(icon, text) => {
-                                let mut column = Column::new().align_items(Alignment::Center);
+                                let mut column = Column::new().align_x(Alignment::Center);
 
                                 match self.position {
                                     Position::Top => {
@@ -437,7 +436,7 @@ where
                                     Position::Right => {
                                         column = column.push(
                                             Row::new()
-                                                .align_items(Alignment::Center)
+                                                .align_y(Alignment::Center)
                                                 .push(layout_text(
                                                     text,
                                                     self.text_size + 1.0,
@@ -453,7 +452,7 @@ where
                                     Position::Left => {
                                         column = column.push(
                                             Row::new()
-                                                .align_items(Alignment::Center)
+                                                .align_y(Alignment::Center)
                                                 .push(layout_icon(
                                                     icon,
                                                     self.icon_size + 1.0,
@@ -487,7 +486,7 @@ where
                         .width(self.tab_width)
                         .height(self.height),
                     )
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .padding(self.padding)
                     .width(self.tab_width);
 
@@ -496,7 +495,7 @@ where
                         Row::new()
                             .width(Length::Fixed(self.close_size * 1.3 + 1.0))
                             .height(Length::Fixed(self.close_size * 1.3 + 1.0))
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                     );
                 }
 
@@ -505,7 +504,7 @@ where
             .width(self.width)
             .height(self.height)
             .spacing(self.spacing)
-            .align_items(Alignment::Center);
+            .align_y(Alignment::Center);
 
         let element: Element<Message, Theme, Renderer> = Element::new(row);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
