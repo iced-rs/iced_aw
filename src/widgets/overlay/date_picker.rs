@@ -107,7 +107,7 @@ where
                 text::Text::new(icon_to_string(Bootstrap::X))
                     .font(crate::BOOTSTRAP_FONT)
                     .size(font_size)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
@@ -116,7 +116,7 @@ where
                 text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(crate::BOOTSTRAP_FONT)
                     .size(font_size)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
@@ -399,7 +399,7 @@ where
                 Row::new()
                     .width(Length::Shrink)
                     .spacing(SPACING)
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .push(
                         // Left Month arrow
                         Container::new(
@@ -429,7 +429,7 @@ where
                 Row::new()
                     .width(Length::Shrink)
                     .spacing(SPACING)
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .push(
                         // Left Year arrow
                         Container::new(
@@ -483,7 +483,7 @@ where
 
         let col = Column::<Message, Theme, Renderer>::new()
             .spacing(SPACING)
-            .align_items(Alignment::Center)
+            .align_x(Alignment::Center)
             .push(month_year)
             .push(days);
 
@@ -948,14 +948,14 @@ where
             cancel_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::X))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
                 text::Text::new(icon_to_string(Bootstrap::Check))
                     .font(BOOTSTRAP_FONT)
-                    .horizontal_alignment(Horizontal::Center)
+                    .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),

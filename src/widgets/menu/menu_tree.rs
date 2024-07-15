@@ -226,7 +226,7 @@ where
 
         let offset_bounds = Rectangle::new(offset_position, offset_size);
         let children_bounds = Rectangle::new(children_position, children_size);
-        let check_bounds = pad_rectangle(children_bounds, [check_bounds_width; 4].into());
+        let check_bounds = pad_rectangle(children_bounds, check_bounds_width.into());
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
 

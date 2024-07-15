@@ -50,7 +50,7 @@ impl Default for Quad {
             quad_border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: [0.0, 0.0, 0.0, 0.0].into(),
+                radius: 0.0.into(),
             },
             quad_shadow: Shadow::default(),
 
@@ -58,7 +58,7 @@ impl Default for Quad {
             bg_border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: [0.0, 0.0, 0.0, 0.0].into(),
+                radius: 0.0.into(),
             },
             bg_shadow: Shadow::default(),
         }
