@@ -143,7 +143,7 @@ trait Tab {
             .spacing(20)
             .push(Text::new(self.title()).size(HEADER_SIZE))
             .push(self.content())
-            .align_items(iced::Alignment::Center);
+            .align_x(iced::Alignment::Center);
 
         Container::new(column)
             .width(Length::Fill)

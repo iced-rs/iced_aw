@@ -82,7 +82,7 @@ impl TabBarExample {
                             .padding(5.0),
                     )
                     .push(Button::new(Text::new("New")).on_press(Message::NewTab))
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .padding(10.0)
                     .spacing(5.0),
             )

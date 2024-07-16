@@ -50,7 +50,7 @@ impl NumberInputDemo {
             column1 = column1.push(
                 Row::new()
                     .spacing(10)
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .push(lb_minute)
                     .push(txt_minute),
             );

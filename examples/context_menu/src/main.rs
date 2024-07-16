@@ -37,7 +37,7 @@ impl ContextMenuExample {
         let underlay = Container::new(
             Row::new()
                 .spacing(10)
-                .align_items(Alignment::Center)
+                .align_y(Alignment::Center)
                 .push(Button::new(Text::new("right click me!")).on_press(Message::ButtonClicked))
                 .push(Text::new(format!(
                     "Last message: {}",

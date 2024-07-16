@@ -85,7 +85,7 @@ impl Example {
         let content = Column::new()
             .width(Length::Fill)
             .height(Length::Fill)
-            .align_items(Alignment::Center)
+            .align_x(Alignment::Center)
             .spacing(10)
             .push(selection_list)
             .push(Text::new("Which is your favorite language?"))

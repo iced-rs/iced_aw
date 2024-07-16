@@ -169,7 +169,7 @@ impl RandStrings {
             .push(line_spacing_input)
             .push(line_minimal_length_input)
             .height(iced::Length::Shrink)
-            .align_items(iced::Alignment::Center);
+            .align_x(iced::Alignment::Center);
 
         Row::new()
             .push(ctrls)

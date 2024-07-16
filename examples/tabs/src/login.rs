@@ -57,7 +57,7 @@ impl Tab for LoginTab {
     fn content(&self) -> Element<'_, Self::Message> {
         let content: Element<'_, LoginMessage> = Container::new(
             Column::new()
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .max_width(600)
                 .padding(20)
                 .spacing(16)
@@ -78,18 +78,14 @@ impl Tab for LoginTab {
                     Row::new()
                         .spacing(10)
                         .push(
-                            Button::new(
-                                Text::new("Clear").horizontal_alignment(Horizontal::Center),
-                            )
-                            .width(Length::Fill)
-                            .on_press(LoginMessage::ClearPressed),
+                            Button::new(Text::new("Clear").align_x(Horizontal::Center))
+                                .width(Length::Fill)
+                                .on_press(LoginMessage::ClearPressed),
                         )
                         .push(
-                            Button::new(
-                                Text::new("Login").horizontal_alignment(Horizontal::Center),
-                            )
-                            .width(Length::Fill)
-                            .on_press(LoginMessage::LoginPressed),
+                            Button::new(Text::new("Login").align_x(Horizontal::Center))
+                                .width(Length::Fill)
+                                .on_press(LoginMessage::LoginPressed),
                         ),
                 ),
         )

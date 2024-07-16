@@ -46,7 +46,7 @@ impl BadgeExample {
                 .fold(content, |col, (i, (name, count))| {
                     col.push(
                         Row::new()
-                            .align_items(Alignment::Center)
+                            .align_y(Alignment::Center)
                             .push(Text::new(name).width(Length::Fill))
                             .push(
                                 badge(Text::new(format!("{count}")).size(BADGE_TEXT_SIZE))
@@ -80,7 +80,7 @@ impl BadgeExample {
         Container::new(
             Column::new()
                 .spacing(10)
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .push(content_messages)
                 .push(content_all),
         )

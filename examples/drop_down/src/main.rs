@@ -79,7 +79,7 @@ impl DropDownExample {
             .padding(20)
             .width(Length::Fill)
             .height(Length::Fill)
-            .align_items(iced::Alignment::Center)
+            .align_x(iced::Alignment::Center)
             .push(drop_down)
             .into()
     }

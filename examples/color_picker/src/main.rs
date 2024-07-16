@@ -65,7 +65,7 @@ impl ColorPickerExample {
         );
 
         let row = Row::new()
-            .align_items(Alignment::Center)
+            .align_y(Alignment::Center)
             .spacing(10)
             .push(color_picker)
             .push(Text::new(format!("Color: {:?}", self.color)));

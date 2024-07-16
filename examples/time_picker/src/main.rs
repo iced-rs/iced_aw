@@ -57,7 +57,7 @@ impl TimePickerExample {
         .use_24h();
 
         let row = Row::new()
-            .align_items(Alignment::Center)
+            .align_y(Alignment::Center)
             .spacing(10)
             .push(timepicker)
             .push(Text::new(format!("Time: {}", self.time)));

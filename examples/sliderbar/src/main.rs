@@ -39,11 +39,11 @@ impl SlideBarExample {
             .push(
                 Text::new(format!("Value is {}", self.value))
                     .width(Length::Fill)
-                    .vertical_alignment(iced::alignment::Vertical::Center)
-                    .horizontal_alignment(iced::alignment::Horizontal::Center),
+                    .align_y(iced::alignment::Vertical::Center)
+                    .align_x(iced::alignment::Horizontal::Center),
             )
             .push(bar)
-            .align_items(iced::Alignment::Center);
+            .align_x(iced::Alignment::Center);
 
         Container::new(content_all)
             .width(Length::Fill)

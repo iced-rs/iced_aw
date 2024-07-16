@@ -56,7 +56,7 @@ impl DatePickerExample {
         );
 
         let row = Row::new()
-            .align_items(Alignment::Center)
+            .align_y(Alignment::Center)
             .spacing(10)
             .push(datepicker)
             .push(Text::new(format!("Date: {}", self.date,)));

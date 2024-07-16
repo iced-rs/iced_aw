@@ -1,3 +1,4 @@
+use iced::border::Radius;
 use iced::widget::{
     button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input,
     toggler, vertical_slider,
@@ -189,7 +190,7 @@ impl App {
                 (button(
                     text("Button")
                         .width(Length::Fill)
-                        .vertical_alignment(alignment::Vertical::Center),
+                        .align_y(alignment::Vertical::Center),
                     )
                     .width(Length::Fill)
                     .on_press(Message::Debug("Button".into()))
@@ -419,7 +420,7 @@ impl App {
         .draw_path(menu::DrawPath::Backdrop)
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
-                radius: [6.0; 4].into(),
+                radius: Radius::new(6.0),
                 ..Default::default()
             },
             ..primary(theme, status)
@@ -430,7 +431,7 @@ impl App {
             mb,
             horizontal_space().width(295),
         ]
-        .align_items(alignment::Alignment::Center);
+        .align_y(alignment::Alignment::Center);
 
         let c = col![
             vertical_space().height(500),
@@ -477,7 +478,7 @@ fn labeled_button(
     msg: Message,
 ) -> button::Button<Message, iced::Theme, iced::Renderer> {
     base_button(
-        text(label).vertical_alignment(alignment::Vertical::Center),
+        text(label).align_y(alignment::Vertical::Center),
         msg,
     )
 }
@@ -495,15 +496,15 @@ fn submenu_button(label: &str) -> button::Button<Message, iced::Theme, iced::Ren
         row![
             text(label)
                 .width(Length::Fill)
-                .vertical_alignment(alignment::Vertical::Center),
+                .align_y(alignment::Vertical::Center),
             text(iced_aw::bootstrap::icon_to_string(
                 Bootstrap::CaretRightFill
             ))
             .font(BOOTSTRAP_FONT)
             .width(Length::Shrink)
-            .vertical_alignment(alignment::Vertical::Center),
+            .align_y(alignment::Vertical::Center),
         ]
-        .align_items(iced::Alignment::Center),
+        .align_y(iced::Alignment::Center),
         Message::Debug(label.into()),
     )
     .width(Length::Fill)
@@ -520,7 +521,7 @@ fn separator() -> quad::Quad {
     quad::Quad {
         quad_color: Color::from([0.5; 3]).into(),
         quad_border: Border {
-            radius: [4.0; 4].into(),
+            radius: Radius::new(4.0),
             ..Default::default()
         },
         inner_bounds: InnerBounds::Ratio(0.98, 0.2),
@@ -556,7 +557,7 @@ fn labeled_separator(label: &'_ str) -> Element<'_, Message, iced::Theme, iced::
         q_1,
         text(label)
             .height(Length::Fill)
-            .vertical_alignment(alignment::Vertical::Center),
+            .align_y(alignment::Vertical::Center),
         q_2,
     ]
     .height(20.0)
@@ -570,7 +571,7 @@ fn circle(color: Color) -> quad::Quad {
         quad_color: color.into(),
         inner_bounds: InnerBounds::Square(radius * 2.0),
         quad_border: Border {
-            radius: [radius; 4].into(),
+            radius: Radius::new(radius),
             ..Default::default()
         },
         height: Length::Fixed(20.0),

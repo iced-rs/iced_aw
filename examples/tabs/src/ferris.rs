@@ -44,7 +44,7 @@ impl Tab for FerrisTab {
     fn content(&self) -> Element<'_, Self::Message> {
         let content: Element<'_, FerrisMessage> = Container::new(
             Column::new()
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .max_width(600)
                 .padding(20)
                 .spacing(16)

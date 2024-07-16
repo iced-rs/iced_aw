@@ -43,7 +43,7 @@ impl NumberInputDemo {
         Container::new(
             Row::new()
                 .spacing(10)
-                .align_items(Alignment::Center)
+                .align_y(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
         )
