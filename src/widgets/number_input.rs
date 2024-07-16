@@ -441,7 +441,7 @@ where
             .bounds();
         let dec_bounds = mod_children
             .next()
-            .expect("fail to get decreate mod layout")
+            .expect("fail to get decrease mod layout")
             .bounds();
 
         if self.min == self.max {
@@ -471,95 +471,108 @@ where
                 if !text_input.is_focused() {
                     return event::Status::Ignored;
                 }
-                let (key, modifiers) = match ke {
-                    keyboard::Event::KeyPressed { key, modifiers, .. } => (key, modifiers),
+                let (key, text) = match ke {
+                    keyboard::Event::KeyPressed { key, text, .. } => (key, text),
                     keyboard::Event::ModifiersChanged(_) => {
                         return forward_to_text(event, shell, child, clipboard)
                     }
                     keyboard::Event::KeyReleased { .. } => return event::Status::Ignored,
                 };
-
-                match key {
-                    keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
-                        self.decrease_value(shell);
-                        event::Status::Captured
-                    }
-                    keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
-                        self.increase_value(shell);
-                        event::Status::Captured
-                    }
-                    keyboard::Key::Named(
-                        keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowRight,
-                    ) => forward_to_text(event, shell, child, clipboard),
-                    keyboard::Key::Named(keyboard::key::Named::Backspace)
-                        if !T::zero().eq(&self.value) =>
-                    {
-                        let mut new_val = self.value.to_string();
-                        match text_input.cursor().state(&Value::new(&new_val)) {
-                            cursor::State::Index(idx) if idx >= 1 && idx <= new_val.len() => {
-                                _ = new_val.remove(idx - 1);
-                            }
-                            cursor::State::Selection { start, end }
-                                if start <= new_val.len() && end <= new_val.len() =>
-                            {
-                                new_val.replace_range(start.min(end)..start.max(end), "");
-                            }
-                            _ => return event::Status::Ignored,
-                        }
-
-                        if new_val.is_empty() {
-                            new_val = T::zero().to_string();
-                        }
-
-                        match T::from_str(&new_val) {
-                            Ok(val) if (self.min..self.max).contains(&val) && val != self.value => {
-                                self.value = val;
-                                forward_to_text(event, shell, child, clipboard)
-                            }
-                            Ok(_) => event::Status::Captured,
-                            _ => event::Status::Ignored,
-                        }
-                    }
-                    keyboard::Key::Named(_) | keyboard::Key::Unidentified => event::Status::Ignored,
-                    keyboard::Key::Character(c) => {
-                        if modifiers.command() && matches!(c.as_ref(), "a" | "c") {
+                match text {
+                    Some(text) => {
+                        if text == "\u{1}" || text == "\u{3}" {
+                            // CTRL + a and CTRL + c
                             return forward_to_text(event, shell, child, clipboard);
-                        }
+                        } else if text == "\u{8}" {
+                            // Backspace
+                            if !T::zero().eq(&self.value) {
+                                let mut new_val = self.value.to_string();
+                                match text_input.cursor().state(&Value::new(&new_val)) {
+                                    cursor::State::Index(idx)
+                                        if idx >= 1 && idx <= new_val.len() =>
+                                    {
+                                        _ = new_val.remove(idx - 1);
+                                    }
+                                    cursor::State::Selection { start, end }
+                                        if start <= new_val.len() && end <= new_val.len() =>
+                                    {
+                                        new_val.replace_range(start.min(end)..start.max(end), "");
+                                    }
+                                    _ => return event::Status::Ignored,
+                                }
 
-                        let input = if modifiers.command() && c.as_ref() == "v" {
-                            match clipboard.read(iced::advanced::clipboard::Kind::Standard) {
-                                Some(paste) => paste,
-                                None => return event::Status::Ignored,
+                                if new_val.is_empty() {
+                                    new_val = T::zero().to_string();
+                                }
+
+                                match T::from_str(&new_val) {
+                                    Ok(val)
+                                        if (self.min..self.max).contains(&val)
+                                            && val != self.value =>
+                                    {
+                                        self.value = val;
+                                        forward_to_text(event, shell, child, clipboard)
+                                    }
+                                    Ok(_) => event::Status::Captured,
+                                    _ => event::Status::Ignored,
+                                }
+                            } else {
+                                event::Status::Ignored
                             }
-                        } else if c.parse::<i64>().is_err() && c != "-" {
-                            return event::Status::Ignored;
                         } else {
-                            c.to_string()
-                        };
-                        let input = input.trim();
+                            let input = if text == "\u{16}" {
+                                // CTRL + v
+                                match clipboard.read(iced::advanced::clipboard::Kind::Standard) {
+                                    Some(paste) => paste,
+                                    None => return event::Status::Ignored,
+                                }
+                            } else if text.parse::<i64>().is_err() && text != "-" {
+                                return event::Status::Ignored;
+                            } else {
+                                text.to_string()
+                            };
 
-                        let mut new_val = self.value.to_string();
-                        match text_input.cursor().state(&Value::new(&new_val)) {
-                            cursor::State::Index(idx) if idx <= new_val.len() => {
-                                new_val.insert_str(idx, input);
-                            }
-                            cursor::State::Selection { start, end }
-                                if start <= new_val.len() && end <= new_val.len() =>
-                            {
-                                new_val.replace_range(start.min(end)..end.max(start), input);
-                            }
-                            _ => return event::Status::Ignored,
-                        }
+                            let input = input.trim();
 
-                        match T::from_str(&new_val) {
-                            Ok(val) if (self.min..self.max).contains(&val) && val != self.value => {
-                                self.value = val;
-                                forward_to_text(event, shell, child, clipboard)
+                            let mut new_val = self.value.to_string();
+                            match text_input.cursor().state(&Value::new(&new_val)) {
+                                cursor::State::Index(idx) if idx <= new_val.len() => {
+                                    new_val.insert_str(idx, input);
+                                }
+                                cursor::State::Selection { start, end }
+                                    if start <= new_val.len() && end <= new_val.len() =>
+                                {
+                                    new_val.replace_range(start.min(end)..end.max(start), input);
+                                }
+                                _ => return event::Status::Ignored,
                             }
-                            Ok(_) => event::Status::Captured,
-                            _ => event::Status::Ignored,
+
+                            match T::from_str(&new_val) {
+                                Ok(val)
+                                    if (self.min..self.max).contains(&val) && val != self.value =>
+                                {
+                                    self.value = val;
+                                    forward_to_text(event, shell, child, clipboard)
+                                }
+                                Ok(_) => event::Status::Captured,
+                                _ => event::Status::Ignored,
+                            }
                         }
                     }
+                    None => match key {
+                        keyboard::Key::Named(keyboard::key::Named::ArrowDown) => {
+                            self.decrease_value(shell);
+                            event::Status::Captured
+                        }
+                        keyboard::Key::Named(keyboard::key::Named::ArrowUp) => {
+                            self.increase_value(shell);
+                            event::Status::Captured
+                        }
+                        keyboard::Key::Named(
+                            keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowRight,
+                        ) => forward_to_text(event, shell, child, clipboard),
+                        _ => event::Status::Ignored,
+                    },
                 }
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta })
