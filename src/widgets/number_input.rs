@@ -482,10 +482,12 @@ where
                     Some(text) => {
                         if text == "\u{1}" || text == "\u{3}" {
                             // CTRL + a and CTRL + c
-                            return forward_to_text(event, shell, child, clipboard);
+                            forward_to_text(event, shell, child, clipboard)
                         } else if text == "\u{8}" {
                             // Backspace
-                            if !T::zero().eq(&self.value) {
+                            if T::zero().eq(&self.value) {
+                                event::Status::Ignored
+                            } else {
                                 let mut new_val = self.value.to_string();
                                 match text_input.cursor().state(&Value::new(&new_val)) {
                                     cursor::State::Index(idx)
@@ -516,8 +518,6 @@ where
                                     Ok(_) => event::Status::Captured,
                                     _ => event::Status::Ignored,
                                 }
-                            } else {
-                                event::Status::Ignored
                             }
                         } else {
                             let input = if text == "\u{16}" {
