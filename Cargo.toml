@@ -35,6 +35,7 @@ spinner = []
 context_menu = []
 slide_bar = []
 drop_down = []
+sidebar = []
 
 default = [
     "badge",
@@ -54,6 +55,7 @@ default = [
     "spinner",
     "drop_down",
     "menu",
+    "sidebar",
 ]
 
 [dependencies]
@@ -94,6 +96,7 @@ members = [
     "examples/WidgetIDReturn",
     "examples/drop_down",
     "examples/menu",
+    "examples/sidebar",
 ]
 
 [workspace.dependencies.iced]

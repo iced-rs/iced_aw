@@ -35,3 +35,6 @@ pub mod menu_bar;
 
 #[cfg(feature = "context_menu")]
 pub mod context_menu;
+
+#[cfg(feature = "sidebar")]
+pub mod sidebar;

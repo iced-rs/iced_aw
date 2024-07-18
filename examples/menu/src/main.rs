@@ -477,10 +477,7 @@ fn labeled_button(
     label: &str,
     msg: Message,
 ) -> button::Button<Message, iced::Theme, iced::Renderer> {
-    base_button(
-        text(label).align_y(alignment::Vertical::Center),
-        msg,
-    )
+    base_button(text(label).align_y(alignment::Vertical::Center), msg)
 }
 
 fn debug_button(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {

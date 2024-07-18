@@ -146,6 +146,10 @@ mod platform {
     #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
     pub use {crate::widgets::drop_down, drop_down::DropDown};
+
+    #[doc(no_inline)]
+    #[cfg(feature = "sidebar")]
+    pub use crate::widgets::sidebar;
 }
 
 #[doc(no_inline)]
