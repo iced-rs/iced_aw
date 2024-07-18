@@ -852,14 +852,7 @@ fn draw_tab<Theme, Renderer>(
                 let cross_layout = children
                     .next()
                     .expect("Graphics: Expected close icon layout.");
-                render_close(
-                    renderer,
-                    &style,
-                    cross_layout,
-                    cursor,
-                    close_size,
-                    viewport,
-                );
+                render_close(renderer, &style, cross_layout, cursor, close_size, viewport);
                 let label_layout = children
                     .next()
                     .expect("Graphics: Layout should have a label layout");
@@ -889,14 +882,7 @@ fn draw_tab<Theme, Renderer>(
                 let cross_layout = children
                     .next()
                     .expect("Graphics: Expected close icon layout.");
-                render_close(
-                    renderer,
-                    &style,
-                    cross_layout,
-                    cursor,
-                    close_size,
-                    viewport,
-                );
+                render_close(renderer, &style, cross_layout, cursor, close_size, viewport);
             }
         }
     } else {

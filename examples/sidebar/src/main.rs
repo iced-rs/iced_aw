@@ -40,10 +40,14 @@ impl From<Icon> for char {
 }
 
 fn main() -> iced::Result {
-    iced::application("Sidebar example", TabBarExample::update, TabBarExample::view)
-        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
-        .font(ICON_BYTES)
-        .run()
+    iced::application(
+        "Sidebar example",
+        TabBarExample::update,
+        TabBarExample::view,
+    )
+    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(ICON_BYTES)
+    .run()
 }
 
 #[derive(Default)]
