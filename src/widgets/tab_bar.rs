@@ -377,7 +377,7 @@ where
                 .size(size)
                 .font(font.unwrap_or_default())
                 .align_x(alignment::Horizontal::Center)
-                // .align_y(alignment::Horizontal::Center)
+                .align_y(alignment::Vertical::Center)
                 .shaping(iced::advanced::text::Shaping::Advanced)
                 .width(Length::Shrink)
         }
