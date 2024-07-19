@@ -2,23 +2,23 @@ use iced::{
     widget::{Container, Row, Text},
     Alignment, Element, Length,
 };
-use iced_aw::number_input;
+use iced_aw::widgets::typed_input;
 
 #[derive(Default, Debug)]
-pub struct NumberInputDemo {
+pub struct TypedInputDemo {
     value: f32,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(f32),
+    TypedInpChanged(f32),
 }
 
 fn main() -> iced::Result {
     iced::application(
-        "Number Input example",
-        NumberInputDemo::update,
-        NumberInputDemo::view,
+        "Typed Input example",
+        TypedInputDemo::update,
+        TypedInputDemo::view,
     )
     .window_size(iced::Size {
         width: 250.0,
@@ -28,23 +28,21 @@ fn main() -> iced::Result {
     .run()
 }
 
-impl NumberInputDemo {
+impl TypedInputDemo {
     fn update(&mut self, message: self::Message) {
-        let Message::NumInpChanged(val) = message;
+        let Message::TypedInpChanged(val) = message;
         println!("Value changed to {:?}", val);
         self.value = val;
     }
 
     fn view(&self) -> Element<Message> {
-        let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(self.value, -10.0..250.0, Message::NumInpChanged)
-            .style(number_input::number_input::primary)
-            .step(0.5);
+        let lb_minute = Text::new("Typed Input:");
+        let txt_minute = typed_input::TypedInput::new(self.value, Message::TypedInpChanged);
 
         Container::new(
             Row::new()
                 .spacing(10)
-                .align_y(Alignment::Center)
+                .align_items(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
         )
