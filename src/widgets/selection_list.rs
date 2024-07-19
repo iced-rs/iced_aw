@@ -16,7 +16,11 @@ use iced::{
     alignment::{Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
-    widget::{container, scrollable, text::{self, LineHeight}, Container, Scrollable},
+    widget::{
+        container, scrollable,
+        text::{self, LineHeight},
+        Container, Scrollable,
+    },
     Border, Element, Event, Font, Length, Pixels, Rectangle, Shadow, Size,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
