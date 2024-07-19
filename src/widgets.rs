@@ -23,6 +23,9 @@ pub mod number_input;
 pub type NumberInput<'a, T, Message, Theme, Renderer> =
     number_input::NumberInput<'a, T, Message, Theme, Renderer>;
 
+#[cfg(feature = "typed_input")]
+pub mod typed_input;
+
 #[cfg(feature = "card")]
 pub mod card;
 #[cfg(feature = "card")]
