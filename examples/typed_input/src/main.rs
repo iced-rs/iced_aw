@@ -37,12 +37,12 @@ impl TypedInputDemo {
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Typed Input:");
-        let txt_minute = typed_input::TypedInput::new(self.value, Message::TypedInpChanged);
+        let txt_minute = typed_input::TypedInput::new(&self.value, Message::TypedInpChanged);
 
         Container::new(
             Row::new()
                 .spacing(10)
-                .align_items(Alignment::Center)
+                .align_y(Alignment::Center)
                 .push(lb_minute)
                 .push(txt_minute),
         )

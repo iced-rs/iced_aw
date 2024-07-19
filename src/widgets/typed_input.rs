@@ -2,17 +2,21 @@
 //!
 //! *This API requires the following crate features to be activated: `typed_input`*
 
-use iced::mouse::{self, Cursor};
-use iced::{widget::text_input::{self, TextInput}, Size, Event, event};
-use iced::advanced::layout::{Node, Limits, Layout};
-use iced::advanced::widget::{Tree, Widget, tree::{State, Tag}, Operation};
-use iced::advanced::{Clipboard, Shell};
-use iced::{Length, Rectangle, Element};
-
-use std::{
-    fmt::Display,
-    str::FromStr,
+use iced::advanced::layout::{Layout, Limits, Node};
+use iced::advanced::widget::{
+    tree::{State, Tag},
+    Operation, Tree, Widget,
 };
+use iced::advanced::{Clipboard, Shell};
+use iced::mouse::{self, Cursor};
+use iced::{
+    event,
+    widget::text_input::{self, TextInput},
+    Event, Size,
+};
+use iced::{Element, Length, Rectangle};
+
+use std::{fmt::Display, str::FromStr};
 
 /// The default padding
 const DEFAULT_PADDING: f32 = 5.0;
@@ -72,26 +76,24 @@ where
     /// It expects:
     /// - the current value
     /// - a function that produces a message when the [`TypedInput`] changes
-    pub fn new<F>(value: T, on_changed: F) -> Self
+    pub fn new<F>(value: &T, on_changed: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'a + Clone,
     {
         let padding = DEFAULT_PADDING;
-        // let move_value = value.clone();
-        // let convert_to_t = move |s: String| on_changed(T::from_str(&s).unwrap_or(move_value.clone()));
 
-        Self { 
-            value: value.clone(), 
+        Self {
+            value: value.clone(),
             text_input: text_input::TextInput::new("", format!("{value}").as_str())
                 .on_input(InternalMessage::OnChange)
                 .on_submit(InternalMessage::OnSubmit)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
-                .class(<Theme as text_input::Catalog>::default()), 
+                .class(<Theme as text_input::Catalog>::default()),
             text: value.to_string(),
             on_change: Box::new(on_changed),
-            on_submit: None, 
+            on_submit: None,
             font: Renderer::Font::default(),
         }
     }
@@ -157,11 +159,7 @@ where
 
     /// Sets the class of the input of the [`TypedInput`].
     #[must_use]
-    pub fn class(
-        mut self,
-        class: impl Into<<Theme as text_input::Catalog>::Class<'a>>,
-    ) -> Self
-    {
+    pub fn class(mut self, class: impl Into<<Theme as text_input::Catalog>::Class<'a>>) -> Self {
         self.text_input = self.text_input.class(class);
         self
     }
@@ -176,49 +174,48 @@ where
     Theme: text_input::Catalog,
 {
     fn tag(&self) -> Tag {
-        Tag::of::<()>()
+        <TextInput<_, _, _> as Widget<_, _, _>>::tag(&self.text_input)
     }
     fn state(&self) -> State {
-        State::new(())
+        <TextInput<_, _, _> as Widget<_, _, _>>::state(&self.text_input)
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree {
-            tag: self.text_input.tag(),
-            state: self.text_input.state(),
-            children: self.text_input.children(),
-        }]
+        <TextInput<_, _, _> as Widget<_, _, _>>::children(&self.text_input)
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(
-            &[&self.text_input],
-            |state, content| content.diff(state),
-            |&content| Tree {
-                tag: content.tag(),
-                state: content.state(),
-                children: content.children(),
-            },
-        );
+    fn diff(&self, state: &mut Tree) {
+        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&self.text_input, state);
     }
 
     fn size(&self) -> Size<Length> {
         <TextInput<_, _, _> as Widget<_, _, _>>::size(&self.text_input)
     }
 
-    fn layout(&self, tree: &mut Tree,renderer: &Renderer, limits: &Limits) -> Node {
-        let content = <TextInput<_, _, _> as Widget<_, _, _>>::layout(&self.text_input, &mut tree.children[0], renderer, limits);
-        let size = limits.resolve(Length::Shrink, Length::Shrink, content.size());
-        Node::with_children(
-            size,
-            vec![ content ]
-        )
+    fn layout(&self, state: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        <TextInput<_, _, _> as Widget<_, _, _>>::layout(&self.text_input, state, renderer, limits)
     }
 
-    fn draw(&self, tree: &Tree, renderer: &mut Renderer, theme: &Theme, style: &iced::advanced::renderer::Style, layout: Layout<'_>, cursor: Cursor, viewport: &Rectangle) {
-        let mut children = layout.children();
-        let text_input_layout = children.next().expect("fail to get TextInput layout");
-        <TextInput<_, _, _> as Widget<_, _, _>>::draw(&self.text_input, &tree.children[0], renderer, theme, style, text_input_layout, cursor, viewport);
+    fn draw(
+        &self,
+        state: &Tree,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &iced::advanced::renderer::Style,
+        layout: Layout<'_>,
+        cursor: Cursor,
+        viewport: &Rectangle,
+    ) {
+        <TextInput<_, _, _> as Widget<_, _, _>>::draw(
+            &self.text_input,
+            state,
+            renderer,
+            theme,
+            style,
+            layout,
+            cursor,
+            viewport,
+        );
     }
 
     fn mouse_interaction(
@@ -229,17 +226,30 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        <TextInput<_, _, _> as Widget<_, _, _>>::mouse_interaction(&self.text_input, &state.children[0], layout.children().next().expect("TypedInput inner child Textbox was not created."), cursor, viewport, renderer)
+        <TextInput<_, _, _> as Widget<_, _, _>>::mouse_interaction(
+            &self.text_input,
+            state,
+            layout,
+            cursor,
+            viewport,
+            renderer,
+        )
     }
 
     fn operate(
         &self,
-        tree: &mut Tree,
+        state: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
-        <TextInput<_, _, _> as Widget<_, _, _>>::operate(&self.text_input, &mut tree.children[0], layout.children().next().expect("TypedInput inner child Textbox was not created."), renderer, operation)
+        <TextInput<_, _, _> as Widget<_, _, _>>::operate(
+            &self.text_input,
+            state,
+            layout,
+            renderer,
+            operation,
+        );
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
@@ -254,17 +264,19 @@ where
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        let text_input_layout = layout.children().next().expect("fail to get text_input layout");
-
-        let child = &mut state.children[0];
-
         let mut messages = Vec::new();
         let mut sub_shell = Shell::new(&mut messages);
         let status = self.text_input.on_event(
-                child, event, text_input_layout, cursor, renderer, clipboard, &mut sub_shell, viewport,
-            );
-        // todo!()
-        // println!("shell: {:?}", shell);
+            state,
+            event,
+            layout,
+            cursor,
+            renderer,
+            clipboard,
+            &mut sub_shell,
+            viewport,
+        );
+
         if let Some(redraw) = sub_shell.redraw_request() {
             shell.request_redraw(redraw);
         }
@@ -296,7 +308,6 @@ where
         }
         status
     }
-        
 }
 
 impl<'a, T, Message, Theme, Renderer> From<TypedInput<'a, T, Message, Theme, Renderer>>

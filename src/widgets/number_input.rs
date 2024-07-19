@@ -30,6 +30,7 @@ use std::{
 };
 
 use crate::style::{self, Status};
+use crate::widgets::typed_input::TypedInput;
 pub use crate::{
     core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::{
@@ -37,7 +38,6 @@ pub use crate::{
         StyleFn,
     },
 };
-use crate::widgets::typed_input::TypedInput;
 
 /// The default padding
 const DEFAULT_PADDING: f32 = 5.0;
@@ -125,7 +125,7 @@ where
             max: Self::set_max(bounds.end_bound()),
             padding,
             size: None,
-            content: TypedInput::new(value, on_changed)
+            content: TypedInput::new(&value, on_changed)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(Theme::default_input()),
@@ -453,14 +453,11 @@ where
 
         let child = state.children.get_mut(0).expect("fail to get child");
         let text_input = child
-            .children
-            .get_mut(0)
-            .expect("fail to get text input")
             .state
             .downcast_mut::<text_input::State<Renderer::Paragraph>>();
         let modifiers = state.state.downcast_mut::<ModifierState>();
 
-        let current_text = self.content.text().to_string();
+        let current_text = self.content.text().to_owned();
 
         let mut forward_to_text = |event, shell, child, clipboard| {
             self.content.on_event(
@@ -492,9 +489,7 @@ where
                             }
                             let mut new_val = current_text;
                             match text_input.cursor().state(&Value::new(&new_val)) {
-                                cursor::State::Index(idx)
-                                    if idx >= 1 && idx <= new_val.len() =>
-                                {
+                                cursor::State::Index(idx) if idx >= 1 && idx <= new_val.len() => {
                                     _ = new_val.remove(idx - 1);
                                 }
                                 cursor::State::Selection { start, end }
@@ -511,17 +506,14 @@ where
 
                             match T::from_str(&new_val) {
                                 Ok(val)
-                                    if (self.min..self.max).contains(&val)
-                                        && val != self.value =>
+                                    if (self.min..self.max).contains(&val) && val != self.value =>
                                 {
                                     self.value = val;
                                     forward_to_text(event, shell, child, clipboard)
                                 }
-                                Ok(val)
-                                if (self.min..self.max).contains(&val) =>
-                            {
-                                forward_to_text(event, shell, child, clipboard)
-                            }
+                                Ok(val) if (self.min..self.max).contains(&val) => {
+                                    forward_to_text(event, shell, child, clipboard)
+                                }
                                 Ok(_) => event::Status::Captured,
                                 _ => event::Status::Ignored,
                             }
@@ -560,11 +552,10 @@ where
                                     self.value = val;
                                     forward_to_text(event, shell, child, clipboard)
                                 }
-                                Ok(val)
-                                    if (self.min..self.max).contains(&val) => 
-                                    forward_to_text(event, shell, child, clipboard),
-                                Ok(_) =>
-                                    event::Status::Captured,
+                                Ok(val) if (self.min..self.max).contains(&val) => {
+                                    forward_to_text(event, shell, child, clipboard)
+                                }
+                                Ok(_) => event::Status::Captured,
                                 _ => event::Status::Ignored,
                             }
                         }
@@ -579,9 +570,10 @@ where
                             event::Status::Captured
                         }
                         keyboard::Key::Named(
-                            keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowRight |
-                            keyboard::key::Named::Home |
-                            keyboard::key::Named::End,
+                            keyboard::key::Named::ArrowLeft
+                            | keyboard::key::Named::ArrowRight
+                            | keyboard::key::Named::Home
+                            | keyboard::key::Named::End,
                         ) => forward_to_text(event, shell, child, clipboard),
                         _ => event::Status::Ignored,
                     },
