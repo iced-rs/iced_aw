@@ -266,7 +266,7 @@ where
                 if row_children.len() > 1 {
                     match self.align {
                         Alignment::Start => {
-                            let element = row_children.first().expect("Always exists.");
+                            let element = row_children.last().expect("Always exists.");
                             let bounds = element.bounds();
                             let mut position = bounds.position();
                             let mut element_node =
