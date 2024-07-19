@@ -7,17 +7,16 @@ use crate::style::{
 
 use iced::{
     advanced::{
-        graphics,
         layout::{Limits, Node},
         renderer,
-        text::{Paragraph, Text},
+        text::{paragraph, Paragraph, Text},
         widget::{tree, Tree},
         Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
-    widget::{container, scrollable, text, text::LineHeight, Container, Scrollable},
+    widget::{container, scrollable, text::{self, LineHeight}, Container, Scrollable},
     Border, Element, Event, Font, Length, Pixels, Rectangle, Shadow, Size,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
@@ -180,12 +179,12 @@ where
 
     fn diff(&self, tree: &mut Tree) {
         tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
-        let state = tree.state.downcast_mut::<State>();
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
         state.values = self
             .options
             .iter()
-            .map(|_| graphics::text::Paragraph::new())
+            .map(|_| paragraph::Plain::<Renderer::Paragraph>::default())
             .collect();
     }
 
@@ -194,17 +193,17 @@ where
     }
 
     fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<State>()
+        tree::Tag::of::<State<Renderer::Paragraph>>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::new(self.options))
+        tree::State::new(State::<Renderer::Paragraph>::new(self.options))
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
 
-        let state = tree.state.downcast_mut::<State>();
+        let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
         let limits = limits.width(self.width).height(self.height);
 
@@ -338,12 +337,12 @@ where
 }
 
 /// A Paragraph cache to enhance speed of layouting.
-#[derive(Debug, Default, Clone)]
-pub struct State {
-    values: Vec<graphics::text::Paragraph>,
+#[derive(Default, Clone)]
+pub struct State<P: Paragraph> {
+    values: Vec<paragraph::Plain<P>>,
 }
 
-impl State {
+impl<P: Paragraph> State<P> {
     /// Creates a new [`State`], representing an unfocused [`TextInput`].
     pub fn new<T>(options: &[T]) -> Self
     where
@@ -353,7 +352,7 @@ impl State {
         Self {
             values: options
                 .iter()
-                .map(|_| graphics::text::Paragraph::new())
+                .map(|_| paragraph::Plain::<P>::default())
                 .collect(),
         }
     }
