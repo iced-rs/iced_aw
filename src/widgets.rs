@@ -122,9 +122,11 @@ pub type DropDown<'a, Overlay, Message, Renderer> =
 
 #[cfg(feature = "sidebar")]
 pub mod sidebar;
+#[cfg(feature = "sidebar")]
 /// A sidebar to show tabs on the side.
 pub type Sidebar<'a, Message, TabId, Theme, Renderer> =
     sidebar::Sidebar<'a, Message, TabId, Theme, Renderer>;
+#[cfg(feature = "sidebar")]
 /// A [`SidebarWithContent`] widget for showing a [`Sidebar`](super::sidebar::SideBar)
 pub type SidebarWithContent<'a, Message, TabId, Theme, Renderer> =
     sidebar::SidebarWithContent<'a, Message, TabId, Theme, Renderer>;
