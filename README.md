@@ -157,7 +157,7 @@ See the example [here](./examples/drop_down/src/main.rs)
 
 Please take a look into our examples on how to use Sidebar.
 
-Enable TabBars with the feature `sidebar`.
+Enable Sidebar with the feature `sidebar`.
 
 Also included in this feature, are two widgets `sidebar::column::FlushColumn` and `sidebar::row::FlushRow` that flushes the end/start element to the opposite direction to the alignment of the container.
 
