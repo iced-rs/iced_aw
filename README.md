@@ -148,6 +148,19 @@ See the example [here](./examples/context_menu/src/main.rs)
 
 See the example [here](./examples/drop_down/src/main.rs)
 
+### Sidebar
+
+<div align="center">
+
+![Modal showcase](./images/showcase/sidebar.png)
+</div>
+
+Please take a look into our examples on how to use Sidebar.
+
+Enable TabBars with the feature `sidebar`.
+
+Also included in this feature, are two widgets `sidebar::column::FlushColumn` and `sidebar::row::FlushRow` that flushes the end/start element to the opposite direction to the alignment of the container.
+
 ## Quickstart features
 
 Quickstart features are pretty handy to start and experiment having everything like colors or icons available. Nevertheless, it is recommended to disable these features once the GUI is ready for production and to only include the things you really need.
