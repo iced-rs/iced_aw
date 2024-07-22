@@ -390,8 +390,8 @@ where
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
-        let max_item_slice = self.items.len()-1.min(slice.end_index);
-        let max_tree_slice = tree.children.len()-1.min(slice.end_index);
+        let max_item_slice = self.items.len() - 1.min(slice.end_index);
+        let max_tree_slice = tree.children.len() - 1.min(slice.end_index);
 
         self.items[slice.start_index..=max_item_slice]
             .iter()
