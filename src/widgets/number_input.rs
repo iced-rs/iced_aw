@@ -503,10 +503,10 @@ where
                             if new_val.is_empty() {
                                 new_val = T::zero().to_string();
                             }
-                            
+
                             match T::from_str(&new_val) {
                                 Ok(val)
-                                    if  val >= self.min && val <= self.max && val != self.value =>
+                                    if val >= self.min && val <= self.max && val != self.value =>
                                 {
                                     self.value = val;
                                     forward_to_text(event, shell, child, clipboard)
