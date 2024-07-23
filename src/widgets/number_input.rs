@@ -503,15 +503,15 @@ where
                             if new_val.is_empty() {
                                 new_val = T::zero().to_string();
                             }
-
+                            
                             match T::from_str(&new_val) {
                                 Ok(val)
-                                    if (self.min..self.max).contains(&val) && val != self.value =>
+                                    if  val >= self.min && val <= self.max && val != self.value =>
                                 {
                                     self.value = val;
                                     forward_to_text(event, shell, child, clipboard)
                                 }
-                                Ok(val) if (self.min..self.max).contains(&val) => {
+                                Ok(val) if val >= self.min && val <= self.max => {
                                     forward_to_text(event, shell, child, clipboard)
                                 }
                                 Ok(_) => event::Status::Captured,
@@ -547,12 +547,12 @@ where
 
                             match T::from_str(&new_val) {
                                 Ok(val)
-                                    if (self.min..self.max).contains(&val) && val != self.value =>
+                                    if val >= self.min && val <= self.max && val != self.value =>
                                 {
                                     self.value = val;
                                     forward_to_text(event, shell, child, clipboard)
                                 }
-                                Ok(val) if (self.min..self.max).contains(&val) => {
+                                Ok(val) if val >= self.min && val <= self.max => {
                                     forward_to_text(event, shell, child, clipboard)
                                 }
                                 Ok(_) => event::Status::Captured,
