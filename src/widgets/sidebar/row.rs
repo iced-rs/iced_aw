@@ -237,7 +237,7 @@ where
             &self.children,
             &mut tree.children,
         );
-        let mut container_y = std::f32::MAX;
+        let mut container_y = f32::MAX;
         let mut container_height = 0.0f32;
         for column in node.children() {
             if column.size().height > container_height {

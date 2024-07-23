@@ -25,6 +25,10 @@ pub type NumberInput<'a, T, Message, Theme, Renderer> =
 
 #[cfg(feature = "typed_input")]
 pub mod typed_input;
+#[cfg(feature = "typed_input")]
+/// A field that can only be filled with a specific type.
+pub type TypedInput<'a, T, Message, Theme, Renderer> =
+    typed_input::TypedInput<'a, T, Message, Theme, Renderer>;
 
 #[cfg(feature = "card")]
 pub mod card;
