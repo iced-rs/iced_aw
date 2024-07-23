@@ -17,7 +17,7 @@ use iced::{
     widget::{
         text::LineHeight,
         text_input::{self, cursor, Value},
-        Column, Container, Row, Text, TextInput,
+        Column, Container, Row, Text,
     },
     Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels, Point,
     Rectangle, Shadow, Size,
@@ -30,6 +30,7 @@ use std::{
 };
 
 use crate::style::{self, Status};
+use crate::widgets::typed_input::TypedInput;
 pub use crate::{
     core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     style::{
@@ -81,7 +82,7 @@ where
     /// The text size of the [`NumberInput`].
     size: Option<f32>,
     /// The underlying element of the [`NumberInput`].
-    content: TextInput<'a, Message, Theme, Renderer>,
+    content: TypedInput<'a, T, Message, Theme, Renderer>,
     /// The ``on_change`` event of the [`NumberInput`].
     on_change: Box<dyn Fn(T) -> Message>,
     /// The style of the [`NumberInput`].
@@ -116,9 +117,6 @@ where
         T: 'static,
     {
         let padding = DEFAULT_PADDING;
-        let convert_to_num = move |s: String| {
-            on_changed(T::from_str(&s).unwrap_or(if s.is_empty() { T::zero() } else { value }))
-        };
 
         Self {
             value,
@@ -127,8 +125,7 @@ where
             max: Self::set_max(bounds.end_bound()),
             padding,
             size: None,
-            content: TextInput::new("", format!("{value}").as_str())
-                .on_input(convert_to_num)
+            content: TypedInput::new(&value, on_changed)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(Theme::default_input()),
@@ -346,7 +343,7 @@ where
             .shrink(padding);
         let content = self
             .content
-            .layout(&mut tree.children[0], renderer, &limits, None);
+            .layout(&mut tree.children[0], renderer, &limits);
         let limits2 = Limits::new(Size::new(0.0, 0.0), content.size());
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
 
@@ -460,6 +457,8 @@ where
             .downcast_mut::<text_input::State<Renderer::Paragraph>>();
         let modifiers = state.state.downcast_mut::<ModifierState>();
 
+        let current_text = self.content.text().to_owned();
+
         let mut forward_to_text = |event, shell, child, clipboard| {
             self.content.on_event(
                 child, event, content, cursor, renderer, clipboard, shell, viewport,
@@ -485,39 +484,38 @@ where
                             forward_to_text(event, shell, child, clipboard)
                         } else if text == "\u{8}" {
                             // Backspace
-                            if T::zero().eq(&self.value) {
-                                event::Status::Ignored
-                            } else {
-                                let mut new_val = self.value.to_string();
-                                match text_input.cursor().state(&Value::new(&new_val)) {
-                                    cursor::State::Index(idx)
-                                        if idx >= 1 && idx <= new_val.len() =>
-                                    {
-                                        _ = new_val.remove(idx - 1);
-                                    }
-                                    cursor::State::Selection { start, end }
-                                        if start <= new_val.len() && end <= new_val.len() =>
-                                    {
-                                        new_val.replace_range(start.min(end)..start.max(end), "");
-                                    }
-                                    _ => return event::Status::Ignored,
+                            if current_text == T::zero().to_string() {
+                                return event::Status::Ignored;
+                            }
+                            let mut new_val = current_text;
+                            match text_input.cursor().state(&Value::new(&new_val)) {
+                                cursor::State::Index(idx) if idx >= 1 && idx <= new_val.len() => {
+                                    _ = new_val.remove(idx - 1);
                                 }
+                                cursor::State::Selection { start, end }
+                                    if start <= new_val.len() && end <= new_val.len() =>
+                                {
+                                    new_val.replace_range(start.min(end)..start.max(end), "");
+                                }
+                                _ => return event::Status::Ignored,
+                            }
 
-                                if new_val.is_empty() {
-                                    new_val = T::zero().to_string();
-                                }
+                            if new_val.is_empty() {
+                                new_val = T::zero().to_string();
+                            }
 
-                                match T::from_str(&new_val) {
-                                    Ok(val)
-                                        if (self.min..self.max).contains(&val)
-                                            && val != self.value =>
-                                    {
-                                        self.value = val;
-                                        forward_to_text(event, shell, child, clipboard)
-                                    }
-                                    Ok(_) => event::Status::Captured,
-                                    _ => event::Status::Ignored,
+                            match T::from_str(&new_val) {
+                                Ok(val)
+                                    if val >= self.min && val <= self.max && val != self.value =>
+                                {
+                                    self.value = val;
+                                    forward_to_text(event, shell, child, clipboard)
                                 }
+                                Ok(val) if val >= self.min && val <= self.max => {
+                                    forward_to_text(event, shell, child, clipboard)
+                                }
+                                Ok(_) => event::Status::Captured,
+                                _ => event::Status::Ignored,
                             }
                         } else {
                             let input = if text == "\u{16}" {
@@ -526,7 +524,7 @@ where
                                     Some(paste) => paste,
                                     None => return event::Status::Ignored,
                                 }
-                            } else if text.parse::<i64>().is_err() && text != "-" {
+                            } else if text.parse::<i64>().is_err() && text != "-" && text != "." {
                                 return event::Status::Ignored;
                             } else {
                                 text.to_string()
@@ -534,7 +532,7 @@ where
 
                             let input = input.trim();
 
-                            let mut new_val = self.value.to_string();
+                            let mut new_val = current_text;
                             match text_input.cursor().state(&Value::new(&new_val)) {
                                 cursor::State::Index(idx) if idx <= new_val.len() => {
                                     new_val.insert_str(idx, input);
@@ -549,9 +547,12 @@ where
 
                             match T::from_str(&new_val) {
                                 Ok(val)
-                                    if (self.min..self.max).contains(&val) && val != self.value =>
+                                    if val >= self.min && val <= self.max && val != self.value =>
                                 {
                                     self.value = val;
+                                    forward_to_text(event, shell, child, clipboard)
+                                }
+                                Ok(val) if val >= self.min && val <= self.max => {
                                     forward_to_text(event, shell, child, clipboard)
                                 }
                                 Ok(_) => event::Status::Captured,
@@ -569,7 +570,10 @@ where
                             event::Status::Captured
                         }
                         keyboard::Key::Named(
-                            keyboard::key::Named::ArrowLeft | keyboard::key::Named::ArrowRight,
+                            keyboard::key::Named::ArrowLeft
+                            | keyboard::key::Named::ArrowRight
+                            | keyboard::key::Named::Home
+                            | keyboard::key::Named::End,
                         ) => forward_to_text(event, shell, child, clipboard),
                         _ => event::Status::Ignored,
                     },
@@ -661,7 +665,7 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Theme,
-        _style: &renderer::Style,
+        style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
@@ -684,9 +688,9 @@ where
             &state.children[0],
             renderer,
             theme,
+            style,
             content_layout,
             cursor,
-            None,
             viewport,
         );
         let is_decrease_disabled = self.value <= self.min || self.min == self.max;

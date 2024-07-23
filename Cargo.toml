@@ -27,7 +27,8 @@ tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "icons", "iced/canvas"]
 wrap = []
-number_input = ["num-format", "num-traits"]
+number_input = ["num-format", "num-traits", "typed_input"]
+typed_input = []
 selection_list = []
 menu = []
 quad = []
@@ -82,6 +83,7 @@ members = [
     "examples/badge",
     "examples/card",
     "examples/number_input",
+    "examples/typed_input",
     "examples/date_picker",
     "examples/color_picker",
     "examples/grid",
