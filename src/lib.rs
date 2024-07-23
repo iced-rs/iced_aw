@@ -120,6 +120,10 @@ mod platform {
     pub use {crate::widgets::number_input, number_input::NumberInput};
 
     #[doc(no_inline)]
+    #[cfg(feature = "typed_input")]
+    pub use {crate::widgets::typed_input, typed_input::TypedInput};
+
+    #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
     pub use {crate::widgets::selection_list, selection_list::SelectionList};
 

@@ -125,7 +125,7 @@ where
             max: Self::set_max(bounds.end_bound()),
             padding,
             size: None,
-            content: TypedInput::new(&value, on_changed)
+            content: TypedInput::new("", &value, on_changed)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(Theme::default_input()),
@@ -640,7 +640,7 @@ where
             .bounds();
         let dec_bounds = mod_children
             .next()
-            .expect("fail to get decreate mod layout")
+            .expect("fail to get decrease mod layout")
             .bounds();
         let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
         let is_decrease_disabled = self.value <= self.min || self.min == self.max;
@@ -682,7 +682,7 @@ where
             .bounds();
         let dec_bounds = mod_children
             .next()
-            .expect("fail to get decreate mod layout")
+            .expect("fail to get decrease mod layout")
             .bounds();
         self.content.draw(
             &state.children[0],

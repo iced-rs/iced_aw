@@ -33,7 +33,6 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// }
 ///
 /// let value = 12;
-/// let max = 1275;
 ///
 /// let input = TypedInput::new(
 ///     value,
@@ -76,7 +75,7 @@ where
     /// It expects:
     /// - the current value
     /// - a function that produces a message when the [`TypedInput`] changes
-    pub fn new<F>(value: &T, on_changed: F) -> Self
+    pub fn new<F>(placeholder: &str, value: &T, on_changed: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'a + Clone,
@@ -85,7 +84,7 @@ where
 
         Self {
             value: value.clone(),
-            text_input: text_input::TextInput::new("", format!("{value}").as_str())
+            text_input: text_input::TextInput::new(placeholder, format!("{value}").as_str())
                 .on_input(InternalMessage::OnChange)
                 .on_submit(InternalMessage::OnSubmit)
                 .padding(padding)

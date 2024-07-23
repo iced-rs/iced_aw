@@ -234,7 +234,7 @@ where
             &self.children,
             &mut tree.children,
         );
-        let mut container_x = std::f32::MAX;
+        let mut container_x = f32::MAX;
         let mut container_width = 0.0f32;
         for row in node.children() {
             if row.size().width > container_width {

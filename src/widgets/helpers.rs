@@ -329,6 +329,25 @@ where
     crate::NumberInput::new(value, bounds, on_changed)
 }
 
+#[cfg(feature = "typed_input")]
+/// Shortcut helper to create a [`TypedInput`] Widget.
+///
+/// [`TypedInput`]: crate::TypedInput
+#[must_use]
+pub fn typed_input<'a, T, Message, Theme, Renderer, F>(
+    value: &T,
+    on_changed: F,
+) -> crate::TypedInput<'a, T, Message, Theme, Renderer>
+where
+    Message: Clone,
+    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Theme: iced::widget::text_input::Catalog,
+    F: 'static + Fn(T) -> Message + Copy,
+    T: 'static + std::fmt::Display + std::str::FromStr + Clone,
+{
+    crate::TypedInput::new("", value, on_changed)
+}
+
 #[cfg(feature = "selection_list")]
 /// Shortcut helper to create a [`SelectionList`] Widget.
 ///
