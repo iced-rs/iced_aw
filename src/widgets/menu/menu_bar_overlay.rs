@@ -10,7 +10,7 @@ use iced::{
     advanced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
-        widget::Tree,
+        widget::{Operation, Tree},
         Clipboard, Layout, Shell,
     },
     event, Event, Point, Rectangle, Size, Vector,
@@ -402,6 +402,64 @@ where
             renderer,
             viewport,
         )
+    }
+
+    fn operate(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        let bar = self.tree.state.downcast_ref::<MenuBarState>();
+        let Some(active) = bar.active_root else {
+            return;
+        };
+
+        // let viewport = layout.bounds();
+        let mut lc = layout.children();
+        let _bar_bounds = lc.next().unwrap().bounds();
+        let _roots_layout = lc.next().unwrap();
+
+        // let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
+        let menu_layouts_layout = lc.next().unwrap(); // Node{0, [menu_node...]}
+        let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
+
+        let active_root = &self.roots[active];
+        let active_tree = &mut self.tree.children[active];
+
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+            tree: &mut Tree,
+            item: &Item<'a, Message, Theme, Renderer>,
+            layout_iter: &mut impl Iterator<Item = Layout<'b>>,
+            renderer: &Renderer,
+            operation: &mut dyn Operation<()>,
+        ) {
+            let menu = item.menu.as_ref().expect("No menu defined in this item");
+            let menu_tree = &mut tree.children[1];
+
+            let Some(menu_layout) = layout_iter.next() else {
+                return;
+            };
+
+            menu.operate(menu_tree, menu_layout, renderer, operation);
+
+            operation.container(None, menu_layout.bounds(), &mut |operation| {
+                menu.items
+                    .iter() // [Item...]
+                    .zip(menu_tree.children.iter_mut()) // [item_tree...] // [widget_node...]
+                    .for_each(|(child, state)| {
+                        rec(state, child, layout_iter, renderer, operation);
+                    });
+            });
+        }
+
+        rec(
+            active_tree,
+            active_root,
+            &mut menu_layouts,
+            renderer,
+            operation,
+        );
     }
 
     fn draw(

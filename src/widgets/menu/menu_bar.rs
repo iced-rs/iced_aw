@@ -9,7 +9,7 @@ use iced::{
     advanced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
-        widget::{tree, Tree},
+        widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
     alignment, event, Element, Event, Length, Padding, Rectangle, Size,
@@ -256,6 +256,24 @@ where
             _ => Ignored,
         }
         .merge(status)
+    }
+
+    fn operate(
+        &self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        operation.container(None, layout.bounds(), &mut |operation| {
+            self.roots
+                .iter() // [Item...]
+                .zip(tree.children.iter_mut()) // [item_tree...]
+                .zip(layout.children()) // [widget_node...]
+                .for_each(|((child, state), layout)| {
+                    child.operate(state, layout, renderer, operation);
+                });
+        });
     }
 
     fn mouse_interaction(
