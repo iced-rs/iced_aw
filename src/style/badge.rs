@@ -130,10 +130,6 @@ pub fn warning(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WARNING, colors::BLACK);
 
     match status {
-        Status::Hovered => Style {
-            background: base.background,
-            ..base
-        },
         Status::Disabled => disabled(base),
         _ => base,
     }
@@ -145,10 +141,6 @@ pub fn info(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::INFO, colors::BLACK);
 
     match status {
-        Status::Hovered => Style {
-            background: base.background,
-            ..base
-        },
         Status::Disabled => disabled(base),
         _ => base,
     }
@@ -160,10 +152,6 @@ pub fn light(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::LIGHT, colors::BLACK);
 
     match status {
-        Status::Hovered => Style {
-            background: base.background,
-            ..base
-        },
         Status::Disabled => disabled(base),
         _ => base,
     }
@@ -175,10 +163,6 @@ pub fn dark(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::DARK, colors::WHITE);
 
     match status {
-        Status::Hovered => Style {
-            background: base.background,
-            ..base
-        },
         Status::Disabled => disabled(base),
         _ => base,
     }
@@ -190,10 +174,6 @@ pub fn white(_theme: &Theme, status: Status) -> Style {
     let base = from_color(colors::WHITE, colors::BLACK);
 
     match status {
-        Status::Hovered => Style {
-            background: base.background,
-            ..base
-        },
         Status::Disabled => disabled(base),
         _ => base,
     }

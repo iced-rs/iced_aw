@@ -729,11 +729,10 @@ where
 
     /// out: \[widget_tree, menu_tree]
     pub(super) fn children(&self) -> Vec<Tree> {
-        self.menu
-            .as_ref()
-            .map_or([Tree::new(&self.item)].into(), |m| {
-                [Tree::new(&self.item), m.tree()].into()
-            })
+        self.menu.as_ref().map_or_else(
+            || [Tree::new(&self.item)].into(),
+            |m| [Tree::new(&self.item), m.tree()].into(),
+        )
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
