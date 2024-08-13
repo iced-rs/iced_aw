@@ -37,8 +37,8 @@ impl TypedInputDemo {
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Typed Input:");
-        let txt_minute =
-            typed_input::TypedInput::new("Placeholder", &self.value, Message::TypedInpChanged);
+        let txt_minute = typed_input::TypedInput::new("Placeholder", &self.value)
+            .on_input(Message::TypedInpChanged);
 
         Container::new(
             Row::new()

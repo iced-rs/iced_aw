@@ -19,8 +19,8 @@ use iced::{
         text_input::{self, cursor, Value},
         Column, Container, Row, Text,
     },
-    Alignment, Background, Border, Color, Element, Event, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size,
+    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    Shadow, Size,
 };
 use num_traits::{bounds::Bounded, Num, NumAssignOps};
 use std::{
@@ -78,9 +78,9 @@ where
     /// The max value of the [`NumberInput`].
     max: T,
     /// The content padding of the [`NumberInput`].
-    padding: f32,
+    padding: iced::Padding,
     /// The text size of the [`NumberInput`].
-    size: Option<f32>,
+    size: Option<iced::Pixels>,
     /// The underlying element of the [`NumberInput`].
     content: TypedInput<'a, T, Message, Theme, Renderer>,
     /// The ``on_change`` event of the [`NumberInput`].
@@ -100,7 +100,7 @@ where
 impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
-    Message: Clone,
+    Message: Clone + 'a,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: number_input::ExtendedCatalog,
 {
@@ -111,12 +111,12 @@ where
     /// - the current value
     /// - the max value
     /// - a function that produces a message when the [`NumberInput`] changes
-    pub fn new<F>(value: T, bounds: impl RangeBounds<T>, on_changed: F) -> Self
+    pub fn new<F>(value: T, bounds: impl RangeBounds<T>, on_change: F) -> Self
     where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
     {
-        let padding = DEFAULT_PADDING;
+        let padding = DEFAULT_PADDING.into();
 
         Self {
             value,
@@ -125,11 +125,12 @@ where
             max: Self::set_max(bounds.end_bound()),
             padding,
             size: None,
-            content: TypedInput::new("", &value, on_changed)
+            content: TypedInput::new("", &value)
+                .on_input(on_change)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(Theme::default_input()),
-            on_change: Box::new(on_changed),
+            on_change: Box::new(on_change),
             class: <Theme as style::number_input::Catalog>::default(),
             font: Renderer::Font::default(),
             width: Length::Shrink,
@@ -154,7 +155,7 @@ where
 
     /// Sets the content width of the [`NumberInput`].
     #[must_use]
-    pub fn content_width(mut self, width: Length) -> Self {
+    pub fn content_width(mut self, width: impl Into<Length>) -> Self {
         self.content = self.content.width(width);
         self
     }
@@ -191,21 +192,23 @@ where
     /// focused and the enter key is pressed.
     #[must_use]
     pub fn on_submit(mut self, message: Message) -> Self {
-        self.content = self.content.on_submit(message);
+        self.content = self.content.on_submit(move |_| message.clone());
         self
     }
 
     /// Sets the padding of the [`NumberInput`].
     #[must_use]
-    pub fn padding(mut self, units: f32) -> Self {
-        self.padding = units;
-        self.content = self.content.padding(units);
+    pub fn padding(mut self, padding: impl Into<iced::Padding>) -> Self {
+        let padding = padding.into();
+        self.padding = padding;
+        self.content = self.content.padding(padding);
         self
     }
 
     /// Sets the text size of the [`NumberInput`].
     #[must_use]
-    pub fn size(mut self, size: f32) -> Self {
+    pub fn size(mut self, size: impl Into<iced::Pixels>) -> Self {
+        let size = size.into();
         self.size = Some(size);
         self.content = self.content.size(size);
         self
@@ -335,17 +338,16 @@ where
     }
 
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = Padding::from(self.padding);
         let num_size = self.size();
         let limits = limits
             .width(num_size.width)
             .height(Length::Shrink)
-            .shrink(padding);
+            .shrink(self.padding);
         let content = self
             .content
             .layout(&mut tree.children[0], renderer, &limits);
         let limits2 = Limits::new(Size::new(0.0, 0.0), content.size());
-        let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
 
         let icon_size = txt_size * 2.5 / 4.0;
         let btn_mod = |c| {
@@ -354,7 +356,12 @@ where
                 .center_x(Length::Shrink)
         };
 
-        let element = if self.padding < DEFAULT_PADDING {
+        let default_padding = Padding::from(DEFAULT_PADDING);
+
+        let element = if self.padding.top < default_padding.top
+            || self.padding.bottom < default_padding.bottom
+            || self.padding.right < default_padding.right
+        {
             Element::new(
                 Row::<Message, Theme, Renderer>::new()
                     .spacing(1)
@@ -712,9 +719,9 @@ where
             style::number_input::Catalog::style(theme, &self.class, Status::Active)
         };
 
-        let txt_size = self.size.unwrap_or_else(|| renderer.default_size().0);
+        let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
 
-        let icon_size = Pixels(txt_size * 2.5 / 4.0);
+        let icon_size = txt_size * 2.5 / 4.0;
 
         if self.ignore_buttons {
             return;
