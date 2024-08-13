@@ -14,7 +14,7 @@ use iced::{
     widget::text_input::{self, TextInput},
     Event, Size,
 };
-use iced::{Element, Length, Rectangle};
+use iced::{Element, Length, Padding, Pixels, Rectangle};
 
 use std::{fmt::Display, str::FromStr};
 
@@ -41,33 +41,36 @@ const DEFAULT_PADDING: f32 = 5.0;
 /// ```
 pub struct TypedInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 where
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: iced::advanced::text::Renderer,
     Theme: text_input::Catalog,
 {
     /// The current value of the [`TypedInput`].
     value: T,
-    /// The underlying element of the [`TypeInput`].
+    /// The underlying element of the [`TypedInput`].
     text_input: text_input::TextInput<'a, InternalMessage, Theme, Renderer>,
     text: String,
-    /// The ``on_change`` event of the [`TextInput`].
-    on_change: Box<dyn Fn(T) -> Message>,
-    /// The ``on_change`` event of the [`TextInput`].
-    on_submit: Option<Message>,
-    /// The font text of the [`TextInput`].
-    font: Renderer::Font,
+    /// The ``on_change`` event of the [`TypedInput`].
+    on_change: Option<Box<dyn 'a + Fn(T) -> Message>>,
+    /// The ``on_submit`` event of the [`TypedInput`].
+    #[allow(clippy::type_complexity)]
+    on_submit: Option<Box<dyn 'a + Fn(Result<T, String>) -> Message>>,
+    /// The ``on_paste`` event of the [`TypedInput`]
+    on_paste: Option<Box<dyn 'a + Fn(T) -> Message>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(clippy::enum_variant_names)]
 enum InternalMessage {
     OnChange(String),
     OnSubmit,
+    OnPaste(String),
 }
 
 impl<'a, T, Message, Theme, Renderer> TypedInput<'a, T, Message, Theme, Renderer>
 where
     T: Display + FromStr,
     Message: Clone,
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: iced::advanced::text::Renderer,
     Theme: text_input::Catalog,
 {
     /// Creates a new [`TypedInput`].
@@ -75,9 +78,9 @@ where
     /// It expects:
     /// - the current value
     /// - a function that produces a message when the [`TypedInput`] changes
-    pub fn new<F>(placeholder: &str, value: &T, on_changed: F) -> Self
+    #[must_use]
+    pub fn new(placeholder: &str, value: &T) -> Self
     where
-        F: 'static + Fn(T) -> Message + Copy,
         T: 'a + Clone,
     {
         let padding = DEFAULT_PADDING;
@@ -85,61 +88,110 @@ where
         Self {
             value: value.clone(),
             text_input: text_input::TextInput::new(placeholder, format!("{value}").as_str())
-                .on_input(InternalMessage::OnChange)
-                .on_submit(InternalMessage::OnSubmit)
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(<Theme as text_input::Catalog>::default()),
             text: value.to_string(),
-            on_change: Box::new(on_changed),
+            on_change: None,
             on_submit: None,
-            font: Renderer::Font::default(),
+            on_paste: None,
         }
     }
 
-    /// Gets the text value of the [`TypedInput`].
-    pub fn text(&self) -> &str {
-        &self.text
-    }
-
-    /// Sets the width of the [`TypedInput`].
+    /// Sets the [Id](text_input::Id) of the internal [`TextInput`]
     #[must_use]
-    pub fn width(mut self, width: Length) -> Self {
-        self.text_input = self.text_input.width(width);
+    pub fn id(mut self, id: text_input::Id) -> Self {
+        self.text_input = self.text_input.id(id);
         self
     }
 
-    /// Sets the [`Font`] of the [`Text`].
-    ///
-    /// [`Font`]: core::Font
-    /// [`Text`]: core::widget::Text
-    #[allow(clippy::needless_pass_by_value)]
+    /// Convert the [`TypedInput`] into a secure password input
     #[must_use]
-    pub fn font(mut self, font: Renderer::Font) -> Self {
-        self.font = font;
-        self.text_input = self.text_input.font(font);
+    pub fn secure(mut self, is_secure: bool) -> Self {
+        self.text_input = self.text_input.secure(is_secure);
+        self
+    }
+
+    /// Sets the message that should be produced when some valid text is typed into [`TypedInput`]
+    ///
+    /// If neither this method nor [`on_submit`](Self::on_submit) is called, the [`TypedInput`] will be disabled
+    #[must_use]
+    pub fn on_input<F>(mut self, callback: F) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        self.text_input = self.text_input.on_input(InternalMessage::OnChange);
+        self.on_change = Some(Box::new(callback));
         self
     }
 
     /// Sets the message that should be produced when the [`TextInput`] is
     /// focused and the enter key is pressed.
+    ///
+    /// If neither this method nor [`on_input`](Self::on_input) is called, the [`TypedInput`] will be disabled
     #[must_use]
-    pub fn on_submit(mut self, message: Message) -> Self {
-        self.on_submit = Some(message);
+    pub fn on_submit<F>(mut self, callback: F) -> Self
+    where
+        F: 'a + Fn(Result<T, String>) -> Message,
+    {
+        self.text_input = self
+            .text_input
+            .on_input(InternalMessage::OnChange)
+            .on_submit(InternalMessage::OnSubmit);
+        self.on_submit = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the message that should be produced when some text is pasted into the [`TypedInput`], resulting in a valid value
+    #[must_use]
+    pub fn on_paste<F>(mut self, callback: F) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        self.text_input = self.text_input.on_paste(InternalMessage::OnPaste);
+        self.on_paste = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the [Font](iced::advanced::text::Renderer::Font) of the [`TypedInput`].
+    #[must_use]
+    pub fn font(mut self, font: Renderer::Font) -> Self {
+        self.text_input = self.text_input.font(font);
+        self
+    }
+
+    /// Sets the [Icon](iced::widget::text_input::Icon) of the [`TypedInput`]
+    #[must_use]
+    pub fn icon(mut self, icon: iced::widget::text_input::Icon<Renderer::Font>) -> Self {
+        self.text_input = self.text_input.icon(icon);
+        self
+    }
+
+    /// Sets the width of the [`TypedInput`].
+    #[must_use]
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
+        self.text_input = self.text_input.width(width);
         self
     }
 
     /// Sets the padding of the [`TypedInput`].
     #[must_use]
-    pub fn padding(mut self, units: f32) -> Self {
-        self.text_input = self.text_input.padding(units);
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.text_input = self.text_input.padding(padding);
         self
     }
 
     /// Sets the text size of the [`TypedInput`].
     #[must_use]
-    pub fn size(mut self, size: f32) -> Self {
+    pub fn size(mut self, size: impl Into<Pixels>) -> Self {
         self.text_input = self.text_input.size(size);
+        self
+    }
+
+    /// Sets the [`text::LineHeight`](iced::widget::text::LineHeight) of the [`TypedInput`].
+    #[must_use]
+    pub fn line_height(mut self, line_height: impl Into<iced::widget::text::LineHeight>) -> Self {
+        self.text_input = self.text_input.line_height(line_height);
         self
     }
 
@@ -162,6 +214,11 @@ where
         self.text_input = self.text_input.class(class);
         self
     }
+
+    /// Gets the current text of the [`TypedInput`].
+    pub fn text(&self) -> &str {
+        &self.text
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -169,7 +226,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: Display + FromStr + Clone + PartialEq,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + iced::advanced::text::Renderer,
     Theme: text_input::Catalog,
 {
     fn tag(&self) -> Tag {
@@ -293,15 +350,33 @@ where
                     if let Ok(val) = T::from_str(&self.text) {
                         if self.value != val {
                             self.value = val.clone();
-                            shell.publish((self.on_change)(val));
+                            if let Some(on_change) = &self.on_change {
+                                shell.publish(on_change(val));
+                            }
                         }
                     }
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnSubmit => {
                     if let Some(on_submit) = &self.on_submit {
-                        shell.publish(on_submit.clone());
+                        let value = match T::from_str(&self.text) {
+                            Ok(v) => Ok(v),
+                            Err(_) => Err(self.text.clone()),
+                        };
+                        shell.publish(on_submit(value));
                     }
+                }
+                InternalMessage::OnPaste(value) => {
+                    self.text = value;
+                    if let Ok(val) = T::from_str(&self.text) {
+                        if self.value != val {
+                            self.value = val.clone();
+                            if let Some(on_paste) = &self.on_paste {
+                                shell.publish(on_paste(val));
+                            }
+                        }
+                    }
+                    shell.invalidate_layout();
                 }
             }
         }
@@ -314,7 +389,7 @@ impl<'a, T, Message, Theme, Renderer> From<TypedInput<'a, T, Message, Theme, Ren
 where
     T: 'a + Display + FromStr + Clone + PartialEq,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + iced::advanced::text::Renderer,
     Theme: 'a + text_input::Catalog,
 {
     fn from(typed_input: TypedInput<'a, T, Message, Theme, Renderer>) -> Self {
