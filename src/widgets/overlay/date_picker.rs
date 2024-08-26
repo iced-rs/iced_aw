@@ -44,13 +44,13 @@ use iced::{
 use std::collections::HashMap;
 
 /// The padding around the elements.
-const PADDING: f32 = 10.0;
+const PADDING: Padding = Padding::new(10.0);
 /// The spacing between the elements.
-const SPACING: f32 = 15.0;
+const SPACING: Pixels = Pixels(15.0);
 /// The padding of the day cells.
-const DAY_CELL_PADDING: f32 = 7.0;
+const DAY_CELL_PADDING: Padding = Padding::new(7.0);
 /// The spacing between the buttons.
-const BUTTON_SPACING: f32 = 5.0;
+const BUTTON_SPACING: Pixels = Pixels(5.0);
 
 /// The overlay of the [`DatePicker`](crate::widgets::DatePicker).
 #[allow(missing_debug_implementations)]
@@ -377,7 +377,7 @@ where
     #[allow(clippy::too_many_lines)]
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .shrink(Padding::from(PADDING))
+            .shrink(PADDING)
             .width(Length::Shrink)
             .height(Length::Shrink);
 
@@ -387,7 +387,7 @@ where
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
-        let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height + SPACING));
+        let limits = limits.shrink(Size::new(0.0, cancel_button.bounds().height + SPACING.0));
 
         // Month/Year
         let font_size = self.font_size;
@@ -499,18 +499,21 @@ where
 
         let mut col = element.as_widget().layout(col_tree, renderer, &limits);
         let col_bounds = col.bounds();
-        col = col.move_to(Point::new(col_bounds.x + PADDING, col_bounds.y + PADDING));
+        col = col.move_to(Point::new(
+            col_bounds.x + PADDING.left,
+            col_bounds.y + PADDING.top,
+        ));
 
         // Buttons
         let cancel_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
         let mut submit_button =
             self.submit_button
@@ -518,20 +521,23 @@ where
 
         let cancel_bounds = cancel_button.bounds();
         cancel_button = cancel_button.move_to(Point {
-            x: cancel_bounds.x + PADDING,
-            y: cancel_bounds.y + col.bounds().height + PADDING + SPACING,
+            x: cancel_bounds.x + PADDING.left,
+            y: cancel_bounds.y + col.bounds().height + PADDING.top + SPACING.0,
         });
 
         let submit_bounds = submit_button.bounds();
         submit_button = submit_button.move_to(Point {
-            x: submit_bounds.x + col.bounds().width - submit_bounds.width + PADDING,
-            y: submit_bounds.y + col.bounds().height + PADDING + SPACING,
+            x: submit_bounds.x + col.bounds().width - submit_bounds.width + PADDING.left,
+            y: submit_bounds.y + col.bounds().height + PADDING.top + SPACING.0,
         });
 
         let mut node = Node::with_children(
             Size::new(
-                col.bounds().width + (2.0 * PADDING),
-                col.bounds().height + cancel_button.bounds().height + (2.0 * PADDING) + SPACING,
+                col.bounds().width + PADDING.horizontal(),
+                col.bounds().height
+                    + cancel_button.bounds().height
+                    + PADDING.vertical()
+                    + SPACING.0,
             ),
             vec![col, cancel_button, submit_button],
         );

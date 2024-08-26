@@ -22,36 +22,24 @@ use iced::{
         Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event,
-    keyboard,
+    event, keyboard,
     mouse::{self, Cursor},
     touch,
     widget::{
         canvas::{self, LineCap, Path, Stroke},
         text, Button, Column, Row,
     },
-    Alignment,
-    Border,
-    Color,
-    Element,
-    Event,
-    Length,
-    Padding,
-    Point,
-    Rectangle,
-    Renderer, // the actual type
-    Shadow,
-    Size,
-    Vector,
+    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
+    Shadow, Size, Vector,
 };
 use std::collections::HashMap;
 
 /// The padding around the elements.
-const PADDING: f32 = 10.0;
+const PADDING: Padding = Padding::new(10.0);
 /// The spacing between the element.
-const SPACING: f32 = 15.0;
+const SPACING: Pixels = Pixels(15.0);
 /// The spacing between the buttons.
-const BUTTON_SPACING: f32 = 5.0;
+const BUTTON_SPACING: Pixels = Pixels(5.0);
 
 /// The step value of the keyboard change of the sat/value color values.
 const SAT_VALUE_STEP: f32 = 0.005;
@@ -564,7 +552,7 @@ where
         };
 
         let limits = Limits::new(Size::ZERO, bounds)
-            .shrink(Padding::from(PADDING))
+            .shrink(PADDING)
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(max_width)
@@ -603,13 +591,13 @@ where
 
         let (width, height) = if bounds.width > bounds.height {
             (
-                block1_node.size().width + block2_node.size().width + SPACING, // + (2.0 * PADDING as f32),
+                block1_node.size().width + block2_node.size().width + SPACING.0, // + (2.0 * PADDING as f32),
                 block2_node.size().height,
             )
         } else {
             (
                 block2_node.size().width,
-                block1_node.size().height + block2_node.size().height + SPACING,
+                block1_node.size().height + block2_node.size().height + SPACING.0,
             )
         };
 
@@ -912,7 +900,7 @@ where
         .height(Length::Fill);
 
     let block1_node = Column::<(), Theme, Renderer>::new()
-        .spacing(PADDING)
+        .spacing(PADDING.vertical() / 2.) // Average vertical padding
         .push(
             Row::new()
                 .width(Length::Fill)
@@ -925,7 +913,7 @@ where
         )
         .layout(color_picker.tree, renderer, &block1_limits);
 
-    block1_node.move_to(Point::new(bounds.x + PADDING, bounds.y + PADDING))
+    block1_node.move_to(Point::new(bounds.x + PADDING.left, bounds.y + PADDING.top))
 }
 
 /// Defines the layout of the 2. block of the color picker containing the RGBA part, Hex and buttons.
@@ -957,12 +945,14 @@ where
 
     let mut hex_text_layout = Row::<Message, Theme, Renderer>::new()
         .width(Length::Fill)
-        .height(Length::Fixed(renderer.default_size().0 + 2.0 * PADDING))
+        .height(Length::Fixed(
+            renderer.default_size().0 + PADDING.vertical(),
+        ))
         .layout(color_picker.tree, renderer, &hex_text_limits);
 
     let block2_limits = block2_limits.shrink(Size::new(
         0.0,
-        cancel_button.bounds().height + hex_text_layout.bounds().height + 2.0 * SPACING,
+        cancel_button.bounds().height + hex_text_layout.bounds().height + 2.0 * SPACING.0,
     ));
 
     // RGBA Colors
@@ -1008,20 +998,23 @@ where
         .layout(rgba_tree, renderer, &block2_limits);
 
     let rgba_bounds = rgba_colors.bounds();
-    rgba_colors = rgba_colors.move_to(Point::new(rgba_bounds.x + PADDING, rgba_bounds.y + PADDING));
+    rgba_colors = rgba_colors.move_to(Point::new(
+        rgba_bounds.x + PADDING.left,
+        rgba_bounds.y + PADDING.top,
+    ));
     let rgba_bounds = rgba_colors.bounds();
 
     // Hex text
     let hex_bounds = hex_text_layout.bounds();
     hex_text_layout = hex_text_layout.move_to(Point::new(
-        hex_bounds.x + PADDING,
-        hex_bounds.y + rgba_bounds.height + PADDING + SPACING,
+        hex_bounds.x + PADDING.left,
+        hex_bounds.y + rgba_bounds.height + PADDING.top + SPACING.0,
     ));
     let hex_bounds = hex_text_layout.bounds();
 
     // Buttons
     let cancel_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING).max(0.0));
+        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
     let mut cancel_button = color_picker.cancel_button.layout(
         &mut color_picker.tree.children[0],
@@ -1030,7 +1023,7 @@ where
     );
 
     let submit_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING).max(0.0));
+        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
     let mut submit_button = color_picker.submit_button.layout(
         &mut color_picker.tree.children[1],
@@ -1040,25 +1033,25 @@ where
 
     let cancel_bounds = cancel_button.bounds();
     cancel_button = cancel_button.move_to(Point::new(
-        cancel_bounds.x + PADDING,
-        cancel_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING + 2.0 * SPACING,
+        cancel_bounds.x + PADDING.left,
+        cancel_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING.top + 2.0 * SPACING.0,
     ));
     let cancel_bounds = cancel_button.bounds();
 
     let submit_bounds = submit_button.bounds();
     submit_button = submit_button.move_to(Point::new(
-        submit_bounds.x + rgba_colors.bounds().width - submit_bounds.width + PADDING,
-        submit_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING + 2.0 * SPACING,
+        submit_bounds.x + rgba_colors.bounds().width - submit_bounds.width + PADDING.left,
+        submit_bounds.y + rgba_bounds.height + hex_bounds.height + PADDING.top + 2.0 * SPACING.0,
     ));
 
     Node::with_children(
         Size::new(
-            rgba_bounds.width + (2.0 * PADDING),
+            rgba_bounds.width + PADDING.horizontal(),
             rgba_bounds.height
                 + hex_bounds.height
                 + cancel_bounds.height
-                + (2.0 * PADDING)
-                + (2.0 * SPACING),
+                + PADDING.vertical()
+                + (2.0 * SPACING.0),
         ),
         vec![rgba_colors, hex_text_layout, cancel_button, submit_button],
     )

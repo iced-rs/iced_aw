@@ -86,7 +86,7 @@ where
     /// Sets the spacing between rows and columns. To set row and column spacing separately, use
     /// [`Self::column_spacing()`] and [`Self::row_spacing()`].
     #[must_use]
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
         let spacing: Pixels = spacing.into();
         self.row_spacing = spacing;
         self.column_spacing = spacing;

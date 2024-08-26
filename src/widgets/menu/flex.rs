@@ -26,7 +26,7 @@ use iced::{
         layout::{Limits, Node},
         renderer, widget,
     },
-    Alignment, Element, Length, Padding, Point, Size,
+    Alignment, Element, Length, Padding, Pixels, Point, Size,
 };
 
 /// The main axis of a flex layout.
@@ -73,7 +73,7 @@ pub fn resolve<'a, E, T, Message, Theme, Renderer>(
     width: Length,
     height: Length,
     padding: Padding,
-    spacing: f32,
+    spacing: Pixels,
     align_items: Alignment,
     items: &[E],
     trees: &mut [T],
@@ -100,7 +100,7 @@ where
         },
     };
 
-    let mut available = axis.main(limits.max()) - total_spacing;
+    let mut available = axis.main(limits.max()) - total_spacing.0;
 
     let mut nodes: Vec<Node> = Vec::with_capacity(items.len());
     nodes.resize(items.len(), Node::default());
@@ -218,7 +218,7 @@ where
 
     for (i, node) in nodes.iter_mut().enumerate() {
         if i > 0 {
-            main += spacing;
+            main += spacing.0;
         }
 
         let (x, y) = axis.pack(main, pad.1);

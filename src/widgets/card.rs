@@ -25,7 +25,7 @@ pub use crate::style::{
 };
 
 /// The default padding of a [`Card`].
-const DEFAULT_PADDING: f32 = 10.0;
+const DEFAULT_PADDING: Padding = Padding::new(10.0);
 
 /// A card consisting of a head, body and optional foot.
 ///
@@ -101,9 +101,9 @@ where
             height: Length::Shrink,
             max_width: u32::MAX as f32,
             max_height: u32::MAX as f32,
-            padding_head: DEFAULT_PADDING.into(),
-            padding_body: DEFAULT_PADDING.into(),
-            padding_foot: DEFAULT_PADDING.into(),
+            padding_head: DEFAULT_PADDING,
+            padding_body: DEFAULT_PADDING,
+            padding_foot: DEFAULT_PADDING,
             close_size: None,
             on_close: None,
             head: head.into(),

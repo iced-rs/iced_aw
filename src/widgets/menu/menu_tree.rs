@@ -14,6 +14,7 @@ use super::common::*;
 use super::flex;
 use iced::advanced::overlay::Group;
 use iced::advanced::widget::Operation;
+use iced::Pixels;
 use iced::{
     advanced::{
         layout::{Layout, Limits, Node},
@@ -89,7 +90,7 @@ where
     Renderer: renderer::Renderer,
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
-    pub(super) spacing: f32,
+    pub(super) spacing: Pixels,
     pub(super) max_width: f32,
     pub(super) width: Length,
     pub(super) height: Length,
@@ -105,7 +106,7 @@ where
     pub fn new(items: Vec<Item<'a, Message, Theme, Renderer>>) -> Self {
         Self {
             items,
-            spacing: 0.0,
+            spacing: Pixels::ZERO,
             max_width: f32::MAX,
             width: Length::Fill,
             height: Length::Shrink,
@@ -127,8 +128,8 @@ where
     }
 
     /// Sets the spacing of the [`Menu`].
-    pub fn spacing(mut self, spacing: f32) -> Self {
-        self.spacing = spacing;
+    pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+        self.spacing = spacing.into();
         self
     }
 

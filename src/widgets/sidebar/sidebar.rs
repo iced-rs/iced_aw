@@ -33,8 +33,8 @@ use iced::{
         text::{self, LineHeight},
         Row, Text,
     },
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Pixels, Point, Rectangle,
-    Shadow, Size, Vector,
+    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Size, Vector,
 };
 use std::marker::PhantomData;
 
@@ -45,9 +45,9 @@ const DEFAULT_TEXT_SIZE: f32 = 16.0;
 /// The default size of the close icon.
 const DEFAULT_CLOSE_SIZE: f32 = 16.0;
 /// The default padding between the tabs.
-const DEFAULT_PADDING: f32 = 1.0;
+const DEFAULT_PADDING: Padding = Padding::new(1.0);
 /// The default spacing around the tabs.
-const DEFAULT_SPACING: f32 = 0.0;
+const DEFAULT_SPACING: Pixels = Pixels::ZERO;
 
 /// A [`TabLabel`] showing an icon and/or a text on a tab
 /// on a [`TabBar`](super::TabBar).
@@ -139,9 +139,9 @@ where
     // The size of the close icon.
     close_size: f32,
     /// The padding of the tabs of the [`Sidebar`].
-    padding: f32,
+    padding: Padding,
     /// The spacing of the tabs of the [`Sidebar`].
-    spacing: f32,
+    spacing: Pixels,
     /// The optional icon font of the [`Sidebar`].
     font: Option<Font>,
     /// The optional text font of the [`Sidebar`].
@@ -287,8 +287,8 @@ where
 
     /// Sets the padding of the tabs of the [`Sidebar`].
     #[must_use]
-    pub fn padding(mut self, padding: f32) -> Self {
-        self.padding = padding;
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.padding = padding.into();
         self
     }
 
@@ -308,8 +308,8 @@ where
 
     /// Sets the spacing between the tabs of the [`Sidebar`].
     #[must_use]
-    pub fn spacing(mut self, spacing: f32) -> Self {
-        self.spacing = spacing;
+    pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+        self.spacing = spacing.into();
         self
     }
 
@@ -1156,7 +1156,7 @@ where
 
     /// Sets the padding of the tabs of the [`Sidebar`](super::sidebar::Sidebar).
     #[must_use]
-    pub fn tab_label_padding(mut self, padding: f32) -> Self {
+    pub fn tab_label_padding(mut self, padding: impl Into<Padding>) -> Self {
         self.sidebar = self.sidebar.padding(padding);
         self
     }
@@ -1164,7 +1164,7 @@ where
     /// Sets the spacing between the tabs of the
     /// [`Sidebar`](super::sidebar::Sidebar).
     #[must_use]
-    pub fn tab_label_spacing(mut self, spacing: f32) -> Self {
+    pub fn tab_label_spacing(mut self, spacing: impl Into<Pixels>) -> Self {
         self.sidebar = self.sidebar.spacing(spacing);
         self
     }

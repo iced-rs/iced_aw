@@ -59,11 +59,11 @@ use iced::{
 use std::collections::HashMap;
 
 /// The padding around the elements.
-const PADDING: f32 = 10.0;
+const PADDING: Padding = Padding::new(10.0);
 /// The spacing between the elements.
-const SPACING: f32 = 15.0;
+const SPACING: Pixels = Pixels(15.0);
 /// The spacing between the buttons.
-const BUTTON_SPACING: f32 = 5.0;
+const BUTTON_SPACING: Pixels = Pixels(5.0);
 /// The percentage size of the numbers.
 const NUMBER_SIZE_PERCENTAGE: f32 = 0.15;
 /// The percentage size of the period.
@@ -516,7 +516,7 @@ where
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
-            .shrink(Padding::from(PADDING))
+            .shrink(PADDING)
             .width(Length::Fill)
             .height(Length::Fill)
             .max_width(300.0)
@@ -534,7 +534,7 @@ where
 
         let limits = limits.shrink(Size::new(
             0.0,
-            digital_clock.bounds().height + cancel_button.bounds().height + 2.0 * SPACING,
+            digital_clock.bounds().height + cancel_button.bounds().height + 2.0 * SPACING.0,
         ));
 
         // Clock-Canvas
@@ -545,26 +545,26 @@ where
 
         let clock_bounds = clock.bounds();
         clock = clock.move_to(Point::new(
-            clock_bounds.x + PADDING,
-            clock_bounds.y + PADDING,
+            clock_bounds.x + PADDING.left,
+            clock_bounds.y + PADDING.top,
         ));
 
         let digital_bounds = digital_clock.bounds();
         digital_clock = digital_clock.move_to(Point::new(
-            digital_bounds.x + PADDING,
-            digital_bounds.y + PADDING + SPACING + clock.bounds().height,
+            digital_bounds.x + PADDING.left,
+            digital_bounds.y + PADDING.top + SPACING.0 + clock.bounds().height,
         ));
 
         // Buttons
         let cancel_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
         let submit_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING).max(0.0));
+            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
 
         let mut submit_button =
             self.submit_button
@@ -572,32 +572,32 @@ where
 
         let cancel_bounds = cancel_button.bounds();
         cancel_button = cancel_button.move_to(Point {
-            x: cancel_bounds.x + PADDING,
+            x: cancel_bounds.x + PADDING.left,
             y: cancel_bounds.y
                 + clock.bounds().height
-                + PADDING
+                + PADDING.top
                 + digital_clock.bounds().height
-                + 2.0 * SPACING,
+                + 2.0 * SPACING.0,
         });
 
         let submit_bounds = submit_button.bounds();
         submit_button = submit_button.move_to(Point {
-            x: submit_bounds.x + clock.bounds().width - submit_bounds.width + PADDING,
+            x: submit_bounds.x + clock.bounds().width - submit_bounds.width + PADDING.left,
             y: submit_bounds.y
                 + clock.bounds().height
-                + PADDING
+                + PADDING.top
                 + digital_clock.bounds().height
-                + 2.0 * SPACING,
+                + 2.0 * SPACING.0,
         });
 
         let mut node = Node::with_children(
             Size::new(
-                clock.bounds().width + (2.0 * PADDING),
+                clock.bounds().width + PADDING.horizontal(),
                 clock.bounds().height
                     + digital_clock.bounds().height
                     + cancel_button.bounds().height
-                    + (2.0 * PADDING)
-                    + 2.0 * SPACING,
+                    + PADDING.vertical()
+                    + 2.0 * SPACING.0,
             ),
             vec![clock, digital_clock, cancel_button, submit_button],
         );

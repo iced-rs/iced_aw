@@ -40,7 +40,7 @@ pub use crate::{
 };
 
 /// The default padding
-const DEFAULT_PADDING: f32 = 5.0;
+const DEFAULT_PADDING: Padding = Padding::new(5.0);
 
 /// A field that can only be filled with numeric type.
 ///
@@ -116,7 +116,7 @@ where
         F: 'static + Fn(T) -> Message + Copy,
         T: 'static,
     {
-        let padding = DEFAULT_PADDING.into();
+        let padding = DEFAULT_PADDING;
 
         Self {
             value,
@@ -356,7 +356,7 @@ where
                 .center_x(Length::Shrink)
         };
 
-        let default_padding = Padding::from(DEFAULT_PADDING);
+        let default_padding = DEFAULT_PADDING;
 
         let element = if self.padding.top < default_padding.top
             || self.padding.bottom < default_padding.bottom

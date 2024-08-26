@@ -12,7 +12,7 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Element, Event, Length, Padding, Rectangle, Size,
+    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -34,7 +34,7 @@ where
     Renderer: renderer::Renderer,
 {
     roots: Vec<Item<'a, Message, Theme, Renderer>>,
-    spacing: f32,
+    spacing: Pixels,
     padding: Padding,
     width: Length,
     height: Length,
@@ -58,7 +58,7 @@ where
 
         Self {
             roots,
-            spacing: 0.0,
+            spacing: Pixels::ZERO,
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
@@ -85,8 +85,8 @@ where
     }
 
     /// Sets the spacing of the [`MenuBar`].
-    pub fn spacing(mut self, spacing: f32) -> Self {
-        self.spacing = spacing;
+    pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+        self.spacing = spacing.into();
         self
     }
 

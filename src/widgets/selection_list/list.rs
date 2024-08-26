@@ -17,7 +17,7 @@ use iced::{
     mouse::{self, Cursor},
     touch,
     widget::text::LineHeight,
-    Border, Color, Element, Event, Length, Pixels, Point, Rectangle, Shadow, Size,
+    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -45,7 +45,7 @@ where
     /// Function Pointer On Select to call on Mouse button press.
     pub on_selected: Box<dyn Fn(usize, T) -> Message>,
     /// The padding Width
-    pub padding: f32,
+    pub padding: Padding,
     /// The Text Size
     pub text_size: f32,
     /// Set the Selected ID manually.
@@ -119,7 +119,7 @@ where
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
             limits.max().width,
-            (self.text_size + self.padding * 2.0) * self.options.len() as f32,
+            (self.text_size + self.padding.vertical()) * self.options.len() as f32,
         );
 
         Node::new(intrinsic)
@@ -145,13 +145,15 @@ where
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + (self.padding * 2.0))) as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.vertical()))
+                            as usize,
                     );
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + (self.padding * 2.0))) as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.vertical()))
+                            as usize,
                     );
 
                     if let Some(index) = list_state.hovered_option {
@@ -211,7 +213,7 @@ where
         use std::f32;
 
         let bounds = layout.bounds();
-        let option_height = self.text_size + (self.padding * 2.0);
+        let option_height = self.text_size + self.padding.vertical();
         let offset = viewport.y - bounds.y;
         let start = (offset / option_height) as usize;
         let end = ((offset + viewport.height) / option_height).ceil() as usize;
@@ -225,7 +227,7 @@ where
                 x: bounds.x,
                 y: bounds.y + option_height * i as f32,
                 width: bounds.width,
-                height: self.text_size + (self.padding * 2.0),
+                height: self.text_size + self.padding.vertical(),
             };
 
             if (is_selected || is_hovered) && (bounds.width > 0.) && (bounds.height > 0.) {
