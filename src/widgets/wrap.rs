@@ -10,7 +10,7 @@ use iced::{
     },
     event,
     mouse::{self, Cursor},
-    Alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    Alignment, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
 };
 use std::marker::PhantomData;
 
@@ -30,11 +30,11 @@ pub struct Wrap<'a, Message, Direction, Theme = iced::Theme, Renderer = iced::Re
     /// The maximum height of the [`Wrap`].
     pub max_height: f32,
     /// The padding of each element of the [`Wrap`].
-    pub padding: f32,
+    pub padding: Padding,
     /// The spacing between each element of the [`Wrap`].
-    pub spacing: f32,
+    pub spacing: Pixels,
     /// The spacing between each line of the [`Wrap`].
-    pub line_spacing: f32,
+    pub line_spacing: Pixels,
     /// The minimal length of each line of the [`Wrap`].
     pub line_minimal_length: f32,
     #[allow(clippy::missing_docs_in_private_items)]
@@ -84,15 +84,15 @@ impl<'a, Message, Theme, Renderer> Wrap<'a, Message, direction::Vertical, Theme,
 impl<'a, Message, Renderer, Direction, Theme> Wrap<'a, Message, Direction, Theme, Renderer> {
     /// Sets the spacing of the [`Wrap`].
     #[must_use]
-    pub const fn spacing(mut self, units: f32) -> Self {
-        self.spacing = units;
+    pub fn spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+        self.spacing = spacing.into();
         self
     }
 
     /// Sets the spacing of the lines of the [`Wrap`].
     #[must_use]
-    pub const fn line_spacing(mut self, units: f32) -> Self {
-        self.line_spacing = units;
+    pub fn line_spacing(mut self, spacing: impl Into<Pixels>) -> Self {
+        self.line_spacing = spacing.into();
         self
     }
 
@@ -105,8 +105,8 @@ impl<'a, Message, Renderer, Direction, Theme> Wrap<'a, Message, Direction, Theme
 
     /// Sets the padding of the elements in the [`Wrap`].
     #[must_use]
-    pub const fn padding(mut self, units: f32) -> Self {
-        self.padding = units;
+    pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
+        self.padding = padding.into();
         self
     }
 
@@ -324,9 +324,9 @@ impl<'a, Message, Renderer, Direction, Theme> Default
             height: Length::Shrink,
             max_width: 4_294_967_295.0,
             max_height: 4_294_967_295.0,
-            padding: 0.0,
-            spacing: 0.0,
-            line_spacing: 0.0,
+            padding: Padding::ZERO,
+            spacing: Pixels::ZERO,
+            line_spacing: Pixels::ZERO,
             line_minimal_length: 10.0,
             _direction: PhantomData,
         }
@@ -349,7 +349,7 @@ where
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = Padding::from(self.padding);
+        let padding = self.padding;
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -386,11 +386,11 @@ where
 
                 let size = node.size();
 
-                let offset_init = size.width + spacing;
+                let offset_init = size.width + spacing.0;
                 let offset = curse + offset_init;
 
                 if offset > max_width {
-                    deep_curse += current_line_height + line_spacing;
+                    deep_curse += current_line_height + line_spacing.0;
                     align.push((start..end, current_line_height));
                     start = end;
                     end += 1;
@@ -436,7 +436,7 @@ where
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let padding = Padding::from(self.padding);
+        let padding = self.padding;
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
         #[allow(clippy::cast_precision_loss)] // TODO: possible precision loss
@@ -473,11 +473,11 @@ where
 
                 let size = node.size();
 
-                let offset_init = size.height + spacing;
+                let offset_init = size.height + spacing.0;
                 let offset = curse + offset_init;
 
                 if offset > max_height {
-                    wide_curse += current_line_width + line_spacing;
+                    wide_curse += current_line_width + line_spacing.0;
                     align.push((start..end, current_line_width));
                     start = end;
                     end += 1;

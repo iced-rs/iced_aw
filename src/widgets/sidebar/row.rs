@@ -21,7 +21,7 @@ use iced::{
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
 pub struct FlushRow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
-    spacing: f32,
+    spacing: Pixels,
     padding: Padding,
     width: Length,
     height: Length,
@@ -71,7 +71,7 @@ where
             .map(|x| Element::into(x.into()))
             .collect();
         Self {
-            spacing: 0.0,
+            spacing: Pixels::ZERO,
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
@@ -90,7 +90,7 @@ where
     /// elements consistent.
     #[must_use]
     pub fn spacing(mut self, amount: impl Into<Pixels>) -> Self {
-        self.spacing = amount.into().0;
+        self.spacing = amount.into();
         self
     }
 
@@ -232,7 +232,7 @@ where
             self.width,
             self.height,
             self.padding,
-            self.spacing,
+            self.spacing.0,
             self.align,
             &self.children,
             &mut tree.children,

@@ -4,7 +4,7 @@
 #[cfg(feature = "selection_list")]
 use crate::style::{Status, StyleFn};
 #[allow(unused_imports)]
-use iced::{self, advanced::renderer, Color, Element};
+use iced::{self, advanced::renderer, Color, Element, Padding};
 
 #[cfg(feature = "number_input")]
 use num_traits::bounds::Bounded;
@@ -357,7 +357,7 @@ pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
     options: &'a [T],
     on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
-    padding: f32,
+    padding: impl Into<Padding>,
     style: impl Fn(&Theme, Status) -> crate::style::selection_list::Style + 'a + Clone,
     selected: Option<usize>,
     font: iced::Font,

@@ -19,7 +19,7 @@ use iced::{Element, Length, Padding, Pixels, Rectangle};
 use std::{fmt::Display, str::FromStr};
 
 /// The default padding
-const DEFAULT_PADDING: f32 = 5.0;
+const DEFAULT_PADDING: Padding = Padding::new(5.0);
 
 /// A field that can only be filled with a specific type.
 ///

@@ -21,7 +21,7 @@ use iced::{
         text::{self, LineHeight},
         Container, Scrollable,
     },
-    Border, Element, Event, Font, Length, Pixels, Rectangle, Shadow, Size,
+    Border, Element, Event, Font, Length, Padding, Pixels, Rectangle, Shadow, Size,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
 
@@ -48,7 +48,7 @@ where
     /// The Containers height
     height: Length,
     /// The padding Width
-    padding: f32,
+    padding: Padding,
     /// The Text Size
     text_size: f32,
     /// Style for Looks
@@ -73,7 +73,7 @@ where
             options,
             font: Font::default(),
             text_size: 12.0,
-            padding: 5.0,
+            padding: 5.0.into(),
             class: <Theme as Catalog>::default(),
             on_selected: Box::new(on_selected),
             selected: None,
@@ -88,7 +88,7 @@ where
             container,
             width: Length::Fill,
             height: Length::Fill,
-            padding: 5.0,
+            padding: 5.0.into(),
             text_size: 12.0,
         }
     }
@@ -100,7 +100,7 @@ where
         options: &'a [T],
         on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
-        padding: f32,
+        padding: impl Into<Padding>,
         style: impl Fn(&Theme, Status) -> Style + 'a + Clone,
         selected: Option<usize>,
         font: Font,
@@ -112,6 +112,8 @@ where
             (Box::new(style.clone()) as StyleFn<'a, Theme, Style>).into();
         let class2: <Theme as Catalog>::Class<'a> =
             (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+
+        let padding = padding.into();
 
         let container = Container::new(Scrollable::new(List {
             options,
@@ -230,14 +232,14 @@ where
                     };
 
                     state.values[id].update(text);
-                    state.values[id].min_bounds().width.round() as u32 + self.padding as u32 * 2
+                    (state.values[id].min_bounds().width + self.padding.horizontal()).round() as u32
                 })
                 .max()
                 .unwrap_or(100),
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width as f32 + self.padding * 2.0);
+        let limits = limits.max_width(max_width as f32 + self.padding.horizontal());
 
         let content = self
             .container

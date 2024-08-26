@@ -30,7 +30,7 @@ use iced::{
     event,
     mouse::{self, Cursor},
     widget::{text, Row},
-    Element, Event, Font, Length, Point, Rectangle, Size, Vector,
+    Element, Event, Font, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
 };
 
 pub use tab_bar_position::TabBarPosition;
@@ -263,7 +263,7 @@ where
 
     /// Sets the padding of the tabs of the [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_label_padding(mut self, padding: f32) -> Self {
+    pub fn tab_label_padding(mut self, padding: impl Into<Padding>) -> Self {
         self.tab_bar = self.tab_bar.padding(padding);
         self
     }
@@ -271,7 +271,7 @@ where
     /// Sets the spacing between the tabs of the
     /// [`TabBar`](super::tab_bar::TabBar).
     #[must_use]
-    pub fn tab_label_spacing(mut self, spacing: f32) -> Self {
+    pub fn tab_label_spacing(mut self, spacing: impl Into<Pixels>) -> Self {
         self.tab_bar = self.tab_bar.spacing(spacing);
         self
     }
