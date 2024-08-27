@@ -1,4 +1,26 @@
 //! Additional widgets for the Iced GUI library.
+//!
+//! # Examples
+//!
+//! * `badge` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `card` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `color_picker` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `context_menu` (Author: wiiznokes <wiiznokes2@gmail.com>)
+//! * `date_picker` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `drop_down` (Author: wiiznokes <wiiznokes2@gmail.com>)
+//! * `grid` (Author: Alexander van Saase <avsaase@gmail.com>)
+//! * `menu`
+//! * `number_input` (Author: leang27 <52003343+leang27@users.noreply.github.com>)
+//! * `selection_list` (Author: Héctor Ramón Jiménez <hector0193@gmail.com> and Andrew Wheeler <genusistimelord@gmail.com>)
+//! * `side_bar` (Author: Kaiden42 <gitlab@tinysn.com> and Rizzen Yazston)
+//! * `slide_bar` (Author: Andrew Wheeler <genusistimelord@gmail.com>)
+//! * `spinner` (Author: Iohann Rabeson <irabeson42@gmail.com>)
+//! * `tab_bar` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `tabs` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `time_picker` (Author: Kaiden42 <gitlab@tinysn.com>)
+//! * `typed_input` (Author: Ultraxime <36888699+Ultraxime@users.noreply.github.com>)
+//! * `widget_id_return` (Author: Andrew Wheeler <genusistimelord@gmail.com>)
+//! * `wrap` (Author: owntime <yrainbxqc@gmail.com>)
 #![deny(missing_docs)]
 #![deny(unused_results)]
 #![forbid(unsafe_code)]

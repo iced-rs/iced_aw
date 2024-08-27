@@ -78,36 +78,85 @@ features = ["advanced"]
 [profile.dev.package."*"]
 opt-level = 2
 
-[workspace]
-members = [
-    "examples/badge",
-    "examples/card",
-    "examples/number_input",
-    "examples/typed_input",
-    "examples/date_picker",
-    "examples/color_picker",
-    "examples/grid",
-    "examples/tab_bar",
-    "examples/tabs",
-    "examples/time_picker",
-    "examples/sliderbar",
-    "examples/wrap",
-    "examples/selection_list",
-    "examples/context_menu",
-    "examples/spinner",
-    "examples/WidgetIDReturn",
-    "examples/drop_down",
-    "examples/menu",
-    "examples/sidebar",
-]
+[dev-dependencies]
+num-traits = "0.2.16"   # For widget_id_return example
+rand = "0.8"            # For wrap example
 
-[workspace.dependencies.iced]
+[dev-dependencies.iced]
 git = "https://github.com/iced-rs/iced.git"
 #rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
 version = "0.13.0-dev"
 #default-features = false
-features = ["advanced", "wgpu"]
+features = ["advanced", "wgpu", "image"]
 
-[workspace.dependencies.iced_aw]
+[dev-dependencies.iced_aw]
 path = "./"
 default-features = false
+
+[[example]]
+name = "badge"
+required-features = ["badge"]
+
+[[example]]
+name = "card"
+required-features = ["card"]
+
+[[example]]
+name = "color_picker"
+required-features = ["color_picker"]
+
+[[example]]
+name = "date_picker"
+required-features = ["date_picker"]
+
+[[example]]
+name = "grid"
+required-features = ["grid"]
+
+[[example]]
+name = "menu"
+required-features = ["menu"]
+
+[[example]]
+name = "number_input"
+required-features = ["number_input"]
+
+[[example]]
+name = "selection_list"
+required-features = ["selection_list"]
+
+[[example]]
+name = "side_bar"
+required-features = ["sidebar"]
+
+[[example]]
+name = "slide_bar"
+required-features = ["slide_bar"]
+
+[[example]]
+name = "spinner"
+required-features = ["spinner"]
+
+[[example]]
+name = "tab_bar"
+required-features = ["tab_bar"]
+
+[[example]]
+name = "tabs"
+required-features = ["tabs"]
+
+[[example]]
+name = "time_picker"
+required-features = ["time_picker"]
+
+[[example]]
+name = "typed_input"
+required-features = ["typed_input"]
+
+[[example]]
+name = "widget_id_return"
+required-features = ["number_input"]
+
+[[example]]
+name = "wrap"
+required-features = ["wrap", "number_input"]
