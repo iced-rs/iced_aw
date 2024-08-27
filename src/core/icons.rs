@@ -1,4 +1,4 @@
-//! The default icon font of the widgets of this library.
+//! The default icon font of the widget of this library.
 
 use cfg_if::cfg_if;
 use iced::Font;

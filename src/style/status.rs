@@ -17,5 +17,5 @@ pub enum Status {
     Selected,
 }
 
-/// The style function of widgets.
+/// The style function of widget.
 pub type StyleFn<'a, Theme, Style> = Box<dyn Fn(&Theme, Status) -> Style + 'a>;

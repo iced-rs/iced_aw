@@ -1,4 +1,4 @@
-//! Additional widgets for the Iced GUI library.
+//! Additional widget for the Iced GUI library.
 //!
 //! # Examples
 //!
@@ -71,7 +71,9 @@
     clippy::let_unit_value
 )]
 
-pub mod widgets;
+pub mod widget;
+#[deprecated(since = "0.9.4", note = "use `widget` instead")]
+pub use widget as widgets;
 
 pub mod core;
 pub mod style;
@@ -82,7 +84,7 @@ pub use iced::Element;
 mod platform {
     #[allow(unused_imports)]
     pub use crate::style;
-    pub use crate::widgets::helpers;
+    pub use crate::widget::helpers;
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "icons")] {
@@ -97,85 +99,88 @@ mod platform {
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]
-    pub use {crate::widgets::badge, badge::Badge};
+    pub use {crate::widget::badge, badge::Badge};
 
     #[doc(no_inline)]
     #[cfg(feature = "card")]
-    pub use {crate::widgets::card, card::Card};
+    pub use {crate::widget::card, card::Card};
 
     #[doc(no_inline)]
     #[cfg(feature = "color_picker")]
-    pub use {crate::widgets::color_picker, color_picker::ColorPicker};
+    pub use {crate::widget::color_picker, color_picker::ColorPicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "date_picker")]
-    pub use {crate::widgets::date_picker, date_picker::DatePicker};
+    pub use {crate::widget::date_picker, date_picker::DatePicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "grid")]
-    pub use crate::widgets::grid::{Grid, GridRow};
+    pub use {
+        crate::widget::{grid, grid_row},
+        grid::{Grid, GridRow},
+    };
 
     #[doc(no_inline)]
     #[cfg(feature = "tab_bar")]
     pub use {
-        crate::widgets::tab_bar,
+        crate::widget::tab_bar,
         tab_bar::{TabBar, TabLabel},
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "tabs")]
     pub use {
-        crate::widgets::tabs,
+        crate::widget::tabs,
         tabs::{TabBarPosition, Tabs},
     };
 
     #[doc(no_inline)]
     #[cfg(feature = "time_picker")]
-    pub use {crate::widgets::time_picker, time_picker::TimePicker};
+    pub use {crate::widget::time_picker, time_picker::TimePicker};
 
     #[doc(no_inline)]
     #[cfg(feature = "wrap")]
-    pub use {crate::widgets::wrap, wrap::direction, wrap::Wrap};
+    pub use {crate::widget::wrap, wrap::direction, wrap::Wrap};
 
     #[doc(no_inline)]
     #[cfg(feature = "number_input")]
-    pub use {crate::widgets::number_input, number_input::NumberInput};
+    pub use {crate::widget::number_input, number_input::NumberInput};
 
     #[doc(no_inline)]
     #[cfg(feature = "typed_input")]
-    pub use {crate::widgets::typed_input, typed_input::TypedInput};
+    pub use {crate::widget::typed_input, typed_input::TypedInput};
 
     #[doc(no_inline)]
     #[cfg(feature = "selection_list")]
-    pub use {crate::widgets::selection_list, selection_list::SelectionList};
+    pub use {crate::widget::selection_list, selection_list::SelectionList};
 
     #[doc(no_inline)]
     #[cfg(feature = "menu")]
-    pub use crate::widgets::menu;
+    pub use {crate::widget::menu, menu::Menu, menu::MenuBar};
 
     #[doc(no_inline)]
     #[cfg(feature = "quad")]
-    pub use crate::widgets::quad;
+    pub use {crate::widget::quad, quad::Quad};
 
     #[doc(no_inline)]
     #[cfg(feature = "spinner")]
-    pub use {crate::widgets::spinner, spinner::Spinner};
+    pub use {crate::widget::spinner, spinner::Spinner};
 
     #[doc(no_inline)]
     #[cfg(feature = "slide_bar")]
-    pub use crate::widgets::SlideBar;
+    pub use crate::widget::SlideBar;
 
     #[doc(no_inline)]
     #[cfg(feature = "context_menu")]
-    pub use {crate::widgets::context_menu, context_menu::ContextMenu};
+    pub use {crate::widget::context_menu, context_menu::ContextMenu};
 
     #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
-    pub use {crate::widgets::drop_down, drop_down::DropDown};
+    pub use {crate::widget::drop_down, drop_down::DropDown};
 
     #[doc(no_inline)]
     #[cfg(feature = "sidebar")]
-    pub use crate::widgets::sidebar;
+    pub use crate::widget::sidebar;
 }
 
 #[doc(no_inline)]

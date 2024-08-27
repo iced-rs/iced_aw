@@ -4,10 +4,10 @@
 use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The style of a [`ContextMenu`](crate::widgets::ContextMenu).
+/// The style of a [`ContextMenu`](crate::widget::ContextMenu).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`ContextMenu`](crate::widgets::ContextMenu).
+    /// The background of the [`ContextMenu`](crate::widget::ContextMenu).
     ///
     /// This is used to color the backdrop of the modal.
     pub background: Background,
@@ -21,7 +21,7 @@ impl Default for Style {
     }
 }
 
-/// The Catalog of a [`ContextMenu`](crate::widgets::ContextMenu).
+/// The Catalog of a [`ContextMenu`](crate::widget::ContextMenu).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -45,7 +45,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`ContextMenu`](crate::widgets::ContextMenu).
+/// The primary theme of a [`ContextMenu`](crate::widget::ContextMenu).
 #[must_use]
 pub fn primary(theme: &Theme, _status: Status) -> Style {
     let palette = theme.extended_palette();

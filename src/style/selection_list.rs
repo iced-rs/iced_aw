@@ -29,7 +29,7 @@ impl std::default::Default for Style {
     }
 }
 
-/// The Catalog of a [`Badge`](crate::widgets::selection_list::SelectionList).
+/// The Catalog of a [`Badge`](crate::widget::selection_list::SelectionList).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -53,7 +53,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::widgets::selection_list::SelectionList).
+/// The primary theme of a [`Badge`](crate::widget::selection_list::SelectionList).
 #[must_use]
 pub fn primary(_theme: &Theme, status: Status) -> Style {
     let base = Style::default();

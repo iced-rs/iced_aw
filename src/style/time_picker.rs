@@ -5,46 +5,46 @@
 use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The style of a [`TimePicker`](crate::widgets::TimePicker).
+/// The style of a [`TimePicker`](crate::widget::TimePicker).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`TimePicker`](crate::widgets::TimePicker).
+    /// The background of the [`TimePicker`](crate::widget::TimePicker).
     pub background: Background,
 
-    /// The border radius of the [`TimePicker`](crate::widgets::TimePicker).
+    /// The border radius of the [`TimePicker`](crate::widget::TimePicker).
     pub border_radius: f32,
 
-    /// The border width of the [`TimePicker`](crate::widgets::TimePicker).
+    /// The border width of the [`TimePicker`](crate::widget::TimePicker).
     pub border_width: f32,
 
-    /// The border color of the [`TimePicker`](crate::widgets::TimePicker).
+    /// The border color of the [`TimePicker`](crate::widget::TimePicker).
     pub border_color: Color,
 
-    /// The text color of the [`TimePicker`](crate::widgets::TimePicker).
+    /// The text color of the [`TimePicker`](crate::widget::TimePicker).
     pub text_color: Color,
 
     /// The color of the clock numbers of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
+    /// [`TimePicker`](crate::widget::TimePicker).
     pub clock_number_color: Color,
 
     /// The background of the clock numbers of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
+    /// [`TimePicker`](crate::widget::TimePicker).
     pub clock_number_background: Color,
 
     /// The color of the dots on the clock of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
+    /// [`TimePicker`](crate::widget::TimePicker).
     pub clock_dots_color: Color,
 
     /// The color of the hands of the clock of the
-    /// [`TimePicker`](crate::widgets::TimePicker).
+    /// [`TimePicker`](crate::widget::TimePicker).
     pub clock_hand_color: Color,
 
     /// The with of the hands of the clock of the
-    /// [`TimePicker](crate::widgets::TimePicker).
+    /// [`TimePicker](crate::widget::TimePicker).
     pub clock_hand_width: f32,
 }
 
-/// The Catalog of a [`TimePicker`](crate::widgets::TimePicker).
+/// The Catalog of a [`TimePicker`](crate::widget::TimePicker).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -68,7 +68,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`TimePicker`](crate::widgets::TimePicker).
+/// The primary theme of a [`TimePicker`](crate::widget::TimePicker).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();

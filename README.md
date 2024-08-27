@@ -9,9 +9,10 @@ This crate contains additional widgets for the GUI library [Iced](https://github
 
 Every widget is hidden by a feature gate. This allows you to cherry pick the widgets you actually need.
 
-## Usage:
+## Usage
 
 Include `iced_aw` as a dependency in your `Cargo.toml`:
+
 ```toml
 [dependencies]
 iced = "0.12.0"
@@ -32,7 +33,7 @@ iced_aw = { version = "0.9.3", default-features = false, features = [...] }
 ### Badge
 
 <div align="center">
-  
+
   ![Badge showcase](./images/showcase/badge.png)
 </div>
 
@@ -43,7 +44,7 @@ Enable this widget with the feature `badge`.
 ### Card
 
 <div align="center">
-  
+
 ![Card showcase](./images/showcase/card.png)
 </div>
 
@@ -65,7 +66,7 @@ Enable this widget with the feature `color_picker`.
 ### Date Picker
 
 <div align="center">
-  
+
   ![Date Picker showcase](./images/showcase/date_picker.png)
 </div>
 

@@ -5,32 +5,32 @@
 use super::{Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`ColorPicker`](crate::widgets::ColorPicker).
+/// The appearance of a [`ColorPicker`](crate::widget::ColorPicker).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The background of the [`ColorPicker`](crate::widget::ColorPicker).
     pub background: Background,
 
-    /// The border radius of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border radius of the [`ColorPicker`](crate::widget::ColorPicker).
     pub border_radius: f32,
 
-    /// The border with of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border with of the [`ColorPicker`](crate::widget::ColorPicker).
     pub border_width: f32,
 
-    /// The border color of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border color of the [`ColorPicker`](crate::widget::ColorPicker).
     pub border_color: Color,
 
-    /// The border radius of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border radius of the bars of the [`ColorPicker`](crate::widget::ColorPicker).
     pub bar_border_radius: f32,
 
-    /// The border width of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border width of the bars of the [`ColorPicker`](crate::widget::ColorPicker).
     pub bar_border_width: f32,
 
-    /// The border color of the bars of the [`ColorPicker`](crate::widgets::ColorPicker).
+    /// The border color of the bars of the [`ColorPicker`](crate::widget::ColorPicker).
     pub bar_border_color: Color,
 }
 
-/// The Catalog of a [`ColorPicker`](crate::widgets::ColorPicker).
+/// The Catalog of a [`ColorPicker`](crate::widget::ColorPicker).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -54,7 +54,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
+/// The primary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();
