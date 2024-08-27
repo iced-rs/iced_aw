@@ -60,7 +60,7 @@ impl std::default::Default for Style {
     }
 }
 
-/// The Catalog of a [`Menu`](crate::widgets::menu::Menu).
+/// The Catalog of a [`Menu`](crate::widget::menu::Menu).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -84,7 +84,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Menu`](crate::widgets::menu::Menu).
+/// The primary theme of a [`Menu`](crate::widget::menu::Menu).
 #[must_use]
 pub fn primary(theme: &Theme, _status: Status) -> Style {
     let palette = theme.extended_palette();

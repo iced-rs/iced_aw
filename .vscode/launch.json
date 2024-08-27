@@ -1,314 +1,359 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'badge'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=badge",
-                    "--package=badge"
-                ],
-                "filter": {
-                    "name": "badge",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'slidebar'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=slidebar",
-                    "--package=slidebar"
-                ],
-                "filter": {
-                    "name": "slidebar",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'card'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=card",
-                    "--package=card"
-                ],
-                "filter": {
-                    "name": "card",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'color_picker'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=color_picker",
-                    "--package=color_picker"
-                ],
-                "filter": {
-                    "name": "color_picker",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'date_picker'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=date_picker",
-                    "--package=date_picker"
-                ],
-                "filter": {
-                    "name": "date_picker",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'grid'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=grid",
-                    "--package=grid"
-                ],
-                "filter": {
-                    "name": "grid",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'tab_bar'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=tab_bar",
-                    "--package=tab_bar"
-                ],
-                "filter": {
-                    "name": "tab_bar",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'tabs'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=tabs",
-                    "--package=tabs"
-                ],
-                "filter": {
-                    "name": "tabs",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'tabstest'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=tabstest",
-                    "--package=tabstest"
-                ],
-                "filter": {
-                    "name": "tabstest",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'widget_id'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=widget_id",
-                    "--package=widget_id"
-                ],
-                "filter": {
-                    "name": "widget_id",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'time_picker'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=time_picker",
-                    "--package=time_picker"
-                ],
-                "filter": {
-                    "name": "time_picker",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'wrap'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=wrap",
-                    "--package=wrap"
-                ],
-                "filter": {
-                    "name": "wrap",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'number_input'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=number_input",
-                    "--package=number_input"
-                ],
-                "filter": {
-                    "name": "number_input",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'selection_list'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=selection_list",
-                    "--package=selection_list"
-                ],
-                "filter": {
-                    "name": "selection_list",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'menu'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=menu",
-                    "--package=menu"
-                ],
-                "filter": {
-                    "name": "menu",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'context_menu'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=context_menu",
-                    "--package=context_menu"
-                ],
-                "filter": {
-                    "name": "context_menu",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug executable 'spinner'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=spinner",
-                    "--package=spinner"
-                ],
-                "filter": {
-                    "name": "spinner",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'badge'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=badge"
+        ],
+        "filter": {
+          "name": "badge",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'card'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=card"
+        ],
+        "filter": {
+          "name": "card",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'color_picker'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=color_picker"
+        ],
+        "filter": {
+          "name": "color_picker",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'context_menu'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=context_menu"
+        ],
+        "filter": {
+          "name": "context_menu",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'date_picker'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=date_picker"
+        ],
+        "filter": {
+          "name": "date_picker",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'drop_down'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=drop_down"
+        ],
+        "filter": {
+          "name": "drop_down",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'grid'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=grid"
+        ],
+        "filter": {
+          "name": "grid",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'menu'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=menu"
+        ],
+        "filter": {
+          "name": "menu",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'number_input'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=number_input"
+        ],
+        "filter": {
+          "name": "number_input",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'selection_list'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=selection_list"
+        ],
+        "filter": {
+          "name": "selection_list",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'side_bar'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=side_bar",
+          "--features=iced/image"
+        ],
+        "filter": {
+          "name": "side_bar",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'slide_bar'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=slide_bar"
+        ],
+        "filter": {
+          "name": "slide_bar",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'spinner'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=spinner"
+        ],
+        "filter": {
+          "name": "spinner",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'tab_bar'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=tab_bar"
+        ],
+        "filter": {
+          "name": "tab_bar",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'tabs'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=tabs",
+          "--features=iced/image"
+        ],
+        "filter": {
+          "name": "tabs",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'time_picker'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=time_picker"
+        ],
+        "filter": {
+          "name": "time_picker",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'typed_input'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=typed_input"
+        ],
+        "filter": {
+          "name": "typed_input",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'widget_id_return'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=widget_id_return"
+        ],
+        "filter": {
+          "name": "widget_id_return",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'wrap'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=wrap"
+        ],
+        "filter": {
+          "name": "wrap",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run all examples",
+      "configurations": [
+        "Debug example 'badge'",
+        "Debug example 'card'",
+        "Debug example 'color_picker'",
+        "Debug example 'context_menu'",
+        "Debug example 'date_picker'",
+        "Debug example 'drop_down'",
+        "Debug example 'grid'",
+        "Debug example 'menu'",
+        "Debug example 'number_input'",
+        "Debug example 'selection_list'",
+        "Debug example 'side_bar'",
+        "Debug example 'slide_bar'",
+        "Debug example 'spinner'",
+        "Debug example 'tab_bar'",
+        "Debug example 'tabs'",
+        "Debug example 'time_picker'",
+        "Debug example 'typed_input'",
+        "Debug example 'widget_id_return'",
+        "Debug example 'wrap'"
+      ]
+    }
+  ]
 }

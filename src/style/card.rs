@@ -1,48 +1,48 @@
-//! Displays a [`Card`](crate::widgets::Card).
+//! Displays a [`Card`](crate::widget::Card).
 //!
 //! *This API requires the following crate features to be activated: card*
 
 use super::{colors, Status, StyleFn};
 use iced::{Background, Color, Theme};
 
-/// The appearance of a [`Card`](crate::widgets::card::Card).
+/// The appearance of a [`Card`](crate::widget::card::Card).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`Card`](crate::widgets::card::Card).
+    /// The background of the [`Card`](crate::widget::card::Card).
     pub background: Background,
 
-    /// The border radius of the [`Card`](crate::widgets::card::Card).
+    /// The border radius of the [`Card`](crate::widget::card::Card).
     pub border_radius: f32,
 
-    /// The border width of the [`Card`](crate::widgets::card::Card).
+    /// The border width of the [`Card`](crate::widget::card::Card).
     pub border_width: f32,
 
-    /// The border color of the [`Card`](crate::widgets::card::Card).
+    /// The border color of the [`Card`](crate::widget::card::Card).
     pub border_color: Color,
 
-    /// The background of the head of the [`Card`](crate::widgets::card::Card).
+    /// The background of the head of the [`Card`](crate::widget::card::Card).
     pub head_background: Background,
 
-    /// The text color of the head of the [`Card`](crate::widgets::card::Card).
+    /// The text color of the head of the [`Card`](crate::widget::card::Card).
     pub head_text_color: Color,
 
-    /// The background of the body of the [`Card`](crate::widgets::card::Card).
+    /// The background of the body of the [`Card`](crate::widget::card::Card).
     pub body_background: Background,
 
-    /// The text color of the body of the [`Card`](crate::widgets::card::Card).
+    /// The text color of the body of the [`Card`](crate::widget::card::Card).
     pub body_text_color: Color,
 
-    /// The background of the foot of the [`Card`](crate::widgets::card::Card).
+    /// The background of the foot of the [`Card`](crate::widget::card::Card).
     pub foot_background: Background,
 
-    /// The text color of the foot of the [`Card`](crate::widgets::card::Card).
+    /// The text color of the foot of the [`Card`](crate::widget::card::Card).
     pub foot_text_color: Color,
 
-    /// The color of the close icon of the [`Card`](crate::widgets::card::Card).
+    /// The color of the close icon of the [`Card`](crate::widget::card::Card).
     pub close_color: Color,
 }
 
-/// The appearance of a [`Card`](crate::widgets::card::Card).
+/// The appearance of a [`Card`](crate::widget::card::Card).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -84,55 +84,55 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Card`](crate::widgets::card::Card).
+/// The primary theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn primary(theme: &Theme, _status: Status) -> Style {
     backing_with_text(theme, colors::PRIMARY, colors::WHITE)
 }
 
-/// The secondary theme of a [`Card`](crate::widgets::card::Card).
+/// The secondary theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn secondary(theme: &Theme, _status: Status) -> Style {
     backing_with_text(theme, colors::SECONDARY, colors::WHITE)
 }
 
-/// The success theme of a [`Card`](crate::widgets::card::Card).
+/// The success theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn success(theme: &Theme, _status: Status) -> Style {
     backing_with_text(theme, colors::SUCCESS, colors::WHITE)
 }
 
-/// The danger theme of a [`Card`](crate::widgets::card::Card).
+/// The danger theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn danger(theme: &Theme, _status: Status) -> Style {
     backing_with_text(theme, colors::DANGER, colors::WHITE)
 }
 
-/// The warning theme of a [`Card`](crate::widgets::card::Card).
+/// The warning theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn warning(theme: &Theme, _status: Status) -> Style {
     backing_only(theme, colors::WARNING)
 }
 
-/// The info theme of a [`Card`](crate::widgets::card::Card).
+/// The info theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn info(theme: &Theme, _status: Status) -> Style {
     backing_only(theme, colors::INFO)
 }
 
-/// The light theme of a [`Card`](crate::widgets::card::Card).
+/// The light theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn light(theme: &Theme, _status: Status) -> Style {
     backing_only(theme, colors::LIGHT)
 }
 
-/// The dark theme of a [`Card`](crate::widgets::card::Card).
+/// The dark theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn dark(theme: &Theme, _status: Status) -> Style {
     backing_with_text(theme, colors::DARK, colors::WHITE)
 }
 
-/// The white theme of a [`Card`](crate::widgets::card::Card).
+/// The white theme of a [`Card`](crate::widget::card::Card).
 #[must_use]
 pub fn white(theme: &Theme, _status: Status) -> Style {
     backing_only(theme, colors::WHITE)

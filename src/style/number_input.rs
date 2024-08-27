@@ -5,12 +5,12 @@
 use super::{Status, StyleFn};
 use iced::{widget, Background, Color, Theme};
 
-/// The appearance of a [`NumberInput`](crate::widgets::number_input::NumberInput).
+/// The appearance of a [`NumberInput`](crate::widget::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
-    /// The background of the [`NumberInput`](crate::widgets::number_input::NumberInput).
+    /// The background of the [`NumberInput`](crate::widget::number_input::NumberInput).
     pub button_background: Option<Background>,
-    /// The Color of the arrows of [`NumberInput`](crate::widgets::number_input::NumberInput).
+    /// The Color of the arrows of [`NumberInput`](crate::widget::number_input::NumberInput).
     pub icon_color: Color,
 }
 
@@ -23,7 +23,7 @@ impl Default for Style {
     }
 }
 
-/// The Catalog of a [`NumberInput`](crate::widgets::number_input::NumberInput).
+/// The Catalog of a [`NumberInput`](crate::widget::number_input::NumberInput).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -47,7 +47,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The Extended Catalog of a [`NumberInput`](crate::widgets::number_input::NumberInput).
+/// The Extended Catalog of a [`NumberInput`](crate::widget::number_input::NumberInput).
 pub trait ExtendedCatalog:
     widget::text_input::Catalog + widget::container::Catalog + widget::text::Catalog + self::Catalog
 {
@@ -67,7 +67,7 @@ impl ExtendedCatalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::widgets::badge::Badge).
+/// The primary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.extended_palette();

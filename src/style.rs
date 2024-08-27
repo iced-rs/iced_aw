@@ -1,4 +1,4 @@
-//! The appearance of the widgets
+//! The appearance of the widget
 
 pub mod colors;
 pub mod status;

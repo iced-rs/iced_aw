@@ -1,12 +1,12 @@
-//! This is the style for [`Sidebar`](crate::widgets::sidebar::Sidebar) and
-//! [`SidebarWithContent`](crate::widgets::sidebar::SidebarWithContent).
+//! This is the style for [`Sidebar`](crate::widget::sidebar::Sidebar) and
+//! [`SidebarWithContent`](crate::widget::sidebar::SidebarWithContent).
 //!
 //! *This API requires the following crate features to be activated: `sidebar`*
 
 use super::{Status, StyleFn};
 use iced::{border::Radius, Background, Color, Theme};
 
-/// The appearance of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The appearance of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[derive(Clone, Copy, Debug)]
 pub struct Style {
     /// The background of the sidebar.
@@ -56,7 +56,7 @@ impl Default for Style {
         }
     }
 }
-/// The Catalog of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The Catalog of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 pub trait Catalog {
     ///Style for the trait to use.
     type Class<'a>;
@@ -80,7 +80,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The primary theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let mut base = Style::default();
@@ -103,7 +103,7 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     base
 }
 
-/// The dark theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The dark theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn dark(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
@@ -121,7 +121,7 @@ pub fn dark(_theme: &Theme, status: Status) -> Style {
     base
 }
 
-/// The red theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The red theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn red(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
@@ -142,7 +142,7 @@ pub fn red(_theme: &Theme, status: Status) -> Style {
     base
 }
 
-/// The blue theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The blue theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn blue(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
@@ -161,7 +161,7 @@ pub fn blue(_theme: &Theme, status: Status) -> Style {
     base
 }
 
-/// The blue theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The blue theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn green(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
@@ -185,7 +185,7 @@ pub fn green(_theme: &Theme, status: Status) -> Style {
     base
 }
 
-/// The purple theme of a [`Sidebar`](crate::widgets::sidebar::Sidebar).
+/// The purple theme of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[must_use]
 pub fn purple(_theme: &Theme, status: Status) -> Style {
     let mut base = Style {
