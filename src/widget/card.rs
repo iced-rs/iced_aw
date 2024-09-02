@@ -268,6 +268,12 @@ where
             tree,
         );
 
+        let limits = limits.shrink(Size::new(0.0, head_node.size().height));
+
+        let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
+            foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
+        });
+        let limits = limits.shrink(Size::new(0.0, foot_node.size().height));
         let mut body_node = body_node(
             renderer,
             &limits,
@@ -276,16 +282,11 @@ where
             self.width,
             tree,
         );
-
         let body_bounds = body_node.bounds();
         body_node = body_node.move_to(Point::new(
             body_bounds.x,
             body_bounds.y + head_node.bounds().height,
         ));
-
-        let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
-            foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
-        });
 
         let foot_bounds = foot_node.bounds();
 
