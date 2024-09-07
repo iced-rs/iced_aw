@@ -26,7 +26,10 @@ use iced::{
     keyboard,
     mouse::{self, Cursor},
     touch,
-    widget::{text, Button, Column, Container, Row, Text},
+    widget::{
+        text::{self, Wrapping},
+        Button, Column, Container, Row, Text,
+    },
     Alignment,
     Border,
     Color,
@@ -1170,6 +1173,7 @@ fn month_year(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
+                wrapping: Wrapping::default(),
             },
             Point::new(left_bounds.center_x(), left_bounds.center_y()),
             style
@@ -1190,6 +1194,7 @@ fn month_year(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
             style
@@ -1210,6 +1215,7 @@ fn month_year(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
+                wrapping: Wrapping::default(),
             },
             Point::new(right_bounds.center_x(), right_bounds.center_y()),
             style
@@ -1279,6 +1285,7 @@ fn day_labels(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(bounds.center_x(), bounds.center_y()),
             style
@@ -1371,6 +1378,7 @@ fn day_table(
                     vertical_alignment: Vertical::Center,
                     line_height: text::LineHeight::Relative(1.3),
                     shaping: text::Shaping::Basic,
+                    wrapping: Wrapping::default(),
                 },
                 Point::new(bounds.center_x(), bounds.center_y()),
                 if is_in_month == IsInMonth::Same {

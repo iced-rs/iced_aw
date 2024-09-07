@@ -27,7 +27,8 @@ use iced::{
     touch,
     widget::{
         canvas::{self, LineCap, Path, Stroke},
-        text, Button, Column, Row,
+        text::{self, Wrapping},
+        Button, Column, Row,
     },
     Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
     Shadow, Size, Vector,
@@ -1427,6 +1428,7 @@ fn rgba_color(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
+                wrapping: Wrapping::default(),
             },
             Point::new(
                 label_layout.bounds().center_x(),
@@ -1510,6 +1512,7 @@ fn rgba_color(
                 vertical_alignment: Vertical::Center,
                 line_height: iced::widget::text::LineHeight::Relative(1.3),
                 shaping: iced::widget::text::Shaping::Advanced,
+                wrapping: Wrapping::default(),
             },
             Point::new(
                 value_layout.bounds().center_x(),
@@ -1651,6 +1654,7 @@ fn hex_text(
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
+            wrapping: Wrapping::default(),
         },
         Point::new(bounds.center_x(), bounds.center_y()),
         Color {
