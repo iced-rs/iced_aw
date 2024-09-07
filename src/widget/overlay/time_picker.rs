@@ -39,7 +39,9 @@ use iced::{
     widget::{
         button,
         canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
-        container, text, Button, Column, Container, Row,
+        container,
+        text::{self, Wrapping},
+        Button, Column, Container, Row,
     },
     Alignment,
     Border,
@@ -1481,6 +1483,7 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(up_bounds.center_x(), up_bounds.center_y()),
             style
@@ -1501,6 +1504,7 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
             style
@@ -1524,6 +1528,7 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(down_bounds.center_x(), down_bounds.center_y()),
             style
@@ -1575,6 +1580,7 @@ fn draw_digital_clock<Message, Theme>(
             vertical_alignment: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
+            wrapping: Wrapping::default(),
         },
         Point::new(
             hour_minute_separator.bounds().center_x(),
@@ -1613,6 +1619,7 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(
                 minute_second_separator.bounds().center_x(),
@@ -1653,6 +1660,7 @@ fn draw_digital_clock<Message, Theme>(
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                wrapping: Wrapping::default(),
             },
             Point::new(period.bounds().center_x(), period.bounds().center_y()),
             style[&StyleState::Active].text_color,

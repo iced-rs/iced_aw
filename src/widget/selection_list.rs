@@ -18,7 +18,7 @@ use iced::{
     mouse::{self, Cursor},
     widget::{
         container, scrollable,
-        text::{self, LineHeight},
+        text::{self, LineHeight, Wrapping},
         Container, Scrollable,
     },
     Border, Element, Event, Font, Length, Padding, Pixels, Rectangle, Shadow, Size,
@@ -229,6 +229,7 @@ where
                         horizontal_alignment: Horizontal::Left,
                         vertical_alignment: Vertical::Top,
                         shaping: text::Shaping::Advanced,
+                        wrapping: Wrapping::default(),
                     };
 
                     state.values[id].update(text);

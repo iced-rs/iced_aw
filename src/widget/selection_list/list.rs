@@ -16,7 +16,7 @@ use iced::{
     event,
     mouse::{self, Cursor},
     touch,
-    widget::text::LineHeight,
+    widget::text::{LineHeight, Wrapping},
     Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
 };
 use std::{
@@ -277,6 +277,7 @@ where
                     vertical_alignment: Vertical::Center,
                     line_height: LineHeight::default(),
                     shaping: iced::widget::text::Shaping::Advanced,
+                    wrapping: Wrapping::default(),
                 },
                 Point::new(bounds.x, bounds.center_y()),
                 text_color,
