@@ -1,4 +1,5 @@
 //! Distribute content columns horizontally while setting the column height to highest column.
+//!
 //! For alignment [`Alignment::Start`] the last element of the column is flushed to the end.
 //! For alignment [`Alignment::End`] the first element of the column is flushed to the start.
 //!

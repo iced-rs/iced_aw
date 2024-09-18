@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changes
+## [0.10.0] - 2024-09-18
 
-- Split removed in favor of Iced pane grid
-- Modal and Floating element removed in favor of Iced Stack.
-- Segmented Button Removed use iced button.
-- cupertino Removed as we are not going to support these anymore.
+### Added 
+- Typed Input @Ultraxime
+
+### Changes
+- (Breaking) Migrated Widgets to Widget folder to mimic Iced @Ultraxime
+- (Breaking) Add text::Wrapping support @edwloef
+- (Breaking) Iced 0.13.0 upgrades.
+- (Breaking) Split removed in favor of Iced pane grid
+- (Breaking) Modal and Floating element removed in favor of Iced Stack.
+- (Breaking) Segmented Button Removed use iced button.
+- (Breaking) cupertino Removed as we are not going to support these anymore.
 
 ## [0.9.3] - 2024-05-08
 

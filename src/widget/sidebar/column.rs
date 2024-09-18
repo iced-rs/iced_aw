@@ -1,4 +1,5 @@
 //! Distribute content rows vertically while setting the row width to widest row.
+//!
 //! For alignment [`Alignment::Start`] the last element of the row is flushed to the end.
 //! For alignment [`Alignment::End`] the first element of the row is flushed to the start.
 //!
