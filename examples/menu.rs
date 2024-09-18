@@ -209,10 +209,8 @@ impl App {
                 )
                 (text_input("", &self.text).on_input(Message::TextChange))
                 (container(toggler(
-                        Some("Or as a sub menu item".to_string()),
                         self.toggle,
-                        Message::ToggleChange,
-                    ))
+                    ).label("Or as a sub menu item".to_string()).on_toggle(Message::ToggleChange))
                     .padding([0, 8])
                     .height(30.0)
                     .align_y(alignment::Vertical::Center),
@@ -234,10 +232,8 @@ impl App {
             )).width(240.0))
             (debug_button_s("Controls"), menu_tpl_1(menu_items!(
                 (row![toggler(
-                        Some("Dark Mode".into()),
                         self.dark_mode,
-                        Message::ThemeChange
-                    )].padding([0, 8])
+                    ).label("Dark Mode".to_string()).on_toggle(Message::ThemeChange)].padding([0, 8])
                 )
                 (color_button([0.45, 0.25, 0.57]))
                 (color_button([0.15, 0.59, 0.64]))
