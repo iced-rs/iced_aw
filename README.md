@@ -16,7 +16,7 @@ Include `iced_aw` as a dependency in your `Cargo.toml`:
 ```toml
 [dependencies]
 iced = "0.13.0"
-iced_aw = { version = "0.10.0", default-features = false, features = [...] }
+iced_aw = { version = "0.11.0", default-features = false, features = [...] }
 ```
 
 ## Versioning
@@ -25,7 +25,7 @@ iced_aw = { version = "0.10.0", default-features = false, features = [...] }
 | -------------- | ----------------- |
 | 0.10           | 0.7               |
 | 0.12           | 0.9               |
-| 0.13           | 0.10              |
+| 0.13           | 0.10, 0.11        |
 
 ## Widgets
 
@@ -160,10 +160,6 @@ Please take a look into our examples on how to use Sidebar.
 Enable Sidebar with the feature `sidebar`.
 
 Also included in this feature, are two widgets `sidebar::column::FlushColumn` and `sidebar::row::FlushRow` that flushes the end/start element to the opposite direction to the alignment of the container.
-
-## Quickstart features
-
-Quickstart features are pretty handy to start and experiment having everything like colors or icons available. Nevertheless, it is recommended to disable these features once the GUI is ready for production and to only include the things you really need.
 
 ### Color palette
 
