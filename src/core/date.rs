@@ -1,8 +1,8 @@
 //! Helper functions for calculating dates
 
 use chrono::{Datelike, Duration, Local, NaiveDate};
-use once_cell::sync::Lazy;
 use std::fmt::Display;
+use std::sync::LazyLock;
 
 /// The date value
 #[derive(Clone, Copy, Debug)]
@@ -221,7 +221,7 @@ pub fn date_as_string(date: NaiveDate) -> String {
 }
 
 /// Gets the length of the longest month name.
-pub static MAX_MONTH_STR_LEN: Lazy<usize> = Lazy::new(|| {
+pub static MAX_MONTH_STR_LEN: LazyLock<usize> = LazyLock::new(|| {
     let months = [
         NaiveDate::from_ymd_opt(0, 1, 1).expect("Year, Month or Day doesnt Exist"),
         NaiveDate::from_ymd_opt(0, 2, 1).expect("Year, Month or Day doesnt Exist"),
@@ -252,7 +252,7 @@ pub static MAX_MONTH_STR_LEN: Lazy<usize> = Lazy::new(|| {
 
 /// Gets the labels of the weekdays containing the first two characters of
 /// the weekdays.
-pub static WEEKDAY_LABELS: Lazy<Vec<String>> = Lazy::new(|| {
+pub static WEEKDAY_LABELS: LazyLock<Vec<String>> = LazyLock::new(|| {
     let days = [
         // Monday
         NaiveDate::from_ymd_opt(2020, 6, 1).expect("Year, Month or Day doesnt Exist"),
