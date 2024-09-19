@@ -30,13 +30,14 @@ use std::{
 };
 
 use crate::style::{self, Status};
+pub use crate::style::{
+    number_input::{self, Catalog, Style},
+    StyleFn,
+};
 use crate::widget::typed_input::TypedInput;
-pub use crate::{
-    core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
-    style::{
-        number_input::{self, Catalog, Style},
-        StyleFn,
-    },
+use iced_fonts::{
+    required::{icon_to_string, RequiredIcons},
+    REQUIRED_FONT,
 };
 
 /// The default padding
@@ -744,10 +745,10 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: icon_to_string(Bootstrap::CaretDownFill),
+                content: icon_to_string(RequiredIcons::CaretDownFill),
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
-                font: BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
@@ -779,10 +780,10 @@ where
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: icon_to_string(Bootstrap::CaretUpFill),
+                content: icon_to_string(RequiredIcons::CaretUpFill),
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
-                font: BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),

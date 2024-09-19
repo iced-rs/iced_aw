@@ -77,25 +77,14 @@ pub use widget as widgets;
 
 pub mod core;
 pub mod style;
-
 pub use iced::Element;
+pub use iced_fonts;
 
 /// Exports for all platforms that are not WASM32.
 mod platform {
     #[allow(unused_imports)]
     pub use crate::style;
     pub use crate::widget::helpers;
-
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "icons")] {
-            pub use
-                crate::core::icons::{
-                    Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, Nerd, NERD_FONT, NERD_FONT_BYTES, bootstrap, nerd
-                };
-        } else {
-            pub use crate::core::icons::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES, bootstrap};
-        }
-    }
 
     #[doc(no_inline)]
     #[cfg(feature = "badge")]

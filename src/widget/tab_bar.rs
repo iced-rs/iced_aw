@@ -6,7 +6,6 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
 pub mod tab_label;
-use crate::core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT};
 
 use iced::{
     advanced::{
@@ -25,6 +24,10 @@ use iced::{
     },
     Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
     Rectangle, Shadow, Size,
+};
+use iced_fonts::{
+    required::{icon_to_string, RequiredIcons},
+    REQUIRED_FONT,
 };
 
 use std::marker::PhantomData;
@@ -650,7 +653,7 @@ where
                 &self.class,
                 i == self.get_active_tab_idx(),
                 cursor,
-                (self.font.unwrap_or(BOOTSTRAP_FONT), self.icon_size),
+                (self.font.unwrap_or(REQUIRED_FONT), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
                 viewport,
@@ -839,10 +842,10 @@ fn draw_tab<Theme, Renderer>(
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: icon_to_string(Bootstrap::X),
+                content: icon_to_string(RequiredIcons::X),
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
-                font: BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),

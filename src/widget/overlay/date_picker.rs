@@ -3,7 +3,6 @@
 //! *This API requires the following crate features to be activated: `date_picker`*
 
 use crate::{
-    core::icons::{bootstrap::icon_to_string, Bootstrap, BOOTSTRAP_FONT},
     core::{
         date::{Date, IsInMonth},
         overlay::Position,
@@ -11,7 +10,6 @@ use crate::{
     date_picker,
     style::{date_picker::Style, style_state::StyleState, Status},
 };
-
 use chrono::{Datelike, Local, NaiveDate};
 use iced::{
     advanced::{
@@ -43,6 +41,10 @@ use iced::{
     Renderer, // the actual type
     Shadow,
     Size,
+};
+use iced_fonts::{
+    required::{icon_to_string, RequiredIcons},
+    REQUIRED_FONT,
 };
 use std::collections::HashMap;
 
@@ -107,8 +109,8 @@ where
         DatePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::X))
-                    .font(crate::BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::X))
+                    .font(REQUIRED_FONT)
                     .size(font_size)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
@@ -116,8 +118,8 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::Check))
-                    .font(crate::BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::Check))
+                    .font(REQUIRED_FONT)
                     .size(font_size)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
@@ -406,9 +408,9 @@ where
                     .push(
                         // Left Month arrow
                         Container::new(
-                            Text::new(icon_to_string(Bootstrap::CaretLeftFill))
+                            Text::new(icon_to_string(RequiredIcons::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
-                                .font(crate::BOOTSTRAP_FONT),
+                                .font(REQUIRED_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -420,9 +422,9 @@ where
                     .push(
                         // Right Month arrow
                         Container::new(
-                            Text::new(icon_to_string(Bootstrap::CaretRightFill))
+                            Text::new(icon_to_string(RequiredIcons::CaretRightFill))
                                 .size(font_size.0 + 1.0)
-                                .font(crate::BOOTSTRAP_FONT),
+                                .font(REQUIRED_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -436,9 +438,9 @@ where
                     .push(
                         // Left Year arrow
                         Container::new(
-                            Text::new(icon_to_string(Bootstrap::CaretLeftFill))
+                            Text::new(icon_to_string(RequiredIcons::CaretLeftFill))
                                 .size(font_size.0 + 1.0)
-                                .font(BOOTSTRAP_FONT),
+                                .font(REQUIRED_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -450,9 +452,9 @@ where
                     .push(
                         // Right Year arrow
                         Container::new(
-                            Text::new(icon_to_string(Bootstrap::CaretRightFill))
+                            Text::new(icon_to_string(RequiredIcons::CaretRightFill))
                                 .size(font_size.0 + 1.0)
-                                .font(BOOTSTRAP_FONT),
+                                .font(REQUIRED_FONT),
                         )
                         .height(Length::Shrink)
                         .width(Length::Shrink),
@@ -955,15 +957,15 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::X))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::X))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::Check))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::Check))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -1165,10 +1167,10 @@ fn month_year(
         // Left caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: icon_to_string(Bootstrap::CaretLeftFill),
+                content: icon_to_string(RequiredIcons::CaretLeftFill),
                 bounds: Size::new(left_bounds.width, left_bounds.height),
                 size: Pixels(font_size.0 + if left_arrow_hovered { 1.0 } else { 0.0 }),
-                font: BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
@@ -1207,10 +1209,10 @@ fn month_year(
         // Right caret
         renderer.fill_text(
             iced::advanced::Text {
-                content: icon_to_string(Bootstrap::CaretRightFill),
+                content: icon_to_string(RequiredIcons::CaretRightFill),
                 bounds: Size::new(right_bounds.width, right_bounds.height),
                 size: Pixels(font_size.0 + if right_arrow_hovered { 1.0 } else { 0.0 }),
-                font: BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),

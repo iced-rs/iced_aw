@@ -58,7 +58,7 @@ fn main() -> iced::Result {
         SpinnerExample::update,
         SpinnerExample::view,
     )
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .theme(SpinnerExample::theme)
     .run()
 }

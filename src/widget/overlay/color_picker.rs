@@ -4,7 +4,6 @@
 
 use crate::{
     color_picker,
-    core::icons::bootstrap::{icon_to_string, Bootstrap},
     core::{
         color::{HexString, Hsv},
         overlay::Position,
@@ -32,6 +31,10 @@ use iced::{
     },
     Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
     Shadow, Size, Vector,
+};
+use iced_fonts::{
+    required::{icon_to_string, RequiredIcons},
+    REQUIRED_FONT,
 };
 use std::collections::HashMap;
 
@@ -97,18 +100,18 @@ where
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced::widget::Text::new(icon_to_string(Bootstrap::X))
+                iced::widget::Text::new(icon_to_string(RequiredIcons::X))
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
-                    .font(crate::BOOTSTRAP_FONT),
+                    .font(REQUIRED_FONT),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced::widget::Text::new(icon_to_string(Bootstrap::Check))
+                iced::widget::Text::new(icon_to_string(RequiredIcons::Check))
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
-                    .font(crate::BOOTSTRAP_FONT),
+                    .font(REQUIRED_FONT),
             )
             .width(Length::Fill)
             .on_press(on_cancel), // Sending a fake message
@@ -1423,7 +1426,7 @@ fn rgba_color(
                 content: label.to_owned(),
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
-                font: crate::BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
@@ -1735,11 +1738,11 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                widget::Text::new(icon_to_string(Bootstrap::X)).font(crate::BOOTSTRAP_FONT),
+                widget::Text::new(icon_to_string(RequiredIcons::X)).font(REQUIRED_FONT),
             )
             .into(),
             submit_button: Button::new(
-                widget::Text::new(icon_to_string(Bootstrap::Check)).font(crate::BOOTSTRAP_FONT),
+                widget::Text::new(icon_to_string(RequiredIcons::Check)).font(REQUIRED_FONT),
             )
             .into(),
         }

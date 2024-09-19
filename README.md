@@ -169,10 +169,3 @@ Quickstart features are pretty handy to start and experiment having everything l
 
 This crate adds a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
 
-### Bootstrap icons
-
-Thanks to [Bootstrap](https://icons.getbootstrap.com), iced_aw now contains ~1,200 icons to be used in an Iced GUI.
-
-Enable icons with the feature `icons`.
-
-*Note: the icon font with ~1,200 weights around 0.274 MB. This features should only be used for experimenting with all the icons.*

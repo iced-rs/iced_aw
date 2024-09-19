@@ -10,7 +10,7 @@ use iced_aw::{selection_list::SelectionList, style::selection_list::primary};
 
 pub fn main() -> iced::Result {
     iced::application("Selection list example", Example::update, Example::view)
-        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+        .font(iced_fonts::REQUIRED_FONT_BYTES)
         .run()
 }
 

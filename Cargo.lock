@@ -1431,6 +1431,7 @@ dependencies = [
  "chrono",
  "iced",
  "iced_aw",
+ "iced_fonts",
  "itertools",
  "num-format",
  "num-traits",
@@ -1456,6 +1457,15 @@ dependencies = [
  "smol_str",
  "thiserror",
  "web-time",
+]
+
+[[package]]
+name = "iced_fonts"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df7deb0800a850ee25c8a42559f72c0f249e577feb3aad37b9b65dc1e517e52a"
+dependencies = [
+ "iced_core",
 ]
 
 [[package]]

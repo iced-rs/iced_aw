@@ -17,7 +17,7 @@ fn main() -> iced::Result {
         DropDownExample::update,
         DropDownExample::view,
     )
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .run()
 }
 

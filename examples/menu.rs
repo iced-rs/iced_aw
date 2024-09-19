@@ -12,12 +12,13 @@ use iced_aw::menu::{self, Item, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
 use iced_aw::{menu_bar, menu_items};
 use iced_aw::{quad, widgets::InnerBounds};
-use iced_aw::{Bootstrap, BOOTSTRAP_FONT, BOOTSTRAP_FONT_BYTES};
+use iced_fonts::required::{icon_to_string, RequiredIcons};
+use iced_fonts::REQUIRED_FONT;
 
 pub fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
         .theme(App::theme)
-        .font(BOOTSTRAP_FONT_BYTES)
+        .font(iced_fonts::REQUIRED_FONT_BYTES)
         .window_size(Size::new(1000.0, 600.0))
         .run()
 }
@@ -492,12 +493,10 @@ fn submenu_button(label: &str) -> button::Button<Message, iced::Theme, iced::Ren
             text(label)
                 .width(Length::Fill)
                 .align_y(alignment::Vertical::Center),
-            text(iced_aw::bootstrap::icon_to_string(
-                Bootstrap::CaretRightFill
-            ))
-            .font(BOOTSTRAP_FONT)
-            .width(Length::Shrink)
-            .align_y(alignment::Vertical::Center),
+            text(icon_to_string(RequiredIcons::CaretRightFill))
+                .font(REQUIRED_FONT)
+                .width(Length::Shrink)
+                .align_y(alignment::Vertical::Center),
         ]
         .align_y(iced::Alignment::Center),
         Message::Debug(label.into()),

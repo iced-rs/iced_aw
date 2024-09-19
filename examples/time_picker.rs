@@ -14,7 +14,7 @@ fn main() -> iced::Result {
         TimePickerExample::update,
         TimePickerExample::view,
     )
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .run()
 }
 

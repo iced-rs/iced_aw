@@ -28,7 +28,7 @@ fn main() -> iced::Result {
         width: 250.0,
         height: 200.0,
     })
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .run()
 }
 

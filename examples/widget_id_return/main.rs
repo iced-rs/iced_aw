@@ -31,7 +31,7 @@ fn main() -> iced::Result {
         NumberInputDemo::update,
         NumberInputDemo::view,
     )
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .run()
 }
 

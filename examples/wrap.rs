@@ -13,7 +13,7 @@ use rand::Rng;
 
 fn main() -> iced::Result {
     iced::application("Wrap example", RandStrings::update, RandStrings::view)
-        .font(iced_aw::BOOTSTRAP_FONT_BYTES)
+        .font(iced_fonts::REQUIRED_FONT_BYTES)
         .run()
 }
 

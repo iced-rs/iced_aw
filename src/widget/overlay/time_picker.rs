@@ -8,10 +8,6 @@ use crate::{
         MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
-    core::icons::{
-        bootstrap::icon_to_string,
-        {Bootstrap, BOOTSTRAP_FONT},
-    },
     core::{clock, overlay::Position, time::Period},
     style::{
         style_state::StyleState,
@@ -20,7 +16,6 @@ use crate::{
     },
     time_picker::{self, Time},
 };
-
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced::{
     advanced::{
@@ -57,6 +52,10 @@ use iced::{
     Shadow,
     Size,
     Vector,
+};
+use iced_fonts::{
+    required::{icon_to_string, RequiredIcons},
+    REQUIRED_FONT,
 };
 use std::collections::HashMap;
 
@@ -115,16 +114,16 @@ where
         TimePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::X))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::X))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::Check))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::Check))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -1475,10 +1474,11 @@ fn draw_digital_clock<Message, Theme>(
         // Caret up
         renderer.fill_text(
             Text {
-                content: (*char::from(Bootstrap::CaretUpFill).encode_utf8(&mut buffer)).to_string(),
+                content: (*char::from(RequiredIcons::CaretUpFill).encode_utf8(&mut buffer))
+                    .to_string(),
                 bounds: Size::new(up_bounds.width, up_bounds.height),
                 size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
-                font: crate::core::icons::BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
@@ -1517,13 +1517,13 @@ fn draw_digital_clock<Message, Theme>(
         // Down caret
         renderer.fill_text(
             Text {
-                content: (*char::from(Bootstrap::CaretDownFill).encode_utf8(&mut buffer))
+                content: (*char::from(RequiredIcons::CaretDownFill).encode_utf8(&mut buffer))
                     .to_string(),
                 bounds: Size::new(down_bounds.width, down_bounds.height),
                 size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
                 ),
-                font: crate::core::icons::BOOTSTRAP_FONT,
+                font: REQUIRED_FONT,
                 horizontal_alignment: Horizontal::Center,
                 vertical_alignment: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
@@ -1739,15 +1739,15 @@ where
     fn default() -> Self {
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::X))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::X))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(Bootstrap::Check))
-                    .font(BOOTSTRAP_FONT)
+                text::Text::new(icon_to_string(RequiredIcons::Check))
+                    .font(REQUIRED_FONT)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
