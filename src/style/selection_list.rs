@@ -18,17 +18,6 @@ pub struct Style {
     pub border_color: Color,
 }
 
-impl std::default::Default for Style {
-    fn default() -> Self {
-        Self {
-            text_color: Color::BLACK,
-            background: Background::Color([0.87, 0.87, 0.87].into()),
-            border_width: 1.0,
-            border_color: [0.7, 0.7, 0.7].into(),
-        }
-    }
-}
-
 /// The Catalog of a [`Badge`](crate::widget::selection_list::SelectionList).
 pub trait Catalog {
     ///Style for the trait to use.
@@ -55,18 +44,25 @@ impl Catalog for Theme {
 
 /// The primary theme of a [`Badge`](crate::widget::selection_list::SelectionList).
 #[must_use]
-pub fn primary(_theme: &Theme, status: Status) -> Style {
-    let base = Style::default();
+pub fn primary(theme: &Theme, status: Status) -> Style {
+    let palette = theme.extended_palette();
+
+    let base = Style {
+        text_color: palette.background.base.text,
+        background: palette.background.base.color.into(),
+        border_width: 1.0,
+        border_color: palette.background.weak.color,
+    };
 
     match status {
         Status::Hovered => Style {
-            text_color: Color::WHITE,
-            background: Background::Color([0.0, 0.5, 1.0].into()),
+            text_color: palette.primary.base.text,
+            background: palette.primary.base.color.into(),
             ..base
         },
         Status::Selected => Style {
-            text_color: Color::WHITE,
-            background: Background::Color([0.2, 0.5, 0.8].into()),
+            text_color: palette.primary.strong.text,
+            background: palette.primary.strong.color.into(),
             ..base
         },
         _ => base,
