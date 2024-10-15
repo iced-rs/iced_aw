@@ -298,6 +298,13 @@ where
         self.class = class.into();
         self
     }
+
+    /// Sets the [`Id`] of the underlying [`TextInput`].
+    #[must_use]
+    pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
+        self.content = self.content.id( id.into() );
+        self
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
