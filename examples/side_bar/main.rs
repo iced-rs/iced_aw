@@ -45,9 +45,9 @@ fn main() -> iced::Result {
         TabBarExample::update,
         TabBarExample::view,
     )
-    .font(iced_aw::BOOTSTRAP_FONT_BYTES)
-    .font(ICON_BYTES)
-    .run()
+        .font(iced_fonts::REQUIRED_FONT_BYTES)
+        .font(ICON_BYTES)
+        .run()
 }
 
 #[derive(Default)]
