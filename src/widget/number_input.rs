@@ -302,7 +302,7 @@ where
     /// Sets the [`Id`] of the underlying [`TextInput`].
     #[must_use]
     pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
-        self.content = self.content.id( id.into() );
+        self.content = self.content.id(id.into());
         self
     }
 }
