@@ -11,9 +11,10 @@ use iced::{
     },
     event::Status,
     mouse::Cursor,
+    time::Instant,
     window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
 };
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 /// A spinner widget, a circle spinning around the center of the widget.
 #[allow(missing_debug_implementations)]
