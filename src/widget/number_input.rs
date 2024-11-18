@@ -495,7 +495,7 @@ where
                         if text == "\u{1}" || text == "\u{3}" {
                             // CTRL + a and CTRL + c
                             forward_to_text(event, shell, child, clipboard)
-                        } else if text == "\u{8}" {
+                        } else if key == &keyboard::Key::Named(keyboard::key::Named::Backspace) {
                             // Backspace
                             if current_text == T::zero().to_string() {
                                 return event::Status::Ignored;
