@@ -497,9 +497,7 @@ where
                             forward_to_text(event, shell, child, clipboard)
                         } else if key == &keyboard::Key::Named(keyboard::key::Named::Backspace) {
                             // Backspace
-                            if current_text == T::zero().to_string() {
-                                return event::Status::Ignored;
-                            }
+
                             let mut new_val = current_text;
                             match text_input.cursor().state(&Value::new(&new_val)) {
                                 cursor::State::Index(idx) if idx >= 1 && idx <= new_val.len() => {
@@ -528,7 +526,7 @@ where
                                     forward_to_text(event, shell, child, clipboard)
                                 }
                                 Ok(_) => event::Status::Captured,
-                                _ => event::Status::Ignored,
+                                _ => forward_to_text(event, shell, child, clipboard),
                             }
                         } else {
                             let input = if text == "\u{16}" {
@@ -537,8 +535,6 @@ where
                                     Some(paste) => paste,
                                     None => return event::Status::Ignored,
                                 }
-                            } else if text.parse::<i64>().is_err() && text != "-" && text != "." {
-                                return event::Status::Ignored;
                             } else {
                                 text.to_string()
                             };
@@ -569,7 +565,7 @@ where
                                     forward_to_text(event, shell, child, clipboard)
                                 }
                                 Ok(_) => event::Status::Captured,
-                                _ => event::Status::Ignored,
+                                _ => forward_to_text(event, shell, child, clipboard),
                             }
                         }
                     }
