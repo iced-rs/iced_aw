@@ -87,47 +87,48 @@ where
             parent_direction: (Direction, Direction),
             viewport: &Rectangle,
         ) {
-            let menu = item.menu.as_ref().unwrap();
-            let menu_tree = &mut tree.children[1];
+            if let Some(menu) = item.menu.as_ref() {
+                let menu_tree = &mut tree.children[1];
 
-            let (menu_node, direction) = menu.layout(
-                menu_tree,
-                renderer,
-                &Limits::NONE,
-                check_bounds_width,
-                parent_bounds,
-                parent_direction,
-                viewport,
-            );
-            // Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
-            menu_nodes.push(menu_node);
-
-            let menu_state = menu_tree.state.downcast_ref::<MenuState>();
-
-            if let Some(active) = menu_state.active {
-                let next_item = &menu.items[active];
-                let next_tree = &mut menu_tree.children[active];
-                let next_parent_bounds = {
-                    let slice_node = &menu_nodes.last().unwrap().children()[0];
-                    let Some(node) = slice_node
-                        .children()
-                        .get(active - menu_state.slice.start_index)
-                    else {
-                        return;
-                    };
-
-                    node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
-                };
-                rec(
+                let (menu_node, direction) = menu.layout(
+                    menu_tree,
                     renderer,
-                    next_item,
-                    next_tree,
-                    menu_nodes,
+                    &Limits::NONE,
                     check_bounds_width,
-                    next_parent_bounds,
-                    direction,
+                    parent_bounds,
+                    parent_direction,
                     viewport,
                 );
+                // Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+                menu_nodes.push(menu_node);
+
+                let menu_state = menu_tree.state.downcast_ref::<MenuState>();
+
+                if let Some(active) = menu_state.active {
+                    let next_item = &menu.items[active];
+                    let next_tree = &mut menu_tree.children[active];
+                    let next_parent_bounds = {
+                        let slice_node = &menu_nodes.last().unwrap().children()[0];
+                        let Some(node) = slice_node
+                            .children()
+                            .get(active - menu_state.slice.start_index)
+                        else {
+                            return;
+                        };
+
+                        node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
+                    };
+                    rec(
+                        renderer,
+                        next_item,
+                        next_tree,
+                        menu_nodes,
+                        check_bounds_width,
+                        next_parent_bounds,
+                        direction,
+                        viewport,
+                    );
+                }
             }
         }
 
@@ -225,6 +226,10 @@ where
             prev: &mut Index,
             scroll_speed: ScrollSpeed,
         ) -> RecEvent {
+            if item.menu.as_mut().is_none() {
+                return RecEvent::None;
+            }
+
             let menu = item.menu.as_mut().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
 
@@ -368,6 +373,10 @@ where
             renderer: &Renderer,
             viewport: &Rectangle,
         ) -> mouse::Interaction {
+            if item.menu.as_ref().is_none() {
+                return mouse::Interaction::default();
+            }
+
             let menu = item.menu.as_ref().expect("No menu defined in this item");
             let menu_tree = &tree.children[1];
 
@@ -434,6 +443,10 @@ where
             renderer: &Renderer,
             operation: &mut dyn Operation<()>,
         ) {
+            if item.menu.is_none() {
+                return;
+            }
+
             let menu = item.menu.as_ref().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
 
@@ -520,45 +533,46 @@ where
             theme_style: &Style,
             viewport: &Rectangle,
         ) {
-            let menu = item.menu.as_ref().expect("No menu defined in this item");
-            let menu_tree = &tree.children[1];
+            if let Some(menu) = item.menu.as_ref() {
+                let menu_tree = &tree.children[1];
 
-            let Some(menu_layout) = layout_iter.next() else {
-                return;
-            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+                let Some(menu_layout) = layout_iter.next() else {
+                    return;
+                }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
 
-            let menu_state = menu_tree.state.downcast_ref::<MenuState>();
+                let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
-            menu.draw(
-                draw_path,
-                menu_tree,
-                renderer,
-                theme,
-                style,
-                theme_style,
-                menu_layout,
-                cursor,
-                viewport,
-            );
+                menu.draw(
+                    draw_path,
+                    menu_tree,
+                    renderer,
+                    theme,
+                    style,
+                    theme_style,
+                    menu_layout,
+                    cursor,
+                    viewport,
+                );
 
-            if let Some(active) = menu_state.active {
-                let next_tree = &menu_tree.children[active];
-                let next_item = &menu.items[active];
+                if let Some(active) = menu_state.active {
+                    let next_tree = &menu_tree.children[active];
+                    let next_item = &menu.items[active];
 
-                renderer.with_layer(*viewport, |r| {
-                    rec(
-                        draw_path,
-                        next_tree,
-                        next_item,
-                        layout_iter,
-                        cursor,
-                        r,
-                        theme,
-                        style,
-                        theme_style,
-                        viewport,
-                    );
-                });
+                    renderer.with_layer(*viewport, |r| {
+                        rec(
+                            draw_path,
+                            next_tree,
+                            next_item,
+                            layout_iter,
+                            cursor,
+                            r,
+                            theme,
+                            style,
+                            theme_style,
+                            viewport,
+                        );
+                    });
+                }
             }
         }
 
