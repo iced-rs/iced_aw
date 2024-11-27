@@ -37,6 +37,9 @@ impl NumberInputDemo {
         if let Message::NumInpChanged(Ok(val)) = message {
             println!("Value changed to {:?}", val);
             self.value = val;
+        } else if let Message::NumInpChanged(Err(_)) = message  {
+            println!("Error Value reset to 0.0");
+            self.value = 0.0;
         }
     }
 

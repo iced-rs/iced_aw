@@ -160,3 +160,6 @@ required-features = ["number_input"]
 [[example]]
 name = "wrap"
 required-features = ["wrap", "number_input"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]

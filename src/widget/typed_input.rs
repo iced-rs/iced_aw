@@ -347,6 +347,11 @@ where
             match message {
                 InternalMessage::OnChange(value) => {
                     self.text = value;
+
+                    if self.text.ends_with('.') {
+                        self.text.push('0');
+                    }
+
                     let value = match T::from_str(&self.text) {
                         Ok(val) if self.value != val => {
                             self.value = val.clone();
@@ -364,6 +369,10 @@ where
                 }
                 InternalMessage::OnSubmit => {
                     if let Some(on_submit) = &self.on_submit {
+                        if self.text.ends_with('.') {
+                            self.text.push('0');
+                        }
+
                         let value = match T::from_str(&self.text) {
                             Ok(v) => Ok(v),
                             Err(_) => Err(self.text.clone()),
@@ -373,6 +382,10 @@ where
                 }
                 InternalMessage::OnPaste(value) => {
                     self.text = value;
+
+                    if self.text.ends_with('.') {
+                        self.text.push('0');
+                    }
 
                     let value = match T::from_str(&self.text) {
                         Ok(val) if self.value != val => {
