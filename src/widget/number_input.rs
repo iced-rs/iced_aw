@@ -85,7 +85,7 @@ where
     /// The underlying element of the [`NumberInput`].
     content: TypedInput<'a, T, Message, Theme, Renderer>,
     /// The ``on_change`` event of the [`NumberInput`].
-    on_change: Box<dyn Fn(T) -> Message>,
+    on_change: Box<dyn Fn(Result<T, String>) -> Message>,
     /// The style of the [`NumberInput`].
     class: <Theme as style::number_input::Catalog>::Class<'a>,
     /// The font text of the [`NumberInput`].
@@ -114,7 +114,7 @@ where
     /// - a function that produces a message when the [`NumberInput`] changes
     pub fn new<F>(value: T, bounds: impl RangeBounds<T>, on_change: F) -> Self
     where
-        F: 'static + Fn(T) -> Message + Copy,
+        F: 'static + Fn(Result<T, String>) -> Message + Copy,
         T: 'static,
     {
         let padding = DEFAULT_PADDING;
@@ -248,7 +248,7 @@ where
             self.value -= self.step;
         }
 
-        shell.publish((self.on_change)(self.value));
+        shell.publish((self.on_change)(Ok(self.value)));
     }
 
     /// Increase current value by step of the [`NumberInput`].
@@ -258,7 +258,7 @@ where
         } else {
             self.value += self.step;
         }
-        shell.publish((self.on_change)(self.value));
+        shell.publish((self.on_change)(Ok(self.value)));
     }
 
     fn set_min(min: Bound<&T>) -> T {

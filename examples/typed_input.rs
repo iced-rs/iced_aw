@@ -15,7 +15,7 @@ pub struct TypedInputDemo {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    TypedInpChanged(f32),
+    TypedInpChanged(Result<f32, String>),
 }
 
 fn main() -> iced::Result {
@@ -34,9 +34,10 @@ fn main() -> iced::Result {
 
 impl TypedInputDemo {
     fn update(&mut self, message: self::Message) {
-        let Message::TypedInpChanged(val) = message;
-        println!("Value changed to {:?}", val);
-        self.value = val;
+        if let Message::TypedInpChanged(Ok(val)) = message {
+            println!("Value changed to {:?}", val);
+            self.value = val;
+        }
     }
 
     fn view(&self) -> Element<Message> {

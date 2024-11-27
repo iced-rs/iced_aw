@@ -15,7 +15,7 @@ pub struct NumberInputDemo {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(f32),
+    NumInpChanged(Result<f32, String>),
 }
 
 fn main() -> iced::Result {
@@ -34,9 +34,10 @@ fn main() -> iced::Result {
 
 impl NumberInputDemo {
     fn update(&mut self, message: self::Message) {
-        let Message::NumInpChanged(val) = message;
-        println!("Value changed to {:?}", val);
-        self.value = val;
+        if let Message::NumInpChanged(Ok(val)) = message {
+            println!("Value changed to {:?}", val);
+            self.value = val;
+        }
     }
 
     fn view(&self) -> Element<Message> {

@@ -316,7 +316,7 @@ where
     Message: Clone + 'a,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: crate::style::number_input::ExtendedCatalog,
-    F: 'static + Fn(T) -> Message + Copy,
+    F: 'static + Fn(Result<T, String>) -> Message + Copy,
     T: 'static
         + num_traits::Num
         + num_traits::NumAssignOps
@@ -342,7 +342,7 @@ where
     Message: Clone,
     Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: iced::widget::text_input::Catalog,
-    F: 'static + Fn(T) -> Message + Copy,
+    F: 'static + Fn(Result<T, String>) -> Message + Copy,
     T: 'static + std::fmt::Display + std::str::FromStr + Clone,
 {
     crate::TypedInput::new("", value).on_input(on_change)

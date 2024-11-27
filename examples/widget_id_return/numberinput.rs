@@ -14,16 +14,18 @@ pub struct NumInput<V, M> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NumInputMessage<V> {
-    Change(V),
+    Change(Result<V, String>),
 }
 
 impl<V> NumInputMessage<V>
 where
     V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
 {
-    pub fn get_data(&self) -> V {
-        let NumInputMessage::Change(data) = self;
-        *data
+    pub fn get_data(&self) -> Result<V, String> {
+        match self {
+            NumInputMessage::Change(Ok(data)) => Ok(*data),
+            NumInputMessage::Change(Err(data)) => Err(data.clone()),
+        }
     }
 }
 
@@ -31,9 +33,11 @@ impl<V> NumInputMessage<V>
 where
     V: Eq + Copy,
 {
-    pub fn get_enum(&self) -> V {
-        let NumInputMessage::Change(data) = self;
-        *data
+    pub fn get_enum(&self) -> Result<V, String> {
+        match self {
+            NumInputMessage::Change(Ok(data)) => Ok(*data),
+            NumInputMessage::Change(Err(data)) => Err(data.clone()),
+        }
     }
 }
 

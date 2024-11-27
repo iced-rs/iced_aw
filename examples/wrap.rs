@@ -89,9 +89,9 @@ struct StrButton {
 #[derive(Debug, Clone)]
 enum Message {
     ChangeAlign(WrapAlign),
-    ChangeSpacing(f32),
-    ChangeLineSpacing(f32),
-    ChangeMinimalLength(f32),
+    ChangeSpacing(Result<f32, String>),
+    ChangeLineSpacing(Result<f32, String>),
+    ChangeMinimalLength(Result<f32, String>),
 }
 
 impl RandStrings {
@@ -100,15 +100,16 @@ impl RandStrings {
             Message::ChangeAlign(align) => {
                 self.align = align.into();
             }
-            Message::ChangeSpacing(num) => {
+            Message::ChangeSpacing(Ok(num)) => {
                 self.spacing = num;
             }
-            Message::ChangeLineSpacing(num) => {
+            Message::ChangeLineSpacing(Ok(num)) => {
                 self.line_spacing = num;
             }
-            Message::ChangeMinimalLength(num) => {
+            Message::ChangeMinimalLength(Ok(num)) => {
                 self.line_minimal_length = num;
             }
+            _ => {}
         }
     }
 

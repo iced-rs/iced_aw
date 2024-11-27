@@ -41,7 +41,7 @@ use numberinput::*;
 impl NumberInputDemo {
     fn update(&mut self, message: self::Message) {
         let Message::GenericF32Input((id, val)) = message;
-        self.value[id].value = val.get_data();
+        self.value[id].value = val.get_data().unwrap_or_default();
     }
 
     fn view(&self) -> Element<Message> {
