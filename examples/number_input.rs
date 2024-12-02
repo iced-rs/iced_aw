@@ -15,7 +15,8 @@ pub struct NumberInputDemo {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(Result<f32, String>),
+    NumInpChanged(f32),
+    NumInpSubmitted,
 }
 
 fn main() -> iced::Result {
@@ -34,19 +35,22 @@ fn main() -> iced::Result {
 
 impl NumberInputDemo {
     fn update(&mut self, message: self::Message) {
-        if let Message::NumInpChanged(Ok(val)) = message {
-            println!("Value changed to {:?}", val);
-            self.value = val;
-        } else if let Message::NumInpChanged(Err(_)) = message  {
-            println!("Error Value reset to 0.0");
-            self.value = 0.0;
+        match message {
+            Message::NumInpChanged(val) => {
+                println!("Value changed to {:?}", val);
+                self.value = val;
+            }
+            Message::NumInpSubmitted => {
+                println!("Value submitted");
+            }
         }
     }
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(self.value, -10.0..250.0, Message::NumInpChanged)
+        let txt_minute = number_input(&self.value, -10.0..250.0, Message::NumInpChanged)
             .style(number_input::number_input::primary)
+            .on_submit(Message::NumInpSubmitted)
             .step(0.5);
 
         Container::new(
