@@ -125,7 +125,31 @@ where
         self
     }
 
-    /// Sets the message that should be produced when the [`TextInput`] is
+    /// Sets the message that should be produced when some text is typed into the [`TypedInput`], if `Some`.
+    ///
+    /// If this is `None`, and there is no [`on_submit`](Self::on_submit) callback, the [`TypedInput`] will be disabled.
+    #[must_use]
+    pub fn on_input_maybe<F>(mut self, callback: Option<F>) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        if let Some(callback) = callback {
+            self.text_input = self.text_input.on_input(InternalMessage::OnChange);
+            self.on_change = Some(Box::new(callback));
+        } else {
+            if self.on_submit.is_none() {
+                // Used to give a proper type to None, maybe someone can find a better way
+                #[allow(unused_assignments)]
+                let mut f = Some(InternalMessage::OnChange);
+                f = None;
+                self.text_input = self.text_input.on_input_maybe(f);
+            }
+            self.on_change = None;
+        }
+        self
+    }
+
+    /// Sets the message that should be produced when the [`TypedtInput`] is
     /// focused and the enter key is pressed.
     ///
     /// If neither this method nor [`on_input`](Self::on_input) is called, the [`TypedInput`] will be disabled
@@ -142,6 +166,39 @@ where
         self
     }
 
+    /// Sets the message that should be produced when the [`TypedtInput`] is
+    /// focused and the enter key is pressed, if `Some`.
+    ///
+    /// If this is `None`, and there is no [`on_change`](Self::on_input) callback, the [`TypedInput`] will be disabled.
+    #[must_use]
+    pub fn on_submit_maybe<F>(mut self, callback: Option<F>) -> Self
+    where
+        F: 'a + Fn(Result<T, String>) -> Message,
+    {
+        if let Some(callback) = callback {
+            self.text_input = self
+                .text_input
+                .on_input(InternalMessage::OnChange)
+                .on_submit(InternalMessage::OnSubmit);
+            self.on_submit = Some(Box::new(callback));
+        } else {
+            if self.on_change.is_none() {
+                // Used to give a proper type to None, maybe someone can find a better way
+                #[allow(unused_assignments)]
+                let mut f = Some(InternalMessage::OnChange);
+                f = None;
+                self.text_input = self.text_input.on_input_maybe(f);
+            }
+            // Used to give a proper type to None, maybe someone can find a better way
+            #[allow(unused_assignments)]
+            let mut f = Some(InternalMessage::OnSubmit);
+            f = None;
+            self.text_input = self.text_input.on_submit_maybe(f);
+            self.on_change = None;
+        }
+        self
+    }
+
     /// Sets the message that should be produced when some text is pasted into the [`TypedInput`], resulting in a valid value
     #[must_use]
     pub fn on_paste<F>(mut self, callback: F) -> Self
@@ -150,6 +207,26 @@ where
     {
         self.text_input = self.text_input.on_paste(InternalMessage::OnPaste);
         self.on_paste = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the message that should be produced when some text is pasted into the [`TypedInput`], resulting in a valid value, if `Some`
+    #[must_use]
+    pub fn on_paste_maybe<F>(mut self, callback: Option<F>) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        if let Some(callback) = callback {
+            self.text_input = self.text_input.on_paste(InternalMessage::OnPaste);
+            self.on_paste = Some(Box::new(callback));
+        } else {
+            // Used to give a proper type to None, maybe someone can find a better way
+            #[allow(unused_assignments)]
+            let mut f = Some(InternalMessage::OnPaste);
+            f = None;
+            self.text_input = self.text_input.on_paste_maybe(f);
+            self.on_paste = None;
+        }
         self
     }
 
@@ -192,6 +269,13 @@ where
     #[must_use]
     pub fn line_height(mut self, line_height: impl Into<iced::widget::text::LineHeight>) -> Self {
         self.text_input = self.text_input.line_height(line_height);
+        self
+    }
+
+    /// Sets the horizontal alignment of the [`TypedInput`].
+    #[must_use]
+    pub fn align_x(mut self, alignment: impl Into<iced::alignment::Horizontal>) -> Self {
+        self.text_input = self.text_input.align_x(alignment);
         self
     }
 

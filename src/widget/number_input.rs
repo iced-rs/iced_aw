@@ -85,7 +85,7 @@ where
     /// The underlying element of the [`NumberInput`].
     content: TypedInput<'a, T, InternalMessage<T>, Theme, Renderer>,
     /// The ``on_change`` event of the [`NumberInput`].
-    on_change: Box<dyn Fn(T) -> Message>,
+    on_change: Option<Box<dyn 'a + Fn(T) -> Message>>,
     /// The ``on_submit`` event of the [`NumberInput`].
     #[allow(clippy::type_complexity)]
     on_submit: Option<Message>,
@@ -143,7 +143,7 @@ where
                 .padding(padding)
                 .width(Length::Fixed(127.0))
                 .class(Theme::default_input()),
-            on_change: Box::new(on_change),
+            on_change: Some(Box::new(on_change)),
             on_submit: None,
             on_paste: None,
             class: <Theme as style::number_input::Catalog>::default(),
@@ -154,18 +154,133 @@ where
         }
     }
 
-    /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
-    /// # Example
-    /// ```
-    /// use iced_aw::widget::number_input;
-    /// // Creates a range from -5 till 5.
-    /// let input: iced_aw::NumberInput<'_, _, _, iced::Theme, iced::Renderer> = number_input(&4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
-    /// ```
+    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced::widget::TextInput).
     #[must_use]
-    pub fn bounds(mut self, bounds: impl RangeBounds<T>) -> Self {
-        self.min = bounds.start_bound().cloned();
-        self.max = bounds.end_bound().cloned();
+    pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
+        self.content = self.content.id(id.into());
+        self
+    }
 
+    /// Sets the message that should be produced when some valid text is typed into [`NumberInput`]
+    ///
+    /// If neither this method nor [`on_submit`](Self::on_submit) is called, the [`NumberInput`] will be disabled
+    #[must_use]
+    pub fn on_input<F>(mut self, callback: F) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        self.content = self.content.on_input(InternalMessage::OnChange);
+        self.on_change = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the message that should be produced when some text is typed into the [`NumberInput`], if `Some`.
+    ///
+    /// If this is `None`, and there is no [`on_submit`](Self::on_submit) callback, the [`NumberInput`] will be disabled.
+    #[must_use]
+    pub fn on_input_maybe<F>(mut self, callback: Option<F>) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        if let Some(callback) = callback {
+            self.content = self.content.on_input(InternalMessage::OnChange);
+            self.on_change = Some(Box::new(callback));
+        } else {
+            if self.on_submit.is_none() {
+                // Used to give a proper type to None, maybe someone can find a better way
+                #[allow(unused_assignments)]
+                let mut f = Some(InternalMessage::OnChange);
+                f = None;
+                self.content = self.content.on_input_maybe(f);
+            }
+            self.on_change = None;
+        }
+        self
+    }
+
+    /// Sets the message that should be produced when the [`NumberInput`] is
+    /// focused and the enter key is pressed.
+    #[must_use]
+    pub fn on_submit(mut self, message: Message) -> Self {
+        self.content = self.content.on_submit(InternalMessage::OnSubmit);
+        self.on_submit = Some(message);
+        self
+    }
+
+    /// Sets the message that should be produced when the [`NumbertInput`] is
+    /// focused and the enter key is pressed, if `Some`.
+    ///
+    /// If this is `None`, and there is no [`on_change`](Self::on_input) callback, the [`NumberInput`] will be disabled.
+    #[must_use]
+    pub fn on_submit_maybe(mut self, message: Option<Message>) -> Self {
+        if let Some(message) = message {
+            self.content = self.content.on_submit(InternalMessage::OnSubmit);
+            self.on_submit = Some(message);
+        } else {
+            if self.on_change.is_none() {
+                // Used to give a proper type to None, maybe someone can find a better way
+                #[allow(unused_assignments)]
+                let mut f = Some(InternalMessage::OnChange);
+                f = None;
+                self.content = self.content.on_input_maybe(f);
+            }
+            // Used to give a proper type to None, maybe someone can find a better way
+            #[allow(unused_assignments)]
+            let mut f = Some(InternalMessage::OnSubmit);
+            f = None;
+            self.content = self.content.on_submit_maybe(f);
+            self.on_change = None;
+        }
+        self
+    }
+
+    /// Sets the message that should be produced when some text is pasted into the [`NumberInput`], resulting in a valid value
+    #[must_use]
+    pub fn on_paste<F>(mut self, callback: F) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        self.content = self.content.on_paste(InternalMessage::OnPaste);
+        self.on_paste = Some(Box::new(callback));
+        self
+    }
+
+    /// Sets the message that should be produced when some text is pasted into the [`NumberInput`], resulting in a valid value, if `Some`
+    #[must_use]
+    pub fn on_paste_maybe<F>(mut self, callback: Option<F>) -> Self
+    where
+        F: 'a + Fn(T) -> Message,
+    {
+        if let Some(callback) = callback {
+            self.content = self.content.on_paste(InternalMessage::OnPaste);
+            self.on_paste = Some(Box::new(callback));
+        } else {
+            // Used to give a proper type to None, maybe someone can find a better way
+            #[allow(unused_assignments)]
+            let mut f = Some(InternalMessage::OnPaste);
+            f = None;
+            self.content = self.content.on_paste_maybe(f);
+            self.on_paste = None;
+        }
+        self
+    }
+
+    /// Sets the [`Font`] of the [`Text`].
+    ///
+    /// [`Font`]: iced::Font
+    /// [`Text`]: iced::widget::Text
+    #[allow(clippy::needless_pass_by_value)]
+    #[must_use]
+    pub fn font(mut self, font: Renderer::Font) -> Self {
+        self.font = font;
+        self.content = self.content.font(font);
+        self
+    }
+
+    /// Sets the [Icon](iced::widget::text_input::Icon) of the [`NumberInput`]
+    #[must_use]
+    pub fn icon(mut self, icon: iced::widget::text_input::Icon<Renderer::Font>) -> Self {
+        self.content = self.content.icon(icon);
         self
     }
 
@@ -181,54 +296,6 @@ where
     #[must_use]
     pub fn content_width(self, width: impl Into<Length>) -> Self {
         self.width(width)
-    }
-
-    /// Sets the [`Font`] of the [`Text`].
-    ///
-    /// [`Font`]: iced::Font
-    /// [`Text`]: iced::widget::Text
-    #[allow(clippy::needless_pass_by_value)]
-    #[must_use]
-    pub fn font(mut self, font: Renderer::Font) -> Self {
-        self.font = font;
-        self.content = self.content.font(font);
-        self
-    }
-
-    /// Enable or disable increase and decrease buttons of the [`NumberInput`], by default this is set to
-    /// ``false``.
-    #[must_use]
-    pub fn ignore_buttons(mut self, ignore: bool) -> Self {
-        self.ignore_buttons = ignore;
-        self
-    }
-
-    /// Enable or disable mouse scrolling events of the [`NumberInput`], by default this is set to
-    /// ``false``.
-    #[must_use]
-    pub fn ignore_scroll(mut self, ignore: bool) -> Self {
-        self.ignore_scroll_events = ignore;
-        self
-    }
-
-    /// Sets the message that should be produced when the [`NumberInput`] is
-    /// focused and the enter key is pressed.
-    #[must_use]
-    pub fn on_submit(mut self, message: Message) -> Self {
-        self.content = self.content.on_submit(InternalMessage::OnSubmit);
-        self.on_submit = Some(message);
-        self
-    }
-
-    /// Sets the message that should be produced when some text is pasted into the [`NumberInput`], resulting in a valid value
-    #[must_use]
-    pub fn on_paste<F>(mut self, callback: F) -> Self
-    where
-        F: 'a + Fn(T) -> Message,
-    {
-        self.content = self.content.on_paste(InternalMessage::OnPaste);
-        self.on_paste = Some(Box::new(callback));
-        self
     }
 
     /// Sets the padding of the [`NumberInput`].
@@ -249,10 +316,17 @@ where
         self
     }
 
-    /// Sets the step of the [`NumberInput`].
+    /// Sets the [`text::LineHeight`](iced::widget::text::LineHeight) of the [`NumberInput`].
     #[must_use]
-    pub fn step(mut self, step: T) -> Self {
-        self.step = step;
+    pub fn line_height(mut self, line_height: impl Into<iced::widget::text::LineHeight>) -> Self {
+        self.content = self.content.line_height(line_height);
+        self
+    }
+
+    /// Sets the horizontal alignment of the [`NumberInput`].
+    #[must_use]
+    pub fn align_x(mut self, alignment: impl Into<iced::alignment::Horizontal>) -> Self {
+        self.content = self.content.align_x(alignment);
         self
     }
 
@@ -265,6 +339,66 @@ where
         self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
+    /// Sets the style of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn input_style(
+        mut self,
+        style: impl Fn(&Theme, text_input::Status) -> text_input::Style + 'a,
+    ) -> Self
+    where
+        <Theme as text_input::Catalog>::Class<'a>: From<text_input::StyleFn<'a, Theme>>,
+    {
+        self.content = self.content.style(style);
+        self
+    }
+
+    /// Sets the class of the input of the [`NumberInput`].
+    #[must_use]
+    pub fn class(
+        mut self,
+        class: impl Into<<Theme as style::number_input::Catalog>::Class<'a>>,
+    ) -> Self {
+        self.class = class.into();
+        self
+    }
+
+    /// Sets the minimum & maximum value (bound) of the [`NumberInput`].
+    /// # Example
+    /// ```
+    /// use iced_aw::widget::number_input;
+    /// // Creates a range from -5 till 5.
+    /// let input: iced_aw::NumberInput<'_, _, _, iced::Theme, iced::Renderer> = number_input(&4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
+    /// ```
+    #[must_use]
+    pub fn bounds(mut self, bounds: impl RangeBounds<T>) -> Self {
+        self.min = bounds.start_bound().cloned();
+        self.max = bounds.end_bound().cloned();
+
+        self
+    }
+
+    /// Sets the step of the [`NumberInput`].
+    #[must_use]
+    pub fn step(mut self, step: T) -> Self {
+        self.step = step;
+        self
+    }
+
+    /// Enable or disable increase and decrease buttons of the [`NumberInput`], by default this is set to
+    /// ``false``.
+    #[must_use]
+    pub fn ignore_buttons(mut self, ignore: bool) -> Self {
+        self.ignore_buttons = ignore;
+        self
+    }
+
+    /// Enable or disable mouse scrolling events of the [`NumberInput`], by default this is set to
+    /// ``false``.
+    #[must_use]
+    pub fn ignore_scroll(mut self, ignore: bool) -> Self {
+        self.ignore_scroll_events = ignore;
+        self
+    }
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_value(&mut self, shell: &mut Shell<Message>) {
@@ -275,8 +409,9 @@ where
         } else {
             return;
         }
-
-        shell.publish((self.on_change)(self.value.clone()));
+        if let Some(on_change) = &self.on_change {
+            shell.publish(on_change(self.value.clone()));
+        }
     }
 
     /// Increase current value by step of the [`NumberInput`].
@@ -288,8 +423,9 @@ where
         } else {
             return;
         }
-
-        shell.publish((self.on_change)(self.value.clone()));
+        if let Some(on_change) = &self.on_change {
+            shell.publish(on_change(self.value.clone()));
+        }
     }
 
     /// Returns the lower value possible
@@ -344,36 +480,6 @@ where
             }
             _ => false,
         }
-    }
-
-    /// Sets the style of the input of the [`NumberInput`].
-    #[must_use]
-    pub fn input_style(
-        mut self,
-        style: impl Fn(&Theme, text_input::Status) -> text_input::Style + 'a,
-    ) -> Self
-    where
-        <Theme as text_input::Catalog>::Class<'a>: From<text_input::StyleFn<'a, Theme>>,
-    {
-        self.content = self.content.style(style);
-        self
-    }
-
-    /// Sets the class of the input of the [`NumberInput`].
-    #[must_use]
-    pub fn class(
-        mut self,
-        class: impl Into<<Theme as style::number_input::Catalog>::Class<'a>>,
-    ) -> Self {
-        self.class = class.into();
-        self
-    }
-
-    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced::widget::TextInput).
-    #[must_use]
-    pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
-        self.content = self.content.id(id.into());
-        self
     }
 }
 
@@ -807,7 +913,9 @@ where
                 InternalMessage::OnChange(value) => {
                     if self.value != value {
                         self.value = value.clone();
-                        shell.publish((self.on_change)(value));
+                        if let Some(on_change) = &self.on_change {
+                            shell.publish(on_change(value));
+                        }
                     };
                     shell.invalidate_layout();
                 }
