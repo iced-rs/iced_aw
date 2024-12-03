@@ -50,12 +50,12 @@ where
     text_input: text_input::TextInput<'a, InternalMessage, Theme, Renderer>,
     text: String,
     /// The ``on_change`` event of the [`TypedInput`].
-    on_change: Option<Box<dyn 'a + Fn(Result<T, String>) -> Message>>,
+    on_change: Option<Box<dyn 'a + Fn(T) -> Message>>,
     /// The ``on_submit`` event of the [`TypedInput`].
     #[allow(clippy::type_complexity)]
     on_submit: Option<Box<dyn 'a + Fn(Result<T, String>) -> Message>>,
     /// The ``on_paste`` event of the [`TypedInput`]
-    on_paste: Option<Box<dyn 'a + Fn(Result<T, String>) -> Message>>,
+    on_paste: Option<Box<dyn 'a + Fn(T) -> Message>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -118,7 +118,7 @@ where
     #[must_use]
     pub fn on_input<F>(mut self, callback: F) -> Self
     where
-        F: 'a + Fn(Result<T, String>) -> Message,
+        F: 'a + Fn(T) -> Message,
     {
         self.text_input = self.text_input.on_input(InternalMessage::OnChange);
         self.on_change = Some(Box::new(callback));
@@ -146,7 +146,7 @@ where
     #[must_use]
     pub fn on_paste<F>(mut self, callback: F) -> Self
     where
-        F: 'a + Fn(Result<T, String>) -> Message,
+        F: 'a + Fn(T) -> Message,
     {
         self.text_input = self.text_input.on_paste(InternalMessage::OnPaste);
         self.on_paste = Some(Box::new(callback));
@@ -348,58 +348,37 @@ where
                 InternalMessage::OnChange(value) => {
                     self.text = value;
 
-                    if self.text.ends_with('.') {
-                        self.text.push('0');
-                    }
-
-                    let value = match T::from_str(&self.text) {
-                        Ok(val) if self.value != val => {
-                            self.value = val.clone();
-                            Ok(val)
+                    if let Ok(value) = T::from_str(&self.text) {
+                        if self.value != value {
+                            self.value = value.clone();
+                            if let Some(on_change) = &self.on_change {
+                                shell.publish(on_change(value));
+                            }
                         }
-                        Ok(val) => Ok(val),
-                        Err(_) => Err(self.text.clone()),
                     };
-
-                    if let Some(on_change) = &self.on_change {
-                        shell.publish(on_change(value));
-                    }
-
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnSubmit => {
                     if let Some(on_submit) = &self.on_submit {
-                        if self.text.ends_with('.') {
-                            self.text.push('0');
-                        }
-
                         let value = match T::from_str(&self.text) {
                             Ok(v) => Ok(v),
                             Err(_) => Err(self.text.clone()),
                         };
                         shell.publish(on_submit(value));
-                    }
+                    };
+                    shell.invalidate_layout();
                 }
                 InternalMessage::OnPaste(value) => {
                     self.text = value;
 
-                    if self.text.ends_with('.') {
-                        self.text.push('0');
-                    }
-
-                    let value = match T::from_str(&self.text) {
-                        Ok(val) if self.value != val => {
-                            self.value = val.clone();
-                            Ok(val)
+                    if let Ok(value) = T::from_str(&self.text) {
+                        if self.value != value {
+                            self.value = value.clone();
+                            if let Some(on_paste) = &self.on_paste {
+                                shell.publish(on_paste(value));
+                            }
                         }
-                        Ok(val) => Ok(val),
-                        Err(_) => Err(self.text.clone()),
                     };
-
-                    if let Some(on_paste) = &self.on_paste {
-                        shell.publish(on_paste(value));
-                    }
-
                     shell.invalidate_layout();
                 }
             }

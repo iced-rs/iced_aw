@@ -15,7 +15,8 @@ pub struct TypedInputDemo {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    TypedInpChanged(Result<f32, String>),
+    TypedInpChanged(f32),
+    TypedInpSubmit(Result<f32, String>),
 }
 
 fn main() -> iced::Result {
@@ -34,16 +35,23 @@ fn main() -> iced::Result {
 
 impl TypedInputDemo {
     fn update(&mut self, message: self::Message) {
-        if let Message::TypedInpChanged(Ok(val)) = message {
-            println!("Value changed to {:?}", val);
-            self.value = val;
+        match message {
+            Message::TypedInpChanged(value) => {
+                println!("Value changed to {}", value);
+                self.value = value;
+            }
+            Message::TypedInpSubmit(Ok(value)) => println!("Value submitted: {}", value),
+            Message::TypedInpSubmit(Err(text)) => {
+                println!("Value submitted while invalid: {}", text)
+            }
         }
     }
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Typed Input:");
         let txt_minute = typed_input::TypedInput::new("Placeholder", &self.value)
-            .on_input(Message::TypedInpChanged);
+            .on_input(Message::TypedInpChanged)
+            .on_submit(Message::TypedInpSubmit);
 
         Container::new(
             Row::new()

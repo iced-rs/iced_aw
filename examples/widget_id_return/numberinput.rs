@@ -1,4 +1,4 @@
-use iced::{Element, Length};
+use iced::Element;
 use iced_aw::style::number_input::Style;
 use iced_aw::NumberInput;
 use num_traits::{bounds::Bounded, Num, NumAssignOps};
@@ -14,17 +14,16 @@ pub struct NumInput<V, M> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NumInputMessage<V> {
-    Change(Result<V, String>),
+    Change(V),
 }
 
 impl<V> NumInputMessage<V>
 where
     V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
 {
-    pub fn get_data(&self) -> Result<V, String> {
+    pub fn get_data(&self) -> V {
         match self {
-            NumInputMessage::Change(Ok(data)) => Ok(*data),
-            NumInputMessage::Change(Err(data)) => Err(data.clone()),
+            NumInputMessage::Change(data) => *data,
         }
     }
 }
@@ -33,10 +32,9 @@ impl<V> NumInputMessage<V>
 where
     V: Eq + Copy,
 {
-    pub fn get_enum(&self) -> Result<V, String> {
+    pub fn get_enum(&self) -> V {
         match self {
-            NumInputMessage::Change(Ok(data)) => Ok(*data),
-            NumInputMessage::Change(Err(data)) => Err(data.clone()),
+            NumInputMessage::Change(data) => *data,
         }
     }
 }
@@ -70,9 +68,7 @@ where
         V: 'static,
         M: 'static + Clone,
     {
-        let mut input = NumberInput::new(self.value, min..max, NumInputMessage::Change)
-            .step(step)
-            .width(Length::Shrink);
+        let mut input = NumberInput::new(&self.value, min..max, NumInputMessage::Change).step(step);
 
         if let Some(style) = style {
             input = input.style(move |_theme, _status| style);
