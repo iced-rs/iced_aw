@@ -159,7 +159,7 @@ where
     /// ```
     /// use iced_aw::widget::number_input;
     /// // Creates a range from -5 till 5.
-    /// let input: iced_aw::NumberInput<'_, _, _, iced::Theme, iced::Renderer> = number_input(4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
+    /// let input: iced_aw::NumberInput<'_, _, _, iced::Theme, iced::Renderer> = number_input(&4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
     /// ```
     #[must_use]
     pub fn bounds(mut self, bounds: impl RangeBounds<T>) -> Self {

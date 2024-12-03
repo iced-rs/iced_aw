@@ -89,9 +89,9 @@ struct StrButton {
 #[derive(Debug, Clone)]
 enum Message {
     ChangeAlign(WrapAlign),
-    ChangeSpacing(Result<f32, String>),
-    ChangeLineSpacing(Result<f32, String>),
-    ChangeMinimalLength(Result<f32, String>),
+    ChangeSpacing(f32),
+    ChangeLineSpacing(f32),
+    ChangeMinimalLength(f32),
 }
 
 impl RandStrings {
@@ -100,16 +100,15 @@ impl RandStrings {
             Message::ChangeAlign(align) => {
                 self.align = align.into();
             }
-            Message::ChangeSpacing(Ok(num)) => {
+            Message::ChangeSpacing(num) => {
                 self.spacing = num;
             }
-            Message::ChangeLineSpacing(Ok(num)) => {
+            Message::ChangeLineSpacing(num) => {
                 self.line_spacing = num;
             }
-            Message::ChangeMinimalLength(Ok(num)) => {
+            Message::ChangeMinimalLength(num) => {
                 self.line_minimal_length = num;
             }
-            _ => {}
         }
     }
 
@@ -148,7 +147,7 @@ impl RandStrings {
         let spacing_input = Column::new()
             .push(Text::new("spacing"))
             .push(NumberInput::new(
-                self.spacing,
+                &self.spacing,
                 0.0..500.0,
                 Message::ChangeSpacing,
             ));
@@ -156,7 +155,7 @@ impl RandStrings {
             Column::new()
                 .push(Text::new("line spacing"))
                 .push(NumberInput::new(
-                    self.line_spacing,
+                    &self.line_spacing,
                     0.0..500.0,
                     Message::ChangeLineSpacing,
                 ));
@@ -164,7 +163,7 @@ impl RandStrings {
             Column::new()
                 .push(Text::new("line minimal length"))
                 .push(NumberInput::new(
-                    self.line_minimal_length,
+                    &self.line_minimal_length,
                     0.0..999.9,
                     Message::ChangeMinimalLength,
                 ));
