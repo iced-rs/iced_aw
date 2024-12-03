@@ -292,6 +292,8 @@ where
         shell.publish((self.on_change)(self.value.clone()));
     }
 
+    /// Returns the lower value possible
+    /// if the bound is excluded the bound is increased by the step
     fn min(&self) -> T {
         match &self.min {
             Bound::Included(n) => n.clone(),
@@ -300,6 +302,8 @@ where
         }
     }
 
+    /// Returns the higher value possible
+    /// if the bound is excluded the bound is decreased by the step
     fn max(&self) -> T {
         match &self.max {
             Bound::Included(n) => n.clone(),
@@ -308,6 +312,7 @@ where
         }
     }
 
+    /// Checks if the value is within the bounds
     fn valid(&self, value: &T) -> bool {
         (match &self.min {
             Bound::Included(n) if *n > *value => false,
@@ -320,14 +325,18 @@ where
         })
     }
 
+    /// Checks if the value can be increased by the step
     fn can_increase(&self) -> bool {
         self.valid(&(self.value.clone() + self.step.clone())) || self.value < self.max()
     }
 
+    /// Checks if the value can be decreased by the step
     fn can_decrease(&self) -> bool {
         self.valid(&(self.value.clone() - self.step.clone())) || self.value > self.min()
     }
 
+    /// Checks if the [`NumberInput`] is disabled
+    /// Meaning that the bounds are too tight for the value to change
     fn disabled(&self) -> bool {
         match (&self.min, &self.max) {
             (Bound::Included(n) | Bound::Excluded(n), Bound::Included(m) | Bound::Excluded(m)) => {
@@ -360,7 +369,7 @@ where
         self
     }
 
-    /// Sets the [`Id`] of the underlying [`TextInput`].
+    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced::widget::TextInput).
     #[must_use]
     pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
         self.content = self.content.id(id.into());
@@ -536,9 +545,11 @@ where
             .state
             .downcast_mut::<text_input::State<Renderer::Paragraph>>();
 
+        // We use a secondary shell to select handle the event of the underlying [`TypedInput`]
         let mut messages = Vec::new();
         let mut sub_shell = Shell::new(&mut messages);
 
+        // Function to forward the event to the underlying [`TypedInput`]
         let mut forward_to_text = |widget: &mut Self, child, clipboard| {
             widget.content.on_event(
                 child,
@@ -552,6 +563,7 @@ where
             )
         };
 
+        // Check if the value that would result from the input is valid and within bound
         let mut check_value = |value: &str| {
             if let Ok(value) = T::from_str(value) {
                 self.valid(&value)
@@ -581,12 +593,20 @@ where
                         let cursor = text_input.cursor();
 
                         match key.as_ref() {
+                            // Enter
+                            keyboard::Key::Named(keyboard::key::Named::Enter) => {
+                                forward_to_text(self, child, clipboard)
+                            }
+                            // Copy and selecting all
                             keyboard::Key::Character("c" | "a") if modifiers.command() => {
                                 forward_to_text(self, child, clipboard)
                             }
+                            // Cut
                             keyboard::Key::Character("x") if modifiers.command() => {
+                                // We need a selection to cut
                                 if let Some((start, end)) = cursor.selection(&Value::new(&value)) {
                                     let _ = value.drain(start..end);
+                                    // We check that once this part is cut, it's still a number
                                     if check_value(&value) {
                                         forward_to_text(self, child, clipboard)
                                     } else {
@@ -596,12 +616,15 @@ where
                                     return event::Status::Ignored;
                                 }
                             }
+                            // Paste
                             keyboard::Key::Character("v") if modifiers.command() => {
+                                // We need something to paste
                                 let Some(paste) =
                                     clipboard.read(iced::advanced::clipboard::Kind::Standard)
                                 else {
                                     return event::Status::Ignored;
                                 };
+                                // We replace the selection or paste the text at the cursor
                                 match cursor.state(&Value::new(&value)) {
                                     cursor::State::Index(idx) => {
                                         let () = value.insert_str(idx, &paste);
@@ -609,54 +632,70 @@ where
                                     cursor::State::Selection { start, end } if end >= start => {
                                         let () = value.replace_range(start..end, &paste);
                                     }
+                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
                                         let () = value.replace_range(end..start, &paste);
                                     }
                                 }
 
+                                // We check if it's now a valid number
                                 if check_value(&value) {
                                     forward_to_text(self, child, clipboard)
                                 } else {
                                     return event::Status::Ignored;
                                 }
                             }
-                            keyboard::Key::Named(keyboard::key::Named::Enter) => {
-                                forward_to_text(self, child, clipboard)
-                            }
+                            // Backspace
                             keyboard::Key::Named(keyboard::key::Named::Backspace) => {
+                                // We remove either the selection or the character before the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } => {
+                                    cursor::State::Selection { start, end } if end >= start => {
                                         let _ = value.drain(start..end);
                                     }
+                                    // we need to invert the selection to be sure the end is after the start
+                                    cursor::State::Selection { start, end } => {
+                                        let _ = value.drain(end..start);
+                                    }
+                                    // We need the cursor not at the start
                                     cursor::State::Index(idx) if idx > 0 => {
                                         let _ = value.remove(idx - 1);
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }
 
+                                // We check if it's now a valid number
                                 if check_value(&value) {
                                     forward_to_text(self, child, clipboard)
                                 } else {
                                     return event::Status::Ignored;
                                 }
                             }
+                            // Delete
                             keyboard::Key::Named(keyboard::key::Named::Delete) => {
+                                // We remove either the selection or the character after the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } => {
+                                    cursor::State::Selection { start, end } if end >= start => {
                                         let _ = value.drain(start..end);
                                     }
+                                    // we need to invert the selection to be sure the end is after the start
+                                    cursor::State::Selection { start, end } => {
+                                        let _ = value.drain(end..start);
+                                    }
+                                    // We need the cursor not at the end
                                     cursor::State::Index(idx) if idx < value.len() => {
                                         let _ = value.remove(idx);
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }
 
+                                // We check if it's now a valid number
                                 if check_value(&value) {
                                     forward_to_text(self, child, clipboard)
                                 } else {
                                     return event::Status::Ignored;
                                 }
                             }
+                            // Arrow Down, decrease by step
                             keyboard::Key::Named(keyboard::key::Named::ArrowDown)
                                 if can_decrease =>
                             {
@@ -664,19 +703,24 @@ where
 
                                 event::Status::Captured
                             }
+                            // Arrow Up, increase by step
                             keyboard::Key::Named(keyboard::key::Named::ArrowUp) if can_increase => {
                                 self.increase_value(shell);
 
                                 event::Status::Captured
                             }
+                            // Mouvement of the cursor
                             keyboard::Key::Named(
                                 keyboard::key::Named::ArrowLeft
                                 | keyboard::key::Named::ArrowRight
                                 | keyboard::key::Named::Home
                                 | keyboard::key::Named::End,
                             ) => forward_to_text(self, child, clipboard),
+                            // Everything else
                             _ => match text {
+                                // If we are trying to input text
                                 Some(text) => {
+                                    // We replace the selection or insert the text at the cursor
                                     match cursor.state(&Value::new(&value)) {
                                         cursor::State::Index(idx) => {
                                             let () = value.insert_str(idx, text);
@@ -684,23 +728,27 @@ where
                                         cursor::State::Selection { start, end } if end >= start => {
                                             let () = value.replace_range(start..end, text);
                                         }
+                                        // we need to invert the selection to be sure the end is after the start
                                         cursor::State::Selection { start, end } => {
                                             let () = value.replace_range(end..start, text);
                                         }
                                     }
 
+                                    // We check if it's now a valid number
                                     if check_value(&value) {
                                         forward_to_text(self, child, clipboard)
                                     } else {
                                         return event::Status::Ignored;
                                     }
                                 }
+                                // If we are not trying to input text
                                 None => return event::Status::Ignored,
                             },
                         }
                     }
                 }
             }
+            // Mouse scroll event
             Event::Mouse(mouse::Event::WheelScrolled { delta })
                 if mouse_over_widget && !self.ignore_scroll_events =>
             {
@@ -715,6 +763,7 @@ where
                 }
                 event::Status::Captured
             }
+            // Clicking on the buttons up or down
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 if mouse_over_button && !self.ignore_buttons =>
             {
@@ -727,6 +776,7 @@ where
                 }
                 event::Status::Captured
             }
+            // Releasing the buttons
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
                 if mouse_over_button =>
             {
@@ -737,8 +787,11 @@ where
                 }
                 event::Status::Captured
             }
+            // Any other event are just forwarded
             _ => forward_to_text(self, child, clipboard),
         };
+
+        // We forward the shell of the [`TypedInput`] to the application
         if let Some(redraw) = sub_shell.redraw_request() {
             shell.request_redraw(redraw);
         }
