@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changes
+- Adding relevant method from TextInput to TypedInput and NumberInput @Ultraxime
+- (Breaking) NumberInput needs Clone and not Copy
+
+### Fixed
+- Any character can be input in NumberInput as long as it stays a valid input
+- NumberInput works properly with Grid
+- (Breaking) content_width removed from NumberInput
+- Adding proper support to excluded bounds in NumberInput
 
 ## [0.11.0] - 2024-09-19
 ### Changes
