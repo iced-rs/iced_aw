@@ -105,29 +105,31 @@ where
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
                 if let Some(active) = menu_state.active {
-                    let next_item = &menu.items[active];
-                    let next_tree = &mut menu_tree.children[active];
-                    let next_parent_bounds = {
-                        let slice_node = &menu_nodes.last().unwrap().children()[0];
-                        let Some(node) = slice_node
-                            .children()
-                            .get(active - menu_state.slice.start_index)
-                        else {
-                            return;
-                        };
+                    if active < menu.items.len() {
+                        let next_item = &menu.items[active];
+                        let next_tree = &mut menu_tree.children[active];
+                        let next_parent_bounds = {
+                            let slice_node = &menu_nodes.last().unwrap().children()[0];
+                            let Some(node) = slice_node
+                                .children()
+                                .get(active - menu_state.slice.start_index)
+                            else {
+                                return;
+                            };
 
-                        node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
-                    };
-                    rec(
-                        renderer,
-                        next_item,
-                        next_tree,
-                        menu_nodes,
-                        check_bounds_width,
-                        next_parent_bounds,
-                        direction,
-                        viewport,
-                    );
+                            node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
+                        };
+                        rec(
+                            renderer,
+                            next_item,
+                            next_tree,
+                            menu_nodes,
+                            check_bounds_width,
+                            next_parent_bounds,
+                            direction,
+                            viewport,
+                        );
+                    }
                 }
             }
         }
