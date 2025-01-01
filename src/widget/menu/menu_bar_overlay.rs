@@ -248,35 +248,39 @@ where
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
 
             let rec_event = if let Some(active) = menu_state.active {
-                let next_tree = &mut menu_tree.children[active];
-                let next_item = &mut menu.items[active];
-                let next_parent_bounds = {
-                    let Some(layout) = slice_layout
-                        .children()
-                        .nth(active - menu_state.slice.start_index)
-                    else {
-                        prev_bounds_list.pop();
-                        return RecEvent::Event;
+                if active < menu_tree.children.len() {
+                    let next_tree = &mut menu_tree.children[active];
+                    let next_item = &mut menu.items[active];
+                    let next_parent_bounds = {
+                        let Some(layout) = slice_layout
+                            .children()
+                            .nth(active - menu_state.slice.start_index)
+                        else {
+                            prev_bounds_list.pop();
+                            return RecEvent::Event;
+                        };
+
+                        layout.bounds()
                     };
 
-                    layout.bounds()
-                };
-
-                rec(
-                    next_tree,
-                    next_item,
-                    event,
-                    layout_iter,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    next_parent_bounds,
-                    viewport,
-                    prev_bounds_list,
-                    &mut menu_state.active,
-                    scroll_speed,
-                )
+                    rec(
+                        next_tree,
+                        next_item,
+                        event,
+                        layout_iter,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        shell,
+                        next_parent_bounds,
+                        viewport,
+                        prev_bounds_list,
+                        &mut menu_state.active,
+                        scroll_speed,
+                    )
+                } else {
+                    RecEvent::Close
+                }
             } else {
                 RecEvent::Close
             };
