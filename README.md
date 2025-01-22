@@ -142,11 +142,11 @@ Enable this widget with the feature `slide_bar`.
 
 ### Context Menu
 
-See the example [here](./examples/context_menu/src/main.rs)
+See the example [here](./src/widget/context_menu.rs)
 
 ### Drop Down Menu
 
-See the example [here](./examples/drop_down/src/main.rs)
+See the example [here](./src/widget/drop_down.rs)
 
 ### Sidebar
 
