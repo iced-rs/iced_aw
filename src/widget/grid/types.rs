@@ -245,4 +245,27 @@ where
         self.elements.push(element.into());
         self
     }
+
+    /// Applies a transformation to the produced message of all the row's [`Element`].
+    pub fn map<B>(
+        self,
+        f: impl Fn(Message) -> B + 'a + Clone,
+    ) -> GridRow<'a, B, Theme, Renderer>
+    where
+        Message: 'a,
+        Theme: 'a,
+        Renderer: renderer::Renderer + 'a,
+        B: 'a,
+    {
+        GridRow {
+            elements: self
+                .elements
+                .into_iter()
+                .map(|element| {
+                    let f = f.clone();
+                    element.map(move |message| f(message))
+                })
+                .collect(),
+        }
+    }
 }
