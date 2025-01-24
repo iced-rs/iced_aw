@@ -247,10 +247,7 @@ where
     }
 
     /// Applies a transformation to the produced message of all the row's [`Element`].
-    pub fn map<B>(
-        self,
-        f: impl Fn(Message) -> B + 'a + Clone,
-    ) -> GridRow<'a, B, Theme, Renderer>
+    pub fn map<B>(self, f: impl Fn(Message) -> B + 'a + Clone) -> GridRow<'a, B, Theme, Renderer>
     where
         Message: 'a,
         Theme: 'a,
