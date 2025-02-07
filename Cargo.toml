@@ -61,9 +61,9 @@ default = [
 [dependencies]
 cfg-if = "1.0"
 chrono = { version = "0.4.38", optional = true, features = ["wasmbind"] }
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.3.1" }
 iced_fonts = "0.1.1"
-itertools = { version = "0.13.0", optional = true }
+itertools = { version = "0.14.0", optional = true }
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
@@ -80,7 +80,7 @@ opt-level = 2
 
 [dev-dependencies]
 num-traits = "0.2.19"   # For widget_id_return example
-rand = "0.8.5"            # For wrap example
+rand = "0.9.0"            # For wrap example
 
 [dev-dependencies.iced]
 #git = "https://github.com/iced-rs/iced.git"

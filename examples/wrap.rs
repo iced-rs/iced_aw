@@ -28,11 +28,11 @@ struct RandStrings {
 
 impl Default for RandStrings {
     fn default() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let data: Vec<StrButton> = (0..45)
             .map(|s| StrButton {
                 str: s.to_string(),
-                size: rng.gen_range(15.0..50.0),
+                size: rng.random_range(15.0..50.0),
             })
             .collect();
         Self {
