@@ -1757,8 +1757,8 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
-    for TimePickerOverlayButtons<'a, Message, Theme>
+impl<Message, Theme> Widget<Message, Theme, Renderer>
+    for TimePickerOverlayButtons<'_, Message, Theme>
 where
     Message: Clone,
     Theme: Catalog + button::Catalog,

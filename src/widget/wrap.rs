@@ -156,8 +156,8 @@ impl<'a, Message, Renderer, Direction, Theme> Wrap<'a, Message, Direction, Theme
     }
 }
 
-impl<'a, Message, Renderer, Direction, Theme> Widget<Message, Theme, Renderer>
-    for Wrap<'a, Message, Direction, Theme, Renderer>
+impl<Message, Renderer, Direction, Theme> Widget<Message, Theme, Renderer>
+    for Wrap<'_, Message, Direction, Theme, Renderer>
 where
     Self: WrapLayout<Renderer>,
     Renderer: renderer::Renderer,
@@ -313,8 +313,8 @@ where
     }
 }
 
-impl<'a, Message, Renderer, Direction, Theme> Default
-    for Wrap<'a, Message, Direction, Theme, Renderer>
+impl<Message, Renderer, Direction, Theme> Default
+    for Wrap<'_, Message, Direction, Theme, Renderer>
 {
     fn default() -> Self {
         Self {

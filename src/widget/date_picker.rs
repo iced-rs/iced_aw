@@ -185,7 +185,7 @@ impl State {
     }
 }
 
-impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'a, Message, Theme>
+impl<Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'_, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: crate::style::date_picker::Catalog

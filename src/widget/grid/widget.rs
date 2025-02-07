@@ -12,8 +12,8 @@ use iced::{
 
 use super::{layout::layout, types::Grid};
 
-impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for Grid<'a, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Grid<'_, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {

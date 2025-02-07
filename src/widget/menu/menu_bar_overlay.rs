@@ -36,7 +36,7 @@ where
     pub(super) scroll_speed: ScrollSpeed,
     pub(super) class: &'b Theme::Class<'a>,
 }
-impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
+impl<'b, Message, Theme, Renderer> MenuBarOverlay<'_, 'b, Message, Theme, Renderer>
 where
     Theme: Catalog,
     Renderer: renderer::Renderer,
@@ -45,8 +45,8 @@ where
         overlay::Element::new(Box::new(self))
     }
 }
-impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
-    for MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
+impl< Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+    for MenuBarOverlay<'_, '_, Message, Theme, Renderer>
 where
     Theme: Catalog,
     Renderer: renderer::Renderer,

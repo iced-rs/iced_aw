@@ -387,8 +387,8 @@ where
     }
 }
 
-impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for Sidebar<'a, Message, TabId, Theme, Renderer>
+impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Sidebar<'_, Message, TabId, Theme, Renderer>
 where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: Catalog + text::Catalog,
@@ -529,16 +529,12 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if cursor
-                    .position()
-                    .map_or(false, |pos| layout.bounds().contains(pos))
+                if cursor.position().is_some_and(|pos| layout.bounds().contains(pos))
                 {
                     let tabs_map: Vec<bool> = layout
                         .children()
                         .map(|layout| {
-                            cursor
-                                .position()
-                                .map_or(false, |pos| layout.bounds().contains(pos))
+                            cursor.position().is_some_and(|pos| layout.bounds().contains(pos))
                         })
                         .collect();
 
@@ -550,7 +546,7 @@ where
                                     let tab_layout = layout.children().nth(new_selected).expect("widget: Layout should have a tab layout at the selected index");
                                     let cross_layout = tab_layout.children().nth(1).expect("widget: Layout should have a close layout");
 
-                                    cursor.position().map_or(false, |pos| cross_layout.bounds().contains(pos) )
+                                    cursor.position().is_some_and(|pos| cross_layout.bounds().contains(pos))
                                 })
                                 .map_or_else(
                                     || (self.on_select)(self.tab_indices[new_selected].clone()),
@@ -578,8 +574,7 @@ where
         let mut mouse_interaction = mouse::Interaction::default();
         for layout in children {
             let is_mouse_over = cursor
-                .position()
-                .map_or(false, |pos| layout.bounds().contains(pos));
+            .position().is_some_and(|pos| layout.bounds().contains(pos));
             let new_mouse_interaction = if is_mouse_over {
                 mouse::Interaction::Pointer
             } else {
@@ -604,7 +599,7 @@ where
     ) {
         let bounds = layout.bounds();
         let children = layout.children();
-        let is_mouse_over = cursor.position().map_or(false, |pos| bounds.contains(pos));
+        let is_mouse_over = cursor.position().is_some_and(|pos| bounds.contains(pos));
         let style_sheet = if is_mouse_over {
             sidebar::Catalog::style(theme, &self.class, Status::Hovered)
         } else {
@@ -829,7 +824,7 @@ fn draw_tab<Theme, Renderer>(
     }
 
     let bounds = layout.bounds();
-    let is_mouse_over = cursor.position().map_or(false, |pos| bounds.contains(pos));
+    let is_mouse_over = cursor.position().is_some_and(|pos| bounds.contains(pos));
     let style = if is_mouse_over {
         sidebar::Catalog::style(theme, class, Status::Hovered)
     } else if is_selected {
@@ -1200,8 +1195,8 @@ where
     }
 }
 
-impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for SidebarWithContent<'a, Message, TabId, Theme, Renderer>
+impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for SidebarWithContent<'_, Message, TabId, Theme, Renderer>
 where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,

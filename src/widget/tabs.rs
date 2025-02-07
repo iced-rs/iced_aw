@@ -301,8 +301,8 @@ where
     }
 }
 
-impl<'a, Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for Tabs<'a, Message, TabId, Theme, Renderer>
+impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for Tabs<'_, Message, TabId, Theme, Renderer>
 where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,

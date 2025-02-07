@@ -191,7 +191,6 @@ impl From<chrono::NaiveTime> for Time {
 }
 
 #[cfg(test)]
-
 mod tests {
     use chrono::NaiveTime;
 

@@ -539,8 +539,8 @@ where
     }
 }
 
-impl<'a, 'b, Message, Theme> Overlay<Message, Theme, Renderer>
-    for ColorPickerOverlay<'a, 'b, Message, Theme>
+impl<'a,Message, Theme> Overlay<Message, Theme, Renderer>
+    for ColorPickerOverlay<'a, '_, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: 'a
@@ -1750,8 +1750,8 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
-    for ColorPickerOverlayButtons<'a, Message, Theme>
+impl<Message, Theme> Widget<Message, Theme, Renderer>
+    for ColorPickerOverlayButtons<'_, Message, Theme>
 where
     Message: Clone,
     Theme:

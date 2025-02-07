@@ -65,8 +65,8 @@ pub struct ListState {
     //pub options: Vec<String>,
 }
 
-impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for List<'a, T, Message, Theme, Renderer>
+impl<T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for List<'_, T, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,

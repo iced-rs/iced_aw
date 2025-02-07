@@ -9,7 +9,6 @@
 /// |BottomStart|  Bottom   | BottomEnd |
 /// +-----------+-----------+-----------+
 /// ```
-
 #[allow(missing_docs)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Alignment {

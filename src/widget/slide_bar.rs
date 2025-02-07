@@ -130,7 +130,7 @@ where
     }
 }
 
-impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for SlideBar<'a, T, Message>
+impl<T, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for SlideBar<'_, T, Message>
 where
     T: Copy + Into<f64> + num_traits::FromPrimitive,
     Message: Clone,

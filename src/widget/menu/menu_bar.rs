@@ -129,8 +129,8 @@ where
         self
     }
 }
-impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for MenuBar<'a, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for MenuBar<'_, Message, Theme, Renderer>
 where
     Theme: Catalog,
     Renderer: renderer::Renderer,

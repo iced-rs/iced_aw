@@ -208,8 +208,8 @@ where
         Some(overlay::Element::new(Box::new(DropDownOverlay::new(
             &mut state.children[1],
             &mut self.overlay,
-            &self.on_dismiss,
-            &self.width,
+            self.on_dismiss.as_ref(),
+            self.width.as_ref(),
             &self.height,
             &self.alignment,
             &self.offset,
@@ -236,8 +236,8 @@ where
 {
     state: &'b mut Tree,
     element: &'b mut Element<'a, Message, Theme, Renderer>,
-    on_dismiss: &'b Option<Message>,
-    width: &'b Option<Length>,
+    on_dismiss: Option<&'b Message>,
+    width: Option<&'b Length>,
     height: &'b Length,
     alignment: &'b Alignment,
     offset: &'b Offset,
@@ -254,8 +254,8 @@ where
     fn new(
         state: &'b mut Tree,
         element: &'b mut Element<'a, Message, Theme, Renderer>,
-        on_dismiss: &'b Option<Message>,
-        width: &'b Option<Length>,
+        on_dismiss: Option<&'b Message>,
+        width: Option<&'b Length>,
         height: &'b Length,
         alignment: &'b Alignment,
         offset: &'b Offset,
@@ -276,8 +276,8 @@ where
     }
 }
 
-impl<'a, 'b, Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
-    for DropDownOverlay<'a, 'b, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+    for DropDownOverlay<'_, '_, Message, Theme, Renderer>
 where
     Message: Clone,
     Renderer: renderer::Renderer,
@@ -285,8 +285,8 @@ where
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .width(
-                self.width
-                    .unwrap_or(Length::Fixed(self.underlay_bounds.width)),
+                *self.width
+                    .unwrap_or(&Length::Fixed(self.underlay_bounds.width)),
             )
             .height(*self.height);
 

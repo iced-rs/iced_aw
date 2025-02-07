@@ -185,7 +185,7 @@ impl State {
     }
 }
 
-impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for TimePicker<'a, Message, Theme>
+impl<Message, Theme> Widget<Message, Theme, Renderer> for TimePicker<'_, Message, Theme>
 where
     Message: 'static + Clone,
     Theme: Catalog + button::Catalog + text::Catalog + container::Catalog,

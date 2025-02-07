@@ -39,10 +39,10 @@ where
     }
 }
 
-impl<'a, V, M> NumInput<V, M>
+impl<V, M> NumInput<V, M>
 where
     V: Num + NumAssignOps + PartialOrd + Display + FromStr + Copy + Bounded,
-    M: 'a + Clone,
+    M: Clone,
 {
     pub fn new(value: V) -> NumInput<V, M>
     where

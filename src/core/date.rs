@@ -94,7 +94,6 @@ pub fn succ_month(date: NaiveDate) -> NaiveDate {
 /// # Panics
 /// Creates a date with the previous year based on the given date.
 // panics if year, month or day doesnt exist.
-
 #[must_use]
 pub fn pred_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() - 1;
@@ -106,7 +105,6 @@ pub fn pred_year(date: NaiveDate) -> NaiveDate {
 /// # Panics
 /// Creates a date with the next year based on the given date.
 // panics if year, month or day doesnt exist.
-
 #[must_use]
 pub fn succ_year(date: NaiveDate) -> NaiveDate {
     let year = date.year() + 1;
@@ -116,28 +114,24 @@ pub fn succ_year(date: NaiveDate) -> NaiveDate {
 }
 
 /// Calculates a date with the previous week based on the given date.
-
 #[must_use]
 pub fn pred_week(date: NaiveDate) -> NaiveDate {
     date - Duration::days(7)
 }
 
 /// Calculates a date with the next week based on the given date.
-
 #[must_use]
 pub fn succ_week(date: NaiveDate) -> NaiveDate {
     date + Duration::days(7)
 }
 
 /// Calculates a date with the previous day based on the given date.
-
 #[must_use]
 pub fn pred_day(date: NaiveDate) -> NaiveDate {
     date - Duration::days(1)
 }
 
 /// Calculates a date with the next day based on the given date.
-
 #[must_use]
 pub fn succ_day(date: NaiveDate) -> NaiveDate {
     date + Duration::days(1)
@@ -145,7 +139,6 @@ pub fn succ_day(date: NaiveDate) -> NaiveDate {
 
 /// Specifies if the calculated day lays in the previous, same or next month of
 /// the date.
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum IsInMonth {
     /// The day lays in the previous month.
@@ -189,7 +182,6 @@ pub fn position_to_day(x: usize, y: usize, year: i32, month: u32) -> (usize, IsI
 }
 
 /// Checks if the given year is a leap year.
-
 const fn is_leap_year(year: i32) -> bool {
     let mod4 = year % 4 == 0;
     let mod100 = year % 100 == 0;
@@ -199,7 +191,6 @@ const fn is_leap_year(year: i32) -> bool {
 }
 
 /// Gets the number of days the given month in the year has.
-
 const fn num_days_of_month(year: i32, month: u32) -> u32 {
     match month {
         4 | 6 | 9 | 11 => 30,
@@ -277,7 +268,6 @@ pub static WEEKDAY_LABELS: LazyLock<Vec<String>> = LazyLock::new(|| {
 });
 
 #[cfg(test)]
-
 mod tests {
     use chrono::NaiveDate;
 

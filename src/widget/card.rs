@@ -423,10 +423,10 @@ where
             .expect("widget: Layout should have a head layout");
         let close_layout = head_children.next();
 
-        let is_mouse_over_close = close_layout.map_or(false, |layout| {
+        let is_mouse_over_close = close_layout.is_some_and(|layout| {
             let bounds = layout.bounds();
             bounds.contains(cursor.position().unwrap_or_default())
-        });
+            });
 
         let mouse_interaction = if is_mouse_over_close {
             mouse::Interaction::Pointer
@@ -589,7 +589,7 @@ where
         draw_foot(
             state.children.get(2),
             renderer,
-            &self.foot,
+            self.foot.as_ref(),
             foot_layout,
             cursor,
             viewport,
@@ -908,7 +908,7 @@ fn draw_body<Message, Theme, Renderer>(
 fn draw_foot<Message, Theme, Renderer>(
     state: Option<&Tree>,
     renderer: &mut Renderer,
-    foot: &Option<Element<'_, Message, Theme, Renderer>>,
+    foot: Option<&Element<'_, Message, Theme, Renderer>>,
     layout: Layout<'_>,
     cursor: Cursor,
     viewport: &Rectangle,

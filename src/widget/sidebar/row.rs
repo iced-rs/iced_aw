@@ -199,8 +199,8 @@ impl<'a, Message: 'a, Theme: 'a, Renderer: iced::advanced::Renderer + 'a>
     }
 }
 
-impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for FlushRow<'a, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for FlushRow<'_, Message, Theme, Renderer>
 where
     Renderer: iced::advanced::Renderer,
 {

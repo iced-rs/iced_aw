@@ -21,7 +21,7 @@ pub struct Grid<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
     pub(super) row_heights: Vec<Length>,
 }
 
-impl<'a, Message, Theme, Renderer> Default for Grid<'a, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> Default for Grid<'_, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
@@ -207,7 +207,7 @@ pub struct GridRow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> 
     pub(crate) elements: Vec<Element<'a, Message, Theme, Renderer>>,
 }
 
-impl<'a, Message, Theme, Renderer> Default for GridRow<'a, Message, Theme, Renderer>
+impl<Message, Theme, Renderer> Default for GridRow<'_, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer,
 {
@@ -260,7 +260,7 @@ where
                 .into_iter()
                 .map(|element| {
                     let f = f.clone();
-                    element.map(move |message| f(message))
+                    element.map(f)
                 })
                 .collect(),
         }

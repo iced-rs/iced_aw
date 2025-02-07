@@ -975,8 +975,8 @@ where
 }
 
 #[allow(clippy::unimplemented)]
-impl<'a, Message, Theme> Widget<Message, Theme, Renderer>
-    for DatePickerOverlayButtons<'a, Message, Theme>
+impl<Message, Theme> Widget<Message, Theme, Renderer>
+    for DatePickerOverlayButtons<'_, Message, Theme>
 where
     Message: Clone,
     Theme: crate::style::date_picker::Catalog
