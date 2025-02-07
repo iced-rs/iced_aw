@@ -539,7 +539,7 @@ where
     }
 }
 
-impl<'a,Message, Theme> Overlay<Message, Theme, Renderer>
+impl<'a, Message, Theme> Overlay<Message, Theme, Renderer>
     for ColorPickerOverlay<'a, '_, Message, Theme>
 where
     Message: 'static + Clone,

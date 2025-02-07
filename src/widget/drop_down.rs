@@ -285,7 +285,8 @@ where
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .width(
-                *self.width
+                *self
+                    .width
                     .unwrap_or(&Length::Fixed(self.underlay_bounds.width)),
             )
             .height(*self.height);

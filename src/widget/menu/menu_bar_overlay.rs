@@ -45,7 +45,7 @@ where
         overlay::Element::new(Box::new(self))
     }
 }
-impl< Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
+impl<Message, Theme, Renderer> overlay::Overlay<Message, Theme, Renderer>
     for MenuBarOverlay<'_, '_, Message, Theme, Renderer>
 where
     Theme: Catalog,

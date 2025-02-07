@@ -529,12 +529,16 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if cursor.position().is_some_and(|pos| layout.bounds().contains(pos))
+                if cursor
+                    .position()
+                    .is_some_and(|pos| layout.bounds().contains(pos))
                 {
                     let tabs_map: Vec<bool> = layout
                         .children()
                         .map(|layout| {
-                            cursor.position().is_some_and(|pos| layout.bounds().contains(pos))
+                            cursor
+                                .position()
+                                .is_some_and(|pos| layout.bounds().contains(pos))
                         })
                         .collect();
 
@@ -574,7 +578,8 @@ where
         let mut mouse_interaction = mouse::Interaction::default();
         for layout in children {
             let is_mouse_over = cursor
-            .position().is_some_and(|pos| layout.bounds().contains(pos));
+                .position()
+                .is_some_and(|pos| layout.bounds().contains(pos));
             let new_mouse_interaction = if is_mouse_over {
                 mouse::Interaction::Pointer
             } else {

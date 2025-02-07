@@ -426,7 +426,7 @@ where
         let is_mouse_over_close = close_layout.is_some_and(|layout| {
             let bounds = layout.bounds();
             bounds.contains(cursor.position().unwrap_or_default())
-            });
+        });
 
         let mouse_interaction = if is_mouse_over_close {
             mouse::Interaction::Pointer
