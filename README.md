@@ -1,7 +1,7 @@
 # Iced - Additional Widgets
 
 [![Documentation](https://docs.rs/iced_aw/badge.svg)](https://docs.rs/iced_aw)
-[![Crates.io](https://img.shields.io/crates/v/iced_aw.svg)](https://crates.io/crates/iced)
+[![Crates.io](https://img.shields.io/crates/v/iced_aw.svg)](https://crates.io/crates/iced_aw)
 [![License](https://img.shields.io/crates/l/iced_aw.svg)](https://github.com/iced-rs/iced/blob/master/LICENSE)
 [![Discord Server](https://img.shields.io/discord/628993209984614400?label=&labelColor=6A7EC2&logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/3xZJ65GAhd)
 

@@ -402,7 +402,7 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_value(&mut self, shell: &mut Shell<Message>) {
-        if self.valid(&(self.value.clone() - self.step.clone())) {
+        if self.value.clone() > self.min() + self.step.clone() && self.valid(&(self.value.clone() - self.step.clone())) {
             self.value -= self.step.clone();
         } else if self.value > self.min() {
             self.value = self.min();
@@ -416,7 +416,7 @@ where
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_value(&mut self, shell: &mut Shell<Message>) {
-        if self.valid(&(self.value.clone() + self.step.clone())) {
+        if self.value < self.max() - self.step.clone() && self.valid(&(self.value.clone() + self.step.clone())) {
             self.value += self.step.clone();
         } else if self.value < self.max() {
             self.value = self.max();
@@ -463,12 +463,12 @@ where
 
     /// Checks if the value can be increased by the step
     fn can_increase(&self) -> bool {
-        self.valid(&(self.value.clone() + self.step.clone())) || self.value < self.max()
+        (self.value < self.max() - self.step.clone() && self.valid(&(self.value.clone() + self.step.clone()))) || self.value < self.max()
     }
 
     /// Checks if the value can be decreased by the step
     fn can_decrease(&self) -> bool {
-        self.valid(&(self.value.clone() - self.step.clone())) || self.value > self.min()
+        (self.value.clone() > self.min() + self.step.clone() && self.valid(&(self.value.clone() - self.step.clone()))) || self.value > self.min()
     }
 
     /// Checks if the [`NumberInput`] is disabled

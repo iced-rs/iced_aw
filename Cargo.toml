@@ -1,6 +1,6 @@
 [package]
 name = "iced_aw"
-version = "0.12.0"
+version = "0.12.1"
 authors = [
     "Kaiden42 <gitlab@tinysn.com>",
     "Andrew Wheeler <genusistimelord@gmail.com>",
@@ -60,7 +60,7 @@ default = [
 
 [dependencies]
 cfg-if = "1.0"
-chrono = { version = "0.4.38", optional = true, features = ["wasmbind"] }
+chrono = { version = "0.4.39", optional = true, features = ["wasmbind"] }
 getrandom = { version = "0.3.1" }
 iced_fonts = "0.1.1"
 itertools = { version = "0.14.0", optional = true }
