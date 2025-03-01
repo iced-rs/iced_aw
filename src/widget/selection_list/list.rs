@@ -3,21 +3,21 @@
 use crate::selection_list::Catalog;
 
 use iced::{
+    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::{
-            tree::{State, Tag},
             Tree,
+            tree::{State, Tag},
         },
-        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
     touch,
     widget::text::{LineHeight, Wrapping},
-    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -125,7 +125,7 @@ where
         Node::new(intrinsic)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,

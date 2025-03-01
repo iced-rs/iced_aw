@@ -4,17 +4,16 @@
 
 use iced::advanced::layout::{Layout, Limits, Node};
 use iced::advanced::widget::{
-    tree::{State, Tag},
     Operation, Tree, Widget,
+    tree::{State, Tag},
 };
 use iced::advanced::{Clipboard, Shell};
 use iced::mouse::{self, Cursor};
-use iced::{
-    event,
-    widget::text_input::{self, TextInput},
-    Event, Size,
-};
 use iced::{Element, Length, Padding, Pixels, Rectangle};
+use iced::{
+    Event, Size, event,
+    widget::text_input::{self, TextInput},
+};
 
 use std::{fmt::Display, str::FromStr};
 
@@ -393,7 +392,7 @@ where
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -406,7 +405,7 @@ where
     ) -> event::Status {
         let mut messages = Vec::new();
         let mut sub_shell = Shell::new(&mut messages);
-        let status = self.text_input.on_event(
+        let status = self.text_input.update(
             state,
             event,
             layout,

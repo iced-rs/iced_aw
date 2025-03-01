@@ -5,8 +5,8 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{Button, Column, Container, PickList, Row, Text},
     Element,
+    widget::{Button, Column, Container, PickList, Row, Text},
 };
 use iced_aw::{NumberInput, Wrap};
 use rand::Rng;

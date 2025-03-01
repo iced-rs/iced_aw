@@ -3,8 +3,8 @@
 // It was written by Andrew Wheeler <genusistimelord@gmail.com>
 
 use iced::{
-    widget::{Column, Container, Text},
     Element, Length,
+    widget::{Column, Container, Text},
 };
 
 use iced_aw::SlideBar;

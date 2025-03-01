@@ -5,7 +5,7 @@ authors = [
     "Kaiden42 <gitlab@tinysn.com>",
     "Andrew Wheeler <genusistimelord@gmail.com>",
 ]
-edition = "2021"
+edition = "2024"
 description = "Additional widgets for the Iced GUI library"
 license = "MIT"
 homepage = "https://iced.rs"
@@ -13,7 +13,7 @@ repository = "https://github.com/iced-rs/iced_aw"
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
 categories = ["gui"]
-rust-version = "1.80"
+rust-version = "1.85" # Keep in sync with iced.
 
 [features]
 badge = []
@@ -38,56 +38,57 @@ drop_down = []
 sidebar = []
 
 default = [
-    "badge",
-    "card",
-    "number_input",
-    "date_picker",
-    "color_picker",
-    "grid",
+    # "badge",
+    # "card",
+    # "number_input",
+    # "date_picker",
+    # "color_picker",
+    # "grid",
     "tab_bar",
-    "tabs",
-    "time_picker",
-    "slide_bar",
-    "wrap",
-    "selection_list",
-    "quad",
-    "context_menu",
-    "spinner",
-    "drop_down",
-    "menu",
-    "sidebar",
+    # "tabs",
+    # "time_picker",
+    # "slide_bar",
+    # "wrap",
+    # "selection_list",
+    # "quad",
+    # "context_menu",
+    # "spinner",
+    # "drop_down",
+    # "menu",
+    # "sidebar",
 ]
 
 [dependencies]
 cfg-if = "1.0"
 chrono = { version = "0.4.39", optional = true, features = ["wasmbind"] }
 getrandom = { version = "0.3.1" }
-iced_fonts = "0.1.1"
 itertools = { version = "0.14.0", optional = true }
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
 
 [dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.13.1"
+version = "0.14.0-dev"
+git = "https://github.com/iced-rs/iced.git"
+# rev = "beddf49c"
 default-features = false
-features = ["advanced"]
+features = ["advanced", "wgpu"]
 
-[profile.dev.package."*"]
-opt-level = 2
+[dependencies.iced_fonts]
+version = "0.2.0"
+git = "https://github.com/redhawk18/iced_fonts.git"
+branch = "next"
+
+[patch.crates-io]
+iced_core = { git = "https://github.com/iced-rs/iced.git" }
+iced_widget = { git = "https://github.com/iced-rs/iced.git" }
+
+# [profile.dev.package."*"]
+# opt-level = 2
 
 [dev-dependencies]
 num-traits = "0.2.19"   # For widget_id_return example
 rand = "0.9.0"            # For wrap example
-
-[dev-dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.13.0"
-#default-features = false
-features = ["advanced", "wgpu"]
 
 [dev-dependencies.iced_aw]
 path = "./"

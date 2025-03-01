@@ -8,33 +8,33 @@ use crate::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    style::{self, color_picker::Style, style_state::StyleState, Status},
+    style::{self, Status, color_picker::Style, style_state::StyleState},
 };
 
 use iced::{
+    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
+    Shadow, Size, Vector,
     advanced::{
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
         graphics::geometry::Renderer as _,
         layout::{Limits, Node},
         overlay, renderer,
         text::Renderer as _,
         widget::{self, tree::Tree},
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
     },
     alignment::{Horizontal, Vertical},
     event, keyboard,
     mouse::{self, Cursor},
     touch,
     widget::{
+        Button, Column, Row,
         canvas::{self, LineCap, Path, Stroke},
         text::{self, Wrapping},
-        Button, Column, Row,
     },
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
-    Shadow, Size, Vector,
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 use std::collections::HashMap;
 
@@ -129,7 +129,7 @@ where
     }
 
     /// The event handling for the HSV color area.
-    fn on_event_hsv_color(
+    fn update_hsv_color(
         &mut self,
         event: &Event,
         layout: Layout<'_>,
@@ -242,7 +242,7 @@ where
 
     /// The event handling for the RGBA color area.
     #[allow(clippy::too_many_lines)]
-    fn on_event_rgba_color(
+    fn update_rgba_color(
         &mut self,
         event: &Event,
         layout: Layout<'_>,
@@ -410,7 +410,7 @@ where
     }
 
     /// The even handling for the keyboard input.
-    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
+    fn update_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -612,7 +612,7 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -621,7 +621,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured == self.on_event_keyboard(&event) {
+        if event::Status::Captured == self.update_keyboard(&event) {
             self.state.sat_value_canvas_cache.clear();
             self.state.hue_canvas_cache.clear();
             return event::Status::Captured;
@@ -635,7 +635,7 @@ where
         let block1_layout = children
             .next()
             .expect("widget: Layout should have a 1. block layout");
-        let hsv_color_status = self.on_event_hsv_color(&event, block1_layout, cursor);
+        let hsv_color_status = self.update_hsv_color(&event, block1_layout, cursor);
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -648,7 +648,7 @@ where
         let rgba_color_layout = block2_children
             .next()
             .expect("widget: Layout should have a RGBA color layout");
-        let rgba_color_status = self.on_event_rgba_color(&event, rgba_color_layout, cursor);
+        let rgba_color_status = self.update_rgba_color(&event, rgba_color_layout, cursor);
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
@@ -661,7 +661,7 @@ where
         let cancel_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a cancel button layout for a ColorPicker");
-        let cancel_button_status = self.cancel_button.on_event(
+        let cancel_button_status = self.cancel_button.update(
             &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
@@ -675,7 +675,7 @@ where
         let submit_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a submit button layout for a ColorPicker");
-        let submit_button_status = self.submit_button.on_event(
+        let submit_button_status = self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,

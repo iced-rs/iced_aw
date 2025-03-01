@@ -3,8 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Button, Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Button, Container, Row, Text},
 };
 use iced_aw::{date_picker::Date, helpers::date_picker};
 

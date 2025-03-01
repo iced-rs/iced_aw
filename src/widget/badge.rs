@@ -3,15 +3,15 @@
 //! *This API requires the following crate features to be activated: badge*
 
 use iced::{
+    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::Tree,
-        Clipboard, Layout, Shell, Widget,
     },
     event,
     mouse::{self, Cursor},
-    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
 };
 
 pub use crate::style::{
@@ -177,7 +177,7 @@ where
         Node::with_children(size.expand(padding), vec![content])
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -188,7 +188,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.content.as_widget_mut().on_event(
+        self.content.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout

@@ -8,26 +8,10 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    style::{date_picker::Style, style_state::StyleState, Status},
+    style::{Status, date_picker::Style, style_state::StyleState},
 };
 use chrono::{Datelike, Local, NaiveDate};
 use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::Renderer as _,
-        widget::tree::Tree,
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Widget,
-    },
-    alignment::{Horizontal, Vertical},
-    event,
-    keyboard,
-    mouse::{self, Cursor},
-    touch,
-    widget::{
-        text::{self, Wrapping},
-        Button, Column, Container, Row, Text,
-    },
     Alignment,
     Border,
     Color,
@@ -41,10 +25,26 @@ use iced::{
     Renderer, // the actual type
     Shadow,
     Size,
+    advanced::{
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Widget,
+        layout::{Limits, Node},
+        overlay, renderer,
+        text::Renderer as _,
+        widget::tree::Tree,
+    },
+    alignment::{Horizontal, Vertical},
+    event,
+    keyboard,
+    mouse::{self, Cursor},
+    touch,
+    widget::{
+        Button, Column, Container, Row, Text,
+        text::{self, Wrapping},
+    },
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 use std::collections::HashMap;
 
@@ -146,7 +146,7 @@ where
     }
 
     /// The event handling for the month / year bar.
-    fn on_event_month_year(
+    fn update_month_year(
         &mut self,
         event: &Event,
         layout: Layout<'_>,
@@ -234,12 +234,7 @@ where
     }
 
     /// The event handling for the calendar days.
-    fn on_event_days(
-        &mut self,
-        event: &Event,
-        layout: Layout<'_>,
-        cursor: Cursor,
-    ) -> event::Status {
+    fn update_days(&mut self, event: &Event, layout: Layout<'_>, cursor: Cursor) -> event::Status {
         let mut children = layout.children();
 
         let _day_labels_layout = children
@@ -295,7 +290,7 @@ where
     }
 
     /// The event handling for the keyboard input.
-    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
+    fn update_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -550,7 +545,7 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -559,7 +554,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured == self.on_event_keyboard(&event) {
+        if event::Status::Captured == self.update_keyboard(&event) {
             return event::Status::Captured;
         }
 
@@ -574,7 +569,7 @@ where
         let month_year_layout = date_children
             .next()
             .expect("widget: Layout should have a month/year layout");
-        let month_year_status = self.on_event_month_year(&event, month_year_layout, cursor);
+        let month_year_status = self.update_month_year(&event, month_year_layout, cursor);
 
         // ----------- Days ----------------------
         let days_layout = date_children
@@ -583,14 +578,14 @@ where
             .children()
             .next()
             .expect("widget: Layout should have a days table layout");
-        let days_status = self.on_event_days(&event, days_layout, cursor);
+        let days_status = self.update_days(&event, days_layout, cursor);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
             .next()
             .expect("widget: Layout should have a cancel button layout for a DatePicker");
 
-        let cancel_status = self.cancel_button.on_event(
+        let cancel_status = self.cancel_button.update(
             &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
@@ -607,7 +602,7 @@ where
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
-        let submit_status = self.submit_button.on_event(
+        let submit_status = self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,

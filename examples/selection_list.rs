@@ -3,8 +3,8 @@
 // It was written by Héctor Ramón Jiménez <hector0193@gmail.com> and Andrew Wheeler <genusistimelord@gmail.com>
 
 use iced::{
-    widget::{button, Column, Container, Text},
     Alignment, Element, Font, Length,
+    widget::{Column, Container, Text, button},
 };
 use iced_aw::{selection_list::SelectionList, style::selection_list::primary};
 

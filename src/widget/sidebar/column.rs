@@ -7,16 +7,16 @@
 //! alignments.
 
 use iced::{
+    Alignment, Element, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{self, Node},
         mouse, overlay, renderer,
-        widget::{tree::Tree, Operation},
-        Clipboard, Layout, Shell, Widget,
+        widget::{Operation, tree::Tree},
     },
     alignment,
     event::{self, Event},
     widget::Row,
-    Alignment, Element, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
 };
 
 /// A container that distributes its contents vertically.
@@ -320,7 +320,7 @@ where
         });
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
         event: Event,
@@ -336,7 +336,7 @@ where
             .zip(&mut tree.children)
             .zip(layout.children())
             .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
+                child.as_widget_mut().update(
                     state,
                     event.clone(),
                     layout,

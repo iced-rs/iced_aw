@@ -9,33 +9,33 @@
 
 use super::column::FlushColumn;
 use crate::style::{
-    sidebar::{self, Catalog, Style},
     Status, StyleFn,
+    sidebar::{self, Catalog, Style},
 };
 use iced::{
+    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         overlay, renderer,
         widget::{
-            tree::{State, Tag},
             Operation, Tree,
+            tree::{State, Tag},
         },
-        Clipboard, Layout, Shell, Widget,
     },
     alignment::{self, Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
     touch,
     widget::{
-        text::{self, LineHeight, Wrapping},
         Row, Text,
+        text::{self, LineHeight, Wrapping},
     },
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size, Vector,
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 use std::marker::PhantomData;
 
@@ -515,7 +515,7 @@ where
             .layout(tab_tree, renderer, &limits.loose())
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         _state: &mut Tree,
         event: Event,
@@ -1287,7 +1287,7 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -1319,7 +1319,7 @@ where
                 (sidebar_layout, tab_content_layout)
             }
         };
-        let status_sidebar = self.sidebar.on_event(
+        let status_sidebar = self.sidebar.update(
             &mut Tree::empty(),
             event.clone(),
             sidebar_layout,
@@ -1334,7 +1334,7 @@ where
             .tabs
             .get_mut(idx)
             .map_or(event::Status::Ignored, |element| {
-                element.as_widget_mut().on_event(
+                element.as_widget_mut().update(
                     &mut state.children[1].children[idx],
                     event,
                     tab_content_layout,

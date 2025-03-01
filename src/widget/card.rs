@@ -3,24 +3,24 @@
 //! *This API requires the following crate features to be activated: card*
 
 use iced::{
+    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow,
+    Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         text::LineHeight,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
     touch,
     widget::text::Wrapping,
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow,
-    Size, Vector,
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 
 pub use crate::style::{
@@ -308,7 +308,7 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -325,7 +325,7 @@ where
             .next()
             .expect("widget: Layout should have a head layout");
         let mut head_children = head_layout.children();
-        let head_status = self.head.as_widget_mut().on_event(
+        let head_status = self.head.as_widget_mut().update(
             &mut state.children[0],
             event.clone(),
             head_children
@@ -365,7 +365,7 @@ where
             .next()
             .expect("widget: Layout should have a body layout");
         let mut body_children = body_layout.children();
-        let body_status = self.body.as_widget_mut().on_event(
+        let body_status = self.body.as_widget_mut().update(
             &mut state.children[1],
             event.clone(),
             body_children
@@ -383,7 +383,7 @@ where
             .expect("widget: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
         let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
-            foot.as_widget_mut().on_event(
+            foot.as_widget_mut().update(
                 &mut state.children[2],
                 event,
                 foot_children

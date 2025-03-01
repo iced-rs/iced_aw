@@ -1,8 +1,8 @@
 //! Use a badge for color highlighting important information.
 //!
 //! *This API requires the following crate features to be activated: badge*
-use super::{colors, Status, StyleFn};
-use iced::{theme::palette, Background, Color, Theme};
+use super::{Status, StyleFn, colors};
+use iced::{Background, Color, Theme, theme::palette};
 
 /// The style of a [`Badge`](crate::widget::badge::Badge).
 #[derive(Clone, Copy, Debug)]

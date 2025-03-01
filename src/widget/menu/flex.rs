@@ -22,11 +22,11 @@
 #![allow(clippy::use_self)]
 
 use iced::{
+    Alignment, Element, Length, Padding, Pixels, Point, Size,
     advanced::{
         layout::{Limits, Node},
         renderer, widget,
     },
-    Alignment, Element, Length, Padding, Pixels, Point, Size,
 };
 
 /// The main axis of a flex layout.
@@ -81,7 +81,6 @@ pub fn resolve<'a, E, T, Message, Theme, Renderer>(
 where
     E: std::borrow::Borrow<Element<'a, Message, Theme, Renderer>>,
     T: std::borrow::BorrowMut<widget::Tree>,
-
     Renderer: renderer::Renderer,
 {
     let limits = limits.width(width).height(height).shrink(padding);

@@ -125,7 +125,7 @@ pub fn nearest_radius(
 mod tests {
     use iced::{Point, Vector};
 
-    use super::{circle_points, nearest_point, nearest_radius, NearestRadius};
+    use super::{NearestRadius, circle_points, nearest_point, nearest_radius};
 
     #[test]
     fn circle_points_test() {

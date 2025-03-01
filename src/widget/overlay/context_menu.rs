@@ -8,16 +8,17 @@ pub use crate::style::{
 };
 
 use iced::{
+    Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell,
         layout::{Limits, Node},
         overlay, renderer,
         widget::Tree,
-        Clipboard, Layout, Shell,
     },
     event::Status,
     keyboard,
     mouse::{self, Cursor},
-    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
+    touch, window,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).
@@ -151,7 +152,7 @@ where
         );
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -205,7 +206,7 @@ where
         };
 
         let child_status = if forward_event_to_children {
-            self.content.as_widget_mut().on_event(
+            self.content.as_widget_mut().update(
                 self.tree,
                 event,
                 layout_children,

@@ -1,27 +1,26 @@
 //! Display a dropdown list of selectable values.
 pub mod list;
 use crate::style::{
-    selection_list::{Catalog, Style},
     Status, StyleFn,
+    selection_list::{Catalog, Style},
 };
 
 use iced::{
+    Border, Element, Event, Font, Length, Padding, Pixels, Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
-        text::{paragraph, Paragraph, Text},
-        widget::{tree, Tree},
-        Clipboard, Layout, Shell, Widget,
+        text::{Paragraph, Text, paragraph},
+        widget::{Tree, tree},
     },
     alignment::{Horizontal, Vertical},
     event,
     mouse::{self, Cursor},
     widget::{
-        container, scrollable,
+        Container, Scrollable, container, scrollable,
         text::{self, LineHeight, Wrapping},
-        Container, Scrollable,
     },
-    Border, Element, Event, Font, Length, Padding, Pixels, Rectangle, Shadow, Size,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
 
@@ -249,7 +248,7 @@ where
         Node::with_children(size, vec![content])
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -260,7 +259,7 @@ where
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.container.on_event(
+        self.container.update(
             &mut state.children[0],
             event,
             layout

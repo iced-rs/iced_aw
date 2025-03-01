@@ -2,27 +2,27 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 use iced::{
+    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
+    Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::{
-            tree::{State, Tag},
             Operation, Tree,
+            tree::{State, Tag},
         },
-        Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
     event, keyboard,
     mouse::{self, Cursor},
     widget::{
-        text::{LineHeight, Wrapping},
-        text_input::{self, cursor, Value},
         Column, Container, Row, Text,
+        text::{LineHeight, Wrapping},
+        text_input::{self, Value, cursor},
     },
-    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
-    Shadow, Size,
 };
-use num_traits::{bounds::Bounded, Num, NumAssignOps};
+use num_traits::{Num, NumAssignOps, bounds::Bounded};
 use std::{
     fmt::Display,
     ops::{Bound, RangeBounds},
@@ -31,13 +31,13 @@ use std::{
 
 use crate::style::{self, Status};
 pub use crate::style::{
-    number_input::{self, Catalog, Style},
     StyleFn,
+    number_input::{self, Catalog, Style},
 };
 use crate::widget::typed_input::TypedInput;
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 
 /// The default padding
@@ -402,7 +402,9 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value.clone() > self.min() + self.step.clone() && self.valid(&(self.value.clone() - self.step.clone())) {
+        if self.value.clone() > self.min() + self.step.clone()
+            && self.valid(&(self.value.clone() - self.step.clone()))
+        {
             self.value -= self.step.clone();
         } else if self.value > self.min() {
             self.value = self.min();
@@ -416,7 +418,9 @@ where
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value < self.max() - self.step.clone() && self.valid(&(self.value.clone() + self.step.clone())) {
+        if self.value < self.max() - self.step.clone()
+            && self.valid(&(self.value.clone() + self.step.clone()))
+        {
             self.value += self.step.clone();
         } else if self.value < self.max() {
             self.value = self.max();
@@ -463,12 +467,16 @@ where
 
     /// Checks if the value can be increased by the step
     fn can_increase(&self) -> bool {
-        (self.value < self.max() - self.step.clone() && self.valid(&(self.value.clone() + self.step.clone()))) || self.value < self.max()
+        (self.value < self.max() - self.step.clone()
+            && self.valid(&(self.value.clone() + self.step.clone())))
+            || self.value < self.max()
     }
 
     /// Checks if the value can be decreased by the step
     fn can_decrease(&self) -> bool {
-        (self.value.clone() > self.min() + self.step.clone() && self.valid(&(self.value.clone() - self.step.clone()))) || self.value > self.min()
+        (self.value.clone() > self.min() + self.step.clone()
+            && self.valid(&(self.value.clone() - self.step.clone())))
+            || self.value > self.min()
     }
 
     /// Checks if the [`NumberInput`] is disabled
@@ -605,7 +613,7 @@ where
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -657,7 +665,7 @@ where
 
         // Function to forward the event to the underlying [`TypedInput`]
         let mut forward_to_text = |widget: &mut Self, child, clipboard| {
-            widget.content.on_event(
+            widget.content.update(
                 child,
                 event.clone(),
                 content,

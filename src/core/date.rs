@@ -272,8 +272,8 @@ mod tests {
     use chrono::NaiveDate;
 
     use super::{
-        is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month,
-        succ_year, IsInMonth,
+        IsInMonth, is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year,
+        succ_month, succ_year,
     };
 
     #[test]

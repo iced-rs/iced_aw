@@ -3,8 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Button, Container, Row, Text},
     Alignment, Color, Element, Length,
+    widget::{Button, Container, Row, Text},
 };
 
 use iced_aw::helpers::color_picker;

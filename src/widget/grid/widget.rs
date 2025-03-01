@@ -1,13 +1,14 @@
 use iced::{
+    Element, Event, Length, Rectangle, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         overlay::Group,
         renderer,
         renderer::Style,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
     },
-    event, mouse, overlay, Element, Event, Length, Rectangle, Size, Vector,
+    event, mouse, overlay,
 };
 
 use super::{layout::layout, types::Grid};
@@ -105,7 +106,7 @@ where
         }
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -121,7 +122,7 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
             .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
+                child.as_widget_mut().update(
                     state,
                     event.clone(),
                     layout,

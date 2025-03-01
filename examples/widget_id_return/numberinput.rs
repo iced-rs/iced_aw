@@ -1,7 +1,7 @@
 use iced::Element;
-use iced_aw::style::number_input::Style;
 use iced_aw::NumberInput;
-use num_traits::{bounds::Bounded, Num, NumAssignOps};
+use iced_aw::style::number_input::Style;
+use num_traits::{Num, NumAssignOps, bounds::Bounded};
 use std::fmt::Display;
 use std::marker::PhantomData;
 use std::str::FromStr;

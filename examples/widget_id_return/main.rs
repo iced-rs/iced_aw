@@ -3,8 +3,8 @@
 // It was written by Andrew Wheeler <genusistimelord@gmail.com>
 
 use iced::{
-    widget::{Column, Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Column, Container, Row, Text},
 };
 
 #[derive(Debug)]

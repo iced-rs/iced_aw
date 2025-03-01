@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 
 use super::{Status, StyleFn};
-use iced::{widget, Background, Color, Theme};
+use iced::{Background, Color, Theme, widget};
 
 /// The appearance of a [`NumberInput`](crate::widget::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]

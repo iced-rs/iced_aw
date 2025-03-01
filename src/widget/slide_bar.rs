@@ -3,15 +3,16 @@
 //! *This API requires the following crate features to be activated: `quad`*
 
 use iced::{
+    Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::tree::{self, Tree},
-        Clipboard, Layout, Shell, Widget,
     },
     event,
     mouse::{self, Cursor},
-    touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
+    touch,
 };
 
 use std::ops::RangeInclusive;
@@ -165,7 +166,7 @@ where
         Node::new(size)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
         event: Event,

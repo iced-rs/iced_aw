@@ -6,13 +6,14 @@
 #![allow(clippy::enum_glob_use)]
 
 use iced::{
+    Element, Event, Length, Padding, Pixels, Rectangle, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         mouse, overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
+        widget::{Operation, Tree, tree},
     },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size,
+    alignment, event,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -177,7 +178,7 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
         event: event::Event,
@@ -196,7 +197,7 @@ where
             .zip(tree.children.iter_mut()) // [item_tree...]
             .zip(layout.children()) // [widget_node...]
             .map(|((item, tree), layout)| {
-                item.on_event(
+                item.update(
                     tree,
                     event.clone(),
                     layout,

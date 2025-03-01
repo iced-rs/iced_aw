@@ -1,15 +1,15 @@
 //! A context menu for showing actions on right click.
 //!
 use iced::{
+    Element, Event, Length, Point, Rectangle, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
+        widget::{Operation, Tree, tree},
     },
     event,
     mouse::{self, Button, Cursor},
-    Element, Event, Length, Point, Rectangle, Vector,
 };
 
 pub use crate::style::{
@@ -174,7 +174,7 @@ where
         }
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -196,7 +196,7 @@ where
             }
         }
 
-        self.underlay.as_widget_mut().on_event(
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,

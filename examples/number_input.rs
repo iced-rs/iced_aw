@@ -3,8 +3,8 @@
 // It was written by leang27 <52003343+leang27@users.noreply.github.com>
 
 use iced::{
-    widget::{Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Container, Row, Text},
 };
 use iced_aw::number_input;
 

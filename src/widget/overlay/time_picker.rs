@@ -4,40 +4,20 @@
 
 use crate::{
     core::clock::{
-        NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
-        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
+        HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE,
+        MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
     core::{clock, overlay::Position, time::Period},
     style::{
+        Status,
         style_state::StyleState,
         time_picker::{Catalog, Style},
-        Status,
     },
     time_picker::{self, Time},
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced::{
-    advanced::{
-        graphics::geometry::Renderer as _,
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::Renderer as _,
-        widget::tree::Tree,
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
-    },
-    alignment::{Horizontal, Vertical},
-    event,
-    keyboard,
-    mouse::{self, Cursor},
-    touch,
-    widget::{
-        button,
-        canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
-        container,
-        text::{self, Wrapping},
-        Button, Column, Container, Row,
-    },
     Alignment,
     Border,
     Color,
@@ -52,10 +32,29 @@ use iced::{
     Shadow,
     Size,
     Vector,
+    advanced::{
+        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
+        graphics::geometry::Renderer as _,
+        layout::{Limits, Node},
+        overlay, renderer,
+        text::Renderer as _,
+        widget::tree::Tree,
+    },
+    alignment::{Horizontal, Vertical},
+    event,
+    keyboard,
+    mouse::{self, Cursor},
+    touch,
+    widget::{
+        Button, Column, Container, Row, button,
+        canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
+        container,
+        text::{self, Wrapping},
+    },
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 use std::collections::HashMap;
 
@@ -144,12 +143,7 @@ where
 
     /// The event handling for the clock.
     #[allow(clippy::too_many_lines)]
-    fn on_event_clock(
-        &mut self,
-        event: &Event,
-        layout: Layout<'_>,
-        cursor: Cursor,
-    ) -> event::Status {
+    fn update_clock(&mut self, event: &Event, layout: Layout<'_>, cursor: Cursor) -> event::Status {
         if cursor.is_over(layout.bounds()) {
             self.state.clock_cache_needs_clearance = true;
             self.state.clock_cache.clear();
@@ -204,11 +198,7 @@ where
                     NearestRadius::Period => {
                         let (pm, hour) = self.state.time.hour12();
                         let hour = if hour == 12 {
-                            if pm {
-                                12
-                            } else {
-                                0
-                            }
+                            if pm { 12 } else { 0 }
                         } else {
                             hour
                         };
@@ -314,7 +304,7 @@ where
 
     /// The event handling for the digital clock.
     #[allow(clippy::too_many_lines)]
-    fn on_event_digital_clock(
+    fn update_digital_clock(
         &mut self,
         event: &Event,
         layout: Layout<'_>,
@@ -446,7 +436,7 @@ where
     }
 
     /// The event handling for the keyboard input.
-    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
+    fn update_keyboard(&mut self, event: &Event) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -607,7 +597,7 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -616,7 +606,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) -> event::Status {
-        if event::Status::Captured == self.on_event_keyboard(&event) {
+        if event::Status::Captured == self.update_keyboard(&event) {
             return event::Status::Captured;
         }
 
@@ -626,7 +616,7 @@ where
         let clock_layout = children
             .next()
             .expect("widget: Layout should have a clock canvas layout");
-        let clock_status = self.on_event_clock(&event, clock_layout, cursor);
+        let clock_status = self.update_clock(&event, clock_layout, cursor);
 
         // ----------- Digital clock ------------------
         let digital_clock_layout = children
@@ -635,15 +625,14 @@ where
             .children()
             .next()
             .expect("widget: Layout should have a digital clock layout");
-        let digital_clock_status =
-            self.on_event_digital_clock(&event, digital_clock_layout, cursor);
+        let digital_clock_status = self.update_digital_clock(&event, digital_clock_layout, cursor);
 
         // ----------- Buttons ------------------------
         let cancel_button_layout = children
             .next()
             .expect("widget: Layout should have a cancel button layout for a TimePicker");
 
-        let cancel_status = self.cancel_button.on_event(
+        let cancel_status = self.cancel_button.update(
             &mut self.tree.children[0],
             event.clone(),
             cancel_button_layout,
@@ -660,7 +649,7 @@ where
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
-        let submit_status = self.submit_button.on_event(
+        let submit_status = self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,

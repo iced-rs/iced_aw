@@ -6,14 +6,14 @@ use iced::widget::{
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Border, Color, Element, Length, Size, Theme};
+use iced::{Border, Color, Element, Length, Size, Theme, alignment, theme};
 
 use iced_aw::menu::{self, Item, Menu};
-use iced_aw::style::{menu_bar::primary, Status};
+use iced_aw::style::{Status, menu_bar::primary};
 use iced_aw::{menu_bar, menu_items};
 use iced_aw::{quad, widgets::InnerBounds};
-use iced_fonts::required::{icon_to_string, RequiredIcons};
 use iced_fonts::REQUIRED_FONT;
+use iced_fonts::required::{RequiredIcons, icon_to_string};
 
 pub fn main() -> iced::Result {
     iced::application(App::title, App::update, App::view)
@@ -439,9 +439,9 @@ impl App {
         ];
 
         let sc = scrollable(c); /*.direction(scrollable::Direction::Both {
-                                    vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
-                                    horizontal: scrollable::Properties::new(),
-                                });*/
+        vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+        horizontal: scrollable::Properties::new(),
+        });*/
 
         fn back_style(theme: &iced::Theme) -> container::Style {
             container::Style {

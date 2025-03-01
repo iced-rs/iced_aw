@@ -3,16 +3,17 @@
 //! *This API requires the following crate features to be activated: `drop_down`*
 
 use iced::{
+    Element, Event, Length, Point, Rectangle, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
     },
     event,
     keyboard::{self, key::Named},
     mouse::{self, Cursor},
-    touch, Element, Event, Length, Point, Rectangle, Size, Vector,
+    touch,
 };
 
 pub use crate::core::{alignment::Alignment, offset::Offset};
@@ -149,7 +150,7 @@ where
             .operate(&mut state.children[0], layout, renderer, operation);
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -160,7 +161,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,
@@ -356,7 +357,7 @@ where
             .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         event: Event,
         layout: Layout<'_>,
@@ -386,7 +387,7 @@ where
             }
         }
 
-        self.element.as_widget_mut().on_event(
+        self.element.as_widget_mut().update(
             self.state,
             event,
             layout,

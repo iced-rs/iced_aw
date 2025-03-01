@@ -5,11 +5,11 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{Button, Column, Row, Text},
     Element, Length,
+    widget::{Button, Column, Row, Text},
 };
 
-use iced_aw::{drop_down, DropDown};
+use iced_aw::{DropDown, drop_down};
 
 fn main() -> iced::Result {
     iced::application(

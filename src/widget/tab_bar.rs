@@ -8,33 +8,32 @@
 pub mod tab_label;
 
 use iced::{
+    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Size,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::Tree,
-        Clipboard, Layout, Shell, Widget,
     },
     alignment::{self, Horizontal, Vertical},
-    event,
     mouse::{self, Cursor},
     touch,
     widget::{
-        text::{self, LineHeight, Wrapping},
         Column, Row, Text,
+        text::{self, LineHeight, Wrapping},
     },
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size,
 };
 use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
     REQUIRED_FONT,
+    required::{RequiredIcons, icon_to_string},
 };
 
 use std::marker::PhantomData;
 
 pub use crate::style::{
-    tab_bar::{self, Catalog, Style},
     Status, StyleFn,
+    tab_bar::{self, Catalog, Style},
 };
 pub use tab_label::TabLabel;
 
@@ -527,17 +526,17 @@ where
             .layout(tab_tree, renderer, &limits.loose())
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         _state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -569,12 +568,12 @@ where
                                     |on_close| (on_close)(self.tab_indices[new_selected].clone()),
                                 ),
                         );
-                        return event::Status::Captured;
+                        return ();
                     }
                 }
-                event::Status::Ignored
+                ()
             }
-            _ => event::Status::Ignored,
+            _ => (),
         }
     }
 

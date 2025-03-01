@@ -4,8 +4,8 @@
 
 use iced::widget::PickList;
 use iced::{
-    widget::{column, container},
     Element, Length, Theme,
+    widget::{column, container},
 };
 use iced_aw::Spinner;
 

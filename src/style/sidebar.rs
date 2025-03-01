@@ -4,7 +4,7 @@
 //! *This API requires the following crate features to be activated: `sidebar`*
 
 use super::{Status, StyleFn};
-use iced::{border::Radius, Background, Color, Theme};
+use iced::{Background, Color, Theme, border::Radius};
 
 /// The appearance of a [`Sidebar`](crate::widget::sidebar::Sidebar).
 #[derive(Clone, Copy, Debug)]

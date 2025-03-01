@@ -12,17 +12,18 @@
 
 use super::common::*;
 use super::flex;
+use iced::Pixels;
 use iced::advanced::overlay::Group;
 use iced::advanced::widget::Operation;
-use iced::Pixels;
 use iced::{
+    Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
     advanced::{
+        Clipboard, Shell,
         layout::{Layout, Limits, Node},
         mouse, overlay, renderer,
         widget::tree::{self, Tree},
-        Clipboard, Shell,
     },
-    alignment, event, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    alignment, event,
 };
 use std::iter::once;
 
@@ -304,7 +305,7 @@ where
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
-    pub(super) fn on_event(
+    pub(super) fn update(
         &mut self,
         tree: &mut Tree,
         event: &Event,
@@ -332,7 +333,7 @@ where
             .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
             .zip(slice_layout.children()) // [item_layout...]
             .map(|((item, tree), layout)| {
-                item.on_event(
+                item.update(
                     tree,
                     event.clone(),
                     layout,
@@ -755,7 +756,7 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     ///
-    pub(super) fn on_event(
+    pub(super) fn update(
         &mut self,
         tree: &mut Tree,
         event: Event,
@@ -766,7 +767,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.item.as_widget_mut().on_event(
+        self.item.as_widget_mut().update(
             &mut tree.children[0],
             event,
             layout,

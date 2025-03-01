@@ -1,7 +1,7 @@
 use iced::{
-    advanced::image::Bytes,
-    widget::{image::Handle, Column, Container, Image, Slider, Text},
     Alignment, Element, Length,
+    advanced::image::Bytes,
+    widget::{Column, Container, Image, Slider, Text, image::Handle},
 };
 use iced_aw::tab_bar::TabLabel;
 

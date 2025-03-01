@@ -6,15 +6,6 @@ use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButt
 
 use chrono::Local;
 use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::tree::{self, Tag, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
-    event,
-    mouse::{self, Cursor},
-    widget::{button, container, text},
     Element,
     Event,
     Length,
@@ -23,13 +14,22 @@ use iced::{
     Renderer, // the actual type
     Size,
     Vector,
+    advanced::{
+        Clipboard, Layout, Shell, Widget,
+        layout::{Limits, Node},
+        overlay, renderer,
+        widget::tree::{self, Tag, Tree},
+    },
+    event,
+    mouse::{self, Cursor},
+    widget::{button, container, text},
 };
 
 pub use crate::{
     core::time::{Period, Time},
     style::{
-        time_picker::{Catalog, Style},
         Status, StyleFn,
+        time_picker::{Catalog, Style},
     },
 };
 
@@ -216,7 +216,7 @@ where
             .layout(&mut tree.children[0], renderer, limits)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -227,7 +227,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,

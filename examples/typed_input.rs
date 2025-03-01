@@ -3,8 +3,8 @@
 // This was written by Ultraxime <36888699+Ultraxime@users.noreply.github.com>
 
 use iced::{
-    widget::{Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Container, Row, Text},
 };
 use iced_aw::widgets::typed_input;
 

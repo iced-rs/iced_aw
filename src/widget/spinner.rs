@@ -1,18 +1,19 @@
 //! A spinner to suggest something is loading.
 use iced::{
+    Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         renderer,
         widget::{
-            tree::{State, Tag},
             Tree,
+            tree::{State, Tag},
         },
-        Clipboard, Layout, Shell, Widget,
     },
     event::Status,
     mouse::Cursor,
     time::{Duration, Instant},
-    window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
+    window,
 };
 
 /// A spinner widget, a circle spinning around the center of the widget.
@@ -164,7 +165,7 @@ where
         })
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,

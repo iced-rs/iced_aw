@@ -2,15 +2,15 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 use iced::{
+    Alignment, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
     advanced::{
+        Clipboard, Layout, Shell, Widget,
         layout::{Limits, Node},
         overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
     },
     event,
     mouse::{self, Cursor},
-    Alignment, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
 };
 use std::marker::PhantomData;
 
@@ -178,7 +178,7 @@ where
         self.inner_layout(tree, renderer, limits)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -194,7 +194,7 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
             .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
+                child.as_widget_mut().update(
                     state,
                     event.clone(),
                     layout,

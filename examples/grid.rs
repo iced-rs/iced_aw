@@ -2,11 +2,11 @@
 //
 // It was written by Alexander van Saase <avsaase [at] gmail.com>
 
-use iced::widget::{checkbox, container, pick_list, row, slider};
 use iced::Padding;
+use iced::widget::{checkbox, container, pick_list, row, slider};
 use iced::{
-    alignment::{Horizontal, Vertical},
     Color, Element, Length,
+    alignment::{Horizontal, Vertical},
 };
 use iced_aw::{grid, grid_row};
 

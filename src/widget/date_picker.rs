@@ -6,18 +6,6 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 
 use chrono::Local;
 use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        text::Renderer as _,
-        widget::{
-            self,
-            tree::{Tag, Tree},
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
-    event,
-    mouse::{self, Cursor},
     Element,
     Event,
     Length,
@@ -27,11 +15,23 @@ use iced::{
     Renderer, // the actual type
     Size,
     Vector,
+    advanced::{
+        Clipboard, Layout, Shell, Widget,
+        layout::{Limits, Node},
+        renderer,
+        text::Renderer as _,
+        widget::{
+            self,
+            tree::{Tag, Tree},
+        },
+    },
+    event,
+    mouse::{self, Cursor},
 };
 
 pub use crate::{
     core::date::Date,
-    style::{date_picker::Style, Status, StyleFn},
+    style::{Status, StyleFn, date_picker::Style},
 };
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs
@@ -219,7 +219,7 @@ where
             .layout(&mut tree.children[0], renderer, limits)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
         event: Event,
@@ -230,7 +230,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,
