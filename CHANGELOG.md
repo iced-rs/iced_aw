@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2025-03-02
+### Fixed
+- drop_down overlay translation @JL70.
+
 ## [0.12.1] - 2025-02-25
 ### Fixed
 - NumberInput Panic when set to min or maxium numbers.
