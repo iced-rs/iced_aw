@@ -214,7 +214,7 @@ where
             &self.alignment,
             &self.offset,
             layout.bounds(),
-            layout.position(),
+            layout.position() + translation,
         ))))
     }
 }
