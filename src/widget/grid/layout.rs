@@ -104,7 +104,6 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
     let mut children = tree.children.iter_mut();
     for row in rows {
         let mut row_height = 0.0f32;
-        let mut min_width = 0.0f32;
 
         for (col_idx, element) in row.elements.iter().enumerate() {
             let child_limits = Limits::NONE.width(Length::Shrink).height(Length::Shrink);
@@ -117,18 +116,14 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
                 )
                 .size();
 
-            min_width = if width == f32::INFINITY {
-                min_width
-            } else {
-                min_width.max(width)
-            };
+            let width = if width == f32::INFINITY { 0.0 } else { width };
 
             #[allow(clippy::option_if_let_else)]
             match column_widths.get_mut(col_idx) {
                 Some(col_width) => {
-                    *col_width = max_allowed_size.width.min(col_width.max(min_width));
+                    *col_width = max_allowed_size.width.min(col_width.max(width));
                 }
-                None => column_widths.insert(col_idx, max_allowed_size.width.min(min_width)),
+                None => column_widths.insert(col_idx, max_allowed_size.width.min(width)),
             }
 
             row_height = row_height.max(height);
@@ -138,8 +133,8 @@ fn minimum_row_column_sizes<Message, Theme, Renderer>(
 }
 
 fn adjust_size_for_fixed_length(sizes: &mut [f32], length_settings: &[Length]) {
-    for (size, lenght) in sizes.iter_mut().zip(length_settings.iter().cycle()) {
-        if let Length::Fixed(value) = *lenght {
+    for (size, length) in sizes.iter_mut().zip(length_settings.iter().cycle()) {
+        if let Length::Fixed(value) = *length {
             *size = size.max(value);
         }
     }
