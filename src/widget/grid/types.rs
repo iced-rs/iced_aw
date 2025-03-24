@@ -67,6 +67,15 @@ where
         self
     }
 
+    /// Extends the [`Grid`] with the given children.
+    #[must_use]
+    pub fn extend(
+        self,
+        children: impl IntoIterator<Item = GridRow<'a, Message, Theme, Renderer>>,
+    ) -> Self {
+        children.into_iter().fold(self, Self::push)
+    }
+
     /// Sets the horizontal alignment of the widget within their cells. Default:
     /// [`Horizontal::Left`]
     #[must_use]
@@ -244,6 +253,15 @@ where
     {
         self.elements.push(element.into());
         self
+    }
+
+    /// Extends the [`GridRow`] with the given children.
+    #[must_use]
+    pub fn extend<E>(self, children: E) -> Self
+    where
+        E: IntoIterator<Item = Element<'a, Message, Theme, Renderer>>,
+    {
+        children.into_iter().fold(self, Self::push)
     }
 
     /// Applies a transformation to the produced message of all the row's [`Element`].
