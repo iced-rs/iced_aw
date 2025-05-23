@@ -5,7 +5,8 @@
 use std::fmt::Display;
 
 use iced::{
-    widget::{Button, Column, Row, Text},
+    alignment::Vertical,
+    widget::{scrollable, Button, Column, Row, Text},
     Element, Length,
 };
 
@@ -13,7 +14,7 @@ use iced_aw::{drop_down, DropDown};
 
 fn main() -> iced::Result {
     iced::application(
-        "ContextMenu example",
+        "DropDown example",
         DropDownExample::update,
         DropDownExample::view,
     )
@@ -28,13 +29,17 @@ enum Choice {
     Choice2,
     Choice3,
     Choice4,
+    Choice5,
+    Choice6,
 }
 
-const CHOICES: [Choice; 4] = [
+const CHOICES: [Choice; 6] = [
     Choice::Choice1,
     Choice::Choice2,
     Choice::Choice3,
     Choice::Choice4,
+    Choice::Choice5,
+    Choice::Choice6,
 ];
 
 #[derive(Clone, Debug)]
@@ -65,14 +70,19 @@ impl DropDownExample {
     fn view(&self) -> Element<'_, Message> {
         let underlay = Row::new()
             .push(Text::new(format!("Selected: {}", self.selected)))
-            .push(Button::new(Text::new("expand")).on_press(Message::Expand));
+            .push(Button::new(Text::new("expand")).on_press(Message::Expand))
+            .spacing(8)
+            .align_y(Vertical::Center);
 
-        let overlay = Column::with_children(CHOICES.map(|choice| {
+        let options = Column::with_children(CHOICES.map(|choice| {
             Row::new()
                 .push(Text::new(choice.to_string()))
                 .push(Button::new(Text::new("choose")).on_press(Message::Select(choice)))
+                .spacing(6)
+                .align_y(Vertical::Center)
                 .into()
         }));
+        let overlay = scrollable(options.padding([0, 4]));
 
         let drop_down = DropDown::new(underlay, overlay, self.expanded)
             .width(Length::Fill)
@@ -96,6 +106,8 @@ impl Display for Choice {
             Choice::Choice2 => write!(f, "2"),
             Choice::Choice3 => write!(f, "3"),
             Choice::Choice4 => write!(f, "4"),
+            Choice::Choice5 => write!(f, "5"),
+            Choice::Choice6 => write!(f, "6"),
         }
     }
 }
