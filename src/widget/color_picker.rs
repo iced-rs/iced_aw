@@ -61,6 +61,7 @@ where
 {
     /// Show the picker.
     show_picker: bool,
+    /// Show the picker.
     /// The color to show.
     color: Color,
     /// The underlying element.
@@ -142,6 +143,8 @@ where
 pub struct State {
     /// The state of the overlay.
     pub(crate) overlay_state: color_picker::State,
+    /// Was overlay shown during the previous render?
+    pub(crate) old_show_picker: bool,
 }
 
 impl State {
@@ -150,6 +153,7 @@ impl State {
     pub fn new(color: Color) -> Self {
         Self {
             overlay_state: color_picker::State::new(color),
+            old_show_picker: false,
         }
     }
 
@@ -183,9 +187,18 @@ where
     fn diff(&self, tree: &mut Tree) {
         let color_picker_state = tree.state.downcast_mut::<State>();
 
-        if color_picker_state.overlay_state.color != self.color {
+        // Keep the overlay state in sync. While overlay is open, it "owns" the value
+        // (there is no other way the user can update its value). When it is reopened,
+        // sync the color again. If the color has changed, empty all canvas caches
+        // as they (unfortunately) do not depend on the picker state.
+        if self.show_picker
+            && !color_picker_state.old_show_picker
+            && color_picker_state.overlay_state.color != self.color
+        {
             color_picker_state.overlay_state.color = self.color;
+            color_picker_state.overlay_state.clear_cache();
         }
+        color_picker_state.old_show_picker = self.show_picker;
 
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }

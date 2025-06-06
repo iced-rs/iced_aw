@@ -94,8 +94,7 @@ where
         class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
         tree: &'a mut Tree,
     ) -> Self {
-        //state.color_hex = color_picker::State::color_as_string(state.color);
-        let color_picker::State { overlay_state } = state;
+        let color_picker::State { overlay_state, .. } = state;
 
         ColorPickerOverlay {
             state: overlay_state,
@@ -126,6 +125,11 @@ where
     #[must_use]
     pub fn overlay(self) -> overlay::Element<'a, Message, Theme, Renderer> {
         overlay::Element::new(Box::new(self))
+    }
+
+    /// Force redraw all components if the internal state was changed
+    fn clear_cache(&mut self) {
+        self.state.clear_cache();
     }
 
     /// The event handling for the HSV color area.
@@ -425,8 +429,7 @@ where
                     self.state.focus = self.state.focus.next();
                 }
                 // TODO: maybe place this better
-                self.state.sat_value_canvas_cache.clear();
-                self.state.hue_canvas_cache.clear();
+                self.clear_cache();
             } else {
                 let sat_value_handle = |key_code: &keyboard::Key, color: &mut Color| {
                     let mut hsv_color: Hsv = (*color).into();
@@ -622,8 +625,7 @@ where
         shell: &mut Shell<Message>,
     ) -> event::Status {
         if event::Status::Captured == self.on_event_keyboard(&event) {
-            self.state.sat_value_canvas_cache.clear();
-            self.state.hue_canvas_cache.clear();
+            self.clear_cache();
             return event::Status::Captured;
         }
 
@@ -694,8 +696,7 @@ where
         if hsv_color_status == event::Status::Captured
             || rgba_color_status == event::Status::Captured
         {
-            self.state.sat_value_canvas_cache.clear();
-            self.state.hue_canvas_cache.clear();
+            self.clear_cache();
         }
 
         status
@@ -1078,7 +1079,6 @@ fn block1<Message, Theme>(
     let hsv_color_layout = layout;
 
     // ----------- HSV Color ----------------------
-    //let hsv_color_layout = block1_children.next().unwrap();
     hsv_color(
         renderer,
         color_picker,
@@ -1698,6 +1698,12 @@ impl State {
             color,
             ..Self::default()
         }
+    }
+
+    /// Reset cached canvas when internal state is modified
+    pub fn clear_cache(&mut self) {
+        self.sat_value_canvas_cache.clear();
+        self.hue_canvas_cache.clear();
     }
 }
 
