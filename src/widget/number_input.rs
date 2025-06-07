@@ -777,7 +777,7 @@ where
                                             // including decimal separator but not including
                                             // minus sign.
                                             let _ =
-                                                value.drain((value.starts_with("-") as usize)..idx);
+                                                value.drain((value.starts_with('-').into())..idx);
                                         } else {
                                             let _ = value.remove(idx - 1);
                                         }
@@ -801,7 +801,7 @@ where
                                     }
                                     // We need the cursor not at the end
                                     cursor::State::Index(idx) if idx < value.len() => {
-                                        if idx == 0 && value.starts_with("-") {
+                                        if idx == 0 && value.starts_with('-') {
                                             let _ = value.remove(0);
                                         } else if modifiers.command() {
                                             // ctrl+del erases to the right,
@@ -935,7 +935,7 @@ where
                         if let Some(on_change) = &self.on_change {
                             shell.publish(on_change(value));
                         }
-                    };
+                    }
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnSubmit(result) => {
@@ -947,7 +947,7 @@ where
                     }
                     if let Some(on_submit) = &self.on_submit {
                         shell.publish(on_submit.clone());
-                    };
+                    }
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnPaste(value) => {
@@ -956,7 +956,7 @@ where
                         if let Some(on_paste) = &self.on_paste {
                             shell.publish(on_paste(value));
                         }
-                    };
+                    }
                     shell.invalidate_layout();
                 }
             }
