@@ -10,12 +10,12 @@ use iced_aw::number_input;
 
 #[derive(Default, Debug)]
 pub struct NumberInputDemo {
-    value: u8,
+    value: i8,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    NumInpChanged(u8),
+    NumInpChanged(i8),
     NumInpSubmitted,
 }
 
@@ -48,7 +48,7 @@ impl NumberInputDemo {
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(&self.value, 0..=10, Message::NumInpChanged)
+        let txt_minute = number_input(&self.value, -10..=10, Message::NumInpChanged)
             .style(number_input::number_input::primary)
             .on_submit(Message::NumInpSubmitted)
             .step(1);

@@ -527,7 +527,6 @@ where
     }
 
     fn size(&self) -> Size<Length> {
-        // Size::new(self.width, Length::Shrink)
         Widget::size(&self.content)
     }
 
@@ -678,10 +677,11 @@ where
         };
 
         // Check if the value that would result from the input is valid and within bound
+        let supports_negative = self.min() < T::zero();
         let mut check_value = |value: &str| {
             if let Ok(value) = T::from_str(value) {
                 self.valid(&value)
-            } else if value.is_empty() {
+            } else if value.is_empty() || value == "-" && supports_negative {
                 self.value = T::zero();
                 true
             } else {
@@ -823,7 +823,7 @@ where
 
                                 event::Status::Captured
                             }
-                            // Mouvement of the cursor
+                            // Movement of the cursor
                             keyboard::Key::Named(
                                 keyboard::key::Named::ArrowLeft
                                 | keyboard::key::Named::ArrowRight
