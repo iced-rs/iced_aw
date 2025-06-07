@@ -162,6 +162,18 @@ impl State {
         self.overlay_state.color = Color::from_rgb(0.5, 0.25, 0.25);
         self.overlay_state.color_bar_dragged = ColorBarDragged::None;
     }
+
+    /// Synchronize with the provided color if it was changed or picker was reopened
+    ///
+    /// Keep the overlay state in sync. While overlay is open, it "owns" the value
+    /// (there is no other way the user can update its value). When it is reopened,
+    /// reset the color to the initial one.
+    fn synchronize(&mut self, show_picker: bool, color: Color) {
+        if show_picker && (!self.old_show_picker || self.overlay_state.initial_color != color) {
+            self.overlay_state.force_synchronize(color);
+        }
+        self.old_show_picker = show_picker;
+    }
 }
 
 impl<'a, Message, Theme> Widget<Message, Theme, Renderer> for ColorPicker<'a, Message, Theme>
@@ -187,18 +199,7 @@ where
     fn diff(&self, tree: &mut Tree) {
         let color_picker_state = tree.state.downcast_mut::<State>();
 
-        // Keep the overlay state in sync. While overlay is open, it "owns" the value
-        // (there is no other way the user can update its value). When it is reopened,
-        // sync the color again. If the color has changed, empty all canvas caches
-        // as they (unfortunately) do not depend on the picker state.
-        if self.show_picker
-            && !color_picker_state.old_show_picker
-            && color_picker_state.overlay_state.color != self.color
-        {
-            color_picker_state.overlay_state.color = self.color;
-            color_picker_state.overlay_state.clear_cache();
-        }
-        color_picker_state.old_show_picker = self.show_picker;
+        color_picker_state.synchronize(self.show_picker, self.color);
 
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }

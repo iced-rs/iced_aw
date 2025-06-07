@@ -1678,6 +1678,8 @@ fn hex_text(
 pub struct State {
     /// The selected color of the [`ColorPickerOverlay`].
     pub(crate) color: Color,
+    /// The color used to initialize [`ColorPickerOverlay`].
+    pub(crate) initial_color: Color,
     /// The cache of the sat/value canvas of the [`ColorPickerOverlay`].
     pub(crate) sat_value_canvas_cache: canvas::Cache,
     /// The cache of the hue canvas of the [`ColorPickerOverlay`].
@@ -1696,21 +1698,34 @@ impl State {
     pub fn new(color: Color) -> Self {
         Self {
             color,
+            initial_color: color,
             ..Self::default()
         }
     }
 
-    /// Reset cached canvas when internal state is modified
-    pub fn clear_cache(&mut self) {
+    /// Reset cached canvas when internal state is modified.
+    ///
+    /// If the color has changed, empty all canvas caches
+    /// as they (unfortunately) do not depend on the picker state.
+    fn clear_cache(&mut self) {
         self.sat_value_canvas_cache.clear();
         self.hue_canvas_cache.clear();
+    }
+
+    /// Synchronize the color with an externally provided value.
+    pub(crate) fn force_synchronize(&mut self, color: Color) {
+        self.initial_color = color;
+        self.color = color;
+        self.clear_cache();
     }
 }
 
 impl Default for State {
     fn default() -> Self {
+        let default_color = Color::from_rgb(0.5, 0.25, 0.25);
         Self {
-            color: Color::from_rgb(0.5, 0.25, 0.25),
+            color: default_color,
+            initial_color: default_color,
             sat_value_canvas_cache: canvas::Cache::default(),
             hue_canvas_cache: canvas::Cache::default(),
             color_bar_dragged: ColorBarDragged::None,
