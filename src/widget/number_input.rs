@@ -780,7 +780,15 @@ where
                                     }
                                     // We need the cursor not at the start
                                     cursor::State::Index(idx) if idx > 0 => {
-                                        let _ = value.remove(idx - 1);
+                                        if modifiers.command() {
+                                            // ctrl+backspace erases to the left,
+                                            // including decimal separator but not including
+                                            // minus sign.
+                                            let _ =
+                                                value.drain((value.starts_with("-") as usize)..idx);
+                                        } else {
+                                            let _ = value.remove(idx - 1);
+                                        }
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }
@@ -805,7 +813,16 @@ where
                                     }
                                     // We need the cursor not at the end
                                     cursor::State::Index(idx) if idx < value.len() => {
-                                        let _ = value.remove(idx);
+                                        if idx == 0 && value.starts_with("-") {
+                                            let _ = value.remove(0);
+                                        } else if modifiers.command() {
+                                            // ctrl+del erases to the right,
+                                            // including decimal separator but not including
+                                            // minus sign.
+                                            let _ = value.drain(idx..);
+                                        } else {
+                                            let _ = value.remove(idx);
+                                        }
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }

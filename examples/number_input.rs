@@ -48,7 +48,7 @@ impl NumberInputDemo {
 
     fn view(&self) -> Element<Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(&self.value, -10..=10, Message::NumInpChanged)
+        let txt_minute = number_input(&self.value, -100..=100, Message::NumInpChanged)
             .style(number_input::number_input::primary)
             .on_submit(Message::NumInpSubmitted)
             .step(1);
