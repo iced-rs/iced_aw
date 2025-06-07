@@ -749,14 +749,10 @@ where
                                 // We replace the selection or paste the text at the cursor
                                 match cursor.state(&Value::new(&value)) {
                                     cursor::State::Index(idx) => {
-                                        let () = value.insert_str(idx, &paste);
+                                        value.insert_str(idx, &paste);
                                     }
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let () = value.replace_range(start..end, &paste);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let () = value.replace_range(end..start, &paste);
+                                        value.replace_range(sorted_range(start, end), &paste);
                                     }
                                 }
 
@@ -771,12 +767,8 @@ where
                             keyboard::Key::Named(keyboard::key::Named::Backspace) => {
                                 // We remove either the selection or the character before the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let _ = value.drain(start..end);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let _ = value.drain(end..start);
+                                        let _ = value.drain(sorted_range(start, end));
                                     }
                                     // We need the cursor not at the start
                                     cursor::State::Index(idx) if idx > 0 => {
@@ -804,12 +796,8 @@ where
                             keyboard::Key::Named(keyboard::key::Named::Delete) => {
                                 // We remove either the selection or the character after the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let _ = value.drain(start..end);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let _ = value.drain(end..start);
+                                        let _ = value.drain(sorted_range(start, end));
                                     }
                                     // We need the cursor not at the end
                                     cursor::State::Index(idx) if idx < value.len() => {
@@ -864,14 +852,10 @@ where
                                     // We replace the selection or insert the text at the cursor
                                     match cursor.state(&Value::new(&value)) {
                                         cursor::State::Index(idx) => {
-                                            let () = value.insert_str(idx, text);
+                                            value.insert_str(idx, text);
                                         }
-                                        cursor::State::Selection { start, end } if end >= start => {
-                                            let () = value.replace_range(start..end, text);
-                                        }
-                                        // we need to invert the selection to be sure the end is after the start
                                         cursor::State::Selection { start, end } => {
-                                            let () = value.replace_range(end..start, text);
+                                            value.replace_range(sorted_range(start, end), text);
                                         }
                                     }
 
@@ -1171,5 +1155,13 @@ where
 {
     fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(num_input)
+    }
+}
+
+fn sorted_range<T: PartialOrd>(a: T, b: T) -> std::ops::Range<T> {
+    if a >= b {
+        b..a
+    } else {
+        a..b
     }
 }
