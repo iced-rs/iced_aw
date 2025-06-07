@@ -37,7 +37,7 @@ impl NumberInputDemo {
     fn update(&mut self, message: self::Message) {
         match message {
             Message::NumInpChanged(val) => {
-                println!("Value changed to {:?}", val);
+                println!("Value changed to {val:?}");
                 self.value = val;
             }
             Message::NumInpSubmitted => {
@@ -60,6 +60,7 @@ impl NumberInputDemo {
                 .push(lb_minute)
                 .push(txt_minute),
         )
+        .padding(10)
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x(Length::Fill)
