@@ -61,7 +61,6 @@ where
 {
     /// Show the picker.
     show_picker: bool,
-    /// Show the picker.
     /// The color to show.
     color: Color,
     /// The underlying element.
