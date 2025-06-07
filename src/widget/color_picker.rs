@@ -142,6 +142,8 @@ where
 pub struct State {
     /// The state of the overlay.
     pub(crate) overlay_state: color_picker::State,
+    /// Was overlay shown during the previous render?
+    pub(crate) old_show_picker: bool,
 }
 
 impl State {
@@ -150,6 +152,7 @@ impl State {
     pub fn new(color: Color) -> Self {
         Self {
             overlay_state: color_picker::State::new(color),
+            old_show_picker: false,
         }
     }
 
@@ -157,6 +160,18 @@ impl State {
     pub fn reset(&mut self) {
         self.overlay_state.color = Color::from_rgb(0.5, 0.25, 0.25);
         self.overlay_state.color_bar_dragged = ColorBarDragged::None;
+    }
+
+    /// Synchronize with the provided color if it was changed or picker was reopened
+    ///
+    /// Keep the overlay state in sync. While overlay is open, it "owns" the value
+    /// (there is no other way the user can update its value). When it is reopened,
+    /// reset the color to the initial one.
+    fn synchronize(&mut self, show_picker: bool, color: Color) {
+        if show_picker && (!self.old_show_picker || self.overlay_state.initial_color != color) {
+            self.overlay_state.force_synchronize(color);
+        }
+        self.old_show_picker = show_picker;
     }
 }
 
@@ -183,9 +198,7 @@ where
     fn diff(&self, tree: &mut Tree) {
         let color_picker_state = tree.state.downcast_mut::<State>();
 
-        if color_picker_state.overlay_state.color != self.color {
-            color_picker_state.overlay_state.color = self.color;
-        }
+        color_picker_state.synchronize(self.show_picker, self.color);
 
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }

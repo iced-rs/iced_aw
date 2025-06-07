@@ -16,6 +16,7 @@ fn main() -> iced::Result {
         ColorPickerExample::view,
     )
     .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .subscription(ColorPickerExample::subscription)
     .run()
 }
 
@@ -25,6 +26,7 @@ enum Message {
     ChooseColor,
     SubmitColor(Color),
     CancelColor,
+    Tick,
 }
 
 #[derive(Debug)]
@@ -54,6 +56,7 @@ impl ColorPickerExample {
             Message::CancelColor => {
                 self.show_picker = false;
             }
+            Message::Tick => {}
         }
     }
 
@@ -80,5 +83,13 @@ impl ColorPickerExample {
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .into()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Message> {
+        // We're running this subscription in background to see if any unrelated
+        // rerenders can affect the implementation negatively.
+        // You do not need a background subscription to use color picker, this
+        // is simply test code.
+        iced::time::every(std::time::Duration::from_secs(1)).map(|_| Message::Tick)
     }
 }

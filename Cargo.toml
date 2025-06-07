@@ -103,7 +103,7 @@ required-features = ["card"]
 
 [[example]]
 name = "color_picker"
-required-features = ["color_picker"]
+required-features = ["color_picker", "iced/async-std"]
 
 [[example]]
 name = "date_picker"
