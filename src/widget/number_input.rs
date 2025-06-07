@@ -706,6 +706,14 @@ where
                     } => {
                         let cursor = text_input.cursor();
 
+                        // If true, ignore Arrow/Home/End keys - they are coming from numpad and are just
+                        // mislabeled. See the core PR:
+                        // https://github.com/iced-rs/iced/pull/2278
+                        let has_value = !modifiers.command()
+                            && text
+                                .as_ref()
+                                .is_some_and(|t| t.chars().any(|c| !c.is_control()));
+
                         match key.as_ref() {
                             // Enter
                             keyboard::Key::Named(keyboard::key::Named::Enter) => {
@@ -811,14 +819,16 @@ where
                             }
                             // Arrow Down, decrease by step
                             keyboard::Key::Named(keyboard::key::Named::ArrowDown)
-                                if can_decrease =>
+                                if can_decrease && !has_value =>
                             {
                                 self.decrease_value(shell);
 
                                 event::Status::Captured
                             }
                             // Arrow Up, increase by step
-                            keyboard::Key::Named(keyboard::key::Named::ArrowUp) if can_increase => {
+                            keyboard::Key::Named(keyboard::key::Named::ArrowUp)
+                                if can_increase && !has_value =>
+                            {
                                 self.increase_value(shell);
 
                                 event::Status::Captured
@@ -829,7 +839,7 @@ where
                                 | keyboard::key::Named::ArrowRight
                                 | keyboard::key::Named::Home
                                 | keyboard::key::Named::End,
-                            ) => forward_to_text(self, child, clipboard),
+                            ) if !has_value => forward_to_text(self, child, clipboard),
                             // Everything else
                             _ => match text {
                                 // If we are trying to input text
