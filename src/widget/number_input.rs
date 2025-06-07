@@ -930,7 +930,7 @@ where
         for message in messages {
             match message {
                 InternalMessage::OnChange(value) => {
-                    if self.value != value {
+                    if self.value != value || self.value.is_zero() {
                         self.value = value.clone();
                         if let Some(on_change) = &self.on_change {
                             shell.publish(on_change(value));
