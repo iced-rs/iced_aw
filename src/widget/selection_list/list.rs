@@ -178,6 +178,8 @@ where
                 }
                 _ => {}
             }
+        } else {
+            list_state.hovered_option = None;
         }
 
         status
