@@ -102,3 +102,8 @@ pub use drop_down::DropDown;
 pub mod sidebar;
 #[cfg(feature = "sidebar")]
 pub use sidebar::{Sidebar, SidebarWithContent};
+
+#[cfg(feature = "labeled_frame")]
+pub mod labeled_frame;
+#[cfg(feature = "labeled_frame")]
+pub use labeled_frame::LabeledFrame;

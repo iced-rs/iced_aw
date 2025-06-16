@@ -21,7 +21,7 @@ card = []
 date_picker = ["chrono"]
 color_picker = ["iced/canvas"]
 grid = ["itertools"]
-glow = []                                                   # TODO
+glow = []                                                  # TODO
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "iced/canvas"]
@@ -36,6 +36,7 @@ context_menu = []
 slide_bar = []
 drop_down = []
 sidebar = []
+labeled_frame = []
 
 default = [
     "badge",
@@ -56,6 +57,7 @@ default = [
     "drop_down",
     "menu",
     "sidebar",
+    "labeled_frame",
 ]
 
 [dependencies]
@@ -78,9 +80,9 @@ features = ["advanced"]
 opt-level = 2
 
 [dev-dependencies]
-num-traits = "0.2.19"   # For widget_id_return example
-rand = "0.9.0"            # For wrap example
-getrandom = { version = "0.3.1", features = ["wasm_js"]}
+num-traits = "0.2.19"                                     # For widget_id_return example
+rand = "0.9.0"                                            # For wrap example
+getrandom = { version = "0.3.1", features = ["wasm_js"] }
 
 [dev-dependencies.iced]
 #git = "https://github.com/iced-rs/iced.git"
@@ -160,6 +162,11 @@ required-features = ["number_input"]
 [[example]]
 name = "wrap"
 required-features = ["wrap", "number_input"]
+
+[[example]]
+name = "labeled_frame"
+required-features = ["labeled_frame"]
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]

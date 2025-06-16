@@ -21,6 +21,7 @@
 //! * `typed_input` (Author: Ultraxime <36888699+Ultraxime@users.noreply.github.com>)
 //! * `widget_id_return` (Author: Andrew Wheeler <genusistimelord@gmail.com>)
 //! * `wrap` (Author: owntime <yrainbxqc@gmail.com>)
+//! * `labeled_frame` (Author: JL710)
 #![deny(missing_docs)]
 #![deny(unused_results)]
 #![forbid(unsafe_code)]
