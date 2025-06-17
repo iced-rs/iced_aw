@@ -162,3 +162,11 @@ Also included in this feature, are two widgets `sidebar::column::FlushColumn` an
 ### Color palette
 
 This crate adds a predefined color palette based on the [CSS color palette](https://www.w3schools.com/cssref/css_colors.asp).
+
+### LabeledFrame
+A frame with a title.
+
+<div align="center">
+
+![LabeledFrame showcase](./images/showcase/labeled_frame.png)
+</div>
