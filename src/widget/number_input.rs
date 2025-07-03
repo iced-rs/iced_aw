@@ -527,7 +527,6 @@ where
     }
 
     fn size(&self) -> Size<Length> {
-        // Size::new(self.width, Length::Shrink)
         Widget::size(&self.content)
     }
 
@@ -678,10 +677,11 @@ where
         };
 
         // Check if the value that would result from the input is valid and within bound
+        let supports_negative = self.min() < T::zero();
         let mut check_value = |value: &str| {
             if let Ok(value) = T::from_str(value) {
                 self.valid(&value)
-            } else if value.is_empty() {
+            } else if value.is_empty() || value == "-" && supports_negative {
                 self.value = T::zero();
                 true
             } else {
@@ -705,6 +705,14 @@ where
                         ..
                     } => {
                         let cursor = text_input.cursor();
+
+                        // If true, ignore Arrow/Home/End keys - they are coming from numpad and are just
+                        // mislabeled. See the core PR:
+                        // https://github.com/iced-rs/iced/pull/2278
+                        let has_value = !modifiers.command()
+                            && text
+                                .as_ref()
+                                .is_some_and(|t| t.chars().any(|c| !c.is_control()));
 
                         match key.as_ref() {
                             // Enter
@@ -741,14 +749,10 @@ where
                                 // We replace the selection or paste the text at the cursor
                                 match cursor.state(&Value::new(&value)) {
                                     cursor::State::Index(idx) => {
-                                        let () = value.insert_str(idx, &paste);
+                                        value.insert_str(idx, &paste);
                                     }
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let () = value.replace_range(start..end, &paste);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let () = value.replace_range(end..start, &paste);
+                                        value.replace_range(sorted_range(start, end), &paste);
                                     }
                                 }
 
@@ -763,16 +767,20 @@ where
                             keyboard::Key::Named(keyboard::key::Named::Backspace) => {
                                 // We remove either the selection or the character before the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let _ = value.drain(start..end);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let _ = value.drain(end..start);
+                                        let _ = value.drain(sorted_range(start, end));
                                     }
                                     // We need the cursor not at the start
                                     cursor::State::Index(idx) if idx > 0 => {
-                                        let _ = value.remove(idx - 1);
+                                        if modifiers.command() {
+                                            // ctrl+backspace erases to the left,
+                                            // including decimal separator but not including
+                                            // minus sign.
+                                            let _ =
+                                                value.drain((value.starts_with('-').into())..idx);
+                                        } else {
+                                            let _ = value.remove(idx - 1);
+                                        }
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }
@@ -788,16 +796,21 @@ where
                             keyboard::Key::Named(keyboard::key::Named::Delete) => {
                                 // We remove either the selection or the character after the cursor
                                 match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Selection { start, end } if end >= start => {
-                                        let _ = value.drain(start..end);
-                                    }
-                                    // we need to invert the selection to be sure the end is after the start
                                     cursor::State::Selection { start, end } => {
-                                        let _ = value.drain(end..start);
+                                        let _ = value.drain(sorted_range(start, end));
                                     }
                                     // We need the cursor not at the end
                                     cursor::State::Index(idx) if idx < value.len() => {
-                                        let _ = value.remove(idx);
+                                        if idx == 0 && value.starts_with('-') {
+                                            let _ = value.remove(0);
+                                        } else if modifiers.command() {
+                                            // ctrl+del erases to the right,
+                                            // including decimal separator but not including
+                                            // minus sign.
+                                            let _ = value.drain(idx..);
+                                        } else {
+                                            let _ = value.remove(idx);
+                                        }
                                     }
                                     cursor::State::Index(_) => return event::Status::Ignored,
                                 }
@@ -811,25 +824,27 @@ where
                             }
                             // Arrow Down, decrease by step
                             keyboard::Key::Named(keyboard::key::Named::ArrowDown)
-                                if can_decrease =>
+                                if can_decrease && !has_value =>
                             {
                                 self.decrease_value(shell);
 
                                 event::Status::Captured
                             }
                             // Arrow Up, increase by step
-                            keyboard::Key::Named(keyboard::key::Named::ArrowUp) if can_increase => {
+                            keyboard::Key::Named(keyboard::key::Named::ArrowUp)
+                                if can_increase && !has_value =>
+                            {
                                 self.increase_value(shell);
 
                                 event::Status::Captured
                             }
-                            // Mouvement of the cursor
+                            // Movement of the cursor
                             keyboard::Key::Named(
                                 keyboard::key::Named::ArrowLeft
                                 | keyboard::key::Named::ArrowRight
                                 | keyboard::key::Named::Home
                                 | keyboard::key::Named::End,
-                            ) => forward_to_text(self, child, clipboard),
+                            ) if !has_value => forward_to_text(self, child, clipboard),
                             // Everything else
                             _ => match text {
                                 // If we are trying to input text
@@ -837,14 +852,10 @@ where
                                     // We replace the selection or insert the text at the cursor
                                     match cursor.state(&Value::new(&value)) {
                                         cursor::State::Index(idx) => {
-                                            let () = value.insert_str(idx, text);
+                                            value.insert_str(idx, text);
                                         }
-                                        cursor::State::Selection { start, end } if end >= start => {
-                                            let () = value.replace_range(start..end, text);
-                                        }
-                                        // we need to invert the selection to be sure the end is after the start
                                         cursor::State::Selection { start, end } => {
-                                            let () = value.replace_range(end..start, text);
+                                            value.replace_range(sorted_range(start, end), text);
                                         }
                                     }
 
@@ -919,12 +930,12 @@ where
         for message in messages {
             match message {
                 InternalMessage::OnChange(value) => {
-                    if self.value != value {
+                    if self.value != value || self.value.is_zero() {
                         self.value = value.clone();
                         if let Some(on_change) = &self.on_change {
                             shell.publish(on_change(value));
                         }
-                    };
+                    }
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnSubmit(result) => {
@@ -936,7 +947,7 @@ where
                     }
                     if let Some(on_submit) = &self.on_submit {
                         shell.publish(on_submit.clone());
-                    };
+                    }
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnPaste(value) => {
@@ -945,7 +956,7 @@ where
                         if let Some(on_paste) = &self.on_paste {
                             shell.publish(on_paste(value));
                         }
-                    };
+                    }
                     shell.invalidate_layout();
                 }
             }
@@ -1144,5 +1155,13 @@ where
 {
     fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {
         Element::new(num_input)
+    }
+}
+
+fn sorted_range<T: PartialOrd>(a: T, b: T) -> std::ops::Range<T> {
+    if a >= b {
+        b..a
+    } else {
+        a..b
     }
 }
