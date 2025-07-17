@@ -37,6 +37,7 @@ slide_bar = []
 drop_down = []
 sidebar = []
 labeled_frame = []
+custom_layout = ["iced/advanced"]
 
 default = [
     "badge",
@@ -58,6 +59,7 @@ default = [
     "menu",
     "sidebar",
     "labeled_frame",
+    "custom_layout",
 ]
 
 [dependencies]

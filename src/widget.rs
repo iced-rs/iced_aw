@@ -107,3 +107,8 @@ pub use sidebar::{Sidebar, SidebarWithContent};
 pub mod labeled_frame;
 #[cfg(feature = "labeled_frame")]
 pub use labeled_frame::LabeledFrame;
+
+#[cfg(feature = "custom_layout")]
+pub mod custom_layout;
+#[cfg(feature = "custom_layout")]
+pub use custom_layout::CustomLayout;
