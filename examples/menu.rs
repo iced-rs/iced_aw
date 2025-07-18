@@ -16,7 +16,7 @@ use iced_fonts::required::{icon_to_string, RequiredIcons};
 use iced_fonts::REQUIRED_FONT;
 
 pub fn main() -> iced::Result {
-    iced::application(App::title, App::update, App::view)
+    iced::application(App::default, App::update, App::view)
         .theme(App::theme)
         .font(iced_fonts::REQUIRED_FONT_BYTES)
         .window_size(Size::new(1000.0, 600.0))
@@ -48,7 +48,7 @@ struct App {
 impl Default for App {
     fn default() -> Self {
         let theme = iced::Theme::custom(
-            "Custom Theme".into(),
+            "Custom Theme",
             theme::Palette {
                 primary: Color::from([0.45, 0.25, 0.57]),
                 ..iced::Theme::Light.palette()
@@ -68,10 +68,6 @@ impl Default for App {
 }
 
 impl App {
-    fn title(&self) -> String {
-        self.title.clone()
-    }
-
     fn update(&mut self, message: Message) {
         match message {
             Message::Debug(s) => {
@@ -91,7 +87,7 @@ impl App {
             }
             Message::ColorChange(c) => {
                 self.theme = iced::Theme::custom(
-                    "Color Change".into(),
+                    "Color Change",
                     theme::Palette {
                         primary: c,
                         ..self.theme.palette()
@@ -104,7 +100,7 @@ impl App {
                 let primary = self.theme.palette().primary;
                 if b {
                     self.theme = iced::Theme::custom(
-                        "Dark".into(),
+                        "Dark",
                         theme::Palette {
                             primary,
                             ..iced::Theme::Dark.palette()
@@ -112,7 +108,7 @@ impl App {
                     )
                 } else {
                     self.theme = iced::Theme::custom(
-                        "Light".into(),
+                        "Light",
                         theme::Palette {
                             primary,
                             ..iced::Theme::Light.palette()

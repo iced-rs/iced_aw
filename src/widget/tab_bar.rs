@@ -15,7 +15,6 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment::{self, Horizontal, Vertical},
-    event,
     mouse::{self, Cursor},
     touch,
     widget::{
@@ -23,7 +22,7 @@ use iced::{
         Column, Row, Text,
     },
     Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size,
+    Rectangle, Size,
 };
 use iced_fonts::{
     required::{icon_to_string, RequiredIcons},
@@ -527,17 +526,17 @@ where
             .layout(tab_tree, renderer, &limits.loose())
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         _state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -569,12 +568,10 @@ where
                                     |on_close| (on_close)(self.tab_indices[new_selected].clone()),
                                 ),
                         );
-                        return event::Status::Captured;
                     }
                 }
-                event::Status::Ignored
             }
-            _ => event::Status::Ignored,
+            _ => (),
         }
     }
 
@@ -635,7 +632,7 @@ where
                         width: style_sheet.border_width,
                         color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style_sheet
                     .background
@@ -721,7 +718,7 @@ fn draw_tab<Theme, Renderer>(
                     width: style.tab_label_border_width,
                     color: style.tab_label_border_color,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             style.tab_label_background,
         );
@@ -737,8 +734,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(icon_bounds.width, icon_bounds.height),
                     size: Pixels(icon_data.1),
                     font: icon_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: Horizontal::Center.into(),
+                    align_y: Vertical::Center.into(),
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -758,8 +755,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: Horizontal::Center.into(),
+                    align_y: Vertical::Center.into(),
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -806,8 +803,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(icon_bounds.width, icon_bounds.height),
                     size: Pixels(icon_data.1),
                     font: icon_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: Horizontal::Center.into(),
+                    align_y: Vertical::Center.into(),
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -823,8 +820,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: Horizontal::Center.into(),
+                    align_y: Vertical::Center.into(),
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -846,8 +843,8 @@ fn draw_tab<Theme, Renderer>(
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
                 font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: Horizontal::Center.into(),
+                align_y: Vertical::Center.into(),
                 line_height: LineHeight::Relative(1.3),
                 shaping: iced::advanced::text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -866,7 +863,7 @@ fn draw_tab<Theme, Renderer>(
                         width: style.border_width,
                         color: style.border_color.unwrap_or(Color::TRANSPARENT),
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style
                     .icon_background

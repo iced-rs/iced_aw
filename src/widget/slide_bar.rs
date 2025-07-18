@@ -9,9 +9,8 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
-    touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
+    touch, Border, Color, Element, Event, Length, Point, Rectangle, Size,
 };
 
 use std::ops::RangeInclusive;
@@ -165,19 +164,19 @@ where
         Node::new(size)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         update(
-            &event,
+            event,
             layout,
             cursor,
             shell,
@@ -218,8 +217,7 @@ pub fn update<Message, T>(
     step: T,
     on_change: &dyn Fn(T) -> Message,
     on_release: &Option<Message>,
-) -> event::Status
-where
+) where
     T: Copy + Into<f64> + num_traits::FromPrimitive,
     Message: Clone,
 {
@@ -261,8 +259,6 @@ where
             if let Some(cursor_position) = cursor.position_over(layout.bounds()) {
                 change(cursor_position);
                 state.is_dragging = true;
-
-                return event::Status::Captured;
             }
         }
         Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
@@ -272,22 +268,16 @@ where
                     shell.publish(on_release);
                 }
                 state.is_dragging = false;
-
-                return event::Status::Captured;
             }
         }
         Event::Mouse(mouse::Event::CursorMoved { .. })
         | Event::Touch(touch::Event::FingerMoved { .. }) => {
             if is_dragging {
                 let _ = cursor.position().map(change);
-
-                return event::Status::Captured;
             }
         }
         _ => {}
     }
-
-    event::Status::Ignored
 }
 
 /// Draws a [`SlideBar`].
@@ -332,7 +322,7 @@ pub fn draw<T, R, Message>(
                     width: slider.border_width,
                     color: slider.border_color,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             background,
         );
@@ -347,7 +337,7 @@ pub fn draw<T, R, Message>(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             slider.color,
         );

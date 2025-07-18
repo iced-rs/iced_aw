@@ -13,7 +13,7 @@ use iced::{
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
     },
-    event, Event, Point, Rectangle, Size, Vector,
+    Event, Point, Rectangle, Size, Vector,
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -27,6 +27,7 @@ where
     /// Tree{ bar_state, [item_tree...] }
     pub(super) translation: Vector,
     pub(super) tree: &'b mut Tree,
+    pub(super) viewport: Rectangle,
 
     pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
     pub(super) init_bar_bounds: Rectangle,
@@ -180,17 +181,15 @@ where
     }
 
     #[allow(unused_results)]
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-    ) -> event::Status {
-        use event::Status::*;
-
+    ) {
         let viewport = layout.bounds();
         let mut lc = layout.children();
         let bar_bounds = lc.next().unwrap().bounds();
@@ -199,12 +198,12 @@ where
         let bar = self.tree.state.downcast_mut::<MenuBarState>();
 
         let Some(active) = bar.active_root else {
-            return Ignored;
+            return;
         };
 
         let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
         let Some(menu_layouts_layout) = lc.next() else {
-            return Ignored;
+            return;
         }; // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
 
@@ -291,7 +290,7 @@ where
                 RecEvent::Event => RecEvent::Event,
                 RecEvent::Close => {
                     if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
+                        menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
                         menu.open_event(menu_tree, menu_layout, cursor);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
@@ -307,7 +306,7 @@ where
                 }
                 RecEvent::None => {
                     if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.on_event(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
+                        menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
                         menu.open_event(menu_tree, menu_layout, cursor);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
@@ -322,7 +321,7 @@ where
         let re = rec(
             active_tree,
             active_root,
-            &event,
+            event,
             &mut menu_layouts,
             cursor,
             renderer,
@@ -336,12 +335,10 @@ where
         );
 
         match re {
-            RecEvent::Event => Captured,
+            RecEvent::Event => shell.capture_event(),
             RecEvent::Close | RecEvent::None => {
-                if cursor.is_over(bar_bounds) {
-                    Ignored
-                } else {
-                    Captured
+                if !cursor.is_over(bar_bounds) {
+                    shell.capture_event();
                 }
             }
         }
@@ -351,7 +348,6 @@ where
         &self,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
@@ -415,7 +411,7 @@ where
             &mut menu_layouts,
             cursor,
             renderer,
-            viewport,
+            &layout.bounds(),
         )
     }
 
@@ -483,7 +479,7 @@ where
 
     fn overlay<'c>(
         &'c mut self,
-        layout: Layout<'_>,
+        layout: Layout<'c>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
@@ -499,7 +495,13 @@ where
         let menu_tree = &mut active_tree.children[1];
         let menu_layout = menu_layouts.next()?;
 
-        menu.overlay(menu_tree, menu_layout, renderer, Vector::ZERO)
+        menu.overlay(
+            menu_tree,
+            menu_layout,
+            renderer,
+            &self.viewport,
+            Vector::ZERO,
+        )
     }
 
     fn draw(
@@ -515,7 +517,7 @@ where
             return;
         };
 
-        let viewport = layout.bounds();
+        let viewport = self.viewport;
         let mut lc = layout.children();
         let _bar_bounds = lc.next().unwrap().bounds();
         let _roots_layout = lc.next().unwrap();
@@ -596,27 +598,5 @@ where
             &theme_style,
             &viewport,
         );
-    }
-
-    fn is_over(&self, layout: Layout<'_>, _renderer: &Renderer, cursor_position: Point) -> bool {
-        let mut lc = layout.children();
-        let _bar_bounds = lc.next().unwrap().bounds();
-        let _roots_layout = lc.next().unwrap();
-        let Some(menu_layouts) = lc.next().map(Layout::children) else {
-            return false;
-        }; // [menu_node...]
-
-        for menu_layout in menu_layouts {
-            // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
-            let mut mc = menu_layout.children();
-            let _slice_layout = mc.next().unwrap();
-            let prescroll = mc.next().unwrap().bounds();
-
-            if prescroll.contains(cursor_position) {
-                return true;
-            }
-        }
-
-        false
     }
 }

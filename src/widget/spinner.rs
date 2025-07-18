@@ -9,10 +9,9 @@ use iced::{
         },
         Clipboard, Layout, Shell, Widget,
     },
-    event::Status,
     mouse::Cursor,
     time::{Duration, Instant},
-    window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
+    window, Border, Color, Element, Event, Length, Rectangle, Size, Vector,
 };
 
 /// A spinner widget, a circle spinning around the center of the widget.
@@ -97,7 +96,7 @@ fn fill_circle(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             color,
         );
@@ -164,22 +163,20 @@ where
         })
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         _cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> Status {
-        const FRAMES_PER_SECOND: u64 = 60;
-
+    ) {
         let bounds = layout.bounds();
 
-        if let Event::Window(window::Event::RedrawRequested(now)) = event {
+        if let Event::Window(window::Event::RedrawRequested(now)) = *event {
             if is_visible(&bounds) {
                 let state = state.state.downcast_mut::<SpinnerState>();
                 let duration = (now - state.last_update).as_secs_f32();
@@ -195,16 +192,10 @@ where
                     state.t -= 1.0;
                 }
 
-                shell.request_redraw(window::RedrawRequest::At(
-                    now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
-                ));
+                shell.request_redraw();
                 state.last_update = now;
-
-                return Status::Captured;
             }
         }
-
-        Status::Ignored
     }
 }
 

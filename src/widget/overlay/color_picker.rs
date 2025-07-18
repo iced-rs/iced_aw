@@ -30,7 +30,7 @@ use iced::{
         Button, Column, Row,
     },
     Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
-    Shadow, Size, Vector,
+    Size, Vector,
 };
 use iced_fonts::{
     required::{icon_to_string, RequiredIcons},
@@ -615,23 +615,21 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> event::Status {
+    ) {
         if event::Status::Captured == self.on_event_keyboard(&event) {
             self.clear_cache();
-            return event::Status::Captured;
+            return;
         }
 
         let mut children = layout.children();
-
-        let status = event::Status::Ignored;
 
         // ----------- Block 1 ----------------------
         let block1_layout = children
@@ -663,9 +661,9 @@ where
         let cancel_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a cancel button layout for a ColorPicker");
-        let cancel_button_status = self.cancel_button.on_event(
+        self.cancel_button.update(
             &mut self.tree.children[0],
-            event.clone(),
+            event,
             cancel_button_layout,
             cursor,
             renderer,
@@ -677,7 +675,7 @@ where
         let submit_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a submit button layout for a ColorPicker");
-        let submit_button_status = self.submit_button.on_event(
+        self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,
@@ -698,19 +696,12 @@ where
         {
             self.clear_cache();
         }
-
-        status
-            .merge(hsv_color_status)
-            .merge(rgba_color_status)
-            .merge(cancel_button_status)
-            .merge(submit_button_status)
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
         cursor: Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
@@ -790,7 +781,7 @@ where
             &self.tree.children[1],
             cancel_button_layout,
             cursor,
-            viewport,
+            &cancel_button_layout.bounds(),
             renderer,
         );
 
@@ -801,7 +792,7 @@ where
             &self.tree.children[1],
             submit_button_layout,
             cursor,
-            viewport,
+            &submit_button_layout.bounds(),
             renderer,
         );
 
@@ -858,7 +849,7 @@ where
                         width: style_sheet[&style_state].border_width,
                         color: style_sheet[&style_state].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style_sheet[&style_state].background,
             );
@@ -1178,7 +1169,7 @@ fn block2<Message, Theme>(
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1196,7 +1187,7 @@ fn block2<Message, Theme>(
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1427,8 +1418,8 @@ fn rgba_color(
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
                 font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: Horizontal::Center.into(),
+                align_y: Vertical::Center.into(),
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -1472,7 +1463,7 @@ fn rgba_color(
                             .bar_border_width,
                         color: Color::TRANSPARENT,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 color,
             );
@@ -1498,7 +1489,7 @@ fn rgba_color(
                             .expect("Style Sheet not found.")
                             .bar_border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1511,8 +1502,8 @@ fn rgba_color(
                 bounds: Size::new(value_layout.bounds().width, value_layout.bounds().height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: Horizontal::Center.into(),
+                align_y: Vertical::Center.into(),
                 line_height: iced::widget::text::LineHeight::Relative(1.3),
                 shaping: iced::widget::text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -1545,7 +1536,7 @@ fn rgba_color(
                             .expect("Style Sheet not found.")
                             .border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1641,7 +1632,7 @@ fn hex_text(
                     width: style_sheet[&hex_text_style_state].bar_border_width,
                     color: style_sheet[&hex_text_style_state].bar_border_color,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             *color,
         );
@@ -1653,8 +1644,8 @@ fn hex_text(
             bounds: Size::new(bounds.width, bounds.height),
             size: renderer.default_size(),
             font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
+            align_x: Horizontal::Center.into(),
+            align_y: Vertical::Center.into(),
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
             wrapping: Wrapping::default(),

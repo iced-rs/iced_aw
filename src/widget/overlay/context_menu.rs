@@ -14,10 +14,9 @@ use iced::{
         widget::Tree,
         Clipboard, Layout, Shell,
     },
-    event::Status,
     keyboard,
     mouse::{self, Cursor},
-    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
+    touch, window, Border, Color, Element, Event, Point, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).
@@ -128,7 +127,7 @@ where
                         width: 0.0,
                         color: Color::TRANSPARENT,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style_sheet.background,
             );
@@ -151,15 +150,15 @@ where
         );
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> Status {
+    ) {
         let layout_children = layout
             .children()
             .next()
@@ -167,14 +166,11 @@ where
 
         let mut forward_event_to_children = true;
 
-        let status = match &event {
+        match &event {
             Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
                 if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                     self.state.show = false;
                     forward_event_to_children = false;
-                    Status::Captured
-                } else {
-                    Status::Ignored
                 }
             }
 
@@ -186,26 +182,23 @@ where
                     self.state.show = false;
                     forward_event_to_children = false;
                 }
-                Status::Captured
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
-                Status::Captured
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
                 forward_event_to_children = false;
-                Status::Captured
             }
 
-            _ => Status::Ignored,
+            _ => (),
         };
 
-        let child_status = if forward_event_to_children {
-            self.content.as_widget_mut().on_event(
+        if forward_event_to_children {
+            self.content.as_widget_mut().update(
                 self.tree,
                 event,
                 layout_children,
@@ -215,21 +208,13 @@ where
                 shell,
                 &layout.bounds(),
             )
-        } else {
-            Status::Ignored
         };
-
-        match child_status {
-            Status::Ignored => status,
-            Status::Captured => Status::Captured,
-        }
     }
 
     fn mouse_interaction(
         &self,
-        layout: Layout<'_>,
+        layout: Layout,
         cursor: Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.content.as_widget().mouse_interaction(
@@ -239,7 +224,7 @@ where
                 .next()
                 .expect("widget: Layout should have a content layout."),
             cursor,
-            viewport,
+            &layout.bounds(),
             renderer,
         )
     }

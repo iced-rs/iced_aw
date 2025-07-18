@@ -263,7 +263,8 @@ where
                         .bottom_left(style.radius.bottom_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+
+                ..Default::default()
             },
             style.color,
         );
@@ -286,7 +287,8 @@ where
                         .bottom_right(style.radius.bottom_right),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+
+                ..Default::default()
             },
             style.color,
         );
@@ -307,7 +309,8 @@ where
                         .bottom_left(style.radius.top_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+
+                ..Default::default()
             },
             style.color,
         );
@@ -326,7 +329,8 @@ where
                     radius: iced::border::Radius::default().top_left(style.radius.top_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+
+                ..Default::default()
             },
             style.color,
         );
@@ -347,7 +351,8 @@ where
                     radius: iced::border::Radius::default().top_right(style.radius.top_right),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+
+                ..Default::default()
             },
             style.color,
         );
@@ -374,34 +379,26 @@ where
             .unwrap_or_default()
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut advanced::widget::Tree,
-        event: iced::Event,
+        event: &iced::Event,
         layout: advanced::Layout<'_>,
         cursor: advanced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn advanced::Clipboard,
         shell: &mut advanced::Shell<'_, Message>,
         viewport: &iced::Rectangle,
-    ) -> advanced::graphics::core::event::Status {
+    ) {
         [&mut self.title, &mut self.content]
             .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
-            .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
-                    state,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
+            .for_each(|((child, state), layout)| {
+                child.as_widget_mut().update(
+                    state, event, layout, cursor, renderer, clipboard, shell, viewport,
                 )
             })
-            .fold(iced::event::Status::Ignored, iced::event::Status::merge)
     }
 
     fn operate(
@@ -427,8 +424,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut advanced::widget::Tree,
-        layout: advanced::Layout<'_>,
+        layout: advanced::Layout<'b>,
         renderer: &Renderer,
+        viewport: &iced::Rectangle,
         translation: iced::Vector,
     ) -> Option<advanced::overlay::Element<'b, Message, Theme, Renderer>> {
         let children = vec![&mut self.title, &mut self.content]
@@ -438,7 +436,7 @@ where
             .filter_map(|((child, state), layout)| {
                 child
                     .as_widget_mut()
-                    .overlay(state, layout, renderer, translation)
+                    .overlay(state, layout, renderer, viewport, translation)
             })
             .collect::<Vec<_>>();
 

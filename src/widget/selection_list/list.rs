@@ -13,11 +13,10 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event,
     mouse::{self, Cursor},
     touch,
     widget::text::{LineHeight, Wrapping},
-    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
+    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -125,19 +124,18 @@ where
         Node::new(intrinsic)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let bounds = layout.bounds();
-        let mut status = event::Status::Ignored;
         let list_state = state.state.downcast_mut::<ListState>();
         let cursor = cursor.position().unwrap_or_default();
 
@@ -164,25 +162,17 @@ where
                         }
                     }
 
-                    status =
-                        list_state
-                            .last_selected_index
-                            .map_or(event::Status::Ignored, |last| {
-                                if let Some(option) = self.options.get(last.0) {
-                                    shell.publish((self.on_selected)(last.0, option.clone()));
-                                    event::Status::Captured
-                                } else {
-                                    event::Status::Ignored
-                                }
-                            });
+                    if let Some(last) = list_state.last_selected_index {
+                        if let Some(option) = self.options.get(last.0) {
+                            shell.publish((self.on_selected)(last.0, option.clone()));
+                        }
+                    };
                 }
                 _ => {}
             }
         } else {
             list_state.hovered_option = None;
         }
-
-        status
     }
 
     fn mouse_interaction(
@@ -241,7 +231,7 @@ where
                             width: 0.0,
                             color: Color::TRANSPARENT,
                         },
-                        shadow: Shadow::default(),
+                        ..Default::default()
                     },
                     if is_selected {
                         theme
@@ -275,8 +265,8 @@ where
                     bounds: Size::new(f32::INFINITY, bounds.height),
                     size: Pixels(self.text_size),
                     font: self.font,
-                    horizontal_alignment: Horizontal::Left,
-                    vertical_alignment: Vertical::Center,
+                    align_x: Horizontal::Left.into(),
+                    align_y: Vertical::Center,
                     line_height: LineHeight::default(),
                     shaping: iced::widget::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),

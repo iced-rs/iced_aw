@@ -11,12 +11,11 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment::{Horizontal, Vertical},
-    event,
     mouse::{self, Cursor},
     touch,
     widget::text::Wrapping,
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow,
-    Size, Vector,
+    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size,
+    Vector,
 };
 use iced_fonts::{
     required::{icon_to_string, RequiredIcons},
@@ -308,26 +307,26 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let mut children = layout.children();
 
         let head_layout = children
             .next()
             .expect("widget: Layout should have a head layout");
         let mut head_children = head_layout.children();
-        let head_status = self.head.as_widget_mut().on_event(
+        self.head.as_widget_mut().update(
             &mut state.children[0],
-            event.clone(),
+            &event,
             head_children
                 .next()
                 .expect("widget: Layout should have a head content layout"),
@@ -338,36 +337,33 @@ where
             viewport,
         );
 
-        let close_status = head_children
-            .next()
-            .map_or(event::Status::Ignored, |close_layout| {
-                match event {
-                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                    | Event::Touch(touch::Event::FingerPressed { .. }) => self
-                        .on_close
-                        .clone()
-                        // TODO: `let` expressions in this position are experimental
-                        // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
-                        .filter(|_| {
-                            close_layout
-                                .bounds()
-                                .contains(cursor.position().unwrap_or_default())
-                        })
-                        .map_or(event::Status::Ignored, |on_close| {
-                            shell.publish(on_close);
-                            event::Status::Captured
-                        }),
-                    _ => event::Status::Ignored,
-                }
-            });
+        if let Some(close_layout) = head_children.next() {
+            match event {
+                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                | Event::Touch(touch::Event::FingerPressed { .. }) => self
+                    .on_close
+                    .clone()
+                    // TODO: `let` expressions in this position are experimental
+                    // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
+                    .filter(|_| {
+                        close_layout
+                            .bounds()
+                            .contains(cursor.position().unwrap_or_default())
+                    })
+                    .map_or((), |on_close| {
+                        shell.publish(on_close);
+                    }),
+                _ => (),
+            }
+        };
 
         let body_layout = children
             .next()
             .expect("widget: Layout should have a body layout");
         let mut body_children = body_layout.children();
-        let body_status = self.body.as_widget_mut().on_event(
+        self.body.as_widget_mut().update(
             &mut state.children[1],
-            event.clone(),
+            &event,
             body_children
                 .next()
                 .expect("widget: Layout should have a body content layout"),
@@ -382,10 +378,10 @@ where
             .next()
             .expect("widget: Layout should have a foot layout");
         let mut foot_children = foot_layout.children();
-        let foot_status = self.foot.as_mut().map_or(event::Status::Ignored, |foot| {
-            foot.as_widget_mut().on_event(
+        if let Some(foot) = self.foot.as_mut() {
+            foot.as_widget_mut().update(
                 &mut state.children[2],
-                event,
+                &event,
                 foot_children
                     .next()
                     .expect("widget: Layout should have a foot content layout"),
@@ -395,12 +391,7 @@ where
                 shell,
                 viewport,
             )
-        });
-
-        head_status
-            .merge(close_status)
-            .merge(body_status)
-            .merge(foot_status)
+        };
     }
 
     fn mouse_interaction(
@@ -530,7 +521,7 @@ where
                         width: style_sheet.border_width,
                         color: style_sheet.border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style_sheet.background,
             );
@@ -545,7 +536,7 @@ where
                         width: style_sheet.border_width,
                         color: style_sheet.border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -601,8 +592,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<iced::advanced::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = vec![&mut self.head, &mut self.body];
@@ -615,9 +607,13 @@ where
             .zip(layout.children())
             .filter_map(|((child, state), layout)| {
                 layout.children().next().and_then(|child_layout| {
-                    child
-                        .as_widget_mut()
-                        .overlay(state, child_layout, renderer, translation)
+                    child.as_widget_mut().overlay(
+                        state,
+                        child_layout,
+                        renderer,
+                        viewport,
+                        translation,
+                    )
                 })
             })
             .collect::<Vec<_>>();
@@ -786,7 +782,7 @@ fn draw_head<Message, Theme, Renderer>(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             style.head_background,
         );
@@ -808,7 +804,7 @@ fn draw_head<Message, Theme, Renderer>(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             style.head_background,
         );
@@ -841,8 +837,8 @@ fn draw_head<Message, Theme, Renderer>(
                         + if is_mouse_over_close { 1.0 } else { 0.0 },
                 ),
                 font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: Horizontal::Center.into(),
+                align_y: Vertical::Center.into(),
                 line_height: LineHeight::Relative(1.3),
                 shaping: iced::advanced::text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -882,7 +878,7 @@ fn draw_body<Message, Theme, Renderer>(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             style.body_background,
         );
@@ -931,7 +927,7 @@ fn draw_foot<Message, Theme, Renderer>(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             style.foot_background,
         );

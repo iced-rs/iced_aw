@@ -23,7 +23,6 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment::{self, Horizontal, Vertical},
-    event,
     mouse::{self, Cursor},
     touch,
     widget::{
@@ -31,7 +30,7 @@ use iced::{
         Row, Text,
     },
     Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size, Vector,
+    Rectangle, Size, Vector,
 };
 use iced_fonts::{
     required::{icon_to_string, RequiredIcons},
@@ -515,17 +514,17 @@ where
             .layout(tab_tree, renderer, &limits.loose())
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         _state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -557,12 +556,10 @@ where
                                     |on_close| (on_close)(self.tab_indices[new_selected].clone()),
                                 ),
                         );
-                        return event::Status::Captured;
                     }
                 }
-                event::Status::Ignored
             }
-            _ => event::Status::Ignored,
+            _ => (),
         }
     }
 
@@ -619,7 +616,7 @@ where
                         width: style_sheet.border_width,
                         color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style_sheet
                     .background
@@ -703,8 +700,8 @@ fn draw_tab<Theme, Renderer>(
                         bounds: Size::new(icon_bounds.width, icon_bounds.height),
                         size: Pixels(icon_data.1),
                         font: icon_data.0,
-                        horizontal_alignment: Horizontal::Center,
-                        vertical_alignment: Vertical::Center,
+                        align_x: Horizontal::Center.into(),
+                        align_y: Vertical::Center.into(),
                         line_height: LineHeight::Relative(1.3),
                         shaping: iced::advanced::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
@@ -722,8 +719,8 @@ fn draw_tab<Theme, Renderer>(
                         bounds: Size::new(text_bounds.width, text_bounds.height),
                         size: Pixels(text_data.1),
                         font: text_data.0,
-                        horizontal_alignment: Horizontal::Center,
-                        vertical_alignment: Vertical::Center,
+                        align_x: Horizontal::Center.into(),
+                        align_y: Vertical::Center.into(),
                         line_height: LineHeight::Relative(1.3),
                         shaping: iced::advanced::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
@@ -752,8 +749,8 @@ fn draw_tab<Theme, Renderer>(
                         bounds: Size::new(icon_bounds.width, icon_bounds.height),
                         size: Pixels(icon_data.1),
                         font: icon_data.0,
-                        horizontal_alignment: Horizontal::Center,
-                        vertical_alignment: Vertical::Center,
+                        align_x: Horizontal::Center.into(),
+                        align_y: Vertical::Center.into(),
                         line_height: LineHeight::Relative(1.3),
                         shaping: iced::advanced::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
@@ -768,8 +765,8 @@ fn draw_tab<Theme, Renderer>(
                         bounds: Size::new(text_bounds.width, text_bounds.height),
                         size: Pixels(text_data.1),
                         font: text_data.0,
-                        horizontal_alignment: Horizontal::Center,
-                        vertical_alignment: Vertical::Center,
+                        align_x: Horizontal::Center.into(),
+                        align_y: Vertical::Center.into(),
                         line_height: LineHeight::Relative(1.3),
                         shaping: iced::advanced::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
@@ -800,8 +797,8 @@ fn draw_tab<Theme, Renderer>(
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
                 font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: Horizontal::Center.into(),
+                align_y: Vertical::Center.into(),
                 line_height: LineHeight::Relative(1.3),
                 shaping: iced::advanced::text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -819,7 +816,7 @@ fn draw_tab<Theme, Renderer>(
                         width: style.border_width,
                         color: style.border_color.unwrap_or(Color::TRANSPARENT),
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style
                     .icon_background
@@ -846,7 +843,7 @@ fn draw_tab<Theme, Renderer>(
                     width: style.tab_label_border_width,
                     color: style.tab_label_border_color,
                 },
-                shadow: Shadow::default(),
+                ..Default::default()
             },
             style.tab_label_background,
         );
@@ -1287,17 +1284,17 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let mut children = layout.children();
         let (sidebar_layout, tab_content_layout) = match self.sidebar_position {
             SidebarPosition::Start => {
@@ -1319,9 +1316,9 @@ where
                 (sidebar_layout, tab_content_layout)
             }
         };
-        let status_sidebar = self.sidebar.on_event(
+        self.sidebar.update(
             &mut Tree::empty(),
-            event.clone(),
+            event,
             sidebar_layout,
             cursor,
             renderer,
@@ -1330,22 +1327,18 @@ where
             viewport,
         );
         let idx = self.sidebar.get_active_tab_idx();
-        let status_element = self
-            .tabs
-            .get_mut(idx)
-            .map_or(event::Status::Ignored, |element| {
-                element.as_widget_mut().on_event(
-                    &mut state.children[1].children[idx],
-                    event,
-                    tab_content_layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            });
-        status_sidebar.merge(status_element)
+        if let Some(element) = self.tabs.get_mut(idx) {
+            element.as_widget_mut().update(
+                &mut state.children[1].children[idx],
+                event,
+                tab_content_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            )
+        };
     }
 
     fn mouse_interaction(
@@ -1459,8 +1452,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.sidebar_position {
@@ -1477,6 +1471,7 @@ where
                         &mut state.children[1].children[idx],
                         layout,
                         renderer,
+                        viewport,
                         translation,
                     )
                 })
