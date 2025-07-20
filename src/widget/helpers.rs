@@ -144,7 +144,7 @@ macro_rules! menu {
 #[macro_export]
 macro_rules! menu_bar {
     ($(($x:expr, $m:expr))+) => (
-        $crate::menu::MenuBar::new(vec![ $( Item::with_menu($x, $m) ),+ ])
+        $crate::menu::MenuBar::new(vec![ $( $crate::menu::Item::with_menu($x, $m) ),+ ])
     );
 }
 
