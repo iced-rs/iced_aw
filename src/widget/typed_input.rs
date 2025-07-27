@@ -10,7 +10,6 @@ use iced::advanced::widget::{
 use iced::advanced::{Clipboard, Shell};
 use iced::mouse::{self, Cursor};
 use iced::{
-    event,
     widget::text_input::{self, TextInput},
     Event, Size,
 };
@@ -393,20 +392,20 @@ where
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let mut messages = Vec::new();
         let mut sub_shell = Shell::new(&mut messages);
-        let status = self.text_input.on_event(
+        self.text_input.update(
             state,
             event,
             layout,
@@ -417,9 +416,8 @@ where
             viewport,
         );
 
-        if let Some(redraw) = sub_shell.redraw_request() {
-            shell.request_redraw(redraw);
-        }
+        shell.request_redraw_at(sub_shell.redraw_request());
+
         if sub_shell.is_layout_invalid() {
             shell.invalidate_layout();
         }
@@ -439,7 +437,8 @@ where
                                 shell.publish(on_change(value));
                             }
                         }
-                    };
+                    }
+
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnSubmit => {
@@ -449,7 +448,8 @@ where
                             Err(_) => Err(self.text.clone()),
                         };
                         shell.publish(on_submit(value));
-                    };
+                    }
+
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnPaste(value) => {
@@ -462,12 +462,12 @@ where
                                 shell.publish(on_paste(value));
                             }
                         }
-                    };
+                    }
+
                     shell.invalidate_layout();
                 }
             }
         }
-        status
     }
 }
 

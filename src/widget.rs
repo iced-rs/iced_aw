@@ -45,11 +45,6 @@ pub mod selection_list;
 #[cfg(feature = "selection_list")]
 pub use selection_list::{List, SelectionList};
 
-#[cfg(feature = "grid")]
-pub mod grid;
-#[cfg(feature = "grid")]
-pub use grid::{Grid, GridRow};
-
 #[cfg(feature = "tab_bar")]
 pub mod tab_bar;
 #[cfg(feature = "tab_bar")]
