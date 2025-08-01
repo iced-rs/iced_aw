@@ -1,6 +1,6 @@
 [package]
 name = "iced_aw"
-version = "0.12.2"
+version = "0.13.0-dev"
 authors = [
     "Kaiden42 <gitlab@tinysn.com>",
     "Andrew Wheeler <genusistimelord@gmail.com>",
@@ -16,12 +16,13 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
+default = []
+
 badge = []
 card = []
 date_picker = ["chrono"]
 color_picker = ["iced/canvas"]
-grid = ["itertools"]
-glow = []                                                  # TODO
+glow = []                                                  # TODO, this has been todo since 2024 :(
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "iced/canvas"]
@@ -39,13 +40,12 @@ sidebar = []
 labeled_frame = []
 custom_layout = ["iced/advanced"]
 
-default = [
+full = [
     "badge",
     "card",
     "number_input",
     "date_picker",
     "color_picker",
-    "grid",
     "tab_bar",
     "tabs",
     "time_picker",
@@ -62,44 +62,40 @@ default = [
     "custom_layout",
 ]
 
+[dev-dependencies]
+iced_aw = { path  = "./" }
+getrandom = { version = "0.3.3", features = ["wasm_js"] }
+rand = "0.9.2" # For wrap example
+
+[dependencies.iced]
+version = "0.14.0-dev"
+features = ["advanced"]
+
 [dependencies]
 cfg-if = "1.0"
-chrono = { version = "0.4.39", optional = true, features = ["wasmbind"] }
-iced_fonts = "0.1.1"
-itertools = { version = "0.14.0", optional = true }
+chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
+iced_fonts = { version = "0.3.0-dev", features = ["advanced_text"], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
+iced_widget = "0.14.0-dev" # Required for font generated from `iced_fonts`.
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
 
-[dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.13.1"
-default-features = false
-features = ["advanced"]
-
-[profile.dev.package."*"]
-opt-level = 2
-
-[dev-dependencies]
-num-traits = "0.2.19"                                     # For widget_id_return example
-rand = "0.9.0"                                            # For wrap example
-getrandom = { version = "0.3.1", features = ["wasm_js"] }
-
-[dev-dependencies.iced]
-#git = "https://github.com/iced-rs/iced.git"
-#rev = "b474a2b7a763dcde6a377cb409001a7b5285ee8d"
-version = "0.13.0"
-#default-features = false
-features = ["advanced", "wgpu"]
-
-[dev-dependencies.iced_aw]
-path = "./"
-default-features = false
+[patch.crates-io]
+iced = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
+iced_core = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
+iced_widget = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
 
 [[example]]
 name = "badge"
 required-features = ["badge"]
+
+[[example]]
+name = "context_menu"
+required-features = ["context_menu"]
+
+[[example]]
+name = "drop_down"
+required-features = ["drop_down"]
 
 [[example]]
 name = "card"
@@ -112,10 +108,6 @@ required-features = ["color_picker", "iced/async-std"]
 [[example]]
 name = "date_picker"
 required-features = ["date_picker"]
-
-[[example]]
-name = "grid"
-required-features = ["grid"]
 
 [[example]]
 name = "menu"

@@ -7,6 +7,7 @@ use iced::{
     Alignment, Element, Length,
 };
 use iced_aw::widgets::typed_input;
+use iced_aw::ICED_AW_FONT_BYTES;
 
 #[derive(Default, Debug)]
 pub struct TypedInputDemo {
@@ -21,7 +22,7 @@ pub enum Message {
 
 fn main() -> iced::Result {
     iced::application(
-        "Typed Input example",
+        TypedInputDemo::default,
         TypedInputDemo::update,
         TypedInputDemo::view,
     )
@@ -29,7 +30,7 @@ fn main() -> iced::Result {
         width: 250.0,
         height: 200.0,
     })
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 
@@ -47,7 +48,7 @@ impl TypedInputDemo {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let lb_minute = Text::new("Typed Input:");
         let txt_minute = typed_input::TypedInput::new("Placeholder", &self.value)
             .on_input(Message::TypedInpChanged)

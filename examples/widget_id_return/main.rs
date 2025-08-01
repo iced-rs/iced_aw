@@ -6,6 +6,7 @@ use iced::{
     widget::{Column, Container, Row, Text},
     Alignment, Element, Length,
 };
+use iced_aw::ICED_AW_FONT_BYTES;
 
 #[derive(Debug)]
 pub struct NumberInputDemo {
@@ -27,11 +28,11 @@ pub enum Message {
 
 fn main() -> iced::Result {
     iced::application(
-        "NumberInput example",
+        NumberInputDemo::default,
         NumberInputDemo::update,
         NumberInputDemo::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 
@@ -44,7 +45,7 @@ impl NumberInputDemo {
         self.value[id].value = val.get_data();
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let mut column1 = Column::new();
 
         for (id, val) in self.value.iter().enumerate() {

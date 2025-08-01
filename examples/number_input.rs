@@ -7,6 +7,7 @@ use iced::{
     Alignment, Element, Length,
 };
 use iced_aw::number_input;
+use iced_aw::ICED_AW_FONT_BYTES;
 
 #[derive(Default, Debug)]
 pub struct NumberInputDemo {
@@ -21,7 +22,7 @@ pub enum Message {
 
 fn main() -> iced::Result {
     iced::application(
-        "Number Input example",
+        NumberInputDemo::default,
         NumberInputDemo::update,
         NumberInputDemo::view,
     )
@@ -29,7 +30,7 @@ fn main() -> iced::Result {
         width: 250.0,
         height: 200.0,
     })
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 
@@ -46,7 +47,7 @@ impl NumberInputDemo {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let lb_minute = Text::new("Number Input:");
         let txt_minute = number_input(&self.value, -100..=100, Message::NumInpChanged)
             .style(number_input::number_input::primary)

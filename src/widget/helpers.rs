@@ -11,35 +11,6 @@ use num_traits::bounds::Bounded;
 #[allow(unused_imports)]
 use std::{borrow::Cow, fmt::Display, hash::Hash, ops::RangeBounds};
 
-/// Creates a [`Grid`] with the given [`GridRow`]s.
-///
-/// [`Grid`]: crate::Grid
-/// [`GridRow`]: crate::GridRow
-#[cfg(feature = "grid")]
-#[macro_export]
-macro_rules! grid {
-    () => (
-        $crate::Grid::new()
-    );
-    ($($x:expr),+ $(,)?) => (
-        $crate::Grid::with_rows(vec![$($x),+])
-    );
-}
-
-/// Creates a [`GridRow`] with the given widget.
-///
-/// [`GridRow`]: crate::GridRow
-#[cfg(feature = "grid")]
-#[macro_export]
-macro_rules! grid_row {
-    () => (
-        $crate::GridRow::new()
-    );
-    ($($x:expr),+ $(,)?) => (
-        $crate::GridRow::with_elements(vec![$(iced::Element::from($x)),+])
-    );
-}
-
 /// Creates a horizontal [`Wrap`] with the given children.
 ///
 /// [`Wrap`]: crate::Wrap
@@ -243,35 +214,6 @@ where
     F: 'static + Fn(crate::core::time::Time) -> Message,
 {
     crate::TimePicker::new(show_picker, time, underlay, on_cancel, on_submit)
-}
-
-#[cfg(feature = "grid")]
-/// Shortcut helper to create a [`Grid`] Widget.
-///
-/// [`Grid`]: crate::grid::Grid
-#[must_use]
-pub fn grid<Message, Theme, Renderer>(
-    rows: Vec<crate::GridRow<Message, Theme, Renderer>>,
-) -> crate::Grid<Message, Theme, Renderer>
-where
-    Renderer: renderer::Renderer,
-{
-    crate::Grid::with_rows(rows)
-}
-
-#[cfg(feature = "grid")]
-/// Shortcut helper to create a [`GridRow`] for the [`Grid`] Widget.
-///
-/// [`GridRow`]: crate::GridRow
-/// [`Grid`]: crate::Grid
-#[must_use]
-pub fn grid_row<'a, Message, Theme, Renderer>(
-    elements: Vec<impl Into<Element<'a, Message, Theme, Renderer>>>,
-) -> crate::GridRow<'a, Message, Theme, Renderer>
-where
-    Renderer: renderer::Renderer,
-{
-    crate::GridRow::with_elements(elements)
 }
 
 #[cfg(feature = "wrap")]
