@@ -839,6 +839,7 @@ where
                             {
                                 shell.capture_event();
                                 shell.request_redraw();
+
                                 self.increase_value(shell);
                             }
                             // Movement of the cursor
