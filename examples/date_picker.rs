@@ -6,15 +6,16 @@ use iced::{
     widget::{Button, Container, Row, Text},
     Alignment, Element, Length,
 };
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{date_picker::Date, helpers::date_picker};
 
 fn main() -> iced::Result {
     iced::application(
-        "DatePicker example",
+        DatePickerExample::default,
         DatePickerExample::update,
         DatePickerExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 
