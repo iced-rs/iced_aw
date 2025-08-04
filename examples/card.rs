@@ -7,11 +7,12 @@ use iced::{
     Element, Length,
 };
 
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{helpers::card, style};
 
 fn main() -> iced::Result {
-    iced::application("Card example", CardExample::update, CardExample::view)
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
+    iced::application(CardExample::default, CardExample::update, CardExample::view)
+        .font(ICED_AW_FONT_BYTES)
         .run()
 }
 
