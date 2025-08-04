@@ -9,7 +9,6 @@ use iced::{
         widget::Tree,
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
     Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
 };
@@ -177,18 +176,18 @@ where
         Node::with_children(size.expand(padding), vec![content])
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<'_, Message>,
+        shell: &mut Shell<Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        self.content.as_widget_mut().on_event(
+    ) {
+        self.content.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout
@@ -200,7 +199,7 @@ where
             clipboard,
             shell,
             viewport,
-        )
+        );
     }
 
     fn mouse_interaction(
@@ -258,6 +257,7 @@ where
                         color: style_sheet.border_color.unwrap_or(Color::BLACK),
                     },
                     shadow: Shadow::default(),
+                    snap: false,
                 },
                 style_sheet.background,
             );

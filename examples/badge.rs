@@ -9,10 +9,15 @@ use iced::{
 
 use iced_aw::{helpers::badge, style, style::status::Status};
 
-const BADGE_TEXT_SIZE: u16 = 15;
+const BADGE_TEXT_SIZE: u32 = 15;
 
 fn main() -> iced::Result {
-    iced::application("Badge example", BadgeExample::update, BadgeExample::view).run()
+    iced::application(
+        BadgeExample::default,
+        BadgeExample::update,
+        BadgeExample::view,
+    )
+    .run()
 }
 
 #[derive(Debug, Clone)]
@@ -37,7 +42,7 @@ impl Default for BadgeExample {
 impl BadgeExample {
     fn update(&mut self, _message: Message) {}
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
             .spacing(10)
