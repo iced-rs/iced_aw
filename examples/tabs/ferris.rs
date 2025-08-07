@@ -18,12 +18,6 @@ pub struct FerrisTab {
 }
 
 impl FerrisTab {
-    pub fn new() -> Self {
-        FerrisTab {
-            ferris_width: 100.0,
-        }
-    }
-
     pub fn update(&mut self, message: FerrisMessage) {
         match message {
             FerrisMessage::ImageWidthChanged(value) => self.ferris_width = value,

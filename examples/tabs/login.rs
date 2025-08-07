@@ -22,13 +22,6 @@ pub struct LoginTab {
 }
 
 impl LoginTab {
-    pub fn new() -> Self {
-        LoginTab {
-            username: String::new(),
-            password: String::new(),
-        }
-    }
-
     pub fn update(&mut self, message: LoginMessage) {
         match message {
             LoginMessage::UsernameChanged(value) => self.username = value,

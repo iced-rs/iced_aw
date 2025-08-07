@@ -33,16 +33,6 @@ pub struct TabSettings {
     pub tab_bar_theme_id: Option<usize>,
 }
 
-impl TabSettings {
-    pub fn new() -> Self {
-        TabSettings {
-            tab_bar_position: Some(TabBarPosition::Top),
-            tab_bar_theme: Some(0),
-            tab_bar_theme_id: Some(0),
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum SettingsMessage {
     PositionSelected(TabBarPosition),
@@ -55,12 +45,6 @@ pub struct SettingsTab {
 }
 
 impl SettingsTab {
-    pub fn new() -> Self {
-        SettingsTab {
-            settings: TabSettings::new(),
-        }
-    }
-
     pub fn settings(&self) -> &TabSettings {
         &self.settings
     }

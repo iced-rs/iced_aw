@@ -18,10 +18,6 @@ pub struct CounterTab {
 }
 
 impl CounterTab {
-    pub fn new() -> Self {
-        CounterTab { value: 0 }
-    }
-
     pub fn update(&mut self, message: CounterMessage) {
         match message {
             CounterMessage::Increase => self.value += 1,
