@@ -14,11 +14,10 @@ use iced_aw::{drop_down, DropDown};
 
 fn main() -> iced::Result {
     iced::application(
-        "DropDown example",
+        DropDownExample::default,
         DropDownExample::update,
         DropDownExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
     .run()
 }
 

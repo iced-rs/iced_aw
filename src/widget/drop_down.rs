@@ -9,7 +9,6 @@ use iced::{
         widget::{Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     keyboard::{self, key::Named},
     mouse::{self, Cursor},
     touch, Element, Event, Length, Point, Rectangle, Size, Vector,
@@ -149,18 +148,18 @@ where
             .operate(&mut state.children[0], layout, renderer, operation);
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
+    ) {
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,
@@ -169,7 +168,7 @@ where
             clipboard,
             shell,
             viewport,
-        )
+        );
     }
 
     fn mouse_interaction(
@@ -192,8 +191,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         if !self.expanded {
@@ -201,6 +201,7 @@ where
                 &mut state.children[0],
                 layout,
                 renderer,
+                viewport,
                 translation,
             );
         }
@@ -215,6 +216,7 @@ where
             &self.offset,
             layout.bounds(),
             layout.position() + translation,
+            *viewport,
         ))))
     }
 }
@@ -243,6 +245,7 @@ where
     offset: &'b Offset,
     underlay_bounds: Rectangle,
     position: Point,
+    viewport: Rectangle,
 }
 
 impl<'a, 'b, Message, Theme, Renderer> DropDownOverlay<'a, 'b, Message, Theme, Renderer>
@@ -261,6 +264,7 @@ where
         offset: &'b Offset,
         underlay_bounds: Rectangle,
         position: Point,
+        viewport: Rectangle,
     ) -> Self {
         DropDownOverlay {
             state,
@@ -272,6 +276,7 @@ where
             offset,
             underlay_bounds,
             position,
+            viewport,
         }
     }
 }
@@ -290,47 +295,6 @@ where
                     .unwrap_or(&Length::Fixed(self.underlay_bounds.width)),
             )
             .height(*self.height);
-
-        let limits = {
-            let max = limits.max();
-            // Offset is computed from the reference rect, it isn't a translation vector.
-            let width_before = self.underlay_bounds.x - self.offset.x;
-            let width_after =
-                max.width - self.underlay_bounds.x - self.underlay_bounds.width - self.offset.x;
-            let height_above = self.underlay_bounds.y - self.offset.y;
-            let height_below =
-                max.height - self.underlay_bounds.y - self.underlay_bounds.height - self.offset.y;
-
-            let ref_center = self.underlay_bounds.center();
-            let max_width_symmetric = ref_center.x.min(max.width - ref_center.x) * 2.0;
-            let max_height_symmetric = ref_center.y.min(max.height - ref_center.y) * 2.0;
-            match self.alignment {
-                Alignment::TopStart => limits
-                    .max_height(height_above + self.underlay_bounds.height)
-                    .max_width(width_before),
-                Alignment::Top => limits
-                    .max_height(height_above)
-                    .max_width(max_width_symmetric),
-                Alignment::TopEnd => limits
-                    .max_height(height_above + self.underlay_bounds.height)
-                    .max_width(width_after),
-                Alignment::End => limits
-                    .max_width(width_after)
-                    .max_height(max_height_symmetric),
-                Alignment::BottomEnd => limits
-                    .max_height(height_below + self.underlay_bounds.height)
-                    .max_width(width_after),
-                Alignment::Bottom => limits
-                    .max_height(height_below)
-                    .max_width(max_width_symmetric),
-                Alignment::BottomStart => limits
-                    .max_height(height_below + self.underlay_bounds.height)
-                    .max_width(width_before),
-                Alignment::Start => limits
-                    .max_width(width_before)
-                    .max_height(max_height_symmetric),
-            }
-        };
 
         let mut node = self
             .element
@@ -397,15 +361,15 @@ where
             .draw(self.state, renderer, theme, style, layout, cursor, &bounds);
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> event::Status {
+    ) {
         if let Some(on_dismiss) = self.on_dismiss {
             match &event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
@@ -427,7 +391,7 @@ where
             }
         }
 
-        self.element.as_widget_mut().on_event(
+        self.element.as_widget_mut().update(
             self.state,
             event,
             layout,
@@ -436,18 +400,21 @@ where
             clipboard,
             shell,
             &layout.bounds(),
-        )
+        );
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
         cursor: Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.element
-            .as_widget()
-            .mouse_interaction(self.state, layout, cursor, viewport, renderer)
+        self.element.as_widget().mouse_interaction(
+            self.state,
+            layout,
+            cursor,
+            &self.viewport,
+            renderer,
+        )
     }
 }
