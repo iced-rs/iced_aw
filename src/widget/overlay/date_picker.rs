@@ -195,6 +195,15 @@ where
                     shell.request_redraw();
                 }
             }
+            Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                if month_layout.bounds().contains(*position)
+                    || left_bounds.contains(*position)
+                    || right_bounds.contains(*position)
+                {
+                    self.state.day_mouse_over = None;
+                    shell.request_redraw();
+                }
+            }
             _ => {}
         }
 
@@ -232,6 +241,15 @@ where
                 } else if cursor.is_over(right_bounds) {
                     self.state.date = crate::core::date::succ_year(self.state.date);
                     shell.capture_event();
+                    shell.request_redraw();
+                }
+            }
+            Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                if year_layout.bounds().contains(*position)
+                    || left_bounds.contains(*position)
+                    || right_bounds.contains(*position)
+                {
+                    self.state.day_mouse_over = None;
                     shell.request_redraw();
                 }
             }
@@ -288,6 +306,27 @@ where
                                     .expect("Succeeding month with day should be valid"),
                             };
 
+                            shell.capture_event();
+                            shell.request_redraw();
+                            break 'outer;
+                        }
+                    }
+                }
+            }
+            Event::Mouse(mouse::Event::CursorMoved { position }) => {
+                if cursor.is_over(layout.bounds()) {
+                    self.state.focus = Focus::Day;
+                    shell.request_redraw();
+                }
+
+                self.state.day_mouse_over = None;
+
+                'outer: for (y, row) in children.enumerate() {
+                    for (x, label) in row.children().enumerate() {
+                        let bounds = label.bounds();
+
+                        if bounds.contains(*position) {
+                            self.state.day_mouse_over = Some((y, x));
                             shell.capture_event();
                             shell.request_redraw();
                             break 'outer;
@@ -600,6 +639,10 @@ where
             .next()
             .expect("widget: Layout should have a cancel button layout for a DatePicker");
 
+        if cursor.is_over(cancel_button_layout.bounds()) {
+            self.state.day_mouse_over = None;
+        }
+
         self.cancel_button.update(
             &mut self.tree.children[0],
             event,
@@ -614,6 +657,10 @@ where
         let submit_button_layout = children
             .next()
             .expect("widget: Layout should have a submit button layout for a DatePicker");
+
+        if cursor.is_over(submit_button_layout.bounds()) {
+            self.state.day_mouse_over = None;
+        }
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
@@ -777,13 +824,13 @@ where
             crate::style::date_picker::Catalog::style(theme, self.class, Status::Focused),
         );
 
-        let mut style_state = StyleState::Active;
-        if self.state.focus == Focus::Overlay {
-            style_state = style_state.max(StyleState::Focused);
-        }
-        if cursor.is_over(bounds) {
-            style_state = style_state.max(StyleState::Hovered);
-        }
+        let style_state = if self.state.focus == Focus::Overlay {
+            StyleState::Focused
+        } else if cursor.is_over(bounds) {
+            StyleState::Hovered
+        } else {
+            StyleState::Active
+        };
 
         // Background
         if (bounds.width > 0.) && (bounds.height > 0.) {
@@ -795,8 +842,7 @@ where
                         width: style_sheet[&style_state].border_width,
                         color: style_sheet[&style_state].border_color,
                     },
-                    shadow: Shadow::default(),
-                    snap: false,
+                    ..renderer::Quad::default()
                 },
                 style_sheet[&style_state].background,
             );
@@ -829,10 +875,10 @@ where
             renderer,
             days_layout,
             self.state.date,
-            cursor_position,
             &style_sheet,
             self.state.focus,
             self.font_size,
+            self.state.day_mouse_over,
         );
 
         // ----------- Buttons ------------------------
@@ -864,42 +910,30 @@ where
             &bounds,
         );
 
+        let border = Border {
+            radius: style_sheet[&StyleState::Focused].border_radius.into(),
+            width: style_sheet[&StyleState::Focused].border_width,
+            color: style_sheet[&StyleState::Focused].border_color,
+        };
+
         // Buttons are not focusable right now...
-        let cancel_button_bounds = cancel_button_layout.bounds();
-        if (self.state.focus == Focus::Cancel)
-            && (cancel_button_bounds.width > 0.)
-            && (cancel_button_bounds.height > 0.)
-        {
+        if self.state.focus == Focus::Cancel {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: cancel_button_bounds,
-                    border: Border {
-                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                        width: style_sheet[&StyleState::Focused].border_width,
-                        color: style_sheet[&StyleState::Focused].border_color,
-                    },
-                    shadow: Shadow::default(),
-                    snap: false,
+                    bounds: cancel_button_layout.bounds(),
+                    border,
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
         }
 
-        let submit_button_bounds = submit_button_layout.bounds();
-        if (self.state.focus == Focus::Submit)
-            && (submit_button_bounds.width > 0.)
-            && (submit_button_bounds.height > 0.)
-        {
+        if self.state.focus == Focus::Submit {
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: submit_button_bounds,
-                    border: Border {
-                        radius: style_sheet[&StyleState::Focused].border_radius.into(),
-                        width: style_sheet[&StyleState::Focused].border_width,
-                        color: style_sheet[&StyleState::Focused].border_color,
-                    },
-                    shadow: Shadow::default(),
-                    snap: false,
+                    bounds: submit_button_layout.bounds(),
+                    border,
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -916,6 +950,8 @@ pub struct State {
     pub(crate) focus: Focus,
     /// The previously pressed keyboard modifiers.
     pub(crate) keyboard_modifiers: keyboard::Modifiers,
+    /// ID of the day the mouse is over.
+    pub(crate) day_mouse_over: Option<(usize, usize)>,
 }
 
 impl State {
@@ -935,6 +971,7 @@ impl Default for State {
             date: Local::now().naive_local().date(),
             focus: Focus::default(),
             keyboard_modifiers: keyboard::Modifiers::default(),
+            day_mouse_over: None,
         }
     }
 }
@@ -1252,15 +1289,15 @@ fn month_year(
 }
 
 /// Draws the days
+#[allow(clippy::too_many_arguments)]
 fn days(
     renderer: &mut Renderer,
     layout: Layout<'_>,
     date: chrono::NaiveDate,
-    cursor: Point,
-    //style: &Style,
     style: &HashMap<StyleState, Style>,
     focus: Focus,
     font_size: Pixels,
+    mouse_over: Option<(usize, usize)>,
 ) {
     let mut children = layout.children();
 
@@ -1273,10 +1310,10 @@ fn days(
         renderer,
         &mut children,
         date,
-        cursor,
         style,
         focus,
         font_size,
+        mouse_over,
     );
 }
 
@@ -1313,22 +1350,28 @@ fn day_labels(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 /// Draws the day table
 fn day_table(
     renderer: &mut Renderer,
     children: &mut dyn Iterator<Item = Layout<'_>>,
     date: chrono::NaiveDate,
-    cursor: Point,
     style: &HashMap<StyleState, Style>,
     focus: Focus,
     font_size: Pixels,
+    day_mouse_over: Option<(usize, usize)>,
 ) {
     for (y, row) in children.enumerate() {
         for (x, label) in row.children().enumerate() {
             let bounds = label.bounds();
             let (number, is_in_month) =
                 crate::core::date::position_to_day(x, y, date.year(), date.month());
-            let mouse_over = bounds.contains(cursor);
+
+            let mouse_over = if let Some((day_y, day_x)) = day_mouse_over {
+                day_y == y && day_x == x
+            } else {
+                false
+            };
 
             let selected = date.day() == number as u32 && is_in_month == IsInMonth::Same;
 

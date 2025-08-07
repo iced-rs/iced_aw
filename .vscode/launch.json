@@ -11,7 +11,8 @@
       "cargo": {
         "args": [
           "build",
-          "--example=badge"
+          "--example=badge",
+          "--features=badge"
         ],
         "filter": {
           "name": "badge",
