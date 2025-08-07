@@ -21,8 +21,8 @@ use iced::{
         text::{self, LineHeight, Wrapping},
         Column, Row, Text,
     },
-    window, Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size,
+    window, Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels,
+    Point, Rectangle, Shadow, Size,
 };
 
 use std::marker::PhantomData;
