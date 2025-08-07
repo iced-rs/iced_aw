@@ -10,7 +10,8 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     mouse::{self, Cursor},
-    Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow, Size,
+    window, Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow,
+    Size,
 };
 
 pub use crate::style::{
@@ -54,6 +55,8 @@ where
     class: Theme::Class<'a>,
     /// The content [`Element`] of the [`Badge`].
     content: Element<'a, Message, Theme, Renderer>,
+    /// The [`Status`] of the [`Badge`]
+    status: Option<Status>,
 }
 
 impl<'a, Message, Theme, Renderer> Badge<'a, Message, Theme, Renderer>
@@ -77,6 +80,7 @@ where
             vertical_alignment: Alignment::Center,
             class: Theme::default(),
             content: content.into(),
+            status: None,
         }
     }
 
@@ -200,6 +204,18 @@ where
             shell,
             viewport,
         );
+
+        let current_status = if cursor.is_over(layout.bounds()) {
+            Status::Hovered
+        } else {
+            Status::Active
+        };
+
+        if let Event::Window(window::Event::RedrawRequested(_now)) = event {
+            self.status = Some(current_status);
+        } else if self.status.is_some_and(|status| status != current_status) {
+            shell.request_redraw();
+        }
     }
 
     fn mouse_interaction(
@@ -231,18 +247,9 @@ where
     ) {
         let bounds = layout.bounds();
         let mut children = layout.children();
-        let is_mouse_over = bounds.contains(cursor.position().unwrap_or_default());
-        let status = if is_mouse_over {
-            Status::Hovered
-        } else {
-            Status::Active
-        };
 
-        let style_sheet = theme.style(&self.class, status);
+        let style_sheet = theme.style(&self.class, self.status.unwrap_or(Status::Active));
 
-        //println!("height: {}", bounds.height);
-        // 34 15
-        //  x
         let border_radius = style_sheet
             .border_radius
             .unwrap_or(bounds.height / BORDER_RADIUS_RATIO);
@@ -257,7 +264,7 @@ where
                         color: style_sheet.border_color.unwrap_or(Color::BLACK),
                     },
                     shadow: Shadow::default(),
-                    snap: false,
+                    ..renderer::Quad::default()
                 },
                 style_sheet.background,
             );
