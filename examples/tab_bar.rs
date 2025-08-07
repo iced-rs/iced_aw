@@ -6,15 +6,17 @@ use iced::{
     widget::{Button, Column, Row, Text, TextInput},
     Alignment, Element, Length,
 };
+
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{TabBar, TabLabel};
 
 fn main() -> iced::Result {
     iced::application(
-        "Tab Bar example",
+        TabBarExample::default,
         TabBarExample::update,
         TabBarExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 

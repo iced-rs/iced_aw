@@ -27,7 +27,6 @@ use iced::{
         },
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
     widget::{text, Row},
     Element, Event, Font, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
@@ -395,17 +394,17 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let mut children = layout.children();
         let (tab_bar_layout, tab_content_layout) = match self.tab_bar_position {
             TabBarPosition::Top => {
@@ -428,9 +427,9 @@ where
             }
         };
 
-        let status_tab_bar = self.tab_bar.on_event(
+        self.tab_bar.update(
             &mut Tree::empty(),
-            event.clone(),
+            event,
             tab_bar_layout,
             cursor,
             renderer,
@@ -439,23 +438,18 @@ where
             viewport,
         );
         let idx = self.tab_bar.get_active_tab_idx();
-        let status_element = self
-            .tabs
-            .get_mut(idx)
-            .map_or(event::Status::Ignored, |element| {
-                element.as_widget_mut().on_event(
-                    &mut state.children[1].children[idx],
-                    event,
-                    tab_content_layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            });
-
-        status_tab_bar.merge(status_element)
+        if let Some(element) = self.tabs.get_mut(idx) {
+            element.as_widget_mut().update(
+                &mut state.children[1].children[idx],
+                event,
+                tab_content_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            )
+        }
     }
 
     fn mouse_interaction(
@@ -576,8 +570,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let layout = match self.tab_bar_position {
@@ -595,6 +590,7 @@ where
                         &mut state.children[1].children[idx],
                         layout,
                         renderer,
+                        viewport,
                         translation,
                     )
                 })

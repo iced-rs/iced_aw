@@ -14,24 +14,20 @@ use iced::{
         widget::Tree,
         Clipboard, Layout, Shell, Widget,
     },
-    alignment::{self, Horizontal, Vertical},
-    event,
+    alignment::{self, Vertical},
     mouse::{self, Cursor},
     touch,
     widget::{
         text::{self, LineHeight, Wrapping},
         Column, Row, Text,
     },
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
+    window, Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
     Rectangle, Shadow, Size,
-};
-use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
-    REQUIRED_FONT,
 };
 
 use std::marker::PhantomData;
 
+use crate::iced_aw_font::advanced_text::cancel;
 pub use crate::style::{
     tab_bar::{self, Catalog, Style},
     Status, StyleFn,
@@ -88,6 +84,8 @@ where
     tab_labels: Vec<TabLabel>,
     /// The vector containing the indices of the tabs.
     tab_indices: Vec<TabId>,
+    /// The statuses of the [`TabLabel`] and cross
+    tab_statuses: Vec<(Option<Status>, Option<bool>)>,
     /// The function that produces the message when a tab is selected.
     on_select: Box<dyn Fn(TabId) -> Message>,
     /// The function that produces the message when the close icon was pressed.
@@ -170,6 +168,7 @@ where
         Self {
             active_tab: 0,
             tab_indices: tab_labels.iter().map(|(id, _)| id.clone()).collect(),
+            tab_statuses: tab_labels.iter().map(|_| (None, None)).collect(),
             tab_labels: tab_labels.into_iter().map(|(_, label)| label).collect(),
             on_select: Box::new(on_select),
             on_close: None,
@@ -276,6 +275,7 @@ where
     pub fn push(mut self, id: TabId, tab_label: TabLabel) -> Self {
         self.tab_labels.push(tab_label);
         self.tab_indices.push(id);
+        self.tab_statuses.push((None, None));
         self
     }
 
@@ -527,17 +527,17 @@ where
             .layout(tab_tree, renderer, &limits.loose())
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         _state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -569,12 +569,44 @@ where
                                     |on_close| (on_close)(self.tab_indices[new_selected].clone()),
                                 ),
                         );
-                        return event::Status::Captured;
+                        shell.capture_event();
                     }
                 }
-                event::Status::Ignored
             }
-            _ => event::Status::Ignored,
+            _ => {}
+        }
+
+        let mut request_redraw = false;
+        let children = layout.children();
+        for ((i, _tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
+            let active_idx = self.get_active_tab_idx();
+            let tab_status = self.tab_statuses.get_mut(i).expect("Should have a status.");
+
+            let current_status = if cursor.is_over(layout.bounds()) {
+                Status::Hovered
+            } else if i == active_idx {
+                Status::Active
+            } else {
+                Status::Disabled
+            };
+
+            let mut is_cross_hovered = None;
+            let mut children = layout.children();
+            if let Some(cross_layout) = children.next_back() {
+                is_cross_hovered = Some(cursor.is_over(cross_layout.bounds()));
+            }
+
+            if let Event::Window(window::Event::RedrawRequested(_now)) = event {
+                *tab_status = (Some(current_status), is_cross_hovered);
+            } else if tab_status.0.is_some_and(|status| status != current_status)
+                || tab_status.1 != is_cross_hovered
+            {
+                request_redraw = true;
+            }
+        }
+
+        if request_redraw {
+            shell.request_redraw();
         }
     }
 
@@ -636,6 +668,7 @@ where
                         color: style_sheet.border_color.unwrap_or(Color::TRANSPARENT),
                     },
                     shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style_sheet
                     .background
@@ -643,17 +676,21 @@ where
             );
         }
 
+        let (_content, font, _shaping) = cancel();
+
         for ((i, tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
+            let tab_status = self.tab_statuses.get(i).expect("Should have a status.");
+
             draw_tab(
                 renderer,
                 tab,
+                tab_status,
                 layout,
                 self.position,
                 theme,
                 &self.class,
-                i == self.get_active_tab_idx(),
                 cursor,
-                (self.font.unwrap_or(REQUIRED_FONT), self.icon_size),
+                (self.font.unwrap_or(font), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
                 viewport,
@@ -671,12 +708,12 @@ where
 fn draw_tab<Theme, Renderer>(
     renderer: &mut Renderer,
     tab: &TabLabel,
+    tab_status: &(Option<Status>, Option<bool>),
     layout: Layout<'_>,
     position: Position,
     theme: &Theme,
     class: &<Theme as Catalog>::Class<'_>,
-    is_selected: bool,
-    cursor: Cursor,
+    _cursor: Cursor,
     icon_data: (Font, f32),
     text_data: (Font, f32),
     close_size: f32,
@@ -696,15 +733,8 @@ fn draw_tab<Theme, Renderer>(
     }
 
     let bounds = layout.bounds();
-    let is_mouse_over = cursor.position().is_some_and(|pos| bounds.contains(pos));
 
-    let style = if is_mouse_over {
-        tab_bar::Catalog::style(theme, class, Status::Hovered)
-    } else if is_selected {
-        tab_bar::Catalog::style(theme, class, Status::Active)
-    } else {
-        tab_bar::Catalog::style(theme, class, Status::Disabled)
-    };
+    let style = tab_bar::Catalog::style(theme, class, tab_status.0.unwrap_or(Status::Disabled));
 
     let mut children = layout.children();
     let label_layout = children
@@ -722,6 +752,7 @@ fn draw_tab<Theme, Renderer>(
                     color: style.tab_label_border_color,
                 },
                 shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             style.tab_label_background,
         );
@@ -737,8 +768,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(icon_bounds.width, icon_bounds.height),
                     size: Pixels(icon_data.1),
                     font: icon_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -758,8 +789,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -806,8 +837,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(icon_bounds.width, icon_bounds.height),
                     size: Pixels(icon_data.1),
                     font: icon_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -823,8 +854,8 @@ fn draw_tab<Theme, Renderer>(
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced::advanced::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
@@ -838,18 +869,20 @@ fn draw_tab<Theme, Renderer>(
 
     if let Some(cross_layout) = children.next() {
         let cross_bounds = cross_layout.bounds();
-        let is_mouse_over_cross = cursor.is_over(cross_bounds);
+        let is_mouse_over_cross = tab_status.1.unwrap_or(false);
+
+        let (content, font, shaping) = cancel();
 
         renderer.fill_text(
             iced::advanced::text::Text {
-                content: icon_to_string(RequiredIcons::X),
+                content,
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
-                font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                font,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: LineHeight::Relative(1.3),
-                shaping: iced::advanced::text::Shaping::Advanced,
+                shaping,
                 wrapping: Wrapping::default(),
             },
             Point::new(cross_bounds.center_x(), cross_bounds.center_y()),
@@ -867,6 +900,7 @@ fn draw_tab<Theme, Renderer>(
                         color: style.border_color.unwrap_or(Color::TRANSPARENT),
                     },
                     shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style
                     .icon_background
