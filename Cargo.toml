@@ -16,7 +16,7 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
-default = ["color_picker"]
+default = ["tab_bar"]
 
 badge = []
 card = []

@@ -71,7 +71,7 @@ impl TabBarExample {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         Column::new()
             .push(
                 Row::new()

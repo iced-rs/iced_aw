@@ -27,11 +27,11 @@ use iced::{
 
 use std::marker::PhantomData;
 
-use crate::iced_aw_font::advanced_text::cancel;
 pub use crate::style::{
     tab_bar::{self, Catalog, Style},
     Status, StyleFn,
 };
+use crate::{iced_aw_font::advanced_text::cancel, ICED_AW_FONT};
 pub use tab_label::TabLabel;
 
 /// The default icon size.
@@ -676,8 +676,6 @@ where
             );
         }
 
-        let (_content, font, _shaping) = cancel();
-
         for ((i, tab), layout) in self.tab_labels.iter().enumerate().zip(children) {
             let tab_status = self.tab_statuses.get(i).expect("Should have a status.");
 
@@ -690,7 +688,7 @@ where
                 theme,
                 &self.class,
                 cursor,
-                (self.font.unwrap_or(font), self.icon_size),
+                (self.font.unwrap_or(ICED_AW_FONT), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
                 viewport,
@@ -785,7 +783,7 @@ fn draw_tab<Theme, Renderer>(
 
             renderer.fill_text(
                 iced::advanced::text::Text {
-                    content: text.to_string(),
+                    content: text.clone(),
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
@@ -850,7 +848,7 @@ fn draw_tab<Theme, Renderer>(
 
             renderer.fill_text(
                 iced::advanced::text::Text {
-                    content: text.to_string(),
+                    content: text.clone(),
                     bounds: Size::new(text_bounds.width, text_bounds.height),
                     size: Pixels(text_data.1),
                     font: text_data.0,
@@ -865,7 +863,7 @@ fn draw_tab<Theme, Renderer>(
                 text_bounds,
             );
         }
-    };
+    }
 
     if let Some(cross_layout) = children.next() {
         let cross_bounds = cross_layout.bounds();
@@ -907,7 +905,7 @@ fn draw_tab<Theme, Renderer>(
                     .unwrap_or(Background::Color(Color::TRANSPARENT)),
             );
         }
-    };
+    }
 }
 
 impl<'a, Message, TabId, Theme, Renderer> From<TabBar<'a, Message, TabId, Theme, Renderer>>
