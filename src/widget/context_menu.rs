@@ -7,7 +7,6 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Button, Cursor},
     Element, Event, Length, Point, Rectangle, Vector,
 };
@@ -174,29 +173,30 @@ where
         }
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        if event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) {
+    ) {
+        if *event == Event::Mouse(mouse::Event::ButtonPressed(Button::Right)) {
             let bounds = layout.bounds();
 
             if cursor.is_over(bounds) {
                 let s: &mut State = state.state.downcast_mut();
                 s.cursor_position = cursor.position().unwrap_or_default();
                 s.show = !s.show;
-                return event::Status::Captured;
+                shell.capture_event();
+                return;
             }
         }
 
-        self.underlay.as_widget_mut().on_event(
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,
@@ -205,7 +205,7 @@ where
             clipboard,
             shell,
             viewport,
-        )
+        );
     }
 
     fn mouse_interaction(
@@ -227,29 +227,31 @@ where
 
     fn overlay<'b>(
         &'b mut self,
-        state: &'b mut Tree,
-        layout: Layout<'_>,
+        tree: &'b mut Tree,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        let s: &mut State = state.state.downcast_mut();
+        let s: &mut State = tree.state.downcast_mut();
 
         if !s.show {
             return self.underlay.as_widget_mut().overlay(
-                &mut state.children[0],
+                &mut tree.children[0],
                 layout,
                 renderer,
+                viewport,
                 translation,
             );
         }
 
         let position = s.cursor_position;
         let content = (self.overlay)();
-        content.as_widget().diff(&mut state.children[1]);
+        content.as_widget().diff(&mut tree.children[1]);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
-                &mut state.children[1],
+                &mut tree.children[1],
                 content,
                 &self.class,
                 s,

@@ -17,7 +17,7 @@ use iced::{
     event::Status,
     keyboard,
     mouse::{self, Cursor},
-    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
+    touch, window, Border, Color, Element, Event, Point, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).
@@ -128,7 +128,7 @@ where
                         width: 0.0,
                         color: Color::TRANSPARENT,
                     },
-                    shadow: Shadow::default(),
+                    ..Default::default()
                 },
                 style_sheet.background,
             );
@@ -151,27 +151,24 @@ where
         );
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
-        cursor: Cursor,
+        cursor: iced::advanced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
-    ) -> Status {
+        shell: &mut Shell<'_, Message>,
+    ) {
         let layout_children = layout
             .children()
             .next()
             .expect("widget: Layout should have a content layout.");
 
-        let mut forward_event_to_children = true;
-
         let status = match &event {
             Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
                 if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                     self.state.show = false;
-                    forward_event_to_children = false;
                     Status::Captured
                 } else {
                     Status::Ignored
@@ -182,56 +179,51 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if !cursor.is_over(layout_children.bounds()) {
+                if cursor.is_over(layout_children.bounds()) {
+                    Status::Ignored
+                } else {
                     self.state.show = false;
-                    forward_event_to_children = false;
+                    Status::Captured
                 }
-                Status::Captured
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
-                Status::Captured
+                Status::Ignored
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
-                forward_event_to_children = false;
                 Status::Captured
             }
 
             _ => Status::Ignored,
         };
 
-        let child_status = if forward_event_to_children {
-            self.content.as_widget_mut().on_event(
-                self.tree,
-                event,
-                layout_children,
-                cursor,
-                renderer,
-                clipboard,
-                shell,
-                &layout.bounds(),
-            )
-        } else {
-            Status::Ignored
-        };
+        self.content.as_widget_mut().update(
+            self.tree,
+            event,
+            layout_children,
+            cursor,
+            renderer,
+            clipboard,
+            shell,
+            &layout.bounds(),
+        );
 
-        match child_status {
-            Status::Ignored => status,
-            Status::Captured => Status::Captured,
+        if shell.is_empty() && status == Status::Captured {
+            shell.capture_event();
         }
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor: Cursor,
-        viewport: &Rectangle,
+        cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
+        let bounds = layout.bounds();
         self.content.as_widget().mouse_interaction(
             self.tree,
             layout
@@ -239,7 +231,7 @@ where
                 .next()
                 .expect("widget: Layout should have a content layout."),
             cursor,
-            viewport,
+            &bounds,
             renderer,
         )
     }
