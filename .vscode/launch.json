@@ -322,7 +322,9 @@
       "cargo": {
         "args": [
           "build",
-          "--example=wrap"
+          "--example=wrap",
+          "--features=wrap",
+          "--features=number_input"
         ],
         "filter": {
           "name": "wrap",

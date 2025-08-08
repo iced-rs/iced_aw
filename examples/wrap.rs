@@ -8,12 +8,13 @@ use iced::{
     widget::{Button, Column, Container, PickList, Row, Text},
     Element,
 };
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{NumberInput, Wrap};
 use rand::Rng;
 
 fn main() -> iced::Result {
-    iced::application("Wrap example", RandStrings::update, RandStrings::view)
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
+    iced::application(RandStrings::default, RandStrings::update, RandStrings::view)
+        .font(ICED_AW_FONT_BYTES)
         .run()
 }
 
