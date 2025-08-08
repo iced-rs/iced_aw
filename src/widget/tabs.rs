@@ -71,7 +71,7 @@ where
     /// The [`TabBar`](crate::widget::TabBar) of the [`Tabs`].
     tab_bar: TabBar<'a, Message, TabId, Theme, Renderer>,
     /// The vector containing the content of the tabs.
-    tabs: Vec<Element<'a, Message, Theme, Renderer>>,
+    children: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The vector containing the indices of the tabs.
     indices: Vec<TabId>,
     /// The position of the [`TabBar`](crate::widget::TabBar).
@@ -135,7 +135,7 @@ where
 
         Tabs {
             tab_bar: TabBar::with_tab_labels(tab_labels, on_select),
-            tabs: elements,
+            children: elements,
             indices,
             tab_bar_position: TabBarPosition::Top,
             tab_icon_position: Position::Left,
@@ -210,7 +210,7 @@ where
             .tab_bar
             .push(id.clone(), tab_label)
             .set_position(self.tab_icon_position);
-        self.tabs.push(element.into());
+        self.children.push(element.into());
         self.indices.push(id);
         self
     }
@@ -311,7 +311,7 @@ where
         let tabs = Tree {
             tag: Tag::stateless(),
             state: State::None,
-            children: self.tabs.iter().map(Tree::new).collect(),
+            children: self.children.iter().map(Tree::new).collect(),
         };
 
         let bar = Tree {
@@ -329,7 +329,7 @@ where
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&self.tabs);
+            tabs.diff_children(&self.children);
         }
     }
 
@@ -349,7 +349,7 @@ where
             .shrink([0.0, tab_bar_node.size().height]);
 
         let mut tab_content_node =
-            if let Some(element) = self.tabs.get(self.tab_bar.get_active_tab_idx()) {
+            if let Some(element) = self.children.get(self.tab_bar.get_active_tab_idx()) {
                 element.as_widget().layout(
                     &mut tree.children[1].children[self.tab_bar.get_active_tab_idx()],
                     renderer,
@@ -438,7 +438,7 @@ where
             viewport,
         );
         let idx = self.tab_bar.get_active_tab_idx();
-        if let Some(element) = self.tabs.get_mut(idx) {
+        if let Some(element) = self.children.get_mut(idx) {
             element.as_widget_mut().update(
                 &mut state.children[1].children[idx],
                 event,
@@ -448,7 +448,7 @@ where
                 clipboard,
                 shell,
                 viewport,
-            )
+            );
         }
     }
 
@@ -495,7 +495,7 @@ where
                 .expect("Graphics: There should be a TabBar at the bottom position"),
         };
         let idx = self.tab_bar.get_active_tab_idx();
-        if let Some(element) = self.tabs.get(idx) {
+        if let Some(element) = self.children.get(idx) {
             let new_mouse_interaction = element.as_widget().mouse_interaction(
                 &state.children[1].children[idx],
                 tab_content_layout,
@@ -554,7 +554,7 @@ where
         };
 
         let idx = self.tab_bar.get_active_tab_idx();
-        if let Some(element) = self.tabs.get(idx) {
+        if let Some(element) = self.children.get(idx) {
             element.as_widget().draw(
                 &state.children[1].children[idx],
                 renderer,
@@ -582,7 +582,7 @@ where
 
         layout.and_then(|layout| {
             let idx = self.tab_bar.get_active_tab_idx();
-            self.tabs
+            self.children
                 .get_mut(idx)
                 .map(Element::as_widget_mut)
                 .and_then(|w| {
@@ -606,7 +606,7 @@ where
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
-            self.tabs[active_tab].as_widget().operate(
+            self.children[active_tab].as_widget().operate(
                 &mut tree.children[1].children[active_tab],
                 layout
                     .children()
