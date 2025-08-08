@@ -652,6 +652,8 @@ where
             .next()
             .expect("widget: Layout should have a cancel button layout for a TimePicker");
 
+        let mut fake_messages: Vec<Message> = Vec::new();
+
         self.cancel_button.update(
             &mut self.tree.children[0],
             event,
@@ -659,15 +661,19 @@ where
             cursor,
             renderer,
             clipboard,
-            shell,
+            &mut Shell::new(&mut fake_messages),
             &layout.bounds(),
         );
+
+        for message in &fake_messages {
+            shell.publish(message.clone());
+            shell.capture_event();
+            return;
+        }
 
         let submit_button_layout = children
             .next()
             .expect("widget: Layout should have a submit button layout for a TimePicker");
-
-        let mut fake_messages: Vec<Message> = Vec::new();
 
         self.submit_button.update(
             &mut self.tree.children[1],

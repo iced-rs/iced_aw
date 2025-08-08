@@ -271,7 +271,8 @@
       "cargo": {
         "args": [
           "build",
-          "--example=time_picker"
+          "--example=time_picker",
+          "--features=time_picker"
         ],
         "filter": {
           "name": "time_picker",
