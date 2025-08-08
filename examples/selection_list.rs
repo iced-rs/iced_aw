@@ -6,11 +6,12 @@ use iced::{
     widget::{button, Column, Container, Text},
     Alignment, Element, Font, Length,
 };
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{selection_list::SelectionList, style::selection_list::primary};
 
 pub fn main() -> iced::Result {
-    iced::application("Selection list example", Example::update, Example::view)
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
+    iced::application(Example::default, Example::update, Example::view)
+        .font(ICED_AW_FONT_BYTES)
         .run()
 }
 
@@ -73,7 +74,7 @@ impl Example {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let selection_list = SelectionList::new_with(
             &self.vec[..],
             Message::LanguageSelected,

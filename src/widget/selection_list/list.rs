@@ -12,12 +12,11 @@ use iced::{
         },
         Clipboard, Layout, Shell, Widget,
     },
-    alignment::{Horizontal, Vertical},
-    event,
+    alignment::Vertical,
     mouse::{self, Cursor},
     touch,
     widget::text::{LineHeight, Wrapping},
-    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow, Size,
+    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -125,19 +124,18 @@ where
         Node::new(intrinsic)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let bounds = layout.bounds();
-        let mut status = event::Status::Ignored;
         let list_state = state.state.downcast_mut::<ListState>();
         let cursor = cursor.position().unwrap_or_default();
 
@@ -148,6 +146,8 @@ where
                         ((cursor.y - bounds.y) / (self.text_size + self.padding.vertical()))
                             as usize,
                     );
+
+                    shell.request_redraw();
                 }
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
@@ -164,25 +164,21 @@ where
                         }
                     }
 
-                    status =
-                        list_state
-                            .last_selected_index
-                            .map_or(event::Status::Ignored, |last| {
-                                if let Some(option) = self.options.get(last.0) {
-                                    shell.publish((self.on_selected)(last.0, option.clone()));
-                                    event::Status::Captured
-                                } else {
-                                    event::Status::Ignored
-                                }
-                            });
+                    list_state.last_selected_index.iter().for_each(|last| {
+                        if let Some(option) = self.options.get(last.0) {
+                            shell.publish((self.on_selected)(last.0, option.clone()));
+                            shell.capture_event();
+                        }
+                    });
+
+                    shell.request_redraw();
                 }
                 _ => {}
             }
-        } else {
+        } else if list_state.hovered_option.is_some() {
             list_state.hovered_option = None;
+            shell.request_redraw();
         }
-
-        status
     }
 
     fn mouse_interaction(
@@ -241,7 +237,7 @@ where
                             width: 0.0,
                             color: Color::TRANSPARENT,
                         },
-                        shadow: Shadow::default(),
+                        ..renderer::Quad::default()
                     },
                     if is_selected {
                         theme
@@ -275,8 +271,8 @@ where
                     bounds: Size::new(f32::INFINITY, bounds.height),
                     size: Pixels(self.text_size),
                     font: self.font,
-                    horizontal_alignment: Horizontal::Left,
-                    vertical_alignment: Vertical::Center,
+                    align_x: iced_widget::text::Alignment::Left,
+                    align_y: Vertical::Center,
                     line_height: LineHeight::default(),
                     shaping: iced::widget::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
