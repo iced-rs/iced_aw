@@ -9,8 +9,10 @@ use crate::{
         overlay::Position,
     },
     style::{self, color_picker::Style, style_state::StyleState, Status},
+    ICED_AW_FONT,
 };
 
+use crate::iced_aw_font::advanced_text::{cancel, ok};
 use iced::{
     advanced::{
         graphics::geometry::Renderer as _,
@@ -30,11 +32,7 @@ use iced::{
         Button, Column, Row,
     },
     Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
-    Shadow, Size, Vector,
-};
-use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
-    REQUIRED_FONT,
+    Size, Vector,
 };
 use std::collections::HashMap;
 
@@ -74,6 +72,7 @@ where
     class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
+    viewport: Rectangle,
 }
 
 impl<'a, 'b, Message, Theme> ColorPickerOverlay<'a, 'b, Message, Theme>
@@ -93,24 +92,28 @@ where
         position: Point,
         class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
         tree: &'a mut Tree,
+        viewport: Rectangle,
     ) -> Self {
         let color_picker::State { overlay_state, .. } = state;
+
+        let (cancel_content, cancel_font, _cancel_shaping) = cancel();
+        let (submit_content, submit_font, _submit_shaping) = ok();
 
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced::widget::Text::new(icon_to_string(RequiredIcons::X))
+                iced::widget::Text::new(cancel_content)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
-                    .font(REQUIRED_FONT),
+                    .font(cancel_font),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced::widget::Text::new(icon_to_string(RequiredIcons::Check))
+                iced::widget::Text::new(submit_content)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
-                    .font(REQUIRED_FONT),
+                    .font(submit_font),
             )
             .width(Length::Fill)
             .on_press(on_cancel), // Sending a fake message
@@ -118,6 +121,7 @@ where
             position,
             class,
             tree,
+            viewport,
         }
     }
 
@@ -128,7 +132,7 @@ where
     }
 
     /// Force redraw all components if the internal state was changed
-    fn clear_cache(&mut self) {
+    fn clear_cache(&self) {
         self.state.clear_cache();
     }
 
@@ -615,29 +619,27 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> event::Status {
-        if event::Status::Captured == self.on_event_keyboard(&event) {
+    ) {
+        if event::Status::Captured == self.on_event_keyboard(event) {
             self.clear_cache();
-            return event::Status::Captured;
+            shell.capture_event();
+            return;
         }
 
         let mut children = layout.children();
-
-        let status = event::Status::Ignored;
-
         // ----------- Block 1 ----------------------
         let block1_layout = children
             .next()
             .expect("widget: Layout should have a 1. block layout");
-        let hsv_color_status = self.on_event_hsv_color(&event, block1_layout, cursor);
+        let hsv_color_status = self.on_event_hsv_color(event, block1_layout, cursor);
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -650,7 +652,7 @@ where
         let rgba_color_layout = block2_children
             .next()
             .expect("widget: Layout should have a RGBA color layout");
-        let rgba_color_status = self.on_event_rgba_color(&event, rgba_color_layout, cursor);
+        let rgba_color_status = self.on_event_rgba_color(event, rgba_color_layout, cursor);
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
@@ -663,9 +665,9 @@ where
         let cancel_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a cancel button layout for a ColorPicker");
-        let cancel_button_status = self.cancel_button.on_event(
+        self.cancel_button.update(
             &mut self.tree.children[0],
-            event.clone(),
+            event,
             cancel_button_layout,
             cursor,
             renderer,
@@ -677,7 +679,7 @@ where
         let submit_button_layout = block2_children
             .next()
             .expect("widget: Layout should have a submit button layout for a ColorPicker");
-        let submit_button_status = self.submit_button.on_event(
+        self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,
@@ -690,6 +692,8 @@ where
 
         if !fake_messages.is_empty() {
             shell.publish((self.on_submit)(self.state.color));
+            shell.capture_event();
+            shell.request_redraw();
         }
         // ----------- Block 2 end ------------------
 
@@ -697,20 +701,15 @@ where
             || rgba_color_status == event::Status::Captured
         {
             self.clear_cache();
+            shell.capture_event();
+            shell.request_redraw();
         }
-
-        status
-            .merge(hsv_color_status)
-            .merge(rgba_color_status)
-            .merge(cancel_button_status)
-            .merge(submit_button_status)
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor: Cursor,
-        viewport: &Rectangle,
+        cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
@@ -790,7 +789,7 @@ where
             &self.tree.children[1],
             cancel_button_layout,
             cursor,
-            viewport,
+            &self.viewport,
             renderer,
         );
 
@@ -801,7 +800,7 @@ where
             &self.tree.children[1],
             submit_button_layout,
             cursor,
-            viewport,
+            &self.viewport,
             renderer,
         );
 
@@ -858,7 +857,7 @@ where
                         width: style_sheet[&style_state].border_width,
                         color: style_sheet[&style_state].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style_sheet[&style_state].background,
             );
@@ -1178,7 +1177,7 @@ fn block2<Message, Theme>(
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1196,7 +1195,7 @@ fn block2<Message, Theme>(
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1426,9 +1425,9 @@ fn rgba_color(
                 content: label.to_owned(),
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
-                font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                font: ICED_AW_FONT,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -1472,7 +1471,7 @@ fn rgba_color(
                             .bar_border_width,
                         color: Color::TRANSPARENT,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 color,
             );
@@ -1498,7 +1497,7 @@ fn rgba_color(
                             .expect("Style Sheet not found.")
                             .bar_border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1511,8 +1510,8 @@ fn rgba_color(
                 bounds: Size::new(value_layout.bounds().width, value_layout.bounds().height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: iced::widget::text::LineHeight::Relative(1.3),
                 shaping: iced::widget::text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
@@ -1545,7 +1544,7 @@ fn rgba_color(
                             .expect("Style Sheet not found.")
                             .border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1641,7 +1640,7 @@ fn hex_text(
                     width: style_sheet[&hex_text_style_state].bar_border_width,
                     color: style_sheet[&hex_text_style_state].bar_border_color,
                 },
-                shadow: Shadow::default(),
+                ..renderer::Quad::default()
             },
             *color,
         );
@@ -1653,8 +1652,8 @@ fn hex_text(
             bounds: Size::new(bounds.width, bounds.height),
             size: renderer.default_size(),
             font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
+            align_x: text::Alignment::Center,
+            align_y: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
             wrapping: Wrapping::default(),
@@ -1707,7 +1706,7 @@ impl State {
     ///
     /// If the color has changed, empty all canvas caches
     /// as they (unfortunately) do not depend on the picker state.
-    fn clear_cache(&mut self) {
+    fn clear_cache(&self) {
         self.sat_value_canvas_cache.clear();
         self.hue_canvas_cache.clear();
     }
@@ -1757,15 +1756,12 @@ where
         + iced::widget::text::Catalog,
 {
     fn default() -> Self {
+        let (cancel_content, cancel_font, _cancel_shaping) = cancel();
+        let (submit_content, submit_font, _submit_shaping) = ok();
+
         Self {
-            cancel_button: Button::new(
-                widget::Text::new(icon_to_string(RequiredIcons::X)).font(REQUIRED_FONT),
-            )
-            .into(),
-            submit_button: Button::new(
-                widget::Text::new(icon_to_string(RequiredIcons::Check)).font(REQUIRED_FONT),
-            )
-            .into(),
+            cancel_button: Button::new(widget::Text::new(cancel_content).font(cancel_font)).into(),
+            submit_button: Button::new(widget::Text::new(submit_content).font(submit_font)).into(),
         }
     }
 }

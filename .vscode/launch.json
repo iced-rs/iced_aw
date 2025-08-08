@@ -46,7 +46,9 @@
       "cargo": {
         "args": [
           "build",
-          "--example=color_picker"
+          "--example=color_picker",
+          "--features=color_picker",
+          "--features=iced/smol"
         ],
         "filter": {
           "name": "color_picker",

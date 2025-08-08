@@ -8,14 +8,14 @@ use iced::{
 };
 
 use iced_aw::helpers::color_picker;
-
+use iced_aw::ICED_AW_FONT_BYTES;
 fn main() -> iced::Result {
     iced::application(
-        "Color Picker example",
+        ColorPickerExample::default,
         ColorPickerExample::update,
         ColorPickerExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .subscription(ColorPickerExample::subscription)
     .run()
 }

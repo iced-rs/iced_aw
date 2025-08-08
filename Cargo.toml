@@ -16,13 +16,12 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
-default = ["date_picker"]
+default = ["color_picker"]
 
 badge = []
 card = []
 date_picker = ["chrono"]
 color_picker = ["iced/canvas"]
-glow = []                                                  # TODO, this has been todo since 2024 :(
 tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "iced/canvas"]
@@ -103,7 +102,7 @@ required-features = ["card"]
 
 [[example]]
 name = "color_picker"
-required-features = ["color_picker", "iced/async-std"]
+required-features = ["color_picker", "iced/smol"]
 
 [[example]]
 name = "date_picker"
