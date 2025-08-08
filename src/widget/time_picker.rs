@@ -12,7 +12,6 @@ use iced::{
         widget::tree::{self, Tag, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
     widget::{button, container, text},
     Element,
@@ -216,18 +215,18 @@ where
             .layout(&mut tree.children[0], renderer, limits)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        self.underlay.as_widget_mut().on_event(
+    ) {
+        self.underlay.as_widget_mut().update(
             &mut state.children[0],
             event,
             layout,
@@ -236,7 +235,7 @@ where
             clipboard,
             shell,
             viewport,
-        )
+        );
     }
 
     fn mouse_interaction(
@@ -279,18 +278,20 @@ where
 
     fn overlay<'b>(
         &'b mut self,
-        state: &'b mut Tree,
-        layout: Layout<'_>,
+        tree: &'b mut Tree,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        let picker_state: &mut State = state.state.downcast_mut();
+        let picker_state: &mut State = tree.state.downcast_mut();
 
         if !self.show_picker {
             return self.underlay.as_widget_mut().overlay(
-                &mut state.children[0],
+                &mut tree.children[0],
                 layout,
                 renderer,
+                viewport,
                 translation,
             );
         }
@@ -305,7 +306,8 @@ where
                 &self.on_submit,
                 position,
                 &self.class,
-                &mut state.children[1],
+                &mut tree.children[1],
+                *viewport,
             )
             .overlay(),
         )

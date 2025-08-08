@@ -6,15 +6,16 @@ use iced::{
     widget::{Button, Container, Row, Text},
     Alignment, Element, Length,
 };
+use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{time_picker::Time, TimePicker};
 
 fn main() -> iced::Result {
     iced::application(
-        "TimePicker example",
+        TimePickerExample::default,
         TimePickerExample::update,
         TimePickerExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 

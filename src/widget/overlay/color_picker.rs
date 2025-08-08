@@ -631,6 +631,7 @@ where
         if event::Status::Captured == self.on_event_keyboard(event) {
             self.clear_cache();
             shell.capture_event();
+            shell.request_redraw();
             return;
         }
 

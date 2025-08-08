@@ -2,6 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `time_picker`*
 
+use crate::iced_aw_font::advanced_text::{cancel, down_open, ok, up_open};
 use crate::{
     core::clock::{
         NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
@@ -49,13 +50,8 @@ use iced::{
     Point,
     Rectangle,
     Renderer, // the actual type
-    Shadow,
     Size,
     Vector,
-};
-use iced_fonts::{
-    required::{icon_to_string, RequiredIcons},
-    REQUIRED_FONT,
 };
 use std::collections::HashMap;
 
@@ -92,6 +88,7 @@ where
     class: &'a <Theme as Catalog>::Class<'b>,
     /// The reference to the tree holding the state of this overlay.
     tree: &'a mut Tree,
+    viewport: Rectangle,
 }
 
 impl<'a, 'b, Message, Theme> TimePickerOverlay<'a, 'b, Message, Theme>
@@ -108,22 +105,25 @@ where
         position: Point,
         class: &'a <Theme as Catalog>::Class<'b>,
         tree: &'a mut Tree,
+        viewport: Rectangle,
     ) -> Self {
         let time_picker::State { overlay_state } = state;
+        let (cancel_content, cancel_font, _cancel_shaping) = cancel();
+        let (submit_content, submit_font, _submit_shaping) = ok();
 
         TimePickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(RequiredIcons::X))
-                    .font(REQUIRED_FONT)
+                text::Text::new(cancel_content)
+                    .font(cancel_font)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(RequiredIcons::Check))
-                    .font(REQUIRED_FONT)
+                text::Text::new(submit_content)
+                    .font(submit_font)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
@@ -133,6 +133,7 @@ where
             position,
             class,
             tree,
+            viewport,
         }
     }
 
@@ -607,17 +608,19 @@ where
         node
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
-    ) -> event::Status {
-        if event::Status::Captured == self.on_event_keyboard(&event) {
-            return event::Status::Captured;
+    ) {
+        if event::Status::Captured == self.on_event_keyboard(event) {
+            shell.capture_event();
+            shell.request_redraw();
+            return;
         }
 
         let mut children = layout.children();
@@ -626,7 +629,7 @@ where
         let clock_layout = children
             .next()
             .expect("widget: Layout should have a clock canvas layout");
-        let clock_status = self.on_event_clock(&event, clock_layout, cursor);
+        let clock_status = self.on_event_clock(event, clock_layout, cursor);
 
         // ----------- Digital clock ------------------
         let digital_clock_layout = children
@@ -635,17 +638,23 @@ where
             .children()
             .next()
             .expect("widget: Layout should have a digital clock layout");
-        let digital_clock_status =
-            self.on_event_digital_clock(&event, digital_clock_layout, cursor);
+        let digital_clock_status = self.on_event_digital_clock(event, digital_clock_layout, cursor);
 
-        // ----------- Buttons ------------------------
+        if digital_clock_status == event::Status::Captured
+            || clock_status == event::Status::Captured
+        {
+            shell.capture_event();
+            shell.request_redraw();
+        }
+
+        // ----------- Buttons --------------
         let cancel_button_layout = children
             .next()
             .expect("widget: Layout should have a cancel button layout for a TimePicker");
 
-        let cancel_status = self.cancel_button.on_event(
+        self.cancel_button.update(
             &mut self.tree.children[0],
-            event.clone(),
+            event,
             cancel_button_layout,
             cursor,
             renderer,
@@ -660,7 +669,7 @@ where
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
-        let submit_status = self.submit_button.on_event(
+        self.submit_button.update(
             &mut self.tree.children[1],
             event,
             submit_button_layout,
@@ -695,19 +704,15 @@ where
             };
 
             shell.publish((self.on_submit)(time));
+            shell.capture_event();
+            shell.request_redraw();
         }
-
-        clock_status
-            .merge(digital_clock_status)
-            .merge(cancel_status)
-            .merge(submit_status)
     }
 
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor: Cursor,
-        viewport: &Rectangle,
+        cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut children = layout.children();
@@ -796,7 +801,7 @@ where
             &self.tree.children[0],
             cancel_button_layout,
             cursor,
-            viewport,
+            &self.viewport,
             renderer,
         );
 
@@ -808,7 +813,7 @@ where
             &self.tree.children[1],
             submit_button_layout,
             cursor,
-            viewport,
+            &self.viewport,
             renderer,
         );
 
@@ -868,7 +873,7 @@ where
                         width: style_sheet[&style_state].border_width,
                         color: style_sheet[&style_state].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style_sheet[&style_state].background,
             );
@@ -929,7 +934,7 @@ where
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -948,7 +953,7 @@ where
                         width: style_sheet[&StyleState::Focused].border_width,
                         color: style_sheet[&StyleState::Focused].border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 Color::TRANSPARENT,
             );
@@ -1243,10 +1248,11 @@ fn draw_clock<Message, Theme>(
                     .clock_number_color,
                 size: Pixels(period_size),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
+                max_width: f32::INFINITY,
             };
             frame.fill_text(period_text);
 
@@ -1288,10 +1294,11 @@ fn draw_clock<Message, Theme>(
                         .clock_number_color,
                     size: Pixels(number_size),
                     font: renderer.default_font(),
-                    horizontal_alignment: Horizontal::Center,
-                    vertical_alignment: Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
                     shaping: text::Shaping::Basic,
                     line_height: text::LineHeight::Relative(1.3),
+                    max_width: f32::INFINITY,
                 };
 
                 frame.fill_text(text);
@@ -1323,10 +1330,11 @@ fn draw_clock<Message, Theme>(
                             .clock_number_color,
                         size: Pixels(number_size),
                         font: renderer.default_font(),
-                        horizontal_alignment: Horizontal::Center,
-                        vertical_alignment: Vertical::Center,
+                        align_x: text::Alignment::Center,
+                        align_y: Vertical::Center,
                         shaping: text::Shaping::Basic,
                         line_height: text::LineHeight::Relative(1.3),
+                        max_width: f32::INFINITY,
                     };
 
                     frame.fill_text(text);
@@ -1369,10 +1377,11 @@ fn draw_clock<Message, Theme>(
                                 .clock_number_color,
                             size: Pixels(number_size),
                             font: renderer.default_font(),
-                            horizontal_alignment: Horizontal::Center,
-                            vertical_alignment: Vertical::Center,
+                            align_x: text::Alignment::Center,
+                            align_y: Vertical::Center,
                             shaping: text::Shaping::Basic,
                             line_height: text::LineHeight::Relative(1.3),
+                            max_width: f32::INFINITY,
                         };
 
                         frame.fill_text(text);
@@ -1460,7 +1469,7 @@ fn draw_digital_clock<Message, Theme>(
                             .expect("Style Sheet not found.")
                             .border_color,
                     },
-                    shadow: Shadow::default(),
+                    ..renderer::Quad::default()
                 },
                 style
                     .get(&style_state)
@@ -1469,18 +1478,17 @@ fn draw_digital_clock<Message, Theme>(
             );
         }
 
-        let mut buffer = [0; 4];
-
+        let (up_content, up_font, _up_shaping) = up_open();
+        let (down_content, down_font, _down_shaping) = down_open();
         // Caret up
         renderer.fill_text(
             Text {
-                content: (*char::from(RequiredIcons::CaretUpFill).encode_utf8(&mut buffer))
-                    .to_string(),
+                content: up_content,
                 bounds: Size::new(up_bounds.width, up_bounds.height),
                 size: Pixels(renderer.default_size().0 + if up_arrow_hovered { 1.0 } else { 0.0 }),
-                font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                font: up_font,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -1500,8 +1508,8 @@ fn draw_digital_clock<Message, Theme>(
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -1517,15 +1525,14 @@ fn draw_digital_clock<Message, Theme>(
         // Down caret
         renderer.fill_text(
             Text {
-                content: (*char::from(RequiredIcons::CaretDownFill).encode_utf8(&mut buffer))
-                    .to_string(),
+                content: down_content,
                 bounds: Size::new(down_bounds.width, down_bounds.height),
                 size: Pixels(
                     renderer.default_size().0 + if down_arrow_hovered { 1.0 } else { 0.0 },
                 ),
-                font: REQUIRED_FONT,
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                font: down_font,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -1576,8 +1583,8 @@ fn draw_digital_clock<Message, Theme>(
             ),
             size: renderer.default_size(),
             font: renderer.default_font(),
-            horizontal_alignment: Horizontal::Center,
-            vertical_alignment: Vertical::Center,
+            align_x: text::Alignment::Center,
+            align_y: Vertical::Center,
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
             wrapping: Wrapping::default(),
@@ -1615,8 +1622,8 @@ fn draw_digital_clock<Message, Theme>(
                 ),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -1656,8 +1663,8 @@ fn draw_digital_clock<Message, Theme>(
                 bounds: Size::new(period.bounds().width, period.bounds().height),
                 size: renderer.default_size(),
                 font: renderer.default_font(),
-                horizontal_alignment: Horizontal::Center,
-                vertical_alignment: Vertical::Center,
+                align_x: text::Alignment::Center,
+                align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
@@ -1737,17 +1744,20 @@ where
     Theme: 'a + Catalog + button::Catalog + text::Catalog,
 {
     fn default() -> Self {
+        let (cancel_content, cancel_font, _cancel_shaping) = cancel();
+        let (submit_content, submit_font, _submit_shaping) = ok();
+
         Self {
             cancel_button: Button::new(
-                text::Text::new(icon_to_string(RequiredIcons::X))
-                    .font(REQUIRED_FONT)
+                text::Text::new(cancel_content)
+                    .font(cancel_font)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
             .into(),
             submit_button: Button::new(
-                text::Text::new(icon_to_string(RequiredIcons::Check))
-                    .font(REQUIRED_FONT)
+                text::Text::new(submit_content)
+                    .font(submit_font)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill),
             )
