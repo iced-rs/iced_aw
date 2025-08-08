@@ -119,20 +119,18 @@ where
         let style_sheet = theme.style(self.class, status::Status::Active);
 
         // Background
-        if (bounds.width > 0.) && (bounds.height > 0.) {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds,
-                    border: Border {
-                        radius: (0.0).into(),
-                        width: 0.0,
-                        color: Color::TRANSPARENT,
-                    },
-                    ..Default::default()
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
                 },
-                style_sheet.background,
-            );
-        }
+                ..Default::default()
+            },
+            style_sheet.background,
+        );
 
         let content_layout = layout
             .children()
