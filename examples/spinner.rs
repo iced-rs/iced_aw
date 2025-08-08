@@ -8,6 +8,7 @@ use iced::{
     Element, Length, Theme,
 };
 use iced_aw::Spinner;
+use iced_aw::ICED_AW_FONT_BYTES;
 
 struct SpinnerExample {
     theme: Theme,
@@ -35,7 +36,7 @@ impl SpinnerExample {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         column![
             container(Spinner::new())
                 .width(Length::Fill)
@@ -54,11 +55,11 @@ impl SpinnerExample {
 
 fn main() -> iced::Result {
     iced::application(
-        "Spinner example",
+        SpinnerExample::default,
         SpinnerExample::update,
         SpinnerExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .theme(SpinnerExample::theme)
     .run()
 }

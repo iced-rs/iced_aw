@@ -16,7 +16,7 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
-default = ["selection_list"]
+default = ["spinner"]
 
 badge = []
 card = []
