@@ -194,7 +194,6 @@ where
                     state.t -= 1.0;
                 }
 
-
                 shell.request_redraw_at(window::RedrawRequest::At(
                     *now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
                 ));

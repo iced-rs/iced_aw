@@ -16,6 +16,7 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
+# STK: revert to normal
 # default = ["selection_list"]
 default = ["full"]
 

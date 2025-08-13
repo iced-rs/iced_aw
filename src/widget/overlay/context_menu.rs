@@ -14,7 +14,6 @@ use iced::{
         widget::Tree,
         Clipboard, Layout, Shell,
     },
-    event::Status,
     keyboard,
     mouse::{self, Cursor},
     touch, window, Border, Color, Element, Event, Point, Size,
@@ -172,7 +171,6 @@ where
                     self.state.show = false;
                     forward_event_to_children = false;
                     shell.capture_event();
-
                 }
             }
 
@@ -180,14 +178,10 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if cursor.is_over(layout_children.bounds()) {
-                    Status::Ignored
-                } else {
+                if !cursor.is_over(layout_children.bounds()) {
                     self.state.show = false;
-                    Status::Captured
+                    shell.capture_event();
                 }
-
-                shell.capture_event();
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -195,7 +189,6 @@ where
                 self.state.show = false;
 
                 shell.capture_event();
-
             }
 
             Event::Window(window::Event::Resized { .. }) => {
@@ -205,8 +198,7 @@ where
             }
 
             _ => {}
-        };
-
+        }
 
         if forward_event_to_children {
             self.content.as_widget_mut().update(
@@ -218,7 +210,7 @@ where
                 clipboard,
                 shell,
                 &layout.bounds(),
-            )
+            );
         }
     }
 
@@ -229,6 +221,7 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
+        // STK: make sure layout.bounds() works out
         let bounds = layout.bounds();
 
         self.content.as_widget().mouse_interaction(
