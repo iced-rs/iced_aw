@@ -8,9 +8,13 @@
 //! and it manages the displaying of the content.
 
 use super::column::FlushColumn;
-use crate::style::{
-    sidebar::{self, Catalog, Style},
-    Status, StyleFn,
+use crate::{
+    iced_aw_font,
+    style::{
+        sidebar::{self, Catalog, Style},
+        Status, StyleFn,
+    },
+    ICED_AW_FONT,
 };
 use iced::{
     advanced::{
@@ -32,7 +36,6 @@ use iced::{
     Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
     Rectangle, Shadow, Size, Vector,
 };
-use iced_fonts::{bootstrap::advanced_text::x, BOOTSTRAP_FONT};
 use std::marker::PhantomData;
 
 /// The default icon size.
@@ -676,7 +679,7 @@ where
                 &self.class,
                 i == self.get_active_tab_idx(),
                 cursor,
-                (self.font.unwrap_or(BOOTSTRAP_FONT), self.icon_size),
+                (self.font.unwrap_or(ICED_AW_FONT), self.icon_size),
                 (self.text_font.unwrap_or_default(), self.text_size),
                 self.close_size,
                 viewport,
@@ -834,7 +837,7 @@ fn draw_tab<Theme, Renderer>(
     {
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cursor.is_over(cross_bounds);
-        let (content, font, shaping) = x();
+        let (content, font, shaping) = iced_aw_font::advanced_text::cancel();
         renderer.fill_text(
             iced::advanced::text::Text {
                 content,

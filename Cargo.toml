@@ -78,7 +78,6 @@ cfg-if = "1.0"
 chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
 iced_fonts = { version = "0.3.0-dev", features = [
   "advanced_text",
-  "bootstrap",
 ], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
 iced_widget = "0.14.0-dev" # Required for font generated from `iced_fonts`.
 num-format = { version = "0.4.4", optional = true }
