@@ -11,7 +11,7 @@ use iced_aw::ContextMenu;
 
 fn main() -> iced::Result {
     iced::application(
-        "ContextMenu example",
+        ContextMenuExample::default,
         ContextMenuExample::update,
         ContextMenuExample::view,
     )

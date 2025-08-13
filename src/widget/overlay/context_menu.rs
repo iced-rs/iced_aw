@@ -17,7 +17,7 @@ use iced::{
     event::Status,
     keyboard,
     mouse::{self, Cursor},
-    touch, window, Border, Color, Element, Event, Point, Rectangle, Shadow, Size,
+    touch, window, Border, Color, Element, Event, Point, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).
@@ -119,21 +119,19 @@ where
         let style_sheet = theme.style(self.class, status::Status::Active);
 
         // Background
-        if (bounds.width > 0.) && (bounds.height > 0.) {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds,
-                    border: Border {
-                        radius: (0.0).into(),
-                        width: 0.0,
-                        color: Color::TRANSPARENT,
-                    },
-                    shadow: Shadow::default(),
-                    ..Default::default()
+
+        renderer.fill_quad(
+            renderer::Quad {
+                bounds,
+                border: Border {
+                    radius: (0.0).into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
                 },
-                style_sheet.background,
-            );
-        }
+                ..Default::default()
+            },
+            style_sheet.background,
+        );
 
         let content_layout = layout
             .children()
@@ -156,10 +154,10 @@ where
         &mut self,
         event: &Event,
         layout: Layout<'_>,
-        cursor: Cursor,
+        cursor: iced::advanced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<Message>,
+        shell: &mut Shell<'_, Message>,
     ) {
         let layout_children = layout
             .children()
@@ -174,6 +172,7 @@ where
                     self.state.show = false;
                     forward_event_to_children = false;
                     shell.capture_event();
+
                 }
             }
 
@@ -181,17 +180,22 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if !cursor.is_over(layout_children.bounds()) {
+                if cursor.is_over(layout_children.bounds()) {
+                    Status::Ignored
+                } else {
                     self.state.show = false;
-                    forward_event_to_children = false;
+                    Status::Captured
                 }
+
                 shell.capture_event();
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
+
                 shell.capture_event();
+
             }
 
             Event::Window(window::Event::Resized { .. }) => {
@@ -202,6 +206,7 @@ where
 
             _ => {}
         };
+
 
         if forward_event_to_children {
             self.content.as_widget_mut().update(
@@ -220,10 +225,12 @@ where
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
-        cursor: Cursor,
+
+        cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        // STK: make sure layout.bounds() works out
+        let bounds = layout.bounds();
+
         self.content.as_widget().mouse_interaction(
             self.tree,
             layout
@@ -231,7 +238,7 @@ where
                 .next()
                 .expect("widget: Layout should have a content layout."),
             cursor,
-            &layout.bounds(),
+            &bounds,
             renderer,
         )
     }

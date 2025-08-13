@@ -19,6 +19,7 @@ rust-version = "1.80"
 # default = ["selection_list"]
 default = ["full"]
 
+
 badge = []
 card = []
 date_picker = ["chrono"]

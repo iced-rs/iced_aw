@@ -9,10 +9,9 @@ use iced::{
         },
         Clipboard, Layout, Shell, Widget,
     },
-    event::Status,
     mouse::Cursor,
     time::{Duration, Instant},
-    window, Border, Color, Element, Event, Length, Rectangle, Shadow, Size, Vector,
+    window, Border, Color, Element, Event, Length, Rectangle, Size, Vector,
 };
 
 /// A spinner widget, a circle spinning around the center of the widget.
@@ -97,7 +96,6 @@ fn fill_circle(
                     width: 0.0,
                     color: Color::TRANSPARENT,
                 },
-                shadow: Shadow::default(),
                 ..Default::default()
             },
             color,
@@ -196,10 +194,11 @@ where
                     state.t -= 1.0;
                 }
 
-                shell.request_redraw_at(*now + Duration::from_millis(1000 / FRAMES_PER_SECOND));
-                state.last_update = *now;
 
-                shell.capture_event();
+                shell.request_redraw_at(window::RedrawRequest::At(
+                    *now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
+                ));
+                state.last_update = *now;
             }
         }
     }

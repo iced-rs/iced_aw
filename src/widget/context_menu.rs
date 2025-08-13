@@ -7,7 +7,6 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Button, Cursor},
     Element, Event, Length, Point, Rectangle, Vector,
 };
@@ -205,7 +204,7 @@ where
             clipboard,
             shell,
             viewport,
-        )
+        );
     }
 
     fn mouse_interaction(
@@ -227,17 +226,17 @@ where
 
     fn overlay<'b>(
         &'b mut self,
-        state: &'b mut Tree,
+        tree: &'b mut Tree,
         layout: Layout<'b>,
         renderer: &Renderer,
         viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        let s: &mut State = state.state.downcast_mut();
+        let s: &mut State = tree.state.downcast_mut();
 
         if !s.show {
             return self.underlay.as_widget_mut().overlay(
-                &mut state.children[0],
+                &mut tree.children[0],
                 layout,
                 renderer,
                 viewport,
@@ -247,11 +246,11 @@ where
 
         let position = s.cursor_position;
         let content = (self.overlay)();
-        content.as_widget().diff(&mut state.children[1]);
+        content.as_widget().diff(&mut tree.children[1]);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
-                &mut state.children[1],
+                &mut tree.children[1],
                 content,
                 &self.class,
                 s,
