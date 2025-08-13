@@ -164,6 +164,7 @@ where
             .expect("widget: Layout should have a content layout.");
 
         let mut forward_event_to_children = true;
+        let mut capture_event = false;
 
         match &event {
             Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
@@ -178,9 +179,12 @@ where
                 mouse::Button::Left | mouse::Button::Right,
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if !cursor.is_over(layout_children.bounds()) {
+                if cursor.is_over(layout_children.bounds()) {
+                    capture_event = true;
+                } else {
                     self.state.show = false;
-                    shell.capture_event();
+                    forward_event_to_children = false;
+                    shell.request_redraw();
                 }
             }
 
@@ -188,13 +192,13 @@ where
                 // close when released because because button send message on release
                 self.state.show = false;
 
-                shell.capture_event();
+                capture_event = true;
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
                 forward_event_to_children = false;
-                shell.capture_event();
+                capture_event = true;
             }
 
             _ => {}
@@ -212,6 +216,9 @@ where
                 &layout.bounds(),
             );
         }
+        if capture_event {
+            shell.capture_event();
+        }
     }
 
     fn mouse_interaction(
@@ -221,7 +228,6 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        // STK: make sure layout.bounds() works out
         let bounds = layout.bounds();
 
         self.content.as_widget().mouse_interaction(
