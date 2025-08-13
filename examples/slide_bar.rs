@@ -7,15 +7,16 @@ use iced::{
     Element, Length,
 };
 
-use iced_aw::SlideBar;
+use iced_aw::{SlideBar, ICED_AW_FONT_BYTES};
 
 fn main() -> iced::Result {
     iced::application(
-        "Slider Bar example",
+        SlideBarExample::default,
         SlideBarExample::update,
         SlideBarExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .title(SlideBarExample::title)
+    .font(ICED_AW_FONT_BYTES)
     .run()
 }
 
@@ -30,6 +31,10 @@ struct SlideBarExample {
 }
 
 impl SlideBarExample {
+    fn title(&self) -> String {
+        String::from("Slider Bar example")
+    }
+
     fn update(&mut self, message: Message) {
         let Message::SliderBarChange(v) = message;
         self.value = v;
