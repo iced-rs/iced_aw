@@ -2,8 +2,8 @@
 name = "iced_aw"
 version = "0.13.0-dev"
 authors = [
-    "Kaiden42 <gitlab@tinysn.com>",
-    "Andrew Wheeler <genusistimelord@gmail.com>",
+  "Kaiden42 <gitlab@tinysn.com>",
+  "Andrew Wheeler <genusistimelord@gmail.com>",
 ]
 edition = "2021"
 description = "Additional widgets for the Iced GUI library"
@@ -16,7 +16,8 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
-default = ["selection_list"]
+# default = ["selection_list"]
+default = ["full"]
 
 badge = []
 card = []
@@ -40,31 +41,31 @@ labeled_frame = []
 custom_layout = ["iced/advanced"]
 
 full = [
-    "badge",
-    "card",
-    "number_input",
-    "date_picker",
-    "color_picker",
-    "tab_bar",
-    "tabs",
-    "time_picker",
-    "slide_bar",
-    "wrap",
-    "selection_list",
-    "quad",
-    "context_menu",
-    "spinner",
-    "drop_down",
-    "menu",
-    "sidebar",
-    "labeled_frame",
-    "custom_layout",
+  "badge",
+  "card",
+  "number_input",
+  "date_picker",
+  "color_picker",
+  "tab_bar",
+  "tabs",
+  "time_picker",
+  "slide_bar",
+  "wrap",
+  "selection_list",
+  "quad",
+  "context_menu",
+  "spinner",
+  "drop_down",
+  "menu",
+  "sidebar",
+  "labeled_frame",
+  "custom_layout",
 ]
 
 [dev-dependencies]
-iced_aw = { path  = "./" }
+iced_aw = { path = "./" }
 getrandom = { version = "0.3.3", features = ["wasm_js"] }
-rand = "0.9.2" # For wrap example
+rand = "0.9.2"                                            # For wrap example
 
 [dependencies.iced]
 version = "0.14.0-dev"
@@ -73,16 +74,19 @@ features = ["advanced"]
 [dependencies]
 cfg-if = "1.0"
 chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
-iced_fonts = { version = "0.3.0-dev", features = ["advanced_text"], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
+iced_fonts = { version = "0.3.0-dev", features = [
+  "advanced_text",
+  "bootstrap",
+], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
 iced_widget = "0.14.0-dev" # Required for font generated from `iced_fonts`.
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
 
 [patch.crates-io]
-iced = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
-iced_core = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
-iced_widget = { git = "https://github.com/iced-rs/iced.git", rev = "c710591" }
+iced = { git = "https://github.com/iced-rs/iced.git", rev = "9d56b48" }
+iced_core = { git = "https://github.com/iced-rs/iced.git", rev = "9d56b48" }
+iced_widget = { git = "https://github.com/iced-rs/iced.git", rev = "9d56b48" }
 
 [[example]]
 name = "badge"

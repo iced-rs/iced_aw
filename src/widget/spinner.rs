@@ -98,6 +98,7 @@ fn fill_circle(
                     color: Color::TRANSPARENT,
                 },
                 shadow: Shadow::default(),
+                ..Default::default()
             },
             color,
         );
@@ -164,17 +165,17 @@ where
         })
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         _cursor: Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> Status {
+    ) {
         const FRAMES_PER_SECOND: u64 = 60;
 
         let bounds = layout.bounds();
@@ -182,7 +183,7 @@ where
         if let Event::Window(window::Event::RedrawRequested(now)) = event {
             if is_visible(&bounds) {
                 let state = state.state.downcast_mut::<SpinnerState>();
-                let duration = (now - state.last_update).as_secs_f32();
+                let duration = (*now - state.last_update).as_secs_f32();
                 let increment = if self.rate == Duration::ZERO {
                     0.0
                 } else {
@@ -195,16 +196,12 @@ where
                     state.t -= 1.0;
                 }
 
-                shell.request_redraw(window::RedrawRequest::At(
-                    now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
-                ));
-                state.last_update = now;
+                shell.request_redraw_at(*now + Duration::from_millis(1000 / FRAMES_PER_SECOND));
+                state.last_update = *now;
 
-                return Status::Captured;
+                shell.capture_event();
             }
         }
-
-        Status::Ignored
     }
 }
 
