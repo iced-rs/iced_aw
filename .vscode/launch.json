@@ -219,7 +219,8 @@
       "cargo": {
         "args": [
           "build",
-          "--example=spinner"
+          "--example=spinner",
+          "--features=spinner"
         ],
         "filter": {
           "name": "spinner",
