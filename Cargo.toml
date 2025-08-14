@@ -16,7 +16,7 @@ categories = ["gui"]
 rust-version = "1.80"
 
 [features]
-default = ["context_menu"]
+default = ["time_picker"]
 
 badge = []
 card = []

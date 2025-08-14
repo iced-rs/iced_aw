@@ -257,7 +257,7 @@ where
 
     fn draw(
         &self,
-        state: &Tree,
+        tree: &Tree,
         renderer: &mut Renderer,
         theme: &Theme,
         style: &renderer::Style,
@@ -266,7 +266,7 @@ where
         viewport: &Rectangle,
     ) {
         self.underlay.as_widget().draw(
-            &state.children[0],
+            &tree.children[0],
             renderer,
             theme,
             style,

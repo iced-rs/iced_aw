@@ -617,12 +617,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
-        if event::Status::Captured == self.on_event_keyboard(event) {
-            shell.capture_event();
-            shell.request_redraw();
-            return;
-        }
-
+        let mut status = self.on_event_keyboard(event);
         let mut children = layout.children();
 
         // Clock canvas
@@ -643,8 +638,7 @@ where
         if digital_clock_status == event::Status::Captured
             || clock_status == event::Status::Captured
         {
-            shell.capture_event();
-            shell.request_redraw();
+            status = event::Status::Captured;
         }
 
         // ----------- Buttons --------------
@@ -665,10 +659,9 @@ where
             &layout.bounds(),
         );
 
-        for message in &fake_messages {
-            shell.publish(message.clone());
-            shell.capture_event();
-            return;
+        while let Some(message) = fake_messages.pop() {
+            shell.publish(message);
+            status = event::Status::Captured;
         }
 
         let submit_button_layout = children
@@ -710,6 +703,10 @@ where
             };
 
             shell.publish((self.on_submit)(time));
+            status = event::Status::Captured;
+        }
+
+        if status == event::Status::Captured {
             shell.capture_event();
             shell.request_redraw();
         }
