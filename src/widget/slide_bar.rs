@@ -9,7 +9,6 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
     touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
 };

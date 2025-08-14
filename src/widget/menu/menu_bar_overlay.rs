@@ -13,7 +13,7 @@ use iced::{
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
     },
-    event, Event, Point, Rectangle, Size, Vector,
+    Event, Point, Rectangle, Size, Vector,
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -226,11 +226,9 @@ where
             prev: &mut Index,
             scroll_speed: ScrollSpeed,
         ) -> RecEvent {
-            if item.menu.as_mut().is_none() {
+            let Some(ref mut menu) = item.menu else {
                 return RecEvent::None;
-            }
-
-            let menu = item.menu.as_mut().expect("No menu defined in this item");
+            };
             let menu_tree = &mut tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
@@ -290,12 +288,12 @@ where
                 RecEvent::Close => {
                     if menu_state.pressed || cursor.is_over(prescroll){
                         menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
-                        menu.open_event(menu_tree, menu_layout, cursor);
+                        menu.open_event(menu_tree, menu_layout, cursor, shell);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
                         RecEvent::Event
                     } else {
-                        menu.close_event(menu_tree, menu_layout, cursor, parent_bounds, prev_bounds_list, prev);
+                        menu.close_event(menu_tree, menu_layout, cursor, shell, parent_bounds, prev_bounds_list, prev);
                         if prev.is_some() {
                             RecEvent::None
                         } else {
@@ -306,7 +304,7 @@ where
                 RecEvent::None => {
                     if menu_state.pressed || cursor.is_over(prescroll){
                         menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
-                        menu.open_event(menu_tree, menu_layout, cursor);
+                        menu.open_event(menu_tree, menu_layout, cursor, shell);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
                         RecEvent::Event
@@ -320,7 +318,7 @@ where
         let re = rec(
             active_tree,
             active_root,
-            &event,
+            event,
             &mut menu_layouts,
             cursor,
             renderer,
@@ -373,11 +371,9 @@ where
             cursor: mouse::Cursor,
             renderer: &Renderer,
         ) -> mouse::Interaction {
-            if item.menu.as_ref().is_none() {
+            let Some(ref menu) = item.menu else {
                 return mouse::Interaction::default();
-            }
-
-            let menu = item.menu.as_ref().expect("No menu defined in this item");
+            };
             let menu_tree = &tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {

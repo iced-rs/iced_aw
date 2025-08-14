@@ -22,7 +22,7 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Shell,
     },
-    alignment, event, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
 use std::iter::once;
 
@@ -602,7 +602,8 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-    ) -> event::Status {
+        shell: &mut Shell<'_, Message>,
+    ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         // let prescroll = lc.next().unwrap().bounds();
@@ -611,7 +612,7 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
-        menu_state.active = None;
+        let pre_menu_state = menu_state.active.take();
 
         for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
@@ -619,11 +620,14 @@ where
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                if pre_menu_state != Some(i + slice.start_index) {
+                    // New submenu selected, make sure it gets displayed
+                    shell.request_redraw();
+                }
                 menu_state.active = Some(i + slice.start_index);
-                return event::Status::Captured;
+                return;
             }
         }
-        event::Status::Ignored
     }
 
     pub(super) fn close_event(
@@ -631,6 +635,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
+        shell: &mut Shell<'_, Message>,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
         prev: &mut Index,
@@ -661,6 +666,7 @@ where
         };
 
         if !open {
+            shell.request_redraw();
             *prev = None;
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
@@ -788,7 +794,6 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        // STK: make sure layout.bounds() works out
         self.item.as_widget().mouse_interaction(
             &tree.children[0],
             layout,
@@ -841,7 +846,6 @@ where
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        // STK: ensure layout.bounds() works out here
         self.item.as_widget_mut().overlay(
             &mut tree.children[0],
             layout,

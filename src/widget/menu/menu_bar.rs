@@ -251,10 +251,10 @@ where
                                 break;
                             }
                         }
+                        shell.capture_event();
                     } else {
                         bar.open = false;
                     }
-                    shell.capture_event();
                 }
             }
             _ => {}
