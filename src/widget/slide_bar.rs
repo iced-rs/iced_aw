@@ -176,7 +176,7 @@ where
         _viewport: &Rectangle,
     ) {
         update(
-            &event,
+            event,
             layout,
             cursor,
             shell,
@@ -186,7 +186,7 @@ where
             self.step,
             self.on_change.as_ref(),
             &self.on_release,
-        )
+        );
     }
 
     fn draw(

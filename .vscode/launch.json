@@ -112,23 +112,6 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug example 'grid'",
-      "cargo": {
-        "args": [
-          "build",
-          "--example=grid"
-        ],
-        "filter": {
-          "name": "grid",
-          "kind": "example"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Debug example 'menu'",
       "cargo": {
         "args": [
@@ -347,7 +330,6 @@
         "Debug example 'context_menu'",
         "Debug example 'date_picker'",
         "Debug example 'drop_down'",
-        "Debug example 'grid'",
         "Debug example 'menu'",
         "Debug example 'number_input'",
         "Debug example 'selection_list'",

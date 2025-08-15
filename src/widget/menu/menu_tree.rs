@@ -343,10 +343,12 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(prescroll) {
                     menu_state.pressed = true;
+                    shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 menu_state.pressed = false;
+                shell.capture_event();
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {

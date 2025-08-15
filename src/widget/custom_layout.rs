@@ -49,12 +49,14 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
     }
 
     /// Sets the width of the [`CustomLayout`]
+    #[must_use]
     pub fn width(mut self, length: impl Into<iced::Length>) -> Self {
         self.width = length.into();
         self
     }
 
     /// Sets the height of the [`CustomLayout`]
+    #[must_use]
     pub fn height(mut self, length: impl Into<iced::Length>) -> Self {
         self.height = length.into();
         self
