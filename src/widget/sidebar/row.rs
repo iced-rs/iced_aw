@@ -345,7 +345,7 @@ where
         {
             child.as_widget_mut().update(
                 state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            )
+            );
         }
         // self.children
         //     .iter_mut()

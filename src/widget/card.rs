@@ -16,7 +16,6 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment::Vertical,
-    event,
     mouse::{self, Cursor},
     touch,
     widget::text::Wrapping,
@@ -79,6 +78,8 @@ where
     foot: Option<Element<'a, Message, Theme, Renderer>>,
     /// The style of the [`Card`].
     class: Theme::Class<'a>,
+    /// Used to display the mouse over action on the close button.
+    is_mouse_over_close: bool,
 }
 
 impl<'a, Message, Theme, Renderer> Card<'a, Message, Theme, Renderer>
@@ -110,6 +111,7 @@ where
             body: body.into(),
             foot: None,
             class: Theme::default(),
+            is_mouse_over_close: false,
         }
     }
 
@@ -316,11 +318,11 @@ where
         viewport: &Rectangle,
     ) {
         let mut children = layout.children();
-
         let head_layout = children
             .next()
             .expect("widget: Layout should have a head layout");
         let mut head_children = head_layout.children();
+
         self.head.as_widget_mut().update(
             &mut state.children[0],
             event,
@@ -334,36 +336,38 @@ where
             viewport,
         );
 
-        let _ = head_children.next().map(|close_layout| {
+        if let Some(close_layout) = head_children.next() {
             match event {
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => self
-                    .on_close
-                    .clone()
-                    // TODO: `let` expressions in this position are experimental
-                    // see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
-                    .filter(|_| {
-                        close_layout
+                | Event::Touch(touch::Event::FingerPressed { .. }) => {
+                    if let Some(on_close) = &self.on_close {
+                        if close_layout
                             .bounds()
                             .contains(cursor.position().unwrap_or_default())
-                    })
-                    .map(|on_close| {
-                        shell.publish(on_close);
-                        shell.capture_event();
-                        event::Status::Captured
-                    }),
-                _ => None,
+                        {
+                            shell.publish(on_close.clone());
+                            self.is_mouse_over_close = true;
+                            shell.capture_event();
+                            shell.request_redraw();
+                        } else if self.is_mouse_over_close {
+                            self.is_mouse_over_close = false;
+                            shell.request_redraw();
+                        }
+                    }
+                }
+                _ => {}
             }
-        });
+        }
 
         let body_layout = children
             .next()
             .expect("widget: Layout should have a body layout");
-        let mut body_children = body_layout.children();
+
         self.body.as_widget_mut().update(
             &mut state.children[1],
             event,
-            body_children
+            body_layout
+                .children()
                 .next()
                 .expect("widget: Layout should have a body content layout"),
             cursor,
@@ -376,12 +380,13 @@ where
         let foot_layout = children
             .next()
             .expect("widget: Layout should have a foot layout");
-        let mut foot_children = foot_layout.children();
+
         if let Some(foot) = self.foot.as_mut() {
             foot.as_widget_mut().update(
                 &mut state.children[2],
                 event,
-                foot_children
+                foot_layout
+                    .children()
                     .next()
                     .expect("widget: Layout should have a foot content layout"),
                 cursor,
@@ -557,6 +562,7 @@ where
             theme,
             &style_sheet,
             self.close_size,
+            self.is_mouse_over_close,
         );
 
         // ----------- Body ----------------------
@@ -768,6 +774,7 @@ fn draw_head<Message, Theme, Renderer>(
     theme: &Theme,
     style: &Style,
     close_size: Option<f32>,
+    is_mouse_over_close: bool,
 ) where
     Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
     Theme: Catalog,
@@ -832,8 +839,6 @@ fn draw_head<Message, Theme, Renderer>(
 
     if let Some(close_layout) = head_children.next() {
         let close_bounds = close_layout.bounds();
-        let is_mouse_over_close = close_bounds.contains(cursor.position().unwrap_or_default());
-
         let (content, font, shaping) = cancel();
 
         renderer.fill_text(
@@ -842,7 +847,7 @@ fn draw_head<Message, Theme, Renderer>(
                 bounds: Size::new(close_bounds.width, close_bounds.height),
                 size: Pixels(
                     close_size.unwrap_or_else(|| renderer.default_size().0)
-                        + if is_mouse_over_close { 1.0 } else { 0.0 },
+                        + if is_mouse_over_close { 3.0 } else { 0.0 },
                 ),
                 font,
                 align_x: iced_widget::text::Alignment::Center,

@@ -49,20 +49,22 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
     }
 
     /// Sets the width of the [`CustomLayout`]
+    #[must_use]
     pub fn width(mut self, length: impl Into<iced::Length>) -> Self {
         self.width = length.into();
         self
     }
 
     /// Sets the height of the [`CustomLayout`]
+    #[must_use]
     pub fn height(mut self, length: impl Into<iced::Length>) -> Self {
         self.height = length.into();
         self
     }
 }
 
-impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, Renderer>
-    for CustomLayout<'b, Message, Theme, Renderer>
+impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, Renderer>
+    for CustomLayout<'_, Message, Theme, Renderer>
 {
     fn size(&self) -> iced::Size<iced::Length> {
         iced::Size::new(self.width, self.height)
@@ -89,7 +91,7 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
             .for_each(|((state, layout), element)| {
                 element
                     .as_widget()
-                    .draw(state, renderer, theme, style, layout, cursor, viewport)
+                    .draw(state, renderer, theme, style, layout, cursor, viewport);
             });
     }
 
@@ -142,7 +144,7 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
         {
             element.as_widget_mut().update(
                 state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            )
+            );
         }
         // state
         //     .children
