@@ -614,6 +614,7 @@ where
                 if pre_menu_state != index {
                     // New sub menu selected, make sure it gets displayed
                     shell.request_redraw();
+                    shell.capture_event();
                 }
                 if item.menu.is_some() {
                     menu_state.active_submenu = index;
