@@ -16,10 +16,11 @@ use counter::{CounterMessage, CounterTab};
 mod settings;
 use settings::{style_from_index, SettingsMessage, SettingsTab, SidebarPosition};
 
-const HEADER_SIZE: u16 = 32;
+const HEADER_SIZE: u32 = 32;
 const TAB_PADDING: u16 = 16;
 const ICON_BYTES: &[u8] = include_bytes!("fonts/icons.ttf");
 const ICON: Font = Font::with_name("icons");
+use iced_aw::ICED_AW_FONT_BYTES;
 
 enum Icon {
     User,
@@ -41,11 +42,11 @@ impl From<Icon> for char {
 
 fn main() -> iced::Result {
     iced::application(
-        "Sidebar example",
+        TabBarExample::default,
         TabBarExample::update,
         TabBarExample::view,
     )
-    .font(iced_fonts::REQUIRED_FONT_BYTES)
+    .font(ICED_AW_FONT_BYTES)
     .font(ICON_BYTES)
     .run()
 }

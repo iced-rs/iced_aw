@@ -628,6 +628,7 @@ where
                 if pre_menu_state != Some(i + slice.start_index) {
                     // New submenu selected, make sure it gets displayed
                     shell.request_redraw();
+                    shell.capture_event();
                 }
                 menu_state.active = Some(i + slice.start_index);
                 return;
