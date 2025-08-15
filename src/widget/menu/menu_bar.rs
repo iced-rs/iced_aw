@@ -177,37 +177,28 @@ where
         )
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: event::Event,
+        event: &event::Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        use event::Status::*;
-
-        let status = self
+    ) {
+        for ((item, tree), layout) in self
             .roots
             .iter_mut() // [Item...]
             .zip(tree.children.iter_mut()) // [item_tree...]
-            .zip(layout.children()) // [widget_node...]
-            .map(|((item, tree), layout)| {
-                item.on_event(
-                    tree,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .fold(Ignored, event::Status::merge);
+            // [widget_node...]
+            .zip(layout.children())
+        {
+            item.update(
+                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
+        }
 
         let bar = tree.state.downcast_mut::<MenuBarState>();
         let bar_bounds = layout.bounds();
@@ -216,9 +207,7 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) {
                     bar.is_pressed = true;
-                    Captured
-                } else {
-                    Ignored
+                    shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -231,9 +220,7 @@ where
                             break;
                         }
                     }
-                    Captured
-                } else {
-                    Ignored
+                    shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
@@ -245,17 +232,14 @@ where
                                 break;
                             }
                         }
+                        shell.capture_event();
                     } else {
                         bar.open = false;
                     }
-                    Captured
-                } else {
-                    Ignored
                 }
             }
-            _ => Ignored,
+            _ => {}
         }
-        .merge(status)
     }
 
     fn operate(
@@ -281,16 +265,14 @@ where
         tree: &Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        viewport: &Rectangle,
+        _viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.roots
             .iter()
             .zip(&tree.children)
             .zip(layout.children())
-            .map(|((item, tree), layout)| {
-                item.mouse_interaction(tree, layout, cursor, viewport, renderer)
-            })
+            .map(|((item, tree), layout)| item.mouse_interaction(tree, layout, cursor, renderer))
             .max()
             .unwrap_or_default()
     }
@@ -311,6 +293,7 @@ where
                 bounds: pad_rectangle(layout.bounds(), styling.bar_background_expand),
                 border: styling.bar_border,
                 shadow: styling.bar_shadow,
+                ..Default::default()
             },
             styling.bar_background,
         );
@@ -356,6 +339,7 @@ where
         tree: &'b mut Tree,
         layout: Layout<'_>,
         _renderer: &Renderer,
+        _viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state = tree.state.downcast_mut::<MenuBarState>();

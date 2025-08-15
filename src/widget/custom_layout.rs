@@ -1,6 +1,6 @@
-//! A container widget that allows you to specify the layouting of its children.
+//! A container widget that allows you to specify the layout of its children.
 
-use iced::advanced::Widget;
+use iced::{advanced::Widget, Rectangle};
 
 #[allow(unused_imports)]
 pub use iced::advanced::{
@@ -18,7 +18,7 @@ type LayoutFn<'a, Message, Theme, Renderer> = Box<
     ) -> Node,
 >;
 
-/// A container widget that allows you to specify the layouting of its children.
+/// A container widget that allows you to specify the layout of its children.
 pub struct CustomLayout<'a, Message, Theme, Renderer> {
     elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
     width: iced::Length,
@@ -61,8 +61,8 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
     }
 }
 
-impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, Renderer>
-    for CustomLayout<'b, Message, Theme, Renderer>
+impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, Renderer>
+    for CustomLayout<'_, Message, Theme, Renderer>
 {
     fn size(&self) -> iced::Size<iced::Length> {
         iced::Size::new(self.width, self.height)
@@ -89,7 +89,7 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
             .for_each(|((state, layout), element)| {
                 element
                     .as_widget()
-                    .draw(state, renderer, theme, style, layout, cursor, viewport)
+                    .draw(state, renderer, theme, style, layout, cursor, viewport);
             });
     }
 
@@ -122,35 +122,27 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
             });
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut Tree,
-        event: iced::Event,
+        event: &iced::Event,
         layout: iced::advanced::Layout<'_>,
         cursor: iced::advanced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn iced::advanced::Clipboard,
         shell: &mut iced::advanced::Shell<'_, Message>,
         viewport: &iced::Rectangle,
-    ) -> iced::advanced::graphics::core::event::Status {
-        state
+    ) {
+        for ((state, layout), element) in state
             .children
             .iter_mut()
             .zip(layout.children())
             .zip(self.elements.iter_mut())
-            .map(|((state, layout), element)| {
-                element.as_widget_mut().on_event(
-                    state,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .fold(iced::event::Status::Ignored, iced::event::Status::merge)
+        {
+            element.as_widget_mut().update(
+                state, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
+        }
     }
 
     fn size_hint(&self) -> iced::Size<iced::Length> {
@@ -160,8 +152,9 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
     fn overlay<'a>(
         &'a mut self,
         state: &'a mut Tree,
-        layout: iced::advanced::Layout<'_>,
+        layout: iced::advanced::Layout<'a>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<iced::advanced::overlay::Element<'a, Message, Theme, Renderer>> {
         iced::advanced::overlay::from_children(
@@ -169,6 +162,7 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, The
             state,
             layout,
             renderer,
+            viewport,
             translation,
         )
     }

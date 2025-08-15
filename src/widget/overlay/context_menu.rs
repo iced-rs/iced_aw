@@ -14,7 +14,6 @@ use iced::{
         widget::Tree,
         Clipboard, Layout, Shell,
     },
-    event::Status,
     keyboard,
     mouse::{self, Cursor},
     touch, window, Border, Color, Element, Event, Point, Size,
@@ -119,6 +118,7 @@ where
         let style_sheet = theme.style(self.class, status::Status::Active);
 
         // Background
+
         renderer.fill_quad(
             renderer::Quad {
                 bounds,
@@ -163,13 +163,15 @@ where
             .next()
             .expect("widget: Layout should have a content layout.");
 
-        let status = match &event {
+        let mut forward_event_to_children = true;
+        let mut capture_event = false;
+
+        match &event {
             Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
                 if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
                     self.state.show = false;
-                    Status::Captured
-                } else {
-                    Status::Ignored
+                    forward_event_to_children = false;
+                    shell.capture_event();
                 }
             }
 
@@ -178,39 +180,43 @@ where
             ))
             | Event::Touch(touch::Event::FingerPressed { .. }) => {
                 if cursor.is_over(layout_children.bounds()) {
-                    Status::Ignored
+                    capture_event = true;
                 } else {
                     self.state.show = false;
-                    Status::Captured
+                    forward_event_to_children = false;
+                    shell.request_redraw();
                 }
             }
 
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 // close when released because because button send message on release
                 self.state.show = false;
-                Status::Ignored
+
+                capture_event = true;
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
-                Status::Captured
+                forward_event_to_children = false;
+                capture_event = true;
             }
 
-            _ => Status::Ignored,
-        };
+            _ => {}
+        }
 
-        self.content.as_widget_mut().update(
-            self.tree,
-            event,
-            layout_children,
-            cursor,
-            renderer,
-            clipboard,
-            shell,
-            &layout.bounds(),
-        );
-
-        if shell.is_empty() && status == Status::Captured {
+        if forward_event_to_children {
+            self.content.as_widget_mut().update(
+                self.tree,
+                event,
+                layout_children,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                &layout.bounds(),
+            );
+        }
+        if capture_event {
             shell.capture_event();
         }
     }
@@ -218,10 +224,12 @@ where
     fn mouse_interaction(
         &self,
         layout: Layout<'_>,
+
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let bounds = layout.bounds();
+
         self.content.as_widget().mouse_interaction(
             self.tree,
             layout

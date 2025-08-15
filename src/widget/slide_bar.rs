@@ -9,7 +9,6 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    event,
     mouse::{self, Cursor},
     touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
 };
@@ -165,17 +164,17 @@ where
         Node::new(size)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         update(
             &event,
             layout,
@@ -218,8 +217,7 @@ pub fn update<Message, T>(
     step: T,
     on_change: &dyn Fn(T) -> Message,
     on_release: &Option<Message>,
-) -> event::Status
-where
+) where
     T: Copy + Into<f64> + num_traits::FromPrimitive,
     Message: Clone,
 {
@@ -262,7 +260,7 @@ where
                 change(cursor_position);
                 state.is_dragging = true;
 
-                return event::Status::Captured;
+                shell.capture_event();
             }
         }
         Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
@@ -273,7 +271,7 @@ where
                 }
                 state.is_dragging = false;
 
-                return event::Status::Captured;
+                shell.capture_event();
             }
         }
         Event::Mouse(mouse::Event::CursorMoved { .. })
@@ -281,13 +279,11 @@ where
             if is_dragging {
                 let _ = cursor.position().map(change);
 
-                return event::Status::Captured;
+                shell.capture_event();
             }
         }
         _ => {}
     }
-
-    event::Status::Ignored
 }
 
 /// Draws a [`SlideBar`].
@@ -333,6 +329,7 @@ pub fn draw<T, R, Message>(
                     color: slider.border_color,
                 },
                 shadow: Shadow::default(),
+                ..Default::default()
             },
             background,
         );
@@ -348,6 +345,7 @@ pub fn draw<T, R, Message>(
                     color: Color::TRANSPARENT,
                 },
                 shadow: Shadow::default(),
+                ..Default::default()
             },
             slider.color,
         );

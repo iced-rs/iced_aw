@@ -96,6 +96,7 @@ where
                         bounds,
                         border: self.bg_border,
                         shadow: self.bg_shadow,
+                        ..Default::default()
                     },
                     b,
                 );
@@ -105,6 +106,7 @@ where
                     bounds: self.inner_bounds.get_bounds(bounds),
                     border: self.quad_border,
                     shadow: self.quad_shadow,
+                    ..Default::default()
                 },
                 self.quad_color,
             );

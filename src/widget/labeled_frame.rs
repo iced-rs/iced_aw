@@ -2,6 +2,7 @@
 
 use iced::advanced;
 use iced::Pixels;
+use iced::Rectangle;
 
 /// The style of a [`LabeledFrame`]
 pub struct Style {
@@ -264,6 +265,7 @@ where
                     ..Default::default()
                 },
                 shadow: iced::Shadow::default(),
+                ..Default::default()
             },
             style.color,
         );
@@ -287,6 +289,7 @@ where
                     ..Default::default()
                 },
                 shadow: iced::Shadow::default(),
+                ..Default::default()
             },
             style.color,
         );
@@ -308,6 +311,7 @@ where
                     ..Default::default()
                 },
                 shadow: iced::Shadow::default(),
+                ..Default::default()
             },
             style.color,
         );
@@ -327,6 +331,7 @@ where
                     ..Default::default()
                 },
                 shadow: iced::Shadow::default(),
+                ..Default::default()
             },
             style.color,
         );
@@ -348,6 +353,7 @@ where
                     ..Default::default()
                 },
                 shadow: iced::Shadow::default(),
+                ..Default::default()
             },
             style.color,
         );
@@ -374,34 +380,26 @@ where
             .unwrap_or_default()
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         state: &mut advanced::widget::Tree,
-        event: iced::Event,
+        event: &iced::Event,
         layout: advanced::Layout<'_>,
         cursor: advanced::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn advanced::Clipboard,
         shell: &mut advanced::Shell<'_, Message>,
         viewport: &iced::Rectangle,
-    ) -> advanced::graphics::core::event::Status {
-        [&mut self.title, &mut self.content]
+    ) {
+        for ((child, state), layout) in [&mut self.title, &mut self.content]
             .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
-            .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
-                    state,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .fold(iced::event::Status::Ignored, iced::event::Status::merge)
+        {
+            child.as_widget_mut().update(
+                state, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
+        }
     }
 
     fn operate(
@@ -427,8 +425,9 @@ where
     fn overlay<'b>(
         &'b mut self,
         state: &'b mut advanced::widget::Tree,
-        layout: advanced::Layout<'_>,
+        layout: advanced::Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<advanced::overlay::Element<'b, Message, Theme, Renderer>> {
         let children = vec![&mut self.title, &mut self.content]
@@ -438,7 +437,7 @@ where
             .filter_map(|((child, state), layout)| {
                 child
                     .as_widget_mut()
-                    .overlay(state, layout, renderer, translation)
+                    .overlay(state, layout, renderer, viewport, translation)
             })
             .collect::<Vec<_>>();
 

@@ -14,7 +14,7 @@ use iced::{
         Clipboard, Layout, Shell, Widget,
     },
     alignment,
-    event::{self, Event},
+    event::Event,
     widget::Column,
     Alignment, Element, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
 };
@@ -325,34 +325,27 @@ where
         });
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        self.children
+    ) {
+        for ((child, state), layout) in self
+            .children
             .iter_mut()
             .zip(&mut tree.children)
             .zip(layout.children())
-            .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
-                    state,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .fold(event::Status::Ignored, event::Status::merge)
+        {
+            child.as_widget_mut().update(
+                state, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
+        }
     }
 
     fn mouse_interaction(
@@ -413,11 +406,19 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        overlay::from_children(&mut self.children, tree, layout, renderer, translation)
+        overlay::from_children(
+            &mut self.children,
+            tree,
+            layout,
+            renderer,
+            viewport,
+            translation,
+        )
     }
 }
 
