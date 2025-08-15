@@ -8,7 +8,8 @@ fn view(_: &u8) -> iced::Element<'_, ()> {
 }
 
 fn main() {
-    iced::application("labeled_frame example", |_: &mut u8, _: ()| {}, view)
+    iced::application(|| 0, |_: &mut u8, _: ()| {}, view)
+        .title(|_: &u8| String::from("labeled_frame example"))
         .theme(|_| iced::Theme::Light)
         .run()
         .unwrap()

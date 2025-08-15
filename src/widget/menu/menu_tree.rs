@@ -22,7 +22,7 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Shell,
     },
-    alignment, event, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
 use std::iter::once;
 
@@ -304,7 +304,7 @@ where
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds, check_bounds ]}
-    pub(super) fn on_event(
+    pub(super) fn update(
         &mut self,
         tree: &mut Tree,
         event: &Event,
@@ -315,9 +315,8 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
         scroll_speed: ScrollSpeed,
-    ) -> event::Status {
-        use event::Status::*;
-
+    ) {
+        // STK: cleanup
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
@@ -327,34 +326,41 @@ where
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
 
-        let status = self.items[slice.start_index..=slice.end_index] // [item...]
+        for ((item, tree), layout) in self.items[slice.start_index..=slice.end_index] // [item...]
             .iter_mut()
             .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
-            .zip(slice_layout.children()) // [item_layout...]
-            .map(|((item, tree), layout)| {
-                item.on_event(
-                    tree,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .fold(Ignored, event::Status::merge);
+            .zip(slice_layout.children())
+        {
+            item.update(
+                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+            )
+        }
+        // let status = self.items[slice.start_index..=slice.end_index] // [item...]
+        //     .iter_mut()
+        //     .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
+        //     .zip(slice_layout.children()) // [item_layout...]
+        //     .map(|((item, tree), layout)| {
+        //         item.on_event(
+        //             tree,
+        //             event.clone(),
+        //             layout,
+        //             cursor,
+        //             renderer,
+        //             clipboard,
+        //             shell,
+        //             viewport,
+        //         )
+        //     })
+        //     .fold(Ignored, event::Status::merge);
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(prescroll) {
                     menu_state.pressed = true;
                 }
-                Ignored
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 menu_state.pressed = false;
-                Ignored
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
@@ -365,16 +371,13 @@ where
                         scroll_speed,
                         viewport.size(),
                     );
-                    Captured
+                    shell.capture_event();
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
-                    Captured
-                } else {
-                    Ignored
+                    shell.capture_event();
                 }
             }
-            _ => Ignored,
+            _ => {}
         }
-        .merge(status)
     }
 
     pub(super) fn operate(
@@ -408,7 +411,7 @@ where
     pub(super) fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
@@ -441,7 +444,6 @@ where
         tree: &Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         let mut lc = layout.children();
@@ -456,9 +458,7 @@ where
             .iter()
             .zip(tree.children[slice.start_index..=max_tree_slice].iter()) // [item_tree...]
             .zip(slice_layout.children()) // [item_layout...]
-            .map(|((item, tree), layout)| {
-                item.mouse_interaction(tree, layout, cursor, viewport, renderer)
-            })
+            .map(|((item, tree), layout)| item.mouse_interaction(tree, layout, cursor, renderer))
             .max()
             .unwrap_or_default()
     }
@@ -497,6 +497,7 @@ where
                     bounds: pad_rectangle,
                     border: theme_style.menu_border,
                     shadow: theme_style.menu_shadow,
+                    ..Default::default()
                 },
                 theme_style.menu_background,
             );
@@ -601,7 +602,8 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-    ) -> event::Status {
+        shell: &mut Shell<'_, Message>,
+    ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         // let prescroll = lc.next().unwrap().bounds();
@@ -610,7 +612,7 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
-        menu_state.active = None;
+        let pre_menu_state = menu_state.active.take();
 
         for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
@@ -618,11 +620,14 @@ where
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                if pre_menu_state != Some(i + slice.start_index) {
+                    // New submenu selected, make sure it gets displayed
+                    shell.request_redraw();
+                }
                 menu_state.active = Some(i + slice.start_index);
-                return event::Status::Captured;
+                return;
             }
         }
-        event::Status::Ignored
     }
 
     pub(super) fn close_event(
@@ -630,6 +635,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
+        shell: &mut Shell<'_, Message>,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
         prev: &mut Index,
@@ -660,6 +666,7 @@ where
         };
 
         if !open {
+            shell.request_redraw();
             *prev = None;
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
@@ -755,18 +762,18 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     ///
-    pub(super) fn on_event(
+    pub(super) fn update(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
-        self.item.as_widget_mut().on_event(
+    ) {
+        self.item.as_widget_mut().update(
             &mut tree.children[0],
             event,
             layout,
@@ -785,14 +792,13 @@ where
         tree: &Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
         self.item.as_widget().mouse_interaction(
             &tree.children[0],
             layout,
             cursor,
-            viewport,
+            &layout.bounds(),
             renderer,
         )
     }
@@ -836,13 +842,17 @@ where
     pub(super) fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        self.item
-            .as_widget_mut()
-            .overlay(&mut tree.children[0], layout, renderer, translation)
+        self.item.as_widget_mut().overlay(
+            &mut tree.children[0],
+            layout,
+            renderer,
+            &layout.bounds(),
+            translation,
+        )
     }
 }
 

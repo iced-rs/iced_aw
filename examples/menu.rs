@@ -8,17 +8,16 @@ use iced::widget::{
 use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Border, Color, Element, Length, Size, Theme};
 
-use iced_aw::menu::{self, Item, Menu};
+use iced_aw::menu::{self, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
-use iced_aw::{menu_bar, menu_items};
+use iced_aw::{iced_aw_font, menu_bar, menu_items, ICED_AW_FONT_BYTES};
 use iced_aw::{quad, widgets::InnerBounds};
-use iced_fonts::required::{icon_to_string, RequiredIcons};
-use iced_fonts::REQUIRED_FONT;
 
 pub fn main() -> iced::Result {
-    iced::application(App::title, App::update, App::view)
+    iced::application(App::default, App::update, App::view)
+        .title(App::title)
         .theme(App::theme)
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
+        .font(ICED_AW_FONT_BYTES)
         .window_size(Size::new(1000.0, 600.0))
         .run()
 }
@@ -48,7 +47,7 @@ struct App {
 impl Default for App {
     fn default() -> Self {
         let theme = iced::Theme::custom(
-            "Custom Theme".into(),
+            "Custom Theme",
             theme::Palette {
                 primary: Color::from([0.45, 0.25, 0.57]),
                 ..iced::Theme::Light.palette()
@@ -91,7 +90,7 @@ impl App {
             }
             Message::ColorChange(c) => {
                 self.theme = iced::Theme::custom(
-                    "Color Change".into(),
+                    "Color Change",
                     theme::Palette {
                         primary: c,
                         ..self.theme.palette()
@@ -104,7 +103,7 @@ impl App {
                 let primary = self.theme.palette().primary;
                 if b {
                     self.theme = iced::Theme::custom(
-                        "Dark".into(),
+                        "Dark",
                         theme::Palette {
                             primary,
                             ..iced::Theme::Dark.palette()
@@ -112,7 +111,7 @@ impl App {
                     )
                 } else {
                     self.theme = iced::Theme::custom(
-                        "Light".into(),
+                        "Light",
                         theme::Palette {
                             primary,
                             ..iced::Theme::Light.palette()
@@ -475,26 +474,25 @@ fn base_button<'a>(
 fn labeled_button(
     label: &str,
     msg: Message,
-) -> button::Button<Message, iced::Theme, iced::Renderer> {
+) -> button::Button<'_, Message, iced::Theme, iced::Renderer> {
     base_button(text(label).align_y(alignment::Vertical::Center), msg)
 }
 
-fn debug_button(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
+fn debug_button(label: &str) -> button::Button<'_, Message, iced::Theme, iced::Renderer> {
     labeled_button(label, Message::Debug(label.into())).width(Length::Fill)
 }
 
-fn debug_button_s(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
+fn debug_button_s(label: &str) -> button::Button<'_, Message, iced::Theme, iced::Renderer> {
     labeled_button(label, Message::Debug(label.into())).width(Length::Shrink)
 }
 
-fn submenu_button(label: &str) -> button::Button<Message, iced::Theme, iced::Renderer> {
+fn submenu_button(label: &str) -> button::Button<'_, Message, iced::Theme, iced::Renderer> {
     base_button(
         row![
             text(label)
                 .width(Length::Fill)
                 .align_y(alignment::Vertical::Center),
-            text(icon_to_string(RequiredIcons::CaretRightFill))
-                .font(REQUIRED_FONT)
+            iced_aw_font::right_open()
                 .width(Length::Shrink)
                 .align_y(alignment::Vertical::Center),
         ]
