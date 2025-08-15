@@ -198,7 +198,7 @@ where
         {
             item.update(
                 tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            )
+            );
         }
         // let status = self
         //     .roots

@@ -62,7 +62,10 @@ Tree{
 #[derive(Debug)]
 pub(super) struct MenuState {
     scroll_offset: f32,
-    pub(super) active: Index,
+    /// Selected item, if any
+    active: Index,
+    /// Selected sub menu item, if any
+    pub(super) active_submenu: Index,
     pub(super) slice: MenuSlice,
     pub(super) pressed: bool,
 }
@@ -71,6 +74,7 @@ impl Default for MenuState {
         Self {
             scroll_offset: 0.0,
             active: None,
+            active_submenu: None,
             slice: MenuSlice {
                 start_index: 0,
                 end_index: usize::MAX - 1,
@@ -333,7 +337,7 @@ where
         {
             item.update(
                 tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            )
+            );
         }
         // let status = self.items[slice.start_index..=slice.end_index] // [item...]
         //     .iter_mut()
@@ -504,7 +508,7 @@ where
         }
 
         // draw path
-        if let Some(active) = menu_state.active {
+        if let Some(active) = menu_state.active_submenu {
             let Some(active_bounds) = slice_layout
                 .children()
                 .nth(active - menu_state.slice.start_index)
@@ -612,6 +616,8 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
+
+        menu_state.active_submenu = None;
         let pre_menu_state = menu_state.active.take();
 
         for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
@@ -619,12 +625,16 @@ where
             .zip(slice_layout.children())
             .enumerate()
         {
-            if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                if pre_menu_state != Some(i + slice.start_index) {
-                    // New submenu selected, make sure it gets displayed
+            if cursor.is_over(layout.bounds()) {
+                let index = Some(i + slice.start_index);
+                if pre_menu_state != index {
+                    // New sub menu selected, make sure it gets displayed
                     shell.request_redraw();
                 }
-                menu_state.active = Some(i + slice.start_index);
+                if item.menu.is_some() {
+                    menu_state.active_submenu = index;
+                }
+                menu_state.active = index;
                 return;
             }
         }
@@ -666,11 +676,14 @@ where
         };
 
         if !open {
-            shell.request_redraw();
             *prev = None;
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
+            menu_state.active_submenu = None;
             menu_state.pressed = false;
+            shell.request_redraw();
+        } else if menu_state.active.take().is_some() {
+            shell.request_redraw();
         }
     }
 }
