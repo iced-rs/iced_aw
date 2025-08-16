@@ -363,6 +363,7 @@ where
                 } else if cursor.is_over(offset_bounds) || cursor.is_over(check_bounds) {
                     shell.capture_event();
                 }
+                shell.request_redraw();
             }
             _ => {}
         }

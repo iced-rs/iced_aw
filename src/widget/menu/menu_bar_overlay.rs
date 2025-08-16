@@ -332,10 +332,14 @@ where
         );
 
         match re {
-            RecEvent::Event => shell.capture_event(),
+            RecEvent::Event => {
+                shell.capture_event();
+                shell.request_redraw();
+            }
             RecEvent::Close | RecEvent::None => {
                 if !cursor.is_over(bar_bounds) {
                     shell.capture_event();
+                    shell.request_redraw();
                 }
             }
         }
