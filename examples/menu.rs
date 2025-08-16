@@ -6,7 +6,7 @@ use iced::widget::{
     toggler, vertical_slider,
 };
 use iced::widget::{column as col, vertical_space};
-use iced::{alignment, theme, Border, Color, Element, Length, Size, Theme};
+use iced::{alignment, theme, Background, Border, Color, Element, Length, Size, Theme};
 
 use iced_aw::menu::{self, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
@@ -467,7 +467,23 @@ fn base_button<'a>(
 ) -> button::Button<'a, Message> {
     button(content)
         .padding([4, 8])
-        .style(iced::widget::button::primary)
+        .style(|theme, status|{
+            use iced_widget::button::{Status, Style};
+
+            let palette = theme.extended_palette();
+            let base = Style {
+                text_color: palette.background.base.text,
+                border: Border::default().rounded(6.0),
+                ..Style::default()
+            };
+            match status {
+                Status::Active => base.with_background(Color::TRANSPARENT),
+                Status::Hovered => base.with_background(palette.primary.weak.color),
+                Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
+                Status::Pressed => base.with_background(Color::from_rgb(0.0, 1.0, 0.0)),
+                // _ => iced::widget::button::primary(theme, status)
+            }
+        })
         .on_press(msg)
 }
 
