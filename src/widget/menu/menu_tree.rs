@@ -61,10 +61,22 @@ Tree{
 
 #[derive(Debug)]
 pub(super) struct MenuState {
-    scroll_offset: f32,
+    pub(super) scroll_offset: f32,
     pub(super) active: Index,
     pub(super) slice: MenuSlice,
     pub(super) pressed: bool,
+}
+impl MenuState{
+    // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
+    fn open_new_menu(&mut self, active_index: usize, active_item_tree: &mut Tree){
+        self.active = Some(active_index);
+
+        // init the new menu state
+        let new_menu_state = active_item_tree.children[1].state.downcast_mut::<MenuState>();
+        new_menu_state.active = None;
+        new_menu_state.pressed = false;
+        new_menu_state.scroll_offset = 0.0;
+    }
 }
 impl Default for MenuState {
     fn default() -> Self {
@@ -603,13 +615,14 @@ where
         let slice = &menu_state.slice;
         menu_state.active = None;
 
-        for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
+        for (i, ((item, new_tree), layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
+            .zip(tree.children[slice.start_index..=slice.end_index].iter_mut())
             .zip(slice_layout.children())
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                menu_state.active = Some(i + slice.start_index);
+                menu_state.open_new_menu(i + slice.start_index, new_tree);
                 return;
             }
         }
@@ -652,9 +665,6 @@ where
 
         if !open {
             *prev = None;
-            menu_state.scroll_offset = 0.0;
-            menu_state.active = None;
-            menu_state.pressed = false;
         }
     }
 }

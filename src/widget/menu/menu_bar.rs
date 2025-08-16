@@ -25,6 +25,19 @@ pub(super) struct MenuBarState {
     pub(super) open: bool,
     pub(super) is_pressed: bool,
 }
+impl MenuBarState{
+    // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
+    fn open_new_menu(&mut self, active_index: usize, active_item_tree: &mut Tree){
+        self.active_root = Some(active_index);
+        self.open = true;
+        
+        // init the new menu state
+        let new_menu_state = active_item_tree.children[1].state.downcast_mut::<MenuState>();
+        new_menu_state.active = None;
+        new_menu_state.pressed = false;
+        new_menu_state.scroll_offset = 0.0;
+    }
+}
 
 /// menu bar
 #[must_use]
@@ -214,27 +227,32 @@ where
                 if cursor.is_over(bar_bounds) && bar.is_pressed {
                     bar.open = true;
                     bar.is_pressed = false;
-                    for (i, l) in layout.children().enumerate() {
-                        if cursor.is_over(l.bounds()) {
-                            bar.active_root = Some(i);
-                            break;
+                    for (i, (l, item_tree)) in layout.children()
+                        .zip(tree.children.iter_mut())
+                        .enumerate() {
+                            if cursor.is_over(l.bounds()) {
+                                bar.open_new_menu(i, item_tree);
+                                break;
+                            }
                         }
-                    }
                     shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                 if bar.open {
                     if cursor.is_over(bar_bounds) {
-                        for (i, l) in layout.children().enumerate() {
-                            if cursor.is_over(l.bounds()) {
-                                bar.active_root = Some(i);
-                                break;
+                        for (i, (l, item_tree)) in layout.children()
+                            .zip(tree.children.iter_mut())
+                            .enumerate() {
+                                if cursor.is_over(l.bounds()) {
+                                    bar.open_new_menu(i, item_tree);
+                                    break;
+                                }
                             }
-                        }
                         shell.capture_event();
                     } else {
                         bar.open = false;
+                        bar.active_root = None;
                     }
                     // println!("MenuBar | update | CursorMoved | bar: {:?}", bar);
                     shell.request_redraw();
