@@ -62,7 +62,10 @@ Tree{
 #[derive(Debug)]
 pub(super) struct MenuState {
     scroll_offset: f32,
-    pub(super) active: Index,
+    /// Selected item, if any
+    active: Index,
+    /// Selected sub menu item, if any
+    pub(super) active_submenu: Index,
     pub(super) slice: MenuSlice,
     pub(super) pressed: bool,
 }
@@ -71,6 +74,7 @@ impl Default for MenuState {
         Self {
             scroll_offset: 0.0,
             active: None,
+            active_submenu: None,
             slice: MenuSlice {
                 start_index: 0,
                 end_index: usize::MAX - 1,
@@ -292,7 +296,7 @@ where
                         .move_to(children_position)
                         .translate([0.0, menu_state.scroll_offset]), // slice layout
                     Node::new(children_size).move_to(children_position), // prescroll bounds
-                    Node::new(offset_bounds.size()).move_to(offset_bounds.position()), // offset boundss
+                    Node::new(offset_bounds.size()).move_to(offset_bounds.position()), // offset bounds
                     Node::new(check_bounds.size()).move_to(check_bounds.position()), // check bounds
                 ]
                 .into(),
@@ -316,7 +320,6 @@ where
         viewport: &Rectangle,
         scroll_speed: ScrollSpeed,
     ) {
-        // STK: cleanup
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
         let prescroll = lc.next().unwrap().bounds();
@@ -333,38 +336,19 @@ where
         {
             item.update(
                 tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            )
+            );
         }
-        // let status = self.items[slice.start_index..=slice.end_index] // [item...]
-        //     .iter_mut()
-        //     .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
-        //     .zip(slice_layout.children()) // [item_layout...]
-        //     .map(|((item, tree), layout)| {
-        //         item.on_event(
-        //             tree,
-        //             event.clone(),
-        //             layout,
-        //             cursor,
-        //             renderer,
-        //             clipboard,
-        //             shell,
-        //             viewport,
-        //         )
-        //     })
-        //     .fold(Ignored, event::Status::merge);
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(prescroll) {
                     menu_state.pressed = true;
                     shell.capture_event();
-                    shell.request_redraw();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 menu_state.pressed = false;
                 shell.capture_event();
-                shell.request_redraw();
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if cursor.is_over(prescroll) {
@@ -509,7 +493,7 @@ where
         }
 
         // draw path
-        if let Some(active) = menu_state.active {
+        if let Some(active) = menu_state.active_submenu {
             let Some(active_bounds) = slice_layout
                 .children()
                 .nth(active - menu_state.slice.start_index)
@@ -617,6 +601,8 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
+
+        menu_state.active_submenu = None;
         let pre_menu_state = menu_state.active.take();
 
         for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
@@ -624,13 +610,17 @@ where
             .zip(slice_layout.children())
             .enumerate()
         {
-            if item.menu.is_some() && cursor.is_over(layout.bounds()) {
-                if pre_menu_state != Some(i + slice.start_index) {
-                    // New submenu selected, make sure it gets displayed
+            if cursor.is_over(layout.bounds()) {
+                let index = Some(i + slice.start_index);
+                if pre_menu_state != index {
+                    // New sub menu selected, make sure it gets displayed
                     shell.request_redraw();
                     shell.capture_event();
                 }
-                menu_state.active = Some(i + slice.start_index);
+                if item.menu.is_some() {
+                    menu_state.active_submenu = index;
+                }
+                menu_state.active = index;
                 return;
             }
         }
@@ -672,11 +662,14 @@ where
         };
 
         if !open {
-            shell.request_redraw();
             *prev = None;
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
+            menu_state.active_submenu = None;
             menu_state.pressed = false;
+            shell.request_redraw();
+        } else if menu_state.active.take().is_some() {
+            shell.request_redraw();
         }
     }
 }
@@ -890,7 +883,7 @@ impl Aod {
         direction: Direction,
     ) -> (f32, f32, Direction) {
         /*
-        Imagine there're two sticks, parent and child
+        Imagine there are two sticks, parent and child
         parent: o-----o
         child:  o----------o
 
@@ -900,19 +893,19 @@ impl Aod {
         1. to the right
                     o-----oo----------o
 
-        2. to the right with overlaping
+        2. to the right with overlapping
                     o-----o
                     o----------o
 
         3. to the left
         o----------oo-----o
 
-        4. to the left with overlaping
+        4. to the left with overlapping
                     o-----o
                o----------o
 
         The child goes to the default direction by default,
-        if the space on the default direction runs out it goes to the the other,
+        if the space on the default direction runs out it goes to the other,
         whether to use overlap is the caller's decision
 
         This can be applied to any direction

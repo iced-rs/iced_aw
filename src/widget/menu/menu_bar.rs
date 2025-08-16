@@ -188,7 +188,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        // STK: cleanup
         for ((item, tree), layout) in self
             .roots
             .iter_mut() // [Item...]
@@ -200,24 +199,6 @@ where
                 tree, event, layout, cursor, renderer, clipboard, shell, viewport,
             );
         }
-        // let status = self
-        //     .roots
-        //     .iter_mut() // [Item...]
-        //     .zip(tree.children.iter_mut()) // [item_tree...]
-        //     .zip(layout.children()) // [widget_node...]
-        //     .map(|((item, tree), layout)| {
-        //         item.on_event(
-        //             tree,
-        //             event.clone(),
-        //             layout,
-        //             cursor,
-        //             renderer,
-        //             clipboard,
-        //             shell,
-        //             viewport,
-        //         )
-        //     })
-        //     .fold(Ignored, event::Status::merge);
 
         let bar = tree.state.downcast_mut::<MenuBarState>();
         let bar_bounds = layout.bounds();
