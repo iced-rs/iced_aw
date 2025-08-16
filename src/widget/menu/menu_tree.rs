@@ -62,10 +62,7 @@ Tree{
 #[derive(Debug)]
 pub(super) struct MenuState {
     scroll_offset: f32,
-    /// Selected item, if any
-    active: Index,
-    /// Selected sub menu item, if any
-    pub(super) active_submenu: Index,
+    pub(super) active: Index,
     pub(super) slice: MenuSlice,
     pub(super) pressed: bool,
 }
@@ -74,7 +71,6 @@ impl Default for MenuState {
         Self {
             scroll_offset: 0.0,
             active: None,
-            active_submenu: None,
             slice: MenuSlice {
                 start_index: 0,
                 end_index: usize::MAX - 1,
@@ -491,12 +487,18 @@ where
         }
 
         // draw path
-        if let Some(active) = menu_state.active_submenu {
+        if let Some(active) = menu_state.active {
             let Some(active_bounds) = slice_layout
                 .children()
                 .nth(active - menu_state.slice.start_index)
                 .map(|l| l.bounds())
             else {
+                /* 
+                should never reach here
+                if there is an active index 
+                and it is not within the range of the slice
+                there is a serious bug in how the slice range is calculated
+                */
                 return;
             };
 
@@ -599,26 +601,15 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
-
-        menu_state.active_submenu = None;
-        let pre_menu_state = menu_state.active.take();
+        menu_state.active = None;
 
         for (i, (item, layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
             .zip(slice_layout.children())
             .enumerate()
         {
-            if cursor.is_over(layout.bounds()) {
-                let index = Some(i + slice.start_index);
-                if pre_menu_state != index {
-                    // New sub menu selected, make sure it gets displayed
-                    shell.request_redraw();
-                    shell.capture_event();
-                }
-                if item.menu.is_some() {
-                    menu_state.active_submenu = index;
-                }
-                menu_state.active = index;
+            if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                menu_state.active = Some(i + slice.start_index);
                 return;
             }
         }
@@ -663,7 +654,6 @@ where
             *prev = None;
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
-            menu_state.active_submenu = None;
             menu_state.pressed = false;
             shell.request_redraw();
         } else if menu_state.active.take().is_some() {

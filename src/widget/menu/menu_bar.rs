@@ -208,7 +208,6 @@ where
                 if cursor.is_over(bar_bounds) {
                     bar.is_pressed = true;
                     shell.capture_event();
-                    shell.request_redraw();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
@@ -222,7 +221,6 @@ where
                         }
                     }
                     shell.capture_event();
-                    shell.request_redraw();
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {

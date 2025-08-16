@@ -104,32 +104,30 @@ where
 
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
-                if let Some(active) = menu_state.active_submenu {
-                    if active < menu.items.len() {
-                        let next_item = &menu.items[active];
-                        let next_tree = &mut menu_tree.children[active];
-                        let next_parent_bounds = {
-                            let slice_node = &menu_nodes.last().unwrap().children()[0];
-                            let Some(node) = slice_node
-                                .children()
-                                .get(active - menu_state.slice.start_index)
-                            else {
-                                return;
-                            };
-
-                            node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
+                if let Some(active) = menu_state.active {
+                    let next_item = &menu.items[active];
+                    let next_tree = &mut menu_tree.children[active];
+                    let next_parent_bounds = {
+                        let slice_node = &menu_nodes.last().unwrap().children()[0];
+                        let Some(node) = slice_node
+                            .children()
+                            .get(active - menu_state.slice.start_index)
+                        else {
+                            return;
                         };
-                        rec(
-                            renderer,
-                            next_item,
-                            next_tree,
-                            menu_nodes,
-                            check_bounds_width,
-                            next_parent_bounds,
-                            direction,
-                            viewport,
-                        );
-                    }
+
+                        node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
+                    };
+                    rec(
+                        renderer,
+                        next_item,
+                        next_tree,
+                        menu_nodes,
+                        check_bounds_width,
+                        next_parent_bounds,
+                        direction,
+                        viewport,
+                    );
                 }
             }
         }
@@ -243,40 +241,36 @@ where
 
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
 
-            let rec_event = if let Some(active) = menu_state.active_submenu {
-                if active < menu_tree.children.len() {
-                    let next_tree = &mut menu_tree.children[active];
-                    let next_item = &mut menu.items[active];
-                    let next_parent_bounds = {
-                        let Some(layout) = slice_layout
-                            .children()
-                            .nth(active - menu_state.slice.start_index)
-                        else {
-                            prev_bounds_list.pop();
-                            return RecEvent::Event;
-                        };
-
-                        layout.bounds()
+            let rec_event = if let Some(active) = menu_state.active {
+                let next_tree = &mut menu_tree.children[active];
+                let next_item = &mut menu.items[active];
+                let next_parent_bounds = {
+                    let Some(layout) = slice_layout
+                        .children()
+                        .nth(active - menu_state.slice.start_index)
+                    else {
+                        prev_bounds_list.pop();
+                        return RecEvent::Event;
                     };
 
-                    rec(
-                        next_tree,
-                        next_item,
-                        event,
-                        layout_iter,
-                        cursor,
-                        renderer,
-                        clipboard,
-                        shell,
-                        next_parent_bounds,
-                        viewport,
-                        prev_bounds_list,
-                        &mut menu_state.active_submenu,
-                        scroll_speed,
-                    )
-                } else {
-                    RecEvent::Close
-                }
+                    layout.bounds()
+                };
+
+                rec(
+                    next_tree,
+                    next_item,
+                    event,
+                    layout_iter,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    shell,
+                    next_parent_bounds,
+                    viewport,
+                    prev_bounds_list,
+                    &mut menu_state.active,
+                    scroll_speed,
+                )
             } else {
                 RecEvent::Close
             };
@@ -388,7 +382,7 @@ where
 
             let i = menu.mouse_interaction(menu_tree, menu_layout, cursor, renderer);
 
-            menu_state.active_submenu.map_or(i, |active| {
+            menu_state.active.map_or(i, |active| {
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
                 rec(next_tree, next_item, layout_iter, cursor, renderer).max(i)
@@ -545,7 +539,7 @@ where
                     viewport,
                 );
 
-                if let Some(active) = menu_state.active_submenu {
+                if let Some(active) = menu_state.active {
                     let next_tree = &menu_tree.children[active];
                     let next_item = &menu.items[active];
 
