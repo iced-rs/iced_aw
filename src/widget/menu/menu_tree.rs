@@ -440,12 +440,10 @@ where
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
-        let max_item_slice = (self.items.len() - 1).min(slice.end_index);
-        let max_tree_slice = (tree.children.len() - 1).min(slice.end_index);
 
-        self.items[slice.start_index..=max_item_slice]
+        self.items[slice.start_index..=slice.end_index]
             .iter()
-            .zip(tree.children[slice.start_index..=max_tree_slice].iter()) // [item_tree...]
+            .zip(tree.children[slice.start_index..=slice.end_index].iter()) // [item_tree...]
             .zip(slice_layout.children()) // [item_layout...]
             .map(|((item, tree), layout)| item.mouse_interaction(tree, layout, cursor, renderer))
             .max()
