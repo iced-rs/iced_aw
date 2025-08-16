@@ -213,7 +213,7 @@ where
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) && bar.is_pressed {
-                    bar.open = !bar.open;
+                    bar.open = true;
                     bar.is_pressed = false;
                     for (i, l) in layout.children().enumerate() {
                         if cursor.is_over(l.bounds()) {
