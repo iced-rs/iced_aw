@@ -12,8 +12,7 @@ use iced::{
         mouse, overlay, renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
-    },
-    Event, Point, Rectangle, Size, Vector,
+    }, window, Event, Point, Rectangle, Size, Vector
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -249,6 +248,12 @@ where
                         .children()
                         .nth(active - menu_state.slice.start_index)
                     else {
+                        /* 
+                        should never reach here
+                        if there is an active index 
+                        and it is not within the range of the slice layout
+                        there is a serious bug in how the slice range or the slice layout is calculated or updated
+                        */
                         prev_bounds_list.pop();
                         return RecEvent::Event;
                     };
@@ -328,14 +333,22 @@ where
         match re {
             RecEvent::Event => {
                 shell.capture_event();
-                shell.request_redraw();
             }
             RecEvent::Close | RecEvent::None => {
                 if !cursor.is_over(bar_bounds) {
                     shell.capture_event();
-                    shell.request_redraw();
                 }
             }
+        }
+        if bar.active_root.is_none() && !cursor.is_over(bar_bounds){
+            bar.open = false;
+            bar.is_pressed = false;
+        }
+        // println!("MenuBarOverlay | bar: {:?}", bar);
+        // println!("MenuBarOverlay | update | event: {:?}", event);
+        if let Event::Window(window::Event::RedrawRequested(_)) = event {
+        }else{
+            shell.request_redraw();
         }
     }
 

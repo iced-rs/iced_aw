@@ -19,7 +19,7 @@ use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
 pub use crate::style::status::{Status, StyleFn};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(super) struct MenuBarState {
     pub(super) active_root: Index,
     pub(super) open: bool,
@@ -236,6 +236,7 @@ where
                     } else {
                         bar.open = false;
                     }
+                    // println!("MenuBar | update | CursorMoved | bar: {:?}", bar);
                     shell.request_redraw();
                 }
             }

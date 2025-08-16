@@ -496,8 +496,8 @@ where
                 /* 
                 should never reach here
                 if there is an active index 
-                and it is not within the range of the slice
-                there is a serious bug in how the slice range is calculated
+                and it is not within the range of the slice layout
+                there is a serious bug in how the slice range or the slice layout is calculated or updated
                 */
                 return;
             };
@@ -591,7 +591,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        shell: &mut Shell<'_, Message>,
+        _shell: &mut Shell<'_, Message>,
     ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
@@ -620,7 +620,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
-        shell: &mut Shell<'_, Message>,
+        _shell: &mut Shell<'_, Message>,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
         prev: &mut Index,
@@ -655,9 +655,6 @@ where
             menu_state.scroll_offset = 0.0;
             menu_state.active = None;
             menu_state.pressed = false;
-            shell.request_redraw();
-        } else if menu_state.active.take().is_some() {
-            shell.request_redraw();
         }
     }
 }

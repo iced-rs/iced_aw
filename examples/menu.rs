@@ -414,6 +414,14 @@ impl App {
                     (debug_button("MMNN").height(50))
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
             })
+            (debug_button_s("single"), {
+                let sub1 = menu_tpl_2(menu_items!(
+                    (debug_button("Item"))
+                )).width(220.0);
+                menu_tpl_1(menu_items!(
+                    (submenu_button("A sub menu"), sub1)
+                )).width(140.0)
+            })
         )
         .draw_path(menu::DrawPath::Backdrop)
         .style(|theme:&iced::Theme, status: Status | menu::Style{
