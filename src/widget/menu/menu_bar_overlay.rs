@@ -33,6 +33,7 @@ where
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: &'b DrawPath,
     pub(super) scroll_speed: ScrollSpeed,
+    pub(super) close_on_click: bool,
     pub(super) class: &'b Theme::Class<'a>,
 }
 impl<'b, Message, Theme, Renderer> MenuBarOverlay<'_, 'b, Message, Theme, Renderer>
@@ -340,6 +341,11 @@ where
                 }
             }
         }
+        
+        if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) = (self.close_on_click, event) {
+            bar.active_root = None;
+        }
+
         if bar.active_root.is_none() && !cursor.is_over(bar_bounds){
             bar.open = false;
             bar.is_pressed = false;

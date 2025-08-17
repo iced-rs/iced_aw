@@ -3,9 +3,8 @@
 use iced::border::Radius;
 use iced::widget::{
     button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input,
-    toggler, vertical_slider,
+    toggler, vertical_slider,column as col, vertical_space, Space,
 };
-use iced::widget::{column as col, vertical_space};
 use iced::{alignment, theme, Background, Border, Color, Element, Length, Size, Theme};
 
 use iced_aw::menu::{self, Menu};
@@ -31,6 +30,7 @@ enum Message {
     ColorChange(Color),
     ThemeChange(bool),
     TextChange(String),
+    ToggleCloseOnClick(bool),
     None,
 }
 
@@ -41,6 +41,7 @@ struct App {
     toggle: bool,
     theme: iced::Theme,
     dark_mode: bool,
+    close_on_click: bool,
     text: String,
 }
 
@@ -61,6 +62,7 @@ impl Default for App {
             toggle: false,
             theme,
             dark_mode: false,
+            close_on_click: false,
             text: "Text Input".into(),
         }
     }
@@ -97,6 +99,10 @@ impl App {
                     },
                 );
                 self.title = format!("[{:.2}, {:.2}, {:.2}]", c.r, c.g, c.b);
+            }
+            Message::ToggleCloseOnClick(b) => {
+                self.close_on_click = b;
+                self.title = b.to_string();
             }
             Message::ThemeChange(b) => {
                 self.dark_mode = b;
@@ -231,9 +237,19 @@ impl App {
                 (debug_button("Item"))
             )).width(240.0))
             (debug_button_s("Controls"), menu_tpl_1(menu_items!(
-                (row![toggler(
+                (row![toggle(
+                        "Close On Click",
+                        self.close_on_click,
+                        Message::ToggleCloseOnClick
+                    )
+                    ].padding([0, 8])
+                )
+                (row![toggle(
+                        "Dark Mode",
                         self.dark_mode,
-                    ).label("Dark Mode".to_string()).on_toggle(Message::ThemeChange)].padding([0, 8])
+                        Message::ThemeChange
+                    )
+                    ].padding([0, 8])
                 )
                 (color_button([0.45, 0.25, 0.57]))
                 (color_button([0.15, 0.59, 0.64]))
@@ -424,6 +440,7 @@ impl App {
             })
         )
         .draw_path(menu::DrawPath::Backdrop)
+        .close_on_click(self.close_on_click)
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
                 radius: Radius::new(6.0),
@@ -593,4 +610,18 @@ fn circle(color: Color) -> quad::Quad {
         height: Length::Fixed(20.0),
         ..Default::default()
     }
+}
+
+fn toggle<'a>(
+    label: &'a str,
+    is_checked: bool,
+    on_toggle: impl Fn(bool) -> Message + 'a,
+) -> Element<'a, Message, iced::Theme, iced::Renderer>{
+    row![
+        text(label).align_y(alignment::Vertical::Center),
+        Space::new(Length::Fill, Length::Shrink),
+        toggler(is_checked).size(20.0).on_toggle(on_toggle),
+    ]
+    .align_y(alignment::Alignment::Center)
+    .into()
 }

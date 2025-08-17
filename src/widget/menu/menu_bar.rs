@@ -54,6 +54,7 @@ where
     check_bounds_width: f32,
     draw_path: DrawPath,
     scroll_speed: ScrollSpeed,
+    close_on_click: bool,
     class: Theme::Class<'a>,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
@@ -81,6 +82,7 @@ where
                 line: 60.0,
                 pixel: 1.0,
             },
+            close_on_click: false,
             class: Theme::default(),
         }
     }
@@ -118,6 +120,12 @@ where
     /// Sets the scroll speed of the [`Menu`]s in the [`MenuBar`]
     pub fn scroll_speed(mut self, scroll_speed: ScrollSpeed) -> Self {
         self.scroll_speed = scroll_speed;
+        self
+    }
+
+    /// Sets the close on click option of the [`MenuBar`]
+    pub fn close_on_click(mut self, close_on_click: bool) -> Self {
+        self.close_on_click = close_on_click;
         self
     }
 
@@ -378,6 +386,7 @@ where
                     check_bounds_width: self.check_bounds_width,
                     draw_path: &self.draw_path,
                     scroll_speed: self.scroll_speed,
+                    close_on_click: self.close_on_click,
                     class: &self.class,
                 }
                 .overlay_element(),
