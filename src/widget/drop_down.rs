@@ -296,46 +296,27 @@ where
             )
             .height(*self.height);
 
-        let limits = {
-            let max = limits.max();
+        let previous_position = self.position;
+        let max = limits.max();
 
-            // Offset is computed from the reference rect, it isn't a translation vector.
-            let width_before = self.underlay_bounds.x - self.offset.x;
-            let width_after =
-                max.width - self.underlay_bounds.x - self.underlay_bounds.width - self.offset.x;
-            let height_above = self.underlay_bounds.y - self.offset.y;
-            let height_below =
-                max.height - self.underlay_bounds.y - self.underlay_bounds.height - self.offset.y;
+        let height_above = (previous_position.y - self.offset.y).max(0.0);
+        let height_below =
+            (max.height - previous_position.y - self.underlay_bounds.height - self.offset.y)
+                .max(0.0);
 
-            let ref_center = self.underlay_bounds.center();
-            let max_width_symmetric = ref_center.x.min(max.width - ref_center.x) * 2.0;
-            let max_height_symmetric = ref_center.y.min(max.height - ref_center.y) * 2.0;
-            match self.alignment {
-                Alignment::TopStart => limits
-                    .max_height(height_above + self.underlay_bounds.height)
-                    .max_width(width_before),
-                Alignment::Top => limits
-                    .max_height(height_above)
-                    .max_width(max_width_symmetric),
-                Alignment::TopEnd => limits
-                    .max_height(height_above + self.underlay_bounds.height)
-                    .max_width(width_after),
-                Alignment::End => limits
-                    .max_width(width_after)
-                    .max_height(max_height_symmetric),
-                Alignment::BottomEnd => limits
-                    .max_height(height_below + self.underlay_bounds.height)
-                    .max_width(width_after),
-                Alignment::Bottom => limits
-                    .max_height(height_below)
-                    .max_width(max_width_symmetric),
-                Alignment::BottomStart => limits
-                    .max_height(height_below + self.underlay_bounds.height)
-                    .max_width(width_before),
-                Alignment::Start => limits
-                    .max_width(width_before)
-                    .max_height(max_height_symmetric),
+        let ref_center_y = previous_position.y + self.underlay_bounds.height / 2.0;
+        let max_height_symmetric = (ref_center_y.min(max.height - ref_center_y) * 2.0).max(0.0);
+
+        let limits = match self.alignment {
+            Alignment::Top => limits.max_height(height_above),
+            Alignment::TopStart | Alignment::TopEnd => {
+                limits.max_height((height_above + self.underlay_bounds.height).max(0.0))
             }
+            Alignment::Bottom => limits.max_height(height_below),
+            Alignment::BottomEnd | Alignment::BottomStart => {
+                limits.max_height((height_below + self.underlay_bounds.height).max(0.0))
+            }
+            Alignment::Start | Alignment::End => limits.max_height(max_height_symmetric),
         };
 
         let mut node = self
@@ -343,9 +324,7 @@ where
             .as_widget()
             .layout(self.state, renderer, &limits);
 
-        let previous_position = self.position;
-
-        let new_position = match self.alignment {
+        let mut new_position = match self.alignment {
             Alignment::TopStart => Point::new(
                 previous_position.x - node.bounds().width - self.offset.x,
                 previous_position.y - node.bounds().height + self.underlay_bounds.height
@@ -384,8 +363,21 @@ where
             ),
         };
 
-        node.move_to_mut(new_position);
+        if new_position.x + node.bounds().width > max.width {
+            new_position.x = max.width - node.bounds().width;
+        }
+        if new_position.x < 0.0 {
+            new_position.x = 0.0;
+        }
 
+        if new_position.y + node.bounds().height > max.height {
+            new_position.y = max.height - node.bounds().height;
+        }
+        if new_position.y < 0.0 {
+            new_position.y = 0.0;
+        }
+
+        node.move_to_mut(new_position);
         node
     }
 
