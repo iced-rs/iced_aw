@@ -20,8 +20,6 @@ pub struct Style {
     pub menu_border: Border,
     /// The shadow of the menus
     pub menu_shadow: Shadow,
-    /// Expand the menu background
-    pub menu_background_expand: Padding,
 
     /// The backgraound of the path
     pub path: Background,
@@ -50,7 +48,6 @@ impl std::default::Default for Style {
                 offset: Vector::ZERO,
                 blur_radius: 10.0,
             },
-            menu_background_expand: 5.into(),
             path: Color::from([0.3; 3]).into(),
             path_border: Border {
                 radius: 6.0.into(),

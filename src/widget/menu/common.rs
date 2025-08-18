@@ -69,6 +69,24 @@ pub(super) type Index = Option<usize>;
 
 /// Should be returned from the recursive event processing function,
 /// tells the caller which type of event has been processed
+/// 
+/// `Event`: The child event has been processed.
+/// The parent menu should process a redraw request event.
+/// 
+/// `Close`: Either the child menu has decided to close itself, 
+/// or that there is no child menu open, 
+/// from the parent menu's perspective, 
+/// there is no difference between the two. 
+/// The parent menu should check if it should close itself,
+/// if not then it should process the event.
+/// 
+/// `None`: A child menu is open, but it did not process the event, 
+/// this happens when the cursor hovers over the item that opens the child menu
+/// but has not entered the child menu yet, 
+/// in this case the parent menu should process the event, 
+/// but close check is not needed.
+/// 
+#[derive(Debug)]
 pub(super) enum RecEvent {
     Event,
     Close,

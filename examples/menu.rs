@@ -134,6 +134,7 @@ impl App {
     }
 
     fn view(&self) -> iced::Element<'_, Message> {
+        println!("App | view");
         let menu_tpl_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
@@ -432,7 +433,8 @@ impl App {
             })
             (debug_button_s("single"), {
                 let sub1 = menu_tpl_2(menu_items!(
-                    (debug_button("Item"))
+                    (debug_button("First Item"))
+                    (debug_button("Second Item"))
                 )).width(220.0);
                 menu_tpl_1(menu_items!(
                     (submenu_button("A sub menu"), sub1)
@@ -490,6 +492,15 @@ fn base_button<'a>(
     content: impl Into<Element<'a, Message>>,
     msg: Message,
 ) -> button::Button<'a, Message> {
+    fn scale(color: Color,factor: f32) -> Color {
+        Color {
+            r: (color.r * factor).clamp(0.0, 1.0),
+            g: (color.g * factor).clamp(0.0, 1.0),
+            b: (color.b * factor).clamp(0.0, 1.0),
+            a: color.a,
+        }
+    }
+
     button(content)
         .padding([4, 8])
         .style(|theme, status|{
@@ -503,9 +514,11 @@ fn base_button<'a>(
             };
             match status {
                 Status::Active => base.with_background(Color::TRANSPARENT),
-                Status::Hovered => base.with_background(palette.primary.weak.color),
-                Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
-                Status::Pressed => base.with_background(Color::from_rgb(0.0, 1.0, 0.0)),
+                Status::Hovered => base.with_background(scale(palette.primary.weak.color, 1.2)),
+                Status::Disabled => base.with_background(Color::from_rgb(0.5, 0.5, 0.5)),
+                Status::Pressed => base.with_background(scale(palette.primary.weak.color, 1.0)),
+                // Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
+                // Status::Pressed => base.with_background(Color::from_rgb(0.0, 1.0, 0.0)),
                 // _ => iced::widget::button::primary(theme, status)
             }
         })

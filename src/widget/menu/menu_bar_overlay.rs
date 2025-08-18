@@ -12,7 +12,9 @@ use iced::{
         mouse, overlay, renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
-    }, window, Event, Point, Rectangle, Size, Vector
+    }, 
+    window, Event, Point, Rectangle, Size, Vector, Padding, 
+    time::Instant
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};
@@ -82,7 +84,6 @@ where
             item: &Item<'_, Message, Theme, Renderer>,
             tree: &mut Tree,
             menu_nodes: &mut Vec<Node>,
-            check_bounds_width: f32,
             parent_bounds: Rectangle,
             parent_direction: (Direction, Direction),
             viewport: &Rectangle,
@@ -94,12 +95,11 @@ where
                     menu_tree,
                     renderer,
                     &Limits::NONE,
-                    check_bounds_width,
                     parent_bounds,
                     parent_direction,
                     viewport,
                 );
-                // Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+                // Node{inf, [ slice_node, prescroll, offset_bounds]}
                 menu_nodes.push(menu_node);
 
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
@@ -113,6 +113,12 @@ where
                             .children()
                             .get(active - menu_state.slice.start_index)
                         else {
+                            /* 
+                            should never reach here
+                            if there is an active index 
+                            and it is not within the range of the slice layout
+                            there is a serious bug in how the slice range or the slice layout is calculated or updated
+                            */
                             return;
                         };
 
@@ -123,7 +129,6 @@ where
                         next_item,
                         next_tree,
                         menu_nodes,
-                        check_bounds_width,
                         next_parent_bounds,
                         direction,
                         viewport,
@@ -160,7 +165,6 @@ where
             active_root,
             active_tree,
             &mut menu_nodes,
-            self.check_bounds_width,
             parent_bounds,
             parent_direction,
             &Rectangle::new(Point::ORIGIN, bounds),
@@ -223,6 +227,8 @@ where
             prev_bounds_list: &mut Vec<Rectangle>,
             prev: &mut Index,
             scroll_speed: ScrollSpeed,
+            check_bounds_width: f32,
+            depth: usize,
         ) -> RecEvent {
             let Some(ref mut menu) = item.menu else {
                 return RecEvent::None;
@@ -231,15 +237,19 @@ where
 
             let Some(menu_layout) = layout_iter.next() else {
                 return RecEvent::None;
-            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
             let mut mc = menu_layout.children();
             let slice_layout = mc.next().unwrap(); // slice_node
             let prescroll = mc.next().unwrap().bounds();
             let offset_bounds = mc.next().unwrap().bounds();
-            prev_bounds_list.push(prescroll);
+            let background_bounds = pad_rectangle(prescroll, menu.padding);
+            let check_bounds = pad_rectangle(background_bounds, Padding::new(check_bounds_width));
+
+            prev_bounds_list.push(background_bounds);
 
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
+            let is_pressed = menu_state.pressed;
 
             let rec_event = if let Some(active) = menu_state.active {
                 let next_tree = &mut menu_tree.children[active];
@@ -276,6 +286,8 @@ where
                     prev_bounds_list,
                     &mut menu_state.active,
                     scroll_speed,
+                    check_bounds_width,
+                    depth + 1,
                 )
             } else {
                 RecEvent::Close
@@ -283,17 +295,71 @@ where
 
             prev_bounds_list.pop();
 
+            println!();
+            println!("MenuBarOverlay | depth: {:?}", depth);
+            println!("MenuBarOverlay | menu_state.active: {:?}", menu_state.active);
+            println!("MenuBarOverlay | menu_state.pressed: {:?}", menu_state.pressed);
+            println!("MenuBarOverlay | rec_event: {:?}", rec_event);
+            println!("MenuBarOverlay | event: {:?}", event);
+            println!("MenuBarOverlay | cursor: {:?}", cursor);
+            // println!("MenuBarOverlay | cursor is over prescroll: {:?}", cursor.is_over(prescroll));
+            // println!("MenuBarOverlay | cursor is over offset bounds: {:?}", cursor.is_over(offset_bounds));
+            println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
+            // println!("MenuBarOverlay | background bounds: {:?}", background_bounds);
+            // println!("MenuBarOverlay | background bounds bottom: {:?}", background_bounds.y + background_bounds.height);
+            // println!("MenuBarOverlay | background bounds right: {:?}", background_bounds.x + background_bounds.width);
+            
+            // let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
+            // let mouse_event = Event::Mouse(mouse::Event::CursorMoved { 
+            //     position: cursor.position().unwrap_or(Point { x: f32::MAX, y: f32::MAX }) 
+            // });
+
             match rec_event {
-                RecEvent::Event => RecEvent::Event,
+                RecEvent::Event => {
+                    // let mut fake_messages = vec![];
+                    // let mut fake_shell = Shell::new(&mut fake_messages);
+                    // menu.update(
+                    //     menu_tree,
+                    //     &redraw_event,
+                    //     menu_layout,
+                    //     cursor,
+                    //     renderer,
+                    //     clipboard,
+                    //     &mut fake_shell,
+                    //     viewport,
+                    //     scroll_speed,
+                    //     check_bounds,
+                    // );
+                    RecEvent::Event
+                },
                 RecEvent::Close => {
-                    if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
-                        menu.open_event(menu_tree, menu_layout, cursor, shell);
+                    if is_pressed || cursor.is_over(background_bounds){
+                        menu.update(
+                            menu_tree,
+                            event,
+                            menu_layout,
+                            cursor,
+                            renderer,
+                            clipboard,
+                            shell,
+                            viewport,
+                            scroll_speed,
+                        );
+                        menu.open_event(menu_tree, menu_layout, cursor);
                         RecEvent::Event
                     } else if cursor.is_over(offset_bounds) {
                         RecEvent::Event
                     } else {
-                        menu.close_event(menu_tree, menu_layout, cursor, shell, parent_bounds, prev_bounds_list, prev);
+                        menu.close_event(
+                            menu_tree, 
+                            menu_layout, 
+                            cursor, 
+                            check_bounds, 
+                            background_bounds, 
+                            parent_bounds, 
+                            prev_bounds_list, 
+                            prev
+                        );
                         if prev.is_some() {
                             RecEvent::None
                         } else {
@@ -302,15 +368,21 @@ where
                     }
                 }
                 RecEvent::None => {
-                    if menu_state.pressed || cursor.is_over(prescroll){
-                        menu.update(menu_tree, event, menu_layout, cursor, renderer, clipboard, shell, viewport, scroll_speed);
-                        menu.open_event(menu_tree, menu_layout, cursor, shell);
-                        RecEvent::Event
-                    } else if cursor.is_over(offset_bounds) {
-                        RecEvent::Event
-                    } else {
-                        RecEvent::None
+                    if is_pressed || cursor.is_over(background_bounds){
+                        menu.update(
+                            menu_tree,
+                            event,
+                            menu_layout,
+                            cursor,
+                            renderer,
+                            clipboard,
+                            shell,
+                            viewport,
+                            scroll_speed,
+                        );
+                        menu.open_event(menu_tree, menu_layout, cursor);
                     }
+                    RecEvent::Event
                 }
             }
         }
@@ -329,18 +401,21 @@ where
             &mut prev_bounds_list,
             &mut bar.active_root,
             self.scroll_speed,
+            self.check_bounds_width,
+            0,
         );
 
-        match re {
-            RecEvent::Event => {
-                shell.capture_event();
-            }
-            RecEvent::Close | RecEvent::None => {
-                if !cursor.is_over(bar_bounds) {
-                    shell.capture_event();
-                }
-            }
-        }
+        // match re {
+        //     RecEvent::Event => {
+        //         shell.capture_event();
+        //     }
+        //     RecEvent::Close | RecEvent::None => {
+        //         if !cursor.is_over(bar_bounds) {
+        //             shell.capture_event();
+        //         }
+        //     }
+        // }
+        shell.capture_event();
         
         if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) = (self.close_on_click, event) {
             bar.active_root = None;
@@ -395,7 +470,7 @@ where
 
             let Some(menu_layout) = layout_iter.next() else {
                 return mouse::Interaction::default();
-            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
@@ -542,7 +617,7 @@ where
 
                 let Some(menu_layout) = layout_iter.next() else {
                     return;
-                }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds, check_bounds ]}
+                }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
