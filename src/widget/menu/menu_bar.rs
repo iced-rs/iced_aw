@@ -24,6 +24,7 @@ pub(super) struct MenuBarState {
     pub(super) active_root: Index,
     pub(super) open: bool,
     pub(super) is_pressed: bool,
+    pub(super) rec_event: Option<RecEvent>,
 }
 impl MenuBarState{
     // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
@@ -46,16 +47,16 @@ where
     Theme: Catalog,
     Renderer: renderer::Renderer,
 {
-    roots: Vec<Item<'a, Message, Theme, Renderer>>,
+    pub(super) roots: Vec<Item<'a, Message, Theme, Renderer>>,
     spacing: Pixels,
     padding: Padding,
     width: Length,
     height: Length,
-    check_bounds_width: f32,
-    draw_path: DrawPath,
-    scroll_speed: ScrollSpeed,
-    close_on_click: bool,
-    class: Theme::Class<'a>,
+    pub(super) check_bounds_width: f32,
+    pub(super) draw_path: DrawPath,
+    pub(super) scroll_speed: ScrollSpeed,
+    pub(super) close_on_click: bool,
+    pub(super) class: Theme::Class<'a>,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
@@ -224,6 +225,12 @@ where
         let bar = tree.state.downcast_mut::<MenuBarState>();
         let bar_bounds = layout.bounds();
 
+        if let Some(RecEvent::Event) = bar.rec_event {
+            bar.rec_event = None;
+            shell.capture_event();
+            return;
+        }
+
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) {
@@ -365,7 +372,7 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         _renderer: &Renderer,
         _viewport: &Rectangle,
         translation: iced::Vector,
@@ -378,16 +385,18 @@ where
         if state.open {
             Some(
                 MenuBarOverlay {
+                    menu_bar: self,
+                    layout,
                     translation,
                     tree,
-                    roots: &mut self.roots,
+                    // roots: &mut self.roots,
                     init_bar_bounds,
                     init_root_bounds,
-                    check_bounds_width: self.check_bounds_width,
-                    draw_path: &self.draw_path,
-                    scroll_speed: self.scroll_speed,
-                    close_on_click: self.close_on_click,
-                    class: &self.class,
+                    // check_bounds_width: self.check_bounds_width,
+                    // draw_path: &self.draw_path,
+                    // scroll_speed: self.scroll_speed,
+                    // close_on_click: self.close_on_click,
+                    // class: &self.class,
                 }
                 .overlay_element(),
             )
