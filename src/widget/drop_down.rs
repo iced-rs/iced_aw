@@ -404,6 +404,13 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
+        self.underlay_bounds = Rectangle {
+            x: self.position.x,
+            y: self.position.y,
+            width: self.underlay_bounds.width,
+            height: self.underlay_bounds.height,
+        };
+
         if let Some(on_dismiss) = self.on_dismiss {
             match &event {
                 Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
