@@ -12,7 +12,8 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size,
+    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size, window,
+    time::Instant,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -28,12 +29,25 @@ pub(super) struct MenuBarState {
 }
 impl MenuBarState{
     // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
-    fn open_new_menu(&mut self, active_index: usize, active_item_tree: &mut Tree){
+    fn open_new_menu<'a, Message, Theme, Renderer>(
+        &mut self, 
+        active_index: usize, 
+        item: &mut Item<'a, Message, Theme, Renderer>,
+        item_tree: &mut Tree,
+    )
+    where
+        Theme: Catalog,
+        Renderer: renderer::Renderer,
+    {
+        if item.menu.is_none() {
+            return;
+        };
         self.active_root = Some(active_index);
         self.open = true;
         
         // init the new menu state
-        let new_menu_state = active_item_tree.children[1].state.downcast_mut::<MenuState>();
+        let new_menu_tree = &mut item_tree.children[1];
+        let new_menu_state = new_menu_tree.state.downcast_mut::<MenuState>();
         new_menu_state.active = None;
         new_menu_state.pressed = false;
         new_menu_state.scroll_offset = 0.0;
@@ -210,6 +224,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
+        println!("MenuBar | update");
         for ((item, tree), layout) in self
             .roots
             .iter_mut() // [Item...]
@@ -228,6 +243,7 @@ where
         if let Some(RecEvent::Event) = bar.rec_event {
             bar.rec_event = None;
             shell.capture_event();
+            println!("MenuBar | update | rec_event | captured");
             return;
         }
 
@@ -242,11 +258,15 @@ where
                 if cursor.is_over(bar_bounds) && bar.is_pressed {
                     bar.open = true;
                     bar.is_pressed = false;
-                    for (i, (l, item_tree)) in layout.children()
-                        .zip(tree.children.iter_mut())
-                        .enumerate() {
-                            if cursor.is_over(l.bounds()) {
-                                bar.open_new_menu(i, item_tree);
+                    for (i, ((item, tree), layout)) in self
+                        .roots
+                        .iter_mut() // [Item...]
+                        .zip(tree.children.iter_mut()) // [item_tree...]
+                        .zip(layout.children())
+                        .enumerate() 
+                        {
+                            if cursor.is_over(layout.bounds()) {
+                                bar.open_new_menu(i, item, tree);
                                 break;
                             }
                         }
@@ -256,11 +276,15 @@ where
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                 if bar.open {
                     if cursor.is_over(bar_bounds) {
-                        for (i, (l, item_tree)) in layout.children()
-                            .zip(tree.children.iter_mut())
-                            .enumerate() {
-                                if cursor.is_over(l.bounds()) {
-                                    bar.open_new_menu(i, item_tree);
+                        for (i, ((item, tree), layout)) in self
+                            .roots
+                            .iter_mut() // [Item...]
+                            .zip(tree.children.iter_mut()) // [item_tree...]
+                            .zip(layout.children())
+                            .enumerate() 
+                            {
+                                if cursor.is_over(layout.bounds()) {
+                                    bar.open_new_menu(i, item, tree);
                                     break;
                                 }
                             }
@@ -342,19 +366,19 @@ where
 
                 match self.draw_path {
                     DrawPath::Backdrop => {
-                        renderer.fill_quad(
-                            renderer::Quad {
-                                bounds: active_bounds,
-                                border: styling.path_border,
-                                ..Default::default()
-                            },
-                            styling.path,
-                        );
+                        // renderer.fill_quad(
+                        //     renderer::Quad {
+                        //         bounds: active_bounds,
+                        //         border: styling.path_border,
+                        //         ..Default::default()
+                        //     },
+                        //     styling.path,
+                        // );
                     }
                     DrawPath::FakeHovering => {
-                        if !cursor.is_over(active_bounds) {
-                            cursor = mouse::Cursor::Available(active_bounds.center());
-                        }
+                        // if !cursor.is_over(active_bounds) {
+                        //     cursor = mouse::Cursor::Available(active_bounds.center());
+                        // }
                     }
                 }
             }

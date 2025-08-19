@@ -333,7 +333,10 @@ where
                         RecEvent::Event
                     },
                     RecEvent::Close => {
-                        if is_pressed || cursor.is_over(background_bounds){
+                        if is_pressed 
+                        || cursor.is_over(background_bounds) 
+                        || cursor.is_over(parent_bounds) 
+                        || cursor.is_over(offset_bounds) {
                             menu.update(
                                 menu_tree,
                                 event,
@@ -346,8 +349,6 @@ where
                                 scroll_speed,
                             );
                             menu.open_event(menu_tree, menu_layout, cursor);
-                            RecEvent::Event
-                        } else if cursor.is_over(offset_bounds) {
                             RecEvent::Event
                         } else {
                             menu.close_event(
@@ -368,7 +369,7 @@ where
                         }
                     }
                     RecEvent::None => {
-                        if is_pressed || cursor.is_over(background_bounds){
+                        // if is_pressed || cursor.is_over(background_bounds){
                             menu.update(
                                 menu_tree,
                                 event,
@@ -381,7 +382,7 @@ where
                                 scroll_speed,
                             );
                             menu.open_event(menu_tree, menu_layout, cursor);
-                        }
+                        // }
                         RecEvent::Event
                     }
                 }

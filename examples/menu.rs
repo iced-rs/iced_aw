@@ -138,61 +138,7 @@ impl App {
         let menu_tpl_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
-        #[rustfmt::skip]
-        let mb = menu_bar!(
-            (debug_button_s("Nested Menus"), {
-                let sub5 = menu_tpl_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                ));
-
-                let sub4 = menu_tpl_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(200.0);
-
-                let sub3 = menu_tpl_2(menu_items!(
-                    (debug_button("You can"))
-                    (debug_button("nest menus"))
-                    (submenu_button("SUB"), sub4)
-                    (debug_button("how ever"))
-                    (debug_button("You like"))
-                    (submenu_button("SUB"), sub5)
-                )).width(180.0);
-
-                let sub2 = menu_tpl_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("More sub menus"), sub3)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(160.0);
-
-                let sub1 = menu_tpl_2(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("Another sub menu"), sub2)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(220.0);
-
-                menu_tpl_1(menu_items!(
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (submenu_button("A sub menu"), sub1)
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                    (debug_button("Item"))
-                )).width(140.0)
-            })
+        /*
             (debug_button_s("Widgets"), menu_tpl_1(menu_items!(
                 (debug_button("You can use any widget"))
                 (debug_button("as a menu item"))
@@ -431,6 +377,64 @@ impl App {
                     (debug_button("MMNN").height(50))
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
             })
+            */
+
+        #[rustfmt::skip]
+        let mb = menu_bar!(
+            (debug_button_s("Nested Menus"), {
+                let sub5 = menu_tpl_2(menu_items!(
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                ));
+
+                let sub4 = menu_tpl_2(menu_items!(
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                )).width(200.0);
+
+                let sub3 = menu_tpl_2(menu_items!(
+                    (debug_button("You can"))
+                    (debug_button("nest menus"))
+                    (submenu_button("SUB"), sub4)
+                    (debug_button("how ever"))
+                    (debug_button("You like"))
+                    (submenu_button("SUB"), sub5)
+                )).width(180.0);
+
+                let sub2 = menu_tpl_2(menu_items!(
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("More sub menus"), sub3)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                )).width(160.0);
+
+                let sub1 = menu_tpl_2(menu_items!(
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("Another sub menu"), sub2)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                )).width(220.0);
+
+                menu_tpl_1(menu_items!(
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (submenu_button("A sub menu"), sub1)
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                    (debug_button("Item"))
+                )).width(140.0)
+            })
+            
             (debug_button_s("single"), {
                 let sub1 = menu_tpl_2(menu_items!(
                     (debug_button("First Item"))
