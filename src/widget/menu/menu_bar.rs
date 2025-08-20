@@ -12,8 +12,7 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size, window,
-    time::Instant,
+    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -25,7 +24,6 @@ pub(super) struct MenuBarState {
     pub(super) active_root: Index,
     pub(super) open: bool,
     pub(super) is_pressed: bool,
-    pub(super) rec_event: Option<RecEvent>,
 }
 impl MenuBarState{
     // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
@@ -66,11 +64,7 @@ where
     padding: Padding,
     width: Length,
     height: Length,
-    pub(super) check_bounds_width: f32,
-    pub(super) draw_path: DrawPath,
-    pub(super) scroll_speed: ScrollSpeed,
-    pub(super) close_on_click: bool,
-    pub(super) class: Theme::Class<'a>,
+    pub(super) global_parameters: GlobalParameters<'a, Theme>,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
 where
@@ -91,14 +85,16 @@ where
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
-            check_bounds_width: 50.0,
-            draw_path: DrawPath::FakeHovering,
-            scroll_speed: ScrollSpeed {
-                line: 60.0,
-                pixel: 1.0,
+            global_parameters: GlobalParameters {
+                check_bounds_width: 50.0,
+                draw_path: DrawPath::FakeHovering,
+                scroll_speed: ScrollSpeed {
+                    line: 60.0,
+                    pixel: 1.0,
+                },
+                close_on_click: false,
+                class: Theme::default(),
             },
-            close_on_click: false,
-            class: Theme::default(),
         }
     }
 
@@ -122,25 +118,25 @@ where
 
     /// Sets the width of the check bounds of the [`Menu`]s in the [`MenuBar`].
     pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self {
-        self.check_bounds_width = check_bounds_width;
+        self.global_parameters.check_bounds_width = check_bounds_width;
         self
     }
 
     /// Sets the draw path option of the [`MenuBar`]
     pub fn draw_path(mut self, draw_path: DrawPath) -> Self {
-        self.draw_path = draw_path;
+        self.global_parameters.draw_path = draw_path;
         self
     }
 
     /// Sets the scroll speed of the [`Menu`]s in the [`MenuBar`]
     pub fn scroll_speed(mut self, scroll_speed: ScrollSpeed) -> Self {
-        self.scroll_speed = scroll_speed;
+        self.global_parameters.scroll_speed = scroll_speed;
         self
     }
 
     /// Sets the close on click option of the [`MenuBar`]
     pub fn close_on_click(mut self, close_on_click: bool) -> Self {
-        self.close_on_click = close_on_click;
+        self.global_parameters.close_on_click = close_on_click;
         self
     }
 
@@ -155,14 +151,38 @@ where
     where
         Theme::Class<'a>: From<StyleFn<'a, Theme, Style>>,
     {
-        self.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
+        self.global_parameters.class = (Box::new(style) as StyleFn<'a, Theme, Style>).into();
         self
     }
 
     /// Sets the class of the input of the [`MenuBar`].
     pub fn class(mut self, class: impl Into<Theme::Class<'a>>) -> Self {
-        self.class = class.into();
+        self.global_parameters.class = class.into();
         self
+    }
+
+    pub(super) fn update_items(
+        &mut self,
+        tree: &mut Tree,
+        event: &event::Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        println!("MenuBar::update_items()");
+        for ((item, tree), layout) in self.roots
+            .iter_mut() // [Item...]
+            .zip(tree.children.iter_mut()) // [item_tree...]
+            // [widget_node...]
+            .zip(layout.children())
+        {
+            item.update(
+                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
+        }
     }
 }
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
@@ -190,10 +210,13 @@ where
 
     /// tree: Tree{bar_state, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
+        println!("MenuBar::diff()");
         tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
+    /// 
+    /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         flex::resolve(
             flex::Axis::Horizontal,
@@ -224,28 +247,11 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        println!("MenuBar | update");
-        for ((item, tree), layout) in self
-            .roots
-            .iter_mut() // [Item...]
-            .zip(tree.children.iter_mut()) // [item_tree...]
-            // [widget_node...]
-            .zip(layout.children())
-        {
-            item.update(
-                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
-        }
+        println!("MenuBar::update()");
+        self.update_items(tree, event, layout, cursor, renderer, clipboard, shell, viewport);
 
         let bar = tree.state.downcast_mut::<MenuBarState>();
         let bar_bounds = layout.bounds();
-
-        if let Some(RecEvent::Event) = bar.rec_event {
-            bar.rec_event = None;
-            shell.capture_event();
-            println!("MenuBar | update | rec_event | captured");
-            return;
-        }
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
@@ -293,12 +299,14 @@ where
                         bar.open = false;
                         bar.active_root = None;
                     }
-                    // println!("MenuBar | update | CursorMoved | bar: {:?}", bar);
+                    // println!("MenuBar::update() | CursorMoved | bar: {:?}", bar);
                     shell.request_redraw();
                 }
             }
             _ => {}
         }
+        
+        println!("MenuBar::update() | return | bar: {:?}", bar);
     }
 
     fn operate(
@@ -343,10 +351,10 @@ where
         theme: &Theme,
         style: &renderer::Style,
         layout: Layout<'_>,
-        mut cursor: mouse::Cursor,
+        cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        let styling = theme.style(&self.class, Status::Active);
+        let styling = theme.style(&self.global_parameters.class, Status::Active);
         renderer.fill_quad(
             renderer::Quad {
                 bounds: pad_rectangle(layout.bounds(), styling.bar_background_expand),
@@ -358,30 +366,28 @@ where
         );
 
         let state = tree.state.downcast_ref::<MenuBarState>();
-        if state.open {
-            if let Some(active) = state.active_root {
-                let Some(active_bounds) = layout.children().nth(active).map(|l| l.bounds()) else {
-                    return;
-                };
 
-                match self.draw_path {
-                    DrawPath::Backdrop => {
-                        // renderer.fill_quad(
-                        //     renderer::Quad {
-                        //         bounds: active_bounds,
-                        //         border: styling.path_border,
-                        //         ..Default::default()
-                        //     },
-                        //     styling.path,
-                        // );
-                    }
-                    DrawPath::FakeHovering => {
-                        // if !cursor.is_over(active_bounds) {
-                        //     cursor = mouse::Cursor::Available(active_bounds.center());
-                        // }
-                    }
-                }
-            }
+        if let (DrawPath::Backdrop, true, Some(active)) 
+        = (&self.global_parameters.draw_path, state.open, state.active_root) {
+            let active_bounds = layout.children()
+                .nth(active)
+                .expect(&format!("Index {:?} is not within the menu bar layout \
+                    | layout.children().count(): {:?} \
+                    | This should not happen, please report this issue
+                    ",
+                    active,
+                    layout.children().count()
+                ))
+                .bounds();
+
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: active_bounds,
+                    border: styling.path_border,
+                    ..Default::default()
+                },
+                styling.path,
+            );
         }
 
         self.roots
@@ -401,10 +407,8 @@ where
         _viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        println!("MenuBar::overlay()");
         let state = tree.state.downcast_mut::<MenuBarState>();
-
-        let init_bar_bounds = layout.bounds();
-        let init_root_bounds = layout.children().map(|l| l.bounds()).collect();
 
         if state.open {
             Some(
@@ -413,14 +417,6 @@ where
                     layout,
                     translation,
                     tree,
-                    // roots: &mut self.roots,
-                    init_bar_bounds,
-                    init_root_bounds,
-                    // check_bounds_width: self.check_bounds_width,
-                    // draw_path: &self.draw_path,
-                    // scroll_speed: self.scroll_speed,
-                    // close_on_click: self.close_on_click,
-                    // class: &self.class,
                 }
                 .overlay_element(),
             )

@@ -28,15 +28,6 @@ where
     /// Tree{ bar_state, [item_tree...] }
     pub(super) translation: Vector,
     pub(super) tree: &'b mut Tree,
-
-    // pub(super) roots: &'b mut [Item<'a, Message, Theme, Renderer>],
-    pub(super) init_bar_bounds: Rectangle,
-    pub(super) init_root_bounds: Vec<Rectangle>,
-    // pub(super) check_bounds_width: f32,
-    // pub(super) draw_path: &'b DrawPath,
-    // pub(super) scroll_speed: ScrollSpeed,
-    // pub(super) close_on_click: bool,
-    // pub(super) class: &'b Theme::Class<'a>,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
@@ -54,17 +45,20 @@ where
     Renderer: renderer::Renderer,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
+        println!("MenuBarOverlay::layout()");
         let translation = self.translation;
 
+        let bar_bounds = self.layout.bounds();
+        let root_bounds = self.layout.children().map(|l| l.bounds()).collect::<Vec<_>>();
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let bar_bounds = self.init_bar_bounds;
 
         let bar_node = Node::with_children(bar_bounds.size(), [].into())
             .move_to(bar_bounds.position() + translation);
 
         let roots_node = Node::with_children(
             Size::ZERO,
-            self.init_root_bounds
+            root_bounds
                 .iter()
                 .map(|r| Node::new(r.size()).move_to(r.position()))
                 .collect(),
@@ -77,7 +71,7 @@ where
 
         let active_root = &mut self.menu_bar.roots[active];
         let active_tree = &mut self.tree.children[active]; // item_tree: Tree{ stateless, [ widget_tree, menu_tree ] }
-        let parent_bounds = self.init_root_bounds[active] + translation;
+        let parent_bounds = root_bounds[active] + translation;
 
         fn rec<Message, Theme: Catalog, Renderer: renderer::Renderer>(
             renderer: &Renderer,
@@ -109,19 +103,8 @@ where
                     let next_tree = &mut menu_tree.children[active];
                     let next_parent_bounds = {
                         let slice_node = &menu_nodes.last().unwrap().children()[0];
-                        let Some(node) = slice_node
-                            .children()
-                            .get(active - menu_state.slice.start_index)
-                        else {
-                            /* 
-                            should never reach here
-                            if there is an active index 
-                            and it is not within the range of the slice layout
-                            there is a serious bug in how the slice range or the slice layout is calculated or updated
-                            */
-                            return;
-                        };
-
+                        let active_in_slice = active - menu_state.slice.start_index;
+                        let node = &slice_node.children()[active_in_slice];
                         node.bounds() + (slice_node.bounds().position() - Point::ORIGIN)
                     };
                     rec(
@@ -191,255 +174,258 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) {
+        println!("MenuBarOverlay::update()");
         let viewport = layout.bounds();
         let mut lc = layout.children();
         let bar_bounds = lc.next().unwrap().bounds();
         let roots_layout = lc.next().unwrap();
-        {
-            let bar = self.tree.state.downcast_mut::<MenuBarState>();
 
-            let Some(active) = bar.active_root else {
-                return;
+        let bar = self.tree.state.downcast_mut::<MenuBarState>();
+
+        let Some(active) = bar.active_root else {
+            return;
+        };
+
+        let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
+        let Some(menu_layouts_layout) = lc.next() else {
+            return;
+        }; // Node{0, [menu_node...]}
+        let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
+
+        let active_root = &mut self.menu_bar.roots[active];
+        let active_tree = &mut self.tree.children[active];
+        let mut prev_bounds_list = vec![bar_bounds];
+
+        #[rustfmt::skip]
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+            global_parameters: &GlobalParameters<'a, Theme>,
+            tree: &mut Tree,
+            item: &mut Item<'a, Message, Theme, Renderer>,
+            event: &Event,
+            layout_iter: &mut impl Iterator<Item = Layout<'b>>,
+            cursor: mouse::Cursor,
+            renderer: &Renderer,
+            clipboard: &mut dyn Clipboard,
+            shell: &mut Shell<'_, Message>,
+            parent_bounds: Rectangle,
+            viewport: &Rectangle,
+            prev_bounds_list: &mut Vec<Rectangle>,
+            prev: &mut Index,
+            depth: usize,
+        ) -> RecEvent {
+            let Some(ref mut menu) = item.menu else {
+                return RecEvent::None;
+            };
+            let menu_tree = &mut tree.children[1];
+
+            let Some(menu_layout) = layout_iter.next() else {
+                return RecEvent::None;
+            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
+
+            let mut mc = menu_layout.children();
+            let slice_layout = mc.next().unwrap(); // slice_node
+            let prescroll = mc.next().unwrap().bounds();
+            let offset_bounds = mc.next().unwrap().bounds();
+            let background_bounds = pad_rectangle(prescroll, menu.padding);
+            let check_bounds = pad_rectangle(background_bounds, Padding::new(global_parameters.check_bounds_width));
+
+            prev_bounds_list.push(background_bounds);
+
+            let menu_state = menu_tree.state.downcast_mut::<MenuState>();
+            let is_pressed = menu_state.pressed;
+
+            let rec_event = if let Some(active) = menu_state.active {
+                let next_tree = &mut menu_tree.children[active];
+                let next_item = &mut menu.items[active];
+                let active_in_slice = active - menu_state.slice.start_index;
+                let next_parent_bounds = slice_layout
+                    .children()
+                    .nth(active_in_slice)
+                    .expect(&format!("Index {:?} is not within the slice layout \
+                        | slice_layout.children().count(): {:?} \
+                        | This should not happen, please report this issue
+                        ", 
+                        active_in_slice,
+                        slice_layout.children().count()
+                    ))
+                    .bounds();
+
+                rec(
+                    global_parameters,
+                    next_tree,
+                    next_item,
+                    event,
+                    layout_iter,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    shell,
+                    next_parent_bounds,
+                    viewport,
+                    prev_bounds_list,
+                    &mut menu_state.active,
+                    depth + 1,
+                )
+            } else {
+                RecEvent::Close
             };
 
-            let parent_bounds = roots_layout.children().nth(active).unwrap().bounds();
-            let Some(menu_layouts_layout) = lc.next() else {
-                return;
-            }; // Node{0, [menu_node...]}
-            let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
+            prev_bounds_list.pop();
 
-            let active_root = &mut self.menu_bar.roots[active];
-            let active_tree = &mut self.tree.children[active];
-            let mut prev_bounds_list = vec![bar_bounds];
+            println!();
+            println!("MenuBarOverlay | depth: {:?}", depth);
+            println!("MenuBarOverlay | menu_state.active: {:?}", menu_state.active);
+            println!("MenuBarOverlay | menu_state.pressed: {:?}", menu_state.pressed);
+            println!("MenuBarOverlay | menu_state.slice: {:?}", menu_state.slice);
+            println!("MenuBarOverlay | rec_event: {:?}", rec_event);
+            println!("MenuBarOverlay | event: {:?}", event);
+            println!("MenuBarOverlay | cursor: {:?}", cursor);
+            // println!("MenuBarOverlay | cursor is over prescroll: {:?}", cursor.is_over(prescroll));
+            // println!("MenuBarOverlay | cursor is over offset bounds: {:?}", cursor.is_over(offset_bounds));
+            println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
+            // println!("MenuBarOverlay | background bounds: {:?}", background_bounds);
+            // println!("MenuBarOverlay | background bounds bottom: {:?}", background_bounds.y + background_bounds.height);
+            // println!("MenuBarOverlay | background bounds right: {:?}", background_bounds.x + background_bounds.width);
+            println!("MenuBarOverlay| shell.is_event_captured(): {:?}", shell.is_event_captured());
+            
+            let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
 
-            #[rustfmt::skip]
-            fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
-                tree: &mut Tree,
-                item: &mut Item<'a, Message, Theme, Renderer>,
-                event: &Event,
-                layout_iter: &mut impl Iterator<Item = Layout<'b>>,
-                cursor: mouse::Cursor,
-                renderer: &Renderer,
-                clipboard: &mut dyn Clipboard,
-                shell: &mut Shell<'_, Message>,
-                parent_bounds: Rectangle,
-                viewport: &Rectangle,
-                prev_bounds_list: &mut Vec<Rectangle>,
-                prev: &mut Index,
-                scroll_speed: ScrollSpeed,
-                check_bounds_width: f32,
-                depth: usize,
-            ) -> RecEvent {
-                let Some(ref mut menu) = item.menu else {
-                    return RecEvent::None;
-                };
-                let menu_tree = &mut tree.children[1];
+            match rec_event {
+                RecEvent::Event => {
+                    let mut fake_messages = vec![];
+                    let mut fake_shell = Shell::new(&mut fake_messages);
+                    
+                    let active = menu_state.active.expect("
+                        `RecEvent::Event` is returned, but `menu_state.active` is `None`. \
+                        This should not happen, please report this issue
+                    ");
 
-                let Some(menu_layout) = layout_iter.next() else {
-                    return RecEvent::None;
-                }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
-
-                let mut mc = menu_layout.children();
-                let slice_layout = mc.next().unwrap(); // slice_node
-                let prescroll = mc.next().unwrap().bounds();
-                let offset_bounds = mc.next().unwrap().bounds();
-                let background_bounds = pad_rectangle(prescroll, menu.padding);
-                let check_bounds = pad_rectangle(background_bounds, Padding::new(check_bounds_width));
-
-                prev_bounds_list.push(background_bounds);
-
-                let menu_state = menu_tree.state.downcast_mut::<MenuState>();
-                let is_pressed = menu_state.pressed;
-
-                let rec_event = if let Some(active) = menu_state.active {
-                    let next_tree = &mut menu_tree.children[active];
-                    let next_item = &mut menu.items[active];
-                    let next_parent_bounds = {
-                        let Some(layout) = slice_layout
-                            .children()
-                            .nth(active - menu_state.slice.start_index)
-                        else {
-                            /* 
-                            should never reach here
-                            if there is an active index 
-                            and it is not within the range of the slice layout
-                            there is a serious bug in how the slice range or the slice layout is calculated or updated
-                            */
-                            prev_bounds_list.pop();
-                            return RecEvent::Event;
-                        };
-
-                        layout.bounds()
+                    let cursor = match &global_parameters.draw_path {
+                        DrawPath::FakeHovering => {
+                            let active_in_slice = active - menu_state.slice.start_index;
+                            let center = slice_layout
+                                .children()
+                                .nth(active_in_slice)
+                                .expect(&format!(" Index {:?} is not within the slice layout \
+                                    | slice_layout.children().count(): {:?} \
+                                    | This should not happen, please report this issue
+                                    ", 
+                                    active_in_slice,
+                                    slice_layout.children().count()
+                                ))
+                                .bounds()
+                                .center();
+                            mouse::Cursor::Available(center)
+                        },
+                        DrawPath::Backdrop => mouse::Cursor::Unavailable
                     };
 
-                    rec(
-                        next_tree,
-                        next_item,
-                        event,
-                        layout_iter,
-                        cursor,
-                        renderer,
-                        clipboard,
-                        shell,
-                        next_parent_bounds,
-                        viewport,
-                        prev_bounds_list,
-                        &mut menu_state.active,
-                        scroll_speed,
-                        check_bounds_width,
-                        depth + 1,
-                    )
-                } else {
-                    RecEvent::Close
-                };
+                    menu.update_items(
+                        menu_tree, 
+                        &redraw_event, 
+                        menu_layout, 
+                        cursor, 
+                        renderer, 
+                        clipboard, 
+                        &mut fake_shell, 
+                        viewport
+                    );
 
-                prev_bounds_list.pop();
-
-                println!();
-                println!("MenuBarOverlay | depth: {:?}", depth);
-                println!("MenuBarOverlay | menu_state.active: {:?}", menu_state.active);
-                println!("MenuBarOverlay | menu_state.pressed: {:?}", menu_state.pressed);
-                println!("MenuBarOverlay | rec_event: {:?}", rec_event);
-                println!("MenuBarOverlay | event: {:?}", event);
-                println!("MenuBarOverlay | cursor: {:?}", cursor);
-                // println!("MenuBarOverlay | cursor is over prescroll: {:?}", cursor.is_over(prescroll));
-                // println!("MenuBarOverlay | cursor is over offset bounds: {:?}", cursor.is_over(offset_bounds));
-                println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
-                // println!("MenuBarOverlay | background bounds: {:?}", background_bounds);
-                // println!("MenuBarOverlay | background bounds bottom: {:?}", background_bounds.y + background_bounds.height);
-                // println!("MenuBarOverlay | background bounds right: {:?}", background_bounds.x + background_bounds.width);
-                
-                let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
-                // let mouse_event = Event::Mouse(mouse::Event::CursorMoved { 
-                //     position: cursor.position().unwrap_or(Point { x: f32::MAX, y: f32::MAX }) 
-                // });
-
-                match rec_event {
-                    RecEvent::Event => {
-                        let mut fake_messages = vec![];
-                        let mut fake_shell = Shell::new(&mut fake_messages);
+                    shell.capture_event();
+                    RecEvent::Event
+                },
+                RecEvent::Close => {
+                    if is_pressed || cursor.is_over(background_bounds) || cursor.is_over(offset_bounds){
                         menu.update(
                             menu_tree,
-                            &redraw_event,
+                            event,
                             menu_layout,
                             cursor,
                             renderer,
                             clipboard,
-                            &mut fake_shell,
+                            shell,
                             viewport,
-                            scroll_speed,
-                            // check_bounds,
+                            global_parameters.scroll_speed,
                         );
+                        menu.open_event(menu_tree, menu_layout, cursor);
+                        shell.capture_event();
                         RecEvent::Event
-                    },
-                    RecEvent::Close => {
-                        if is_pressed 
-                        || cursor.is_over(background_bounds) 
-                        || cursor.is_over(parent_bounds) 
-                        || cursor.is_over(offset_bounds) {
-                            menu.update(
-                                menu_tree,
-                                event,
-                                menu_layout,
-                                cursor,
-                                renderer,
-                                clipboard,
-                                shell,
-                                viewport,
-                                scroll_speed,
-                            );
-                            menu.open_event(menu_tree, menu_layout, cursor);
+                    } else if cursor.is_over(parent_bounds){
+                        let mut fake_messages = vec![];
+                        let mut fake_shell = Shell::new(&mut fake_messages);
+                        menu.update_items(
+                            menu_tree, 
+                            &redraw_event, 
+                            menu_layout, 
+                            cursor, 
+                            renderer, 
+                            clipboard, 
+                            &mut fake_shell, 
+                            viewport
+                        );
+                        // the cursor is over the parent bounds
+                        // let the parent process the event
+                        assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::None");
+                        RecEvent::None
+                    } else {
+                        menu.close_event(
+                            menu_tree, 
+                            menu_layout, 
+                            cursor, 
+                            check_bounds, 
+                            background_bounds, 
+                            parent_bounds, 
+                            prev_bounds_list, 
+                            prev
+                        );
+                        if prev.is_some() {
+                            // the current menu is not ready to close
+                            shell.capture_event();
                             RecEvent::Event
                         } else {
-                            menu.close_event(
-                                menu_tree, 
-                                menu_layout, 
-                                cursor, 
-                                check_bounds, 
-                                background_bounds, 
-                                parent_bounds, 
-                                prev_bounds_list, 
-                                prev
-                            );
-                            if prev.is_some() {
-                                RecEvent::None
-                            } else {
-                                RecEvent::Close
-                            }
+                            assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::Close");
+                            // the current menu has closed itself
+                            RecEvent::Close
                         }
                     }
-                    RecEvent::None => {
-                        // if is_pressed || cursor.is_over(background_bounds){
-                            menu.update(
-                                menu_tree,
-                                event,
-                                menu_layout,
-                                cursor,
-                                renderer,
-                                clipboard,
-                                shell,
-                                viewport,
-                                scroll_speed,
-                            );
-                            menu.open_event(menu_tree, menu_layout, cursor);
-                        // }
-                        RecEvent::Event
-                    }
+                }
+                RecEvent::None => {
+                    menu.update(
+                        menu_tree,
+                        event,
+                        menu_layout,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        shell,
+                        viewport,
+                        global_parameters.scroll_speed,
+                    );
+                    shell.capture_event();
+                    RecEvent::Event
                 }
             }
+        }
 
-            let re = rec(
-                active_tree,
-                active_root,
-                event,
-                &mut menu_layouts,
-                cursor,
-                renderer,
-                clipboard,
-                shell,
-                parent_bounds,
-                &viewport,
-                &mut prev_bounds_list,
-                &mut bar.active_root,
-                self.menu_bar.scroll_speed,
-                self.menu_bar.check_bounds_width,
-                0,
-            );
-            match re {
-                RecEvent::Event => {
-                    bar.rec_event = Some(re);
-                    // shell.capture_event();
-                },
-                // RecEvent::Close | RecEvent::None => {
-                //     if !cursor.is_over(bar_bounds) {
-                //         shell.capture_event();
-                //     }
-                // }
-                _ => {}
-            };
-        };
-        let mut fake_messages = vec![];
-        let mut fake_shell = Shell::new(&mut fake_messages);
-        let Self{
-            menu_bar,
-            tree,
-            layout,
-            ..
-        } = self;
-        menu_bar.update(
-            tree, 
-            event, 
-            *layout, 
-            cursor, 
-            renderer, 
-            clipboard, 
-            &mut fake_shell, 
-            &viewport
+        let re = rec(
+            &self.menu_bar.global_parameters,
+            active_tree,
+            active_root,
+            event,
+            &mut menu_layouts,
+            cursor,
+            renderer,
+            clipboard,
+            shell,
+            parent_bounds,
+            &viewport,
+            &mut prev_bounds_list,
+            &mut bar.active_root,
+            0,
         );
-        shell.capture_event();
-        
-        let bar = self.tree.state.downcast_mut::<MenuBarState>();
-        if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) = (self.menu_bar.close_on_click, event) {
+
+        if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) 
+        = (self.menu_bar.global_parameters.close_on_click, event) {
             bar.active_root = None;
         }
 
@@ -447,6 +433,38 @@ where
             bar.open = false;
             bar.is_pressed = false;
         }
+        
+        match re {
+            RecEvent::Event => {
+                let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
+                let mut fake_messages = vec![];
+                let mut fake_shell = Shell::new(&mut fake_messages);
+
+                let Self { menu_bar, layout, tree, .. } = self;
+                let draw_path = menu_bar.global_parameters.draw_path;
+                let cursor = match draw_path {
+                    DrawPath::FakeHovering => {
+                        let center = parent_bounds.center();
+                        mouse::Cursor::Available(center)
+                    }
+                    DrawPath::Backdrop => mouse::Cursor::Unavailable
+                };
+
+                println!("MenuBarOverlay::update() | calling MenuBar::update_items()");
+                menu_bar.update_items(
+                    tree, 
+                    &redraw_event, 
+                    *layout, 
+                    cursor, 
+                    renderer, 
+                    clipboard, 
+                    &mut fake_shell, 
+                    &viewport
+                );
+            },
+            _ => {}
+        }
+
         // println!("MenuBarOverlay | bar: {:?}", bar);
         // println!("MenuBarOverlay | update | event: {:?}", event);
         if let Event::Window(window::Event::RedrawRequested(_)) = event {
@@ -461,6 +479,7 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
+        println!("MenuBarOverlay::mouse_interaction()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let Some(active) = bar.active_root else {
             return mouse::Interaction::default();
@@ -544,11 +563,10 @@ where
             renderer: &Renderer,
             operation: &mut dyn Operation<()>,
         ) {
-            if item.menu.is_none() {
+            let Some(menu) = item.menu.as_ref() else {
                 return;
-            }
+            };
 
-            let menu = item.menu.as_ref().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
@@ -581,6 +599,7 @@ where
         layout: Layout<'c>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
+        println!("MenuBarOverlay::overlay()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let active = bar.active_root?;
         let mut lc = layout.children();
@@ -605,6 +624,7 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
     ) {
+        println!("MenuBarOverlay::draw()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let Some(active) = bar.active_root else {
             return;
@@ -623,7 +643,7 @@ where
         let active_tree = &self.tree.children[active];
 
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
-            draw_path: &DrawPath,
+            global_parameters: &GlobalParameters<'a, Theme>,
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
@@ -644,7 +664,7 @@ where
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
                 menu.draw(
-                    draw_path,
+                    &global_parameters.draw_path,
                     menu_tree,
                     renderer,
                     theme,
@@ -661,7 +681,7 @@ where
 
                     renderer.with_layer(*viewport, |r| {
                         rec(
-                            draw_path,
+                            global_parameters,
                             next_tree,
                             next_item,
                             layout_iter,
@@ -677,10 +697,10 @@ where
             }
         }
 
-        let theme_style = theme.style(&self.menu_bar.class, Status::Active);
+        let theme_style = theme.style(&self.menu_bar.global_parameters.class, Status::Active);
 
         rec(
-            &self.menu_bar.draw_path,
+            &self.menu_bar.global_parameters,
             active_tree,
             active_root,
             &mut menu_layouts,
