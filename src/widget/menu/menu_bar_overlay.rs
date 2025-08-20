@@ -25,8 +25,8 @@ where
 {
     pub(super) menu_bar: &'b mut MenuBar<'a, Message, Theme, Renderer>,
     pub(super) layout: Layout<'b>,
-    /// Tree{ bar_state, [item_tree...] }
     pub(super) translation: Vector,
+    /// Tree{ bar_state, [item_tree...] }
     pub(super) tree: &'b mut Tree,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>

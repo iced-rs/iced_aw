@@ -357,7 +357,7 @@ where
         let styling = theme.style(&self.global_parameters.class, Status::Active);
         renderer.fill_quad(
             renderer::Quad {
-                bounds: pad_rectangle(layout.bounds(), styling.bar_background_expand),
+                bounds: layout.bounds(),
                 border: styling.bar_border,
                 shadow: styling.bar_shadow,
                 ..Default::default()
