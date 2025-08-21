@@ -1,4 +1,4 @@
-//! A container widget that allows you to specify the layouting of its children.
+//! A container widget that allows you to specify the layout of its children.
 
 use iced::{advanced::Widget, Rectangle};
 
@@ -18,7 +18,7 @@ type LayoutFn<'a, Message, Theme, Renderer> = Box<
     ) -> Node,
 >;
 
-/// A container widget that allows you to specify the layouting of its children.
+/// A container widget that allows you to specify the layout of its children.
 pub struct CustomLayout<'a, Message, Theme, Renderer> {
     elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
     width: iced::Length,
@@ -135,7 +135,6 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         shell: &mut iced::advanced::Shell<'_, Message>,
         viewport: &iced::Rectangle,
     ) {
-        // STK: clean this up if working
         for ((state, layout), element) in state
             .children
             .iter_mut()
@@ -146,24 +145,6 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
                 state, event, layout, cursor, renderer, clipboard, shell, viewport,
             );
         }
-        // state
-        //     .children
-        //     .iter_mut()
-        //     .zip(layout.children())
-        //     .zip(self.elements.iter_mut())
-        //     .map(|((state, layout), element)| {
-        //         element.as_widget_mut().on_event(
-        //             state,
-        //             event.clone(),
-        //             layout,
-        //             cursor,
-        //             renderer,
-        //             clipboard,
-        //             shell,
-        //             viewport,
-        //         )
-        //     })
-        //     .fold(iced::event::Status::Ignored, iced::event::Status::merge)
     }
 
     fn size_hint(&self) -> iced::Size<iced::Length> {

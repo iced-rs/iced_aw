@@ -336,7 +336,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        // STK: clean up if working
         for ((child, state), layout) in self
             .children
             .iter_mut()
@@ -347,23 +346,6 @@ where
                 state, event, layout, cursor, renderer, clipboard, shell, viewport,
             );
         }
-        // self.children
-        //     .iter_mut()
-        //     .zip(&mut tree.children)
-        //     .zip(layout.children())
-        //     .map(|((child, state), layout)| {
-        //         child.as_widget_mut().on_event(
-        //             state,
-        //             event.clone(),
-        //             layout,
-        //             cursor,
-        //             renderer,
-        //             clipboard,
-        //             shell,
-        //             viewport,
-        //         )
-        //     })
-        //     .fold(event::Status::Ignored, event::Status::merge)
     }
 
     fn mouse_interaction(

@@ -391,20 +391,6 @@ where
         shell: &mut advanced::Shell<'_, Message>,
         viewport: &iced::Rectangle,
     ) {
-        // STK: clean up if working
-        // let status = [&mut self.title, &mut self.content]
-        //     .iter_mut()
-        //     .zip(&mut state.children)
-        //     .zip(layout.children())
-        //     .map(|((child, state), layout)| {
-        //         child.as_widget_mut().update(
-        //             state, event, layout, cursor, renderer, clipboard, shell, viewport,
-        //         )
-        //     })
-        //     .fold(iced::event::Status::Ignored, iced::event::Status::merge);
-        // if status == iced::event::Status::Captured {
-        //     shell.capture_event();
-        // }
         for ((child, state), layout) in [&mut self.title, &mut self.content]
             .iter_mut()
             .zip(&mut state.children)

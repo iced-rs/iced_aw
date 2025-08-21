@@ -1,10 +1,10 @@
 //! There are two options available: [`Sidebar`] and [`SidebarWithContent`].
 //!
-//! [`Sidebar`] is used to displays a side bar for selecting content to be displayed, and the
+//! [`Sidebar`] is used to displays a sidebar for selecting content to be displayed, and the
 //! sidebar is normally to a side of displayed content. You have to manage the logic to show
-//! the content by yourself. Mainly used to customise the sidebar, the content, or both.
+//! the content by yourself. Mainly used to customize the sidebar, the content, or both.
 //!
-//! [`SidebarWithContent`] is an single widget containing both the sidebar and content area,
+//! [`SidebarWithContent`] is a single widget containing both the sidebar and content area,
 //! and it manages the displaying of the content.
 
 use super::column::FlushColumn;
@@ -525,7 +525,6 @@ where
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {
-        // STK: cleanup
         if matches!(
             event,
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
@@ -568,44 +567,6 @@ where
                 shell.capture_event();
             }
         }
-        // match event {
-        //     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-        //     | Event::Touch(touch::Event::FingerPressed { .. }) => {
-        //         if cursor
-        //             .position()
-        //             .is_some_and(|pos| layout.bounds().contains(pos))
-        //         {
-        //             let tabs_map: Vec<bool> = layout
-        //                 .children()
-        //                 .map(|layout| {
-        //                     cursor
-        //                         .position()
-        //                         .is_some_and(|pos| layout.bounds().contains(pos))
-        //                 })
-        //                 .collect();
-        //
-        //             if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-        //                 shell.publish(
-        //                     self.on_close
-        //                         .as_ref()
-        //                         .filter(|_on_close| {
-        //                             let tab_layout = layout.children().nth(new_selected).expect("widget: Layout should have a tab layout at the selected index");
-        //                             let cross_layout = tab_layout.children().nth(1).expect("widget: Layout should have a close layout");
-        //
-        //                             cursor.position().is_some_and(|pos| cross_layout.bounds().contains(pos))
-        //                         })
-        //                         .map_or_else(
-        //                             || (self.on_select)(self.tab_indices[new_selected].clone()),
-        //                             |on_close| (on_close)(self.tab_indices[new_selected].clone()),
-        //                         ),
-        //                 );
-        //                 return event::Status::Captured;
-        //             }
-        //         }
-        //         event::Status::Ignored
-        //     }
-        //     _ => event::Status::Ignored,
-        // }
     }
 
     fn mouse_interaction(
@@ -1344,7 +1305,6 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        // STK: cleanup
         let mut children = layout.children();
         let (sidebar_layout, tab_content_layout) = match self.sidebar_position {
             SidebarPosition::Start => {
@@ -1389,22 +1349,6 @@ where
                 viewport,
             );
         }
-        // let status_element = self
-        //     .tabs
-        //     .get_mut(idx)
-        //     .map_or(event::Status::Ignored, |element| {
-        //         element.as_widget_mut().on_event(
-        //             &mut state.children[1].children[idx],
-        //             event,
-        //             tab_content_layout,
-        //             cursor,
-        //             renderer,
-        //             clipboard,
-        //             shell,
-        //             viewport,
-        //         )
-        //     });
-        // status_sidebar.merge(status_element)
     }
 
     fn mouse_interaction(

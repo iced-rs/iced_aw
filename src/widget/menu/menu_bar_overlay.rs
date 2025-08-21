@@ -104,7 +104,7 @@ where
 
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
-                if let Some(active) = menu_state.active {
+                if let Some(active) = menu_state.active_submenu {
                     if active < menu.items.len() {
                         let next_item = &mut menu.items[active];
                         let next_tree = &mut menu_tree.children[active];
@@ -243,7 +243,7 @@ where
 
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
 
-            let rec_event = if let Some(active) = menu_state.active {
+            let rec_event = if let Some(active) = menu_state.active_submenu {
                 if active < menu_tree.children.len() {
                     let next_tree = &mut menu_tree.children[active];
                     let next_item = &mut menu.items[active];
@@ -271,7 +271,7 @@ where
                         next_parent_bounds,
                         viewport,
                         prev_bounds_list,
-                        &mut menu_state.active,
+                        &mut menu_state.active_submenu,
                         scroll_speed,
                     )
                 } else {
@@ -388,7 +388,7 @@ where
 
             let i = menu.mouse_interaction(menu_tree, menu_layout, cursor, renderer);
 
-            menu_state.active.map_or(i, |active| {
+            menu_state.active_submenu.map_or(i, |active| {
                 let next_tree = &menu_tree.children[active];
                 let next_item = &menu.items[active];
                 rec(next_tree, next_item, layout_iter, cursor, renderer).max(i)
@@ -545,7 +545,7 @@ where
                     viewport,
                 );
 
-                if let Some(active) = menu_state.active {
+                if let Some(active) = menu_state.active_submenu {
                     let next_tree = &menu_tree.children[active];
                     let next_item = &menu.items[active];
 

@@ -99,6 +99,10 @@ name = "drop_down"
 required-features = ["drop_down"]
 
 [[example]]
+name = "drop_down_test"
+required-features = ["drop_down"]
+
+[[example]]
 name = "card"
 required-features = ["card"]
 
