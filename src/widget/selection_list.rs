@@ -182,8 +182,8 @@ where
         vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.container as &mut dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
         state.values = self
@@ -205,7 +205,7 @@ where
         tree::State::new(State::<Renderer::Paragraph>::new(self.options))
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
 
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
@@ -223,7 +223,7 @@ where
                         content: s,
                         size: Pixels(self.text_size),
                         line_height: LineHeight::default(),
-                        bounds: Size::INFINITY,
+                        bounds: Size::INFINITE,
                         font: self.font,
                         align_x: text::Alignment::Left,
                         align_y: Vertical::Top,

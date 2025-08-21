@@ -306,7 +306,7 @@ where
 
     /// Sets the text size of the [`NumberInput`].
     #[must_use]
-    pub fn size(mut self, size: impl Into<iced::Pixels>) -> Self {
+    pub fn set_size(mut self, size: impl Into<iced::Pixels>) -> Self {
         let size = size.into();
         self.size = Some(size);
         self.content = self.content.size(size);
@@ -511,11 +511,11 @@ where
         }]
     }
 
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         tree.diff_children_custom(
-            &[&self.content],
+            &mut [&mut self.content],
             |state, content| content.diff(state),
-            |&content| Tree {
+            |content| Tree {
                 tag: content.tag(),
                 state: content.state(),
                 children: content.children(),
@@ -527,7 +527,7 @@ where
         Widget::size(&self.content)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let num_size = self.size();
         let limits = limits.width(num_size.width).height(Length::Shrink);
         let content = self
@@ -545,7 +545,7 @@ where
 
         let default_padding = DEFAULT_PADDING;
 
-        let element = if self.padding.top < default_padding.top
+        let mut element = if self.padding.top < default_padding.top
             || self.padding.bottom < default_padding.bottom
             || self.padding.right < default_padding.right
         {
@@ -567,7 +567,7 @@ where
         };
 
         let input_tree = if let Some(child_tree) = tree.children.get_mut(1) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -576,7 +576,7 @@ where
         };
 
         let mut modifier = element
-            .as_widget()
+            .as_widget_mut()
             .layout(input_tree, renderer, &limits2.loose());
         let intrinsic = Size::new(
             content.size().width - 1.0,
@@ -589,7 +589,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,

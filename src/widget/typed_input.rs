@@ -323,16 +323,21 @@ where
         <TextInput<_, _, _> as Widget<_, _, _>>::children(&self.text_input)
     }
 
-    fn diff(&self, state: &mut Tree) {
-        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&self.text_input, state);
+    fn diff(&mut self, state: &mut Tree) {
+        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&mut self.text_input, state);
     }
 
     fn size(&self) -> Size<Length> {
         <TextInput<_, _, _> as Widget<_, _, _>>::size(&self.text_input)
     }
 
-    fn layout(&self, state: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        <TextInput<_, _, _> as Widget<_, _, _>>::layout(&self.text_input, state, renderer, limits)
+    fn layout(&mut self, state: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        <TextInput<_, _, _> as Widget<_, _, _>>::layout(
+            &mut self.text_input,
+            state,
+            renderer,
+            limits,
+        )
     }
 
     fn draw(
@@ -376,14 +381,14 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         state: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
         <TextInput<_, _, _> as Widget<_, _, _>>::operate(
-            &self.text_input,
+            &mut self.text_input,
             state,
             layout,
             renderer,

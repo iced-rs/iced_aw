@@ -116,10 +116,29 @@
       "cargo": {
         "args": [
           "build",
-          "--example=menu"
+          "--example=menu",
+          "--features=menu",
+          "--features=quad"
         ],
         "filter": {
           "name": "menu",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'custom_layout'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=custom_layout",
+        ],
+        "filter": {
+          "name": "custom_layout",
           "kind": "example"
         }
       },

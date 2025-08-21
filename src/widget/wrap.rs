@@ -165,15 +165,15 @@ where
         self.elements.iter().map(Tree::new).collect()
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.elements);
     }
 
     fn size(&self) -> Size<Length> {
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         self.inner_layout(tree, renderer, limits)
     }
 
@@ -262,7 +262,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         state: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -270,12 +270,12 @@ where
     ) {
         for ((element, state), layout) in self
             .elements
-            .iter()
+            .iter_mut()
             .zip(&mut state.children)
             .zip(layout.children())
         {
             element
-                .as_widget()
+                .as_widget_mut()
                 .operate(state, layout, renderer, operation);
         }
     }
@@ -330,7 +330,7 @@ where
     Renderer: renderer::Renderer,
 {
     /// A inner layout of the [`Wrap`].
-    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node;
+    fn inner_layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node;
 }
 
 impl<'a, Message, Theme, Renderer> WrapLayout<Renderer>
@@ -340,7 +340,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = self.padding;
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -364,13 +364,13 @@ where
         let mut end = 0;
         let mut nodes: Vec<Node> = self
             .elements
-            .iter()
+            .iter_mut()
             .map(|elem| {
                 let node_limit = Limits::new(
                     Size::new(limits.min().width, line_minimal_length),
                     limits.max(),
                 );
-                let mut node = elem.as_widget().layout(
+                let mut node = elem.as_widget_mut().layout(
                     children.next().expect("wrap missing expected child"),
                     renderer,
                     &node_limit,
@@ -427,7 +427,7 @@ where
 {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn inner_layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn inner_layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = self.padding;
         let spacing = self.spacing;
         let line_spacing = self.line_spacing;
@@ -451,13 +451,13 @@ where
         let mut end = 0;
         let mut nodes: Vec<Node> = self
             .elements
-            .iter()
+            .iter_mut()
             .map(|elem| {
                 let node_limit = Limits::new(
                     Size::new(line_minimal_length, limits.min().height),
                     limits.max(),
                 );
-                let mut node = elem.as_widget().layout(
+                let mut node = elem.as_widget_mut().layout(
                     children.next().expect("wrap missing expected child"),
                     renderer,
                     &node_limit,

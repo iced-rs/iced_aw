@@ -368,7 +368,7 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         fn layout_icon<Theme, Renderer>(
             icon: &char,
             size: f32,
@@ -473,6 +473,7 @@ where
                                     }
                                     Position::Bottom => {
                                         column = column
+                                            .height(Length::Fill)
                                             .push(layout_text(
                                                 text,
                                                 self.text_size + 1.0,
@@ -512,9 +513,9 @@ where
             .spacing(self.spacing)
             .align_y(Alignment::Center);
 
-        let element: Element<Message, Theme, Renderer> = Element::new(row);
+        let mut element: Element<Message, Theme, Renderer> = Element::new(row);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -523,7 +524,7 @@ where
         };
 
         element
-            .as_widget()
+            .as_widget_mut()
             .layout(tab_tree, renderer, &limits.loose())
     }
 

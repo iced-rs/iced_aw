@@ -153,12 +153,12 @@ where
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         flex::resolve(
             flex::Axis::Horizontal,
             renderer,
@@ -168,7 +168,11 @@ where
             self.padding,
             self.spacing,
             alignment::Alignment::Center,
-            &self.roots.iter().map(|item| &item.item).collect::<Vec<_>>(),
+            &mut self
+                .roots
+                .iter_mut()
+                .map(|item| &mut item.item)
+                .collect::<Vec<_>>(),
             &mut tree
                 .children
                 .iter_mut()
@@ -265,7 +269,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -273,7 +277,7 @@ where
     ) {
         operation.container(None, layout.bounds(), &mut |operation| {
             self.roots
-                .iter() // [Item...]
+                .iter_mut() // [Item...]
                 .zip(tree.children.iter_mut()) // [item_tree...]
                 .zip(layout.children()) // [widget_node...]
                 .for_each(|((child, state), layout)| {

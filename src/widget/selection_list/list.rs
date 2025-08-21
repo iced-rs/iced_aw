@@ -79,7 +79,7 @@ where
         State::new(ListState::default())
     }
 
-    fn diff(&self, state: &mut Tree) {
+    fn diff(&mut self, state: &mut Tree) {
         let list_state = state.state.downcast_mut::<ListState>();
 
         if let Some(id) = self.selected {
@@ -111,7 +111,7 @@ where
         Size::new(Length::Fill, Length::Shrink)
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 

@@ -140,7 +140,7 @@ where
             tab_bar_position: TabBarPosition::Top,
             tab_icon_position: Position::Left,
             width: Length::Fill,
-            height: Length::Shrink,
+            height: Length::Fill,
         }
     }
 
@@ -323,13 +323,13 @@ where
         vec![bar, tabs]
     }
 
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         if tree.children.is_empty() {
             tree.children = self.children();
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&self.children);
+            tabs.diff_children(&mut self.children);
         }
     }
 
@@ -337,8 +337,8 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let tab_bar_limits = limits.width(self.width).height(Length::Shrink);
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        let tab_bar_limits = limits.width(self.width).height(Length::Fill);
         let mut tab_bar_node =
             self.tab_bar
                 .layout(&mut tree.children[0], renderer, &tab_bar_limits);
@@ -349,8 +349,8 @@ where
             .shrink([0.0, tab_bar_node.size().height]);
 
         let mut tab_content_node =
-            if let Some(element) = self.children.get(self.tab_bar.get_active_tab_idx()) {
-                element.as_widget().layout(
+            if let Some(element) = self.children.get_mut(self.tab_bar.get_active_tab_idx()) {
+                element.as_widget_mut().layout(
                     &mut tree.children[1].children[self.tab_bar.get_active_tab_idx()],
                     renderer,
                     &tab_content_limits,
@@ -598,7 +598,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -606,7 +606,7 @@ where
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
-            self.children[active_tab].as_widget().operate(
+            self.children[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
                 layout
                     .children()

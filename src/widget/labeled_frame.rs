@@ -142,7 +142,7 @@ where
     }
 
     fn layout(
-        &self,
+        &mut self,
         tree: &mut advanced::widget::Tree,
         renderer: &Renderer,
         limits: &advanced::layout::Limits,
@@ -150,7 +150,7 @@ where
         let limits = (*limits).height(self.height).width(self.width).loose();
         let title_layout = self
             .title
-            .as_widget()
+            .as_widget_mut()
             .layout(
                 &mut tree.children[0],
                 renderer,
@@ -173,7 +173,7 @@ where
             ]);
         let content_layout = self
             .content
-            .as_widget()
+            .as_widget_mut()
             .layout(
                 &mut tree.children[1],
                 renderer,
@@ -220,8 +220,8 @@ where
         ]
     }
 
-    fn diff(&self, tree: &mut advanced::widget::Tree) {
-        tree.diff_children(&[&self.title, &self.content]);
+    fn diff(&mut self, tree: &mut advanced::widget::Tree) {
+        tree.diff_children(&mut [&mut self.title, &mut self.content]);
     }
 
     fn draw(
@@ -417,20 +417,20 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         state: &mut advanced::widget::Tree,
         layout: advanced::Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn advanced::widget::Operation,
     ) {
         operation.container(None, layout.bounds(), &mut |operation| {
-            [&self.title, &self.content]
-                .iter()
+            [&mut self.title, &mut self.content]
+                .iter_mut()
                 .zip(&mut state.children)
                 .zip(layout.children())
                 .for_each(|((child, state), layout)| {
                     child
-                        .as_widget()
+                        .as_widget_mut()
                         .operate(state, layout, renderer, operation);
                 });
         });

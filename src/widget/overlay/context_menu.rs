@@ -88,7 +88,7 @@ where
 
         let mut content = self
             .content
-            .as_widget()
+            .as_widget_mut()
             .layout(self.tree, renderer, &limits);
 
         // Try to stay inside borders

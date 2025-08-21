@@ -12,7 +12,7 @@ pub fn three_split_row<'a, Message: 'a>(
         move |elements, states, renderer, limits| {
             let mut middle_layout =
                 elements[1]
-                    .as_widget()
+                    .as_widget_mut()
                     .layout(&mut states[1], renderer, limits);
             let side_limits = iced::advanced::layout::Limits::new(
                 (limits.min() - middle_layout.size()) * 0.5,
@@ -20,11 +20,11 @@ pub fn three_split_row<'a, Message: 'a>(
             );
             let mut left_layout =
                 elements[0]
-                    .as_widget()
+                    .as_widget_mut()
                     .layout(&mut states[0], renderer, &side_limits);
             let mut right_layout =
                 elements[2]
-                    .as_widget()
+                    .as_widget_mut()
                     .layout(&mut states[2], renderer, &side_limits);
 
             let height = middle_layout

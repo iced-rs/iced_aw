@@ -397,7 +397,7 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         fn layout_icon<Theme, Renderer>(
             icon: &char,
             size: f32,
@@ -500,9 +500,9 @@ where
             .height(self.height)
             .spacing(self.spacing)
             .align_x(self.align_tabs);
-        let element: Element<Message, Theme, Renderer> = Element::new(column);
+        let mut element: Element<Message, Theme, Renderer> = Element::new(column);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -510,7 +510,7 @@ where
             &mut tree.children[0]
         };
         element
-            .as_widget()
+            .as_widget_mut()
             .layout(tab_tree, renderer, &limits.loose())
     }
 
@@ -1267,13 +1267,13 @@ where
         vec![bar, tabs]
     }
 
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         if tree.children.is_empty() {
             tree.children = self.children();
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&self.tabs);
+            tabs.diff_children(&mut self.tabs);
         }
     }
 
@@ -1281,7 +1281,7 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let sidebar_limits = limits.width(Length::Shrink).height(self.height);
         let mut sidebar_node =
             self.sidebar
@@ -1291,8 +1291,8 @@ where
             .height(self.height)
             .shrink([sidebar_node.size().width, 0.0]);
         let mut tab_content_node =
-            if let Some(element) = self.tabs.get(self.sidebar.get_active_tab_idx()) {
-                element.as_widget().layout(
+            if let Some(element) = self.tabs.get_mut(self.sidebar.get_active_tab_idx()) {
+                element.as_widget_mut().layout(
                     &mut tree.children[1].children[self.sidebar.get_active_tab_idx()],
                     renderer,
                     &tab_content_limits,
@@ -1545,7 +1545,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -1553,7 +1553,7 @@ where
     ) {
         let active_tab = self.sidebar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
-            self.tabs[active_tab].as_widget().operate(
+            self.tabs[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
                 layout
                     .children()

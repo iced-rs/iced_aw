@@ -171,15 +171,15 @@ where
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.items, |tree, item| item.diff(tree), Item::tree);
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.items, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
     /// out: Node{inf, \[ items_node, prescroll, offset_bounds, check_bounds ]}
     pub(super) fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &Limits,
@@ -199,7 +199,11 @@ where
             Padding::ZERO,
             self.spacing,
             alignment::Alignment::Center,
-            &self.items.iter().map(|i| &i.item).collect::<Vec<_>>(),
+            &mut self
+                .items
+                .iter_mut()
+                .map(|i| &mut i.item)
+                .collect::<Vec<_>>(),
             &mut tree
                 .children
                 .iter_mut()
@@ -286,7 +290,7 @@ where
 
         (
             Node::with_children(
-                Size::INFINITY,
+                Size::INFINITE,
                 [
                     slice_node
                         .move_to(children_position)
@@ -386,7 +390,7 @@ where
     }
 
     pub(super) fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -403,7 +407,7 @@ where
 
         operation.container(None, layout.bounds(), &mut |operation| {
             self.items[slice.start_index..=slice.end_index] // [item...]
-                .iter()
+                .iter_mut()
                 .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
                 .zip(slice_layout.children())
                 .for_each(|((child, state), layout)| {
@@ -751,10 +755,10 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     #[allow(clippy::option_if_let_else)]
-    pub(super) fn diff(&self, tree: &mut Tree) {
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
         if let Some(t0) = tree.children.get_mut(0) {
-            t0.diff(&self.item);
-            if let Some(m) = self.menu.as_ref() {
+            t0.diff(&mut self.item);
+            if let Some(m) = self.menu.as_mut() {
                 if let Some(t1) = tree.children.get_mut(1) {
                     m.diff(t1);
                 } else {
@@ -833,14 +837,14 @@ where
     }
 
     pub(super) fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
         self.item
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut tree.children[0], layout, renderer, operation);
     }
 

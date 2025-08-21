@@ -241,11 +241,11 @@ where
         )
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        if let Some(foot) = self.foot.as_ref() {
-            tree.diff_children(&[&self.head, &self.body, foot]);
+    fn diff(&mut self, tree: &mut Tree) {
+        if let Some(foot) = self.foot.as_mut() {
+            tree.diff_children(&mut [&mut self.head, &mut self.body, foot]);
         } else {
-            tree.diff_children(&[&self.head, &self.body]);
+            tree.diff_children(&mut [&mut self.head, &mut self.body]);
         }
     }
 
@@ -256,13 +256,13 @@ where
         }
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
             renderer,
             &limits,
-            &self.head,
+            &mut self.head,
             self.padding_head,
             self.width,
             self.on_close.is_some(),
@@ -272,14 +272,14 @@ where
 
         let limits = limits.shrink(Size::new(0.0, head_node.size().height));
 
-        let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
+        let mut foot_node = self.foot.as_mut().map_or_else(Node::default, |foot| {
             foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
         });
         let limits = limits.shrink(Size::new(0.0, foot_node.size().height));
         let mut body_node = body_node(
             renderer,
             &limits,
-            &self.body,
+            &mut self.body,
             self.padding_body,
             self.width,
             tree,
@@ -476,7 +476,7 @@ where
     }
 
     fn operate<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -488,16 +488,19 @@ where
         let foot_layout = children.next().expect("Missing Footer Layout");
 
         self.head
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut state.children[0], head_layout, renderer, operation);
         self.body
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut state.children[1], body_layout, renderer, operation);
 
-        if let Some(footer) = &self.foot {
-            footer
-                .as_widget()
-                .operate(&mut state.children[2], foot_layout, renderer, operation);
+        if let Some(footer) = &mut self.foot {
+            footer.as_widget_mut().operate(
+                &mut state.children[2],
+                foot_layout,
+                renderer,
+                operation,
+            );
         }
     }
 
@@ -638,7 +641,7 @@ where
 fn head_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    head: &Element<'_, Message, Theme, Renderer>,
+    head: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     on_close: bool,
@@ -663,7 +666,7 @@ where
     }
 
     let mut head = head
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[0], renderer, &limits);
     let mut size = limits.resolve(width, header_size.height, head.size());
 
@@ -698,7 +701,7 @@ where
 fn body_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    body: &Element<'_, Message, Theme, Renderer>,
+    body: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -715,7 +718,7 @@ where
         .shrink(padding);
 
     let mut body = body
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[1], renderer, &limits);
     let size = limits.resolve(width, body_size.height, body.size());
 
@@ -732,7 +735,7 @@ where
 fn foot_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    foot: &Element<'_, Message, Theme, Renderer>,
+    foot: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -749,7 +752,7 @@ where
         .shrink(padding);
 
     let mut foot = foot
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[2], renderer, &limits);
     let size = limits.resolve(width, foot_size.height, foot.size());
 

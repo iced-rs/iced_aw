@@ -11,7 +11,7 @@ pub use iced::advanced::{
 
 type LayoutFn<'a, Message, Theme, Renderer> = Box<
     dyn Fn(
-        &Vec<iced::Element<'a, Message, Theme, Renderer>>,
+        &mut Vec<iced::Element<'a, Message, Theme, Renderer>>,
         &mut Vec<Tree>,
         &Renderer,
         &Limits,
@@ -33,7 +33,7 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
     pub fn new(
         elements: Vec<iced::Element<'b, Message, Theme, Renderer>>,
         layout: impl Fn(
-                &Vec<iced::Element<'b, Message, Theme, Renderer>>,
+                &mut Vec<iced::Element<'b, Message, Theme, Renderer>>,
                 &mut Vec<Tree>,
                 &Renderer,
                 &Limits,
@@ -70,8 +70,8 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         iced::Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        (self.layout)(&self.elements, &mut tree.children, renderer, limits)
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        (self.layout)(&mut self.elements, &mut tree.children, renderer, limits)
     }
 
     fn draw(
@@ -99,12 +99,12 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         self.elements.iter().map(|x| Tree::new(x)).collect()
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.elements);
     }
 
     fn operate(
-        &self,
+        &mut self,
         state: &mut Tree,
         layout: iced::advanced::Layout<'_>,
         renderer: &Renderer,
@@ -114,11 +114,11 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
             .children
             .iter_mut()
             .zip(layout.children())
-            .zip(self.elements.iter())
+            .zip(self.elements.iter_mut())
             .for_each(|((state, layout), element)| {
                 operation.container(None, layout.bounds(), &mut |operation| {
                     element
-                        .as_widget()
+                        .as_widget_mut()
                         .operate(state, layout, renderer, operation);
                 });
             });

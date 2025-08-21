@@ -539,9 +539,9 @@ where
             .push(month_year)
             .push(days);
 
-        let element: Element<Message, Theme, Renderer> = Element::new(col);
+        let mut element: Element<Message, Theme, Renderer> = Element::new(col);
         let col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -549,7 +549,7 @@ where
             &mut self.tree.children[2]
         };
 
-        let mut col = element.as_widget().layout(col_tree, renderer, &limits);
+        let mut col = element.as_widget_mut().layout(col_tree, renderer, &limits);
         let col_bounds = col.bounds();
         col = col.move_to(Point::new(
             col_bounds.x + PADDING.left,
@@ -1037,15 +1037,15 @@ where
         ]
     }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
+    fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 

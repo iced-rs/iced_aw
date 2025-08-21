@@ -79,7 +79,7 @@ where
 
         fn rec<Message, Theme: Catalog, Renderer: renderer::Renderer>(
             renderer: &Renderer,
-            item: &Item<'_, Message, Theme, Renderer>,
+            item: &mut Item<'_, Message, Theme, Renderer>,
             tree: &mut Tree,
             menu_nodes: &mut Vec<Node>,
             check_bounds_width: f32,
@@ -87,7 +87,7 @@ where
             parent_direction: (Direction, Direction),
             viewport: &Rectangle,
         ) {
-            if let Some(menu) = item.menu.as_ref() {
+            if let Some(menu) = item.menu.as_mut() {
                 let menu_tree = &mut tree.children[1];
 
                 let (menu_node, direction) = menu.layout(
@@ -106,7 +106,7 @@ where
 
                 if let Some(active) = menu_state.active {
                     if active < menu.items.len() {
-                        let next_item = &menu.items[active];
+                        let next_item = &mut menu.items[active];
                         let next_tree = &mut menu_tree.children[active];
                         let next_parent_bounds = {
                             let slice_node = &menu_nodes.last().unwrap().children()[0];
@@ -424,12 +424,12 @@ where
         let menu_layouts_layout = lc.next().unwrap(); // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
 
-        let active_root = &self.roots[active];
+        let active_root = &mut self.roots[active];
         let active_tree = &mut self.tree.children[active];
 
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             tree: &mut Tree,
-            item: &Item<'a, Message, Theme, Renderer>,
+            item: &mut Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
             renderer: &Renderer,
             operation: &mut dyn Operation<()>,
@@ -438,7 +438,7 @@ where
                 return;
             }
 
-            let menu = item.menu.as_ref().expect("No menu defined in this item");
+            let menu = item.menu.as_mut().expect("No menu defined in this item");
             let menu_tree = &mut tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
@@ -449,7 +449,7 @@ where
 
             operation.container(None, menu_layout.bounds(), &mut |operation| {
                 menu.items
-                    .iter() // [Item...]
+                    .iter_mut() // [Item...]
                     .zip(menu_tree.children.iter_mut()) // [item_tree...] // [widget_node...]
                     .for_each(|(child, state)| {
                         rec(state, child, layout_iter, renderer, operation);
