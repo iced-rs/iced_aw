@@ -131,14 +131,14 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug example 'custom_layout'",
+      "name": "Debug example 'drop_down_test'",
       "cargo": {
         "args": [
           "build",
-          "--example=custom_layout",
+          "--example=drop_down_test",
         ],
         "filter": {
-          "name": "custom_layout",
+          "name": "drop_down_test",
           "kind": "example"
         }
       },
