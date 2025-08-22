@@ -5,7 +5,7 @@ use iced::widget::{
     button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input,
     toggler, vertical_slider,column as col, vertical_space, Space,
 };
-use iced::{alignment, theme, Background, Border, Color, Element, Length, Size, Theme};
+use iced::{alignment, theme, Background, Border, Color, Element, Length, Padding, Size, Theme};
 
 use iced_aw::menu::{self, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
@@ -446,6 +446,7 @@ impl App {
         )
         .draw_path(menu::DrawPath::FakeHovering)
         .close_on_click(self.close_on_click)
+        .padding(Padding::new(5.0))
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
                 radius: Radius::new(6.0),

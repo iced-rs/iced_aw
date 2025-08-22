@@ -560,6 +560,7 @@ where
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
+        println!("Menu::open_event() | old_active: {:?}", menu_state.active);
         menu_state.active = None;
 
         for (i, ((item, new_tree), layout)) in self.items[slice.start_index..=slice.end_index]
@@ -569,6 +570,7 @@ where
             .enumerate()
         {
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+                println!("Menu::open_event() | new menu opened | i: {:?}", i);
                 menu_state.open_new_menu(i + slice.start_index, new_tree);
                 return;
             }

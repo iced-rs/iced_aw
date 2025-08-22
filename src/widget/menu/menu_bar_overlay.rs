@@ -12,7 +12,7 @@ use iced::{
         mouse, overlay, renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell, Widget,
-    }, time::Instant, window, Event, Padding, Point, Rectangle, Size, Vector
+    }, time::Instant, window::{self, RedrawRequest}, Event, Padding, Point, Rectangle, Size, Vector
 };
 
 use super::{common::*, menu_bar::{MenuBar, MenuBarState}, menu_tree::*};
@@ -213,13 +213,13 @@ where
             prev: &mut Index,
             depth: usize,
         ) -> RecEvent {
-            let Some(ref mut menu) = item.menu else {
-                return RecEvent::None;
+            let Some(menu) = item.menu.as_mut() else {
+                return RecEvent::Close;
             };
             let menu_tree = &mut tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
-                return RecEvent::None;
+                return RecEvent::Close;
             }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
             let mut mc = menu_layout.children();
@@ -286,7 +286,7 @@ where
             // println!("MenuBarOverlay | background bounds: {:?}", background_bounds);
             // println!("MenuBarOverlay | background bounds bottom: {:?}", background_bounds.y + background_bounds.height);
             // println!("MenuBarOverlay | background bounds right: {:?}", background_bounds.x + background_bounds.width);
-            println!("MenuBarOverlay| shell.is_event_captured(): {:?}", shell.is_event_captured());
+            println!("MenuBarOverlay | shell.is_event_captured(): {:?}", shell.is_event_captured());
             
             let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
 
@@ -331,6 +331,7 @@ where
                         viewport
                     );
 
+                    merge_fake_shell(shell, fake_shell);
                     shell.capture_event();
                     RecEvent::Event
                 },
@@ -363,6 +364,7 @@ where
                             &mut fake_shell, 
                             viewport
                         );
+                        merge_fake_shell(shell, fake_shell);
                         // the cursor is over the parent bounds
                         // let the parent process the event
                         assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::None");
@@ -465,6 +467,7 @@ where
             _ => {}
         }
 
+        println!("MenuBarOverlay::update() | shell.is_layout_invalid(): {:?}", shell.is_layout_invalid());
         // println!("MenuBarOverlay | bar: {:?}", bar);
         // println!("MenuBarOverlay | update | event: {:?}", event);
         if let Event::Window(window::Event::RedrawRequested(_)) = event {
@@ -504,12 +507,13 @@ where
             cursor: mouse::Cursor,
             renderer: &Renderer,
         ) -> mouse::Interaction {
-            let Some(ref menu) = item.menu else {
+            let Some(menu) = item.menu.as_ref() else {
                 return mouse::Interaction::default();
             };
             let menu_tree = &tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
+                println!("MenuBarOverlay::mouse_interaction() | menu exists, but menu_layout is None");
                 return mouse::Interaction::default();
             }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
@@ -654,46 +658,49 @@ where
             theme_style: &Style,
             viewport: &Rectangle,
         ) {
-            if let Some(menu) = item.menu.as_ref() {
-                let menu_tree = &tree.children[1];
+            let Some(menu) = item.menu.as_ref() else {
+                return;
+            };
 
-                let Some(menu_layout) = layout_iter.next() else {
-                    return;
-                }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
+            let menu_tree = &tree.children[1];
 
-                let menu_state = menu_tree.state.downcast_ref::<MenuState>();
+            let Some(menu_layout) = layout_iter.next() else {
+                println!("MenuBarOverlay::draw() | menu exists, but menu_layout is None");
+                return;
+            }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
-                menu.draw(
-                    &global_parameters.draw_path,
-                    menu_tree,
-                    renderer,
-                    theme,
-                    style,
-                    theme_style,
-                    menu_layout,
-                    cursor,
-                    viewport,
-                );
+            let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
-                if let Some(active) = menu_state.active {
-                    let next_tree = &menu_tree.children[active];
-                    let next_item = &menu.items[active];
+            menu.draw(
+                &global_parameters.draw_path,
+                menu_tree,
+                renderer,
+                theme,
+                style,
+                theme_style,
+                menu_layout,
+                cursor,
+                viewport,
+            );
 
-                    renderer.with_layer(*viewport, |r| {
-                        rec(
-                            global_parameters,
-                            next_tree,
-                            next_item,
-                            layout_iter,
-                            cursor,
-                            r,
-                            theme,
-                            style,
-                            theme_style,
-                            viewport,
-                        );
-                    });
-                }
+            if let Some(active) = menu_state.active {
+                let next_tree = &menu_tree.children[active];
+                let next_item = &menu.items[active];
+
+                renderer.with_layer(*viewport, |r| {
+                    rec(
+                        global_parameters,
+                        next_tree,
+                        next_item,
+                        layout_iter,
+                        cursor,
+                        r,
+                        theme,
+                        style,
+                        theme_style,
+                        viewport,
+                    );
+                });
             }
         }
 
@@ -711,5 +718,29 @@ where
             &theme_style,
             &viewport,
         );
+    }
+}
+
+pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
+    if fake_shell.is_layout_invalid(){
+        shell.invalidate_layout();
+    }
+
+    if fake_shell.are_widgets_invalid(){
+        shell.invalidate_widgets();
+    }
+
+    let rr = fake_shell.redraw_request();
+    
+    if rr < shell.redraw_request(){
+        match rr {
+            RedrawRequest::NextFrame => {
+                shell.request_redraw();
+            }
+            RedrawRequest::At(time) => {
+                shell.request_redraw_at(time);
+            }
+            RedrawRequest::Wait => {}
+        }
     }
 }
