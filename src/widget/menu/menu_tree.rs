@@ -553,15 +553,25 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
+        shell: &mut Shell<'_, Message>,
     ) {
         println!("Menu::open_event()");
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
 
         let menu_state = tree.state.downcast_mut::<MenuState>();
+        
+        if menu_state.pressed {
+            return;
+        }
+
         let slice = &menu_state.slice;
-        println!("Menu::open_event() | old_active: {:?}", menu_state.active);
-        menu_state.active = None;
+
+        assert!(menu_state.active.is_none(), "
+            Menu::open_event() is called only when RecEvent::Close is returned, \
+            which means no child menu should be open (menu_state.active must be None). \
+            If this assert fails, please report this issue.
+        ");
 
         for (i, ((item, new_tree), layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
@@ -572,8 +582,12 @@ where
             if item.menu.is_some() && cursor.is_over(layout.bounds()) {
                 println!("Menu::open_event() | new menu opened | i: {:?}", i);
                 menu_state.open_new_menu(i + slice.start_index, new_tree);
-                return;
+                break;
             }
+        }
+
+        if menu_state.active.is_some() {
+            shell.invalidate_layout();
         }
     }
 
@@ -582,6 +596,7 @@ where
         tree: &mut Tree,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
+        shell: &mut Shell<'_, Message>,
         check_bounds: Rectangle,
         background_bounds: Rectangle,
         parent_bounds: Rectangle,
@@ -601,7 +616,6 @@ where
         }
 
         let open = {
-            // if cursor.is_over(pad_rectangle(prescroll, self.padding))
             if cursor.is_over(background_bounds)
                 || cursor.is_over(parent_bounds)
                 || cursor.is_over(offset_bounds)
@@ -617,6 +631,7 @@ where
         if !open {
             println!("Menu::close_event() | not open");
             *prev = None;
+            shell.invalidate_layout();
         }
     }
 }

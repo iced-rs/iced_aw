@@ -280,20 +280,15 @@ where
             println!("MenuBarOverlay | rec_event: {:?}", rec_event);
             println!("MenuBarOverlay | event: {:?}", event);
             println!("MenuBarOverlay | cursor: {:?}", cursor);
-            // println!("MenuBarOverlay | cursor is over prescroll: {:?}", cursor.is_over(prescroll));
-            // println!("MenuBarOverlay | cursor is over offset bounds: {:?}", cursor.is_over(offset_bounds));
             println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
-            // println!("MenuBarOverlay | background bounds: {:?}", background_bounds);
-            // println!("MenuBarOverlay | background bounds bottom: {:?}", background_bounds.y + background_bounds.height);
-            // println!("MenuBarOverlay | background bounds right: {:?}", background_bounds.x + background_bounds.width);
             println!("MenuBarOverlay | shell.is_event_captured(): {:?}", shell.is_event_captured());
             
-            let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
 
             match rec_event {
                 RecEvent::Event => {
                     let mut fake_messages = vec![];
                     let mut fake_shell = Shell::new(&mut fake_messages);
+                    let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
                     
                     let active = menu_state.active.expect("
                         `RecEvent::Event` is returned, but `menu_state.active` is `None`. \
@@ -334,7 +329,7 @@ where
                     merge_fake_shell(shell, fake_shell);
                     shell.capture_event();
                     RecEvent::Event
-                },
+                }
                 RecEvent::Close => {
                     if is_pressed || cursor.is_over(background_bounds) || cursor.is_over(offset_bounds){
                         menu.update(
@@ -348,12 +343,14 @@ where
                             viewport,
                             global_parameters.scroll_speed,
                         );
-                        menu.open_event(menu_tree, menu_layout, cursor);
+                        menu.open_event(menu_tree, menu_layout, cursor, shell);
                         shell.capture_event();
                         RecEvent::Event
                     } else if cursor.is_over(parent_bounds){
                         let mut fake_messages = vec![];
                         let mut fake_shell = Shell::new(&mut fake_messages);
+                        let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
+
                         menu.update_items(
                             menu_tree, 
                             &redraw_event, 
@@ -374,6 +371,7 @@ where
                             menu_tree, 
                             menu_layout, 
                             cursor, 
+                            shell,
                             check_bounds, 
                             background_bounds, 
                             parent_bounds, 
@@ -429,11 +427,17 @@ where
         if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) 
         = (self.menu_bar.global_parameters.close_on_click, event) {
             bar.active_root = None;
+            shell.invalidate_layout();
         }
 
+        // if the function reaches here, 
+        // that means bar.active_root was Some, 
+        // if bar.active_root is None, 
+        // we can be sure that the layout has changed
         if bar.active_root.is_none() && !cursor.is_over(bar_bounds){
             bar.open = false;
             bar.is_pressed = false;
+            shell.invalidate_layout();
         }
         
         match re {
@@ -464,16 +468,13 @@ where
                     &viewport
                 );
             },
-            _ => {}
+            _ => {
+                // if RecEvent::Close or RecEvent::None is returned,
+                // let the menu bar process the event
+            }
         }
 
         println!("MenuBarOverlay::update() | shell.is_layout_invalid(): {:?}", shell.is_layout_invalid());
-        // println!("MenuBarOverlay | bar: {:?}", bar);
-        // println!("MenuBarOverlay | update | event: {:?}", event);
-        if let Event::Window(window::Event::RedrawRequested(_)) = event {
-        }else{
-            shell.request_redraw();
-        }
     }
 
     fn mouse_interaction(
