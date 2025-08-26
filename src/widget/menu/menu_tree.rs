@@ -22,6 +22,7 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Shell,
     },
+    window, time::Instant,
     alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
 use std::iter::once;
@@ -314,6 +315,33 @@ where
             ),
             child_direction,
         )
+    }
+
+    /// tree: Tree{ menu_state, \[item_tree...] }
+    ///
+    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds]}
+    /// 
+    /// Updates the menu items with a fake shell and a redraw event, 
+    /// and merges the fake shell into the real shell without merging the status
+    pub(super) fn fake_update(
+        &mut self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        println!("Menu::fake_update()");
+        let mut fake_messages = vec![];
+        let mut fake_shell = Shell::new(&mut fake_messages);
+
+        let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
+
+        self.update_items(tree, &redraw_event, layout, cursor, renderer, clipboard, &mut fake_shell, viewport);
+
+        merge_fake_shell(shell, fake_shell);
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }

@@ -1,4 +1,4 @@
-use iced::{Padding, Rectangle};
+use iced::{advanced::Shell, window::RedrawRequest, Padding, Rectangle};
 
 /* /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
@@ -119,4 +119,32 @@ pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog>{
     pub(super) scroll_speed: ScrollSpeed,
     pub(super) close_on_click: bool,
     pub(super) class: Theme::Class<'a>,
+}
+
+/// Merges the fake shell into the real shell,
+/// this makes sure that the fake shell status does not propagate to the real shell.
+/// 
+/// Current limitation: messages are not merged.
+pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
+    if fake_shell.is_layout_invalid(){
+        shell.invalidate_layout();
+    }
+
+    if fake_shell.are_widgets_invalid(){
+        shell.invalidate_widgets();
+    }
+
+    let rr = fake_shell.redraw_request();
+    
+    if rr < shell.redraw_request(){
+        match rr {
+            RedrawRequest::NextFrame => {
+                shell.request_redraw();
+            }
+            RedrawRequest::At(time) => {
+                shell.request_redraw_at(time);
+            }
+            RedrawRequest::Wait => {}
+        }
+    }
 }

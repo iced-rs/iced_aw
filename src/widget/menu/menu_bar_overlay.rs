@@ -286,10 +286,6 @@ where
 
             match rec_event {
                 RecEvent::Event => {
-                    let mut fake_messages = vec![];
-                    let mut fake_shell = Shell::new(&mut fake_messages);
-                    let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
-                    
                     let active = menu_state.active.expect("
                         `RecEvent::Event` is returned, but `menu_state.active` is `None`. \
                         This should not happen, please report this issue
@@ -315,18 +311,8 @@ where
                         DrawPath::Backdrop => mouse::Cursor::Unavailable
                     };
 
-                    menu.update_items(
-                        menu_tree, 
-                        &redraw_event, 
-                        menu_layout, 
-                        cursor, 
-                        renderer, 
-                        clipboard, 
-                        &mut fake_shell, 
-                        viewport
-                    );
+                    menu.fake_update(menu_tree, menu_layout, cursor, renderer, clipboard, shell, viewport);
 
-                    merge_fake_shell(shell, fake_shell);
                     shell.capture_event();
                     RecEvent::Event
                 }
@@ -347,21 +333,7 @@ where
                         shell.capture_event();
                         RecEvent::Event
                     } else if cursor.is_over(parent_bounds){
-                        let mut fake_messages = vec![];
-                        let mut fake_shell = Shell::new(&mut fake_messages);
-                        let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
-
-                        menu.update_items(
-                            menu_tree, 
-                            &redraw_event, 
-                            menu_layout, 
-                            cursor, 
-                            renderer, 
-                            clipboard, 
-                            &mut fake_shell, 
-                            viewport
-                        );
-                        merge_fake_shell(shell, fake_shell);
+                        menu.fake_update(menu_tree, menu_layout, cursor, renderer, clipboard, shell, viewport);
                         // the cursor is over the parent bounds
                         // let the parent process the event
                         assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::None");
@@ -722,26 +694,3 @@ where
     }
 }
 
-pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
-    if fake_shell.is_layout_invalid(){
-        shell.invalidate_layout();
-    }
-
-    if fake_shell.are_widgets_invalid(){
-        shell.invalidate_widgets();
-    }
-
-    let rr = fake_shell.redraw_request();
-    
-    if rr < shell.redraw_request(){
-        match rr {
-            RedrawRequest::NextFrame => {
-                shell.request_redraw();
-            }
-            RedrawRequest::At(time) => {
-                shell.request_redraw_at(time);
-            }
-            RedrawRequest::Wait => {}
-        }
-    }
-}
