@@ -182,8 +182,8 @@ where
         vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(&mut [&mut self.container as &mut dyn Widget<_, _, _>]);
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
         state.values = self

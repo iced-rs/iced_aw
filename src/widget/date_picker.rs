@@ -204,8 +204,8 @@ where
         vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay_state]);
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
     fn size(&self) -> Size<Length> {

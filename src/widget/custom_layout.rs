@@ -99,8 +99,8 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         self.elements.iter().map(|x| Tree::new(x)).collect()
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(&mut self.elements);
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.elements);
     }
 
     fn operate(

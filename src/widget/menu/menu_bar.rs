@@ -153,8 +153,8 @@ where
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}
-    fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children_custom(&mut self.roots, |tree, item| item.diff(tree), Item::tree);
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar_state, \[item_tree...]}

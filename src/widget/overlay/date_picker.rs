@@ -1037,8 +1037,8 @@ where
         ]
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
