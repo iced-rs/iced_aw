@@ -79,7 +79,7 @@ where
         State::new(ListState::default())
     }
 
-    fn diff(&mut self, state: &mut Tree) {
+    fn diff(&self, state: &mut Tree) {
         let list_state = state.state.downcast_mut::<ListState>();
 
         if let Some(id) = self.selected {

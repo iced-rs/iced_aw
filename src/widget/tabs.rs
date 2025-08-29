@@ -323,13 +323,13 @@ where
         vec![bar, tabs]
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
+    fn diff(&self, tree: &mut Tree) {
         if tree.children.is_empty() {
             tree.children = self.children();
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&mut self.children);
+            tabs.diff_children(&self.children);
         }
     }
 

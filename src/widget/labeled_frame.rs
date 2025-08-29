@@ -220,8 +220,8 @@ where
         ]
     }
 
-    fn diff(&mut self, tree: &mut advanced::widget::Tree) {
-        tree.diff_children(&mut [&mut self.title, &mut self.content]);
+    fn diff(&self, tree: &mut advanced::widget::Tree) {
+        tree.diff_children(&[&self.title, &self.content]);
     }
 
     fn draw(

@@ -511,9 +511,9 @@ where
         }]
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
+    fn diff(&self, tree: &mut Tree) {
         tree.diff_children_custom(
-            &mut [&mut self.content],
+            &[&self.content],
             |state, content| content.diff(state),
             |content| Tree {
                 tag: content.tag(),

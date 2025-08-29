@@ -241,11 +241,11 @@ where
         )
     }
 
-    fn diff(&mut self, tree: &mut Tree) {
-        if let Some(foot) = self.foot.as_mut() {
-            tree.diff_children(&mut [&mut self.head, &mut self.body, foot]);
+    fn diff(&self, tree: &mut Tree) {
+        if let Some(foot) = self.foot.as_ref() {
+            tree.diff_children(&[&self.head, &self.body, foot]);
         } else {
-            tree.diff_children(&mut [&mut self.head, &mut self.body]);
+            tree.diff_children(&[&self.head, &self.body]);
         }
     }
 
