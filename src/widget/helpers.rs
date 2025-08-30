@@ -4,7 +4,7 @@
 #[cfg(feature = "selection_list")]
 use crate::style::{Status, StyleFn};
 #[allow(unused_imports)]
-use iced::{self, advanced::renderer, Color, Element, Padding};
+use iced_core::{self, renderer, Color, Element, Padding};
 
 #[cfg(feature = "number_input")]
 use num_traits::bounds::Bounded;
@@ -155,7 +155,7 @@ where
 pub fn color_picker<'a, Message, Theme, F>(
     show_picker: bool,
     color: Color,
-    underlay: impl Into<Element<'a, Message, Theme, iced::Renderer>>,
+    underlay: impl Into<Element<'a, Message, Theme, iced_widget::Renderer>>,
     on_cancel: Message,
     on_submit: F,
 ) -> crate::ColorPicker<'a, Message, Theme>
@@ -163,8 +163,8 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
     F: 'static + Fn(Color) -> Message,
 {
     crate::ColorPicker::new(show_picker, color, underlay, on_cancel, on_submit)
@@ -177,7 +177,7 @@ where
 pub fn date_picker<'a, Message, Theme, F>(
     show_picker: bool,
     date: impl Into<crate::core::date::Date>,
-    underlay: impl Into<Element<'a, Message, Theme, iced::Renderer>>,
+    underlay: impl Into<Element<'a, Message, Theme, iced_widget::Renderer>>,
     on_cancel: Message,
     on_submit: F,
 ) -> crate::DatePicker<'a, Message, Theme>
@@ -185,9 +185,9 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
     F: 'static + Fn(crate::core::date::Date) -> Message,
 {
     crate::DatePicker::new(show_picker, date, underlay, on_cancel, on_submit)
@@ -208,9 +208,9 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::time_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
-    U: Into<Element<'a, Message, Theme, iced::Renderer>>,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
+    U: Into<Element<'a, Message, Theme, iced_widget::Renderer>>,
     F: 'static + Fn(crate::core::time::Time) -> Message,
 {
     crate::TimePicker::new(show_picker, time, underlay, on_cancel, on_submit)
@@ -256,7 +256,7 @@ pub fn number_input<'a, T, Message, Theme, Renderer, F>(
 ) -> crate::NumberInput<'a, T, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: crate::style::number_input::ExtendedCatalog,
     F: 'static + Fn(T) -> Message + Copy,
     T: 'static
@@ -282,8 +282,8 @@ pub fn typed_input<'a, T, Message, Theme, Renderer, F>(
 ) -> crate::TypedInput<'a, T, Message, Theme, Renderer>
 where
     Message: Clone,
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
-    Theme: iced::widget::text_input::Catalog,
+    Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
+    Theme: iced_widget::text_input::Catalog,
     F: 'static + Fn(T) -> Message + Copy,
     T: 'static + std::fmt::Display + std::str::FromStr + Clone,
 {
@@ -302,15 +302,15 @@ pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
     padding: impl Into<Padding>,
     style: impl Fn(&Theme, Status) -> crate::style::selection_list::Style + 'a + Clone,
     selected: Option<usize>,
-    font: iced::Font,
+    font: iced_core::Font,
 ) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a
         + crate::style::selection_list::Catalog
-        + iced::widget::container::Catalog
-        + iced::widget::scrollable::Catalog,
+        + iced_widget::container::Catalog
+        + iced_widget::scrollable::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     <Theme as crate::style::selection_list::Catalog>::Class<'a>:
@@ -338,11 +338,11 @@ pub fn selection_list<'a, T, Message, Theme, Renderer>(
 ) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a
         + crate::style::selection_list::Catalog
-        + iced::widget::container::Catalog
-        + iced::widget::scrollable::Catalog,
+        + iced_widget::container::Catalog
+        + iced_widget::scrollable::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {

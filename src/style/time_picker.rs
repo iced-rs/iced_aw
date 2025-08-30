@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `time_picker`*
 #![allow(clippy::doc_markdown)]
 use super::{Status, StyleFn};
-use iced::{Background, Color, Theme};
+use iced_core::{Background, Color, Theme};
 
 /// The style of a [`TimePicker`](crate::widget::TimePicker).
 #[derive(Clone, Copy, Debug)]

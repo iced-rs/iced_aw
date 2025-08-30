@@ -6,14 +6,11 @@
 #![allow(clippy::items_after_statements)]
 #![allow(clippy::similar_names)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        mouse, overlay, renderer,
-        widget::{Operation, Tree},
-        Clipboard, Layout, Shell,
-    },
-    Event, Point, Rectangle, Size, Vector,
+use iced_core::{
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
+    widget::{Operation, Tree},
+    Clipboard, Event, Layout, Point, Rectangle, Shell, Size, Vector,
 };
 
 use super::{common::*, menu_bar::MenuBarState, menu_tree::*};

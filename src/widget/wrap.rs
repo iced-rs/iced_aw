@@ -1,21 +1,25 @@
 //! A widget that displays its children in multiple horizontal or vertical runs.
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    Alignment, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
+    overlay, renderer,
+    widget::{Operation, Tree},
+    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
+    Size, Vector, Widget,
 };
 use std::marker::PhantomData;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct Wrap<'a, Message, Direction, Theme = iced::Theme, Renderer = iced::Renderer> {
+pub struct Wrap<
+    'a,
+    Message,
+    Direction,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> {
     /// The elements to distribute.
     pub elements: Vec<Element<'a, Message, Theme, Renderer>>,
     /// The alignment of the [`Wrap`].

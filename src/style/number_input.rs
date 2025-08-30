@@ -3,7 +3,8 @@
 //! *This API requires the following crate features to be activated: `number_input`*
 
 use super::{Status, StyleFn};
-use iced::{widget, Background, Color, Theme};
+use iced_core::{Background, Color, Theme};
+use iced_widget::{container, text, text_input};
 
 /// The appearance of a [`NumberInput`](crate::widget::number_input::NumberInput).
 #[derive(Clone, Copy, Debug)]
@@ -49,12 +50,12 @@ impl Catalog for Theme {
 
 /// The Extended Catalog of a [`NumberInput`](crate::widget::number_input::NumberInput).
 pub trait ExtendedCatalog:
-    widget::text_input::Catalog + widget::container::Catalog + widget::text::Catalog + self::Catalog
+    text_input::Catalog + container::Catalog + text::Catalog + self::Catalog
 {
     /// The default class produced by the [`Catalog`].
     #[must_use]
-    fn default_input<'a>() -> <Self as widget::text_input::Catalog>::Class<'a> {
-        <Self as widget::text_input::Catalog>::default()
+    fn default_input<'a>() -> <Self as text_input::Catalog>::Class<'a> {
+        <Self as text_input::Catalog>::default()
     }
 
     /// The [`Style`] of a class with the given status.

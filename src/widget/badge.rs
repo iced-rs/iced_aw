@@ -2,16 +2,13 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        widget::Tree,
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    window, Alignment, Border, Color, Element, Event, Length, Padding, Point, Rectangle, Shadow,
-    Size,
+    renderer,
+    widget::Tree,
+    window, Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shadow, Shell, Size, Widget,
 };
 
 pub use crate::style::{
@@ -26,7 +23,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 ///
 /// # Example
 /// ```ignore
-/// # use iced::widget::Text;
+/// # use iced_widget::Text;
 /// # use iced_aw::Badge;
 /// #
 /// #[derive(Debug, Clone)]
@@ -36,7 +33,7 @@ const BORDER_RADIUS_RATIO: f32 = 34.0 / 15.0;
 /// let badge = Badge::<Message>::new(Text::new("Text"));
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Badge<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct Badge<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: renderer::Renderer,
     Theme: Catalog,

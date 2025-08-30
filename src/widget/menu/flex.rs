@@ -21,12 +21,9 @@
 #![allow(clippy::pedantic)]
 #![allow(clippy::use_self)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer, widget,
-    },
-    Alignment, Element, Length, Padding, Pixels, Point, Size,
+use iced_core::{
+    layout::{Limits, Node},
+    renderer, widget, Alignment, Element, Length, Padding, Pixels, Point, Size,
 };
 
 /// The main axis of a flex layout.

@@ -21,10 +21,10 @@ default = ["full"]
 badge = []
 card = []
 date_picker = ["chrono"]
-color_picker = ["iced/canvas"]
+color_picker = ["iced_widget/canvas"]
 tab_bar = []
 tabs = ["tab_bar"]
-time_picker = ["chrono", "iced/canvas"]
+time_picker = ["chrono", "iced_widget/canvas"]
 wrap = []
 number_input = ["num-format", "num-traits", "typed_input"]
 typed_input = []
@@ -37,7 +37,7 @@ slide_bar = []
 drop_down = []
 sidebar = []
 labeled_frame = []
-custom_layout = ["iced/advanced"]
+custom_layout = []
 
 full = [
   "badge",
@@ -66,17 +66,19 @@ iced_aw = { path = "./" }
 getrandom = { version = "0.3.3", features = ["wasm_js"] }
 rand = "0.9.2"                                            # For wrap example
 
-[dependencies.iced]
+[dev-dependencies.iced]
 version = "0.14.0-dev"
 features = ["advanced"]
 
 [dependencies]
+iced_core = "0.14.0-dev"
+iced_widget = "0.14.0-dev"
+
 cfg-if = "1.0"
 chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
 iced_fonts = { version = "0.3.0-dev", features = [
   "advanced_text",
 ], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
-iced_widget = "0.14.0-dev" # Required for font generated from `iced_fonts`.
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"

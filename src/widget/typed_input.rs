@@ -2,18 +2,16 @@
 //!
 //! *This API requires the following crate features to be activated: `typed_input`*
 
-use iced::advanced::layout::{Layout, Limits, Node};
-use iced::advanced::widget::{
+use iced_core::layout::{Layout, Limits, Node};
+use iced_core::mouse::{self, Cursor};
+use iced_core::widget::{
     tree::{State, Tag},
     Operation, Tree, Widget,
 };
-use iced::advanced::{Clipboard, Shell};
-use iced::mouse::{self, Cursor};
-use iced::{
-    widget::text_input::{self, TextInput},
-    Event, Size,
-};
-use iced::{Element, Length, Padding, Pixels, Rectangle};
+use iced_core::{Clipboard, Shell};
+use iced_core::{Element, Length, Padding, Pixels, Rectangle};
+use iced_core::{Event, Size};
+use iced_widget::text_input::{self, TextInput};
 
 use std::{fmt::Display, str::FromStr};
 
@@ -38,9 +36,9 @@ const DEFAULT_PADDING: Padding = Padding::new(5.0);
 ///     Message::TypedInputChanged,
 /// );
 /// ```
-pub struct TypedInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct TypedInput<'a, T, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
-    Renderer: iced::advanced::text::Renderer,
+    Renderer: iced_core::text::Renderer,
     Theme: text_input::Catalog,
 {
     /// The current value of the [`TypedInput`].
@@ -69,7 +67,7 @@ impl<'a, T, Message, Theme, Renderer> TypedInput<'a, T, Message, Theme, Renderer
 where
     T: Display + FromStr,
     Message: Clone,
-    Renderer: iced::advanced::text::Renderer,
+    Renderer: iced_core::text::Renderer,
     Theme: text_input::Catalog,
 {
     /// Creates a new [`TypedInput`].
@@ -229,16 +227,16 @@ where
         self
     }
 
-    /// Sets the [Font](iced::advanced::text::Renderer::Font) of the [`TypedInput`].
+    /// Sets the [Font](iced_core::text::Renderer::Font) of the [`TypedInput`].
     #[must_use]
     pub fn font(mut self, font: Renderer::Font) -> Self {
         self.text_input = self.text_input.font(font);
         self
     }
 
-    /// Sets the [Icon](iced::widget::text_input::Icon) of the [`TypedInput`]
+    /// Sets the [Icon](iced_widget::text_input::Icon) of the [`TypedInput`]
     #[must_use]
-    pub fn icon(mut self, icon: iced::widget::text_input::Icon<Renderer::Font>) -> Self {
+    pub fn icon(mut self, icon: iced_widget::text_input::Icon<Renderer::Font>) -> Self {
         self.text_input = self.text_input.icon(icon);
         self
     }
@@ -264,16 +262,16 @@ where
         self
     }
 
-    /// Sets the [`text::LineHeight`](iced::widget::text::LineHeight) of the [`TypedInput`].
+    /// Sets the [`text::LineHeight`](iced_widget::text::LineHeight) of the [`TypedInput`].
     #[must_use]
-    pub fn line_height(mut self, line_height: impl Into<iced::widget::text::LineHeight>) -> Self {
+    pub fn line_height(mut self, line_height: impl Into<iced_widget::text::LineHeight>) -> Self {
         self.text_input = self.text_input.line_height(line_height);
         self
     }
 
     /// Sets the horizontal alignment of the [`TypedInput`].
     #[must_use]
-    pub fn align_x(mut self, alignment: impl Into<iced::alignment::Horizontal>) -> Self {
+    pub fn align_x(mut self, alignment: impl Into<iced_core::alignment::Horizontal>) -> Self {
         self.text_input = self.text_input.align_x(alignment);
         self
     }
@@ -309,7 +307,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: Display + FromStr + Clone + PartialEq,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer,
+    Renderer: 'a + iced_core::text::Renderer,
     Theme: text_input::Catalog,
 {
     fn tag(&self) -> Tag {
@@ -345,7 +343,7 @@ where
         state: &Tree,
         renderer: &mut Renderer,
         theme: &Theme,
-        style: &iced::advanced::renderer::Style,
+        style: &iced_core::renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
         viewport: &Rectangle,
@@ -481,7 +479,7 @@ impl<'a, T, Message, Theme, Renderer> From<TypedInput<'a, T, Message, Theme, Ren
 where
     T: 'a + Display + FromStr + Clone + PartialEq,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer,
+    Renderer: 'a + iced_core::text::Renderer,
     Theme: 'a + text_input::Catalog,
 {
     fn from(typed_input: TypedInput<'a, T, Message, Theme, Renderer>) -> Self {

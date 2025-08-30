@@ -1,17 +1,15 @@
 //! A spinner to suggest something is loading.
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        widget::{
-            tree::{State, Tag},
-            Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::Cursor,
+    renderer,
     time::{Duration, Instant},
-    window, Border, Color, Element, Event, Length, Rectangle, Size, Vector,
+    widget::{
+        tree::{State, Tag},
+        Tree,
+    },
+    window, Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size,
+    Vector, Widget,
 };
 
 /// A spinner widget, a circle spinning around the center of the widget.

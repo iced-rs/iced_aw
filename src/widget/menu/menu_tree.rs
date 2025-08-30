@@ -12,17 +12,15 @@
 
 use super::common::*;
 use super::flex;
-use iced::advanced::overlay::Group;
-use iced::advanced::widget::Operation;
-use iced::Pixels;
-use iced::{
-    advanced::{
-        layout::{Layout, Limits, Node},
-        mouse, overlay, renderer,
-        widget::tree::{self, Tree},
-        Clipboard, Shell,
-    },
-    alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+use iced_core::overlay::Group;
+use iced_core::widget::Operation;
+use iced_core::Pixels;
+use iced_core::{
+    alignment,
+    layout::{Layout, Limits, Node},
+    mouse, overlay, renderer,
+    widget::tree::{self, Tree},
+    Clipboard, Element, Event, Length, Padding, Point, Rectangle, Shell, Size, Vector,
 };
 use std::iter::once;
 

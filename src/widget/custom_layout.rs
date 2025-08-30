@@ -1,9 +1,9 @@
 //! A container widget that allows you to specify the layout of its children.
 
-use iced::{advanced::Widget, Rectangle};
+use iced_core::{Length, Rectangle, Widget};
 
 #[allow(unused_imports)]
-pub use iced::advanced::{
+pub use iced_core::{
     layout::{Limits, Node},
     widget::Tree,
     Renderer,
@@ -11,7 +11,7 @@ pub use iced::advanced::{
 
 type LayoutFn<'a, Message, Theme, Renderer> = Box<
     dyn Fn(
-        &mut Vec<iced::Element<'a, Message, Theme, Renderer>>,
+        &mut Vec<iced_core::Element<'a, Message, Theme, Renderer>>,
         &mut Vec<Tree>,
         &Renderer,
         &Limits,
@@ -20,20 +20,18 @@ type LayoutFn<'a, Message, Theme, Renderer> = Box<
 
 /// A container widget that allows you to specify the layout of its children.
 pub struct CustomLayout<'a, Message, Theme, Renderer> {
-    elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
-    width: iced::Length,
-    height: iced::Length,
+    elements: Vec<iced_core::Element<'a, Message, Theme, Renderer>>,
+    width: Length,
+    height: Length,
     layout: LayoutFn<'a, Message, Theme, Renderer>,
 }
 
-impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
-    CustomLayout<'b, Message, Theme, Renderer>
-{
+impl<'b, Message, Theme, Renderer: iced_core::Renderer> CustomLayout<'b, Message, Theme, Renderer> {
     /// Creates a new [`CustomLayout`]
     pub fn new(
-        elements: Vec<iced::Element<'b, Message, Theme, Renderer>>,
+        elements: Vec<iced_core::Element<'b, Message, Theme, Renderer>>,
         layout: impl Fn(
-                &mut Vec<iced::Element<'b, Message, Theme, Renderer>>,
+                &mut Vec<iced_core::Element<'b, Message, Theme, Renderer>>,
                 &mut Vec<Tree>,
                 &Renderer,
                 &Limits,
@@ -42,32 +40,32 @@ impl<'b, Message, Theme, Renderer: iced::advanced::Renderer>
     ) -> Self {
         Self {
             elements,
-            width: iced::Shrink,
-            height: iced::Shrink,
+            width: Length::Shrink,
+            height: Length::Shrink,
             layout: Box::new(layout),
         }
     }
 
     /// Sets the width of the [`CustomLayout`]
     #[must_use]
-    pub fn width(mut self, length: impl Into<iced::Length>) -> Self {
+    pub fn width(mut self, length: impl Into<Length>) -> Self {
         self.width = length.into();
         self
     }
 
     /// Sets the height of the [`CustomLayout`]
     #[must_use]
-    pub fn height(mut self, length: impl Into<iced::Length>) -> Self {
+    pub fn height(mut self, length: impl Into<Length>) -> Self {
         self.height = length.into();
         self
     }
 }
 
-impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, Renderer>
+impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Renderer>
     for CustomLayout<'_, Message, Theme, Renderer>
 {
-    fn size(&self) -> iced::Size<iced::Length> {
-        iced::Size::new(self.width, self.height)
+    fn size(&self) -> iced_core::Size<Length> {
+        iced_core::Size::new(self.width, self.height)
     }
 
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -79,10 +77,10 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         tree: &Tree,
         renderer: &mut Renderer,
         theme: &Theme,
-        style: &iced::advanced::renderer::Style,
-        layout: iced::advanced::Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        style: &iced_core::renderer::Style,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
+        viewport: &iced_core::Rectangle,
     ) {
         tree.children
             .iter()
@@ -106,9 +104,9 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
     fn operate(
         &mut self,
         state: &mut Tree,
-        layout: iced::advanced::Layout<'_>,
+        layout: iced_core::Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn iced::advanced::widget::Operation,
+        operation: &mut dyn iced_core::widget::Operation,
     ) {
         state
             .children
@@ -127,13 +125,13 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
     fn update(
         &mut self,
         state: &mut Tree,
-        event: &iced::Event,
-        layout: iced::advanced::Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
+        event: &iced_core::Event,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn iced::advanced::Clipboard,
-        shell: &mut iced::advanced::Shell<'_, Message>,
-        viewport: &iced::Rectangle,
+        clipboard: &mut dyn iced_core::Clipboard,
+        shell: &mut iced_core::Shell<'_, Message>,
+        viewport: &iced_core::Rectangle,
     ) {
         for ((state, layout), element) in state
             .children
@@ -147,19 +145,19 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
         }
     }
 
-    fn size_hint(&self) -> iced::Size<iced::Length> {
+    fn size_hint(&self) -> iced_core::Size<Length> {
         self.size()
     }
 
     fn overlay<'a>(
         &'a mut self,
         state: &'a mut Tree,
-        layout: iced::advanced::Layout<'a>,
+        layout: iced_core::Layout<'a>,
         renderer: &Renderer,
         viewport: &Rectangle,
-        translation: iced::Vector,
-    ) -> Option<iced::advanced::overlay::Element<'a, Message, Theme, Renderer>> {
-        iced::advanced::overlay::from_children(
+        translation: iced_core::Vector,
+    ) -> Option<iced_core::overlay::Element<'a, Message, Theme, Renderer>> {
+        iced_core::overlay::from_children(
             &mut self.elements,
             state,
             layout,
@@ -172,11 +170,11 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
     fn mouse_interaction(
         &self,
         state: &Tree,
-        layout: iced::advanced::Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
+        viewport: &iced_core::Rectangle,
         renderer: &Renderer,
-    ) -> iced::advanced::mouse::Interaction {
+    ) -> iced_core::mouse::Interaction {
         self.elements
             .iter()
             .zip(&state.children)
@@ -191,11 +189,11 @@ impl<Message, Theme, Renderer: iced::advanced::Renderer> Widget<Message, Theme, 
     }
 }
 
-impl<'b, Message: 'b, Theme: 'b, Renderer: iced::advanced::Renderer + 'b>
+impl<'b, Message: 'b, Theme: 'b, Renderer: iced_core::Renderer + 'b>
     From<CustomLayout<'b, Message, Theme, Renderer>>
-    for iced::Element<'b, Message, Theme, Renderer>
+    for iced_core::Element<'b, Message, Theme, Renderer>
 {
     fn from(value: CustomLayout<'b, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(value)
+        iced_core::Element::new(value)
     }
 }

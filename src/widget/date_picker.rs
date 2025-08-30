@@ -5,28 +5,19 @@
 use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButtons};
 
 use chrono::Local;
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        text::Renderer as _,
-        widget::{
-            self,
-            tree::{Tag, Tree},
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    Element,
-    Event,
-    Length,
-    Pixels,
-    Point,
-    Rectangle,
-    Renderer, // the actual type
-    Size,
-    Vector,
+    renderer,
+    text::Renderer as _,
+    widget::{
+        self,
+        tree::{Tag, Tree},
+    },
+    Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector,
+    Widget,
 };
+use iced_widget::Renderer;
 
 pub use crate::{
     core::date::Date,
@@ -39,7 +30,7 @@ pub use crate::{
 /// # Example
 /// ```ignore
 /// # use iced_aw::DatePicker;
-/// # use iced::widget::{button, Button, Text};
+/// # use iced_widget::{button, Button, Text};
 /// #
 /// #[derive(Clone, Debug)]
 /// enum Message {
@@ -61,7 +52,7 @@ pub use crate::{
 pub struct DatePicker<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
+    Theme: crate::style::date_picker::Catalog + iced_widget::button::Catalog,
 {
     /// Show the picker.
     show_picker: bool,
@@ -87,9 +78,9 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
 {
     /// Creates a new [`DatePicker`] wrapping around the given underlay.
     ///
@@ -188,9 +179,9 @@ impl<Message, Theme> Widget<Message, Theme, Renderer> for DatePicker<'_, Message
 where
     Message: 'static + Clone,
     Theme: crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -286,7 +277,7 @@ where
         renderer: &Renderer,
         viewport: &Rectangle,
         translation: Vector,
-    ) -> Option<iced::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<iced_core::overlay::Element<'b, Message, Theme, Renderer>> {
         let picker_state: &mut State = tree.state.downcast_mut();
 
         if !self.show_picker {
@@ -324,9 +315,9 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
 {
     fn from(date_picker: DatePicker<'a, Message, Theme>) -> Self {
         Element::new(date_picker)

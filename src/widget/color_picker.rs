@@ -8,23 +8,14 @@ use super::overlay::color_picker::{
     self, ColorBarDragged, ColorPickerOverlay, ColorPickerOverlayButtons,
 };
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::tree::{self, Tag, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    Color,
-    Element,
-    Event,
-    Length,
-    Point,
-    Rectangle,
-    Renderer, // the actual type
-    Vector,
+    overlay, renderer,
+    widget::tree::{self, Tag, Tree},
+    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
 };
+use iced_widget::Renderer;
 
 pub use crate::style::{self, color_picker::Style};
 
@@ -53,10 +44,10 @@ pub use crate::style::{self, color_picker::Style};
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ColorPicker<'a, Message, Theme = iced::Theme>
+pub struct ColorPicker<'a, Message, Theme = iced_widget::Theme>
 where
     Message: Clone,
-    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog,
 {
     /// Show the picker.
     show_picker: bool,
@@ -79,8 +70,8 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     /// Creates a new [`ColorPicker`] wrapping around the given underlay.
     ///
@@ -179,8 +170,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     fn tag(&self) -> Tag {
         Tag::of::<State>()
@@ -202,7 +193,7 @@ where
         tree.diff_children(&[&self.underlay, &self.overlay_state]);
     }
 
-    fn size(&self) -> iced::Size<Length> {
+    fn size(&self) -> iced_core::Size<Length> {
         self.underlay.as_widget().size()
     }
 
@@ -317,8 +308,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     fn from(color_picker: ColorPicker<'a, Message, Theme>) -> Self {
         Element::new(color_picker)

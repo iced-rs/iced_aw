@@ -2,22 +2,19 @@
 //!
 //! *This API requires the following crate features to be activated: `drop_down`*
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     keyboard::{self, key::Named},
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    touch, Element, Event, Length, Point, Rectangle, Size, Vector,
+    overlay, renderer, touch,
+    widget::{Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
 };
 
 pub use crate::core::{alignment::Alignment, offset::Offset};
 
 /// Customizable drop down menu widget
-pub struct DropDown<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct DropDown<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Message: Clone,
     Renderer: renderer::Renderer,
@@ -232,8 +229,13 @@ where
     }
 }
 
-struct DropDownOverlay<'a, 'b, Message, Theme = iced::Theme, Renderer = iced::Renderer>
-where
+struct DropDownOverlay<
+    'a,
+    'b,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Message: Clone,
 {
     state: &'b mut Tree,

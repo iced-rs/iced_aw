@@ -13,26 +13,23 @@ use crate::{
 };
 
 use crate::iced_aw_font::advanced_text::{cancel, ok};
-use iced::{
-    advanced::{
-        graphics::geometry::Renderer as _,
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::Renderer as _,
-        widget::{self, tree::Tree},
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
-    },
+use iced_core::{
     alignment::{Horizontal, Vertical},
     event, keyboard,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
+    overlay, renderer,
+    text::Renderer as _,
     touch,
-    widget::{
-        canvas::{self, LineCap, Path, Stroke},
-        text::{self, Wrapping},
-        Button, Column, Row,
-    },
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Renderer,
-    Size, Vector,
+    widget::{self, tree::Tree},
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+};
+use iced_widget::{
+    canvas::{self, LineCap, Path, Stroke},
+    graphics::geometry::Renderer as _,
+    text::{self, Wrapping},
+    Button, Column, Renderer, Row,
 };
 use std::collections::HashMap;
 
@@ -55,7 +52,7 @@ const RGBA_STEP: i16 = 1;
 pub struct ColorPickerOverlay<'a, 'b, Message, Theme>
 where
     Message: Clone,
-    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog,
     'b: 'a,
 {
     /// The state of the [`ColorPickerOverlay`].
@@ -80,8 +77,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
     'b: 'a,
 {
     /// Creates a new [`ColorPickerOverlay`] on the given position.
@@ -102,7 +99,7 @@ where
         ColorPickerOverlay {
             state: overlay_state,
             cancel_button: Button::new(
-                iced::widget::Text::new(cancel_content)
+                iced_widget::Text::new(cancel_content)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
                     .font(cancel_font),
@@ -110,7 +107,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel.clone()),
             submit_button: Button::new(
-                iced::widget::Text::new(submit_content)
+                iced_widget::Text::new(submit_content)
                     .align_x(Horizontal::Center)
                     .width(Length::Fill)
                     .font(submit_font),
@@ -552,8 +549,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let (max_width, max_height) = if bounds.width > bounds.height {
@@ -897,8 +894,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     let block1_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -931,8 +928,8 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     let block2_limits = Limits::new(Size::ZERO, bounds.size())
         .width(Length::Fill)
@@ -1072,8 +1069,7 @@ fn block1<Message, Theme>(
     style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme:
-        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
     // ----------- Block 1 ----------------------
     let hsv_color_layout = layout;
@@ -1103,8 +1099,7 @@ fn block2<Message, Theme>(
     style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme:
-        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
     // ----------- Block 2 ----------------------
     let mut block2_children = layout.children();
@@ -1215,8 +1210,7 @@ fn hsv_color<Message, Theme>(
     style_sheet: &HashMap<StyleState, Style>,
 ) where
     Message: Clone,
-    Theme:
-        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
     let mut hsv_color_children = layout.children();
     let hsv_color: Hsv = color_picker.state.color.into();
@@ -1513,8 +1507,8 @@ fn rgba_color(
                 font: renderer.default_font(),
                 align_x: text::Alignment::Center,
                 align_y: Vertical::Center,
-                line_height: iced::widget::text::LineHeight::Relative(1.3),
-                shaping: iced::widget::text::Shaping::Advanced,
+                line_height: iced_widget::text::LineHeight::Relative(1.3),
+                shaping: iced_widget::text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
             },
             Point::new(
@@ -1740,7 +1734,7 @@ impl Default for State {
 pub struct ColorPickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: style::color_picker::Catalog + iced::widget::button::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog,
 {
     /// The cancel button of the [`ColorPickerOverlay`].
     cancel_button: Element<'a, Message, Theme, Renderer>,
@@ -1753,8 +1747,8 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     fn default() -> Self {
         let (cancel_content, cancel_font, _cancel_shaping) = cancel();
@@ -1772,8 +1766,7 @@ impl<Message, Theme> Widget<Message, Theme, Renderer>
     for ColorPickerOverlayButtons<'_, Message, Theme>
 where
     Message: Clone,
-    Theme:
-        style::color_picker::Catalog + iced::widget::button::Catalog + iced::widget::text::Catalog,
+    Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![
@@ -1814,8 +1807,8 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + style::color_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog,
 {
     fn from(overlay: ColorPickerOverlayButtons<'a, Message, Theme>) -> Self {
         Self::new(overlay)

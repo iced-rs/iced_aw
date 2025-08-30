@@ -17,20 +17,18 @@ use crate::{
     TabLabel,
 };
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{
-            tree::{State, Tag},
-            Operation, Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    widget::{text, Row},
-    Element, Event, Font, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
+    overlay, renderer,
+    widget::{
+        tree::{State, Tag},
+        Operation, Tree,
+    },
+    Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
+    Size, Vector, Widget,
 };
+use iced_widget::{text, Row};
 
 pub use tab_bar_position::TabBarPosition;
 
@@ -40,7 +38,7 @@ pub use tab_bar_position::TabBarPosition;
 /// # Example
 /// ```ignore
 /// # use iced_aw::{TabLabel, tabs::Tabs};
-/// # use iced::widget::Text;
+/// # use iced_widget::Text;
 /// #
 /// #[derive(Debug, Clone)]
 /// enum Message {
@@ -62,9 +60,9 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct Tabs<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer,
     Theme: Catalog,
     TabId: Eq + Clone,
 {
@@ -86,7 +84,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -303,7 +301,7 @@ where
 impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Tabs<'_, Message, TabId, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -622,7 +620,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: 'a + Catalog + text::Catalog,
     Message: 'a,
     TabId: 'a + Eq + Clone,

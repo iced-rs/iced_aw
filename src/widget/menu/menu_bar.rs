@@ -5,14 +5,13 @@
 #![allow(clippy::wildcard_imports)]
 #![allow(clippy::enum_glob_use)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        mouse, overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size,
+use iced_core::{
+    alignment, event,
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
+    widget::{tree, Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Vector,
+    Widget,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -347,7 +346,7 @@ where
         layout: Layout<'_>,
         _renderer: &Renderer,
         _viewport: &Rectangle,
-        translation: iced::Vector,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         let state = tree.state.downcast_mut::<MenuBarState>();
 
