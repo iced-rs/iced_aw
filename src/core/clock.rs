@@ -1,6 +1,6 @@
 //! Helper functions for calculating the clock
 
-use iced::Point;
+use iced_core::Point;
 use std::fmt::Display;
 
 /// The size of the period on the clock based on the clock's size.
@@ -123,7 +123,7 @@ pub fn nearest_radius(
 
 #[cfg(test)]
 mod tests {
-    use iced::{Point, Vector};
+    use iced_core::{Point, Vector};
 
     use super::{circle_points, nearest_point, nearest_radius, NearestRadius};
 

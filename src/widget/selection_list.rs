@@ -5,22 +5,20 @@ use crate::style::{
     Status, StyleFn,
 };
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        text::{paragraph, Paragraph, Text},
-        widget::{tree, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment::Vertical,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    widget::{
-        container, scrollable,
-        text::{self, LineHeight, Wrapping},
-        Container, Scrollable,
-    },
-    Border, Element, Event, Font, Length, Padding, Pixels, Rectangle, Size,
+    renderer,
+    text::{paragraph, Paragraph, Text},
+    widget::{tree, Tree},
+    Border, Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell,
+    Size, Widget,
+};
+use iced_widget::{
+    container, scrollable,
+    text::{self, LineHeight, Wrapping},
+    Container, Scrollable,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
 
@@ -29,11 +27,16 @@ pub use list::List;
 /// A widget for selecting a single value from a dynamic scrollable list of options.
 #[allow(missing_debug_implementations)]
 #[allow(clippy::type_repetition_in_bounds)]
-pub struct SelectionList<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
-where
+pub struct SelectionList<
+    'a,
+    T,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     T: Clone + ToString + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog + container::Catalog,
 {
     /// Container for Rendering List.
@@ -58,7 +61,7 @@ where
 impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog + container::Catalog + scrollable::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
@@ -175,7 +178,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: 'a + Clone + ToString + Eq + Hash + Display,
     Message: 'static,
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font> + 'a,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font> + 'a,
     Theme: Catalog + container::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
@@ -334,7 +337,7 @@ impl<'a, T, Message, Theme, Renderer> From<SelectionList<'a, T, Message, Theme, 
 where
     T: Clone + ToString + Eq + Hash + Display,
     Message: 'static,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog + container::Catalog,
 {
     fn from(selection_list: SelectionList<'a, T, Message, Theme, Renderer>) -> Self {
@@ -349,7 +352,7 @@ pub struct State<P: Paragraph> {
 }
 
 impl<P: Paragraph> State<P> {
-    /// Creates a new [`State`], representing an unfocused [`TextInput`](iced::widget::TextInput).
+    /// Creates a new [`State`], representing an unfocused [`TextInput`](iced_widget::TextInput).
     pub fn new<T>(options: &[T]) -> Self
     where
         T: Clone + Display + Eq + Hash,

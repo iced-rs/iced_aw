@@ -1,14 +1,11 @@
 //! A context menu for showing actions on right click.
 //!
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Button, Cursor},
-    Element, Event, Length, Point, Rectangle, Vector,
+    overlay, renderer,
+    widget::{tree, Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
 };
 
 pub use crate::style::{
@@ -23,7 +20,7 @@ use crate::widget::overlay::ContextMenuOverlay;
 ///
 /// # Example
 /// ```ignore
-/// # use iced::widget::{Text, Button};
+/// # use iced_widget::{Text, Button};
 /// # use iced_aw::ContextMenu;
 /// #
 /// #[derive(Debug, Clone)]
@@ -39,8 +36,13 @@ use crate::widget::overlay::ContextMenuOverlay;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ContextMenu<'a, Overlay, Message, Theme = iced::Theme, Renderer = iced::Renderer>
-where
+pub struct ContextMenu<
+    'a,
+    Overlay,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: renderer::Renderer,
@@ -103,7 +105,7 @@ where
     Renderer: 'a + renderer::Renderer,
     Theme: Catalog,
 {
-    fn size(&self) -> iced::Size<Length> {
+    fn size(&self) -> iced_core::Size<Length> {
         self.underlay.as_widget().size()
     }
 

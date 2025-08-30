@@ -1,6 +1,6 @@
 //! Helper functions for overlays
 
-use iced::{advanced::layout, Point, Size};
+use iced_core::{layout, Point, Size};
 
 /// Trait containing functions for positioning of nodes.
 pub trait Position {

@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use super::{Status, StyleFn};
-use iced::{Background, Color, Theme};
+use iced_core::{Background, Color, Theme};
 
 /// The style of a [`ContextMenu`](crate::widget::ContextMenu).
 #[derive(Clone, Copy, Debug)]

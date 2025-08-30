@@ -6,22 +6,20 @@
 //! Future: Idea to implement leaders before/after the flushed element for `Start`/`End`
 //! alignments.
 
-use iced::{
-    advanced::{
-        layout::{self, Node},
-        mouse, overlay, renderer,
-        widget::{tree::Tree, Operation},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment,
     event::Event,
-    widget::Column,
-    Alignment, Element, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
+    layout::{self, Node},
+    mouse, overlay, renderer,
+    widget::{tree::Tree, Operation},
+    Alignment, Clipboard, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Vector, Widget,
 };
+use iced_widget::Column;
 
 /// A container that distributes its contents horizontally.
 #[allow(missing_debug_implementations)]
-pub struct FlushRow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+pub struct FlushRow<'a, Message, Theme = iced_core::Theme, Renderer = iced_widget::Renderer> {
     spacing: Pixels,
     padding: Padding,
     width: Length,
@@ -35,7 +33,7 @@ pub struct FlushRow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
 
 impl<'a, Message: 'a, Theme: 'a, Renderer> FlushRow<'a, Message, Theme, Renderer>
 where
-    Renderer: iced::advanced::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     /// Creates an empty [`FlushRow`].
     #[must_use]
@@ -184,14 +182,14 @@ where
 #[allow(clippy::mismatching_type_param_order)]
 impl<'a, Message: 'a, Renderer> Default for FlushRow<'a, Message, Renderer>
 where
-    Renderer: iced::advanced::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a, Message: 'a, Theme: 'a, Renderer: iced::advanced::Renderer + 'a>
+impl<'a, Message: 'a, Theme: 'a, Renderer: iced_core::Renderer + 'a>
     FromIterator<Column<'a, Message, Theme, Renderer>> for FlushRow<'a, Message, Theme, Renderer>
 {
     fn from_iter<T: IntoIterator<Item = Column<'a, Message, Theme, Renderer>>>(iter: T) -> Self {
@@ -202,7 +200,7 @@ impl<'a, Message: 'a, Theme: 'a, Renderer: iced::advanced::Renderer + 'a>
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for FlushRow<'_, Message, Theme, Renderer>
 where
-    Renderer: iced::advanced::Renderer,
+    Renderer: iced_core::Renderer,
 {
     fn children(&self) -> Vec<Tree> {
         self.children.iter().map(Tree::new).collect()
@@ -427,7 +425,7 @@ impl<'a, Message, Theme, Renderer> From<FlushRow<'a, Message, Theme, Renderer>>
 where
     Message: 'a,
     Theme: 'a,
-    Renderer: iced::advanced::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     fn from(row: FlushRow<'a, Message, Theme, Renderer>) -> Self {
         Self::new(row)

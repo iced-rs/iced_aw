@@ -1,6 +1,6 @@
 //! Helper functions and structs for picking dates.
 
-use iced::Color;
+use iced_core::Color;
 
 /// A color in the HSV color space.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -99,7 +99,7 @@ impl From<Hsv> for Color {
 
 #[cfg(test)]
 mod tests {
-    use iced::Color;
+    use iced_core::Color;
 
     use super::Hsv;
 

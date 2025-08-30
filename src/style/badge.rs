@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: badge*
 use super::{colors, Status, StyleFn};
-use iced::{theme::palette, Background, Color, Theme};
+use iced_core::{theme::palette, Background, Color, Theme};
 
 /// The style of a [`Badge`](crate::widget::badge::Badge).
 #[derive(Clone, Copy, Debug)]

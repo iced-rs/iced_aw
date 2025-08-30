@@ -1,6 +1,6 @@
 //! Offset struct
 
-use iced::Point;
+use iced_core::Point;
 
 /// Represents an offset in a two-dimensional space.
 #[derive(Copy, Clone, Debug)]

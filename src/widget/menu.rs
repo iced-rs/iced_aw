@@ -7,7 +7,7 @@
 //! ## Example 1
 //!
 //! ```ignore
-//! use iced::widget::button;
+//! use iced_widget::button;
 //! use iced_aw::menu::{Item, Menu, MenuBar};
 //!
 //! let sub_2 = Item::with_menu(
@@ -56,13 +56,13 @@
 //!
 //! ## Example 2
 //! ```
-//! use iced::widget::button;
+//! use iced_widget::button;
 //! use iced_aw::menu::{Menu, Item, MenuBar};
 //! use iced_aw::{menu_bar, menu_items};
 //!
 //! let menu_template = |items| Menu::new(items).max_width(180.0).offset(6.0);
 //!
-//! let menu_bar: MenuBar<'_, (), iced::Theme, iced::Renderer> = menu_bar!(
+//! let menu_bar: MenuBar<'_, (), iced_widget::Theme, iced::Renderer> = menu_bar!(
 //!     (button("Menu 1"),menu_template(menu_items!(
 //!         (button("item_1"))
 //!         (button("item_2"))
@@ -95,7 +95,7 @@
 //! ## Example 3
 //!
 //! ```
-//! use iced::widget::button;
+//! use iced_widget::button;
 //! use iced_aw::{menu, Menu};
 //!
 //! macro_rules! menu_template {
@@ -105,7 +105,7 @@
 //! }
 //!
 //! // then you can just write
-//! let m: Menu<'_, (), iced::Theme, iced::Renderer> = menu_template!(
+//! let m: Menu<'_, (), iced_widget::Theme, iced::Renderer> = menu_template!(
 //!     (button("item_1"))
 //!     (button("item_2"))
 //!     (button("sub menu"), menu_template!(
@@ -124,19 +124,19 @@
 //!
 //! ```
 //! use iced_aw::{menu, Menu};
-//! use iced::widget::button;
+//! use iced_widget::button;
 //!
 //! fn menu_template<'a, Message, Theme, Renderer>(
 //! menu: Menu<'a, Message, Theme, Renderer>
 //! ) -> Menu<'a, Message, Theme, Renderer>
 //! where
 //!     Theme: iced_aw::menu::Catalog,
-//!     Renderer: iced::advanced::Renderer,
+//!     Renderer: iced_core::Renderer,
 //! {
 //!     menu.max_width(180.0).offset(6.0)
 //! }
 //!
-//! let m: Menu<'_, (), iced::Theme, iced::Renderer> = menu_template(menu!(
+//! let m: Menu<'_, (), iced_widget::Theme, iced::Renderer> = menu_template(menu!(
 //!     (button("item_1"))
 //!     (button("item_2"))
 //!     (button("item_3"))

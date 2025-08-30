@@ -18,40 +18,25 @@ use crate::{
     time_picker::{self, Time},
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
-use iced::{
-    advanced::{
-        graphics::geometry::Renderer as _,
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::Renderer as _,
-        widget::tree::Tree,
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Text, Widget,
-    },
+use iced_core::{
     alignment::{Horizontal, Vertical},
-    event,
-    keyboard,
+    event, keyboard,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
+    overlay, renderer,
+    text::Renderer as _,
     touch,
-    widget::{
-        button,
-        canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
-        container,
-        text::{self, Wrapping},
-        Button, Column, Container, Row,
-    },
-    Alignment,
-    Border,
-    Color,
-    Element,
-    Event,
-    Length,
-    Padding,
-    Pixels,
-    Point,
-    Rectangle,
-    Renderer, // the actual type
-    Size,
-    Vector,
+    widget::tree::Tree,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+};
+use iced_widget::{
+    button,
+    canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
+    container,
+    graphics::geometry::Renderer as _,
+    text::{self, Wrapping},
+    Button, Column, Container, Renderer, Row,
 };
 use std::collections::HashMap;
 
