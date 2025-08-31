@@ -411,6 +411,7 @@ where
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         if state.open {
+            println!("MenuBar::overlay() | return | Some");
             Some(
                 MenuBarOverlay {
                     menu_bar: self,
@@ -421,6 +422,7 @@ where
                 .overlay_element(),
             )
         } else {
+            println!("MenuBar::overlay() | return | None");
             None
         }
     }

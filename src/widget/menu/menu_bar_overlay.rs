@@ -399,7 +399,6 @@ where
         if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) 
         = (self.menu_bar.global_parameters.close_on_click, event) {
             bar.active_root = None;
-            shell.invalidate_layout();
         }
 
         // if the function reaches here, 
@@ -410,6 +409,7 @@ where
             bar.open = false;
             bar.is_pressed = false;
             shell.invalidate_layout();
+            shell.request_redraw();
         }
         
         match re {
@@ -443,6 +443,7 @@ where
             _ => {
                 // if RecEvent::Close or RecEvent::None is returned,
                 // let the menu bar process the event
+                println!("MenuBarOverlay::update() | MenuBar should process the event");
             }
         }
 
