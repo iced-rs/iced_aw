@@ -11,8 +11,6 @@ pub struct Style {
     pub bar_border: Border,
     /// The shadow of the menu bar.
     pub bar_shadow: Shadow,
-    /// Expand the menu bar background
-    pub bar_background_expand: Padding,
 
     /// The background of the menus.
     pub menu_background: Background,
@@ -36,7 +34,6 @@ impl std::default::Default for Style {
                 ..Default::default()
             },
             bar_shadow: Shadow::default(),
-            bar_background_expand: 5.into(),
 
             menu_background: Color::from([0.85; 3]).into(),
             menu_border: Border {

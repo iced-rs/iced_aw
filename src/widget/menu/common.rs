@@ -1,4 +1,4 @@
-use iced::{Padding, Rectangle};
+use iced::{advanced::Shell, window::RedrawRequest, Padding, Rectangle};
 
 /* /// The condition of when to close a menu
 #[derive(Debug, Clone, Copy)]
@@ -35,6 +35,7 @@ pub struct CloseCondition {
 /// depending on the style you're going for,
 /// oftentimes manually syncing the path's styling to the path items' is necessary,
 /// the default styling simply can't cover most use cases.
+#[derive(Debug, Clone, Copy)]
 pub enum DrawPath {
     /// FakeHovering
     FakeHovering,
@@ -71,7 +72,7 @@ pub(super) type Index = Option<usize>;
 /// tells the caller which type of event has been processed
 /// 
 /// `Event`: The child event has been processed.
-/// The parent menu should process a redraw request event.
+/// The parent menu should not process the event.
 /// 
 /// `Close`: Either the child menu has decided to close itself, 
 /// or that there is no child menu open, 
@@ -86,7 +87,7 @@ pub(super) type Index = Option<usize>;
 /// in this case the parent menu should process the event, 
 /// but close check is not needed.
 /// 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(super) enum RecEvent {
     Event,
     Close,
@@ -108,5 +109,42 @@ pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
         y: rect.y - padding.top,
         width: rect.width + padding.horizontal(),
         height: rect.height + padding.vertical(),
+    }
+}
+
+/// Parameters that are shared by all menus in the menu bar
+pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog>{
+    pub(super) check_bounds_width: f32,
+    pub(super) draw_path: DrawPath,
+    pub(super) scroll_speed: ScrollSpeed,
+    pub(super) close_on_click: bool,
+    pub(super) class: Theme::Class<'a>,
+}
+
+/// Merges the fake shell into the real shell,
+/// this makes sure that the fake shell status does not propagate to the real shell.
+/// 
+/// Current limitation: messages are not merged.
+pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
+    if fake_shell.is_layout_invalid(){
+        shell.invalidate_layout();
+    }
+
+    if fake_shell.are_widgets_invalid(){
+        shell.invalidate_widgets();
+    }
+
+    let rr = fake_shell.redraw_request();
+    
+    if rr < shell.redraw_request(){
+        match rr {
+            RedrawRequest::NextFrame => {
+                shell.request_redraw();
+            }
+            RedrawRequest::At(time) => {
+                shell.request_redraw_at(time);
+            }
+            RedrawRequest::Wait => {}
+        }
     }
 }

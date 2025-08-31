@@ -5,7 +5,7 @@ use iced::widget::{
     button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input,
     toggler, vertical_slider,column as col, vertical_space, Space,
 };
-use iced::{alignment, theme, Background, Border, Color, Element, Length, Size, Theme};
+use iced::{alignment, theme, Background, Border, Color, Element, Length, Padding, Size, Theme};
 
 use iced_aw::menu::{self, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
@@ -138,6 +138,7 @@ impl App {
         let menu_tpl_1 = |items| Menu::new(items).max_width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).max_width(180.0).offset(0.0).spacing(5.0);
 
+       
         #[rustfmt::skip]
         let mb = menu_bar!(
             (debug_button_s("Nested Menus"), {
@@ -193,6 +194,7 @@ impl App {
                     (debug_button("Item"))
                 )).width(140.0)
             })
+             
             (debug_button_s("Widgets"), menu_tpl_1(menu_items!(
                 (debug_button("You can use any widget"))
                 (debug_button("as a menu item"))
@@ -431,6 +433,7 @@ impl App {
                     (debug_button("MMNN").height(50))
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
             })
+           
             (debug_button_s("single"), {
                 let sub1 = menu_tpl_2(menu_items!(
                     (debug_button("First Item"))
@@ -441,8 +444,9 @@ impl App {
                 )).width(140.0)
             })
         )
-        .draw_path(menu::DrawPath::Backdrop)
+        .draw_path(menu::DrawPath::FakeHovering)
         .close_on_click(self.close_on_click)
+        .padding(Padding::new(5.0))
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
                 radius: Radius::new(6.0),
