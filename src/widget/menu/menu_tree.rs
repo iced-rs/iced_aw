@@ -67,16 +67,29 @@ pub(super) struct MenuState {
     pub(super) pressed: bool,
 }
 impl MenuState{
-    // active_item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
-    fn open_new_menu(&mut self, active_index: usize, active_item_tree: &mut Tree){
+    /// item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
+    pub(super) fn open_new_menu<'a, Message, Theme:Catalog, Renderer:renderer::Renderer>(
+        &mut self, 
+        active_index: usize, 
+        item: &Item<'a, Message, Theme, Renderer>,
+        item_tree: &mut Tree
+    ){
         println!("MenuState::open_new_menu()");
+        let Some(menu) = item.menu.as_ref() else {
+            println!("MenuState::open_new_menu() | item.menu is None");
+            return;
+        };
+
         self.active = Some(active_index);
-        
-        // init the new menu state
-        let new_menu_state = active_item_tree.children[1].state.downcast_mut::<MenuState>();
-        new_menu_state.active = None;
-        new_menu_state.pressed = false;
-        new_menu_state.scroll_offset = 0.0;
+
+        // build the state tree for the new menu
+        let menu_tree = menu.tree();
+
+        if item_tree.children.len() == 1 {
+            item_tree.children.push(menu_tree);
+        } else {
+            item_tree.children[1] = menu_tree;
+        }
     }
 }
 impl Default for MenuState {
@@ -574,15 +587,15 @@ where
             If this assert fails, please report this issue.
         ");
 
-        for (i, ((item, new_tree), layout)) in self.items[slice.start_index..=slice.end_index]
+        for (i, ((item, item_tree), layout)) in self.items[slice.start_index..=slice.end_index]
             .iter()
             .zip(tree.children[slice.start_index..=slice.end_index].iter_mut())
             .zip(slice_layout.children())
             .enumerate()
         {
-            if item.menu.is_some() && cursor.is_over(layout.bounds()) {
+            if cursor.is_over(layout.bounds()) {
                 println!("Menu::open_event() | new menu opened | i: {:?}", i);
-                menu_state.open_new_menu(i + slice.start_index, new_tree);
+                menu_state.open_new_menu(i + slice.start_index, item, item_tree);
                 break;
             }
         }
@@ -699,10 +712,11 @@ where
 
     /// out: \[widget_tree, menu_tree]
     pub(super) fn children(&self) -> Vec<Tree> {
-        self.menu.as_ref().map_or_else(
-            || [Tree::new(&self.item)].into(),
-            |m| [Tree::new(&self.item), m.tree()].into(),
-        )
+        // self.menu.as_ref().map_or_else(
+        //     || [Tree::new(&self.item)].into(),
+        //     |m| [Tree::new(&self.item), m.tree()].into(),
+        // )
+        vec![Tree::new(&self.item)]
     }
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
