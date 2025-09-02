@@ -403,15 +403,15 @@ where
         &'b mut self,
         tree: &'b mut Tree,
         layout: Layout<'b>,
-        _renderer: &Renderer,
-        _viewport: &Rectangle,
+        renderer: &Renderer,
+        viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         println!("MenuBar::overlay()");
         let state = tree.state.downcast_mut::<MenuBarState>();
 
         if state.open {
-            println!("MenuBar::overlay() | return | Some");
+            println!("MenuBar::overlay() | return | Menu Overlay");
             Some(
                 MenuBarOverlay {
                     menu_bar: self,
@@ -422,8 +422,50 @@ where
                 .overlay_element(),
             )
         } else {
-            println!("MenuBar::overlay() | return | None");
-            None
+            // let mut overlays = vec![];
+
+            // for (i, ((item, item_tree), item_layout)) in self.menu_bar.roots.iter_mut()
+            //     .zip(self.tree.children.iter_mut()) // [item_tree...]
+            //     .zip(self.layout.children())
+            //     .enumerate() 
+            // {
+            //     let Item{ item: item_widget, menu: item_menu } = item;
+            //     let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
+            //         continue;
+            //     };
+
+            //     if let Some(overlay) = item_widget.as_widget_mut().overlay(
+            //         item_widget_tree,
+            //         item_layout, 
+            //         renderer, 
+            //         &item_layout.bounds(), 
+            //         self.translation
+            //     ){
+            //         overlays.push(overlay);
+            //     }
+            // }
+            
+            println!("MenuBar::overlay() | state not open | try return root overlays");
+            let overlays = self.roots.iter_mut()
+                .zip(tree.children.iter_mut()) // [item_tree...]
+                .zip(layout.children())
+                .filter_map(|((item, item_tree), item_layout)| {
+                    item.item.as_widget_mut().overlay(
+                        &mut item_tree.children[0],
+                        item_layout, 
+                        renderer, 
+                        viewport,
+                        translation
+                    )
+                }).collect::<Vec<_>>();
+
+            if overlays.is_empty(){
+                println!("MenuBar::overlay() | return | None");
+                None
+            }else{
+                println!("MenuBar::overlay() | return | Root Item Overlay");
+                Some(overlay::Group::with_children(overlays).overlay())
+            }
         }
     }
 }

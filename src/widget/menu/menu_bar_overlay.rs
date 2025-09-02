@@ -11,8 +11,8 @@ use iced::{
         layout::{Limits, Node},
         mouse, overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    }, time::Instant, window::{self, RedrawRequest}, Event, Padding, Point, Rectangle, Size, Vector
+        Clipboard, Layout, Shell,
+    }, time::Instant, window, Event, Padding, Point, Rectangle, Size, Vector
 };
 
 use super::{common::*, menu_bar::{MenuBar, MenuBarState}, menu_tree::*};
@@ -266,6 +266,12 @@ where
                     &mut menu_state.active,
                     depth + 1,
                 )
+            } else if let mouse::Cursor::Unavailable = cursor{
+                // there no child menu open
+                // and the cursor is unavailable
+                // this means there is an overlay from one of the items open
+                println!("MenuBarOverlay::update() | rec | cursor is unavailable");
+                RecEvent::Event
             } else {
                 RecEvent::Close
             };
@@ -282,33 +288,31 @@ where
             println!("MenuBarOverlay | cursor: {:?}", cursor);
             println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
             println!("MenuBarOverlay | shell.is_event_captured(): {:?}", shell.is_event_captured());
-            
 
             match rec_event {
                 RecEvent::Event => {
-                    let active = menu_state.active.expect("
-                        `RecEvent::Event` is returned, but `menu_state.active` is `None`. \
-                        This should not happen, please report this issue
-                    ");
-
-                    let cursor = match &global_parameters.draw_path {
-                        DrawPath::FakeHovering => {
-                            let active_in_slice = active - menu_state.slice.start_index;
-                            let center = slice_layout
-                                .children()
-                                .nth(active_in_slice)
-                                .expect(&format!(" Index {:?} is not within the slice layout \
-                                    | slice_layout.children().count(): {:?} \
-                                    | This should not happen, please report this issue
-                                    ", 
-                                    active_in_slice,
-                                    slice_layout.children().count()
-                                ))
-                                .bounds()
-                                .center();
-                            mouse::Cursor::Available(center)
-                        },
-                        DrawPath::Backdrop => mouse::Cursor::Unavailable
+                    let cursor = if let Some(active) = menu_state.active {
+                        match &global_parameters.draw_path {
+                            DrawPath::FakeHovering => {
+                                let active_in_slice = active - menu_state.slice.start_index;
+                                let center = slice_layout
+                                    .children()
+                                    .nth(active_in_slice)
+                                    .expect(&format!(" Index {:?} is not within the slice layout \
+                                        | slice_layout.children().count(): {:?} \
+                                        | This should not happen, please report this issue
+                                        ", 
+                                        active_in_slice,
+                                        slice_layout.children().count()
+                                    ))
+                                    .bounds()
+                                    .center();
+                                mouse::Cursor::Available(center)
+                            },
+                            DrawPath::Backdrop => mouse::Cursor::Unavailable
+                        }
+                    }else{
+                        mouse::Cursor::Unavailable
                     };
 
                     menu.fake_update(menu_tree, menu_layout, cursor, renderer, clipboard, shell, viewport);
@@ -352,6 +356,7 @@ where
                         );
                         if prev.is_some() {
                             // the current menu is not ready to close
+                            menu.fake_update(menu_tree, menu_layout, cursor, renderer, clipboard, shell, viewport);
                             shell.capture_event();
                             RecEvent::Event
                         } else {
@@ -423,7 +428,7 @@ where
                 let cursor = match draw_path {
                     DrawPath::FakeHovering => {
                         let center = parent_bounds.center();
-                        mouse::Cursor::Available(center)
+                        mouse::Cursor::Available(center - self.translation)
                     }
                     DrawPath::Backdrop => mouse::Cursor::Unavailable
                 };
@@ -581,17 +586,156 @@ where
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let active = bar.active_root?;
         let mut lc = layout.children();
+        let viewport = layout.bounds();
         let _bar_bounds = lc.next()?.bounds();
         let _roots_layout = lc.next()?;
         let menu_layouts_layout = lc.next()?; // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
-        let active_root = &mut self.menu_bar.roots[active];
-        let active_tree = &mut self.tree.children[active];
-        let menu = active_root.menu.as_mut()?;
-        let menu_tree = &mut active_tree.children[1];
-        let menu_layout = menu_layouts.next()?;
+        // let active_root = &mut self.menu_bar.roots[active];
+        // let active_tree = &mut self.tree.children[active]; // item tree{stateless, [widget tree, menu tree]}
+        // let menu = active_root.menu.as_mut()?;
+        // let menu_tree = &mut active_tree.children[1];
+        // let menu_layout = menu_layouts.next()?;
 
-        menu.overlay(menu_tree, menu_layout, renderer, Vector::ZERO)
+        // menu.overlay(menu_tree, menu_layout, renderer, Vector::ZERO)
+
+        fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+            items: &'b mut [Item<'a, Message, Theme, Renderer>],
+            menu_tree: &'b mut Tree, // Tree{ menu_state, [item_tree...] }
+            menu_layouts: &mut impl Iterator<Item = Layout<'b>>, // [menu_node...]
+            overlays: &mut Vec<overlay::Element<'b, Message, Theme, Renderer>>,
+            renderer: &Renderer,
+            viewport: &Rectangle,
+        ){
+            println!("MenuBarOverlay::overlay() | rec");
+            let menu_state = menu_tree.state.downcast_mut::<MenuState>();
+            let menu_layout = menu_layouts.next().unwrap(); // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
+            let mut mlc = menu_layout.children();
+            let slice_layout = mlc.next().unwrap(); // slice_node: Node{inf, [item_node...]}
+            println!("MenuBarOverlay::overlay() | rec | slice_layout.children : {}", slice_layout.children().count());
+            
+            let slice = &menu_state.slice;
+
+            if let Some(active) = menu_state.active {
+                let slice_index = active - slice.start_index;
+
+                let mut next = None;
+
+                for (i, ((item, item_tree), item_layout)) in 
+                    items[slice.start_index..=slice.end_index].iter_mut()
+                    .zip(menu_tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
+                    .zip(slice_layout.children())
+                    .enumerate() 
+                {
+                    println!("MenuBarOverlay::overlay() | rec | i: {i}");
+
+                    let Item{ item: item_widget, menu: item_menu } = item;
+                    let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
+                        continue;
+                    };
+
+                    if i == slice_index {
+                        println!("MenuBarOverlay::overlay() | rec | i == slice_index {slice_index}");
+                        next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
+                    }
+                    if let Some(overlay) = item_widget.as_widget_mut().overlay(
+                        item_widget_tree,
+                        item_layout, 
+                        renderer, 
+                        viewport,   
+                        Vector::ZERO
+                    ){
+                        overlays.push(overlay);
+                    }
+                }
+
+                if let Some((next_menu, next_menu_tree)) = next {
+                    println!("MenuBarOverlay::overlay() | rec | next");
+                    rec(
+                        &mut next_menu.items, 
+                        next_menu_tree, 
+                        menu_layouts,
+                        overlays,
+                        renderer,
+                        viewport,
+                    );
+                }
+            }else{
+                println!("MenuBarOverlay::overlay() | rec | no active");
+                
+
+                let mut count = 0;
+                for ((item, item_tree), item_layout) in 
+                    items[slice.start_index..=slice.end_index].iter_mut()
+                    .zip(menu_tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
+                    .zip(slice_layout.children())
+                {
+                    println!("MenuBarOverlay::overlay() | rec | no active | loop: {count}");
+                    println!("MenuBarOverlay::overlay() | rec | item_layout.children : {}", item_layout.children().count());
+                    let Item{ item: item_widget, .. } = item;
+
+                    if let Some(overlay) = item_widget.as_widget_mut().overlay(
+                        &mut item_tree.children[0], 
+                        item_layout, 
+                        renderer, 
+                        viewport, 
+                        Vector::ZERO
+                    ){
+                        overlays.push(overlay);
+                    }
+                    count += 1;
+                }
+            }
+        }
+
+        let mut overlays = vec![];
+        let mut next = None;
+
+        for (i, ((item, item_tree), item_layout)) in self.menu_bar.roots.iter_mut()
+            .zip(self.tree.children.iter_mut()) // [item_tree...]
+            .zip(self.layout.children())
+            .enumerate() 
+        {
+            println!("i: {i}");
+            // println!("layout children: {:?}", item_layout.children().count());
+
+            let Item{ item: item_widget, menu: item_menu } = item;
+            let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
+                continue;
+            };
+
+            if i == active {
+                next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
+            }
+            if let Some(overlay) = item_widget.as_widget_mut().overlay(
+                item_widget_tree,
+                item_layout, 
+                renderer, 
+                &viewport, 
+                self.translation
+            ){
+                overlays.push(overlay);
+            }
+        }
+
+        if let Some((next_menu, next_menu_tree)) = next {
+            rec(
+                &mut next_menu.items, 
+                next_menu_tree, 
+                &mut menu_layouts,
+                &mut overlays,
+                renderer,
+                &viewport,
+            );
+        };
+       
+        if overlays.is_empty(){
+            println!("MenuBarOverlay::overlay() | return | None");
+            None
+        }else{
+            println!("MenuBarOverlay::overlay() | return | Some");
+            Some(overlay::Group::with_children(overlays).overlay())
+        }
     }
 
     fn draw(

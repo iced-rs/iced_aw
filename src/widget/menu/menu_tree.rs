@@ -12,13 +12,12 @@
 
 use super::common::*;
 use super::flex;
-use iced::advanced::overlay::Group;
 use iced::advanced::widget::Operation;
 use iced::{Color, Pixels};
 use iced::{
     advanced::{
         layout::{Layout, Limits, Node},
-        mouse, overlay, renderer,
+        mouse, renderer,
         widget::tree::{self, Tree},
         Clipboard, Shell,
     },
@@ -72,7 +71,7 @@ impl MenuState{
     fn open_new_menu(&mut self, active_index: usize, active_item_tree: &mut Tree){
         println!("MenuState::open_new_menu()");
         self.active = Some(active_index);
-
+        
         // init the new menu state
         let new_menu_state = active_item_tree.children[1].state.downcast_mut::<MenuState>();
         new_menu_state.active = None;
@@ -195,7 +194,7 @@ where
 
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
-    /// out: Node{inf, \[ items_node, prescroll, offset_bounds]}
+    /// out: Node{inf, \[ slice_node, prescroll, offset_bounds]}
     pub(super) fn layout(
         &self,
         tree: &mut Tree,
@@ -450,32 +449,6 @@ where
                     child.operate(state, layout, renderer, operation);
                 });
         });
-    }
-
-    #[allow(dead_code)]
-    pub(super) fn overlay<'b>(
-        &'b mut self,
-        tree: &'b mut Tree,
-        layout: Layout<'b>,
-        renderer: &Renderer,
-        translation: Vector,
-    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        let mut lc = layout.children();
-        let slice_layout = lc.next()?;
-
-        let menu_state = tree.state.downcast_mut::<MenuState>();
-        let slice = &menu_state.slice;
-
-        let children = self.items[slice.start_index..=slice.end_index] // [item...]
-            .iter_mut()
-            .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
-            .zip(slice_layout.children())
-            .filter_map(|((child, state), layout)| {
-                child.overlay(state, layout, renderer, translation)
-            })
-            .collect::<Vec<_>>();
-
-        (!children.is_empty()).then(|| Group::with_children(children).overlay())
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
@@ -828,22 +801,6 @@ where
             .operate(&mut tree.children[0], layout, renderer, operation);
     }
 
-    #[allow(dead_code)]
-    pub(super) fn overlay<'b>(
-        &'b mut self,
-        tree: &'b mut Tree,
-        layout: Layout<'b>,
-        renderer: &Renderer,
-        translation: Vector,
-    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        self.item.as_widget_mut().overlay(
-            &mut tree.children[0],
-            layout,
-            renderer,
-            &layout.bounds(),
-            translation,
-        )
-    }
 }
 
 /// Adaptive open direction
