@@ -12,7 +12,7 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size
+    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size, Color
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -229,10 +229,14 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) {
-                    bar.state = Some(MenuState {
-                        pressed: true,
-                        ..Default::default()
-                    });
+                    if let Some(bar_state) = bar.state.as_mut() {
+                        bar_state.pressed = true;
+                    }else{
+                        bar.state = Some(MenuState {
+                            pressed: true,
+                            ..Default::default()
+                        });
+                    }
                     shell.capture_event();
                 }
             }
@@ -328,6 +332,8 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
+        let bar = tree.state.downcast_ref::<MenuBarState>();
+
         let styling = theme.style(&self.global_parameters.class, Status::Active);
         renderer.fill_quad(
             renderer::Quad {
@@ -336,34 +342,33 @@ where
                 shadow: styling.bar_shadow,
                 ..Default::default()
             },
-            styling.bar_background,
+            bar.state.as_ref()
+                .and_then(|bar_state| bar_state.pressed.then(|| Color::from([0.5; 3]).into()))
+                .unwrap_or(styling.bar_background),
+            // styling.bar_background,
         );
 
-        let bar = tree.state.downcast_ref::<MenuBarState>();
-
-        if let (DrawPath::Backdrop, Some(bar_state)) 
+        if let (DrawPath::Backdrop, Some(MenuState { active: Some(active), .. })) 
         = (&self.global_parameters.draw_path, bar.state.as_ref()) {
-            if let Some(active) = bar_state.active {
-                let active_bounds = layout.children()
-                    .nth(active)
-                    .expect(&format!("Index {:?} is not within the menu bar layout \
-                        | layout.children().count(): {:?} \
-                        | This should not happen, please report this issue
-                        ",
-                        active,
-                        layout.children().count()
-                    ))
-                    .bounds();
-    
-                renderer.fill_quad(
-                    renderer::Quad {
-                        bounds: active_bounds,
-                        border: styling.path_border,
-                        ..Default::default()
-                    },
-                    styling.path,
-                );
-            }
+            let active_bounds = layout.children()
+                .nth(*active)
+                .expect(&format!("Index {:?} is not within the menu bar layout \
+                    | layout.children().count(): {:?} \
+                    | This should not happen, please report this issue
+                    ",
+                    active,
+                    layout.children().count()
+                ))
+                .bounds();
+
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: active_bounds,
+                    border: styling.path_border,
+                    ..Default::default()
+                },
+                styling.path,
+            );
         }
 
         self.roots
