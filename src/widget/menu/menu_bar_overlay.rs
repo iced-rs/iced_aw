@@ -15,7 +15,7 @@ use iced::{
     }, time::Instant, window, Event, Padding, Point, Rectangle, Size, Vector
 };
 
-use super::{common::*, menu_bar::{MenuBar, MenuBarState}, menu_tree::*};
+use super::{common::*, menu_bar::*, menu_tree::*};
 use crate::style::{menu_bar::*, Status};
 
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
@@ -26,7 +26,7 @@ where
     pub(super) menu_bar: &'b mut MenuBar<'a, Message, Theme, Renderer>,
     pub(super) layout: Layout<'b>,
     pub(super) translation: Vector,
-    /// Tree{ bar_state, [item_tree...] }
+    /// Tree{ bar, [item_tree...] }
     pub(super) tree: &'b mut Tree,
 }
 impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
@@ -65,11 +65,11 @@ where
         )
         .translate(translation);
 
-        let Some(bar_state) = bar.state.as_ref() else {
+        let Some(bar_menu_state) = bar.menu_state.as_ref() else {
             return Node::with_children(bounds, [bar_node, roots_node].into());
         };
 
-        let Some(active) = bar_state.active else {
+        let Some(active) = bar_menu_state.active else {
             return Node::with_children(bounds, [bar_node, roots_node].into());
         };
 
@@ -180,12 +180,13 @@ where
     ) {
         println!("MenuBarOverlay::update()");
         let bar = self.tree.state.downcast_mut::<MenuBarState>();
+        let MenuBarState { global_state, menu_state: bar_state } = bar;
 
-        let Some(bar_state) = bar.state.as_mut() else {
+        let Some(bar_menu_state) = bar_state.as_mut() else {
             return;
         };
 
-        let Some(active) = bar_state.active else {
+        let Some(active) = bar_menu_state.active else {
             return;
         };
 
@@ -202,8 +203,23 @@ where
         let active_tree = &mut self.tree.children[active];
         let mut prev_bounds_list = vec![bar_bounds];
 
+        match event {
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                global_state.pressed = true;
+                if self.menu_bar.global_parameters.close_on_click{
+                    global_state.schedule(MenuBarTask::CloseOnClick);
+                }
+            }
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                global_state.pressed = false;
+                shell.request_redraw();
+            }
+            _ => {}
+        }
+
         #[rustfmt::skip]
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+            global_state: &mut GlobalState,
             global_parameters: &GlobalParameters<'a, Theme>,
             tree: &mut Tree,
             item: &mut Item<'a, Message, Theme, Renderer>,
@@ -216,7 +232,7 @@ where
             parent_bounds: Rectangle,
             viewport: &Rectangle,
             prev_bounds_list: &mut Vec<Rectangle>,
-            prev: &mut Index,
+            prev_active: &mut Index,
             depth: usize,
         ) -> RecEvent {
             let Some(menu) = item.menu.as_mut() else {
@@ -254,6 +270,7 @@ where
                     .bounds();
 
                 rec(
+                    global_state,
                     global_parameters,
                     next_tree,
                     next_item,
@@ -284,7 +301,6 @@ where
             println!();
             println!("MenuBarOverlay | depth: {:?}", depth);
             println!("MenuBarOverlay | menu_state.active: {:?}", menu_state.active);
-            println!("MenuBarOverlay | menu_state.pressed: {:?}", menu_state.pressed);
             println!("MenuBarOverlay | menu_state.slice: {:?}", menu_state.slice);
             println!("MenuBarOverlay | rec_event: {:?}", rec_event);
             println!("MenuBarOverlay | event: {:?}", event);
@@ -293,8 +309,9 @@ where
             println!("MenuBarOverlay | shell.is_event_captured(): {:?}", shell.is_event_captured());
 
             menu.update(
-                rec_event, 
+                global_state,
                 global_parameters, 
+                rec_event, 
                 menu_tree, 
                 event, 
                 menu_layout, 
@@ -305,11 +322,12 @@ where
                 viewport, 
                 parent_bounds, 
                 prev_bounds_list, 
-                prev
+                prev_active,
             )
         }
 
         let re = rec(
+            global_state,
             &self.menu_bar.global_parameters,
             active_tree,
             active_root,
@@ -322,25 +340,19 @@ where
             parent_bounds,
             &viewport,
             &mut prev_bounds_list,
-            &mut bar_state.active,
+            &mut bar_menu_state.active,
             0,
         );
 
-        if let (true, Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))) 
-        = (self.menu_bar.global_parameters.close_on_click, event) {
-            bar_state.active = None;
+        println!("MenuBarOverlay::update() | re: {:?}", re);
+
+        if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
+            if let Some(MenuBarTask::CloseOnClick) = global_state.task() {
+                bar.close(self.tree.children.as_mut_slice(), shell);
+                return;
+            }
         }
 
-        // if the function reaches here, 
-        // that means bar_state.active was Some, 
-        // if bar_state.active is None, 
-        // we can be sure that the layout has changed
-        if bar_state.active.is_none() && !cursor.is_over(bar_bounds){
-            bar.state = None;
-            shell.invalidate_layout();
-            shell.request_redraw();
-        }
-        
         match re {
             RecEvent::Event => {
                 let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
@@ -358,10 +370,11 @@ where
                 };
 
                 println!("MenuBarOverlay::update() | calling MenuBar::update_items()");
-                menu_bar.update_items(
-                    tree, 
+                update_items(
+                    menu_bar.roots.as_mut_slice(), 
+                    tree.children.as_mut_slice(), 
+                    layout.children(), 
                     &redraw_event, 
-                    *layout, 
                     cursor, 
                     renderer, 
                     clipboard, 
@@ -369,10 +382,18 @@ where
                     &viewport
                 );
             },
-            _ => {
-                // if RecEvent::Close or RecEvent::None is returned,
+            RecEvent::Close => {
+                if !cursor.is_over(bar_bounds){
+                    bar.close(self.tree.children.as_mut_slice(), shell);
+                }
+                assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::Close | Returning");
                 // let the menu bar process the event
+            }
+            RecEvent::None => {
                 println!("MenuBarOverlay::update() | MenuBar should process the event");
+
+                assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::None | Returning");
+                // let the menu bar process the event
             }
         }
 
@@ -387,11 +408,11 @@ where
     ) -> mouse::Interaction {
         println!("MenuBarOverlay::mouse_interaction()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(bar_state) = bar.state.as_ref() else {
+        let Some(bar_menu_state) = bar.menu_state.as_ref() else {
             return mouse::Interaction::default();
         };
 
-        let Some(active) = bar_state.active else {
+        let Some(active) = bar_menu_state.active else {
             return mouse::Interaction::default();
         };
 
@@ -451,10 +472,10 @@ where
         operation: &mut dyn Operation<()>,
     ) {
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(bar_state) = bar.state.as_ref() else {
+        let Some(bar_menu_state) = bar.menu_state.as_ref() else {
             return;
         };
-        let Some(active) = bar_state.active else {
+        let Some(active) = bar_menu_state.active else {
             return;
         };
 
@@ -515,8 +536,8 @@ where
     ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
         println!("MenuBarOverlay::overlay()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let bar_state = bar.state.as_ref()?;
-        let active = bar_state.active?;
+        let bar_menu_state = bar.menu_state.as_ref()?;
+        let active = bar_menu_state.active?;
 
         let mut lc = layout.children();
         let viewport = layout.bounds();
@@ -524,14 +545,7 @@ where
         let _roots_layout = lc.next()?;
         let menu_layouts_layout = lc.next()?; // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
-        // let active_root = &mut self.menu_bar.roots[active];
-        // let active_tree = &mut self.tree.children[active]; // item tree{stateless, [widget tree, menu tree]}
-        // let menu = active_root.menu.as_mut()?;
-        // let menu_tree = &mut active_tree.children[1];
-        // let menu_layout = menu_layouts.next()?;
-
-        // menu.overlay(menu_tree, menu_layout, renderer, Vector::ZERO)
-
+       
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             items: &'b mut [Item<'a, Message, Theme, Renderer>],
             menu_tree: &'b mut Tree, // Tree{ menu_state, [item_tree...] }
@@ -681,10 +695,12 @@ where
     ) {
         println!("MenuBarOverlay::draw()");
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let Some(bar_state) = bar.state.as_ref() else {
+        let MenuBarState { global_state, menu_state: bar_state } = bar;
+
+        let Some(bar_menu_state) = bar_state.as_ref() else {
             return;
         };
-        let Some(active) = bar_state.active else {
+        let Some(active) = bar_menu_state.active else {
             return;
         };
 
@@ -701,6 +717,7 @@ where
         let active_tree = &self.tree.children[active];
 
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+            global_state: &GlobalState,
             global_parameters: &GlobalParameters<'a, Theme>,
             tree: &Tree,
             item: &Item<'a, Message, Theme, Renderer>,
@@ -726,6 +743,7 @@ where
             let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
             menu.draw(
+                global_state,
                 &global_parameters.draw_path,
                 menu_tree,
                 renderer,
@@ -743,6 +761,7 @@ where
 
                 renderer.with_layer(*viewport, |r| {
                     rec(
+                        global_state,
                         global_parameters,
                         next_tree,
                         next_item,
@@ -761,6 +780,7 @@ where
         let theme_style = theme.style(&self.menu_bar.global_parameters.class, Status::Active);
 
         rec(
+            global_state,
             &self.menu_bar.global_parameters,
             active_tree,
             active_root,

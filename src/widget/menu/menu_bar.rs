@@ -19,10 +19,80 @@ use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
 pub use crate::style::status::{Status, StyleFn};
 
+#[derive(Debug, Clone, Copy)]
+pub(super) enum MenuBarTask{
+    OpenOnClick,
+    CloseOnClick,
+}
+
+#[derive(Default, Debug)]
+pub(super) struct GlobalState {
+    pub(super) pressed: bool,
+    task: Option<MenuBarTask>,
+}
+impl GlobalState{
+    pub(super) fn schedule(&mut self, task: MenuBarTask) {
+        self.task = Some(task);
+    }
+
+    pub(super) fn task(&self) -> Option<MenuBarTask> {
+        self.task
+    }
+}
+
 #[derive(Default, Debug)]
 pub(super) struct MenuBarState {
+    pub(super) global_state: GlobalState,
     /// state is None when the menu bar is not open
-    pub(super) state: Option<MenuState>,
+    pub(super) menu_state: Option<MenuState>,
+}
+impl MenuBarState {
+    pub(super) fn open<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+        &mut self,
+        roots: &mut [Item<'a, Message, Theme, Renderer>],
+        item_trees: &mut [Tree],
+        item_layouts: impl Iterator<Item = Layout<'b>>,
+        cursor: mouse::Cursor,
+        shell: &mut Shell<'_, Message>,
+    ){
+        if self.menu_state.is_none() {
+            self.menu_state = Some(MenuState::default());
+        }
+        let bar_menu_state = self.menu_state.as_mut().unwrap();
+
+        try_open_menu(
+            roots,
+            bar_menu_state,
+            item_trees,
+            item_layouts,
+            cursor,
+            shell,
+            0,
+        );
+
+        self.global_state.task = None;
+    }
+    
+    pub(super) fn close<Message>(
+        &mut self,
+        item_trees: &mut [Tree],
+        shell: &mut Shell<'_, Message>,
+    ) {
+        if self.global_state.pressed {
+            return;
+        }
+        
+        for item_tree in item_trees.iter_mut() {
+            if item_tree.children.len() == 2 {
+                let _ = item_tree.children.pop();
+                shell.invalidate_layout();
+            }
+        }
+        self.global_state.pressed = false;
+        self.global_state.task = None;
+        self.menu_state = None;
+        shell.request_redraw();
+    }
 }
 
 /// menu bar
@@ -133,30 +203,6 @@ where
         self.global_parameters.class = class.into();
         self
     }
-
-    pub(super) fn update_items(
-        &mut self,
-        tree: &mut Tree,
-        event: &event::Event,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<'_, Message>,
-        viewport: &Rectangle,
-    ) {
-        println!("MenuBar::update_items()");
-        for ((item, tree), layout) in self.roots
-            .iter_mut() // [Item...]
-            .zip(tree.children.iter_mut()) // [item_tree...]
-            // [widget_node...]
-            .zip(layout.children())
-        {
-            item.update(
-                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
-        }
-    }
 }
 impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for MenuBar<'_, Message, Theme, Renderer>
@@ -181,13 +227,13 @@ where
         self.roots.iter().map(Item::tree).collect::<Vec<_>>()
     }
 
-    /// tree: Tree{bar_state, \[item_tree...]}
+    /// tree: Tree{bar, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
         println!("MenuBar::diff()");
         tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
-    /// tree: Tree{bar_state, \[item_tree...]}
+    /// tree: Tree{bar, \[item_tree...]}
     /// 
     /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -221,64 +267,58 @@ where
         viewport: &Rectangle,
     ) {
         println!("MenuBar::update()");
-        self.update_items(tree, event, layout, cursor, renderer, clipboard, shell, viewport);
+        update_items(
+            self.roots.as_mut_slice(), 
+            tree.children.as_mut_slice(), 
+            layout.children(), 
+            event, cursor, renderer, clipboard, shell, viewport
+        );
 
-        let bar = tree.state.downcast_mut::<MenuBarState>();
+        let Tree{ state, children: item_trees, .. } = tree;
+        let bar = state.downcast_mut::<MenuBarState>();
+        let MenuBarState { global_state, menu_state: bar_state } = bar;
+
         let bar_bounds = layout.bounds();
 
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) {
-                    if let Some(bar_state) = bar.state.as_mut() {
-                        bar_state.pressed = true;
-                    }else{
-                        bar.state = Some(MenuState {
-                            pressed: true,
-                            ..Default::default()
-                        });
-                    }
+                    global_state.pressed = true;
+                    global_state.schedule(MenuBarTask::OpenOnClick);
                     shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                if let (true, Some(bar_state)) = (cursor.is_over(bar_bounds), bar.state.as_mut()) {
-                    bar_state.pressed = false;
-                    for (i, ((item, tree), layout)) in self
-                        .roots
-                        .iter_mut() // [Item...]
-                        .zip(tree.children.iter_mut()) // [item_tree...]
-                        .zip(layout.children())
-                        .enumerate() 
-                        {
-                            if cursor.is_over(layout.bounds()) && item.menu.is_some() {
-                                bar_state.open_new_menu(i, item, tree);
-                                break;
-                            }
+                global_state.pressed = false;
+
+                if let Some(task) = global_state.task {
+                    match task {
+                        MenuBarTask::OpenOnClick => {
+                            bar.open(&mut self.roots, item_trees, layout.children(), cursor, shell);
                         }
-                    shell.capture_event();
+                        MenuBarTask::CloseOnClick => {
+                            bar.close(item_trees, shell);
+                        }
+                    }
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
-                if let Some(bar_state) = bar.state.as_mut() {
+                if let Some(bar_menu_state) = bar_state.as_mut() {
                     if cursor.is_over(bar_bounds) {
-                        for (i, ((item, tree), layout)) in self
-                            .roots
-                            .iter_mut() // [Item...]
-                            .zip(tree.children.iter_mut()) // [item_tree...]
-                            .zip(layout.children())
-                            .enumerate() 
-                            {
-                                if cursor.is_over(layout.bounds()) {
-                                    bar_state.open_new_menu(i, item, tree);
-                                    break;
-                                }
-                            }
+                        try_open_menu(
+                            &mut self.roots,
+                            bar_menu_state,
+                            item_trees,
+                            layout.children(),
+                            cursor,
+                            shell,
+                            0,
+                        );
                         shell.capture_event();
                     } else {
-                        bar.state = None;
+                        bar.close(item_trees, shell);
                     }
                     // println!("MenuBar::update() | CursorMoved | bar: {:?}", bar);
-                    shell.request_redraw();
                 }
             }
             _ => {}
@@ -333,6 +373,7 @@ where
         viewport: &Rectangle,
     ) {
         let bar = tree.state.downcast_ref::<MenuBarState>();
+        let MenuBarState { global_state, menu_state: bar_state } = bar;
 
         let styling = theme.style(&self.global_parameters.class, Status::Active);
         renderer.fill_quad(
@@ -342,14 +383,13 @@ where
                 shadow: styling.bar_shadow,
                 ..Default::default()
             },
-            bar.state.as_ref()
-                .and_then(|bar_state| bar_state.pressed.then(|| Color::from([0.5; 3]).into()))
+            global_state.pressed.then(|| Color::from([0.5; 3]).into())
                 .unwrap_or(styling.bar_background),
             // styling.bar_background,
         );
 
         if let (DrawPath::Backdrop, Some(MenuState { active: Some(active), .. })) 
-        = (&self.global_parameters.draw_path, bar.state.as_ref()) {
+        = (&self.global_parameters.draw_path, bar_state.as_ref()) {
             let active_bounds = layout.children()
                 .nth(*active)
                 .expect(&format!("Index {:?} is not within the menu bar layout \
@@ -391,7 +431,7 @@ where
         println!("MenuBar::overlay()");
         let bar = tree.state.downcast_mut::<MenuBarState>();
 
-        if bar.state.is_some() {
+        if bar.menu_state.is_some() {
             println!("MenuBar::overlay() | return | Menu Overlay");
             Some(
                 MenuBarOverlay {
@@ -438,3 +478,4 @@ where
         Self::new(value)
     }
 }
+

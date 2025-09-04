@@ -27,6 +27,7 @@ use iced::{
 use std::iter::once;
 
 use crate::style::menu_bar::*;
+use super::menu_bar::*;
 
 /*
 menu tree:
@@ -64,7 +65,6 @@ pub(super) struct MenuState {
     pub(super) scroll_offset: f32,
     pub(super) active: Index,
     pub(super) slice: MenuSlice,
-    pub(super) pressed: bool,
 }
 impl MenuState{
     /// item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
@@ -103,8 +103,61 @@ impl Default for MenuState {
                 lower_bound_rel: 0.0,
                 upper_bound_rel: f32::MAX,
             },
-            pressed: false,
         }
+    }
+}
+
+/// Tries to open a menu at the given cursor position
+pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+    items: &mut [Item<'a, Message, Theme, Renderer>],
+    menu_state: &mut MenuState,
+    item_trees: &mut [Tree],
+    item_layouts: impl Iterator<Item = Layout<'b>>,
+    cursor: mouse::Cursor,
+    shell: &mut Shell<'_, Message>,
+    index_offset: usize,
+) {
+    let old_active = menu_state.active.clone();
+
+    for (i, ((item, tree), layout)) in items
+        .iter_mut() // [Item...]
+        .zip(item_trees.iter_mut()) // [item_tree...]
+        .zip(item_layouts)
+        .enumerate() 
+        {
+            if cursor.is_over(layout.bounds()) {
+                if item.menu.is_some() {
+                    menu_state.open_new_menu(i + index_offset, item, tree);
+                }
+                break;
+            }
+        }
+
+    if menu_state.active != old_active {
+        shell.invalidate_layout();
+        shell.request_redraw();
+    }
+}
+
+pub(super) fn update_items<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+    items: &mut [Item<'a, Message, Theme, Renderer>],
+    item_trees: &mut [Tree],
+    item_layouts: impl Iterator<Item = Layout<'b>>,
+    event: &Event,
+    cursor: mouse::Cursor,
+    renderer: &Renderer,
+    clipboard: &mut dyn Clipboard,
+    shell: &mut Shell<'_, Message>,
+    viewport: &Rectangle,
+){
+    for ((item, tree), layout) in items// [item...]
+        .iter_mut()
+        .zip(item_trees.iter_mut()) // [item_tree...]
+        .zip(item_layouts)
+    {
+        item.update(
+            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+        );
     }
 }
 
@@ -329,10 +382,14 @@ where
         )
     }
 
+    /// tree: Tree{ menu_state, \[item_tree...] }
+    /// 
+    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds]}
     pub(super) fn update(
         &mut self,
-        rec_event: RecEvent,
+        global_state: &mut GlobalState,
         global_parameters: &GlobalParameters<'_, Theme>,
+        rec_event: RecEvent,
         tree: &mut Tree,
         event: &Event,
         layout: Layout<'_>,
@@ -343,7 +400,7 @@ where
         viewport: &Rectangle,
         parent_bounds: Rectangle,
         prev_bounds_list: &[Rectangle],
-        prev: &mut Index,
+        prev_active: &mut Index,
     ) -> RecEvent {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
@@ -361,20 +418,18 @@ where
         }
 
         let mut run_op = |tree: &mut Tree, op: &Op| {
-            let menu_state = tree.state.downcast_mut::<MenuState>();
+            let Tree{ state, children: item_trees, .. } = tree;
+            let menu_state = state.downcast_mut::<MenuState>();
             
             match op {
                 Op::UpdateItems => {
                     let slice = &menu_state.slice;
-                    for ((item, tree), layout) in self.items[slice.start_index..=slice.end_index] // [item...]
-                        .iter_mut()
-                        .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
-                        .zip(slice_layout.children())
-                    {
-                        item.update(
-                            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-                        );
-                    }
+                    update_items(
+                        &mut self.items[slice.start_index..=slice.end_index], 
+                        &mut tree.children[slice.start_index..=slice.end_index], 
+                        slice_layout.children(), 
+                        event, cursor, renderer, clipboard, shell, viewport,
+                    );
                 }
                 Op::FakeUpdate => {
                     let cursor = if let Some(active) = menu_state.active {
@@ -407,28 +462,18 @@ where
                     let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
     
                     let slice = &menu_state.slice;
-                    for ((item, tree), layout) in self.items[slice.start_index..=slice.end_index] // [item...]
-                        .iter_mut()
-                        .zip(tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
-                        .zip(slice_layout.children())
-                    {
-                        item.update(
-                            tree, &redraw_event, layout, cursor, renderer, clipboard, &mut fake_shell, viewport,
-                        );
-                    }
+                    update_items(
+                        &mut self.items[slice.start_index..=slice.end_index], 
+                        &mut tree.children[slice.start_index..=slice.end_index], 
+                        slice_layout.children(), 
+                        &redraw_event, cursor, renderer, clipboard, &mut fake_shell, viewport,
+                    );
                     merge_fake_shell(shell, fake_shell);
                 }
                 Op::MouseButtonEvent => {
                     match event {
                         Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                            println!("Menu::update() | ButtonPressed");
-                            menu_state.pressed = true;
-                            shell.request_redraw();
-                        }
-                        Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-                            println!("Menu::update() | ButtonReleased");
-                            menu_state.pressed = false;
-                            shell.request_redraw();
+                            // schedule close event
                         }
                         _ => {}
                     }
@@ -450,7 +495,7 @@ where
                         _ => {}
                     }
                 }
-                Op::OpenEvent => if !menu_state.pressed {
+                Op::OpenEvent => if !global_state.pressed{
                     let slice = &menu_state.slice;
             
                     assert!(menu_state.active.is_none(), "
@@ -458,32 +503,22 @@ where
                         which means no child menu should be open (menu_state.active must be None). \
                         If this assert fails, please report this issue.
                     ");
-            
-                    for (i, ((item, item_tree), layout)) in self.items[slice.start_index..=slice.end_index]
-                        .iter()
-                        .zip(tree.children[slice.start_index..=slice.end_index].iter_mut())
-                        .zip(slice_layout.children())
-                        .enumerate()
-                    {
-                        if cursor.is_over(layout.bounds()) {
-                            println!("Menu::open_event() | new menu opened | i: {:?}", i);
-                            menu_state.open_new_menu(i + slice.start_index, item, item_tree);
-                            break;
-                        }
-                    }
-            
-                    if menu_state.active.is_some() {
-                        shell.invalidate_layout();
-                        shell.request_redraw();
-                    }
+
+                    try_open_menu(
+                        &mut self.items[slice.start_index..=slice.end_index], 
+                        menu_state, 
+                        &mut item_trees[slice.start_index..=slice.end_index], 
+                        slice_layout.children(), 
+                        cursor, 
+                        shell,
+                        slice.start_index
+                    );
                 }
             }
         };
 
         let mut update = |tree: &mut Tree, ops: &[Op]|{
-            let menu_state = tree.state.downcast_mut::<MenuState>();
-
-            let pre_ops = menu_state.pressed.then(|| Op::MouseButtonEvent);
+            let pre_ops = global_state.pressed.then(|| Op::MouseButtonEvent);
                 
             for op in pre_ops.iter().chain(ops.iter()) {
                 run_op(tree, op);
@@ -505,12 +540,11 @@ where
                     update(tree, &[Op::FakeUpdate, Op::MouseButtonEvent]);
                     // the cursor is over the parent bounds
                     // let the parent process the event
-                    assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::None");
+                    assert!(shell.is_event_captured() == false, "Returning RecEvent::None");
                     RecEvent::None
                 } else {
                     let open = {
-                        let menu_state = tree.state.downcast_mut::<MenuState>();
-                        if menu_state.pressed{
+                        if global_state.pressed{
                             true
                         } else {
                             if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
@@ -529,8 +563,8 @@ where
                     }else{
                         // the current menu is ready to close
                         println!("Menu::update() | close menu");
-                        assert_eq!(shell.is_event_captured(), false, "Returning RecEvent::Close");
-                        *prev = None;
+                        assert!(shell.is_event_captured() == false, "Returning RecEvent::Close");
+                        *prev_active = None;
                         if tree.children.len() == 2{
                             // prune the menu tree when the menu is close
                             let _ = tree.children.pop();
@@ -603,6 +637,7 @@ where
     /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_bounds]}
     pub(super) fn draw(
         &self,
+        global_state: &GlobalState,
         draw_path: &DrawPath,
         tree: &Tree,
         renderer: &mut Renderer,
@@ -632,7 +667,7 @@ where
                     shadow: theme_style.menu_shadow,
                     ..Default::default()
                 },
-                if menu_state.pressed {
+                if global_state.pressed {
                     Color::from([0.5; 3]).into()
                 } else {
                     theme_style.menu_background
