@@ -107,59 +107,6 @@ impl Default for MenuState {
     }
 }
 
-/// Tries to open a menu at the given cursor position
-pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
-    items: &mut [Item<'a, Message, Theme, Renderer>],
-    menu_state: &mut MenuState,
-    item_trees: &mut [Tree],
-    item_layouts: impl Iterator<Item = Layout<'b>>,
-    cursor: mouse::Cursor,
-    shell: &mut Shell<'_, Message>,
-    index_offset: usize,
-) {
-    let old_active = menu_state.active.clone();
-
-    for (i, ((item, tree), layout)) in items
-        .iter_mut() // [Item...]
-        .zip(item_trees.iter_mut()) // [item_tree...]
-        .zip(item_layouts)
-        .enumerate() 
-        {
-            if cursor.is_over(layout.bounds()) {
-                if item.menu.is_some() {
-                    menu_state.open_new_menu(i + index_offset, item, tree);
-                }
-                break;
-            }
-        }
-
-    if menu_state.active != old_active {
-        shell.invalidate_layout();
-        shell.request_redraw();
-    }
-}
-
-pub(super) fn update_items<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
-    items: &mut [Item<'a, Message, Theme, Renderer>],
-    item_trees: &mut [Tree],
-    item_layouts: impl Iterator<Item = Layout<'b>>,
-    event: &Event,
-    cursor: mouse::Cursor,
-    renderer: &Renderer,
-    clipboard: &mut dyn Clipboard,
-    shell: &mut Shell<'_, Message>,
-    viewport: &Rectangle,
-){
-    for ((item, tree), layout) in items// [item...]
-        .iter_mut()
-        .zip(item_trees.iter_mut()) // [item_tree...]
-        .zip(item_layouts)
-    {
-        item.update(
-            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-        );
-    }
-}
 
 /// Menu
 #[must_use]
@@ -176,6 +123,8 @@ where
     pub(super) axis: Axis,
     pub(super) offset: f32,
     pub(super) padding: Padding,
+    pub(super) close_on_item_click: Option<bool>,
+    pub(super) close_on_background_click: Option<bool>,
 }
 impl<'a, Message, Theme, Renderer> Menu<'a, Message, Theme, Renderer>
 where
@@ -193,6 +142,8 @@ where
             axis: Axis::Horizontal,
             offset: 0.0,
             padding: Padding::new(5.0),
+            close_on_item_click: None,
+            close_on_background_click: None,
         }
     }
 
@@ -223,6 +174,18 @@ where
     /// Sets the padding of the [`Menu`].
     pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
         self.padding = padding.into();
+        self
+    }
+
+    /// Sets the close on item click option of the [`Menu`].
+    pub fn close_on_item_click(mut self, value: bool) -> Self {
+        self.close_on_item_click = Some(value);
+        self
+    }
+
+    /// Sets the close on background click option of the [`Menu`].
+    pub fn close_on_background_click(mut self, value: bool) -> Self {
+        self.close_on_background_click = Some(value);
         self
     }
 
@@ -412,12 +375,12 @@ where
         enum Op{
             UpdateItems,
             OpenEvent,
-            MouseButtonEvent,
+            LeftPress,
             ScrollEvent,
             FakeUpdate,
         }
 
-        let mut run_op = |tree: &mut Tree, op: &Op| {
+        let mut run_op = |global_state: &mut GlobalState, tree: &mut Tree, op: &Op| {
             let Tree{ state, children: item_trees, .. } = tree;
             let menu_state = state.downcast_mut::<MenuState>();
             
@@ -470,10 +433,19 @@ where
                     );
                     merge_fake_shell(shell, fake_shell);
                 }
-                Op::MouseButtonEvent => {
+                Op::LeftPress => {
                     match event {
                         Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                            // schedule close event
+                            let slice = &menu_state.slice;
+                            schedule_close_on_click(
+                                global_state, 
+                                global_parameters,
+                                &mut self.items[slice.start_index..=slice.end_index], 
+                                slice_layout.children(), 
+                                cursor, 
+                                self.close_on_item_click,
+                                self.close_on_background_click,
+                            );
                         }
                         _ => {}
                     }
@@ -517,27 +489,25 @@ where
             }
         };
 
-        let mut update = |tree: &mut Tree, ops: &[Op]|{
-            let pre_ops = global_state.pressed.then(|| Op::MouseButtonEvent);
-                
-            for op in pre_ops.iter().chain(ops.iter()) {
-                run_op(tree, op);
+        let mut update = |global_state: &mut GlobalState, tree: &mut Tree, ops: &[Op]|{
+            for op in ops.iter() {
+                run_op(global_state, tree, op);
             }
         };
         
         match rec_event{
             RecEvent::Event => {
-                update(tree, &[Op::FakeUpdate]);
+                update(global_state, tree, &[Op::FakeUpdate]);
                 shell.capture_event();
                 RecEvent::Event
             }
             RecEvent::Close => {
                 if cursor.is_over(background_bounds) || cursor.is_over(offset_bounds){
-                    update(tree, &[Op::UpdateItems, Op::MouseButtonEvent, Op::ScrollEvent, Op::OpenEvent]);
+                    update(global_state, tree, &[Op::UpdateItems, Op::LeftPress, Op::ScrollEvent, Op::OpenEvent]);
                     shell.capture_event();
                     RecEvent::Event
                 } else if cursor.is_over(parent_bounds) {
-                    update(tree, &[Op::FakeUpdate, Op::MouseButtonEvent]);
+                    update(global_state, tree, &[Op::FakeUpdate]);
                     // the cursor is over the parent bounds
                     // let the parent process the event
                     assert!(shell.is_event_captured() == false, "Returning RecEvent::None");
@@ -557,7 +527,7 @@ where
 
                     if open {
                         // the current menu is not ready to close
-                        update(tree, &[Op::UpdateItems, Op::MouseButtonEvent]);
+                        update(global_state, tree, &[Op::UpdateItems]);
                         shell.capture_event();
                         RecEvent::Event
                     }else{
@@ -576,7 +546,7 @@ where
                 }
             }
             RecEvent::None => {
-                update(tree, &[Op::UpdateItems, Op::MouseButtonEvent, Op::ScrollEvent]);
+                update(global_state, tree, &[Op::UpdateItems, Op::LeftPress, Op::ScrollEvent]);
                 shell.capture_event();
                 RecEvent::Event
             }
@@ -721,6 +691,7 @@ where
 {
     pub(super) item: Element<'a, Message, Theme, Renderer>,
     pub(super) menu: Option<Box<Menu<'a, Message, Theme, Renderer>>>,
+    pub(super) close_on_click: Option<bool>,
 }
 impl<'a, Message, Theme, Renderer> Item<'a, Message, Theme, Renderer>
 where
@@ -732,6 +703,7 @@ where
         Self {
             item: item.into(),
             menu: None,
+            close_on_click: None,
         }
     }
 
@@ -743,7 +715,14 @@ where
         Self {
             item: item.into(),
             menu: Some(Box::new(menu)),
+            close_on_click: None,
         }
+    }
+
+    /// Sets the close on click option of the [`Item`].
+    pub fn close_on_click(mut self, close_on_click: bool) -> Self {
+        self.close_on_click = Some(close_on_click);
+        self
     }
 
     /// Rebuild state tree

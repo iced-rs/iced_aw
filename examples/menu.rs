@@ -105,7 +105,7 @@ impl Default for App {
             toggle: false,
             theme,
             dark_mode: false,
-            close_on_click: false,
+            close_on_click: true,
             text: "Text Input".into(),
             fruit: Fruit::Apple,
         }
@@ -185,66 +185,69 @@ impl App {
         println!("App | view");
         let menu_tpl_1 = |items| Menu::new(items).width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).width(180.0).offset(0.0).spacing(5.0);
-        
+        let hold_item = |widget| Item::new(widget).close_on_click(false);
+        let hold_item_wm = |widget, menu| Item::with_menu(widget, menu).close_on_click(false);
+        // let coc_item = |widget| Item::new(widget).close_on_click(true);
+        // let coc_item_wm = |widget, menu| Item::with_menu(widget, menu).close_on_click(true);
+
         #[rustfmt::skip]
         let mb = menu_bar!(
             (debug_button_s("Nested Menus"), {
                 let sub5 = menu_tpl_2(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                 ));
 
                 let sub4 = menu_tpl_2(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                 )).width(200.0);
 
                 let sub3 = menu_tpl_2(menu_items!(
-                    (debug_button_f("You can"))
-                    (debug_button_f("nest menus"))
-                    (submenu_button("SUB"), sub4)
-                    (debug_button_f("how ever"))
-                    (debug_button_f("You like"))
-                    (submenu_button("SUB"), sub5)
+                    (debug_button_f("You can")),
+                    (debug_button_f("nest menus")),
+                    (submenu_button("SUB"), sub4),
+                    (debug_button_f("how ever")),
+                    (debug_button_f("You like")),
+                    (submenu_button("SUB"), sub5),
                 )).width(180.0);
 
                 let sub2 = menu_tpl_2(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (submenu_button("More sub menus"), sub3)
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (submenu_button("More sub menus"), sub3),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                 )).width(160.0);
 
                 let sub1 = menu_tpl_2(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (submenu_button("Another sub menu"), sub2)
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (submenu_button("Another sub menu"), sub2),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                 )).width(220.0);
 
                 menu_tpl_1(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (submenu_button("A sub menu"), sub1)
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (submenu_button("A sub menu"), sub1),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                 )).width(140.0)
-            })
-             
+            }),
             (debug_button_s("Widgets"), menu_tpl_1(menu_items!(
-                (debug_button_f("You can use any widget"))
-                (debug_button_f("as a menu item"))
+                (debug_button_f("You can use any widget")),
+                (debug_button_f("as a menu item")),
                 (button(
                     text("Button")
                         .width(Length::Fill)
@@ -252,18 +255,18 @@ impl App {
                     )
                     .width(Length::Fill)
                     .on_press(Message::Debug("Button".into()))
-                )
+                ),
                 (checkbox("Checkbox", self.check).on_toggle(Message::CheckChange)
                     .width(Length::Fill)
-                )
+                ),
                 (
                     row![
                         "Slider",
                         horizontal_space().width(Length::Fixed(8.0)),
                         slider(0..=255, self.value, Message::ValueChange)
                     ]
-                )
-                (text_input("", &self.text).on_input(Message::TextChange))
+                ),
+                (text_input("", &self.text).on_input(Message::TextChange)),
                 (
                     container(toggler(self.toggle)
                         .label("Or as a sub menu item".to_string())
@@ -274,173 +277,173 @@ impl App {
                     .width(Length::Fill)
                     .align_y(alignment::Vertical::Center),
                     menu_tpl_2(menu_items!(
-                        (debug_button_f("Item"))
-                        (debug_button_f("Item"))
-                        (debug_button_f("Item"))
-                        (debug_button_f("Item"))
+                        (debug_button_f("Item")),
+                        (debug_button_f("Item")),
+                        (debug_button_f("Item")),
+                        (debug_button_f("Item")),
                     ))
-                )
-                (debug_button_f("Separator"))
-                (separator())
-                (debug_button_f("Labeled Separator"))
-                (labeled_separator("Separator"))
-                (debug_button_f("Dot Separator"))
-                (dot_separator(&self.theme))
-                (debug_button_f("Item"))
-                (debug_button_f("Item"))
-            )).width(240.0))
+                ),
+                (debug_button_f("Separator")),
+                (separator()),
+                (debug_button_f("Labeled Separator")),
+                (labeled_separator("Separator")),
+                (debug_button_f("Dot Separator")),
+                (dot_separator(&self.theme)),
+                (debug_button_f("Item")),
+                (debug_button_f("Item")),
+            )).width(240.0)),
             (debug_button_s("Controls"), menu_tpl_1(menu_items!(
                 (row![toggle(
-                        "Close On Click",
+                        "Close On Click Global",
                         self.close_on_click,
                         Message::ToggleCloseOnClick
                     )
                     ].padding([0, 8])
-                )
+                ),
                 (row![toggle(
                         "Dark Mode",
                         self.dark_mode,
                         Message::ThemeChange
                     )
                     ].padding([0, 8])
-                )
-                (color_button([0.45, 0.25, 0.57]))
-                (color_button([0.15, 0.59, 0.64]))
-                (color_button([0.76, 0.82, 0.20]))
-                (color_button([0.17, 0.27, 0.33]))
+                ),
+                (color_button([0.45, 0.25, 0.57])),
+                (color_button([0.15, 0.59, 0.64])),
+                (color_button([0.76, 0.82, 0.20])),
+                (color_button([0.17, 0.27, 0.33])),
                 (debug_button_f("Primary"), {
                     let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
                     menu_tpl_2(menu_items!(
                         (slider(0..=255, r, move |x| {
                             Message::ColorChange(Color::from_rgb8(x, g, b))
-                        }))
+                        })),
                         (slider(0..=255, g, move |x| {
                             Message::ColorChange(Color::from_rgb8(r, x, b))
-                        }))
+                        })),
                         (slider(0..=255, b, move |x| {
                             Message::ColorChange(Color::from_rgb8(r, g, x))
-                        }))
+                        })),
                     ))
-                })
-            )))
+                }),
+            )).width(220.0)),
             (debug_button_s("Scroll"), menu_tpl_1(menu_items!(
-                (debug_button_f("ajrs"))
-                (debug_button_f("bsdfho"))
-                (debug_button_f("clkjhbf"))
-                (debug_button_f("dekjdaud"))
-                (debug_button_f("ecsh"))
-                (debug_button_f("fweiu"))
-                (debug_button_f("giwe"))
-                (debug_button_f("heruyv"))
-                (debug_button_f("isabe"))
+                (debug_button_f("ajrs")),
+                (debug_button_f("bsdfho")),
+                (debug_button_f("clkjhbf")),
+                (debug_button_f("dekjdaud")),
+                (debug_button_f("ecsh")),
+                (debug_button_f("fweiu")),
+                (debug_button_f("giwe")),
+                (debug_button_f("heruyv")),
+                (debug_button_f("isabe")),
                 (submenu_button("jcsu"), menu_tpl_2(menu_items!(
-                    (debug_button_f("ajrs"))
-                    (debug_button_f("bsdfho"))
-                    (debug_button_f("clkjhbf"))
-                    (debug_button_f("dekjdaud"))
-                    (debug_button_f("ecsh"))
-                    (debug_button_f("fweiu"))
-                    (debug_button_f("giwe"))
-                    (debug_button_f("heruyv"))
-                    (debug_button_f("isabe"))
-                    (debug_button_f("jcsu"))
-                    (debug_button_f("kaljkahd"))
+                    (debug_button_f("ajrs")),
+                    (debug_button_f("bsdfho")),
+                    (debug_button_f("clkjhbf")),
+                    (debug_button_f("dekjdaud")),
+                    (debug_button_f("ecsh")),
+                    (debug_button_f("fweiu")),
+                    (debug_button_f("giwe")),
+                    (debug_button_f("heruyv")),
+                    (debug_button_f("isabe")),
+                    (debug_button_f("jcsu")),
+                    (debug_button_f("kaljkahd")),
                     (submenu_button("luyortp"), menu_tpl_2(menu_items!(
-                        (debug_button_f("ajrs"))
-                        (debug_button_f("bsdfho"))
-                        (debug_button_f("clkjhbf"))
-                        (debug_button_f("dekjdaud"))
-                        (debug_button_f("ecsh"))
-                        (debug_button_f("fweiu"))
-                        (debug_button_f("giwe"))
-                        (debug_button_f("heruyv"))
-                        (debug_button_f("isabe"))
-                        (debug_button_f("jcsu"))
-                        (debug_button_f("kaljkahd"))
-                        (debug_button_f("luyortp"))
-                        (debug_button_f("mmdyrc"))
-                        (debug_button_f("nquc"))
-                    )))
-                    (debug_button_f("mmdyrc"))
-                    (debug_button_f("nquc"))
-                )))
-                (debug_button_f("kaljkahd"))
-                (debug_button_f("luyortp"))
-                (debug_button_f("mmdyrc"))
-                (debug_button_f("nquc"))
-                (debug_button_f("ajrs"))
-                (debug_button_f("bsdfho"))
-                (debug_button_f("clkjhbf"))
-                (debug_button_f("dekjdaud"))
-                (debug_button_f("ecsh"))
-                (debug_button_f("fweiu"))
-                (debug_button_f("giwe"))
-                (debug_button_f("heruyv"))
-                (debug_button_f("isabe"))
-                (debug_button_f("jcsu"))
-                (debug_button_f("kaljkahd"))
-                (debug_button_f("luyortp"))
-                (debug_button_f("mmdyrc"))
-                (debug_button_f("nquc"))
-                (debug_button_f("ajrs"))
-                (debug_button_f("bsdfho"))
-                (debug_button_f("clkjhbf"))
+                        (debug_button_f("ajrs")),
+                        (debug_button_f("bsdfho")),
+                        (debug_button_f("clkjhbf")),
+                        (debug_button_f("dekjdaud")),
+                        (debug_button_f("ecsh")),
+                        (debug_button_f("fweiu")),
+                        (debug_button_f("giwe")),
+                        (debug_button_f("heruyv")),
+                        (debug_button_f("isabe")),
+                        (debug_button_f("jcsu")),
+                        (debug_button_f("kaljkahd")),
+                        (debug_button_f("luyortp")),
+                        (debug_button_f("mmdyrc")),
+                        (debug_button_f("nquc")),
+                    ))),
+                    (debug_button_f("mmdyrc")),
+                    (debug_button_f("nquc")),
+                ))),
+                (debug_button_f("kaljkahd")),
+                (debug_button_f("luyortp")),
+                (debug_button_f("mmdyrc")),
+                (debug_button_f("nquc")),
+                (debug_button_f("ajrs")),
+                (debug_button_f("bsdfho")),
+                (debug_button_f("clkjhbf")),
+                (debug_button_f("dekjdaud")),
+                (debug_button_f("ecsh")),
+                (debug_button_f("fweiu")),
+                (debug_button_f("giwe")),
+                (debug_button_f("heruyv")),
+                (debug_button_f("isabe")),
+                (debug_button_f("jcsu")),
+                (debug_button_f("kaljkahd")),
+                (debug_button_f("luyortp")),
+                (debug_button_f("mmdyrc")),
+                (debug_button_f("nquc")),
+                (debug_button_f("ajrs")),
+                (debug_button_f("bsdfho")),
+                (debug_button_f("clkjhbf")),
                 (submenu_button("dekjdaud"), menu_tpl_2(menu_items!(
-                    (debug_button_f("ajrs"))
-                    (debug_button_f("bsdfho"))
-                    (debug_button_f("clkjhbf"))
-                    (debug_button_f("dekjdaud"))
-                    (debug_button_f("ecsh"))
-                    (debug_button_f("fweiu"))
-                    (debug_button_f("giwe"))
-                    (debug_button_f("heruyv"))
-                    (debug_button_f("isabe"))
-                    (debug_button_f("jcsu"))
-                    (debug_button_f("kaljkahd"))
-                    (debug_button_f("luyortp"))
-                    (debug_button_f("mmdyrc"))
-                    (debug_button_f("nquc"))
-                    (debug_button_f("ajrs"))
-                    (debug_button_f("bsdfho"))
-                    (debug_button_f("clkjhbf"))
-                    (debug_button_f("dekjdaud"))
-                    (debug_button_f("ecsh"))
-                    (debug_button_f("fweiu"))
-                    (debug_button_f("giwe"))
-                    (debug_button_f("heruyv"))
-                    (debug_button_f("isabe"))
-                    (debug_button_f("jcsu"))
-                    (debug_button_f("kaljkahd"))
-                    (debug_button_f("luyortp"))
-                    (debug_button_f("mmdyrc"))
-                    (debug_button_f("nquc"))
-                )))
-                (debug_button_f("ecsh"))
-                (debug_button_f("fweiu"))
-                (debug_button_f("giwe"))
-                (debug_button_f("heruyv"))
-                (debug_button_f("isabe"))
-                (debug_button_f("jcsu"))
-                (debug_button_f("kaljkahd"))
-                (debug_button_f("luyortp"))
-                (debug_button_f("mmdyrc"))
-                (debug_button_f("nquc"))
-                (debug_button_f("ajrs"))
-                (debug_button_f("bsdfho"))
-                (debug_button_f("clkjhbf"))
-                (debug_button_f("dekjdaud"))
-                (debug_button_f("ecsh"))
-                (debug_button_f("fweiu"))
-                (debug_button_f("giwe"))
-                (debug_button_f("heruyv"))
-                (debug_button_f("isabe"))
-                (debug_button_f("jcsu"))
-                (debug_button_f("kaljkahd"))
-                (debug_button_f("luyortp"))
-                (debug_button_f("mmdyrc"))
-                (debug_button_f("nquc"))
-            )))
+                    (debug_button_f("ajrs")),
+                    (debug_button_f("bsdfho")),
+                    (debug_button_f("clkjhbf")),
+                    (debug_button_f("dekjdaud")),
+                    (debug_button_f("ecsh")),
+                    (debug_button_f("fweiu")),
+                    (debug_button_f("giwe")),
+                    (debug_button_f("heruyv")),
+                    (debug_button_f("isabe")),
+                    (debug_button_f("jcsu")),
+                    (debug_button_f("kaljkahd")),
+                    (debug_button_f("luyortp")),
+                    (debug_button_f("mmdyrc")),
+                    (debug_button_f("nquc")),
+                    (debug_button_f("ajrs")),
+                    (debug_button_f("bsdfho")),
+                    (debug_button_f("clkjhbf")),
+                    (debug_button_f("dekjdaud")),
+                    (debug_button_f("ecsh")),
+                    (debug_button_f("fweiu")),
+                    (debug_button_f("giwe")),
+                    (debug_button_f("heruyv")),
+                    (debug_button_f("isabe")),
+                    (debug_button_f("jcsu")),
+                    (debug_button_f("kaljkahd")),
+                    (debug_button_f("luyortp")),
+                    (debug_button_f("mmdyrc")),
+                    (debug_button_f("nquc")),
+                ))),
+                (debug_button_f("ecsh")),
+                (debug_button_f("fweiu")),
+                (debug_button_f("giwe")),
+                (debug_button_f("heruyv")),
+                (debug_button_f("isabe")),
+                (debug_button_f("jcsu")),
+                (debug_button_f("kaljkahd")),
+                (debug_button_f("luyortp")),
+                (debug_button_f("mmdyrc")),
+                (debug_button_f("nquc")),
+                (debug_button_f("ajrs")),
+                (debug_button_f("bsdfho")),
+                (debug_button_f("clkjhbf")),
+                (debug_button_f("dekjdaud")),
+                (debug_button_f("ecsh")),
+                (debug_button_f("fweiu")),
+                (debug_button_f("giwe")),
+                (debug_button_f("heruyv")),
+                (debug_button_f("isabe")),
+                (debug_button_f("jcsu")),
+                (debug_button_f("kaljkahd")),
+                (debug_button_f("luyortp")),
+                (debug_button_f("mmdyrc")),
+                (debug_button_f("nquc")),
+            ))),
             (debug_button_s("Dynamic height"), {
                 let slider_count = 3;
                 let slider_width = 30;
@@ -449,7 +452,7 @@ impl App {
                 let [r, g, b, _] = self.theme.palette().primary.into_rgba8();
 
                 menu_tpl_1(menu_items!(
-                    (labeled_separator("Primary"))
+                    (labeled_separator("Primary")),
                     (
                         row![
                             vertical_slider(0..=255, r, move |x| Message::ColorChange(Color::from_rgb8(
@@ -469,19 +472,23 @@ impl App {
                             ,
                         ].spacing(spacing)
                         .height(100.0)
-                    )
-                    (separator())
-                    (debug_button("AABB", Some(Length::Fill), Some(Length::Fixed(40.0))))
-                    (debug_button("CCDD", Some(Length::Fill), Some(Length::Fixed(140.0))))
-                    (debug_button("EEFF", Some(Length::Fill), Some(Length::Fixed(30.0))))
-                    (debug_button("GGHH", Some(Length::Fill), Some(Length::Fixed(100.0))))
-                    (debug_button("IIJJ", Some(Length::Fill), Some(Length::Fixed(60.0))))
-                    (debug_button("KKLL", Some(Length::Fill), Some(Length::Fixed(120.0))))
-                    (debug_button("MMNN", Some(Length::Fill), Some(Length::Fixed(50.0))))
+                    ),
+                    (separator()),
+                    (debug_button("AABB", Some(Length::Fill), Some(Length::Fixed(40.0)))),
+                    (debug_button("CCDD", Some(Length::Fill), Some(Length::Fixed(140.0)))),
+                    (debug_button("EEFF", Some(Length::Fill), Some(Length::Fixed(30.0)))),
+                    (debug_button("GGHH", Some(Length::Fill), Some(Length::Fixed(100.0)))),
+                    (debug_button("IIJJ", Some(Length::Fill), Some(Length::Fixed(60.0)))),
+                    (debug_button("KKLL", Some(Length::Fill), Some(Length::Fixed(120.0)))),
+                    (debug_button("MMNN", Some(Length::Fill), Some(Length::Fixed(50.0)))),
                 )).width(slider_width * slider_count + (slider_count - 1) * spacing + pad)
-            })
-           
+            }),
             (debug_button_s("Overlay"), {
+                let sub2 = menu_tpl_2(menu_items!(
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                ));
+
                 let fruit_button = |fruit: Fruit | {
                     let r = if self.fruit == fruit {
                         row![
@@ -517,13 +524,27 @@ impl App {
                     .map(|fruit| 
                         Item::new(fruit_button(*fruit))
                     ).collect()
-                );
+                )
+                .close_on_item_click(false)
+                .close_on_background_click(false);
                 
                 let sub1 = menu_tpl_2(menu_items!(
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
-                    (row![
-                        horizontal_space().width(Length::Fixed(8.0)),
+                    (
+                        container(
+                            text("This menu is set to always close on click\n \
+                            Except for the pick lists\
+                            ")
+                            .size(12)
+                            .color(Color::from([0.5; 3]))
+                        )
+                        .padding([4, 4])
+                        .align_y(alignment::Alignment::Center)
+                        .align_x(alignment::Alignment::Center)
+                    ),
+                    
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
+                    hold_item(row![
                         text("Pick Fruit")
                             .width(Length::Fill)
                             .align_y(alignment::Vertical::Center),
@@ -532,9 +553,10 @@ impl App {
                             Some(self.fruit),
                             Message::FruitSelected
                         ),
-                    ].align_y(iced::Alignment::Center))
-                    (debug_button_f("Item"))
-                    (debug_button_f("Item"))
+                    ].padding([0, 8])
+                    .align_y(iced::Alignment::Center)),
+                    (debug_button_f("Item")),
+                    (debug_button_f("Item")),
                     (
                         tooltip_button(
                             format!("{:?}", self.fruit), 
@@ -551,17 +573,38 @@ impl App {
                             Message::Debug(format!("{:?}", self.fruit))
                         ),
                         fruit_menu
-                    )
+                    ),
+                    (debug_button_f("Item")),
+                    hold_item_wm(
+                        tooltip_button(
+                            "Pick Fruit".to_string(), 
+                            row![
+                                text("Pick Fruit")
+                                    .width(Length::Fill)
+                                    .align_y(alignment::Vertical::Center),
+                                pick_list(
+                                    Fruit::ALL,
+                                    Some(self.fruit),
+                                    Message::FruitSelected
+                                ),
+                            ].align_y(iced::Alignment::Center), 
+                            Some(Length::Fill), 
+                            Some(Length::Shrink), 
+                            Message::Debug(format!("{:?}", self.fruit))
+                        ),
+                        sub2
+                    ),
                     (debug_button_f("Item"))
-                )).width(220.0);
+                )).width(240.0).close_on_item_click(true);
                 
                 menu_tpl_1(menu_items!(
                     (submenu_button("A sub menu"), sub1)
                 )).width(140.0)
-            })
+            }),
         )
         .draw_path(menu::DrawPath::Backdrop)
-        .close_on_click(self.close_on_click)
+        .close_on_item_click_global(self.close_on_click)
+        .close_on_background_click_global(self.close_on_click)
         .padding(Padding::new(5.0))
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{

@@ -38,6 +38,10 @@ impl GlobalState{
     pub(super) fn task(&self) -> Option<MenuBarTask> {
         self.task
     }
+
+    pub(super) fn clear_task(&mut self) {
+        self.task = None;
+    }
 }
 
 #[derive(Default, Debug)]
@@ -107,6 +111,8 @@ where
     padding: Padding,
     width: Length,
     height: Length,
+    close_on_item_click: Option<bool>,
+    close_on_background_click: Option<bool>,
     pub(super) global_parameters: GlobalParameters<'a, Theme>,
 }
 impl<'a, Message, Theme, Renderer> MenuBar<'a, Message, Theme, Renderer>
@@ -128,6 +134,8 @@ where
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
+            close_on_item_click: None,
+            close_on_background_click: None,
             global_parameters: GlobalParameters {
                 check_bounds_width: 50.0,
                 draw_path: DrawPath::FakeHovering,
@@ -135,7 +143,8 @@ where
                     line: 60.0,
                     pixel: 1.0,
                 },
-                close_on_click: false,
+                close_on_item_click: false,
+                close_on_background_click: false,
                 class: Theme::default(),
             },
         }
@@ -177,9 +186,27 @@ where
         self
     }
 
-    /// Sets the close on click option of the [`MenuBar`]
-    pub fn close_on_click(mut self, close_on_click: bool) -> Self {
-        self.global_parameters.close_on_click = close_on_click;
+    /// Sets the close on item click option of the [`MenuBar`]
+    pub fn close_on_item_click(mut self, value: bool) -> Self {
+        self.close_on_item_click = Some(value);
+        self
+    }
+
+    /// Sets the close on background click option of the [`MenuBar`]
+    pub fn close_on_background_click(mut self, value: bool) -> Self {
+        self.close_on_background_click = Some(value);
+        self
+    }
+
+    /// Sets the global default close on item click option
+    pub fn close_on_item_click_global(mut self, value: bool) -> Self {
+        self.global_parameters.close_on_item_click = value;
+        self
+    }
+
+    /// Sets the global default close on background click option
+    pub fn close_on_background_click_global(mut self, value: bool) -> Self {
+        self.global_parameters.close_on_background_click = value;
         self
     }
 
@@ -284,7 +311,19 @@ where
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 if cursor.is_over(bar_bounds) {
                     global_state.pressed = true;
-                    global_state.schedule(MenuBarTask::OpenOnClick);
+                    if bar.menu_state.is_some() {
+                        schedule_close_on_click(
+                            global_state, 
+                            &self.global_parameters,
+                            &mut self.roots, 
+                            layout.children(), 
+                            cursor, 
+                            self.close_on_item_click,
+                            self.close_on_background_click,
+                        );
+                    }else{
+                        global_state.schedule(MenuBarTask::OpenOnClick);
+                    }
                     shell.capture_event();
                 }
             }

@@ -12,7 +12,7 @@ use iced::{
         mouse, overlay, renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
-    }, time::Instant, window, Event, Padding, Point, Rectangle, Size, Vector
+    }, time::Instant, window, Event, Point, Rectangle, Size, Vector
 };
 
 use super::{common::*, menu_bar::*, menu_tree::*};
@@ -206,9 +206,6 @@ where
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
                 global_state.pressed = true;
-                if self.menu_bar.global_parameters.close_on_click{
-                    global_state.schedule(MenuBarTask::CloseOnClick);
-                }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 global_state.pressed = false;

@@ -1,18 +1,11 @@
-use iced::{advanced::Shell, window::RedrawRequest, Padding, Rectangle};
+use iced::{
+    advanced::{mouse, renderer, widget::Tree, Clipboard, Layout, Shell,}, 
+    window::RedrawRequest, Padding, Rectangle, Event
+};
 
-/* /// The condition of when to close a menu
-#[derive(Debug, Clone, Copy)]
-pub struct CloseCondition {
-    /// Close menus when the cursor moves outside the check bounds
-    pub leave: bool,
-
-    /// Close menus when the cursor clicks outside the check bounds
-    pub click_outside: bool,
-
-    /// Close menus when the cursor clicks inside the check bounds
-    pub click_inside: bool,
-}
- */
+use super::menu_bar::*;
+use super::menu_tree::*;
+use crate::style::menu_bar::*;
 
 ///
 /// ## FakeHovering:
@@ -117,7 +110,8 @@ pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog>{
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: DrawPath,
     pub(super) scroll_speed: ScrollSpeed,
-    pub(super) close_on_click: bool,
+    pub(super) close_on_item_click: bool,
+    pub(super) close_on_background_click: bool,
     pub(super) class: Theme::Class<'a>,
 }
 
@@ -145,6 +139,110 @@ pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: She
                 shell.request_redraw_at(time);
             }
             RedrawRequest::Wait => {}
+        }
+    }
+}
+
+/// Tries to open a menu at the given cursor position
+pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+    items: &mut [Item<'a, Message, Theme, Renderer>],
+    menu_state: &mut MenuState,
+    item_trees: &mut [Tree],
+    item_layouts: impl Iterator<Item = Layout<'b>>,
+    cursor: mouse::Cursor,
+    shell: &mut Shell<'_, Message>,
+    index_offset: usize,
+) {
+    let old_active = menu_state.active.clone();
+
+    for (i, ((item, tree), layout)) in items
+        .iter_mut() // [Item...]
+        .zip(item_trees.iter_mut()) // [item_tree...]
+        .zip(item_layouts)
+        .enumerate() 
+        {
+            if cursor.is_over(layout.bounds()) {
+                if item.menu.is_some() {
+                    menu_state.open_new_menu(i + index_offset, item, tree);
+                }
+                break;
+            }
+        }
+
+    if menu_state.active != old_active {
+        shell.invalidate_layout();
+        shell.request_redraw();
+    }
+}
+
+pub(super) fn update_items<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+    items: &mut [Item<'a, Message, Theme, Renderer>],
+    item_trees: &mut [Tree],
+    item_layouts: impl Iterator<Item = Layout<'b>>,
+    event: &Event,
+    cursor: mouse::Cursor,
+    renderer: &Renderer,
+    clipboard: &mut dyn Clipboard,
+    shell: &mut Shell<'_, Message>,
+    viewport: &Rectangle,
+){
+    for ((item, tree), layout) in items// [item...]
+        .iter_mut()
+        .zip(item_trees.iter_mut()) // [item_tree...]
+        .zip(item_layouts)
+    {
+        item.update(
+            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+        );
+    }
+}
+
+/// Schedules a close on click task if applicable
+/// 
+/// This function assumes that a mouse::Event::ButtonPressed(mouse::Button::Left) event has occurred, 
+/// make sure to check the event before calling this function.
+pub(super) fn schedule_close_on_click<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+    global_state: &mut GlobalState,
+    global_parameters: &GlobalParameters<'_, Theme>,
+    items: &mut [Item<'a, Message, Theme, Renderer>],
+    item_layouts: impl Iterator<Item = Layout<'b>>,
+    cursor: mouse::Cursor,
+    menu_coic: Option<bool>,
+    menu_cobc: Option<bool>,
+) {
+    global_state.clear_task();
+
+    let mut coc_handled = false;
+
+    for (item, layout) in items// [item...]
+        .iter_mut()
+        .zip(item_layouts)
+    {
+        if cursor.is_over(layout.bounds()) {
+            if let Some(coc) = item.close_on_click {
+                coc_handled = true;
+                if coc {
+                    global_state.schedule(MenuBarTask::CloseOnClick);
+                }
+            }
+            for cocfb in [menu_coic, Some(global_parameters.close_on_item_click)] {
+                if let (false, Some(coc)) = (coc_handled, cocfb) {
+                    coc_handled = true;
+                    if coc {
+                        global_state.schedule(MenuBarTask::CloseOnClick);
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    for cocfb in [menu_cobc, Some(global_parameters.close_on_background_click)] {
+        if let (false, Some(coc)) = (coc_handled, cocfb) {
+            coc_handled = true;
+            if coc {
+                global_state.schedule(MenuBarTask::CloseOnClick);
+            }
         }
     }
 }
