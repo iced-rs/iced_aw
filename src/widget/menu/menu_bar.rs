@@ -12,7 +12,7 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Element, Event, Length, Padding, Pixels, Rectangle, Size, Color
+    alignment, event, Color, Element, Event, Length, Padding, Pixels, Rectangle, Size,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -23,7 +23,7 @@ pub use crate::style::status::{Status, StyleFn};
 use log::debug;
 
 #[derive(Debug, Clone, Copy)]
-pub(super) enum MenuBarTask{
+pub(super) enum MenuBarTask {
     OpenOnClick,
     CloseOnClick,
 }
@@ -33,7 +33,7 @@ pub(super) struct GlobalState {
     pub(super) pressed: bool,
     task: Option<MenuBarTask>,
 }
-impl GlobalState{
+impl GlobalState {
     pub(super) fn schedule(&mut self, task: MenuBarTask) {
         self.task = Some(task);
     }
@@ -61,7 +61,7 @@ impl MenuBarState {
         item_layouts: impl Iterator<Item = Layout<'b>>,
         cursor: mouse::Cursor,
         shell: &mut Shell<'_, Message>,
-    ){
+    ) {
         if self.menu_state.is_none() {
             self.menu_state = Some(MenuState::default());
         }
@@ -79,7 +79,7 @@ impl MenuBarState {
 
         self.global_state.task = None;
     }
-    
+
     pub(super) fn close<Message>(
         &mut self,
         item_trees: &mut [Tree],
@@ -88,7 +88,7 @@ impl MenuBarState {
         if self.global_state.pressed {
             return;
         }
-        
+
         for item_tree in item_trees.iter_mut() {
             if item_tree.children.len() == 2 {
                 let _ = item_tree.children.pop();
@@ -172,6 +172,11 @@ where
     }
 
     /// Sets the width of the check bounds of the [`Menu`]s in the [`MenuBar`].
+    ///
+    /// This creates a rectangle around the menus,
+    /// padded with the specified value.
+    /// When the cursor moves,
+    /// it will be used to check against to determined if a menu should be closed
     pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self {
         self.global_parameters.check_bounds_width = check_bounds_width;
         self
@@ -263,7 +268,7 @@ where
     }
 
     /// tree: Tree{bar, \[item_tree...]}
-    /// 
+    ///
     /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         flex::resolve(
@@ -299,15 +304,27 @@ where
         debug!(target:"menu::MenuBar::update", "");
 
         update_items(
-            self.roots.as_mut_slice(), 
-            tree.children.as_mut_slice(), 
-            layout.children(), 
-            event, cursor, renderer, clipboard, shell, viewport
+            self.roots.as_mut_slice(),
+            tree.children.as_mut_slice(),
+            layout.children(),
+            event,
+            cursor,
+            renderer,
+            clipboard,
+            shell,
+            viewport,
         );
 
-        let Tree{ state, children: item_trees, .. } = tree;
+        let Tree {
+            state,
+            children: item_trees,
+            ..
+        } = tree;
         let bar = state.downcast_mut::<MenuBarState>();
-        let MenuBarState { global_state, menu_state: bar_state } = bar;
+        let MenuBarState {
+            global_state,
+            menu_state: bar_state,
+        } = bar;
 
         let bar_bounds = layout.bounds();
 
@@ -317,15 +334,15 @@ where
                     global_state.pressed = true;
                     if bar.menu_state.is_some() {
                         schedule_close_on_click(
-                            global_state, 
+                            global_state,
                             &self.global_parameters,
-                            &mut self.roots, 
-                            layout.children(), 
-                            cursor, 
+                            &mut self.roots,
+                            layout.children(),
+                            cursor,
                             self.close_on_item_click,
                             self.close_on_background_click,
                         );
-                    }else{
+                    } else {
                         global_state.schedule(MenuBarTask::OpenOnClick);
                     }
                     shell.capture_event();
@@ -337,7 +354,13 @@ where
                 if let Some(task) = global_state.task {
                     match task {
                         MenuBarTask::OpenOnClick => {
-                            bar.open(&mut self.roots, item_trees, layout.children(), cursor, shell);
+                            bar.open(
+                                &mut self.roots,
+                                item_trees,
+                                layout.children(),
+                                cursor,
+                                shell,
+                            );
                         }
                         MenuBarTask::CloseOnClick => {
                             bar.close(item_trees, shell);
@@ -365,7 +388,7 @@ where
             }
             _ => {}
         }
-        
+
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::MenuBar::update", "return | bar: {:?}", bar);
     }
@@ -416,7 +439,10 @@ where
         viewport: &Rectangle,
     ) {
         let bar = tree.state.downcast_ref::<MenuBarState>();
-        let MenuBarState { global_state, menu_state: bar_state } = bar;
+        let MenuBarState {
+            global_state,
+            menu_state: bar_state,
+        } = bar;
 
         let styling = theme.style(&self.global_parameters.class, Status::Active);
         renderer.fill_quad(
@@ -426,16 +452,26 @@ where
                 shadow: styling.bar_shadow,
                 ..Default::default()
             },
-            global_state.pressed.then(|| Color::from([0.5; 3]).into())
+            global_state
+                .pressed
+                .then(|| Color::from([0.5; 3]).into())
                 .unwrap_or(styling.bar_background),
             // styling.bar_background,
         );
 
-        if let (DrawPath::Backdrop, Some(MenuState { active: Some(active), .. })) 
-        = (&self.global_parameters.draw_path, bar_state.as_ref()) {
-            let active_bounds = layout.children()
+        if let (
+            DrawPath::Backdrop,
+            Some(MenuState {
+                active: Some(active),
+                ..
+            }),
+        ) = (&self.global_parameters.draw_path, bar_state.as_ref())
+        {
+            let active_bounds = layout
+                .children()
                 .nth(*active)
-                .expect(&format!("Index {:?} is not within the menu bar layout \
+                .expect(&format!(
+                    "Index {:?} is not within the menu bar layout \
                     | layout.children().count(): {:?} \
                     | This should not happen, please report this issue
                     ",
@@ -490,24 +526,27 @@ where
         } else {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBar::overlay", "state not open | try return root overlays");
-            let overlays = self.roots.iter_mut()
+            let overlays = self
+                .roots
+                .iter_mut()
                 .zip(tree.children.iter_mut()) // [item_tree...]
                 .zip(layout.children())
                 .filter_map(|((item, item_tree), item_layout)| {
                     item.item.as_widget_mut().overlay(
                         &mut item_tree.children[0],
-                        item_layout, 
-                        renderer, 
+                        item_layout,
+                        renderer,
                         viewport,
-                        translation
+                        translation,
                     )
-                }).collect::<Vec<_>>();
+                })
+                .collect::<Vec<_>>();
 
-            if overlays.is_empty(){
+            if overlays.is_empty() {
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBar::overlay", "return | None");
                 None
-            }else{
+            } else {
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBar::overlay", "return | Root Item Overlay");
                 Some(overlay::Group::with_children(overlays).overlay())
@@ -526,4 +565,3 @@ where
         Self::new(value)
     }
 }
-

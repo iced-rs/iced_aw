@@ -12,14 +12,16 @@ use iced::{
         mouse, overlay, renderer,
         widget::{Operation, Tree},
         Clipboard, Layout, Shell,
-    }, time::Instant, window, Event, Point, Rectangle, Size, Vector
+    },
+    time::Instant,
+    window, Event, Point, Rectangle, Size, Vector,
 };
 
 use super::{common::*, menu_bar::*, menu_tree::*};
 use crate::style::{menu_bar::*, Status};
 
 #[cfg(feature = "debug_log")]
-use log::{debug, warn, trace};
+use log::{debug, trace, warn};
 
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
@@ -54,7 +56,11 @@ where
         let translation = self.translation;
 
         let bar_bounds = self.layout.bounds();
-        let root_bounds = self.layout.children().map(|l| l.bounds()).collect::<Vec<_>>();
+        let root_bounds = self
+            .layout
+            .children()
+            .map(|l| l.bounds())
+            .collect::<Vec<_>>();
 
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
 
@@ -185,9 +191,12 @@ where
     ) {
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::MenuBarOverlay::update", "");
-        
+
         let bar = self.tree.state.downcast_mut::<MenuBarState>();
-        let MenuBarState { global_state, menu_state: bar_state } = bar;
+        let MenuBarState {
+            global_state,
+            menu_state: bar_state,
+        } = bar;
 
         let Some(bar_menu_state) = bar_state.as_mut() else {
             return;
@@ -321,18 +330,18 @@ where
 
             menu.update(
                 global_state,
-                global_parameters, 
-                rec_event, 
-                menu_tree, 
-                event, 
-                menu_layout, 
-                cursor, 
-                renderer, 
-                clipboard, 
-                shell, 
-                viewport, 
-                parent_bounds, 
-                prev_bounds_list, 
+                global_parameters,
+                rec_event,
+                menu_tree,
+                event,
+                menu_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+                parent_bounds,
+                prev_bounds_list,
                 prev_active,
             )
         }
@@ -371,46 +380,57 @@ where
                 let mut fake_messages = vec![];
                 let mut fake_shell = Shell::new(&mut fake_messages);
 
-                let Self { menu_bar, layout, tree, .. } = self;
+                let Self {
+                    menu_bar,
+                    layout,
+                    tree,
+                    ..
+                } = self;
                 let draw_path = menu_bar.global_parameters.draw_path;
                 let cursor = match draw_path {
                     DrawPath::FakeHovering => {
                         let center = parent_bounds.center();
                         mouse::Cursor::Available(center - self.translation)
                     }
-                    DrawPath::Backdrop => mouse::Cursor::Unavailable
+                    DrawPath::Backdrop => mouse::Cursor::Unavailable,
                 };
 
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBarOverlay::update", "calling update_items() on MenuBar");
                 update_items(
-                    menu_bar.roots.as_mut_slice(), 
-                    tree.children.as_mut_slice(), 
-                    layout.children(), 
-                    &redraw_event, 
-                    cursor, 
-                    renderer, 
-                    clipboard, 
-                    &mut fake_shell, 
-                    &viewport
+                    menu_bar.roots.as_mut_slice(),
+                    tree.children.as_mut_slice(),
+                    layout.children(),
+                    &redraw_event,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    &mut fake_shell,
+                    &viewport,
                 );
-            },
+            }
             RecEvent::Close => {
-                if !cursor.is_over(bar_bounds){
+                if !cursor.is_over(bar_bounds) {
                     bar.close(self.tree.children.as_mut_slice(), shell);
                 }
 
                 #[cfg(feature = "debug_log")]
-                debug!(target:"menu::MenuBarOverlay::update", "RecEvent::None | MenuBar should process the event");
+                debug!(target:"menu::MenuBarOverlay::update", "RecEvent::Close | MenuBar should process the event");
 
-                assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::Close | Returning");
+                assert!(
+                    shell.is_event_captured() == false,
+                    "MenuBarOverlay::update() | RecEvent::Close | Returning"
+                );
                 // let the menu bar process the event
             }
             RecEvent::None => {
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBarOverlay::update", "RecEvent::None | MenuBar should process the event");
 
-                assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::None | Returning");
+                assert!(
+                    shell.is_event_captured() == false,
+                    "MenuBarOverlay::update() | RecEvent::None | Returning"
+                );
                 // let the menu bar process the event
             }
         }
@@ -574,7 +594,7 @@ where
         let _roots_layout = lc.next()?;
         let menu_layouts_layout = lc.next()?; // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
-       
+
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             items: &'b mut [Item<'a, Message, Theme, Renderer>],
             menu_tree: &'b mut Tree, // Tree{ menu_state, [item_tree...] }
@@ -582,7 +602,7 @@ where
             overlays: &mut Vec<overlay::Element<'b, Message, Theme, Renderer>>,
             renderer: &Renderer,
             viewport: &Rectangle,
-        ){
+        ) {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBarOverlay::overlay", "rec");
 
@@ -592,7 +612,7 @@ where
             let slice_layout = mlc.next().unwrap(); // slice_node: Node{inf, [item_node...]}
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBarOverlay::overlay", "rec | slice_layout.children : {}", slice_layout.children().count());
-            
+
             let slice = &menu_state.slice;
 
             if let Some(active) = menu_state.active {
@@ -603,17 +623,23 @@ where
 
                 let mut next = None;
 
-                for (i, ((item, item_tree), item_layout)) in 
-                    items[slice.start_index..=slice.end_index].iter_mut()
+                for (i, ((item, item_tree), item_layout)) in items
+                    [slice.start_index..=slice.end_index]
+                    .iter_mut()
                     .zip(menu_tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
                     .zip(slice_layout.children())
-                    .enumerate() 
+                    .enumerate()
                 {
                     #[cfg(feature = "debug_log")]
                     trace!(target:"menu::MenuBarOverlay::overlay", "rec | i: {i}");
 
-                    let Item{ item: item_widget, menu: item_menu, .. } = item;
-                    let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
+                    let Item {
+                        item: item_widget,
+                        menu: item_menu,
+                        ..
+                    } = item;
+                    let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice()
+                    else {
                         continue;
                     };
 
@@ -624,11 +650,13 @@ where
                     }
                     if let Some(overlay) = item_widget.as_widget_mut().overlay(
                         item_widget_tree,
-                        item_layout, 
-                        renderer, 
-                        viewport,   
-                        Vector::ZERO
-                    ){
+                        item_layout,
+                        renderer,
+                        viewport,
+                        Vector::ZERO,
+                    ) {
+                        #[cfg(feature = "debug_log")]
+                        debug!(target:"menu::MenuBarOverlay::overlay", "rec | active | loop: {i} | Some overlay");
                         overlays.push(overlay);
                     }
                 }
@@ -637,43 +665,49 @@ where
                     #[cfg(feature = "debug_log")]
                     debug!(target:"menu::MenuBarOverlay::overlay", "rec | next");
                     rec(
-                        &mut next_menu.items, 
-                        next_menu_tree, 
+                        &mut next_menu.items,
+                        next_menu_tree,
                         menu_layouts,
                         overlays,
                         renderer,
                         viewport,
                     );
                 }
-            }else{
+            } else {
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBarOverlay::overlay", "rec | no active");
-                
+
                 #[cfg(feature = "debug_log")]
                 let mut count = 0;
 
-                for ((item, item_tree), item_layout) in 
-                    items[slice.start_index..=slice.end_index].iter_mut()
+                for ((item, item_tree), item_layout) in items[slice.start_index..=slice.end_index]
+                    .iter_mut()
                     .zip(menu_tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
                     .zip(slice_layout.children())
                 {
                     #[cfg(feature = "debug_log")]
                     trace!(target:"menu::MenuBarOverlay::overlay", "rec | loop: {count}");
 
-                    let Item{ item: item_widget, .. } = item;
+                    let Item {
+                        item: item_widget, ..
+                    } = item;
 
                     if let Some(overlay) = item_widget.as_widget_mut().overlay(
-                        &mut item_tree.children[0], 
-                        item_layout, 
-                        renderer, 
-                        viewport, 
-                        Vector::ZERO
-                    ){
+                        &mut item_tree.children[0],
+                        item_layout,
+                        renderer,
+                        viewport,
+                        Vector::ZERO,
+                    ) {
+                        #[cfg(feature = "debug_log")]
+                        debug!(target:"menu::MenuBarOverlay::overlay", "rec | no active | loop: {count} | Some overlay");
                         overlays.push(overlay);
                     }
 
                     #[cfg(feature = "debug_log")]
-                    { count += 1; }
+                    {
+                        count += 1;
+                    }
                 }
             }
         }
@@ -681,15 +715,22 @@ where
         let mut overlays = vec![];
         let mut next = None;
 
-        for (i, ((item, item_tree), item_layout)) in self.menu_bar.roots.iter_mut()
+        for (i, ((item, item_tree), item_layout)) in self
+            .menu_bar
+            .roots
+            .iter_mut()
             .zip(self.tree.children.iter_mut()) // [item_tree...]
             .zip(self.layout.children())
-            .enumerate() 
+            .enumerate()
         {
             #[cfg(feature = "debug_log")]
-            trace!(target:"menu::MenuBarOverlay::overlay", "i: {i}");
-            
-            let Item{ item: item_widget, menu: item_menu, .. } = item;
+            trace!(target:"menu::MenuBarOverlay::overlay", "root | i: {i}");
+
+            let Item {
+                item: item_widget,
+                menu: item_menu,
+                ..
+            } = item;
             let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
                 continue;
             };
@@ -699,31 +740,33 @@ where
             }
             if let Some(overlay) = item_widget.as_widget_mut().overlay(
                 item_widget_tree,
-                item_layout, 
-                renderer, 
-                &viewport, 
-                self.translation
-            ){
+                item_layout,
+                renderer,
+                &viewport,
+                self.translation,
+            ) {
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::overlay", "root | i: {i} | Some overlay");
                 overlays.push(overlay);
             }
         }
 
         if let Some((next_menu, next_menu_tree)) = next {
             rec(
-                &mut next_menu.items, 
-                next_menu_tree, 
+                &mut next_menu.items,
+                next_menu_tree,
                 &mut menu_layouts,
                 &mut overlays,
                 renderer,
                 &viewport,
             );
         };
-       
-        if overlays.is_empty(){
+
+        if overlays.is_empty() {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBarOverlay::overlay", "return | None");
             None
-        }else{
+        } else {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBarOverlay::overlay", "return | Some");
             Some(overlay::Group::with_children(overlays).overlay())
@@ -742,7 +785,10 @@ where
         debug!(target:"menu::MenuBarOverlay::draw", "");
 
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
-        let MenuBarState { global_state, menu_state: bar_state } = bar;
+        let MenuBarState {
+            global_state,
+            menu_state: bar_state,
+        } = bar;
 
         let Some(bar_menu_state) = bar_state.as_ref() else {
             return;
@@ -842,4 +888,3 @@ where
         );
     }
 }
-

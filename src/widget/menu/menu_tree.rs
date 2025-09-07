@@ -13,7 +13,6 @@
 use super::common::*;
 use super::flex;
 use iced::advanced::widget::Operation;
-use iced::{Color, Pixels};
 use iced::{
     advanced::{
         layout::{Layout, Limits, Node},
@@ -21,16 +20,18 @@ use iced::{
         widget::tree::{self, Tree},
         Clipboard, Shell,
     },
-    window, time::Instant,
-    alignment, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    alignment,
+    time::Instant,
+    window, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
 };
+use iced::{Color, Pixels};
 use std::iter::once;
 
-use crate::style::menu_bar::*;
 use super::menu_bar::*;
+use crate::style::menu_bar::*;
 
 #[cfg(feature = "debug_log")]
-use log::debug;
+use log::{debug, warn};
 
 /*
 menu tree:
@@ -69,19 +70,19 @@ pub(super) struct MenuState {
     pub(super) active: Index,
     pub(super) slice: MenuSlice,
 }
-impl MenuState{
+impl MenuState {
     /// item_tree: Tree{item state, [Tree{widget state}, Tree{menu state, [...]}]}
-    pub(super) fn open_new_menu<'a, Message, Theme:Catalog, Renderer:renderer::Renderer>(
-        &mut self, 
-        active_index: usize, 
+    pub(super) fn open_new_menu<'a, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+        &mut self,
+        active_index: usize,
         item: &Item<'a, Message, Theme, Renderer>,
-        item_tree: &mut Tree
-    ){
+        item_tree: &mut Tree,
+    ) {
         #[cfg(feature = "debug_log")]
-        debug!(target:"menu::Menu::open_new_menu", "");
+        debug!(target:"menu::MenuState::open_new_menu", "");
         let Some(menu) = item.menu.as_ref() else {
             #[cfg(feature = "debug_log")]
-            debug!(target:"menu::Menu::open_new_menu", "item.menu is None");
+            debug!(target:"menu::MenuState::open_new_menu", "item.menu is None");
             return;
         };
 
@@ -89,6 +90,17 @@ impl MenuState{
 
         // build the state tree for the new menu
         let menu_tree = menu.tree();
+
+        #[cfg(feature = "debug_log")]
+        {
+            if item_tree.children.len() > 2 {
+                warn!(
+                    target:"menu::MenuState::open_new_menu",
+                    "item_tree.children.len() > 2 | len: {:?}",
+                    item_tree.children.len()
+                );
+            }
+        }
 
         if item_tree.children.len() == 1 {
             item_tree.children.push(menu_tree);
@@ -111,7 +123,6 @@ impl Default for MenuState {
         }
     }
 }
-
 
 /// Menu
 #[must_use]
@@ -353,7 +364,7 @@ where
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
-    /// 
+    ///
     /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds]}
     pub(super) fn update(
         &mut self,
@@ -377,9 +388,12 @@ where
         let prescroll = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
         let background_bounds = pad_rectangle(prescroll, self.padding);
-        let check_bounds = pad_rectangle(background_bounds, Padding::new(global_parameters.check_bounds_width));
+        let check_bounds = pad_rectangle(
+            background_bounds,
+            Padding::new(global_parameters.check_bounds_width),
+        );
 
-        enum Op{
+        enum Op {
             UpdateItems,
             OpenEvent,
             LeftPress,
@@ -388,17 +402,26 @@ where
         }
 
         let mut run_op = |global_state: &mut GlobalState, tree: &mut Tree, op: &Op| {
-            let Tree{ state, children: item_trees, .. } = tree;
+            let Tree {
+                state,
+                children: item_trees,
+                ..
+            } = tree;
             let menu_state = state.downcast_mut::<MenuState>();
-            
+
             match op {
                 Op::UpdateItems => {
                     let slice = &menu_state.slice;
                     update_items(
-                        &mut self.items[slice.start_index..=slice.end_index], 
-                        &mut tree.children[slice.start_index..=slice.end_index], 
-                        slice_layout.children(), 
-                        event, cursor, renderer, clipboard, shell, viewport,
+                        &mut self.items[slice.start_index..=slice.end_index],
+                        &mut tree.children[slice.start_index..=slice.end_index],
+                        slice_layout.children(),
+                        event,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        shell,
+                        viewport,
                     );
                 }
                 Op::FakeUpdate => {
@@ -409,119 +432,139 @@ where
                                 let center = slice_layout
                                     .children()
                                     .nth(active_in_slice)
-                                    .expect(&format!(" Index {:?} is not within the slice layout \
+                                    .expect(&format!(
+                                        " Index {:?} is not within the slice layout \
                                         | slice_layout.children().count(): {:?} \
                                         | This should not happen, please report this issue
-                                        ", 
+                                        ",
                                         active_in_slice,
                                         slice_layout.children().count()
                                     ))
                                     .bounds()
                                     .center();
                                 mouse::Cursor::Available(center)
-                            },
-                            DrawPath::Backdrop => mouse::Cursor::Unavailable
+                            }
+                            DrawPath::Backdrop => mouse::Cursor::Unavailable,
                         }
-                    }else{
+                    } else {
                         cursor
                     };
-                    
+
                     let mut fake_messages = vec![];
                     let mut fake_shell = Shell::new(&mut fake_messages);
-    
-                    let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
-    
+
+                    let redraw_event =
+                        Event::Window(window::Event::RedrawRequested(Instant::now()));
+
                     let slice = &menu_state.slice;
                     update_items(
-                        &mut self.items[slice.start_index..=slice.end_index], 
-                        &mut tree.children[slice.start_index..=slice.end_index], 
-                        slice_layout.children(), 
-                        &redraw_event, cursor, renderer, clipboard, &mut fake_shell, viewport,
+                        &mut self.items[slice.start_index..=slice.end_index],
+                        &mut tree.children[slice.start_index..=slice.end_index],
+                        slice_layout.children(),
+                        &redraw_event,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        &mut fake_shell,
+                        viewport,
                     );
                     merge_fake_shell(shell, fake_shell);
                 }
-                Op::LeftPress => {
-                    match event {
-                        Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                            let slice = &menu_state.slice;
-                            schedule_close_on_click(
-                                global_state, 
-                                global_parameters,
-                                &mut self.items[slice.start_index..=slice.end_index], 
-                                slice_layout.children(), 
-                                cursor, 
-                                self.close_on_item_click,
-                                self.close_on_background_click,
+                Op::LeftPress => match event {
+                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                        let slice = &menu_state.slice;
+                        schedule_close_on_click(
+                            global_state,
+                            global_parameters,
+                            &mut self.items[slice.start_index..=slice.end_index],
+                            slice_layout.children(),
+                            cursor,
+                            self.close_on_item_click,
+                            self.close_on_background_click,
+                        );
+                    }
+                    _ => {}
+                },
+                Op::ScrollEvent => match event {
+                    Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
+                        if cursor.is_over(background_bounds) {
+                            process_scroll_event(
+                                menu_state,
+                                prescroll,
+                                *delta,
+                                global_parameters.scroll_speed,
+                                viewport.size(),
                             );
                         }
-                        _ => {}
+                        shell.request_redraw();
                     }
-                }
-                Op::ScrollEvent => {
-                    match event {
-                        Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                            if cursor.is_over(background_bounds) {
-                                process_scroll_event(
-                                    menu_state,
-                                    prescroll,
-                                    *delta,
-                                    global_parameters.scroll_speed,
-                                    viewport.size(),
-                                );
-                            }
-                            shell.request_redraw();
-                        }
-                        _ => {}
-                    }
-                }
-                Op::OpenEvent => if !global_state.pressed{
-                    let slice = &menu_state.slice;
-            
-                    assert!(menu_state.active.is_none(), "
+                    _ => {}
+                },
+                Op::OpenEvent => {
+                    if !global_state.pressed {
+                        let slice = &menu_state.slice;
+
+                        assert!(
+                            menu_state.active.is_none(),
+                            "
                         Menu::open_event() is called only when RecEvent::Close is returned, \
                         which means no child menu should be open (menu_state.active must be None). \
                         If this assert fails, please report this issue.
-                    ");
+                    "
+                        );
 
-                    try_open_menu(
-                        &mut self.items[slice.start_index..=slice.end_index], 
-                        menu_state, 
-                        &mut item_trees[slice.start_index..=slice.end_index], 
-                        slice_layout.children(), 
-                        cursor, 
-                        shell,
-                        slice.start_index
-                    );
+                        try_open_menu(
+                            &mut self.items[slice.start_index..=slice.end_index],
+                            menu_state,
+                            &mut item_trees[slice.start_index..=slice.end_index],
+                            slice_layout.children(),
+                            cursor,
+                            shell,
+                            slice.start_index,
+                        );
+                    }
                 }
             }
         };
 
-        let mut update = |global_state: &mut GlobalState, tree: &mut Tree, ops: &[Op]|{
+        let mut update = |global_state: &mut GlobalState, tree: &mut Tree, ops: &[Op]| {
             for op in ops.iter() {
                 run_op(global_state, tree, op);
             }
         };
-        
-        match rec_event{
+
+        match rec_event {
             RecEvent::Event => {
                 update(global_state, tree, &[Op::FakeUpdate]);
                 shell.capture_event();
                 RecEvent::Event
             }
             RecEvent::Close => {
-                if cursor.is_over(background_bounds) || cursor.is_over(offset_bounds){
-                    update(global_state, tree, &[Op::UpdateItems, Op::LeftPress, Op::ScrollEvent, Op::OpenEvent]);
+                if cursor.is_over(background_bounds) || cursor.is_over(offset_bounds) {
+                    update(
+                        global_state,
+                        tree,
+                        &[
+                            Op::UpdateItems,
+                            Op::LeftPress,
+                            Op::ScrollEvent,
+                            Op::OpenEvent,
+                        ],
+                    );
                     shell.capture_event();
                     RecEvent::Event
                 } else if cursor.is_over(parent_bounds) {
                     update(global_state, tree, &[Op::FakeUpdate]);
                     // the cursor is over the parent bounds
                     // let the parent process the event
-                    assert!(shell.is_event_captured() == false, "Returning RecEvent::None");
+                    assert!(
+                        shell.is_event_captured() == false,
+                        "Returning RecEvent::None"
+                    );
                     RecEvent::None
                 } else {
                     let open = {
-                        if global_state.pressed{
+                        if global_state.pressed {
                             true
                         } else {
                             if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
@@ -537,14 +580,17 @@ where
                         update(global_state, tree, &[Op::UpdateItems]);
                         shell.capture_event();
                         RecEvent::Event
-                    }else{
+                    } else {
                         // the current menu is ready to close
                         #[cfg(feature = "debug_log")]
                         debug!(target:"menu::Menu::update", "close menu");
-                        assert!(shell.is_event_captured() == false, "Returning RecEvent::Close");
+                        assert!(
+                            shell.is_event_captured() == false,
+                            "Returning RecEvent::Close"
+                        );
                         *prev_active = None;
-                        if tree.children.len() == 2{
-                            // prune the menu tree when the menu is close
+                        if tree.children.len() == 2 {
+                            // prune the menu tree when the menu is closed
                             let _ = tree.children.pop();
                         }
                         shell.invalidate_layout();
@@ -554,7 +600,11 @@ where
                 }
             }
             RecEvent::None => {
-                update(global_state, tree, &[Op::UpdateItems, Op::LeftPress, Op::ScrollEvent]);
+                update(
+                    global_state,
+                    tree,
+                    &[Op::UpdateItems, Op::LeftPress, Op::ScrollEvent],
+                );
                 shell.capture_event();
                 RecEvent::Event
             }
@@ -570,7 +620,7 @@ where
     ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
-        
+
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = &menu_state.slice;
 
@@ -652,12 +702,13 @@ where
             );
         }
 
-        if let (DrawPath::Backdrop, Some(active)) 
-        = (draw_path, menu_state.active) {
+        if let (DrawPath::Backdrop, Some(active)) = (draw_path, menu_state.active) {
             let active_in_slice = active - menu_state.slice.start_index;
-            let active_bounds = slice_layout.children()
+            let active_bounds = slice_layout
+                .children()
                 .nth(active_in_slice)
-                .expect(&format!("Index {:?} is not within the slice layout \
+                .expect(&format!(
+                    "Index {:?} is not within the slice layout \
                     | slice_layout.children().count(): {:?} \
                     | This should not happen, please report this issue
                     ",
@@ -862,7 +913,6 @@ where
             .as_widget()
             .operate(&mut tree.children[0], layout, renderer, operation);
     }
-
 }
 
 /// Adaptive open direction

@@ -2,8 +2,8 @@
 
 use iced::border::Radius;
 use iced::widget::{
-    button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input, pick_list,
-    tooltip, toggler, vertical_slider,column as col, vertical_space, Space,
+    button, checkbox, column as col, container, horizontal_space, pick_list, row, scrollable,
+    slider, text, text_input, toggler, tooltip, vertical_slider, vertical_space, Space,
 };
 use iced::{alignment, theme, Border, Color, Element, Length, Padding, Size, Theme};
 
@@ -59,9 +59,9 @@ enum Fruit {
 }
 impl Fruit {
     const ALL: [Fruit; 13] = [
-        Fruit::Apple, 
-        Fruit::Orange, 
-        Fruit::Strawberry, 
+        Fruit::Apple,
+        Fruit::Orange,
+        Fruit::Strawberry,
         Fruit::Tomato,
         Fruit::Banana,
         Fruit::Cherry,
@@ -188,7 +188,7 @@ impl App {
     fn view(&self) -> iced::Element<'_, Message> {
         #[cfg(feature = "debug_log")]
         debug!(target:"App::view", "App | view");
-        
+
         let menu_tpl_1 = |items| Menu::new(items).width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).width(180.0).offset(0.0).spacing(5.0);
         let hold_item = |widget| Item::new(widget).close_on_click(false);
@@ -516,7 +516,7 @@ impl App {
                             text(format!("{fruit:?}")).width(Length::Fill),
                         ]
                     }.align_y(iced::Alignment::Center);
-                    
+
                     tooltip_button(
                         format!("{fruit:?}"),
                         r,
@@ -527,13 +527,13 @@ impl App {
                 };
 
                 let fruit_menu = menu_tpl_2(Fruit::ALL.iter()
-                    .map(|fruit| 
+                    .map(|fruit|
                         Item::new(fruit_button(*fruit))
                     ).collect()
                 )
                 .close_on_item_click(false)
                 .close_on_background_click(false);
-                
+
                 let sub1 = menu_tpl_2(menu_items!(
                     (
                         container(
@@ -547,7 +547,7 @@ impl App {
                         .align_y(alignment::Alignment::Center)
                         .align_x(alignment::Alignment::Center)
                     ),
-                    
+
                     (debug_button_f("Item")),
                     (debug_button_f("Item")),
                     hold_item(row![
@@ -573,9 +573,9 @@ impl App {
                                 text(format!("{:?}", self.fruit))
                                     .align_y(alignment::Vertical::Center)
                                     .color(Color::from([0.5; 3])),
-                            ].align_y(iced::Alignment::Center), 
-                            Some(Length::Fill), 
-                            None, 
+                            ].align_y(iced::Alignment::Center),
+                            Some(Length::Fill),
+                            None,
                             Message::Debug(format!("{:?}", self.fruit))
                         ),
                         fruit_menu
@@ -593,16 +593,16 @@ impl App {
                                     Some(self.fruit),
                                     Message::FruitSelected
                                 ),
-                            ].align_y(iced::Alignment::Center), 
-                            Some(Length::Fill), 
-                            Some(Length::Shrink), 
+                            ].align_y(iced::Alignment::Center),
+                            Some(Length::Fill),
+                            Some(Length::Shrink),
                             Message::Debug(format!("{:?}", self.fruit))
                         ),
                         sub2
                     ),
                     (debug_button_f("Item"))
                 )).width(240.0).close_on_item_click(true);
-                
+
                 menu_tpl_1(menu_items!(
                     (submenu_button("A sub menu"), sub1)
                 )).width(140.0)
@@ -638,14 +638,13 @@ impl App {
             vertical_space().height(700),
         ];
 
-        let sc = scrollable(c)
-            .direction(scrollable::Direction::Both { 
-                vertical: scrollable::Scrollbar::default(), 
-                horizontal: scrollable::Scrollbar::default()
-            }); /*.direction(scrollable::Direction::Both {
-                                    vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
-                                    horizontal: scrollable::Properties::new(),
-                                });*/
+        let sc = scrollable(c).direction(scrollable::Direction::Both {
+            vertical: scrollable::Scrollbar::default(),
+            horizontal: scrollable::Scrollbar::default(),
+        }); /*.direction(scrollable::Direction::Both {
+                vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+                horizontal: scrollable::Properties::new(),
+            });*/
 
         fn back_style(theme: &iced::Theme) -> container::Style {
             container::Style {
@@ -672,7 +671,7 @@ fn base_button<'a>(
 ) -> button::Button<'a, Message> {
     button(content)
         .padding([4, 8])
-        .style(|theme, status|{
+        .style(|theme, status| {
             use iced_widget::button::{Status, Style};
 
             let palette = theme.extended_palette();
@@ -683,13 +682,11 @@ fn base_button<'a>(
             };
             match status {
                 Status::Active => base.with_background(Color::TRANSPARENT),
-                Status::Hovered => base.with_background(
-                    Color::from_rgb(
-                        palette.primary.weak.color.r * 1.2,
-                        palette.primary.weak.color.g * 1.2,
-                        palette.primary.weak.color.b * 1.2,
-                    )
-                ),
+                Status::Hovered => base.with_background(Color::from_rgb(
+                    palette.primary.weak.color.r * 1.2,
+                    palette.primary.weak.color.g * 1.2,
+                    palette.primary.weak.color.b * 1.2,
+                )),
                 Status::Disabled => base.with_background(Color::from_rgb(0.5, 0.5, 0.5)),
                 Status::Pressed => base.with_background(palette.primary.weak.color),
                 // Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
@@ -706,16 +703,16 @@ fn build_tooltip<'a>(
 ) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     tooltip(
         content,
-        container(
-            text(label).color(Color::WHITE)
-        ).padding(10)
-        .style(|theme|{
-            container::rounded_box(theme)
-                .border(Border::default().rounded(8.0))
-                .background(Color::from_rgb(0.2, 0.2, 0.2))
-        }),
-        tooltip::Position::Bottom
-    ).into()
+        container(text(label).color(Color::WHITE))
+            .padding(10)
+            .style(|theme| {
+                container::rounded_box(theme)
+                    .border(Border::default().rounded(8.0))
+                    .background(Color::from_rgb(0.2, 0.2, 0.2))
+            }),
+        tooltip::Position::Bottom,
+    )
+    .into()
 }
 
 fn tooltip_button<'a>(
@@ -726,13 +723,10 @@ fn tooltip_button<'a>(
     msg: Message,
 ) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     build_tooltip(
-        label, 
-        base_button(
-            content, 
-            msg
-        )
-        .width(width.unwrap_or(Length::Shrink))
-        .height(height.unwrap_or(Length::Shrink))
+        label,
+        base_button(content, msg)
+            .width(width.unwrap_or(Length::Shrink))
+            .height(height.unwrap_or(Length::Shrink)),
     )
 }
 
@@ -748,7 +742,7 @@ fn debug_button(
             .align_y(alignment::Vertical::Center),
         width,
         height,
-        Message::Debug(label.into())
+        Message::Debug(label.into()),
     )
 }
 
@@ -762,7 +756,7 @@ fn debug_button_f(label: &str) -> Element<'_, Message, iced::Theme, iced::Render
 
 fn submenu_button(label: &str) -> Element<'_, Message, iced::Theme, iced::Renderer> {
     tooltip_button(
-        label.to_string(), 
+        label.to_string(),
         row![
             text(label)
                 .width(Length::Fill)
@@ -770,16 +764,15 @@ fn submenu_button(label: &str) -> Element<'_, Message, iced::Theme, iced::Render
             iced_aw_font::right_open()
                 .width(Length::Shrink)
                 .align_y(alignment::Vertical::Center),
-        ].align_y(iced::Alignment::Center), 
-        Some(Length::Fill), 
-        None, 
-        Message::Debug(label.into())
+        ]
+        .align_y(iced::Alignment::Center),
+        Some(Length::Fill),
+        None,
+        Message::Debug(label.into()),
     )
 }
 
-fn color_button<'a>(
-    color: impl Into<Color>,
-) -> Element<'a, Message, iced::Theme, iced::Renderer> {
+fn color_button<'a>(color: impl Into<Color>) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     let color = color.into();
     // base_button(circle(color), Message::ColorChange(color))
     tooltip_button(
@@ -787,8 +780,9 @@ fn color_button<'a>(
         circle(color),
         Some(Length::Fill),
         None,
-        Message::ColorChange(color)
-    ).into()
+        Message::ColorChange(color),
+    )
+    .into()
 }
 
 fn separator() -> quad::Quad {
@@ -857,7 +851,7 @@ fn toggle<'a>(
     label: &'a str,
     is_checked: bool,
     on_toggle: impl Fn(bool) -> Message + 'a,
-) -> Element<'a, Message, iced::Theme, iced::Renderer>{
+) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     row![
         text(label).align_y(alignment::Vertical::Center),
         Space::new(Length::Fill, Length::Shrink),

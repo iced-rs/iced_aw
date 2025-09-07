@@ -1,6 +1,7 @@
 use iced::{
-    advanced::{mouse, renderer, widget::Tree, Clipboard, Layout, Shell,}, 
-    window::RedrawRequest, Padding, Rectangle, Event
+    advanced::{mouse, renderer, widget::Tree, Clipboard, Layout, Shell},
+    window::RedrawRequest,
+    Event, Padding, Rectangle,
 };
 
 use super::menu_bar::*;
@@ -63,23 +64,23 @@ pub(super) type Index = Option<usize>;
 
 /// Should be returned from the recursive event processing function,
 /// tells the caller which type of event has been processed
-/// 
+///
 /// `Event`: The child event has been processed.
 /// The parent menu should not process the event.
-/// 
-/// `Close`: Either the child menu has decided to close itself, 
-/// or that there is no child menu open, 
-/// from the parent menu's perspective, 
-/// there is no difference between the two. 
+///
+/// `Close`: Either the child menu has decided to close itself,
+/// or that there is no child menu open,
+/// from the parent menu's perspective,
+/// there is no difference between the two.
 /// The parent menu should check if it should close itself,
 /// if not then it should process the event.
-/// 
-/// `None`: A child menu is open, but it did not process the event, 
+///
+/// `None`: A child menu is open, but it did not process the event,
 /// this happens when the cursor hovers over the item that opens the child menu
-/// but has not entered the child menu yet, 
-/// in this case the parent menu should process the event, 
+/// but has not entered the child menu yet,
+/// in this case the parent menu should process the event,
 /// but close check is not needed.
-/// 
+///
 #[derive(Debug, Clone, Copy)]
 pub(super) enum RecEvent {
     Event,
@@ -106,7 +107,7 @@ pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
 }
 
 /// Parameters that are shared by all menus in the menu bar
-pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog>{
+pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog> {
     pub(super) check_bounds_width: f32,
     pub(super) draw_path: DrawPath,
     pub(super) scroll_speed: ScrollSpeed,
@@ -117,20 +118,20 @@ pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog>{
 
 /// Merges the fake shell into the real shell,
 /// this makes sure that the fake shell status does not propagate to the real shell.
-/// 
+///
 /// Current limitation: messages are not merged.
 pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
-    if fake_shell.is_layout_invalid(){
+    if fake_shell.is_layout_invalid() {
         shell.invalidate_layout();
     }
 
-    if fake_shell.are_widgets_invalid(){
+    if fake_shell.are_widgets_invalid() {
         shell.invalidate_widgets();
     }
 
     let rr = fake_shell.redraw_request();
-    
-    if rr < shell.redraw_request(){
+
+    if rr < shell.redraw_request() {
         match rr {
             RedrawRequest::NextFrame => {
                 shell.request_redraw();
@@ -159,15 +160,15 @@ pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer:
         .iter_mut() // [Item...]
         .zip(item_trees.iter_mut()) // [item_tree...]
         .zip(item_layouts)
-        .enumerate() 
-        {
-            if cursor.is_over(layout.bounds()) {
-                if item.menu.is_some() {
-                    menu_state.open_new_menu(i + index_offset, item, tree);
-                }
-                break;
+        .enumerate()
+    {
+        if cursor.is_over(layout.bounds()) {
+            if item.menu.is_some() {
+                menu_state.open_new_menu(i + index_offset, item, tree);
             }
+            break;
         }
+    }
 
     if menu_state.active != old_active {
         shell.invalidate_layout();
@@ -185,8 +186,8 @@ pub(super) fn update_items<'a, 'b, Message, Theme: Catalog, Renderer: renderer::
     clipboard: &mut dyn Clipboard,
     shell: &mut Shell<'_, Message>,
     viewport: &Rectangle,
-){
-    for ((item, tree), layout) in items// [item...]
+) {
+    for ((item, tree), layout) in items // [item...]
         .iter_mut()
         .zip(item_trees.iter_mut()) // [item_tree...]
         .zip(item_layouts)
@@ -198,10 +199,16 @@ pub(super) fn update_items<'a, 'b, Message, Theme: Catalog, Renderer: renderer::
 }
 
 /// Schedules a close on click task if applicable
-/// 
-/// This function assumes that a mouse::Event::ButtonPressed(mouse::Button::Left) event has occurred, 
+///
+/// This function assumes that a mouse::Event::ButtonPressed(mouse::Button::Left) event has occurred,
 /// make sure to check the event before calling this function.
-pub(super) fn schedule_close_on_click<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
+pub(super) fn schedule_close_on_click<
+    'a,
+    'b,
+    Message,
+    Theme: Catalog,
+    Renderer: renderer::Renderer,
+>(
     global_state: &mut GlobalState,
     global_parameters: &GlobalParameters<'_, Theme>,
     items: &mut [Item<'a, Message, Theme, Renderer>],
@@ -214,7 +221,7 @@ pub(super) fn schedule_close_on_click<'a, 'b, Message, Theme: Catalog, Renderer:
 
     let mut coc_handled = false;
 
-    for (item, layout) in items// [item...]
+    for (item, layout) in items // [item...]
         .iter_mut()
         .zip(item_layouts)
     {
