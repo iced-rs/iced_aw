@@ -638,16 +638,21 @@ where
                         menu: item_menu,
                         ..
                     } = item;
-                    let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice()
-                    else {
-                        continue;
+
+                    let item_widget_tree = if i == slice_index {
+                        #[cfg(feature = "debug_log")]
+                        debug!(target:"menu::MenuBarOverlay::overlay", "rec | i == slice_index {slice_index}");
+                        let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
+                            #[cfg(feature = "debug_log")]
+                            warn!(target:"menu::MenuBarOverlay::overlay", "rec | menu_state.active is Some, but there's no state tree for it");
+                            continue;
+                        };
+                        next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
+                        item_widget_tree
+                    }else{
+                        &mut item_tree.children.as_mut_slice()[0]
                     };
 
-                    if i == slice_index {
-                        #[cfg(feature = "debug_log")]
-                        trace!(target:"menu::MenuBarOverlay::overlay", "rec | i == slice_index {slice_index}");
-                        next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
-                    }
                     if let Some(overlay) = item_widget.as_widget_mut().overlay(
                         item_widget_tree,
                         item_layout,
