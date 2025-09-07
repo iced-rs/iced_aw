@@ -38,6 +38,7 @@ drop_down = []
 sidebar = []
 labeled_frame = []
 custom_layout = ["iced/advanced"]
+debug_log = ["log"]
 
 full = [
   "badge",
@@ -64,7 +65,8 @@ full = [
 [dev-dependencies]
 iced_aw = { path = "./" }
 getrandom = { version = "0.3.3", features = ["wasm_js"] }
-rand = "0.9.2"                                            # For wrap example
+rand = "0.9.2"    
+env_logger = "0.11"                                        # For wrap example
 
 [dependencies.iced]
 version = "0.14.0-dev"
@@ -80,6 +82,7 @@ iced_widget = "0.14.0-dev" # Required for font generated from `iced_fonts`.
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
+log = {version = "0.4", optional=true}
 
 [patch.crates-io]
 iced = { git = "https://github.com/iced-rs/iced.git", rev = "9d56b48" }

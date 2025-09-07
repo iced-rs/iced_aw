@@ -29,6 +29,9 @@ use std::iter::once;
 use crate::style::menu_bar::*;
 use super::menu_bar::*;
 
+#[cfg(feature = "debug_log")]
+use log::debug;
+
 /*
 menu tree:
 Item{
@@ -74,9 +77,11 @@ impl MenuState{
         item: &Item<'a, Message, Theme, Renderer>,
         item_tree: &mut Tree
     ){
-        println!("MenuState::open_new_menu()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::Menu::open_new_menu", "");
         let Some(menu) = item.menu.as_ref() else {
-            println!("MenuState::open_new_menu() | item.menu is None");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::Menu::open_new_menu", "item.menu is None");
             return;
         };
 
@@ -233,7 +238,8 @@ where
         parent_direction: (Direction, Direction),
         viewport: &Rectangle,
     ) -> (Node, (Direction, Direction)) {
-        println!("Menu::layout()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::Menu::layout", "");
         let limits = limits.max_width(self.max_width);
 
         let items_node = flex::resolve(
@@ -285,7 +291,8 @@ where
             menu_state.scroll_offset,
         );
         menu_state.slice = slice;
-        println!("Menu::layout() | slice: {:?}", slice);
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::Menu::layout", "slice: {:?}", slice);
 
         let slice_node = if slice.start_index == slice.end_index {
             let node = &items_node.children()[slice.start_index];
@@ -532,7 +539,8 @@ where
                         RecEvent::Event
                     }else{
                         // the current menu is ready to close
-                        println!("Menu::update() | close menu");
+                        #[cfg(feature = "debug_log")]
+                        debug!(target:"menu::Menu::update", "close menu");
                         assert!(shell.is_event_captured() == false, "Returning RecEvent::Close");
                         *prev_active = None;
                         if tree.children.len() == 2{
@@ -627,8 +635,6 @@ where
 
         // draw background
         let pad_rectangle = pad_rectangle(prescroll, self.padding);
-        println!();
-        println!("Menu::draw() | pad_rectangle: {:?}", pad_rectangle);
         if pad_rectangle.intersects(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
@@ -790,7 +796,8 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        println!("Item::update()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"Item::update", "");
         self.item.as_widget_mut().update(
             &mut tree.children[0],
             event,

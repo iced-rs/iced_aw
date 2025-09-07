@@ -18,6 +18,9 @@ use iced::{
 use super::{common::*, menu_bar::*, menu_tree::*};
 use crate::style::{menu_bar::*, Status};
 
+#[cfg(feature = "debug_log")]
+use log::{debug, warn, trace};
+
 pub(super) struct MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
 where
     Theme: Catalog,
@@ -44,8 +47,10 @@ where
     Theme: Catalog,
     Renderer: renderer::Renderer,
 {
+    /// out: Node{inf, [ bar_node, roots_node, menu_nodes_node{0, [ menu_node,...]} ]}
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
-        println!("MenuBarOverlay::layout()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::layout", "");
         let translation = self.translation;
 
         let bar_bounds = self.layout.bounds();
@@ -178,7 +183,9 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) {
-        println!("MenuBarOverlay::update()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::update", "");
+        
         let bar = self.tree.state.downcast_mut::<MenuBarState>();
         let MenuBarState { global_state, menu_state: bar_state } = bar;
 
@@ -232,6 +239,9 @@ where
             prev_active: &mut Index,
             depth: usize,
         ) -> RecEvent {
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBarOverlay::update", "rec");
+
             let Some(menu) = item.menu.as_mut() else {
                 return RecEvent::Close;
             };
@@ -287,7 +297,8 @@ where
                 // there no child menu open
                 // and the cursor is unavailable
                 // this means there is an overlay from one of the items open
-                println!("MenuBarOverlay::update() | rec | cursor is unavailable");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::update", "rec | cursor is unavailable");
                 RecEvent::Event
             } else {
                 RecEvent::Close
@@ -295,15 +306,18 @@ where
 
             prev_bounds_list.pop();
 
-            println!();
-            println!("MenuBarOverlay | depth: {:?}", depth);
-            println!("MenuBarOverlay | menu_state.active: {:?}", menu_state.active);
-            println!("MenuBarOverlay | menu_state.slice: {:?}", menu_state.slice);
-            println!("MenuBarOverlay | rec_event: {:?}", rec_event);
-            println!("MenuBarOverlay | event: {:?}", event);
-            println!("MenuBarOverlay | cursor: {:?}", cursor);
-            println!("MenuBarOverlay | cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
-            println!("MenuBarOverlay | shell.is_event_captured(): {:?}", shell.is_event_captured());
+            #[cfg(feature = "debug_log")]
+            {
+                debug!(target:"menu::MenuBarOverlay::update", "");
+                debug!(target:"menu::MenuBarOverlay::update", "depth: {:?}", depth);
+                debug!(target:"menu::MenuBarOverlay::update", "menu_state.active: {:?}", menu_state.active);
+                debug!(target:"menu::MenuBarOverlay::update", "menu_state.slice: {:?}", menu_state.slice);
+                debug!(target:"menu::MenuBarOverlay::update", "rec_event: {:?}", rec_event);
+                debug!(target:"menu::MenuBarOverlay::update", "event: {:?}", event);
+                debug!(target:"menu::MenuBarOverlay::update", "cursor: {:?}", cursor);
+                debug!(target:"menu::MenuBarOverlay::update", "cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
+                debug!(target:"menu::MenuBarOverlay::update", "shell.is_event_captured(): {:?}", shell.is_event_captured());
+            }
 
             menu.update(
                 global_state,
@@ -341,7 +355,8 @@ where
             0,
         );
 
-        println!("MenuBarOverlay::update() | re: {:?}", re);
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::update", "re: {:?}", re);
 
         if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
             if let Some(MenuBarTask::CloseOnClick) = global_state.task() {
@@ -366,7 +381,8 @@ where
                     DrawPath::Backdrop => mouse::Cursor::Unavailable
                 };
 
-                println!("MenuBarOverlay::update() | calling MenuBar::update_items()");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::update", "calling update_items() on MenuBar");
                 update_items(
                     menu_bar.roots.as_mut_slice(), 
                     tree.children.as_mut_slice(), 
@@ -383,18 +399,24 @@ where
                 if !cursor.is_over(bar_bounds){
                     bar.close(self.tree.children.as_mut_slice(), shell);
                 }
+
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::update", "RecEvent::None | MenuBar should process the event");
+
                 assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::Close | Returning");
                 // let the menu bar process the event
             }
             RecEvent::None => {
-                println!("MenuBarOverlay::update() | MenuBar should process the event");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::update", "RecEvent::None | MenuBar should process the event");
 
                 assert!(shell.is_event_captured() == false, "MenuBarOverlay::update() | RecEvent::None | Returning");
                 // let the menu bar process the event
             }
         }
 
-        println!("MenuBarOverlay::update() | shell.is_layout_invalid(): {:?}", shell.is_layout_invalid());
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::update", "returning | shell.is_layout_invalid(): {:?}", shell.is_layout_invalid());
     }
 
     fn mouse_interaction(
@@ -403,7 +425,9 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        println!("MenuBarOverlay::mouse_interaction()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::mouse_interaction", "");
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let Some(bar_menu_state) = bar.menu_state.as_ref() else {
             return mouse::Interaction::default();
@@ -438,7 +462,8 @@ where
             let menu_tree = &tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
-                println!("MenuBarOverlay::mouse_interaction() | menu exists, but menu_layout is None");
+                #[cfg(feature = "debug_log")]
+                warn!(target:"menu::MenuBarOverlay::mouse_interaction", "menu exists, but menu_layout is None");
                 return mouse::Interaction::default();
             }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 
@@ -468,6 +493,9 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::operate", "");
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let Some(bar_menu_state) = bar.menu_state.as_ref() else {
             return;
@@ -502,6 +530,8 @@ where
             let menu_tree = &mut tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
+                #[cfg(feature = "debug_log")]
+                warn!(target:"menu::MenuBarOverlay::operate", "menu exists, but menu_layout is None");
                 return;
             };
 
@@ -531,7 +561,9 @@ where
         layout: Layout<'c>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'c, Message, Theme, Renderer>> {
-        println!("MenuBarOverlay::overlay()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::overlay", "");
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let bar_menu_state = bar.menu_state.as_ref()?;
         let active = bar_menu_state.active?;
@@ -551,16 +583,22 @@ where
             renderer: &Renderer,
             viewport: &Rectangle,
         ){
-            println!("MenuBarOverlay::overlay() | rec");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBarOverlay::overlay", "rec");
+
             let menu_state = menu_tree.state.downcast_mut::<MenuState>();
             let menu_layout = menu_layouts.next().unwrap(); // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
             let mut mlc = menu_layout.children();
             let slice_layout = mlc.next().unwrap(); // slice_node: Node{inf, [item_node...]}
-            println!("MenuBarOverlay::overlay() | rec | slice_layout.children : {}", slice_layout.children().count());
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBarOverlay::overlay", "rec | slice_layout.children : {}", slice_layout.children().count());
             
             let slice = &menu_state.slice;
 
             if let Some(active) = menu_state.active {
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::overlay", "rec | active");
+
                 let slice_index = active - slice.start_index;
 
                 let mut next = None;
@@ -571,7 +609,8 @@ where
                     .zip(slice_layout.children())
                     .enumerate() 
                 {
-                    println!("MenuBarOverlay::overlay() | rec | i: {i}");
+                    #[cfg(feature = "debug_log")]
+                    trace!(target:"menu::MenuBarOverlay::overlay", "rec | i: {i}");
 
                     let Item{ item: item_widget, menu: item_menu, .. } = item;
                     let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
@@ -579,7 +618,8 @@ where
                     };
 
                     if i == slice_index {
-                        println!("MenuBarOverlay::overlay() | rec | i == slice_index {slice_index}");
+                        #[cfg(feature = "debug_log")]
+                        trace!(target:"menu::MenuBarOverlay::overlay", "rec | i == slice_index {slice_index}");
                         next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
                     }
                     if let Some(overlay) = item_widget.as_widget_mut().overlay(
@@ -594,7 +634,8 @@ where
                 }
 
                 if let Some((next_menu, next_menu_tree)) = next {
-                    println!("MenuBarOverlay::overlay() | rec | next");
+                    #[cfg(feature = "debug_log")]
+                    debug!(target:"menu::MenuBarOverlay::overlay", "rec | next");
                     rec(
                         &mut next_menu.items, 
                         next_menu_tree, 
@@ -605,17 +646,20 @@ where
                     );
                 }
             }else{
-                println!("MenuBarOverlay::overlay() | rec | no active");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBarOverlay::overlay", "rec | no active");
                 
-
+                #[cfg(feature = "debug_log")]
                 let mut count = 0;
+
                 for ((item, item_tree), item_layout) in 
                     items[slice.start_index..=slice.end_index].iter_mut()
                     .zip(menu_tree.children[slice.start_index..=slice.end_index].iter_mut()) // [item_tree...]
                     .zip(slice_layout.children())
                 {
-                    println!("MenuBarOverlay::overlay() | rec | no active | loop: {count}");
-                    println!("MenuBarOverlay::overlay() | rec | item_layout.children : {}", item_layout.children().count());
+                    #[cfg(feature = "debug_log")]
+                    trace!(target:"menu::MenuBarOverlay::overlay", "rec | loop: {count}");
+
                     let Item{ item: item_widget, .. } = item;
 
                     if let Some(overlay) = item_widget.as_widget_mut().overlay(
@@ -627,7 +671,9 @@ where
                     ){
                         overlays.push(overlay);
                     }
-                    count += 1;
+
+                    #[cfg(feature = "debug_log")]
+                    { count += 1; }
                 }
             }
         }
@@ -640,9 +686,9 @@ where
             .zip(self.layout.children())
             .enumerate() 
         {
-            println!("i: {i}");
-            // println!("layout children: {:?}", item_layout.children().count());
-
+            #[cfg(feature = "debug_log")]
+            trace!(target:"menu::MenuBarOverlay::overlay", "i: {i}");
+            
             let Item{ item: item_widget, menu: item_menu, .. } = item;
             let [item_widget_tree, item_menu_tree] = item_tree.children.as_mut_slice() else {
                 continue;
@@ -674,10 +720,12 @@ where
         };
        
         if overlays.is_empty(){
-            println!("MenuBarOverlay::overlay() | return | None");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBarOverlay::overlay", "return | None");
             None
         }else{
-            println!("MenuBarOverlay::overlay() | return | Some");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBarOverlay::overlay", "return | Some");
             Some(overlay::Group::with_children(overlays).overlay())
         }
     }
@@ -690,7 +738,9 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
     ) {
-        println!("MenuBarOverlay::draw()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBarOverlay::draw", "");
+
         let bar = self.tree.state.downcast_ref::<MenuBarState>();
         let MenuBarState { global_state, menu_state: bar_state } = bar;
 
@@ -733,7 +783,8 @@ where
             let menu_tree = &tree.children[1];
 
             let Some(menu_layout) = layout_iter.next() else {
-                println!("MenuBarOverlay::draw() | menu exists, but menu_layout is None");
+                #[cfg(feature = "debug_log")]
+                warn!(target:"menu::MenuBarOverlay::draw", "menu exists, but menu_layout is None");
                 return;
             }; // menu_node: Node{inf, [ slice_node, prescroll, offset_bounds]}
 

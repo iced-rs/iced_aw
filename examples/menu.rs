@@ -1,20 +1,24 @@
 // This example demonstrates how to use the menu widget
 
-use std::fmt::format;
-
 use iced::border::Radius;
 use iced::widget::{
     button, checkbox, container, horizontal_space, row, scrollable, slider, text, text_input, pick_list,
     tooltip, toggler, vertical_slider,column as col, vertical_space, Space,
 };
-use iced::{alignment, theme, Background, Border, Color, Element, Length, Padding, Size, Theme};
+use iced::{alignment, theme, Border, Color, Element, Length, Padding, Size, Theme};
 
 use iced_aw::menu::{self, Item, Menu};
 use iced_aw::style::{menu_bar::primary, Status};
 use iced_aw::{iced_aw_font, menu_bar, menu_items, ICED_AW_FONT_BYTES};
 use iced_aw::{quad, widgets::InnerBounds};
 
+#[cfg(feature = "debug_log")]
+use log::debug;
+
 pub fn main() -> iced::Result {
+    #[cfg(feature = "debug_log")]
+    env_logger::init();
+
     iced::application(App::default, App::update, App::view)
         .title(App::title)
         .theme(App::theme)
@@ -182,7 +186,9 @@ impl App {
     }
 
     fn view(&self) -> iced::Element<'_, Message> {
-        println!("App | view");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"App::view", "App | view");
+        
         let menu_tpl_1 = |items| Menu::new(items).width(180.0).offset(15.0).spacing(5.0);
         let menu_tpl_2 = |items| Menu::new(items).width(180.0).offset(0.0).spacing(5.0);
         let hold_item = |widget| Item::new(widget).close_on_click(false);

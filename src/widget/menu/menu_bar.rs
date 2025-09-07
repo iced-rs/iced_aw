@@ -19,6 +19,9 @@ use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
 use crate::style::menu_bar::*;
 pub use crate::style::status::{Status, StyleFn};
 
+#[cfg(feature = "debug_log")]
+use log::debug;
+
 #[derive(Debug, Clone, Copy)]
 pub(super) enum MenuBarTask{
     OpenOnClick,
@@ -256,7 +259,6 @@ where
 
     /// tree: Tree{bar, \[item_tree...]}
     fn diff(&self, tree: &mut Tree) {
-        println!("MenuBar::diff()");
         tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
@@ -293,7 +295,9 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        println!("MenuBar::update()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBar::update", "");
+
         update_items(
             self.roots.as_mut_slice(), 
             tree.children.as_mut_slice(), 
@@ -357,13 +361,13 @@ where
                     } else {
                         bar.close(item_trees, shell);
                     }
-                    // println!("MenuBar::update() | CursorMoved | bar: {:?}", bar);
                 }
             }
             _ => {}
         }
         
-        println!("MenuBar::update() | return | bar: {:?}", bar);
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBar::update", "return | bar: {:?}", bar);
     }
 
     fn operate(
@@ -467,11 +471,13 @@ where
         viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        println!("MenuBar::overlay()");
+        #[cfg(feature = "debug_log")]
+        debug!(target:"menu::MenuBar::overlay", "");
         let bar = tree.state.downcast_mut::<MenuBarState>();
 
         if bar.menu_state.is_some() {
-            println!("MenuBar::overlay() | return | Menu Overlay");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBar::overlay", "return | Menu Overlay");
             Some(
                 MenuBarOverlay {
                     menu_bar: self,
@@ -482,7 +488,8 @@ where
                 .overlay_element(),
             )
         } else {
-            println!("MenuBar::overlay() | state not open | try return root overlays");
+            #[cfg(feature = "debug_log")]
+            debug!(target:"menu::MenuBar::overlay", "state not open | try return root overlays");
             let overlays = self.roots.iter_mut()
                 .zip(tree.children.iter_mut()) // [item_tree...]
                 .zip(layout.children())
@@ -497,10 +504,12 @@ where
                 }).collect::<Vec<_>>();
 
             if overlays.is_empty(){
-                println!("MenuBar::overlay() | return | None");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBar::overlay", "return | None");
                 None
             }else{
-                println!("MenuBar::overlay() | return | Root Item Overlay");
+                #[cfg(feature = "debug_log")]
+                debug!(target:"menu::MenuBar::overlay", "return | Root Item Overlay");
                 Some(overlay::Group::with_children(overlays).overlay())
             }
         }
