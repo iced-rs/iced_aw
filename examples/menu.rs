@@ -535,18 +535,18 @@ impl App {
                 .close_on_background_click(false);
 
                 let sub1 = menu_tpl_2(menu_items!(
-                    (
-                        container(
-                            text("This menu is set to always close on click\n \
-                            Except for the pick lists\
-                            ")
-                            .size(12)
-                            .color(Color::from([0.5; 3]))
-                        )
-                        .padding([4, 4])
-                        .align_y(alignment::Alignment::Center)
-                        .align_x(alignment::Alignment::Center)
-                    ),
+                    // (
+                    //     container(
+                    //         text("This menu is set to always close on click\n \
+                    //         Except for the pick lists\
+                    //         ")
+                    //         .size(12)
+                    //         .color(Color::from([0.5; 3]))
+                    //     )
+                    //     .padding([4, 4])
+                    //     .align_y(alignment::Alignment::Center)
+                    //     .align_x(alignment::Alignment::Center)
+                    // ),
 
                     (debug_button_f("Item")),
                     (debug_button_f("Item")),
@@ -611,6 +611,7 @@ impl App {
         .draw_path(menu::DrawPath::Backdrop)
         .close_on_item_click_global(self.close_on_click)
         .close_on_background_click_global(self.close_on_click)
+        // .check_bounds_width(f32::MAX)
         .padding(Padding::new(5.0))
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{

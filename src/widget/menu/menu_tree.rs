@@ -239,7 +239,7 @@ where
 
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
-    /// out: Node{inf, \[ slice_node, prescroll, offset_bounds]}
+    /// out: Node{inf, \[ slice_node, items_bounds, offset_bounds]}
     pub(super) fn layout(
         &self,
         tree: &mut Tree,
@@ -353,9 +353,9 @@ where
                 [
                     slice_node
                         .move_to(children_position)
-                        .translate([0.0, menu_state.scroll_offset]), // slice layout
-                    Node::new(children_size).move_to(children_position), // prescroll bounds
-                    Node::new(offset_bounds.size()).move_to(offset_bounds.position()), // offset bounds
+                        .translate([0.0, menu_state.scroll_offset]), // slice_layout
+                    Node::new(children_size).move_to(children_position), // items_bounds
+                    Node::new(offset_bounds.size()).move_to(offset_bounds.position()), // offset_bounds
                 ]
                 .into(),
             ),
@@ -365,7 +365,7 @@ where
 
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
-    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds]}
+    /// layout: Node{inf, \[ slice_node, items_bounds, offset_bounds]}
     pub(super) fn update(
         &mut self,
         global_state: &mut GlobalState,
@@ -385,12 +385,12 @@ where
     ) -> RecEvent {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
-        let prescroll = lc.next().unwrap().bounds();
+        let items_bounds = lc.next().unwrap().bounds();
         let offset_bounds = lc.next().unwrap().bounds();
-        let background_bounds = pad_rectangle(prescroll, self.padding);
-        let check_bounds = pad_rectangle(
+        let background_bounds = pad_rectangle(items_bounds, self.padding);
+        let safe_bounds = pad_rectangle(
             background_bounds,
-            Padding::new(global_parameters.check_bounds_width),
+            Padding::new(global_parameters.safe_bounds_margin),
         );
 
         enum Op {
@@ -490,7 +490,7 @@ where
                         if cursor.is_over(background_bounds) {
                             process_scroll_event(
                                 menu_state,
-                                prescroll,
+                                items_bounds,
                                 *delta,
                                 global_parameters.scroll_speed,
                                 viewport.size(),
@@ -570,14 +570,14 @@ where
                             if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
                                 false
                             } else {
-                                cursor.is_over(check_bounds)
+                                cursor.is_over(safe_bounds)
                             }
                         }
                     };
 
                     if open {
                         // the current menu is not ready to close
-                        update(global_state, tree, &[Op::UpdateItems]);
+                        update(global_state, tree, &[Op::UpdateItems, Op::LeftPress]);
                         shell.capture_event();
                         RecEvent::Event
                     } else {
@@ -637,7 +637,7 @@ where
 
     /// tree: Tree{ menu_state, \[item_tree...] }
     ///
-    /// layout: Node{inf, \[ slice_node, prescroll, offset_bounds]}
+    /// layout: Node{inf, \[ slice_node, items_bounds, offset_bounds]}
     pub(super) fn mouse_interaction(
         &self,
         tree: &Tree,
@@ -662,7 +662,7 @@ where
 
     /// tree: Tree{menu_state, \[item_tree...]}
     ///
-    /// layout: Node{inf, \[ items_node, slice_node, prescroll, offset_bounds]}
+    /// layout: Node{inf, \[ items_node, slice_node, items_bounds, offset_bounds]}
     pub(super) fn draw(
         &self,
         global_state: &GlobalState,
@@ -678,13 +678,13 @@ where
     ) {
         let mut lc = layout.children();
         let slice_layout = lc.next().unwrap();
-        let prescroll = lc.next().unwrap().bounds();
+        let items_bounds = lc.next().unwrap().bounds();
 
         let menu_state = tree.state.downcast_ref::<MenuState>();
         let slice = &menu_state.slice;
 
         // draw background
-        let pad_rectangle = pad_rectangle(prescroll, self.padding);
+        let pad_rectangle = pad_rectangle(items_bounds, self.padding);
         if pad_rectangle.intersects(viewport) {
             renderer.fill_quad(
                 renderer::Quad {
@@ -727,7 +727,7 @@ where
             );
         }
 
-        renderer.with_layer(prescroll, |r| {
+        renderer.with_layer(items_bounds, |r| {
             for ((item, tree), layout) in self.items[slice.start_index..=slice.end_index]
                 .iter()
                 .zip(tree.children[slice.start_index..=slice.end_index].iter())

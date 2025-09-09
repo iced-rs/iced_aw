@@ -140,7 +140,7 @@ where
             close_on_item_click: None,
             close_on_background_click: None,
             global_parameters: GlobalParameters {
-                check_bounds_width: 50.0,
+                safe_bounds_margin: 50.0,
                 draw_path: DrawPath::FakeHovering,
                 scroll_speed: ScrollSpeed {
                     line: 60.0,
@@ -171,14 +171,12 @@ where
         self
     }
 
-    /// Sets the width of the check bounds of the [`Menu`]s in the [`MenuBar`].
+    /// Sets the margin of the safe bounds of the [`Menu`]s in the [`MenuBar`].
     ///
-    /// This creates a rectangle around the menus,
-    /// padded with the specified value.
-    /// When the cursor moves,
-    /// it will be used to check against to determined if a menu should be closed
-    pub fn check_bounds_width(mut self, check_bounds_width: f32) -> Self {
-        self.global_parameters.check_bounds_width = check_bounds_width;
+    /// Defines a rectangular safe area that extends each menu's background bounds by a margin.
+    /// If the cursor moves outside this area, the menu will be closed.
+    pub fn safe_bounds_margin(mut self, margin: f32) -> Self {
+        self.global_parameters.safe_bounds_margin = margin;
         self
     }
 

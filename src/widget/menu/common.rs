@@ -108,7 +108,7 @@ pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
 
 /// Parameters that are shared by all menus in the menu bar
 pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog> {
-    pub(super) check_bounds_width: f32,
+    pub(super) safe_bounds_margin: f32,
     pub(super) draw_path: DrawPath,
     pub(super) scroll_speed: ScrollSpeed,
     pub(super) close_on_item_click: bool,
