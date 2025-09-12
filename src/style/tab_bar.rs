@@ -7,7 +7,7 @@
 //! *This API requires the following crate features to be activated: `tab_bar`*
 
 use super::{Status, StyleFn};
-use iced::{border::Radius, Background, Color, Theme};
+use iced_core::{border::Radius, Background, Color, Theme};
 
 /// The appearance of a [`TabBar`](crate::widget::tab_bar::TabBar).
 #[derive(Clone, Copy, Debug)]

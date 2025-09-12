@@ -21,12 +21,9 @@
 #![allow(clippy::pedantic)]
 #![allow(clippy::use_self)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer, widget,
-    },
-    Alignment, Element, Length, Padding, Pixels, Point, Size,
+use iced_core::{
+    layout::{Limits, Node},
+    renderer, widget, Alignment, Element, Length, Padding, Pixels, Point, Size,
 };
 
 /// The main axis of a flex layout.
@@ -75,11 +72,11 @@ pub fn resolve<'a, E, T, Message, Theme, Renderer>(
     padding: Padding,
     spacing: Pixels,
     align_items: Alignment,
-    items: &[E],
+    items: &mut [E],
     trees: &mut [T],
 ) -> Node
 where
-    E: std::borrow::Borrow<Element<'a, Message, Theme, Renderer>>,
+    E: std::borrow::BorrowMut<Element<'a, Message, Theme, Renderer>>,
     T: std::borrow::BorrowMut<widget::Tree>,
 
     Renderer: renderer::Renderer,
@@ -105,7 +102,7 @@ where
     let mut nodes: Vec<Node> = Vec::with_capacity(items.len());
     nodes.resize(items.len(), Node::default());
 
-    for (i, (child, tree)) in items.iter().zip(trees.iter_mut()).enumerate() {
+    for (i, (child, tree)) in items.iter_mut().zip(trees.iter_mut()).enumerate() {
         let (fill_main_factor, fill_cross_factor) = {
             let size = child.borrow().as_widget().size();
 
@@ -118,11 +115,11 @@ where
 
                 let child_limits = Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
-                let layout =
-                    child
-                        .borrow()
-                        .as_widget()
-                        .layout(tree.borrow_mut(), renderer, &child_limits);
+                let layout = child.borrow_mut().as_widget_mut().layout(
+                    tree.borrow_mut(),
+                    renderer,
+                    &child_limits,
+                );
                 let size = layout.size();
 
                 available -= axis.main(size);
@@ -135,7 +132,7 @@ where
         }
     }
 
-    for (i, (child, tree)) in items.iter().zip(trees.iter_mut()).enumerate() {
+    for (i, (child, tree)) in items.iter_mut().zip(trees.iter_mut()).enumerate() {
         let (fill_main_factor, fill_cross_factor) = {
             let size = child.borrow().as_widget().size();
 
@@ -147,11 +144,11 @@ where
 
             let child_limits = Limits::new(Size::ZERO, Size::new(max_width, max_height));
 
-            let layout =
-                child
-                    .borrow()
-                    .as_widget()
-                    .layout(tree.borrow_mut(), renderer, &child_limits);
+            let layout = child.borrow_mut().as_widget_mut().layout(
+                tree.borrow_mut(),
+                renderer,
+                &child_limits,
+            );
             let size = layout.size();
 
             available -= axis.main(size);
@@ -172,7 +169,7 @@ where
         },
     };
 
-    for (i, (child, tree)) in items.iter().zip(trees).enumerate() {
+    for (i, (child, tree)) in items.iter_mut().zip(trees).enumerate() {
         let (fill_main_factor, fill_cross_factor) = {
             let size = child.borrow().as_widget().size();
 
@@ -202,11 +199,11 @@ where
                 Size::new(max_width, max_height),
             );
 
-            let layout =
-                child
-                    .borrow()
-                    .as_widget()
-                    .layout(tree.borrow_mut(), renderer, &child_limits);
+            let layout = child.borrow_mut().as_widget_mut().layout(
+                tree.borrow_mut(),
+                renderer,
+                &child_limits,
+            );
             cross = cross.max(axis.cross(layout.size()));
 
             nodes[i] = layout;

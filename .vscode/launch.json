@@ -116,10 +116,29 @@
       "cargo": {
         "args": [
           "build",
-          "--example=menu"
+          "--example=menu",
+          "--features=menu",
+          "--features=quad"
         ],
         "filter": {
           "name": "menu",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug example 'drop_down_test'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=drop_down_test",
+        ],
+        "filter": {
+          "name": "drop_down_test",
           "kind": "example"
         }
       },

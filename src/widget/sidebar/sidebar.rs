@@ -16,25 +16,21 @@ use crate::{
     },
     ICED_AW_FONT,
 };
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{
-            tree::{State, Tag},
-            Operation, Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment::{self, Vertical},
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    touch,
+    overlay, renderer, touch,
     widget::{
-        text::{self, LineHeight, Wrapping},
-        Row, Text,
+        tree::{State, Tag},
+        Operation, Tree,
     },
-    Alignment, Background, Border, Color, Element, Event, Font, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Size, Vector,
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length, Padding,
+    Pixels, Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
+};
+use iced_widget::{
+    text::{self, LineHeight, Wrapping},
+    Row, Text,
 };
 use std::marker::PhantomData;
 
@@ -108,9 +104,9 @@ pub enum Position {
 /// .set_active_tab(&TabId::One);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Sidebar<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct Sidebar<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer,
+    Renderer: renderer::Renderer + iced_core::text::Renderer,
     Theme: Catalog,
     TabId: Eq + Clone,
 {
@@ -158,7 +154,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> Sidebar<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
     TabId: Eq + Clone,
 {
@@ -389,7 +385,7 @@ where
 impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Sidebar<'_, Message, TabId, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -397,23 +393,23 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         fn layout_icon<Theme, Renderer>(
             icon: &char,
             size: f32,
             font: Option<Font>,
         ) -> Text<'_, Theme, Renderer>
         where
-            Renderer: iced::advanced::text::Renderer,
+            Renderer: iced_core::text::Renderer,
             Renderer::Font: From<Font>,
-            Theme: iced::widget::text::Catalog,
+            Theme: iced_widget::text::Catalog,
         {
             Text::<Theme, Renderer>::new(icon.to_string())
                 .size(size)
                 .font(font.unwrap_or_default())
                 .align_x(alignment::Horizontal::Center)
                 .align_y(alignment::Vertical::Center)
-                .shaping(iced::advanced::text::Shaping::Advanced)
+                .shaping(iced_core::text::Shaping::Advanced)
                 .width(Length::Shrink)
         }
 
@@ -423,9 +419,9 @@ where
             font: Option<Font>,
         ) -> Text<'_, Theme, Renderer>
         where
-            Renderer: iced::advanced::text::Renderer,
+            Renderer: iced_core::text::Renderer,
             Renderer::Font: From<Font>,
-            Theme: iced::widget::text::Catalog,
+            Theme: iced_widget::text::Catalog,
         {
             Text::<Theme, Renderer>::new(text)
                 .size(size)
@@ -500,9 +496,9 @@ where
             .height(self.height)
             .spacing(self.spacing)
             .align_x(self.align_tabs);
-        let element: Element<Message, Theme, Renderer> = Element::new(column);
+        let mut element: Element<Message, Theme, Renderer> = Element::new(column);
         let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -510,7 +506,7 @@ where
             &mut tree.children[0]
         };
         element
-            .as_widget()
+            .as_widget_mut()
             .layout(tab_tree, renderer, &limits.loose())
     }
 
@@ -673,7 +669,7 @@ fn draw_tab<Theme, Renderer>(
     on_close: bool,
     close_position: &Position,
 ) where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog + text::Catalog,
 {
     fn icon_bound_rectangle(item: Option<Layout<'_>>) -> Rectangle {
@@ -695,14 +691,14 @@ fn draw_tab<Theme, Renderer>(
         style: &Style,
         position: Position,
     ) where
-        Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+        Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     {
         let mut label_layout_children = label_layout.children();
         match tab {
             TabLabel::Icon(icon) => {
                 let icon_bounds = icon_bound_rectangle(label_layout_children.next());
                 renderer.fill_text(
-                    iced::advanced::text::Text {
+                    iced_core::text::Text {
                         content: icon.to_string(),
                         bounds: Size::new(icon_bounds.width, icon_bounds.height),
                         size: Pixels(icon_data.1),
@@ -710,7 +706,7 @@ fn draw_tab<Theme, Renderer>(
                         align_x: text::Alignment::Center,
                         align_y: Vertical::Center,
                         line_height: LineHeight::Relative(1.3),
-                        shaping: iced::advanced::text::Shaping::Advanced,
+                        shaping: iced_core::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
                     },
                     Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
@@ -721,7 +717,7 @@ fn draw_tab<Theme, Renderer>(
             TabLabel::Text(text) => {
                 let text_bounds = text_bound_rectangle(label_layout_children.next());
                 renderer.fill_text(
-                    iced::advanced::text::Text {
+                    iced_core::text::Text {
                         content: text.clone(),
                         bounds: Size::new(text_bounds.width, text_bounds.height),
                         size: Pixels(text_data.1),
@@ -729,7 +725,7 @@ fn draw_tab<Theme, Renderer>(
                         align_x: text::Alignment::Center,
                         align_y: Vertical::Center,
                         line_height: LineHeight::Relative(1.3),
-                        shaping: iced::advanced::text::Shaping::Advanced,
+                        shaping: iced_core::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
                     },
                     Point::new(text_bounds.center_x(), text_bounds.center_y()),
@@ -751,7 +747,7 @@ fn draw_tab<Theme, Renderer>(
                     }
                 }
                 renderer.fill_text(
-                    iced::advanced::text::Text {
+                    iced_core::text::Text {
                         content: icon.to_string(),
                         bounds: Size::new(icon_bounds.width, icon_bounds.height),
                         size: Pixels(icon_data.1),
@@ -759,7 +755,7 @@ fn draw_tab<Theme, Renderer>(
                         align_x: text::Alignment::Center,
                         align_y: Vertical::Center,
                         line_height: LineHeight::Relative(1.3),
-                        shaping: iced::advanced::text::Shaping::Advanced,
+                        shaping: iced_core::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
                     },
                     Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
@@ -767,7 +763,7 @@ fn draw_tab<Theme, Renderer>(
                     icon_bounds,
                 );
                 renderer.fill_text(
-                    iced::advanced::text::Text {
+                    iced_core::text::Text {
                         content: text.clone(),
                         bounds: Size::new(text_bounds.width, text_bounds.height),
                         size: Pixels(text_data.1),
@@ -775,7 +771,7 @@ fn draw_tab<Theme, Renderer>(
                         align_x: text::Alignment::Center,
                         align_y: Vertical::Center,
                         line_height: LineHeight::Relative(1.3),
-                        shaping: iced::advanced::text::Shaping::Advanced,
+                        shaping: iced_core::text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
                     },
                     Point::new(text_bounds.center_x(), text_bounds.center_y()),
@@ -794,13 +790,13 @@ fn draw_tab<Theme, Renderer>(
         close_size: f32,
         viewport: &Rectangle,
     ) where
-        Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+        Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     {
         let cross_bounds = cross_layout.bounds();
         let is_mouse_over_cross = cursor.is_over(cross_bounds);
         let (content, font, shaping) = iced_aw_font::advanced_text::cancel();
         renderer.fill_text(
-            iced::advanced::text::Text {
+            iced_core::text::Text {
                 content,
                 bounds: Size::new(cross_bounds.width, cross_bounds.height),
                 size: Pixels(close_size + if is_mouse_over_cross { 1.0 } else { 0.0 }),
@@ -917,7 +913,7 @@ fn draw_tab<Theme, Renderer>(
 impl<'a, Message, TabId, Theme, Renderer> From<Sidebar<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog + text::Catalog,
     Message: 'a,
     TabId: 'a + Eq + Clone,
@@ -950,7 +946,7 @@ pub enum SidebarPosition {
 /// # Example
 /// ```ignore
 /// # use iced_aw::{TabLabel, tabs::SidebarWithContent};
-/// # use iced::widget::Text;
+/// # use iced_widget::Text;
 /// #
 /// #[derive(Debug, Clone)]
 /// enum Message {
@@ -972,9 +968,14 @@ pub enum SidebarPosition {
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct SidebarWithContent<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
-where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
+pub struct SidebarWithContent<
+    'a,
+    Message,
+    TabId,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer,
     Theme: Catalog,
     TabId: Eq + Clone,
 {
@@ -994,7 +995,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> SidebarWithContent<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -1210,7 +1211,7 @@ where
 impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for SidebarWithContent<'_, Message, TabId, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -1242,7 +1243,7 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let sidebar_limits = limits.width(Length::Shrink).height(self.height);
         let mut sidebar_node =
             self.sidebar
@@ -1252,8 +1253,8 @@ where
             .height(self.height)
             .shrink([sidebar_node.size().width, 0.0]);
         let mut tab_content_node =
-            if let Some(element) = self.tabs.get(self.sidebar.get_active_tab_idx()) {
-                element.as_widget().layout(
+            if let Some(element) = self.tabs.get_mut(self.sidebar.get_active_tab_idx()) {
+                element.as_widget_mut().layout(
                     &mut tree.children[1].children[self.sidebar.get_active_tab_idx()],
                     renderer,
                     &tab_content_limits,
@@ -1489,7 +1490,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -1497,7 +1498,7 @@ where
     ) {
         let active_tab = self.sidebar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
-            self.tabs[active_tab].as_widget().operate(
+            self.tabs[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
                 layout
                     .children()
@@ -1514,7 +1515,7 @@ impl<'a, Message, TabId, Theme, Renderer>
     From<SidebarWithContent<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: 'a + Catalog + text::Catalog,
     Message: 'a,
     TabId: 'a + Eq + Clone,

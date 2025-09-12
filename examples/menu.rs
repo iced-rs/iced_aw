@@ -702,6 +702,7 @@ fn base_button<'a>(
                 // Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
                 // Status::Pressed => base.with_background(Color::from_rgb(0.0, 1.0, 0.0)),
                 // _ => iced::widget::button::primary(theme, status)
+                
             }
         })
         .on_press(msg)

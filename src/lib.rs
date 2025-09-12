@@ -77,7 +77,6 @@ pub use widget as widgets;
 
 pub mod core;
 pub mod style;
-pub use iced::Element;
 pub use iced_fonts;
 
 /// Exports for all platforms that are not WASM32.
@@ -168,7 +167,7 @@ mod platform {
 #[doc(no_inline)]
 pub use platform::*;
 
-use iced::Font;
+use iced_core::Font;
 use iced_fonts::generate_icon_functions;
 
 /// Embedded font file. There a handfull of glyphs so no need to worry.

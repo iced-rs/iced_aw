@@ -1,7 +1,7 @@
 //! Common types for reuse.
 //!
 
-use iced::{Padding, Rectangle};
+use iced_core::{Padding, Rectangle};
 
 /// Methods for creating inner bounds
 #[allow(missing_debug_implementations)]

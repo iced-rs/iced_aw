@@ -5,14 +5,13 @@
 #![allow(clippy::wildcard_imports)]
 #![allow(clippy::enum_glob_use)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        mouse, overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
-    alignment, event, window, Color, Element, Event, Length, Padding, Pixels, Rectangle, Size,
+use iced_core::{
+    alignment, event,
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
+    widget::{tree, Operation, Tree},
+    window, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size,
+    Widget,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -268,7 +267,7 @@ where
     /// tree: Tree{bar, \[item_tree...]}
     ///
     /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let MenuBarState {
             menu_state: bar_menu_state,
             ..
@@ -293,7 +292,11 @@ where
             self.padding,
             self.spacing,
             alignment::Alignment::Center,
-            &self.roots.iter().map(|item| &item.item).collect::<Vec<_>>(),
+            &mut self
+                .roots
+                .iter_mut()
+                .map(|item| &mut item.item)
+                .collect::<Vec<_>>(),
             &mut tree
                 .children
                 .iter_mut()
@@ -521,7 +524,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -537,7 +540,7 @@ where
         let slice = bar_menu_state.slice;
 
         operation.container(None, layout.bounds(), &mut |operation| {
-            itl_iter_slice!(slice, self.roots;iter, tree.children;iter_mut, slice_layout.children())
+            itl_iter_slice!(slice, self.roots;iter_mut, tree.children;iter_mut, slice_layout.children())
                 .for_each(|((child, state), layout)| {
                     child.operate(state, layout, renderer, operation);
                 });
@@ -646,7 +649,7 @@ where
         layout: Layout<'b>,
         renderer: &Renderer,
         viewport: &Rectangle,
-        translation: iced::Vector,
+        translation: iced_core::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::MenuBar::overlay", "");

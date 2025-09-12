@@ -1,7 +1,6 @@
-use iced::{
-    advanced::{layout::*, mouse, renderer, widget::Tree, Shell},
-    window::RedrawRequest,
-    Padding, Rectangle, Size,
+use iced_core::{
+    layout::*, mouse, renderer, widget::Tree, window::RedrawRequest, Padding, Rectangle, Shell,
+    Size,
 };
 
 use super::menu_bar::*;

@@ -7,21 +7,18 @@ pub use crate::style::{
     card::{Catalog, Style},
     status::{Status, StyleFn},
 };
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::LineHeight,
-        widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment::Vertical,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
+    overlay, renderer,
+    text::LineHeight,
     touch,
-    widget::text::Wrapping,
-    Alignment, Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shadow,
-    Size, Vector,
+    widget::{Operation, Tree},
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Shell, Size, Vector, Widget,
 };
+use iced_widget::text::Wrapping;
 
 /// The default padding of a [`Card`].
 const DEFAULT_PADDING: Padding = Padding::new(10.0);
@@ -30,7 +27,7 @@ const DEFAULT_PADDING: Padding = Padding::new(10.0);
 ///
 /// # Example
 /// ```ignore
-/// # use iced::widget::Text;
+/// # use iced_widget::Text;
 /// # use iced_aw::Card;
 /// #
 /// #[derive(Debug, Clone)]
@@ -47,7 +44,7 @@ const DEFAULT_PADDING: Padding = Padding::new(10.0);
 ///
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct Card<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct Card<'a, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
     Renderer: renderer::Renderer,
     Theme: Catalog,
@@ -225,7 +222,7 @@ impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Card<'a, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     fn children(&self) -> Vec<Tree> {
@@ -256,13 +253,13 @@ where
         }
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
         let head_node = head_node(
             renderer,
             &limits,
-            &self.head,
+            &mut self.head,
             self.padding_head,
             self.width,
             self.on_close.is_some(),
@@ -272,14 +269,14 @@ where
 
         let limits = limits.shrink(Size::new(0.0, head_node.size().height));
 
-        let mut foot_node = self.foot.as_ref().map_or_else(Node::default, |foot| {
+        let mut foot_node = self.foot.as_mut().map_or_else(Node::default, |foot| {
             foot_node(renderer, &limits, foot, self.padding_foot, self.width, tree)
         });
         let limits = limits.shrink(Size::new(0.0, foot_node.size().height));
         let mut body_node = body_node(
             renderer,
             &limits,
-            &self.body,
+            &mut self.body,
             self.padding_body,
             self.width,
             tree,
@@ -476,7 +473,7 @@ where
     }
 
     fn operate<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -488,16 +485,19 @@ where
         let foot_layout = children.next().expect("Missing Footer Layout");
 
         self.head
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut state.children[0], head_layout, renderer, operation);
         self.body
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut state.children[1], body_layout, renderer, operation);
 
-        if let Some(footer) = &self.foot {
-            footer
-                .as_widget()
-                .operate(&mut state.children[2], foot_layout, renderer, operation);
+        if let Some(footer) = &mut self.foot {
+            footer.as_widget_mut().operate(
+                &mut state.children[2],
+                foot_layout,
+                renderer,
+                operation,
+            );
         }
     }
 
@@ -603,7 +603,7 @@ where
         renderer: &Renderer,
         viewport: &Rectangle,
         translation: Vector,
-    ) -> Option<iced::advanced::overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<iced_core::overlay::Element<'b, Message, Theme, Renderer>> {
         let mut children = vec![&mut self.head, &mut self.body];
         if let Some(foot) = &mut self.foot {
             children.push(foot);
@@ -638,7 +638,7 @@ where
 fn head_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    head: &Element<'_, Message, Theme, Renderer>,
+    head: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     on_close: bool,
@@ -646,7 +646,7 @@ fn head_node<Message, Theme, Renderer>(
     tree: &mut Tree,
 ) -> Node
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
 {
     let header_size = head.as_widget().size();
 
@@ -663,7 +663,7 @@ where
     }
 
     let mut head = head
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[0], renderer, &limits);
     let mut size = limits.resolve(width, header_size.height, head.size());
 
@@ -698,7 +698,7 @@ where
 fn body_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    body: &Element<'_, Message, Theme, Renderer>,
+    body: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -715,7 +715,7 @@ where
         .shrink(padding);
 
     let mut body = body
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[1], renderer, &limits);
     let size = limits.resolve(width, body_size.height, body.size());
 
@@ -732,7 +732,7 @@ where
 fn foot_node<Message, Theme, Renderer>(
     renderer: &Renderer,
     limits: &Limits,
-    foot: &Element<'_, Message, Theme, Renderer>,
+    foot: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
     tree: &mut Tree,
@@ -749,7 +749,7 @@ where
         .shrink(padding);
 
     let mut foot = foot
-        .as_widget()
+        .as_widget_mut()
         .layout(&mut tree.children[2], renderer, &limits);
     let size = limits.resolve(width, foot_size.height, foot.size());
 
@@ -776,7 +776,7 @@ fn draw_head<Message, Theme, Renderer>(
     close_size: Option<f32>,
     is_mouse_over_close: bool,
 ) where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     let mut head_children = layout.children();
@@ -842,7 +842,7 @@ fn draw_head<Message, Theme, Renderer>(
         let (content, font, shaping) = cancel();
 
         renderer.fill_text(
-            iced::advanced::text::Text {
+            iced_core::text::Text {
                 content,
                 bounds: Size::new(close_bounds.width, close_bounds.height),
                 size: Pixels(
@@ -875,7 +875,7 @@ fn draw_body<Message, Theme, Renderer>(
     theme: &Theme,
     style: &Style,
 ) where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     let mut body_children = layout.children();
@@ -925,7 +925,7 @@ fn draw_foot<Message, Theme, Renderer>(
     theme: &Theme,
     style: &Style,
 ) where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     let mut foot_children = layout.children();
@@ -968,7 +968,7 @@ fn draw_foot<Message, Theme, Renderer>(
 impl<'a, Message, Theme, Renderer> From<Card<'a, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog,
     Message: Clone + 'a,
 {

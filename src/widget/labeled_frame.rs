@@ -1,15 +1,13 @@
 //! This module provides a [`LabeledFrame`] widget which allows you to draw a border with a title around some content.
 
-use iced::advanced;
-use iced::Pixels;
-use iced::Rectangle;
+use iced_core::{Length, Pixels, Rectangle};
 
 /// The style of a [`LabeledFrame`]
 pub struct Style {
     /// The color of the border/frame
-    pub color: iced::Background,
+    pub color: iced_core::Background,
     /// The border radius of the border/frame
-    pub radius: iced::border::Radius,
+    pub radius: iced_core::border::Radius,
 }
 
 /// The theme catalog of a [`LabeledFrame`]
@@ -25,13 +23,13 @@ pub trait Catalog {
 /// A styling function for a [`LabeledFrame`]
 pub type StyleFn<'a, Theme> = Box<dyn Fn(&Theme) -> Style + 'a>;
 
-impl Catalog for iced::Theme {
+impl Catalog for iced_widget::Theme {
     type Class<'a> = StyleFn<'a, Self>;
 
     fn default<'a>() -> Self::Class<'a> {
         Box::new(|theme| Style {
-            color: iced::Background::Color(theme.extended_palette().secondary.weak.color),
-            radius: iced::border::Radius::default(),
+            color: iced_core::Background::Color(theme.extended_palette().secondary.weak.color),
+            radius: iced_core::border::Radius::default(),
         })
     }
 
@@ -45,10 +43,10 @@ pub struct LabeledFrame<'a, Message, Theme, Renderer>
 where
     Theme: Catalog,
 {
-    title: iced::Element<'a, Message, Theme, Renderer>,
-    content: iced::Element<'a, Message, Theme, Renderer>,
-    width: iced::Length,
-    height: iced::Length,
+    title: iced_core::Element<'a, Message, Theme, Renderer>,
+    content: iced_core::Element<'a, Message, Theme, Renderer>,
+    width: Length,
+    height: Length,
     class: Theme::Class<'a>,
     inset: f32,
     outset: f32,
@@ -62,14 +60,14 @@ where
 {
     /// Creates a new [`LabeledFrame`]
     pub fn new(
-        title: impl Into<iced::Element<'a, Message, Theme, Renderer>>,
-        content: impl Into<iced::Element<'a, Message, Theme, Renderer>>,
+        title: impl Into<iced_core::Element<'a, Message, Theme, Renderer>>,
+        content: impl Into<iced_core::Element<'a, Message, Theme, Renderer>>,
     ) -> Self {
         Self {
             title: title.into(),
             content: content.into(),
-            width: iced::Shrink,
-            height: iced::Shrink,
+            width: Length::Shrink,
+            height: Length::Shrink,
             class: Theme::default(),
             inset: 5.0,
             outset: 5.0,
@@ -80,14 +78,14 @@ where
 
     /// Sets the width of the [`LabeledFrame`]
     #[must_use]
-    pub fn width(mut self, width: impl Into<iced::Length>) -> Self {
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
         self.width = width.into();
         self
     }
 
     /// Sets the height of the [`LabeledFrame`]
     #[must_use]
-    pub fn height(mut self, height: impl Into<iced::Length>) -> Self {
+    pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
         self
     }
@@ -131,31 +129,31 @@ where
     }
 }
 
-impl<Message, Theme, Renderer> advanced::Widget<Message, Theme, Renderer>
+impl<Message, Theme, Renderer> iced_core::Widget<Message, Theme, Renderer>
     for LabeledFrame<'_, Message, Theme, Renderer>
 where
-    Renderer: advanced::Renderer,
+    Renderer: iced_core::Renderer,
     Theme: Catalog,
 {
-    fn size(&self) -> iced::Size<iced::Length> {
-        iced::Size::new(self.width, self.height)
+    fn size(&self) -> iced_core::Size<Length> {
+        iced_core::Size::new(self.width, self.height)
     }
 
     fn layout(
-        &self,
-        tree: &mut advanced::widget::Tree,
+        &mut self,
+        tree: &mut iced_core::widget::Tree,
         renderer: &Renderer,
-        limits: &advanced::layout::Limits,
-    ) -> advanced::layout::Node {
+        limits: &iced_core::layout::Limits,
+    ) -> iced_core::layout::Node {
         let limits = (*limits).height(self.height).width(self.width).loose();
         let title_layout = self
             .title
-            .as_widget()
+            .as_widget_mut()
             .layout(
                 &mut tree.children[0],
                 renderer,
                 &limits.shrink(
-                    iced::Padding::default()
+                    iced_core::Padding::default()
                         .left(
                             (self.outset + self.inset + self.stroke_width) * 2.0
                                 + self.horizontal_title_padding,
@@ -173,12 +171,12 @@ where
             ]);
         let content_layout = self
             .content
-            .as_widget()
+            .as_widget_mut()
             .layout(
                 &mut tree.children[1],
                 renderer,
                 &limits.shrink(
-                    iced::Padding::default()
+                    iced_core::Padding::default()
                         .left(self.outset + self.inset + self.stroke_width)
                         .right(self.outset + self.inset + self.stroke_width)
                         .bottom(self.outset + self.inset + self.stroke_width)
@@ -193,11 +191,11 @@ where
                 (self.outset + self.inset + self.stroke_width).max(title_layout.bounds().height),
             ]);
 
-        advanced::layout::Node::with_children(
+        iced_core::layout::Node::with_children(
             limits.resolve(
                 self.width,
                 self.height,
-                iced::Size::new(
+                iced_core::Size::new(
                     (content_layout.size().width
                         + (self.outset + self.inset + self.stroke_width) * 2.0)
                         .max(
@@ -213,26 +211,26 @@ where
         )
     }
 
-    fn children(&self) -> Vec<advanced::widget::Tree> {
+    fn children(&self) -> Vec<iced_core::widget::Tree> {
         vec![
-            advanced::widget::Tree::new(&self.title),
-            advanced::widget::Tree::new(&self.content),
+            iced_core::widget::Tree::new(&self.title),
+            iced_core::widget::Tree::new(&self.content),
         ]
     }
 
-    fn diff(&self, tree: &mut advanced::widget::Tree) {
+    fn diff(&self, tree: &mut iced_core::widget::Tree) {
         tree.diff_children(&[&self.title, &self.content]);
     }
 
     fn draw(
         &self,
-        tree: &advanced::widget::Tree,
+        tree: &iced_core::widget::Tree,
         renderer: &mut Renderer,
         theme: &Theme,
-        style: &advanced::renderer::Style,
-        layout: advanced::Layout<'_>,
-        cursor: advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        style: &iced_core::renderer::Style,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
+        viewport: &iced_core::Rectangle,
     ) {
         [&self.title, &self.content]
             .iter()
@@ -249,8 +247,8 @@ where
             title_layout.position().y + (title_layout.bounds().height - self.stroke_width) / 2.0;
         // left line
         renderer.fill_quad(
-            advanced::renderer::Quad {
-                bounds: iced::Rectangle {
+            iced_core::renderer::Quad {
+                bounds: iced_core::Rectangle {
                     x: layout.position().x + self.outset,
                     y: top_line_y,
                     width: self.stroke_width,
@@ -258,21 +256,21 @@ where
                         - self.outset
                         - (top_line_y - layout.position().y),
                 },
-                border: iced::Border {
-                    radius: iced::border::Radius::default()
+                border: iced_core::Border {
+                    radius: iced_core::border::Radius::default()
                         .top_left(style.radius.top_left)
                         .bottom_left(style.radius.bottom_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+                shadow: iced_core::Shadow::default(),
                 ..Default::default()
             },
             style.color,
         );
         // right line
         renderer.fill_quad(
-            advanced::renderer::Quad {
-                bounds: iced::Rectangle {
+            iced_core::renderer::Quad {
+                bounds: iced_core::Rectangle {
                     x: layout.position().x + layout.bounds().width
                         - self.outset
                         - self.stroke_width,
@@ -282,21 +280,21 @@ where
                         - self.outset
                         - (top_line_y - layout.position().y),
                 },
-                border: iced::Border {
-                    radius: iced::border::Radius::default()
+                border: iced_core::Border {
+                    radius: iced_core::border::Radius::default()
                         .top_right(style.radius.top_right)
                         .bottom_right(style.radius.bottom_right),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+                shadow: iced_core::Shadow::default(),
                 ..Default::default()
             },
             style.color,
         );
         // bottom line
         renderer.fill_quad(
-            advanced::renderer::Quad {
-                bounds: iced::Rectangle {
+            iced_core::renderer::Quad {
+                bounds: iced_core::Rectangle {
                     x: layout.position().x + self.outset,
                     y: layout.position().y + layout.bounds().height
                         - self.outset
@@ -304,21 +302,21 @@ where
                     width: layout.bounds().width - self.outset * 2.0,
                     height: self.stroke_width,
                 },
-                border: iced::Border {
-                    radius: iced::border::Radius::default()
+                border: iced_core::Border {
+                    radius: iced_core::border::Radius::default()
                         .bottom_right(style.radius.top_right)
                         .bottom_left(style.radius.top_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+                shadow: iced_core::Shadow::default(),
                 ..Default::default()
             },
             style.color,
         );
         // top line left
         renderer.fill_quad(
-            advanced::renderer::Quad {
-                bounds: iced::Rectangle {
+            iced_core::renderer::Quad {
+                bounds: iced_core::Rectangle {
                     x: layout.position().x + self.outset,
                     y: top_line_y,
                     width: title_layout.position().x
@@ -326,19 +324,19 @@ where
                         - self.horizontal_title_padding,
                     height: self.stroke_width,
                 },
-                border: iced::Border {
-                    radius: iced::border::Radius::default().top_left(style.radius.top_left),
+                border: iced_core::Border {
+                    radius: iced_core::border::Radius::default().top_left(style.radius.top_left),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+                shadow: iced_core::Shadow::default(),
                 ..Default::default()
             },
             style.color,
         );
         // top line right
         renderer.fill_quad(
-            advanced::renderer::Quad {
-                bounds: iced::Rectangle {
+            iced_core::renderer::Quad {
+                bounds: iced_core::Rectangle {
                     x: title_layout.position().x
                         + title_layout.bounds().width
                         + self.horizontal_title_padding,
@@ -348,11 +346,11 @@ where
                         - self.horizontal_title_padding,
                     height: self.stroke_width,
                 },
-                border: iced::Border {
-                    radius: iced::border::Radius::default().top_right(style.radius.top_right),
+                border: iced_core::Border {
+                    radius: iced_core::border::Radius::default().top_right(style.radius.top_right),
                     ..Default::default()
                 },
-                shadow: iced::Shadow::default(),
+                shadow: iced_core::Shadow::default(),
                 ..Default::default()
             },
             style.color,
@@ -361,12 +359,12 @@ where
 
     fn mouse_interaction(
         &self,
-        state: &advanced::widget::Tree,
-        layout: advanced::Layout<'_>,
-        cursor: advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        state: &iced_core::widget::Tree,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
+        viewport: &iced_core::Rectangle,
         renderer: &Renderer,
-    ) -> advanced::mouse::Interaction {
+    ) -> iced_core::mouse::Interaction {
         [&self.title, &self.content]
             .iter()
             .zip(&state.children)
@@ -382,14 +380,14 @@ where
 
     fn update(
         &mut self,
-        state: &mut advanced::widget::Tree,
-        event: &iced::Event,
-        layout: advanced::Layout<'_>,
-        cursor: advanced::mouse::Cursor,
+        state: &mut iced_core::widget::Tree,
+        event: &iced_core::Event,
+        layout: iced_core::Layout<'_>,
+        cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn advanced::Clipboard,
-        shell: &mut advanced::Shell<'_, Message>,
-        viewport: &iced::Rectangle,
+        clipboard: &mut dyn iced_core::Clipboard,
+        shell: &mut iced_core::Shell<'_, Message>,
+        viewport: &iced_core::Rectangle,
     ) {
         for ((child, state), layout) in [&mut self.title, &mut self.content]
             .iter_mut()
@@ -403,20 +401,20 @@ where
     }
 
     fn operate(
-        &self,
-        state: &mut advanced::widget::Tree,
-        layout: advanced::Layout<'_>,
+        &mut self,
+        state: &mut iced_core::widget::Tree,
+        layout: iced_core::Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn advanced::widget::Operation,
+        operation: &mut dyn iced_core::widget::Operation,
     ) {
         operation.container(None, layout.bounds(), &mut |operation| {
-            [&self.title, &self.content]
-                .iter()
+            [&mut self.title, &mut self.content]
+                .iter_mut()
                 .zip(&mut state.children)
                 .zip(layout.children())
                 .for_each(|((child, state), layout)| {
                     child
-                        .as_widget()
+                        .as_widget_mut()
                         .operate(state, layout, renderer, operation);
                 });
         });
@@ -424,12 +422,12 @@ where
 
     fn overlay<'b>(
         &'b mut self,
-        state: &'b mut advanced::widget::Tree,
-        layout: advanced::Layout<'b>,
+        state: &'b mut iced_core::widget::Tree,
+        layout: iced_core::Layout<'b>,
         renderer: &Renderer,
         viewport: &Rectangle,
-        translation: iced::Vector,
-    ) -> Option<advanced::overlay::Element<'b, Message, Theme, Renderer>> {
+        translation: iced_core::Vector,
+    ) -> Option<iced_core::overlay::Element<'b, Message, Theme, Renderer>> {
         let children = vec![&mut self.title, &mut self.content]
             .into_iter()
             .zip(&mut state.children)
@@ -441,22 +439,22 @@ where
             })
             .collect::<Vec<_>>();
 
-        (!children.is_empty()).then(|| advanced::overlay::Group::with_children(children).overlay())
+        (!children.is_empty()).then(|| iced_core::overlay::Group::with_children(children).overlay())
     }
 
-    fn size_hint(&self) -> iced::Size<iced::Length> {
+    fn size_hint(&self) -> iced_core::Size<Length> {
         self.size()
     }
 }
 
 impl<'a, Message, Theme, Renderer> From<LabeledFrame<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for iced_core::Element<'a, Message, Theme, Renderer>
 where
     Message: 'a,
     Theme: 'a + Catalog,
-    Renderer: advanced::Renderer + 'a,
+    Renderer: iced_core::Renderer + 'a,
 {
     fn from(value: LabeledFrame<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(value)
+        iced_core::Element::new(value)
     }
 }

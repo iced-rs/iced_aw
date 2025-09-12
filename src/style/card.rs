@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: card*
 
 use super::{colors, Status, StyleFn};
-use iced::{Background, Color, Theme};
+use iced_core::{Background, Color, Theme};
 
 /// The appearance of a [`Card`](crate::widget::card::Card).
 #[derive(Clone, Copy, Debug)]

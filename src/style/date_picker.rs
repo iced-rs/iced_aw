@@ -2,7 +2,7 @@
 //!
 //! *This API requires the following crate features to be activated: `date_picker`*
 use super::{Status, StyleFn};
-use iced::{Background, Color, Theme};
+use iced_core::{Background, Color, Theme};
 
 /// The appearance of a [`DatePicker`](crate::widget::DatePicker).
 #[derive(Clone, Copy, Debug)]

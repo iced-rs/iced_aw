@@ -7,22 +7,24 @@ pub use crate::style::{
     status::{self, StyleFn},
 };
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::Tree,
-        Clipboard, Layout, Shell,
-    },
+use iced_core::{
     keyboard,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    touch, window, Border, Color, Element, Event, Point, Size,
+    overlay, renderer, touch,
+    widget::Tree,
+    window, Border, Clipboard, Color, Element, Event, Layout, Point, Shell, Size,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).
 #[allow(missing_debug_implementations)]
-pub struct ContextMenuOverlay<'a, 'b, Message, Theme = iced::Theme, Renderer = iced::Renderer>
-where
+pub struct ContextMenuOverlay<
+    'a,
+    'b,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer,
     Theme: Catalog,
@@ -88,7 +90,7 @@ where
 
         let mut content = self
             .content
-            .as_widget()
+            .as_widget_mut()
             .layout(self.tree, renderer, &limits);
 
         // Try to stay inside borders
@@ -153,7 +155,7 @@ where
         &mut self,
         event: &Event,
         layout: Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
+        cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,

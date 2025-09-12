@@ -6,15 +6,12 @@
 #![allow(clippy::items_after_statements)]
 #![allow(clippy::similar_names)]
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        mouse, overlay, renderer,
-        widget::{Operation, Tree},
-        Clipboard, Layout, Shell,
-    },
+use iced_core::{
+    layout::{Limits, Node},
+    mouse, overlay, renderer,
     time::Instant,
-    window, Event, Point, Rectangle, Size, Vector,
+    widget::{Operation, Tree},
+    window, Clipboard, Event, Layout, Point, Rectangle, Shell, Size, Vector,
 };
 
 use super::{common::*, menu_bar::*, menu_tree::*};
@@ -96,14 +93,14 @@ where
 
         fn rec<Message, Theme: Catalog, Renderer: renderer::Renderer>(
             renderer: &Renderer,
-            item: &Item<'_, Message, Theme, Renderer>,
+            item: &mut Item<'_, Message, Theme, Renderer>,
             tree: &mut Tree,
             menu_nodes: &mut Vec<Node>,
             parent_bounds: Rectangle,
             parent_direction: (Direction, Direction),
             viewport: &Rectangle,
         ) {
-            if let Some(menu) = item.menu.as_ref() {
+            if let Some(menu) = item.menu.as_mut() {
                 let menu_tree = &mut tree.children[1];
 
                 let (menu_node, direction) = menu.layout(
@@ -120,7 +117,7 @@ where
                 let menu_state = menu_tree.state.downcast_ref::<MenuState>();
 
                 if let Some(active) = menu_state.active {
-                    let next_item = &menu.items[active];
+                    let next_item = &mut menu.items[active];
                     let next_tree = &mut menu_tree.children[active];
                     let next_parent_bounds = {
                         let slice_node = &menu_nodes.last().unwrap().children()[0];
@@ -564,17 +561,17 @@ where
         let menu_layouts_layout = lc.next().unwrap(); // Node{0, [menu_node...]}
         let mut menu_layouts = menu_layouts_layout.children(); // [menu_node...]
 
-        let active_root = &self.menu_bar.roots[active];
+        let active_root = &mut self.menu_bar.roots[active];
         let active_tree = &mut self.tree.children[active];
 
         fn rec<'a, 'b, Message, Theme: Catalog, Renderer: renderer::Renderer>(
             tree: &mut Tree,
-            item: &Item<'a, Message, Theme, Renderer>,
+            item: &mut Item<'a, Message, Theme, Renderer>,
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
             renderer: &Renderer,
             operation: &mut dyn Operation<()>,
         ) {
-            let Some(menu) = item.menu.as_ref() else {
+            let Some(menu) = item.menu.as_mut() else {
                 return;
             };
 
@@ -590,7 +587,7 @@ where
 
             operation.container(None, menu_layout.bounds(), &mut |operation| {
                 menu.items
-                    .iter() // [Item...]
+                    .iter_mut() // [Item...]
                     .zip(menu_tree.children.iter_mut()) // [item_tree...] // [widget_node...]
                     .for_each(|(child, state)| {
                         rec(state, child, layout_iter, renderer, operation);

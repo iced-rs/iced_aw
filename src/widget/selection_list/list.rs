@@ -2,21 +2,18 @@
 
 use crate::selection_list::Catalog;
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        widget::{
-            tree::{State, Tag},
-            Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment::Vertical,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    touch,
+    renderer, touch,
     widget::text::{LineHeight, Wrapping},
-    Border, Color, Element, Event, Length, Padding, Pixels, Point, Rectangle, Size,
+    widget::{
+        tree::{State, Tag},
+        Tree,
+    },
+    Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
+    Shell, Size, Widget,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -31,7 +28,7 @@ pub struct List<'a, T: 'a, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     /// Options pointer to hold all rendered strings
@@ -68,7 +65,7 @@ impl<T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
     for List<'_, T, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
     fn tag(&self) -> Tag {
@@ -111,7 +108,7 @@ where
         Size::new(Length::Fill, Length::Shrink)
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
@@ -266,7 +263,7 @@ where
             };
 
             renderer.fill_text(
-                iced::advanced::text::Text {
+                iced_core::text::Text {
                     content: self.options[i].to_string(),
                     bounds: Size::new(f32::INFINITY, bounds.height),
                     size: Pixels(self.text_size),
@@ -274,7 +271,7 @@ where
                     align_x: iced_widget::text::Alignment::Left,
                     align_y: Vertical::Center,
                     line_height: LineHeight::default(),
-                    shaping: iced::widget::text::Shaping::Advanced,
+                    shaping: iced_widget::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
                 },
                 Point::new(bounds.x, bounds.center_y()),
@@ -290,7 +287,7 @@ impl<'a, T, Message, Theme, Renderer> From<List<'a, T, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Message: 'a,
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog,
 {
     fn from(list: List<'a, T, Message, Theme, Renderer>) -> Self {

@@ -1,27 +1,24 @@
 //! Display fields that can only be filled with numeric type.
 //!
 //! A [`NumberInput`] has some local [`State`].
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        widget::{
-            tree::{State, Tag},
-            Operation, Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
     alignment::Vertical,
     keyboard,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
+    renderer,
     widget::{
-        text_input::{self, cursor, Value},
-        Column, Container, Row, Text,
+        tree::{State, Tag},
+        Operation, Tree,
     },
-    Alignment, Background, Border, Color, Element, Event, Length, Padding, Point, Rectangle,
-    Shadow, Size,
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
+    Point, Rectangle, Shadow, Shell, Size, Widget,
 };
-use iced_widget::text::{LineHeight, Wrapping};
+use iced_widget::{
+    text::{LineHeight, Wrapping},
+    text_input::{self, cursor, Value},
+    Column, Container, Row, Text,
+};
 use num_traits::{bounds::Bounded, Num, NumAssignOps};
 use std::{
     fmt::Display,
@@ -62,9 +59,9 @@ const DEFAULT_PADDING: Padding = Padding::new(5.0);
 /// .step(2);
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct NumberInput<'a, T, Message, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct NumberInput<'a, T, Message, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: number_input::ExtendedCatalog,
 {
     /// The current value of the [`NumberInput`].
@@ -76,9 +73,9 @@ where
     /// The max value of the [`NumberInput`].
     max: Bound<T>,
     /// The content padding of the [`NumberInput`].
-    padding: iced::Padding,
+    padding: iced_core::Padding,
     /// The text size of the [`NumberInput`].
-    size: Option<iced::Pixels>,
+    size: Option<iced_core::Pixels>,
     /// The underlying element of the [`NumberInput`].
     content: TypedInput<'a, T, InternalMessage<T>, Theme, Renderer>,
     /// The ``on_change`` event of the [`NumberInput`].
@@ -112,7 +109,7 @@ impl<'a, T, Message, Theme, Renderer> NumberInput<'a, T, Message, Theme, Rendere
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + Clone + Bounded + 'a,
     Message: Clone + 'a,
-    Renderer: iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: number_input::ExtendedCatalog,
 {
     /// Creates a new [`NumberInput`].
@@ -151,7 +148,7 @@ where
         }
     }
 
-    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced::widget::TextInput).
+    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced_widget::TextInput).
     #[must_use]
     pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
         self.content = self.content.id(id.into());
@@ -264,8 +261,8 @@ where
 
     /// Sets the [`Font`] of the [`Text`].
     ///
-    /// [`Font`]: iced::Font
-    /// [`Text`]: iced::widget::Text
+    /// [`Font`]: iced_core::Font
+    /// [`Text`]: iced_widget::Text
     #[allow(clippy::needless_pass_by_value)]
     #[must_use]
     pub fn font(mut self, font: Renderer::Font) -> Self {
@@ -274,9 +271,9 @@ where
         self
     }
 
-    /// Sets the [Icon](iced::widget::text_input::Icon) of the [`NumberInput`]
+    /// Sets the [Icon](iced_widget::text_input::Icon) of the [`NumberInput`]
     #[must_use]
-    pub fn icon(mut self, icon: iced::widget::text_input::Icon<Renderer::Font>) -> Self {
+    pub fn icon(mut self, icon: iced_widget::text_input::Icon<Renderer::Font>) -> Self {
         self.content = self.content.icon(icon);
         self
     }
@@ -297,7 +294,7 @@ where
 
     /// Sets the padding of the [`NumberInput`].
     #[must_use]
-    pub fn padding(mut self, padding: impl Into<iced::Padding>) -> Self {
+    pub fn padding(mut self, padding: impl Into<iced_core::Padding>) -> Self {
         let padding = padding.into();
         self.padding = padding;
         self.content = self.content.padding(padding);
@@ -306,23 +303,23 @@ where
 
     /// Sets the text size of the [`NumberInput`].
     #[must_use]
-    pub fn size(mut self, size: impl Into<iced::Pixels>) -> Self {
+    pub fn set_size(mut self, size: impl Into<iced_core::Pixels>) -> Self {
         let size = size.into();
         self.size = Some(size);
         self.content = self.content.size(size);
         self
     }
 
-    /// Sets the [`text::LineHeight`](iced::widget::text::LineHeight) of the [`NumberInput`].
+    /// Sets the [`text::LineHeight`](iced_widget::text::LineHeight) of the [`NumberInput`].
     #[must_use]
-    pub fn line_height(mut self, line_height: impl Into<iced::widget::text::LineHeight>) -> Self {
+    pub fn line_height(mut self, line_height: impl Into<iced_widget::text::LineHeight>) -> Self {
         self.content = self.content.line_height(line_height);
         self
     }
 
     /// Sets the horizontal alignment of the [`NumberInput`].
     #[must_use]
-    pub fn align_x(mut self, alignment: impl Into<iced::alignment::Horizontal>) -> Self {
+    pub fn align_x(mut self, alignment: impl Into<iced_core::alignment::Horizontal>) -> Self {
         self.content = self.content.align_x(alignment);
         self
     }
@@ -364,7 +361,7 @@ where
     /// ```
     /// use iced_aw::widget::number_input;
     /// // Creates a range from -5 till 5.
-    /// let input: iced_aw::NumberInput<'_, _, _, iced::Theme, iced::Renderer> = number_input(&4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
+    /// let input: iced_aw::NumberInput<'_, _, _, iced_widget::Theme, iced::Renderer> = number_input(&4 /* my_value */, 0..=4, |_| () /* my_message */).bounds(-5..=5);
     /// ```
     #[must_use]
     pub fn bounds(mut self, bounds: impl RangeBounds<T>) -> Self {
@@ -493,7 +490,7 @@ impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     T: Num + NumAssignOps + PartialOrd + Display + FromStr + ToString + Clone + Bounded + 'a,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: number_input::ExtendedCatalog,
 {
     fn tag(&self) -> Tag {
@@ -515,7 +512,7 @@ where
         tree.diff_children_custom(
             &[&self.content],
             |state, content| content.diff(state),
-            |&content| Tree {
+            |content| Tree {
                 tag: content.tag(),
                 state: content.state(),
                 children: content.children(),
@@ -527,7 +524,7 @@ where
         Widget::size(&self.content)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let num_size = self.size();
         let limits = limits.width(num_size.width).height(Length::Shrink);
         let content = self
@@ -545,7 +542,7 @@ where
 
         let default_padding = DEFAULT_PADDING;
 
-        let element = if self.padding.top < default_padding.top
+        let mut element = if self.padding.top < default_padding.top
             || self.padding.bottom < default_padding.bottom
             || self.padding.right < default_padding.right
         {
@@ -567,7 +564,7 @@ where
         };
 
         let input_tree = if let Some(child_tree) = tree.children.get_mut(1) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -576,7 +573,7 @@ where
         };
 
         let mut modifier = element
-            .as_widget()
+            .as_widget_mut()
             .layout(input_tree, renderer, &limits2.loose());
         let intrinsic = Size::new(
             content.size().width - 1.0,
@@ -589,7 +586,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -739,7 +736,7 @@ where
                             keyboard::Key::Character("v") if modifiers.command() => {
                                 // We need something to paste
                                 let Some(paste) =
-                                    clipboard.read(iced::advanced::clipboard::Kind::Standard)
+                                    clipboard.read(iced_core::clipboard::Kind::Standard)
                                 else {
                                     return;
                                 };
@@ -1093,7 +1090,7 @@ where
 
         let (content, font, shaping) = down_open();
         renderer.fill_text(
-            iced::advanced::text::Text {
+            iced_core::text::Text {
                 content,
                 bounds: Size::new(dec_bounds.width, dec_bounds.height),
                 size: icon_size,
@@ -1130,7 +1127,7 @@ where
 
         let (content, font, shaping) = up_open();
         renderer.fill_text(
-            iced::advanced::text::Text {
+            iced_core::text::Text {
                 content,
                 bounds: Size::new(inc_bounds.width, inc_bounds.height),
                 size: icon_size,
@@ -1162,7 +1159,7 @@ impl<'a, T, Message, Theme, Renderer> From<NumberInput<'a, T, Message, Theme, Re
 where
     T: 'a + Num + NumAssignOps + PartialOrd + Display + FromStr + Clone + Bounded,
     Message: 'a + Clone,
-    Renderer: 'a + iced::advanced::text::Renderer<Font = iced::Font>,
+    Renderer: 'a + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + number_input::ExtendedCatalog,
 {
     fn from(num_input: NumberInput<'a, T, Message, Theme, Renderer>) -> Self {

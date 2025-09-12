@@ -17,20 +17,18 @@ use crate::{
     TabLabel,
 };
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{
-            tree::{State, Tag},
-            Operation, Tree,
-        },
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    widget::{text, Row},
-    Element, Event, Font, Length, Padding, Pixels, Point, Rectangle, Size, Vector,
+    overlay, renderer,
+    widget::{
+        tree::{State, Tag},
+        Operation, Tree,
+    },
+    Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
+    Size, Vector, Widget,
 };
+use iced_widget::{text, Row};
 
 pub use tab_bar_position::TabBarPosition;
 
@@ -40,7 +38,7 @@ pub use tab_bar_position::TabBarPosition;
 /// # Example
 /// ```ignore
 /// # use iced_aw::{TabLabel, tabs::Tabs};
-/// # use iced::widget::Text;
+/// # use iced_widget::Text;
 /// #
 /// #[derive(Debug, Clone)]
 /// enum Message {
@@ -62,9 +60,9 @@ pub use tab_bar_position::TabBarPosition;
 /// ```
 ///
 #[allow(missing_debug_implementations)]
-pub struct Tabs<'a, Message, TabId, Theme = iced::Theme, Renderer = iced::Renderer>
+pub struct Tabs<'a, Message, TabId, Theme = iced_widget::Theme, Renderer = iced_widget::Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer,
     Theme: Catalog,
     TabId: Eq + Clone,
 {
@@ -86,7 +84,7 @@ where
 
 impl<'a, Message, TabId, Theme, Renderer> Tabs<'a, Message, TabId, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -140,7 +138,7 @@ where
             tab_bar_position: TabBarPosition::Top,
             tab_icon_position: Position::Left,
             width: Length::Fill,
-            height: Length::Shrink,
+            height: Length::Fill,
         }
     }
 
@@ -303,7 +301,7 @@ where
 impl<Message, TabId, Theme, Renderer> Widget<Message, Theme, Renderer>
     for Tabs<'_, Message, TabId, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
@@ -337,8 +335,8 @@ where
         Size::new(self.width, self.height)
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let tab_bar_limits = limits.width(self.width).height(Length::Shrink);
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        let tab_bar_limits = limits.width(self.width).height(Length::Fill);
         let mut tab_bar_node =
             self.tab_bar
                 .layout(&mut tree.children[0], renderer, &tab_bar_limits);
@@ -349,8 +347,8 @@ where
             .shrink([0.0, tab_bar_node.size().height]);
 
         let mut tab_content_node =
-            if let Some(element) = self.children.get(self.tab_bar.get_active_tab_idx()) {
-                element.as_widget().layout(
+            if let Some(element) = self.children.get_mut(self.tab_bar.get_active_tab_idx()) {
+                element.as_widget_mut().layout(
                     &mut tree.children[1].children[self.tab_bar.get_active_tab_idx()],
                     renderer,
                     &tab_content_limits,
@@ -598,7 +596,7 @@ where
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -606,7 +604,7 @@ where
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
         operation.container(None, layout.bounds(), &mut |operation| {
-            self.children[active_tab].as_widget().operate(
+            self.children[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
                 layout
                     .children()
@@ -622,7 +620,7 @@ where
 impl<'a, Message, TabId, Theme, Renderer> From<Tabs<'a, Message, TabId, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: 'a + renderer::Renderer + iced::advanced::text::Renderer<Font = Font>,
+    Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = Font>,
     Theme: 'a + Catalog + text::Catalog,
     Message: 'a,
     TabId: 'a + Eq + Clone,

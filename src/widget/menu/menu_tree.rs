@@ -12,19 +12,16 @@
 
 use super::common::*;
 use super::flex;
-use iced::advanced::widget::Operation;
-use iced::{
-    advanced::{
-        layout::{Layout, Limits, Node},
-        mouse, renderer,
-        widget::tree::{self, Tree},
-        Clipboard, Shell,
-    },
+use iced_core::{
     alignment,
+    layout::{Layout, Limits, Node},
+    mouse, renderer,
     time::Instant,
-    window, Element, Event, Length, Padding, Point, Rectangle, Size, Vector,
+    widget::tree::{self, Tree},
+    widget::Operation,
+    window, Clipboard, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Vector,
 };
-use iced::{Color, Pixels};
 use std::iter::once;
 
 use super::menu_bar::*;
@@ -241,7 +238,7 @@ where
     ///
     /// out: Node{inf, \[ slice_node, items_bounds, offset_bounds]}
     pub(super) fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &Limits,
@@ -262,7 +259,11 @@ where
             Padding::ZERO,
             self.spacing,
             alignment::Alignment::Center,
-            &self.items.iter().map(|i| &i.item).collect::<Vec<_>>(),
+            &mut self
+                .items
+                .iter_mut()
+                .map(|i| &mut i.item)
+                .collect::<Vec<_>>(),
             &mut tree
                 .children
                 .iter_mut()
@@ -353,7 +354,7 @@ where
 
         (
             Node::with_children(
-                Size::INFINITY,
+                Size::INFINITE,
                 [
                     slice_node
                         .move_to(children_position)
@@ -626,7 +627,7 @@ where
     }
 
     pub(super) fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -639,7 +640,7 @@ where
         let slice = menu_state.slice;
 
         operation.container(None, layout.bounds(), &mut |operation| {
-            itl_iter_slice!(slice, self.items;iter, tree.children;iter_mut, slice_layout.children())
+            itl_iter_slice!(slice, self.items;iter_mut, tree.children;iter_mut, slice_layout.children())
                 .for_each(|((child, state), layout)| {
                     child.operate(state, layout, renderer, operation);
                 });
@@ -902,14 +903,14 @@ where
     }
 
     pub(super) fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
         self.item
-            .as_widget()
+            .as_widget_mut()
             .operate(&mut tree.children[0], layout, renderer, operation);
     }
 }

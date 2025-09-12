@@ -12,36 +12,21 @@ use crate::{
     style::{date_picker::Style, style_state::StyleState, Status},
 };
 use chrono::{Datelike, Local, NaiveDate};
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        text::Renderer as _,
-        widget::tree::Tree,
-        Clipboard, Layout, Overlay, Renderer as _, Shell, Widget,
-    },
+use iced_core::{
     alignment::{Horizontal, Vertical},
-    event,
-    keyboard,
+    event, keyboard,
+    layout::{Limits, Node},
     mouse::{self, Cursor},
+    overlay, renderer,
+    text::Renderer as _,
     touch,
-    widget::{
-        text::{self, Wrapping},
-        Button, Column, Container, Row, Text,
-    },
-    Alignment,
-    Border,
-    Color,
-    Element,
-    Event,
-    Length,
-    Padding,
-    Pixels,
-    Point,
-    Rectangle,
-    Renderer, // the actual type
-    Shadow,
-    Size,
+    widget::tree::Tree,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
+};
+use iced_widget::{
+    text::{self, Wrapping},
+    Button, Column, Container, Renderer, Row, Text,
 };
 use std::collections::HashMap;
 
@@ -59,7 +44,7 @@ const BUTTON_SPACING: Pixels = Pixels(5.0);
 pub struct DatePickerOverlay<'a, 'b, Message, Theme>
 where
     Message: Clone,
-    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
+    Theme: crate::style::date_picker::Catalog + iced_widget::button::Catalog,
     'b: 'a,
 {
     /// The state of the [`DatePickerOverlay`].
@@ -86,9 +71,9 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
     'b: 'a,
 {
     #[allow(clippy::too_many_arguments)]
@@ -418,9 +403,9 @@ where
     Message: 'static + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
     'b: 'a,
 {
     #[allow(clippy::too_many_lines)]
@@ -539,9 +524,9 @@ where
             .push(month_year)
             .push(days);
 
-        let element: Element<Message, Theme, Renderer> = Element::new(col);
+        let mut element: Element<Message, Theme, Renderer> = Element::new(col);
         let col_tree = if let Some(child_tree) = self.tree.children.get_mut(2) {
-            child_tree.diff(element.as_widget());
+            child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
             let child_tree = Tree::new(element.as_widget());
@@ -549,7 +534,7 @@ where
             &mut self.tree.children[2]
         };
 
-        let mut col = element.as_widget().layout(col_tree, renderer, &limits);
+        let mut col = element.as_widget_mut().layout(col_tree, renderer, &limits);
         let col_bounds = col.bounds();
         col = col.move_to(Point::new(
             col_bounds.x + PADDING.left,
@@ -981,7 +966,7 @@ impl Default for State {
 pub struct DatePickerOverlayButtons<'a, Message, Theme>
 where
     Message: Clone,
-    Theme: crate::style::date_picker::Catalog + iced::widget::button::Catalog,
+    Theme: crate::style::date_picker::Catalog + iced_widget::button::Catalog,
 {
     /// The cancel button of the [`DatePickerOverlay`].
     cancel_button: Element<'a, Message, Theme, Renderer>,
@@ -994,9 +979,9 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::text::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::text::Catalog
+        + iced_widget::container::Catalog,
 {
     fn default() -> Self {
         let (cancel_content, cancel_font, _cancel_shaping) = cancel();
@@ -1027,8 +1012,8 @@ impl<Message, Theme> Widget<Message, Theme, Renderer>
 where
     Message: Clone,
     Theme: crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::container::Catalog,
 {
     fn children(&self) -> Vec<Tree> {
         vec![
@@ -1045,7 +1030,7 @@ where
         unimplemented!("This should never be reached!")
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
+    fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, _limits: &Limits) -> Node {
         unimplemented!("This should never be reached!")
     }
 
@@ -1069,8 +1054,8 @@ where
     Message: 'a + Clone,
     Theme: 'a
         + crate::style::date_picker::Catalog
-        + iced::widget::button::Catalog
-        + iced::widget::container::Catalog,
+        + iced_widget::button::Catalog
+        + iced_widget::container::Catalog,
 {
     fn from(overlay: DatePickerOverlayButtons<'a, Message, Theme>) -> Self {
         Self::new(overlay)
@@ -1217,7 +1202,7 @@ fn month_year(
 
         // Left caret
         renderer.fill_text(
-            iced::advanced::Text {
+            iced_core::Text {
                 content: left_content,
                 bounds: Size::new(left_bounds.width, left_bounds.height),
                 size: Pixels(font_size.0 + if left_arrow_hovered { 1.0 } else { 0.0 }),
@@ -1238,7 +1223,7 @@ fn month_year(
 
         // Text
         renderer.fill_text(
-            iced::advanced::Text {
+            iced_core::Text {
                 content: text.to_owned(),
                 bounds: Size::new(center_bounds.width, center_bounds.height),
                 size: font_size,
@@ -1259,7 +1244,7 @@ fn month_year(
 
         // Right caret
         renderer.fill_text(
-            iced::advanced::Text {
+            iced_core::Text {
                 content: right_content,
                 bounds: Size::new(right_bounds.width, right_bounds.height),
                 size: Pixels(font_size.0 + if right_arrow_hovered { 1.0 } else { 0.0 }),
@@ -1329,7 +1314,7 @@ fn day_labels(
         let bounds = label.bounds();
 
         renderer.fill_text(
-            iced::advanced::Text {
+            iced_core::Text {
                 content: crate::core::date::WEEKDAY_LABELS[i].clone(),
                 bounds: Size::new(bounds.width, bounds.height),
                 size: font_size,
@@ -1427,7 +1412,7 @@ fn day_table(
             }
 
             renderer.fill_text(
-                iced::advanced::Text {
+                iced_core::Text {
                     content: format!("{number:02}"), // Todo: is there some way of static format as this has a fixed size?
                     bounds: Size::new(bounds.width, bounds.height),
                     size: font_size,

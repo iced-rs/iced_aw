@@ -1,6 +1,6 @@
 //! Change the appearance of menu bars and their menus.
 use super::{Status, StyleFn};
-use iced::{Background, Border, Color, Shadow, Theme, Vector};
+use iced_core::{Background, Border, Color, Shadow, Theme, Vector};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]

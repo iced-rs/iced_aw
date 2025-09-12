@@ -1,14 +1,11 @@
 //! A context menu for showing actions on right click.
 //!
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        overlay, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Button, Cursor},
-    Element, Event, Length, Point, Rectangle, Vector,
+    overlay, renderer,
+    widget::{tree, Operation, Tree},
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
 };
 
 pub use crate::style::{
@@ -23,7 +20,7 @@ use crate::widget::overlay::ContextMenuOverlay;
 ///
 /// # Example
 /// ```ignore
-/// # use iced::widget::{Text, Button};
+/// # use iced_widget::{Text, Button};
 /// # use iced_aw::ContextMenu;
 /// #
 /// #[derive(Debug, Clone)]
@@ -39,8 +36,13 @@ use crate::widget::overlay::ContextMenuOverlay;
 /// );
 /// ```
 #[allow(missing_debug_implementations)]
-pub struct ContextMenu<'a, Overlay, Message, Theme = iced::Theme, Renderer = iced::Renderer>
-where
+pub struct ContextMenu<
+    'a,
+    Overlay,
+    Message,
+    Theme = iced_widget::Theme,
+    Renderer = iced_widget::Renderer,
+> where
     Overlay: Fn() -> Element<'a, Message, Theme, Renderer>,
     Message: Clone,
     Renderer: renderer::Renderer,
@@ -103,13 +105,13 @@ where
     Renderer: 'a + renderer::Renderer,
     Theme: Catalog,
 {
-    fn size(&self) -> iced::Size<Length> {
+    fn size(&self) -> iced_core::Size<Length> {
         self.underlay.as_widget().size()
     }
 
-    fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         self.underlay
-            .as_widget()
+            .as_widget_mut()
             .layout(&mut tree.children[0], renderer, limits)
     }
 
@@ -151,7 +153,7 @@ where
     }
 
     fn operate<'b>(
-        &'b self,
+        &'b mut self,
         state: &'b mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
@@ -160,16 +162,19 @@ where
         let s: &mut State = state.state.downcast_mut();
 
         if s.show {
-            let content = (self.overlay)();
-            content.as_widget().diff(&mut state.children[1]);
+            let mut content = (self.overlay)();
+            content.as_widget_mut().diff(&mut state.children[1]);
 
             content
-                .as_widget()
+                .as_widget_mut()
                 .operate(&mut state.children[1], layout, renderer, operation);
         } else {
-            self.underlay
-                .as_widget()
-                .operate(&mut state.children[0], layout, renderer, operation);
+            self.underlay.as_widget_mut().operate(
+                &mut state.children[0],
+                layout,
+                renderer,
+                operation,
+            );
         }
     }
 
@@ -245,8 +250,8 @@ where
         }
 
         let position = s.cursor_position;
-        let content = (self.overlay)();
-        content.as_widget().diff(&mut tree.children[1]);
+        let mut content = (self.overlay)();
+        content.as_widget_mut().diff(&mut tree.children[1]);
         Some(
             ContextMenuOverlay::new(
                 position + translation,

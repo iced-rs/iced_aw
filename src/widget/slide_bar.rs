@@ -2,15 +2,13 @@
 //!
 //! *This API requires the following crate features to be activated: `quad`*
 
-use iced::{
-    advanced::{
-        layout::{Limits, Node},
-        renderer,
-        widget::tree::{self, Tree},
-        Clipboard, Layout, Shell, Widget,
-    },
+use iced_core::{
+    layout::{Limits, Node},
     mouse::{self, Cursor},
-    touch, Border, Color, Element, Event, Length, Point, Rectangle, Shadow, Size,
+    renderer, touch,
+    widget::tree::{self, Tree},
+    Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell,
+    Size, Widget,
 };
 
 use std::ops::RangeInclusive;
@@ -150,7 +148,7 @@ where
         }
     }
 
-    fn layout(&self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
+    fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits
             .width(self.width)
             .height(self.height.unwrap_or(Length::Fixed(DEFAULT_HEIGHT)));
