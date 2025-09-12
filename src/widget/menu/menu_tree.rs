@@ -301,12 +301,10 @@ where
             viewport.size(),
             menu_state.scroll_offset,
         );
-        let slice = MenuSlice::from_bounds_rel(
-            lower_bound_rel, 
-            upper_bound_rel, 
-            &items_node, 
-            |n| n.bounds().y
-        );
+        let slice =
+            MenuSlice::from_bounds_rel(lower_bound_rel, upper_bound_rel, &items_node, |n| {
+                n.bounds().y
+            });
         menu_state.slice = slice;
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::Menu::layout", "slice: {:?}", slice);
@@ -418,12 +416,15 @@ where
             match op {
                 Op::UpdateItems => {
                     itl_iter_slice!(
-                        menu_state.slice, 
-                        self.items;iter_mut, 
-                        item_trees;iter_mut, 
+                        menu_state.slice,
+                        self.items;iter_mut,
+                        item_trees;iter_mut,
                         slice_layout.children()
-                    ).for_each(|((item, tree), layout)|{
-                        item.update(tree, event, layout, cursor, renderer, clipboard, shell, viewport);
+                    )
+                    .for_each(|((item, tree), layout)| {
+                        item.update(
+                            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+                        );
                     });
                 }
                 Op::FakeUpdate => {
@@ -459,12 +460,22 @@ where
                         Event::Window(window::Event::RedrawRequested(Instant::now()));
 
                     itl_iter_slice!(
-                        menu_state.slice, 
-                        self.items;iter_mut, 
-                        item_trees;iter_mut, 
+                        menu_state.slice,
+                        self.items;iter_mut,
+                        item_trees;iter_mut,
                         slice_layout.children()
-                    ).for_each(|((item, tree), layout)|{
-                        item.update(tree, &redraw_event, layout, cursor, renderer, clipboard, &mut fake_shell, viewport);
+                    )
+                    .for_each(|((item, tree), layout)| {
+                        item.update(
+                            tree,
+                            &redraw_event,
+                            layout,
+                            cursor,
+                            renderer,
+                            clipboard,
+                            &mut fake_shell,
+                            viewport,
+                        );
                     });
                     merge_fake_shell(shell, fake_shell);
                 }
@@ -486,13 +497,21 @@ where
                 Op::ScrollEvent => match event {
                     Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                         if cursor.is_over(background_bounds) {
-                            process_scroll_event(
-                                menu_state,
-                                items_bounds,
-                                *delta,
-                                global_parameters.scroll_speed,
-                                viewport.size(),
-                            );
+                            let delta_y = match delta {
+                                mouse::ScrollDelta::Lines { y, .. } => {
+                                    y * global_parameters.scroll_speed.line
+                                }
+                                mouse::ScrollDelta::Pixels { y, .. } => {
+                                    y * global_parameters.scroll_speed.pixel
+                                }
+                            };
+
+                            let max_offset = (0.0 - items_bounds.y).max(0.0);
+                            let min_offset = (viewport.size().height
+                                - (items_bounds.y + items_bounds.height))
+                                .min(0.0);
+                            menu_state.scroll_offset =
+                                (menu_state.scroll_offset + delta_y).clamp(min_offset, max_offset);
                         }
                         shell.request_redraw();
                     }
@@ -654,7 +673,6 @@ where
     /// layout: Node{inf, \[ items_node, slice_node, items_bounds, offset_bounds]}
     pub(super) fn draw(
         &self,
-        global_state: &GlobalState,
         draw_path: &DrawPath,
         tree: &Tree,
         renderer: &mut Renderer,
@@ -682,12 +700,7 @@ where
                     shadow: theme_style.menu_shadow,
                     ..Default::default()
                 },
-                if global_state.pressed {
-                    Color::from([0.5; 3]).into()
-                } else {
-                    theme_style.menu_background
-                },
-                // theme_style.menu_background,
+                theme_style.menu_background,
             );
         }
 
@@ -718,7 +731,7 @@ where
 
         renderer.with_layer(items_bounds, |r| {
             itl_iter_slice!(slice, self.items;iter, tree.children;iter, slice_layout.children())
-                .for_each(|((item, tree), layout)|{
+                .for_each(|((item, tree), layout)| {
                     item.draw(tree, r, theme, style, layout, cursor, viewport);
                 });
         });
@@ -1097,7 +1110,12 @@ impl Aod {
     }
 }
 
-fn cal_bounds_rel_menu(items_node: &Node, translation: Vector, viewport: Size, scroll_offset: f32) -> (f32, f32) {
+fn cal_bounds_rel_menu(
+    items_node: &Node,
+    translation: Vector,
+    viewport: Size,
+    scroll_offset: f32,
+) -> (f32, f32) {
     let items_bounds = items_node.bounds() + translation; // viewport space
 
     // viewport space absolute bounds
@@ -1109,25 +1127,4 @@ fn cal_bounds_rel_menu(items_node: &Node, translation: Vector, viewport: Size, s
     let upper_bound_rel = upper_bound - (items_bounds.y + scroll_offset);
 
     (lower_bound_rel, upper_bound_rel)
-}
-
-fn process_scroll_event(
-    menu_state: &mut MenuState,
-    prescroll_children_bounds: Rectangle,
-    delta: mouse::ScrollDelta,
-    scroll_speed: ScrollSpeed,
-    viewport_size: Size,
-) {
-    use mouse::ScrollDelta;
-
-    let pcb = prescroll_children_bounds;
-
-    let delta_y = match delta {
-        ScrollDelta::Lines { y, .. } => y * scroll_speed.line,
-        ScrollDelta::Pixels { y, .. } => y * scroll_speed.pixel,
-    };
-
-    let max_offset = (0.0 - pcb.y).max(0.0);
-    let min_offset = (viewport_size.height - (pcb.y + pcb.height)).min(0.0);
-    menu_state.scroll_offset = (menu_state.scroll_offset + delta_y).clamp(min_offset, max_offset);
 }

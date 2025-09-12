@@ -12,7 +12,7 @@ use iced::{
         widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
-    alignment, event, Color, Element, Event, Length, Padding, Pixels, Rectangle, Size, window
+    alignment, event, window, Color, Element, Event, Length, Padding, Pixels, Rectangle, Size,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -269,9 +269,7 @@ where
     ///
     /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
     fn layout(&self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        // println!("MenuBar::layout | limits: {:?}", limits);
-        
-        let MenuBarState { 
+        let MenuBarState {
             menu_state: bar_menu_state,
             ..
         } = tree.state.downcast_mut::<MenuBarState>();
@@ -280,13 +278,13 @@ where
             flex::Axis::Horizontal,
             renderer,
             &Limits::new(
-                Size { 
-                    width: 0.0, 
-                    height: limits.min().height
+                Size {
+                    width: 0.0,
+                    height: limits.min().height,
                 },
-                Size { 
-                    width: f32::INFINITY, 
-                    height: limits.max().height 
+                Size {
+                    width: f32::INFINITY,
+                    height: limits.max().height,
                 },
             ),
             Length::Shrink,
@@ -304,30 +302,30 @@ where
         );
 
         let items_node_bounds = items_node.bounds();
-        println!("items_node_bounds: {:?}", items_node_bounds);
+        #[cfg(feature = "debug_log")]
+        debug!(
+            "menu::MenuBar::layout | items_node_bounds: {:?}",
+            items_node_bounds
+        );
 
-        let resolved_width = match self.width{
-            Length::Fill | Length::FillPortion(_) => {
-                items_node_bounds.width.min(limits.max().width).max(limits.min().width)
-            }
-            Length::Fixed(amount) => {
-                amount.min(limits.max().width).max(limits.min().width)
-            }
-            Length::Shrink => {
-                items_node_bounds.width
-            }
+        let resolved_width = match self.width {
+            Length::Fill | Length::FillPortion(_) => items_node_bounds
+                .width
+                .min(limits.max().width)
+                .max(limits.min().width),
+            Length::Fixed(amount) => amount.min(limits.max().width).max(limits.min().width),
+            Length::Shrink => items_node_bounds.width,
         };
 
         let lower_bound_rel = self.padding.left - bar_menu_state.scroll_offset;
         let upper_bound_rel = lower_bound_rel + resolved_width - self.padding.horizontal();
 
-        let slice = MenuSlice::from_bounds_rel(
-            lower_bound_rel, 
-            upper_bound_rel, 
-            &items_node,
-            |n| n.bounds().x
-        );
-        println!("slice: {:?}", slice);
+        let slice =
+            MenuSlice::from_bounds_rel(lower_bound_rel, upper_bound_rel, &items_node, |n| {
+                n.bounds().x
+            });
+        #[cfg(feature = "debug_log")]
+        debug!("menu::MenuBar::layout | slice: {:?}", slice);
 
         bar_menu_state.slice = slice;
 
@@ -371,15 +369,15 @@ where
         };
 
         Node::with_children(
-            Size { 
-                width: resolved_width, 
-                height: items_node_bounds.height
-            }, 
+            Size {
+                width: resolved_width,
+                height: items_node_bounds.height,
+            },
             [
                 // items_node
-                slice_node
-                .translate([bar_menu_state.scroll_offset, 0.0]),
-            ].into()
+                slice_node.translate([bar_menu_state.scroll_offset, 0.0]),
+            ]
+            .into(),
         )
     }
 
@@ -412,12 +410,15 @@ where
 
         let slice = bar_menu_state.slice;
         itl_iter_slice!(
-            slice, 
-            self.roots;iter_mut, 
-            item_trees;iter_mut, 
+            slice,
+            self.roots;iter_mut,
+            item_trees;iter_mut,
             slice_layout.children()
-        ).for_each(|((item, tree), layout)|{
-            item.update(tree, event, layout, cursor, renderer, clipboard, shell, viewport);
+        )
+        .for_each(|((item, tree), layout)| {
+            item.update(
+                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+            );
         });
 
         let bar_bounds = layout.bounds();
@@ -484,38 +485,29 @@ where
                 }
             }
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                if cursor.is_over(bar_bounds) 
-                && slice_layout.bounds().width > layout.bounds().width// check if scrolling is on
+                if cursor.is_over(bar_bounds) && slice_layout.bounds().width > layout.bounds().width
+                // check if scrolling is on
                 {
                     let scroll_speed = self.global_parameters.scroll_speed;
                     let delta_x = match delta {
                         mouse::ScrollDelta::Lines { x, .. } => x * scroll_speed.line,
                         mouse::ScrollDelta::Pixels { x, .. } => x * scroll_speed.pixel,
                     };
-                    println!("delta: {:?}", delta);
-                    println!("delta_x: {:?}", delta_x);
 
-                    let min_offset = 
-                    -(slice_layout.bounds().width 
-                    - layout.bounds().width
-                    );
+                    let min_offset = -(slice_layout.bounds().width - layout.bounds().width);
 
-                    bar_menu_state.scroll_offset = 
+                    bar_menu_state.scroll_offset =
                         (bar_menu_state.scroll_offset + delta_x as f32).clamp(min_offset, 0.0);
-                    println!("bar_menu_state.scroll_offset: {:?}", bar_menu_state.scroll_offset);
                     shell.invalidate_layout();
                     shell.request_redraw();
                     shell.capture_event();
                 }
             }
             Event::Window(window::Event::Resized { .. }) => {
-                if slice_layout.bounds().width > layout.bounds().width{
-                    let min_offset = 
-                        -(slice_layout.bounds().width 
-                        - layout.bounds().width
-                        );
-    
-                    bar_menu_state.scroll_offset = 
+                if slice_layout.bounds().width > layout.bounds().width {
+                    let min_offset = -(slice_layout.bounds().width - layout.bounds().width);
+
+                    bar_menu_state.scroll_offset =
                         bar_menu_state.scroll_offset.clamp(min_offset, 0.0);
                 }
                 shell.invalidate_layout();
@@ -600,29 +592,14 @@ where
                 shadow: styling.bar_shadow,
                 ..Default::default()
             },
-            global_state
-                .pressed
-                .then(|| Color::from([0.5; 3]).into())
-                .unwrap_or(styling.bar_background),
-            // styling.bar_background,
+            styling.bar_background,
         );
 
-        // renderer.fill_quad(
-        //     renderer::Quad {
-        //         bounds: slice_layout.bounds(),
-        //         border: styling.bar_border,
-        //         shadow: styling.bar_shadow,
-        //         ..Default::default()
-        //     },
-        //     Color::from([0.5, 0.5, 0.5, 0.5]),
-        // );
-
-        if let (
-            DrawPath::Backdrop,
-            true,
-            Some(active),
-        ) = (&self.global_parameters.draw_path, global_state.open, bar_menu_state.active)
-        {
+        if let (DrawPath::Backdrop, true, Some(active)) = (
+            &self.global_parameters.draw_path,
+            global_state.open,
+            bar_menu_state.active,
+        ) {
             let active_in_slice = active - slice.start_index;
             let active_bounds = slice_layout
                 .children()
@@ -648,19 +625,19 @@ where
         }
 
         renderer.with_layer(
-            Rectangle { 
-                x: layout.bounds().x + self.padding.left, 
-                y: layout.bounds().y + self.padding.top, 
-                width: layout.bounds().width - self.padding.horizontal(), 
-                height: layout.bounds().height - self.padding.vertical() 
-            }, 
-            |r|{
-            itl_iter_slice!(slice, self.roots;iter, tree.children;iter, slice_layout.children())
+            Rectangle {
+                x: layout.bounds().x + self.padding.left,
+                y: layout.bounds().y + self.padding.top,
+                width: layout.bounds().width - self.padding.horizontal(),
+                height: layout.bounds().height - self.padding.vertical(),
+            },
+            |r| {
+                itl_iter_slice!(slice, self.roots;iter, tree.children;iter, slice_layout.children())
                 .for_each(|((item, tree), layout)| {
                     item.draw(tree, r, theme, style, layout, cursor, viewport);
                 });
-        });
-
+            },
+        );
     }
 
     fn overlay<'b>(
@@ -702,7 +679,7 @@ where
                 menu_state: bar_menu_state,
                 ..
             } = bar;
-    
+
             let slice = bar_menu_state.slice;
 
             let overlays = itl_iter_slice!(slice, self.roots;iter_mut, item_trees;iter_mut, slice_layout.children())

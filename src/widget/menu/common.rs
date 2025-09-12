@@ -1,7 +1,7 @@
 use iced::{
-    advanced::{mouse, renderer, widget::Tree, Clipboard, layout::*, Shell},
+    advanced::{layout::*, mouse, renderer, widget::Tree, Shell},
     window::RedrawRequest,
-    Event, Padding, Rectangle, Vector, Size
+    Padding, Rectangle, Size,
 };
 
 use super::menu_bar::*;
@@ -106,7 +106,6 @@ pub fn pad_rectangle(rect: Rectangle, padding: Padding) -> Rectangle {
     }
 }
 
-
 #[derive(Debug, Clone, Copy)]
 pub(super) struct MenuSlice {
     pub(super) start_index: usize,
@@ -114,12 +113,12 @@ pub(super) struct MenuSlice {
     pub(super) lower_bound_rel: f32,
     pub(super) upper_bound_rel: f32,
 }
-impl MenuSlice { 
+impl MenuSlice {
     pub(super) fn from_bounds_rel(
-        lower_bound_rel: f32, 
-        upper_bound_rel: f32, 
-        items_node: &Node, 
-        get_position: fn(&Node) -> f32
+        lower_bound_rel: f32,
+        upper_bound_rel: f32,
+        items_node: &Node,
+        get_position: fn(&Node) -> f32,
     ) -> Self {
         let max_index = items_node.children().len().saturating_sub(1);
         let nodes = items_node.children();
@@ -151,11 +150,11 @@ impl MenuSlice {
 } */
 
 pub(super) fn search_bound(
-    default_left: usize, 
-    default_right: usize, 
-    bound: f32, 
+    default_left: usize,
+    default_right: usize,
+    bound: f32,
     list: &[Node],
-    get_position: fn(&Node) -> f32
+    get_position: fn(&Node) -> f32,
 ) -> usize {
     // binary search
     let mut left = default_left;
@@ -248,7 +247,9 @@ pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer:
     let old_active = menu_state.active.clone();
     let slice = menu_state.slice;
 
-    for (i, ((item, tree), layout)) in itl_iter_slice_enum!(slice, items;iter_mut, item_trees;iter_mut, item_layouts) {
+    for (i, ((item, tree), layout)) in
+        itl_iter_slice_enum!(slice, items;iter_mut, item_trees;iter_mut, item_layouts)
+    {
         if cursor.is_over(layout.bounds()) {
             if item.menu.is_some() {
                 menu_state.open_new_menu(i, item, tree);
@@ -322,7 +323,8 @@ pub(super) fn schedule_close_on_click<
 
 macro_rules! itl_iter_slice {
     ($slice:expr, $items:expr;$iter_0:ident, $item_trees:expr;$iter_1:ident, $slice_layout:expr) => {
-        $items[$slice.start_index..=$slice.end_index].$iter_0()
+        $items[$slice.start_index..=$slice.end_index]
+            .$iter_0()
             .zip($item_trees[$slice.start_index..=$slice.end_index].$iter_1())
             .zip($slice_layout)
     };
