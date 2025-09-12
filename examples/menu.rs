@@ -607,12 +607,16 @@ impl App {
                     (submenu_button("A sub menu"), sub1)
                 )).width(140.0)
             }),
+            // (horizontal_space().width(Length::Fill)),
         )
         .draw_path(menu::DrawPath::Backdrop)
         .close_on_item_click_global(self.close_on_click)
         .close_on_background_click_global(self.close_on_click)
-        // .check_bounds_width(f32::MAX)
+        // .safe_bounds_margin(f32::MAX)
         .padding(Padding::new(5.0))
+        // .width(Length::Fixed(400.0))
+        // .width(Length::Fill)
+        // .width(Length::Shrink)
         .style(|theme:&iced::Theme, status: Status | menu::Style{
             path_border: Border{
                 radius: Radius::new(6.0),
@@ -627,9 +631,9 @@ impl App {
         });
 
         let r = row![
-            horizontal_space().width(295),
+            horizontal_space().width(350),
             mb,
-            horizontal_space().width(295),
+            horizontal_space().width(350),
         ]
         .align_y(alignment::Alignment::Center);
 
@@ -639,10 +643,15 @@ impl App {
             vertical_space().height(700),
         ];
 
-        let sc = scrollable(c).direction(scrollable::Direction::Both {
+        let sc = scrollable(c)
+        // .direction(scrollable::Direction::Vertical(
+        //     scrollable::Scrollbar::default()
+        // ));
+        .direction(scrollable::Direction::Both {
             vertical: scrollable::Scrollbar::default(),
             horizontal: scrollable::Scrollbar::default(),
-        }); /*.direction(scrollable::Direction::Both {
+        }); 
+        /*.direction(scrollable::Direction::Both {
                 vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
                 horizontal: scrollable::Properties::new(),
             });*/

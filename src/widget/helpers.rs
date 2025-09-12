@@ -39,7 +39,7 @@ macro_rules! wrap_vertical {
     );
 }
 
-/// Creates a vec of menu items
+/// Creates a vec of menu [`Item`]s
 ///
 /// [`Item`]: crate::menu::Item
 ///
@@ -47,16 +47,8 @@ macro_rules! wrap_vertical {
 /// ```ignore
 /// menu_items!(
 ///     (widget),
-///     (widget),
-///     (widget, menu),
-///     (widget),
-///     expression,
 ///     (widget, menu),
 ///     expression,
-///     (widget),
-///     (widget, menu),
-///     expression,
-///     (widget),
 ///     ...
 /// )
 /// ```
@@ -105,12 +97,9 @@ macro_rules! menu_items {
 /// Syntax:
 /// ```ignore
 /// menu!(
-///     (widget)
-///     (widget)
-///     (widget, menu)
-///     (widget)
-///     (widget, menu)
-///     (widget)
+///     (widget),
+///     (widget, menu),
+///     expression,
 ///     ...
 /// )
 /// ```
@@ -129,9 +118,9 @@ macro_rules! menu {
 /// Syntax:
 /// ```ignore
 /// menu_bar!(
-///     (widget, menu)
-///     (widget, menu)
-///     (widget, menu)
+///     (widget),
+///     (widget, menu),
+///     expression,
 ///     ...
 /// )
 /// ```
