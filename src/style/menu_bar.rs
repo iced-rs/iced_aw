@@ -1,6 +1,6 @@
 //! Change the appearance of menu bars and their menus.
 use super::{Status, StyleFn};
-use iced_core::{Background, Border, Color, Padding, Shadow, Theme, Vector};
+use iced_core::{Background, Border, Color, Shadow, Theme, Vector};
 
 /// The appearance of a menu bar and its menus.
 #[derive(Debug, Clone, Copy)]
@@ -11,8 +11,6 @@ pub struct Style {
     pub bar_border: Border,
     /// The shadow of the menu bar.
     pub bar_shadow: Shadow,
-    /// Expand the menu bar background
-    pub bar_background_expand: Padding,
 
     /// The background of the menus.
     pub menu_background: Background,
@@ -20,8 +18,6 @@ pub struct Style {
     pub menu_border: Border,
     /// The shadow of the menus
     pub menu_shadow: Shadow,
-    /// Expand the menu background
-    pub menu_background_expand: Padding,
 
     /// The backgraound of the path
     pub path: Background,
@@ -38,7 +34,6 @@ impl std::default::Default for Style {
                 ..Default::default()
             },
             bar_shadow: Shadow::default(),
-            bar_background_expand: 5.into(),
 
             menu_background: Color::from([0.85; 3]).into(),
             menu_border: Border {
@@ -50,7 +45,6 @@ impl std::default::Default for Style {
                 offset: Vector::ZERO,
                 blur_radius: 10.0,
             },
-            menu_background_expand: 5.into(),
             path: Color::from([0.3; 3]).into(),
             path_border: Border {
                 radius: 6.0.into(),

@@ -39,39 +39,55 @@ macro_rules! wrap_vertical {
     );
 }
 
-/// Creates a vec of menu items
+/// Creates a vec of menu [`Item`]s
 ///
 /// [`Item`]: crate::menu::Item
 ///
 /// Syntax:
 /// ```ignore
 /// menu_items!(
-///     (widget)
-///     (widget)
-///     (widget, menu)
-///     (widget)
-///     (widget, menu)
-///     (widget)
+///     (widget),
+///     (widget, menu),
+///     expression,
 ///     ...
 /// )
 /// ```
 #[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_items {
-    ($($x:tt)+) => {
-        {
-            macro_rules! wrap_item {
-                (($i:expr , $m:expr)) => (
-                    $crate::menu::Item::with_menu($i, $m)
-                );
-                (($i:expr)) => (
-                    $crate::menu::Item::new($i)
-                );
-            }
+    // base case
+    (@process [$($output:expr,)*]) => {
+        vec![$($output),*]
+    };
 
-            vec![ $( wrap_item!($x) ),+ ]
-        }
-    }
+    // rule for (widget, menu)
+    (@process [$($output:expr,)*] ($i:expr, $m:expr) , $($rest:tt)*) => {
+        $crate::menu_items!(@process [$($output,)* $crate::menu::Item::with_menu($i, $m),] $($rest)*)
+    };
+    (@process [$($output:expr,)*] ($i:expr, $m:expr)) => {
+        $crate::menu_items!(@process [$($output,)* $crate::menu::Item::with_menu($i, $m),])
+    };
+
+    // rule for (widget)
+    (@process [$($output:expr,)*] ($i:expr) , $($rest:tt)*) => {
+        $crate::menu_items!(@process [$($output,)* $crate::menu::Item::new($i),] $($rest)*)
+    };
+    (@process [$($output:expr,)*] ($i:expr)) => {
+        $crate::menu_items!(@process [$($output,)* $crate::menu::Item::new($i),])
+    };
+
+    // rule for expr
+    (@process [$($output:expr,)*] $item:expr , $($rest:tt)*) => {
+        $crate::menu_items!(@process [$($output,)* $item,] $($rest)*)
+    };
+    (@process [$($output:expr,)*] $item:expr) => {
+        $crate::menu_items!(@process [$($output,)* $item,])
+    };
+
+    // entry point
+    ($($input:tt)*) => {
+        $crate::menu_items!(@process [] $($input)*)
+    };
 }
 
 /// Creates a [`Menu`] with the given items.
@@ -81,12 +97,9 @@ macro_rules! menu_items {
 /// Syntax:
 /// ```ignore
 /// menu!(
-///     (widget)
-///     (widget)
-///     (widget, menu)
-///     (widget)
-///     (widget, menu)
-///     (widget)
+///     (widget),
+///     (widget, menu),
+///     expression,
 ///     ...
 /// )
 /// ```
@@ -105,17 +118,17 @@ macro_rules! menu {
 /// Syntax:
 /// ```ignore
 /// menu_bar!(
-///     (widget, menu)
-///     (widget, menu)
-///     (widget, menu)
+///     (widget),
+///     (widget, menu),
+///     expression,
 ///     ...
 /// )
 /// ```
 #[cfg(feature = "menu")]
 #[macro_export]
 macro_rules! menu_bar {
-    ($(($x:expr, $m:expr))+) => (
-        $crate::menu::MenuBar::new(vec![ $( $crate::menu::Item::with_menu($x, $m) ),+ ])
+    ($($input:tt)+) => (
+        $crate::menu::MenuBar::new(menu_items!( $($input)+ ))
     );
 }
 
