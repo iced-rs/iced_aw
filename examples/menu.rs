@@ -644,17 +644,17 @@ impl App {
         ];
 
         let sc = scrollable(c)
-        // .direction(scrollable::Direction::Vertical(
-        //     scrollable::Scrollbar::default()
-        // ));
-        .direction(scrollable::Direction::Both {
-            vertical: scrollable::Scrollbar::default(),
-            horizontal: scrollable::Scrollbar::default(),
-        }); 
+            // .direction(scrollable::Direction::Vertical(
+            //     scrollable::Scrollbar::default()
+            // ));
+            .direction(scrollable::Direction::Both {
+                vertical: scrollable::Scrollbar::default(),
+                horizontal: scrollable::Scrollbar::default(),
+            });
         /*.direction(scrollable::Direction::Both {
-                vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
-                horizontal: scrollable::Properties::new(),
-            });*/
+            vertical: scrollable::Properties::new().alignment(scrollable::Alignment::End),
+            horizontal: scrollable::Properties::new(),
+        });*/
 
         fn back_style(theme: &iced::Theme) -> container::Style {
             container::Style {
@@ -702,7 +702,6 @@ fn base_button<'a>(
                 // Status::Disabled => base.with_background(Color::from_rgb(1.0, 0.0, 0.0)),
                 // Status::Pressed => base.with_background(Color::from_rgb(0.0, 1.0, 0.0)),
                 // _ => iced::widget::button::primary(theme, status)
-                
             }
         })
         .on_press(msg)
