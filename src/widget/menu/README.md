@@ -75,7 +75,7 @@ you can create a helper function/closure,
 and simply put it before the parentheses, 
 it will be treated as a normal function call expression.
 ```rust
-let hold_item = |widget| Item::new(widget).close_on_click(false)
+let hold_item = |widget| Item::new(widget).close_on_click(false);
 
 menu_items!(
     hold_item(widget), 
@@ -91,7 +91,7 @@ e.g. a double comma `,,`,
 or any unexpected sequence of non-alphabetical symbols like `?.-=+`.
 
 This is a limitation of `macro_rules!`, 
-it dosen't always provide clear errors for unexpected syntax, 
+it doesn't always provide clear errors for unexpected syntax, 
 and we don't have much control over how errors are handled.
 
 # Parameters Explained
@@ -122,7 +122,7 @@ For example,
 if a parent menu has a left and right padding of 6.0, 
 setting the child menu's offset to 6.0 
 will ensure they are tightly aligned
-redarless of the open direction
+regarless of the open direction
 (NOTE: Tight alignment for asymmetric paddings is not currently supported, 
 if you have a left padding 6.0 and a right padding 3.0, 
 you can't get a tight alignment for both open directions at the same time).
@@ -160,8 +160,9 @@ The close-on-click behavior follows an inheritance pattern:
 
 Global <- MenuBar/Menu <- Item
 
-An item's setting (when it is `Some(T)`) overrides its containing menu's setting, 
-which in turn overrides the global setting. 
+A manu's setting (when it is `Some`) overrides the global settings.
+
+An item's setting (when it is `Some`) overrides any ancestor settings.
 
 Here is an overview of the data structure:
 ```rust
@@ -233,12 +234,12 @@ Consider a `PickList` opened from a menu item.
 
 Note that iced passes `Cursor::Unavailable` to lower overlays 
 when an upper overlay calls `shell.capture_event()`, 
-meaning the upper overlays has processed the event.
+meaning an upper overlay has processed the event.
 
 In the image above, a `PickList` is opened from a menu item. 
 
 1. If the cursor moves off the `PickList` overlay, 
-`PickList` does not capture events happen outside its bounds, 
+`PickList` does not capture events that happen outside its bounds, 
 the menu underneath is unaware of this overlay, 
 and will process the `Cursor::Available(...)` it receives. 
 This can result in multiple interactive overlays being visible at the same time.
@@ -258,12 +259,12 @@ of an arbitrary nested overlay
 For example, a `Tooltip` is not expected to block menu interactions, whereas a `PickList` may. 
 Since the `MenuBar` cannot know the difference, 
 it defaults to blocking menu interaction 
-upon receving `Cursor::Unavailable`, 
+upon receiving `Cursor::Unavailable`, 
 which may not be ideal in all cases.
 
 This complexity extends to other behaviors too, 
-such as how "close-on-click" should be handled for nested overlays, 
-or whether to perform "out of safe bounds" checks 
+such as how close-on-click should be handled for nested overlays, 
+or whether to perform out-of-safe-bounds checks 
 when a nested overlay is active.
 
 Therefore, 
@@ -280,17 +281,11 @@ Check out the [menu example](https://github.com/iced-rs/iced_aw/blob/main/exampl
 ![iced_aw_menu_doc_2](images/iced_aw_menu_doc_2.png)
 
 
-# Limitations
-This might change in the future, 
-but at the moment, 
-due to changes from iced 0.14, 
-`Widget::update` has to be called 
-on items that aren't in focus
-(otherwise their appearance won't be updated properly), 
-but the messages they produce won't be sent to the shell.
+# Caveats
 
-The actual implementation is a bit involved, 
-but roughly speaking, a menu, and subsequently all of its items, 
+### Focus
+
+Roughly speaking, a menu, and subsequently all of its items, 
 is "in focus" ,
 when the cursor is within its safe bounds. 
 When the cursor is hovering over an item that opens a child menu, 
@@ -298,11 +293,31 @@ the parent menu remains in focus.
 Once the cursor enters the child menu, 
 the child menu gains focus.
 
-This is not a concern for simple widgets like buttons or checkboxes. 
-However, if you have a widget that continuously produces messages from `Widget::update` 
-(e.g. an animated widget that emits messages periodically), 
-those messages will be dropped if the menu containing the widget is not in focus.
+### Performance
 
+When a menu is in focus, 
+`Widget::update()` is called on all visible widgets in the menu
+with the incoming event.
+
+When a menu is not in focus, 
+`Widget::update()` is called on all visible widgets in the menu
+with a `window::Event::RedrawRequested` event.
+
+This is due to changes from iced 0.14, 
+`Widget::update()` has to be called on widgets 
+even when they aren't in focus, 
+otherwise their appearance won't update properly.
+
+Be aware of the potential performance cost.
+
+### Panic
+
+It is assumed that `Widget::update()` does not capture 
+the `window::Event::RedrawRequested` event 
+(i.e. it does not call `Shell::capture_event()`
+in response to a `window::Event::RedrawRequested` event).
+
+A panic will occur when this assumption is violated.
 
 # Debugging
 `MenuBar` is a complex widget, 
@@ -356,7 +371,7 @@ And then redirect stdout:
 RUST_LOG=menu=debug cargo run > path/to/your/log_file
 ```
 
-To run the menu example with debug enable:
+To run the menu example with debug enabled:
 ```
 RUST_LOG=menu=debug cargo run --example menu --features "debug_log"
 ```

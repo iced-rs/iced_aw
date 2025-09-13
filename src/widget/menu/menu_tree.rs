@@ -403,7 +403,7 @@ where
             OpenEvent,
             LeftPress,
             ScrollEvent,
-            FakeUpdate,
+            RedrawUpdate,
         }
 
         let mut run_op = |global_state: &mut GlobalState, tree: &mut Tree, op: &Op| {
@@ -428,7 +428,7 @@ where
                         );
                     });
                 }
-                Op::FakeUpdate => {
+                Op::RedrawUpdate => {
                     let cursor = if let Some(active) = menu_state.active {
                         match &global_parameters.draw_path {
                             DrawPath::FakeHovering => {
@@ -454,8 +454,8 @@ where
                         cursor
                     };
 
-                    let mut fake_messages = vec![];
-                    let mut fake_shell = Shell::new(&mut fake_messages);
+                    let mut temp_messages = vec![];
+                    let mut temp_shell = Shell::new(&mut temp_messages);
 
                     let redraw_event =
                         Event::Window(window::Event::RedrawRequested(Instant::now()));
@@ -474,11 +474,11 @@ where
                             cursor,
                             renderer,
                             clipboard,
-                            &mut fake_shell,
+                            &mut temp_shell,
                             viewport,
                         );
                     });
-                    merge_fake_shell(shell, fake_shell);
+                    shell.merge(temp_shell, |message| message);
                 }
                 Op::LeftPress => match event {
                     Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
@@ -550,12 +550,14 @@ where
 
         match rec_event {
             RecEvent::Event => {
-                update(global_state, tree, &[Op::FakeUpdate]);
+                // menu not in focus
+                update(global_state, tree, &[Op::RedrawUpdate]);
                 shell.capture_event();
                 RecEvent::Event
             }
             RecEvent::Close => {
                 if cursor.is_over(background_bounds) || cursor.is_over(offset_bounds) {
+                    // menu in focus
                     update(
                         global_state,
                         tree,
@@ -569,7 +571,8 @@ where
                     shell.capture_event();
                     RecEvent::Event
                 } else if cursor.is_over(parent_bounds) {
-                    update(global_state, tree, &[Op::FakeUpdate]);
+                    // menu not in focus
+                    update(global_state, tree, &[Op::RedrawUpdate]);
                     // the cursor is over the parent bounds
                     // let the parent process the event
                     assert!(

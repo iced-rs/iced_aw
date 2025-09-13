@@ -1,7 +1,4 @@
-use iced_core::{
-    layout::*, mouse, renderer, widget::Tree, window::RedrawRequest, Padding, Rectangle, Shell,
-    Size,
-};
+use iced_core::{layout::*, mouse, renderer, widget::Tree, Padding, Rectangle, Shell, Size};
 
 use super::menu_bar::*;
 use super::menu_tree::*;
@@ -204,34 +201,6 @@ pub(super) struct GlobalParameters<'a, Theme: crate::style::menu_bar::Catalog> {
     pub(super) close_on_item_click: bool,
     pub(super) close_on_background_click: bool,
     pub(super) class: Theme::Class<'a>,
-}
-
-/// Merges the fake shell into the real shell,
-/// this makes sure that the fake shell status does not propagate to the real shell.
-///
-/// Current limitation: messages are not merged.
-pub fn merge_fake_shell<Message>(shell: &mut Shell<'_, Message>, fake_shell: Shell<'_, Message>) {
-    if fake_shell.is_layout_invalid() {
-        shell.invalidate_layout();
-    }
-
-    if fake_shell.are_widgets_invalid() {
-        shell.invalidate_widgets();
-    }
-
-    let rr = fake_shell.redraw_request();
-
-    if rr < shell.redraw_request() {
-        match rr {
-            RedrawRequest::NextFrame => {
-                shell.request_redraw();
-            }
-            RedrawRequest::At(time) => {
-                shell.request_redraw_at(time);
-            }
-            RedrawRequest::Wait => {}
-        }
-    }
 }
 
 /// Tries to open a menu at the given cursor position

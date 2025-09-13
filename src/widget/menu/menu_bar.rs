@@ -268,6 +268,8 @@ where
     ///
     /// out: Node{bar bounds , \[widget_layout, widget_layout, ...]}
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        // TODO: unify layout code with Menu
+
         let MenuBarState {
             menu_state: bar_menu_state,
             ..
