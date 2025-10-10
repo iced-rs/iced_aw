@@ -2,8 +2,8 @@
 
 use iced::border::Radius;
 use iced::widget::{
-    button, checkbox, column as col, container, horizontal_space, pick_list, row, scrollable,
-    slider, text, text_input, toggler, tooltip, vertical_slider, vertical_space, Space,
+    button, checkbox, column as col, container, pick_list, row, scrollable, slider, space, text,
+    text_input, toggler, tooltip, vertical_slider, Space,
 };
 use iced::{alignment, theme, Border, Color, Element, Length, Padding, Size, Theme};
 
@@ -268,7 +268,7 @@ impl App {
                 (
                     row![
                         "Slider",
-                        horizontal_space().width(Length::Fixed(8.0)),
+                        space::horizontal().width(Length::Fixed(8.0)),
                         slider(0..=255, self.value, Message::ValueChange)
                     ]
                 ),
@@ -631,16 +631,16 @@ impl App {
         });
 
         let r = row![
-            horizontal_space().width(350),
+            space::horizontal().width(350),
             mb,
-            horizontal_space().width(350),
+            space::horizontal().width(350),
         ]
         .align_y(alignment::Alignment::Center);
 
         let c = col![
-            vertical_space().height(500),
+            space::vertical().height(500),
             r,
-            vertical_space().height(700),
+            space::vertical().height(700),
         ];
 
         let sc = scrollable(c)
@@ -864,7 +864,7 @@ fn toggle<'a>(
 ) -> Element<'a, Message, iced::Theme, iced::Renderer> {
     row![
         text(label).align_y(alignment::Vertical::Center),
-        Space::new(Length::Fill, Length::Shrink),
+        Space::new().width(Length::Fill).height(Length::Shrink),
         toggler(is_checked).size(20.0).on_toggle(on_toggle),
     ]
     .align_y(alignment::Alignment::Center)

@@ -407,7 +407,8 @@ where
         renderer: &Renderer,
         operation: &mut dyn iced_core::widget::Operation,
     ) {
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             [&mut self.title, &mut self.content]
                 .iter_mut()
                 .zip(&mut state.children)

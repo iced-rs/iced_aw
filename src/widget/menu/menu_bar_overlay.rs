@@ -585,7 +585,8 @@ where
 
             menu.operate(menu_tree, menu_layout, renderer, operation);
 
-            operation.container(None, menu_layout.bounds(), &mut |operation| {
+            operation.container(None, menu_layout.bounds());
+            operation.traverse(&mut |operation| {
                 menu.items
                     .iter_mut() // [Item...]
                     .zip(menu_tree.children.iter_mut()) // [item_tree...] // [widget_node...]
