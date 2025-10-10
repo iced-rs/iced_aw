@@ -603,7 +603,8 @@ where
         operation: &mut dyn Operation<()>,
     ) {
         let active_tab = self.tab_bar.get_active_tab_idx();
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             self.children[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
                 layout

@@ -8,7 +8,7 @@ use iced_core::widget::{
     tree::{State, Tag},
     Operation, Tree, Widget,
 };
-use iced_core::{Clipboard, Shell};
+use iced_core::{widget, Clipboard, Shell};
 use iced_core::{Element, Length, Padding, Pixels, Rectangle};
 use iced_core::{Event, Size};
 use iced_widget::text_input::{self, TextInput};
@@ -95,9 +95,9 @@ where
         }
     }
 
-    /// Sets the [Id](text_input::Id) of the internal [`TextInput`]
+    /// Sets the [Id](widget::Id) of the internal [`TextInput`]
     #[must_use]
-    pub fn id(mut self, id: text_input::Id) -> Self {
+    pub fn id(mut self, id: impl Into<widget::Id>) -> Self {
         self.text_input = self.text_input.id(id);
         self
     }

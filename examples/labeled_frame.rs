@@ -9,8 +9,16 @@ fn view(_: &u8) -> iced::Element<'_, ()> {
 
 fn main() {
     iced::application(|| 0, |_: &mut u8, _: ()| {}, view)
-        .title(|_: &u8| String::from("labeled_frame example"))
-        .theme(|_| iced::Theme::Light)
+        .title(title)
+        .theme(theme)
         .run()
         .unwrap()
+}
+
+fn title(_: &u8) -> String {
+    String::from("labeled_frame example")
+}
+
+fn theme(_: &u8) -> iced::Theme {
+    iced::Theme::Light
 }

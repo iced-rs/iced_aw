@@ -541,7 +541,8 @@ where
 
         let slice = bar_menu_state.slice;
 
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             itl_iter_slice!(slice, self.roots;iter_mut, tree.children;iter_mut, slice_layout.children())
                 .for_each(|((child, state), layout)| {
                     child.operate(state, layout, renderer, operation);

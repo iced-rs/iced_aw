@@ -8,6 +8,7 @@ use iced_core::{
     mouse::{self, Cursor},
     renderer,
     widget::{
+        self,
         tree::{State, Tag},
         Operation, Tree,
     },
@@ -148,9 +149,9 @@ where
         }
     }
 
-    /// Sets the [`Id`](text_input::Id) of the underlying [`TextInput`](iced_widget::TextInput).
+    /// Sets the [`Id`](widget::Id) of the underlying [`TextInput`](iced_widget::TextInput).
     #[must_use]
-    pub fn id(mut self, id: impl Into<text_input::Id>) -> Self {
+    pub fn id(mut self, id: impl Into<widget::Id>) -> Self {
         self.content = self.content.id(id.into());
         self
     }
@@ -592,7 +593,8 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             self.content.operate(
                 &mut tree.children[0],
                 layout

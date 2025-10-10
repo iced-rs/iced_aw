@@ -114,10 +114,9 @@ impl<Message, Theme, Renderer: iced_core::Renderer> Widget<Message, Theme, Rende
             .zip(layout.children())
             .zip(self.elements.iter_mut())
             .for_each(|((state, layout), element)| {
-                operation.container(None, layout.bounds(), &mut |operation| {
-                    element
-                        .as_widget_mut()
-                        .operate(state, layout, renderer, operation);
+                operation.container(None, layout.bounds());
+                operation.traverse(&mut |operation| {
+                    element.as_widget_mut().operate(state, layout, renderer, operation);
                 });
             });
     }

@@ -642,7 +642,8 @@ where
         let menu_state = tree.state.downcast_mut::<MenuState>();
         let slice = menu_state.slice;
 
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             itl_iter_slice!(slice, self.items;iter_mut, tree.children;iter_mut, slice_layout.children())
                 .for_each(|((child, state), layout)| {
                     child.operate(state, layout, renderer, operation);
