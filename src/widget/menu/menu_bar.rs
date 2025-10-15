@@ -502,7 +502,7 @@ where
                     let min_offset = -(slice_layout.bounds().width - layout.bounds().width);
 
                     bar_menu_state.scroll_offset =
-                        (bar_menu_state.scroll_offset + delta_x as f32).clamp(min_offset, 0.0);
+                        (bar_menu_state.scroll_offset + delta_x).clamp(min_offset, 0.0);
                     shell.invalidate_layout();
                     shell.request_redraw();
                     shell.capture_event();
@@ -610,14 +610,16 @@ where
             let active_bounds = slice_layout
                 .children()
                 .nth(active_in_slice)
-                .expect(&format!(
-                    "Index {:?} (in slice space) is not within the menu bar layout \
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Index {:?} (in slice space) is not within the menu bar layout \
                     | slice_layout.children().count(): {:?} \
                     | This should not happen, please report this issue
                     ",
-                    active_in_slice,
-                    slice_layout.children().count()
-                ))
+                        active_in_slice,
+                        slice_layout.children().count()
+                    )
+                })
                 .bounds();
 
             renderer.fill_quad(

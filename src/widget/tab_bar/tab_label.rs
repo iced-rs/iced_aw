@@ -17,3 +17,33 @@ pub enum TabLabel {
     IconText(char, String),
     // TODO: Support any element as a label.
 }
+
+impl From<char> for TabLabel {
+    fn from(value: char) -> Self {
+        Self::Icon(value)
+    }
+}
+
+impl From<&str> for TabLabel {
+    fn from(value: &str) -> Self {
+        Self::Text(value.to_owned())
+    }
+}
+
+impl From<String> for TabLabel {
+    fn from(value: String) -> Self {
+        Self::Text(value)
+    }
+}
+
+impl From<(char, &str)> for TabLabel {
+    fn from(value: (char, &str)) -> Self {
+        Self::IconText(value.0, value.1.to_owned())
+    }
+}
+
+impl From<(char, String)> for TabLabel {
+    fn from(value: (char, String)) -> Self {
+        Self::IconText(value.0, value.1)
+    }
+}

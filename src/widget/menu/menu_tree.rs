@@ -436,14 +436,12 @@ where
                                 let center = slice_layout
                                     .children()
                                     .nth(active_in_slice)
-                                    .expect(&format!(
-                                        " Index {:?} (in slice space) is not within the slice layout \
+                                    .unwrap_or_else(|| panic!(" Index {:?} (in slice space) is not within the slice layout \
                                         | slice_layout.children().count(): {:?} \
                                         | This should not happen, please report this issue
                                         ",
                                         active_in_slice,
-                                        slice_layout.children().count()
-                                    ))
+                                        slice_layout.children().count()))
                                     .bounds()
                                     .center();
                                 mouse::Cursor::Available(center)
@@ -480,8 +478,11 @@ where
                     });
                     shell.merge(temp_shell, |message| message);
                 }
-                Op::LeftPress => match event {
-                    Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                Op::LeftPress => {
+                    if matches!(
+                        event,
+                        Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                    ) {
                         schedule_close_on_click(
                             global_state,
                             global_parameters,
@@ -493,10 +494,9 @@ where
                             self.close_on_background_click,
                         );
                     }
-                    _ => {}
-                },
-                Op::ScrollEvent => match event {
-                    Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
+                }
+                Op::ScrollEvent => {
+                    if let Event::Mouse(mouse::Event::WheelScrolled { delta }) = event {
                         if cursor.is_over(background_bounds) {
                             let delta_y = match delta {
                                 mouse::ScrollDelta::Lines { y, .. } => {
@@ -516,8 +516,7 @@ where
                         }
                         shell.request_redraw();
                     }
-                    _ => {}
-                },
+                }
                 Op::OpenEvent => {
                     if !global_state.pressed {
                         assert!(
@@ -575,21 +574,16 @@ where
                     update(global_state, tree, &[Op::RedrawUpdate]);
                     // the cursor is over the parent bounds
                     // let the parent process the event
-                    assert!(
-                        shell.is_event_captured() == false,
-                        "Returning RecEvent::None"
-                    );
+                    assert!(!shell.is_event_captured(), "Returning RecEvent::None");
                     RecEvent::None
                 } else {
                     let open = {
                         if global_state.pressed {
                             true
+                        } else if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
+                            false
                         } else {
-                            if prev_bounds_list.iter().any(|r| cursor.is_over(*r)) {
-                                false
-                            } else {
-                                cursor.is_over(safe_bounds)
-                            }
+                            cursor.is_over(safe_bounds)
                         }
                     };
 
@@ -602,10 +596,7 @@ where
                         // the current menu is ready to close
                         #[cfg(feature = "debug_log")]
                         debug!(target:"menu::Menu::update", "close menu");
-                        assert!(
-                            shell.is_event_captured() == false,
-                            "Returning RecEvent::Close"
-                        );
+                        assert!(!shell.is_event_captured(), "Returning RecEvent::Close");
                         *prev_active = None;
                         if tree.children.len() == 2 {
                             // prune the menu tree when the menu is closed
@@ -714,14 +705,16 @@ where
             let active_bounds = slice_layout
                 .children()
                 .nth(active_in_slice)
-                .expect(&format!(
-                    "Index {:?} (in slice space) is not within the slice layout \
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Index {:?} (in slice space) is not within the slice layout \
                     | slice_layout.children().count(): {:?} \
                     | This should not happen, please report this issue
                     ",
-                    active_in_slice,
-                    slice_layout.children().count()
-                ))
+                        active_in_slice,
+                        slice_layout.children().count()
+                    )
+                })
                 .bounds();
 
             renderer.fill_quad(
