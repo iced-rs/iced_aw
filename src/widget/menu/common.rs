@@ -1,8 +1,13 @@
-use iced_core::{layout::*, mouse, renderer, widget::Tree, Padding, Rectangle, Shell, Size};
+use iced_core::{
+    layout::{Layout, Node},
+    mouse, renderer,
+    widget::Tree,
+    Padding, Rectangle, Shell, Size,
+};
 
-use super::menu_bar::*;
-use super::menu_tree::*;
-use crate::style::menu_bar::*;
+use super::menu_bar::{GlobalState, MenuBarTask};
+use super::menu_tree::{Item, MenuState};
+use crate::style::menu_bar::Catalog;
 
 ///
 /// ## FakeHovering:
@@ -212,7 +217,7 @@ pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer:
     cursor: mouse::Cursor,
     shell: &mut Shell<'_, Message>,
 ) {
-    let old_active = menu_state.active.clone();
+    let old_active = menu_state.active;
     let slice = menu_state.slice;
 
     for (i, ((item, tree), layout)) in

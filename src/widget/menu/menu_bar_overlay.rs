@@ -31,7 +31,7 @@ where
     /// Tree{ bar, [item_tree...] }
     pub(super) tree: &'b mut Tree,
 }
-impl<'a, 'b, Message, Theme, Renderer> MenuBarOverlay<'a, 'b, Message, Theme, Renderer>
+impl<'b, Message, Theme, Renderer> MenuBarOverlay<'_, 'b, Message, Theme, Renderer>
 where
     Theme: Catalog,
     Renderer: renderer::Renderer,
@@ -81,7 +81,7 @@ where
 
         if !global_state.open {
             return Node::with_children(bounds, [bar_node, roots_node].into());
-        };
+        }
 
         let Some(active) = bar_menu_state.active else {
             return Node::with_children(bounds, [bar_node, roots_node].into());
@@ -204,7 +204,7 @@ where
 
         if !global_state.open {
             return;
-        };
+        }
 
         let Some(active) = bar_menu_state.active else {
             return;
@@ -288,13 +288,12 @@ where
                 let next_parent_bounds = slice_layout
                     .children()
                     .nth(active_in_slice)
-                    .expect(&format!("Index {:?} (in slice space) is not within the slice layout \
+                    .unwrap_or_else(|| panic!("Index {:?} (in slice space) is not within the slice layout \
                         | slice_layout.children().count(): {:?} \
                         | This should not happen, please report this issue
                         ", 
                         active_in_slice,
-                        slice_layout.children().count()
-                    ))
+                        slice_layout.children().count()))
                     .bounds();
 
                 rec(
@@ -314,7 +313,7 @@ where
                     &mut menu_state.active,
                     depth + 1,
                 )
-            } else if let mouse::Cursor::Unavailable = cursor{
+            } else if cursor == mouse::Cursor::Unavailable{
                 #[cfg(feature = "debug_log")]
                 debug!(target:"menu::MenuBarOverlay::update", "rec | cursor is unavailable");
                 RecEvent::Event
@@ -376,11 +375,13 @@ where
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::MenuBarOverlay::update", "re: {:?}", re);
 
-        if let Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) = event {
-            if let Some(MenuBarTask::CloseOnClick) = global_state.task() {
-                bar.close(self.tree.children.as_mut_slice(), shell);
-                return;
-            }
+        if matches!(
+            event,
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+        ) && matches!(global_state.task(), Some(MenuBarTask::CloseOnClick))
+        {
+            bar.close(self.tree.children.as_mut_slice(), shell);
+            return;
         }
 
         match re {
@@ -435,7 +436,7 @@ where
                 debug!(target:"menu::MenuBarOverlay::update", "RecEvent::Close | MenuBar should process the event");
 
                 assert!(
-                    shell.is_event_captured() == false,
+                    !shell.is_event_captured(),
                     "MenuBarOverlay::update() | RecEvent::Close | Returning"
                 );
                 // let the menu bar process the event
@@ -445,7 +446,7 @@ where
                 debug!(target:"menu::MenuBarOverlay::update", "RecEvent::None | MenuBar should process the event");
 
                 assert!(
-                    shell.is_event_captured() == false,
+                    !shell.is_event_captured(),
                     "MenuBarOverlay::update() | RecEvent::None | Returning"
                 );
                 // let the menu bar process the event
@@ -473,7 +474,7 @@ where
 
         if !global_state.open {
             return mouse::Interaction::default();
-        };
+        }
 
         let Some(active) = bar_menu_state.active else {
             return mouse::Interaction::default();
@@ -546,7 +547,7 @@ where
 
         if !global_state.open {
             return;
-        };
+        }
 
         let Some(active) = bar_menu_state.active else {
             return;
@@ -627,7 +628,7 @@ where
 
         if !global_state.open {
             return None;
-        };
+        }
 
         let active = bar_menu_state.active?;
 
@@ -807,7 +808,7 @@ where
                 renderer,
                 &viewport,
             );
-        };
+        }
 
         if overlays.is_empty() {
             #[cfg(feature = "debug_log")]
@@ -839,7 +840,7 @@ where
 
         if !global_state.open {
             return;
-        };
+        }
 
         let Some(active) = bar_menu_state.active else {
             return;
