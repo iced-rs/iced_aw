@@ -235,14 +235,14 @@ where
                     };
 
                     let _ = state.values[id].update(text);
-                    (state.values[id].min_bounds().width + self.padding.horizontal()).round() as u32
+                    (state.values[id].min_bounds().width + self.padding.x()).round() as u32
                 })
                 .max()
                 .unwrap_or(100),
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width as f32 + self.padding.horizontal());
+        let limits = limits.max_width(max_width as f32 + self.padding.x());
 
         let content = self
             .container

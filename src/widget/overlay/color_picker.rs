@@ -902,7 +902,7 @@ where
         .height(Length::Fill);
 
     let block1_node = Column::<(), Theme, Renderer>::new()
-        .spacing(PADDING.vertical() / 2.) // Average vertical padding
+        .spacing(PADDING.y() / 2.) // Average vertical padding
         .push(
             Row::new()
                 .width(Length::Fill)
@@ -948,7 +948,7 @@ where
     let mut hex_text_layout = Row::<Message, Theme, Renderer>::new()
         .width(Length::Fill)
         .height(Length::Fixed(
-            renderer.default_size().0 + PADDING.vertical(),
+            renderer.default_size().0 + PADDING.y(),
         ))
         .layout(color_picker.tree, renderer, &hex_text_limits);
 
@@ -1048,11 +1048,11 @@ where
 
     Node::with_children(
         Size::new(
-            rgba_bounds.width + PADDING.horizontal(),
+            rgba_bounds.width + PADDING.x(),
             rgba_bounds.height
                 + hex_bounds.height
                 + cancel_bounds.height
-                + PADDING.vertical()
+                + PADDING.y()
                 + (2.0 * SPACING.0),
         ),
         vec![rgba_colors, hex_text_layout, cancel_button, submit_button],

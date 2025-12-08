@@ -579,11 +579,11 @@ where
 
         let mut node = Node::with_children(
             Size::new(
-                clock.bounds().width + PADDING.horizontal(),
+                clock.bounds().width + PADDING.x(),
                 clock.bounds().height
                     + digital_clock.bounds().height
                     + cancel_button.bounds().height
-                    + PADDING.vertical()
+                    + PADDING.y()
                     + 2.0 * SPACING.0,
             ),
             vec![clock, digital_clock, cancel_button, submit_button],
