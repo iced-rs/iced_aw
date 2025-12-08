@@ -1417,12 +1417,12 @@ fn rgba_color(
                 content: label.to_owned(),
                 bounds: Size::new(label_layout.bounds().width, label_layout.bounds().height),
                 size: renderer.default_size(),
-                font: ICED_AW_FONT,
+                font: renderer.default_font(),
                 align_x: text::Alignment::Center,
                 align_y: Vertical::Center,
                 line_height: text::LineHeight::Relative(1.3),
-                shaping: text::Shaping::Advanced,
-                wrapping: Wrapping::default(),
+                shaping: text::Shaping::Basic,
+                wrapping: Wrapping::None,
             },
             Point::new(
                 label_layout.bounds().center_x(),
@@ -1505,8 +1505,8 @@ fn rgba_color(
                 align_x: text::Alignment::Center,
                 align_y: Vertical::Center,
                 line_height: iced_widget::text::LineHeight::Relative(1.3),
-                shaping: iced_widget::text::Shaping::Advanced,
-                wrapping: Wrapping::default(),
+                shaping: iced_widget::text::Shaping::Basic,
+                wrapping: Wrapping::None,
             },
             Point::new(
                 value_layout.bounds().center_x(),
@@ -1551,7 +1551,7 @@ fn rgba_color(
     f(
         renderer,
         red_row_layout,
-        "R:",
+        "R",
         Color::from_rgb(color.r, 0.0, 0.0),
         color.r,
         cursor,
@@ -1566,7 +1566,7 @@ fn rgba_color(
     f(
         renderer,
         green_row_layout,
-        "G:",
+        "G",
         Color::from_rgb(0.0, color.g, 0.0),
         color.g,
         cursor,
@@ -1581,7 +1581,7 @@ fn rgba_color(
     f(
         renderer,
         blue_row_layout,
-        "B:",
+        "B",
         Color::from_rgb(0.0, 0.0, color.b),
         color.b,
         cursor,
@@ -1596,7 +1596,7 @@ fn rgba_color(
     f(
         renderer,
         alpha_row_layout,
-        "A:",
+        "A",
         Color::from_rgba(0.0, 0.0, 0.0, color.a),
         color.a,
         cursor,
