@@ -1,9 +1,9 @@
 use iced::{
-    advanced::image::Bytes,
-    widget::{image::Handle, Column, Container, Image, Slider, Text},
     Alignment, Element, Length,
+    widget::{Column, Container, Image, Slider, Text, image::Handle},
 };
 use iced_aw::sidebar::TabLabel;
+use iced_core::Bytes;
 
 use crate::{Icon, Message, Tab};
 
