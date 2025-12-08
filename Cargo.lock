@@ -1340,7 +1340,8 @@ dependencies = [
 [[package]]
 name = "iced_fonts"
 version = "0.3.0"
-source = "git+https://github.com/Redhawk18/iced_fonts.git#42b63f52a96ae0a65603bb850e0bad1f7be30fe7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "214cff7c8499e328774216690e58e315a1a5f8f6fdd1035aed6298e62ffc4c1d"
 dependencies = [
  "iced_core",
  "iced_fonts_macros",
@@ -1350,7 +1351,8 @@ dependencies = [
 [[package]]
 name = "iced_fonts_macros"
 version = "0.3.0"
-source = "git+https://github.com/Redhawk18/iced_fonts.git#42b63f52a96ae0a65603bb850e0bad1f7be30fe7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ef5125e110cb19cd1910a28298661c98c5d9ab02eef43594968352940e8752e"
 dependencies = [
  "proc-macro2",
  "quote",

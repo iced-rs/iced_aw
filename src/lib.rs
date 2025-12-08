@@ -47,7 +47,6 @@
     clippy::print_stdout,
     clippy::rest_pat_in_fully_bound_structs,
     clippy::str_to_string,
-    clippy::string_to_string,
     clippy::todo,
     clippy::unimplemented,
     clippy::unneeded_field_pattern,

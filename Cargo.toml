@@ -5,7 +5,7 @@ authors = [
   "Kaiden42 <gitlab@tinysn.com>",
   "Andrew Wheeler <genusistimelord@gmail.com>",
 ]
-edition = "2021"
+edition = "2024"
 description = "Additional widgets for the Iced GUI library"
 license = "MIT"
 homepage = "https://iced.rs"
@@ -13,7 +13,7 @@ repository = "https://github.com/iced-rs/iced_aw"
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
 categories = ["gui"]
-rust-version = "1.80"
+rust-version = "1.88"
 
 [features]
 default = ["full"]
