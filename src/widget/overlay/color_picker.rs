@@ -947,9 +947,7 @@ where
 
     let mut hex_text_layout = Row::<Message, Theme, Renderer>::new()
         .width(Length::Fill)
-        .height(Length::Fixed(
-            renderer.default_size().0 + PADDING.y(),
-        ))
+        .height(Length::Fixed(renderer.default_size().0 + PADDING.y()))
         .layout(color_picker.tree, renderer, &hex_text_limits);
 
     let block2_limits = block2_limits.shrink(Size::new(

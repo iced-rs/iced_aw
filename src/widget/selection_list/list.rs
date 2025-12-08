@@ -140,8 +140,7 @@ where
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y()))
-                            as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y())) as usize,
                     );
 
                     shell.request_redraw();
@@ -149,8 +148,7 @@ where
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y()))
-                            as usize,
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y())) as usize,
                     );
 
                     if let Some(index) = list_state.hovered_option {
