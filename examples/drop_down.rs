@@ -5,12 +5,12 @@
 use std::fmt::Display;
 
 use iced::{
-    alignment::Vertical,
-    widget::{scrollable, Button, Column, Row, Text},
     Element, Length,
+    alignment::Vertical,
+    widget::{Button, Column, Row, Text, scrollable},
 };
 
-use iced_aw::{drop_down, DropDown};
+use iced_aw::{DropDown, drop_down};
 
 fn main() -> iced::Result {
     iced::application(

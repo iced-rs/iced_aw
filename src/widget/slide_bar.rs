@@ -3,12 +3,12 @@
 //! *This API requires the following crate features to be activated: `quad`*
 
 use iced_core::{
+    Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell,
+    Size, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
     widget::tree::{self, Tree},
-    Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell,
-    Size, Widget,
 };
 
 use std::ops::RangeInclusive;

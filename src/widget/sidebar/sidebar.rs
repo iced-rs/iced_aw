@@ -9,28 +9,27 @@
 
 use super::column::FlushColumn;
 use crate::{
-    iced_aw_font,
+    ICED_AW_FONT, iced_aw_font,
     style::{
-        sidebar::{self, Catalog, Style},
         Status, StyleFn,
+        sidebar::{self, Catalog, Style},
     },
-    ICED_AW_FONT,
 };
 use iced_core::{
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length, Padding,
+    Pixels, Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
     alignment::{self, Vertical},
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::{
-        tree::{State, Tag},
         Operation, Tree,
+        tree::{State, Tag},
     },
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length, Padding,
-    Pixels, Point, Rectangle, Shadow, Shell, Size, Vector, Widget,
 };
 use iced_widget::{
-    text::{self, LineHeight, Wrapping},
     Row, Text,
+    text::{self, LineHeight, Wrapping},
 };
 use std::marker::PhantomData;
 

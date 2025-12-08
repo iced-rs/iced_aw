@@ -1,8 +1,8 @@
 mod login;
 use iced::{
+    Element, Font, Length,
     alignment::{Horizontal, Vertical},
     widget::{Column, Container, Text},
-    Element, Font, Length,
 };
 use iced_aw::sidebar::{SidebarWithContent, TabLabel};
 use login::{LoginMessage, LoginTab};
@@ -14,7 +14,7 @@ mod counter;
 use counter::{CounterMessage, CounterTab};
 
 mod settings;
-use settings::{style_from_index, SettingsMessage, SettingsTab, SidebarPosition};
+use settings::{SettingsMessage, SettingsTab, SidebarPosition, style_from_index};
 
 const HEADER_SIZE: u32 = 32;
 const TAB_PADDING: u16 = 16;

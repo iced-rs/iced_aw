@@ -13,14 +13,14 @@
 use super::common::*;
 use super::flex;
 use iced_core::{
+    Clipboard, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector,
     alignment,
     layout::{Layout, Limits, Node},
     mouse, renderer,
     time::Instant,
-    widget::tree::{self, Tree},
     widget::Operation,
-    window, Clipboard, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
-    Vector,
+    widget::tree::{self, Tree},
+    window,
 };
 use std::iter::once;
 

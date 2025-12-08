@@ -1,9 +1,9 @@
 use crate::{Icon, Message, Tab};
 use iced::{
-    widget::{Column, Container, Radio, Text},
     Element,
+    widget::{Column, Container, Radio, Text},
 };
-use iced_aw::style::{tab_bar, StyleFn};
+use iced_aw::style::{StyleFn, tab_bar};
 use iced_aw::tab_bar::TabLabel;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TabBarPosition {

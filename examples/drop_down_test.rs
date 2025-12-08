@@ -4,11 +4,11 @@
 //! in a plain column and inside a scrollable container.
 
 use iced::{
-    widget::{scrollable, Button, Column, Container, Row, Text},
     Element, Length,
+    widget::{Button, Column, Container, Row, Text, scrollable},
 };
 
-use iced_aw::{drop_down, DropDown};
+use iced_aw::{DropDown, drop_down};
 
 fn main() -> iced::Result {
     iced::application(

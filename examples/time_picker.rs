@@ -3,11 +3,11 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Button, Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Button, Container, Row, Text},
 };
 use iced_aw::ICED_AW_FONT_BYTES;
-use iced_aw::{time_picker::Time, TimePicker};
+use iced_aw::{TimePicker, time_picker::Time};
 
 fn main() -> iced::Result {
     iced::application(

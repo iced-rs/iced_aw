@@ -1,24 +1,23 @@
 //! Display a dropdown list of selectable values.
 pub mod list;
 use crate::style::{
-    selection_list::{Catalog, Style},
     Status, StyleFn,
+    selection_list::{Catalog, Style},
 };
 
 use iced_core::{
+    Border, Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell,
+    Size, Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
-    text::{paragraph, Paragraph, Text},
-    widget::{tree, Tree},
-    Border, Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell,
-    Size, Widget,
+    text::{Paragraph, Text, paragraph},
+    widget::{Tree, tree},
 };
 use iced_widget::{
-    container, scrollable,
+    Container, Scrollable, container, scrollable,
     text::{self, LineHeight, Wrapping},
-    Container, Scrollable,
 };
 use std::{fmt::Display, hash::Hash, marker::PhantomData};
 

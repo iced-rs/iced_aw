@@ -3,8 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Column, Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Column, Container, Row, Text},
 };
 
 use iced_aw::{helpers::badge, style, style::status::Status};

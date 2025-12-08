@@ -8,6 +8,8 @@ pub use crate::style::{
     status::{Status, StyleFn},
 };
 use iced_core::{
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point,
+    Rectangle, Shadow, Shell, Size, Vector, Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
@@ -15,8 +17,6 @@ use iced_core::{
     text::LineHeight,
     touch,
     widget::{Operation, Tree},
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Shell, Size, Vector, Widget,
 };
 use iced_widget::text::Wrapping;
 

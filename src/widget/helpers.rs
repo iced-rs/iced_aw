@@ -4,7 +4,7 @@
 #[cfg(feature = "selection_list")]
 use crate::style::{Status, StyleFn};
 #[allow(unused_imports)]
-use iced_core::{self, renderer, Color, Element, Padding};
+use iced_core::{self, Color, Element, Padding, renderer};
 
 #[cfg(feature = "number_input")]
 use num_traits::bounds::Bounded;

@@ -3,12 +3,13 @@
 //! *This API requires the following crate features to be activated: badge*
 
 use iced_core::{
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Shadow, Shell, Size, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::Tree,
-    window, Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point,
-    Rectangle, Shadow, Shell, Size, Widget,
+    window,
 };
 
 pub use crate::style::{

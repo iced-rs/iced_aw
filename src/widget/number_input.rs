@@ -2,25 +2,24 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 use iced_core::{
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
+    Point, Rectangle, Shadow, Shell, Size, Widget,
     alignment::Vertical,
     keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
     widget::{
-        self,
+        self, Operation, Tree,
         tree::{State, Tag},
-        Operation, Tree,
     },
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
-    Point, Rectangle, Shadow, Shell, Size, Widget,
 };
 use iced_widget::{
-    text::{LineHeight, Wrapping},
-    text_input::{self, cursor, Value},
     Column, Container, Row, Text,
+    text::{LineHeight, Wrapping},
+    text_input::{self, Value, cursor},
 };
-use num_traits::{bounds::Bounded, Num, NumAssignOps};
+use num_traits::{Num, NumAssignOps, bounds::Bounded};
 use std::{
     fmt::Display,
     ops::{Bound, RangeBounds},
@@ -30,8 +29,8 @@ use std::{
 use crate::iced_aw_font::advanced_text::{down_open, up_open};
 use crate::style::{self, Status};
 pub use crate::style::{
-    number_input::{self, Catalog, Style},
     StyleFn,
+    number_input::{self, Catalog, Style},
 };
 use crate::widget::typed_input::TypedInput;
 
@@ -1170,9 +1169,5 @@ where
 }
 
 fn sorted_range<T: PartialOrd>(a: T, b: T) -> std::ops::Range<T> {
-    if a >= b {
-        b..a
-    } else {
-        a..b
-    }
+    if a >= b { b..a } else { a..b }
 }

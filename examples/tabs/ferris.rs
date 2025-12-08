@@ -1,6 +1,6 @@
 use iced::{
-    widget::{image::Handle, Column, Container, Image, Slider, Text},
     Alignment, Element, Length,
+    widget::{Column, Container, Image, Slider, Text, image::Handle},
 };
 use iced_aw::tab_bar::TabLabel;
 use iced_core::Bytes;

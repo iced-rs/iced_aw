@@ -3,8 +3,8 @@
 // It was written by Andrew Wheeler <genusistimelord@gmail.com>
 
 use iced::{
-    widget::{Column, Container, Row, Text},
     Alignment, Element, Length,
+    widget::{Column, Container, Row, Text},
 };
 use iced_aw::ICED_AW_FONT_BYTES;
 

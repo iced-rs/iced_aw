@@ -3,12 +3,12 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Button, Container, Row, Text},
     Alignment, Color, Element, Length,
+    widget::{Button, Container, Row, Text},
 };
 
-use iced_aw::helpers::color_picker;
 use iced_aw::ICED_AW_FONT_BYTES;
+use iced_aw::helpers::color_picker;
 fn main() -> iced::Result {
     iced::application(
         ColorPickerExample::default,

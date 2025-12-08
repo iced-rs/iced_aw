@@ -3,8 +3,8 @@
 // It was written by wiiznokes <wiiznokes2@gmail.com>
 
 use iced::{
-    widget::{column, Button, Container, Row, Text},
     Alignment, Element,
+    widget::{Button, Container, Row, Text, column},
 };
 
 use iced_aw::ContextMenu;

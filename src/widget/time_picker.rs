@@ -6,19 +6,19 @@ use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButt
 
 use chrono::Local;
 use iced_core::{
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::tree::{self, Tag, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
 };
-use iced_widget::{button, container, text, Renderer};
+use iced_widget::{Renderer, button, container, text};
 
 pub use crate::{
     core::time::{Period, Time},
     style::{
-        time_picker::{Catalog, Style},
         Status, StyleFn,
+        time_picker::{Catalog, Style},
     },
 };
 

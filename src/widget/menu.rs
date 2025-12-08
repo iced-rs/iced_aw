@@ -153,7 +153,7 @@ mod menu_bar;
 mod menu_bar_overlay;
 mod menu_tree;
 
-pub use crate::style::menu_bar::{primary, Catalog, Style};
+pub use crate::style::menu_bar::{Catalog, Style, primary};
 pub use common::{DrawPath, ScrollSpeed};
 pub use menu_bar::MenuBar;
 pub use menu_tree::{Item, Menu};

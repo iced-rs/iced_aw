@@ -8,26 +8,27 @@
 pub mod tab_label;
 
 use iced_core::{
+    Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length, Padding,
+    Pixels, Point, Rectangle, Shadow, Shell, Size, Widget,
     alignment::{self, Vertical},
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
     widget::Tree,
-    window, Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length,
-    Padding, Pixels, Point, Rectangle, Shadow, Shell, Size, Widget,
+    window,
 };
 use iced_widget::{
-    text::{self, LineHeight, Wrapping},
     Column, Row, Text,
+    text::{self, LineHeight, Wrapping},
 };
 
 use std::marker::PhantomData;
 
 pub use crate::style::{
-    tab_bar::{self, Catalog, Style},
     Status, StyleFn,
+    tab_bar::{self, Catalog, Style},
 };
-use crate::{iced_aw_font::advanced_text::cancel, ICED_AW_FONT};
+use crate::{ICED_AW_FONT, iced_aw_font::advanced_text::cancel};
 pub use tab_label::TabLabel;
 
 /// The default icon size.

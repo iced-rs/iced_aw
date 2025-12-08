@@ -2,12 +2,12 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 use iced_core::{
+    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
+    Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{Operation, Tree},
-    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Vector, Widget,
 };
 use std::marker::PhantomData;
 

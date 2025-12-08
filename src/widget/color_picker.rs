@@ -9,11 +9,11 @@ use super::overlay::color_picker::{
 };
 
 use iced_core::{
+    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::tree::{self, Tag, Tree},
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
 };
 use iced_widget::Renderer;
 

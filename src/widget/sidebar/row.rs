@@ -7,13 +7,12 @@
 //! alignments.
 
 use iced_core::{
-    alignment,
+    Alignment, Clipboard, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Vector, Widget, alignment,
     event::Event,
     layout::{self, Node},
     mouse, overlay, renderer,
-    widget::{tree::Tree, Operation},
-    Alignment, Clipboard, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
-    Vector, Widget,
+    widget::{Operation, tree::Tree},
 };
 use iced_widget::Column;
 

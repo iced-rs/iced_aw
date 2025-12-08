@@ -4,9 +4,9 @@ use iced_core::{Length, Rectangle, Widget};
 
 #[allow(unused_imports)]
 pub use iced_core::{
+    Renderer,
     layout::{Limits, Node},
     widget::Tree,
-    Renderer,
 };
 
 type LayoutFn<'a, Message, Theme, Renderer> = Box<
@@ -31,12 +31,12 @@ impl<'b, Message, Theme, Renderer: iced_core::Renderer> CustomLayout<'b, Message
     pub fn new(
         elements: Vec<iced_core::Element<'b, Message, Theme, Renderer>>,
         layout: impl Fn(
-                &mut Vec<iced_core::Element<'b, Message, Theme, Renderer>>,
-                &mut Vec<Tree>,
-                &Renderer,
-                &Limits,
-            ) -> Node
-            + 'static,
+            &mut Vec<iced_core::Element<'b, Message, Theme, Renderer>>,
+            &mut Vec<Tree>,
+            &Renderer,
+            &Limits,
+        ) -> Node
+        + 'static,
     ) -> Self {
         Self {
             elements,

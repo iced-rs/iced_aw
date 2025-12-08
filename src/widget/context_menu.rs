@@ -1,11 +1,11 @@
 //! A context menu for showing actions on right click.
 //!
 use iced_core::{
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Button, Cursor},
     overlay, renderer,
-    widget::{tree, Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+    widget::{Operation, Tree, tree},
 };
 
 pub use crate::style::{

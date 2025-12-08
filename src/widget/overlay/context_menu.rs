@@ -8,12 +8,12 @@ pub use crate::style::{
 };
 
 use iced_core::{
-    keyboard,
+    Border, Clipboard, Color, Element, Event, Layout, Point, Shell, Size, keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::Tree,
-    window, Border, Clipboard, Color, Element, Event, Layout, Point, Shell, Size,
+    window,
 };
 
 /// The overlay of the [`ContextMenu`](crate::widget::ContextMenu).

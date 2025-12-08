@@ -6,6 +6,8 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 
 use chrono::Local;
 use iced_core::{
+    Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector,
+    Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
@@ -14,14 +16,12 @@ use iced_core::{
         self,
         tree::{Tag, Tree},
     },
-    Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector,
-    Widget,
 };
 use iced_widget::Renderer;
 
 pub use crate::{
     core::date::Date,
-    style::{date_picker::Style, Status, StyleFn},
+    style::{Status, StyleFn, date_picker::Style},
 };
 
 //TODO: Remove ignore when Null is updated. Temp fix for Test runs

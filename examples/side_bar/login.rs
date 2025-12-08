@@ -1,7 +1,7 @@
 use iced::{
+    Alignment, Element, Length,
     alignment::{Horizontal, Vertical},
     widget::{Button, Column, Container, Row, Text, TextInput},
-    Alignment, Element, Length,
 };
 use iced_aw::sidebar::TabLabel;
 

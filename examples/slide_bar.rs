@@ -3,11 +3,11 @@
 // It was written by Andrew Wheeler <genusistimelord@gmail.com>
 
 use iced::{
-    widget::{Column, Container, Text},
     Element, Length,
+    widget::{Column, Container, Text},
 };
 
-use iced_aw::{SlideBar, ICED_AW_FONT_BYTES};
+use iced_aw::{ICED_AW_FONT_BYTES, SlideBar};
 
 fn main() -> iced::Result {
     iced::application(

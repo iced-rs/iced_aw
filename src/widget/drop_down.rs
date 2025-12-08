@@ -3,12 +3,12 @@
 //! *This API requires the following crate features to be activated: `drop_down`*
 
 use iced_core::{
+    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     keyboard::{self, key::Named},
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
     widget::{Operation, Tree},
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
 };
 
 pub use crate::core::{alignment::Alignment, offset::Offset};

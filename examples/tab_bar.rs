@@ -3,8 +3,8 @@
 // It was written by Kaiden42 <gitlab@tinysn.com>
 
 use iced::{
-    widget::{Button, Column, Row, Text, TextInput},
     Alignment, Element, Length,
+    widget::{Button, Column, Row, Text, TextInput},
 };
 
 use iced_aw::ICED_AW_FONT_BYTES;

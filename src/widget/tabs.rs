@@ -9,26 +9,26 @@
 pub mod tab_bar_position;
 pub use crate::tab_bar::Position;
 use crate::{
+    TabLabel,
     style::{
-        tab_bar::{Catalog, Style},
         Status, StyleFn,
+        tab_bar::{Catalog, Style},
     },
     widget::tab_bar::TabBar,
-    TabLabel,
 };
 
 use iced_core::{
+    Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
+    Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
     widget::{
-        tree::{State, Tag},
         Operation, Tree,
+        tree::{State, Tag},
     },
-    Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Vector, Widget,
 };
-use iced_widget::{text, Row};
+use iced_widget::{Row, text};
 
 pub use tab_bar_position::TabBarPosition;
 

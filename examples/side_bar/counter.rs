@@ -1,6 +1,6 @@
 use iced::{
-    widget::{Button, Column, Container, Row, Text},
     Alignment, Element,
+    widget::{Button, Column, Container, Row, Text},
 };
 use iced_aw::sidebar::TabLabel;
 

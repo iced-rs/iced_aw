@@ -4,11 +4,11 @@
 
 use crate::widget::InnerBounds;
 use iced_core::{
+    Background, Border, Color, Element, Layout, Length, Rectangle, Shadow, Size, Widget,
     layout::{Limits, Node},
     mouse::Cursor,
     renderer,
     widget::Tree,
-    Background, Border, Color, Element, Layout, Length, Rectangle, Shadow, Size, Widget,
 };
 
 /// A dummy widget that draws a quad

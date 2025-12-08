@@ -4,11 +4,11 @@
 
 use iced::widget::PickList;
 use iced::{
-    widget::{column, container},
     Element, Length, Theme,
+    widget::{column, container},
 };
-use iced_aw::Spinner;
 use iced_aw::ICED_AW_FONT_BYTES;
+use iced_aw::Spinner;
 
 struct SpinnerExample {
     theme: Theme,
