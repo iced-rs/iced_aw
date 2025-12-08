@@ -323,7 +323,7 @@ where
         };
 
         let lower_bound_rel = self.padding.left - bar_menu_state.scroll_offset;
-        let upper_bound_rel = lower_bound_rel + resolved_width - self.padding.horizontal();
+        let upper_bound_rel = lower_bound_rel + resolved_width - self.padding.x();
 
         let slice =
             MenuSlice::from_bounds_rel(lower_bound_rel, upper_bound_rel, &items_node, |n| {
@@ -636,8 +636,8 @@ where
             Rectangle {
                 x: layout.bounds().x + self.padding.left,
                 y: layout.bounds().y + self.padding.top,
-                width: layout.bounds().width - self.padding.horizontal(),
-                height: layout.bounds().height - self.padding.vertical(),
+                width: layout.bounds().width - self.padding.x(),
+                height: layout.bounds().height - self.padding.y(),
             },
             |r| {
                 itl_iter_slice!(slice, self.roots;iter, tree.children;iter, slice_layout.children())

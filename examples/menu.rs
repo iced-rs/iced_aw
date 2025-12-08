@@ -262,8 +262,11 @@ impl App {
                     .width(Length::Fill)
                     .on_press(Message::Debug("Button".into()))
                 ),
-                (checkbox("Checkbox", self.check).on_toggle(Message::CheckChange)
-                    .width(Length::Fill)
+                (
+                    row![
+                        "Checkbox",
+                        checkbox(self.check).on_toggle(Message::CheckChange).width(Length::Fill)
+                    ]
                 ),
                 (
                     row![
@@ -565,7 +568,7 @@ impl App {
                     (debug_button_f("Item")),
                     (
                         tooltip_button(
-                            format!("{:?}", self.fruit), 
+                            format!("{:?}", self.fruit),
                             row![
                                 text("Pick Fruit")
                                     .width(Length::Fill)
@@ -583,7 +586,7 @@ impl App {
                     (debug_button_f("Item")),
                     hold_item_wm(
                         tooltip_button(
-                            "Pick Fruit".to_string(), 
+                            "Pick Fruit".to_string(),
                             row![
                                 text("Pick Fruit")
                                     .width(Length::Fill)

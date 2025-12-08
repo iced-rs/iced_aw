@@ -115,7 +115,7 @@ where
         #[allow(clippy::cast_precision_loss)]
         let intrinsic = Size::new(
             limits.max().width,
-            (self.text_size + self.padding.vertical()) * self.options.len() as f32,
+            (self.text_size + self.padding.y()) * self.options.len() as f32,
         );
 
         Node::new(intrinsic)
@@ -140,7 +140,7 @@ where
             match event {
                 Event::Mouse(mouse::Event::CursorMoved { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + self.padding.vertical()))
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y()))
                             as usize,
                     );
 
@@ -149,7 +149,7 @@ where
                 Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                 | Event::Touch(touch::Event::FingerPressed { .. }) => {
                     list_state.hovered_option = Some(
-                        ((cursor.y - bounds.y) / (self.text_size + self.padding.vertical()))
+                        ((cursor.y - bounds.y) / (self.text_size + self.padding.y()))
                             as usize,
                     );
 
@@ -208,7 +208,7 @@ where
         use std::f32;
 
         let bounds = layout.bounds();
-        let option_height = self.text_size + self.padding.vertical();
+        let option_height = self.text_size + self.padding.y();
         let offset = viewport.y - bounds.y;
         let start = (offset / option_height) as usize;
         let end = ((offset + viewport.height) / option_height).ceil() as usize;
@@ -222,7 +222,7 @@ where
                 x: bounds.x,
                 y: bounds.y + option_height * i as f32,
                 width: bounds.width,
-                height: self.text_size + self.padding.vertical(),
+                height: self.text_size + self.padding.y(),
             };
 
             if (is_selected || is_hovered) && (bounds.width > 0.) && (bounds.height > 0.) {
