@@ -69,18 +69,18 @@ rand = "0.9.2"
 env_logger = "0.11"                                        # For wrap example
 
 [dev-dependencies.iced]
-git = "https://github.com/iced-rs/iced.git"
+version = "0.14.0"
 features = ["advanced"]
 
 [dependencies]
-iced_core = { git = "https://github.com/iced-rs/iced.git" }
-iced_widget = { git = "https://github.com/iced-rs/iced.git" }
+iced_core = { version = "0.14.0" }
+iced_widget = { version = "0.14.0" }
 
 cfg-if = "1.0"
 chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
 iced_fonts = { version = "0.3.0-dev", features = [
   "advanced_text",
-], git = "https://github.com/Redhawk18/iced_fonts.git", rev = "31970b2" }
+], git = "https://github.com/Redhawk18/iced_fonts.git" }
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
