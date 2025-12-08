@@ -5,20 +5,22 @@
 use crate::iced_aw_font::advanced_text::{cancel, down_open, ok, up_open};
 use crate::{
     core::clock::{
-        NearestRadius, HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS,
-        MINUTE_RADIUS_PERCENTAGE, MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, PERIOD_PERCENTAGE,
+        HOUR_RADIUS_PERCENTAGE, HOUR_RADIUS_PERCENTAGE_NO_SECONDS, MINUTE_RADIUS_PERCENTAGE,
+        MINUTE_RADIUS_PERCENTAGE_NO_SECONDS, NearestRadius, PERIOD_PERCENTAGE,
         SECOND_RADIUS_PERCENTAGE,
     },
     core::{clock, overlay::Position, time::Period},
     style::{
+        Status,
         style_state::StyleState,
         time_picker::{Catalog, Style},
-        Status,
     },
     time_picker::{self, Time},
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_core::{
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -27,16 +29,13 @@ use iced_core::{
     text::Renderer as _,
     touch,
     widget::tree::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
 };
 use iced_widget::{
-    button,
+    Button, Column, Container, Renderer, Row, button,
     canvas::{self, LineCap, Path, Stroke, Text as CanvasText},
     container,
     graphics::geometry::Renderer as _,
     text::{self, Wrapping},
-    Button, Column, Container, Renderer, Row,
 };
 use std::collections::HashMap;
 
@@ -190,11 +189,7 @@ where
                     NearestRadius::Period => {
                         let (pm, hour) = self.state.time.hour12();
                         let hour = if hour == 12 {
-                            if pm {
-                                12
-                            } else {
-                                0
-                            }
+                            if pm { 12 } else { 0 }
                         } else {
                             hour
                         };
@@ -1822,9 +1817,10 @@ pub enum ClockDragged {
 }
 
 /// An enumeration of all focusable elements of the [`TimePickerOverlay`].
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum Focus {
     /// Nothing is in focus.
+    #[default]
     None,
 
     /// The overlay itself is in focus.
@@ -1884,11 +1880,5 @@ impl Focus {
             }
             Self::Submit => Self::Cancel,
         }
-    }
-}
-
-impl Default for Focus {
-    fn default() -> Self {
-        Self::None
     }
 }

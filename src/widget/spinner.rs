@@ -1,15 +1,16 @@
 //! A spinner to suggest something is loading.
 use iced_core::{
+    Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector,
+    Widget,
     layout::{Limits, Node},
     mouse::Cursor,
     renderer,
     time::{Duration, Instant},
     widget::{
-        tree::{State, Tag},
         Tree,
+        tree::{State, Tag},
     },
-    window, Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size,
-    Vector, Widget,
+    window,
 };
 
 /// A spinner widget, a circle spinning around the center of the widget.
@@ -176,27 +177,27 @@ where
 
         let bounds = layout.bounds();
 
-        if let Event::Window(window::Event::RedrawRequested(now)) = event {
-            if is_visible(&bounds) {
-                let state = state.state.downcast_mut::<SpinnerState>();
-                let duration = (*now - state.last_update).as_secs_f32();
-                let increment = if self.rate == Duration::ZERO {
-                    0.0
-                } else {
-                    duration * 1.0 / self.rate.as_secs_f32()
-                };
+        if let Event::Window(window::Event::RedrawRequested(now)) = event
+            && is_visible(&bounds)
+        {
+            let state = state.state.downcast_mut::<SpinnerState>();
+            let duration = (*now - state.last_update).as_secs_f32();
+            let increment = if self.rate == Duration::ZERO {
+                0.0
+            } else {
+                duration * 1.0 / self.rate.as_secs_f32()
+            };
 
-                state.t += increment;
+            state.t += increment;
 
-                if state.t > 1.0 {
-                    state.t -= 1.0;
-                }
-
-                shell.request_redraw_at(window::RedrawRequest::At(
-                    *now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
-                ));
-                state.last_update = *now;
+            if state.t > 1.0 {
+                state.t -= 1.0;
             }
+
+            shell.request_redraw_at(window::RedrawRequest::At(
+                *now + Duration::from_millis(1000 / FRAMES_PER_SECOND),
+            ));
+            state.last_update = *now;
         }
     }
 }

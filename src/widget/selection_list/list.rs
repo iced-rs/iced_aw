@@ -3,17 +3,17 @@
 use crate::selection_list::Catalog;
 
 use iced_core::{
+    Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
+    Shell, Size, Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
     widget::text::{LineHeight, Wrapping},
     widget::{
-        tree::{State, Tag},
         Tree,
+        tree::{State, Tag},
     },
-    Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
-    Shell, Size, Widget,
 };
 use std::{
     collections::hash_map::DefaultHasher,
@@ -151,12 +151,12 @@ where
                         ((cursor.y - bounds.y) / (self.text_size + self.padding.y())) as usize,
                     );
 
-                    if let Some(index) = list_state.hovered_option {
-                        if let Some(option) = self.options.get(index) {
-                            let mut hasher = DefaultHasher::new();
-                            option.hash(&mut hasher);
-                            list_state.last_selected_index = Some((index, hasher.finish()));
-                        }
+                    if let Some(index) = list_state.hovered_option
+                        && let Some(option) = self.options.get(index)
+                    {
+                        let mut hasher = DefaultHasher::new();
+                        option.hash(&mut hasher);
+                        list_state.last_selected_index = Some((index, hasher.finish()));
                     }
 
                     list_state.last_selected_index.iter().for_each(|last| {

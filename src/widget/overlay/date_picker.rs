@@ -9,10 +9,12 @@ use crate::{
         overlay::Position,
     },
     date_picker,
-    style::{date_picker::Style, style_state::StyleState, Status},
+    style::{Status, date_picker::Style, style_state::StyleState},
 };
 use chrono::{Datelike, Local, NaiveDate};
 use iced_core::{
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -21,12 +23,10 @@ use iced_core::{
     text::Renderer as _,
     touch,
     widget::tree::Tree,
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
 };
 use iced_widget::{
-    text::{self, Wrapping},
     Button, Column, Container, Renderer, Row, Text,
+    text::{self, Wrapping},
 };
 use std::collections::HashMap;
 
@@ -1060,9 +1060,10 @@ where
 }
 
 /// An enumeration of all focusable elements of the [`DatePickerOverlay`].
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum Focus {
     /// Nothing is in focus.
+    #[default]
     None,
 
     /// The overlay itself is in focus.
@@ -1110,12 +1111,6 @@ impl Focus {
             Self::Cancel => Self::Day,
             Self::Submit => Self::Cancel,
         }
-    }
-}
-
-impl Default for Focus {
-    fn default() -> Self {
-        Self::None
     }
 }
 

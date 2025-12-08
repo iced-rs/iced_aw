@@ -5,10 +5,10 @@
 use iced_core::layout::{Layout, Limits, Node};
 use iced_core::mouse::{self, Cursor};
 use iced_core::widget::{
-    tree::{State, Tag},
     Operation, Tree, Widget,
+    tree::{State, Tag},
 };
-use iced_core::{widget, Clipboard, Shell};
+use iced_core::{Clipboard, Shell, widget};
 use iced_core::{Element, Length, Padding, Pixels, Rectangle};
 use iced_core::{Event, Size};
 use iced_widget::text_input::{self, TextInput};
@@ -433,12 +433,12 @@ where
                 InternalMessage::OnChange(value) => {
                     self.text = value;
 
-                    if let Ok(value) = T::from_str(&self.text) {
-                        if self.value != value {
-                            self.value = value.clone();
-                            if let Some(on_change) = &self.on_change {
-                                shell.publish(on_change(value));
-                            }
+                    if let Ok(value) = T::from_str(&self.text)
+                        && self.value != value
+                    {
+                        self.value = value.clone();
+                        if let Some(on_change) = &self.on_change {
+                            shell.publish(on_change(value));
                         }
                     }
 
@@ -458,12 +458,12 @@ where
                 InternalMessage::OnPaste(value) => {
                     self.text = value;
 
-                    if let Ok(value) = T::from_str(&self.text) {
-                        if self.value != value {
-                            self.value = value.clone();
-                            if let Some(on_paste) = &self.on_paste {
-                                shell.publish(on_paste(value));
-                            }
+                    if let Ok(value) = T::from_str(&self.text)
+                        && self.value != value
+                    {
+                        self.value = value.clone();
+                        if let Some(on_paste) = &self.on_paste {
+                            shell.publish(on_paste(value));
                         }
                     }
 

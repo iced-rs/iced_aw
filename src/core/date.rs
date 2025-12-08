@@ -228,7 +228,7 @@ pub static MAX_MONTH_STR_LEN: LazyLock<usize> = LazyLock::new(|| {
         NaiveDate::from_ymd_opt(0, 12, 1).expect("Year, Month or Day doesnt Exist"),
     ];
 
-    let max = months
+    months
         .iter()
         .map(|m| {
             let d = date_as_string(*m);
@@ -236,9 +236,7 @@ pub static MAX_MONTH_STR_LEN: LazyLock<usize> = LazyLock::new(|| {
             s.len()
         })
         .max()
-        .expect("There should be a maximum element");
-
-    max
+        .expect("There should be a maximum element")
 });
 
 /// Gets the labels of the weekdays containing the first two characters of
@@ -272,8 +270,8 @@ mod tests {
     use chrono::NaiveDate;
 
     use super::{
-        is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year, succ_month,
-        succ_year, IsInMonth,
+        IsInMonth, is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year,
+        succ_month, succ_year,
     };
 
     #[test]

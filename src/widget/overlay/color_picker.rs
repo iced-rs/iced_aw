@@ -3,17 +3,18 @@
 //! *This API requires the following crate features to be activated: `color_picker`*
 
 use crate::{
-    color_picker,
+    ICED_AW_FONT, color_picker,
     core::{
         color::{HexString, Hsv},
         overlay::Position,
     },
-    style::{self, color_picker::Style, style_state::StyleState, Status},
-    ICED_AW_FONT,
+    style::{self, Status, color_picker::Style, style_state::StyleState},
 };
 
 use crate::iced_aw_font::advanced_text::{cancel, ok};
 use iced_core::{
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
+    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -22,14 +23,12 @@ use iced_core::{
     text::Renderer as _,
     touch,
     widget::{self, tree::Tree},
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
 };
 use iced_widget::{
+    Button, Column, Renderer, Row,
     canvas::{self, LineCap, Path, Stroke},
     graphics::geometry::Renderer as _,
     text::{self, Wrapping},
-    Button, Column, Renderer, Row,
 };
 use std::collections::HashMap;
 
@@ -1814,9 +1813,10 @@ where
 }
 
 /// The state of the currently dragged area.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub enum ColorBarDragged {
     /// No area is focussed.
+    #[default]
     None,
 
     /// The saturation/value area is focussed.
@@ -1838,16 +1838,11 @@ pub enum ColorBarDragged {
     Alpha,
 }
 
-impl Default for ColorBarDragged {
-    fn default() -> Self {
-        Self::None
-    }
-}
-
 /// An enumeration of all focusable element of the [`ColorPickerOverlay`].
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum Focus {
     /// Nothing is in focus.
+    #[default]
     None,
 
     /// The overlay itself is in focus.
@@ -1910,11 +1905,5 @@ impl Focus {
             Self::Cancel => Self::Alpha,
             Self::Submit => Self::Cancel,
         }
-    }
-}
-
-impl Default for Focus {
-    fn default() -> Self {
-        Self::None
     }
 }

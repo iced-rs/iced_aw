@@ -7,15 +7,16 @@
 #![allow(clippy::similar_names)]
 
 use iced_core::{
+    Clipboard, Event, Layout, Point, Rectangle, Shell, Size, Vector,
     layout::{Limits, Node},
     mouse, overlay, renderer,
     time::Instant,
     widget::{Operation, Tree},
-    window, Clipboard, Event, Layout, Point, Rectangle, Shell, Size, Vector,
+    window,
 };
 
 use super::{common::*, menu_bar::*, menu_tree::*};
-use crate::style::{menu_bar::*, Status};
+use crate::style::{Status, menu_bar::*};
 
 #[cfg(feature = "debug_log")]
 use log::{debug, trace, warn};
@@ -258,7 +259,6 @@ where
             viewport: &Rectangle,
             prev_bounds_list: &mut Vec<Rectangle>,
             prev_active: &mut Index,
-            depth: usize,
         ) -> RecEvent {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBarOverlay::update", "rec");
@@ -311,7 +311,6 @@ where
                     viewport,
                     prev_bounds_list,
                     &mut menu_state.active,
-                    depth + 1,
                 )
             } else if cursor == mouse::Cursor::Unavailable{
                 #[cfg(feature = "debug_log")]
@@ -369,7 +368,6 @@ where
             &viewport,
             &mut prev_bounds_list,
             &mut bar_menu_state.active,
-            0,
         );
 
         #[cfg(feature = "debug_log")]

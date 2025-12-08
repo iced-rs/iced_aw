@@ -6,12 +6,12 @@
 #![allow(clippy::enum_glob_use)]
 
 use iced_core::{
+    Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget,
     alignment, event,
     layout::{Limits, Node},
     mouse, overlay, renderer,
-    widget::{tree, Operation, Tree},
-    window, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size,
-    Widget,
+    widget::{Operation, Tree, tree},
+    window,
 };
 
 use super::{common::*, flex, menu_bar_overlay::MenuBarOverlay, menu_tree::*};
@@ -675,7 +675,7 @@ where
         } else {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuBar::overlay", "state not open | try return root overlays");
-            let slice_layout = layout.children().next().unwrap();
+            let slice_layout = layout.children().next()?;
 
             let Tree {
                 state,

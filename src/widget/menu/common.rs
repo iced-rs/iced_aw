@@ -1,8 +1,8 @@
 use iced_core::{
+    Padding, Rectangle, Shell, Size,
     layout::{Layout, Node},
     mouse, renderer,
     widget::Tree,
-    Padding, Rectangle, Shell, Size,
 };
 
 use super::menu_bar::{GlobalState, MenuBarTask};
@@ -162,7 +162,7 @@ pub(super) fn search_bound(
     let mut right = default_right;
 
     while left != right {
-        let m = ((left + right) / 2) + 1;
+        let m = usize::midpoint(left, right) + 1;
         if get_position(&list[m]) > bound {
             right = m - 1;
         } else {
@@ -241,6 +241,7 @@ pub(super) fn try_open_menu<'a, 'b, Message, Theme: Catalog, Renderer: renderer:
 ///
 /// This function assumes that a mouse::Event::ButtonPressed(mouse::Button::Left) event has occurred,
 /// make sure to check the event before calling this function.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn schedule_close_on_click<
     'a,
     'b,
