@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2025-12-08
+
 ### Changes
+- (Breaking) Updated to Iced 0.14.0.
 - Removed Grid please see Iced grid instead.
 
 ## [0.12.2] - 2025-03-02

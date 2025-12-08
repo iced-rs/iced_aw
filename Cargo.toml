@@ -1,6 +1,6 @@
 [package]
 name = "iced_aw"
-version = "0.13.0-dev"
+version = "0.13.0"
 authors = [
   "Kaiden42 <gitlab@tinysn.com>",
   "Andrew Wheeler <genusistimelord@gmail.com>",
