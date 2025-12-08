@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `color_picker`*
 
 use crate::{
-    ICED_AW_FONT, color_picker,
+    color_picker,
     core::{
         color::{HexString, Hsv},
         overlay::Position,
