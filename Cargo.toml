@@ -78,9 +78,9 @@ iced_widget = { version = "0.14.0" }
 
 cfg-if = "1.0"
 chrono = { version = "0.4.41", optional = true, features = ["wasmbind"] }
-iced_fonts = { version = "0.3.0-dev", features = [
+iced_fonts = { version = "0.3.0", features = [
   "advanced_text",
-], git = "https://github.com/Redhawk18/iced_fonts.git" }
+]}
 num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
