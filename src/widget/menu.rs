@@ -55,7 +55,7 @@
 //! Alterwidgetly you can use the helper macros
 //!
 //! ## Example 2
-//! ```
+//! ```ignore
 //! use iced_widget::button;
 //! use iced_aw::menu::{Menu, Item, MenuBar};
 //! use iced_aw::{menu_bar, menu_items};
@@ -94,7 +94,7 @@
 //!
 //! ## Example 3
 //!
-//! ```
+//! ```ignore
 //! use iced_widget::button;
 //! use iced_aw::{menu, Menu};
 //!
@@ -122,7 +122,7 @@
 //!
 //! ## Example 4
 //!
-//! ```
+//! ```ignore
 //! use iced_aw::{menu, Menu};
 //! use iced_widget::button;
 //!

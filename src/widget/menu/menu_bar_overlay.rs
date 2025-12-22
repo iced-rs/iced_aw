@@ -325,12 +325,11 @@ where
             #[cfg(feature = "debug_log")]
             {
                 debug!(target:"menu::MenuBarOverlay::update", "");
-                debug!(target:"menu::MenuBarOverlay::update", "depth: {:?}", depth);
                 debug!(target:"menu::MenuBarOverlay::update", "menu_state.active: {:?}", menu_state.active);
                 debug!(target:"menu::MenuBarOverlay::update", "menu_state.slice: {:?}", menu_state.slice);
-                debug!(target:"menu::MenuBarOverlay::update", "rec_event: {:?}", rec_event);
-                debug!(target:"menu::MenuBarOverlay::update", "event: {:?}", event);
-                debug!(target:"menu::MenuBarOverlay::update", "cursor: {:?}", cursor);
+                debug!(target:"menu::MenuBarOverlay::update", "rec_event: {rec_event:?}");
+                debug!(target:"menu::MenuBarOverlay::update", "event: {event:?}");
+                debug!(target:"menu::MenuBarOverlay::update", "cursor: {cursor:?}");
                 debug!(target:"menu::MenuBarOverlay::update", "cursor is over background bounds: {:?}", cursor.is_over(background_bounds));
                 debug!(target:"menu::MenuBarOverlay::update", "shell.is_event_captured(): {:?}", shell.is_event_captured());
             }
@@ -371,7 +370,7 @@ where
         );
 
         #[cfg(feature = "debug_log")]
-        debug!(target:"menu::MenuBarOverlay::update", "re: {:?}", re);
+        debug!(target:"menu::MenuBarOverlay::update", "re: {re:?}");
 
         if matches!(
             event,

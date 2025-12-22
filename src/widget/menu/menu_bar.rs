@@ -309,8 +309,7 @@ where
         let items_node_bounds = items_node.bounds();
         #[cfg(feature = "debug_log")]
         debug!(
-            "menu::MenuBar::layout | items_node_bounds: {:?}",
-            items_node_bounds
+            "menu::MenuBar::layout | items_node_bounds: {items_node_bounds:?}"
         );
 
         let resolved_width = match self.width {
@@ -330,7 +329,7 @@ where
                 n.bounds().x
             });
         #[cfg(feature = "debug_log")]
-        debug!("menu::MenuBar::layout | slice: {:?}", slice);
+        debug!("menu::MenuBar::layout | slice: {slice:?}");
 
         bar_menu_state.slice = slice;
 
@@ -522,7 +521,7 @@ where
         }
 
         #[cfg(feature = "debug_log")]
-        debug!(target:"menu::MenuBar::update", "return | bar: {:?}", bar);
+        debug!(target:"menu::MenuBar::update", "return | bar: {bar:?}");
     }
 
     fn operate(
