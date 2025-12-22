@@ -308,9 +308,7 @@ where
 
         let items_node_bounds = items_node.bounds();
         #[cfg(feature = "debug_log")]
-        debug!(
-            "menu::MenuBar::layout | items_node_bounds: {items_node_bounds:?}"
-        );
+        debug!("menu::MenuBar::layout | items_node_bounds: {items_node_bounds:?}");
 
         let resolved_width = match self.width {
             Length::Fill | Length::FillPortion(_) => items_node_bounds
