@@ -51,8 +51,7 @@ fn card_can_set_max_width() {
 
 #[test]
 fn card_can_set_max_height() {
-    let _card =
-        Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).max_height(400.0);
+    let _card = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).max_height(400.0);
 }
 
 #[test]
@@ -125,8 +124,8 @@ fn card_can_be_styled() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let _card = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body"))
-        .style(|_theme: &Theme, _status: Status| style::card::Style {
+    let _card = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).style(
+        |_theme: &Theme, _status: Status| style::card::Style {
             background: Background::Color(Color::from_rgb(0.95, 0.95, 0.95)),
             border_radius: 8.0,
             border_width: 1.0,
@@ -138,7 +137,8 @@ fn card_can_be_styled() {
             foot_background: Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
             foot_text_color: Color::from_rgb(0.2, 0.2, 0.2),
             close_color: Color::WHITE,
-        });
+        },
+    );
 }
 
 #[test]
@@ -202,10 +202,10 @@ fn card_converts_to_element() {
 
 #[test]
 fn card_supports_multiple_instances() {
-    let _card1 = Card::<Message, Theme>::new(Text::new("Card 1 Head"), Text::new("Card 1 Body"))
-        .width(300);
-    let _card2 = Card::<Message, Theme>::new(Text::new("Card 2 Head"), Text::new("Card 2 Body"))
-        .height(200);
+    let _card1 =
+        Card::<Message, Theme>::new(Text::new("Card 1 Head"), Text::new("Card 1 Body")).width(300);
+    let _card2 =
+        Card::<Message, Theme>::new(Text::new("Card 2 Head"), Text::new("Card 2 Body")).height(200);
     let _card3 = Card::<Message, Theme>::new(Text::new("Card 3 Head"), Text::new("Card 3 Body"))
         .foot(Text::new("Card 3 Footer"));
 }
@@ -236,8 +236,7 @@ fn card_with_various_width_configurations() {
 
 #[test]
 fn card_with_various_height_configurations() {
-    let _card_fixed =
-        Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).height(300);
+    let _card_fixed = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).height(300);
     let _card_fill =
         Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).height(Length::Fill);
     let _card_shrink =
@@ -314,16 +313,16 @@ fn card_with_long_content() {
     let long_body = "This is a very long body content that contains multiple sentences and should test how the card handles lengthy text. It might wrap across multiple lines depending on the card width.";
     let long_foot = "Footer with some additional information that might also be quite long";
 
-    let _card: Card<Message, Theme> = Card::new(Text::new(long_head), Text::new(long_body))
-        .foot(Text::new(long_foot));
+    let _card: Card<Message, Theme> =
+        Card::new(Text::new(long_head), Text::new(long_body)).foot(Text::new(long_foot));
 }
 
 #[test]
 fn card_with_unicode_content() {
     let _card1: Card<Message, Theme> = Card::new(Text::new("标题"), Text::new("内容"));
     let _card2: Card<Message, Theme> = Card::new(Text::new("العنوان"), Text::new("المحتوى"));
-    let _card3: Card<Message, Theme> = Card::new(Text::new("🎨 Header"), Text::new("📝 Body"))
-        .foot(Text::new("✅ Footer"));
+    let _card3: Card<Message, Theme> =
+        Card::new(Text::new("🎨 Header"), Text::new("📝 Body")).foot(Text::new("✅ Footer"));
 }
 
 #[test]
@@ -333,14 +332,14 @@ fn card_without_footer() {
 
 #[test]
 fn card_with_footer() {
-    let _card: Card<Message, Theme> = Card::new(Text::new("Head"), Text::new("Body"))
-        .foot(Text::new("Footer"));
+    let _card: Card<Message, Theme> =
+        Card::new(Text::new("Head"), Text::new("Body")).foot(Text::new("Footer"));
 }
 
 #[test]
 fn card_with_on_close_without_custom_size() {
-    let _card: Card<Message, Theme> = Card::new(Text::new("Head"), Text::new("Body"))
-        .on_close(Message::CloseCard);
+    let _card: Card<Message, Theme> =
+        Card::new(Text::new("Head"), Text::new("Body")).on_close(Message::CloseCard);
 }
 
 #[test]
@@ -398,8 +397,8 @@ fn card_style_with_transparency() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let _card = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body"))
-        .style(|_theme: &Theme, _status: Status| style::card::Style {
+    let _card = Card::<Message, Theme>::new(Text::new("Head"), Text::new("Body")).style(
+        |_theme: &Theme, _status: Status| style::card::Style {
             background: Background::Color(Color::from_rgba(1.0, 1.0, 1.0, 0.9)),
             border_radius: 10.0,
             border_width: 1.0,
@@ -411,7 +410,8 @@ fn card_style_with_transparency() {
             foot_background: Background::Color(Color::from_rgba(0.9, 0.9, 0.9, 0.8)),
             foot_text_color: Color::from_rgb(0.3, 0.3, 0.3),
             close_color: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
-        });
+        },
+    );
 }
 
 #[test]

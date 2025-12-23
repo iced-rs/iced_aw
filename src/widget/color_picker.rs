@@ -483,13 +483,8 @@ mod tests {
         let red = Color::from_rgb(1.0, 0.0, 0.0);
         let button = create_test_button();
 
-        let picker = TestColorPicker::new(
-            false,
-            red,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
+        let picker =
+            TestColorPicker::new(false, red, button, TestMessage::Cancel, TestMessage::Submit);
 
         assert_eq!(picker.color, red);
     }

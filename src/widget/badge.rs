@@ -422,8 +422,8 @@ mod tests {
 
     #[test]
     fn badge_length_fillportion() {
-        let badge = TestBadge::new(iced_widget::text::Text::new("Test"))
-            .width(Length::FillPortion(3));
+        let badge =
+            TestBadge::new(iced_widget::text::Text::new("Test")).width(Length::FillPortion(3));
 
         assert_eq!(badge.width, Length::FillPortion(3));
     }
