@@ -976,3 +976,341 @@ where
         Element::new(card)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone)]
+    enum TestMessage {
+        Close,
+    }
+
+    type TestCard<'a> = Card<'a, TestMessage, iced_widget::Theme, iced_widget::Renderer>;
+
+    #[test]
+    fn card_new_has_default_values() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        );
+
+        assert_eq!(card.width, Length::Fill);
+        assert_eq!(card.height, Length::Shrink);
+        assert_eq!(card.max_width, u32::MAX as f32);
+        assert_eq!(card.max_height, u32::MAX as f32);
+        assert_eq!(card.padding_head, DEFAULT_PADDING);
+        assert_eq!(card.padding_body, DEFAULT_PADDING);
+        assert_eq!(card.padding_foot, DEFAULT_PADDING);
+        assert!(card.close_size.is_none());
+        assert!(card.on_close.is_none());
+        assert!(card.foot.is_none());
+        assert!(!card.is_mouse_over_close);
+    }
+
+    #[test]
+    fn card_width_sets_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .width(400);
+
+        assert_eq!(card.width, Length::Fixed(400.0));
+    }
+
+    #[test]
+    fn card_height_sets_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .height(300);
+
+        assert_eq!(card.height, Length::Fixed(300.0));
+    }
+
+    #[test]
+    fn card_max_width_sets_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .max_width(500.0);
+
+        assert_eq!(card.max_width, 500.0);
+    }
+
+    #[test]
+    fn card_max_height_sets_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .max_height(400.0);
+
+        assert_eq!(card.max_height, 400.0);
+    }
+
+    #[test]
+    fn card_padding_sets_all_sections() {
+        let padding = Padding::new(15.0);
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding(padding);
+
+        assert_eq!(card.padding_head, padding);
+        assert_eq!(card.padding_body, padding);
+        assert_eq!(card.padding_foot, padding);
+    }
+
+    #[test]
+    fn card_padding_head_sets_value() {
+        let padding = Padding::new(20.0);
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding_head(padding);
+
+        assert_eq!(card.padding_head, padding);
+        assert_eq!(card.padding_body, DEFAULT_PADDING);
+        assert_eq!(card.padding_foot, DEFAULT_PADDING);
+    }
+
+    #[test]
+    fn card_padding_body_sets_value() {
+        let padding = Padding::new(25.0);
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding_body(padding);
+
+        assert_eq!(card.padding_head, DEFAULT_PADDING);
+        assert_eq!(card.padding_body, padding);
+        assert_eq!(card.padding_foot, DEFAULT_PADDING);
+    }
+
+    #[test]
+    fn card_padding_foot_sets_value() {
+        let padding = Padding::new(10.0);
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding_foot(padding);
+
+        assert_eq!(card.padding_head, DEFAULT_PADDING);
+        assert_eq!(card.padding_body, DEFAULT_PADDING);
+        assert_eq!(card.padding_foot, padding);
+    }
+
+    #[test]
+    fn card_foot_adds_footer() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .foot(iced_widget::text::Text::new("Footer"));
+
+        assert!(card.foot.is_some());
+    }
+
+    #[test]
+    fn card_on_close_sets_message() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .on_close(TestMessage::Close);
+
+        assert!(card.on_close.is_some());
+    }
+
+    #[test]
+    fn card_close_size_sets_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .close_size(24.0);
+
+        assert_eq!(card.close_size, Some(24.0));
+    }
+
+    #[test]
+    fn card_size_method_returns_correct_size() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .width(500)
+        .height(400);
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&card);
+        assert_eq!(size.width, Length::Fixed(500.0));
+        assert_eq!(size.height, Length::Fixed(400.0));
+    }
+
+    #[test]
+    fn card_chaining_methods() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .foot(iced_widget::text::Text::new("Footer"))
+        .width(600)
+        .height(450)
+        .max_width(800.0)
+        .max_height(600.0)
+        .padding(Padding::new(15.0))
+        .on_close(TestMessage::Close)
+        .close_size(20.0);
+
+        assert!(card.foot.is_some());
+        assert_eq!(card.width, Length::Fixed(600.0));
+        assert_eq!(card.height, Length::Fixed(450.0));
+        assert_eq!(card.max_width, 800.0);
+        assert_eq!(card.max_height, 600.0);
+        assert_eq!(card.padding_head, Padding::new(15.0));
+        assert_eq!(card.padding_body, Padding::new(15.0));
+        assert_eq!(card.padding_foot, Padding::new(15.0));
+        assert!(card.on_close.is_some());
+        assert_eq!(card.close_size, Some(20.0));
+    }
+
+    #[test]
+    fn card_default_padding_value() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        );
+
+        assert_eq!(card.padding_head, Padding::new(10.0));
+        assert_eq!(card.padding_body, Padding::new(10.0));
+        assert_eq!(card.padding_foot, Padding::new(10.0));
+    }
+
+    #[test]
+    fn card_individual_padding_overrides() {
+        let general_padding = Padding::new(10.0);
+        let head_padding = Padding::new(20.0);
+
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding(general_padding)
+        .padding_head(head_padding);
+
+        assert_eq!(card.padding_head, head_padding);
+        assert_eq!(card.padding_body, general_padding);
+        assert_eq!(card.padding_foot, general_padding);
+    }
+
+    #[test]
+    fn card_without_footer_has_none() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        );
+
+        assert!(card.foot.is_none());
+    }
+
+    #[test]
+    fn card_without_on_close_has_none() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        );
+
+        assert!(card.on_close.is_none());
+    }
+
+    #[test]
+    fn card_close_size_without_on_close() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .close_size(24.0);
+
+        assert_eq!(card.close_size, Some(24.0));
+        assert!(card.on_close.is_none());
+    }
+
+    #[test]
+    fn card_default_max_dimensions() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        );
+
+        assert_eq!(card.max_width, u32::MAX as f32);
+        assert_eq!(card.max_height, u32::MAX as f32);
+    }
+
+    #[test]
+    fn card_length_fill() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill);
+
+        assert_eq!(card.width, Length::Fill);
+        assert_eq!(card.height, Length::Fill);
+    }
+
+    #[test]
+    fn card_length_shrink() {
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .width(Length::Shrink)
+        .height(Length::Shrink);
+
+        assert_eq!(card.width, Length::Shrink);
+        assert_eq!(card.height, Length::Shrink);
+    }
+
+    #[test]
+    fn card_asymmetric_padding() {
+        let head_padding = Padding {
+            top: 5.0,
+            right: 10.0,
+            bottom: 15.0,
+            left: 20.0,
+        };
+        let body_padding = Padding {
+            top: 10.0,
+            right: 20.0,
+            bottom: 30.0,
+            left: 40.0,
+        };
+        let foot_padding = Padding {
+            top: 2.0,
+            right: 4.0,
+            bottom: 6.0,
+            left: 8.0,
+        };
+
+        let card = TestCard::new(
+            iced_widget::text::Text::new("Head"),
+            iced_widget::text::Text::new("Body"),
+        )
+        .padding_head(head_padding)
+        .padding_body(body_padding)
+        .padding_foot(foot_padding);
+
+        assert_eq!(card.padding_head, head_padding);
+        assert_eq!(card.padding_body, body_padding);
+        assert_eq!(card.padding_foot, foot_padding);
+    }
+}
