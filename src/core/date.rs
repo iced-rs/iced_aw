@@ -267,7 +267,7 @@ pub static WEEKDAY_LABELS: LazyLock<Vec<String>> = LazyLock::new(|| {
 
 #[cfg(test)]
 mod tests {
-    use chrono::NaiveDate;
+    use chrono::{Datelike, NaiveDate};
 
     use super::{
         IsInMonth, is_leap_year, num_days_of_month, position_to_day, pred_month, pred_year,
@@ -434,5 +434,231 @@ mod tests {
         assert_eq!(num_days_of_month(2020, 10), 31);
         assert_eq!(num_days_of_month(2020, 11), 30);
         assert_eq!(num_days_of_month(2020, 12), 31);
+    }
+
+    #[test]
+    fn date_default() {
+        use super::Date;
+        let date = Date::default();
+        assert_eq!(date.year, 2024);
+        assert_eq!(date.month, 1);
+        assert_eq!(date.day, 1);
+    }
+
+    #[test]
+    fn date_from_ymd() {
+        use super::Date;
+        let date = Date::from_ymd(2023, 12, 25);
+        assert_eq!(date.year, 2023);
+        assert_eq!(date.month, 12);
+        assert_eq!(date.day, 25);
+    }
+
+    #[test]
+    fn date_display() {
+        use super::Date;
+        let date = Date::from_ymd(2023, 3, 5);
+        assert_eq!(format!("{}", date), "2023-03-05");
+
+        let date = Date::from_ymd(2023, 12, 31);
+        assert_eq!(format!("{}", date), "2023-12-31");
+
+        let date = Date::from_ymd(1999, 1, 1);
+        assert_eq!(format!("{}", date), "1999-01-01");
+    }
+
+    #[test]
+    fn date_to_naive_date() {
+        use super::Date;
+        let date = Date::from_ymd(2023, 6, 15);
+        let naive: NaiveDate = date.into();
+        assert_eq!(naive.year(), 2023);
+        assert_eq!(naive.month(), 6);
+        assert_eq!(naive.day(), 15);
+    }
+
+    #[test]
+    fn naive_date_to_date() {
+        use super::Date;
+        let naive = NaiveDate::from_ymd_opt(2023, 6, 15).unwrap();
+        let date: Date = naive.into();
+        assert_eq!(date.year, 2023);
+        assert_eq!(date.month, 6);
+        assert_eq!(date.day, 15);
+    }
+
+    #[test]
+    fn pred_week_test() {
+        use super::pred_week;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let result = pred_week(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 5, 8).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn pred_week_crosses_month() {
+        use super::pred_week;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 5).unwrap();
+        let result = pred_week(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 4, 28).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn succ_week_test() {
+        use super::succ_week;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let result = succ_week(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 5, 22).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn succ_week_crosses_month() {
+        use super::succ_week;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 28).unwrap();
+        let result = succ_week(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 6, 4).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn pred_day_test() {
+        use super::pred_day;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let result = pred_day(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 5, 14).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn pred_day_crosses_month() {
+        use super::pred_day;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 1).unwrap();
+        let result = pred_day(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 4, 30).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn succ_day_test() {
+        use super::succ_day;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let result = succ_day(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 5, 16).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn succ_day_crosses_month() {
+        use super::succ_day;
+        let date = NaiveDate::from_ymd_opt(2020, 5, 31).unwrap();
+        let result = succ_day(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 6, 1).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn date_as_string_test() {
+        use super::date_as_string;
+        let date = NaiveDate::from_ymd_opt(2023, 1, 15).unwrap();
+        let result = date_as_string(date);
+        assert!(result.starts_with("2023"));
+        assert!(result.contains("January") || result.contains("Jan"));
+    }
+
+    #[test]
+    fn is_leap_year_century_rules() {
+        // Century years divisible by 400 are leap years
+        assert!(is_leap_year(2000));
+        assert!(is_leap_year(2400));
+
+        // Century years not divisible by 400 are not leap years
+        assert!(!is_leap_year(1900));
+        assert!(!is_leap_year(2100));
+        assert!(!is_leap_year(2200));
+        assert!(!is_leap_year(2300));
+    }
+
+    #[test]
+    fn is_leap_year_edge_cases() {
+        // Regular leap years
+        assert!(is_leap_year(2024));
+        assert!(is_leap_year(2028));
+
+        // Regular non-leap years
+        assert!(!is_leap_year(2023));
+        assert!(!is_leap_year(2025));
+        assert!(!is_leap_year(2026));
+        assert!(!is_leap_year(2027));
+    }
+
+    #[test]
+    fn max_month_str_len_is_defined() {
+        use super::MAX_MONTH_STR_LEN;
+        // Just verify it's accessible and has a reasonable value
+        assert!(*MAX_MONTH_STR_LEN > 0);
+        assert!(*MAX_MONTH_STR_LEN <= 20); // No month name should be longer than 20 chars
+    }
+
+    #[test]
+    fn weekday_labels_has_seven_days() {
+        use super::WEEKDAY_LABELS;
+        assert_eq!(WEEKDAY_LABELS.len(), 7);
+
+        // Each label should be exactly 2 characters
+        for label in WEEKDAY_LABELS.iter() {
+            assert_eq!(label.len(), 2);
+        }
+    }
+
+    #[test]
+    fn pred_month_february_to_january() {
+        let date = NaiveDate::from_ymd_opt(2020, 2, 15).unwrap();
+        let result = pred_month(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 1, 15).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn succ_month_november_to_december() {
+        let date = NaiveDate::from_ymd_opt(2020, 11, 15).unwrap();
+        let result = succ_month(date);
+        let expected = NaiveDate::from_ymd_opt(2020, 12, 15).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn num_days_february_leap_vs_non_leap() {
+        // Leap year
+        assert_eq!(num_days_of_month(2020, 2), 29);
+        assert_eq!(num_days_of_month(2024, 2), 29);
+
+        // Non-leap year
+        assert_eq!(num_days_of_month(2019, 2), 28);
+        assert_eq!(num_days_of_month(2021, 2), 28);
+        assert_eq!(num_days_of_month(2022, 2), 28);
+        assert_eq!(num_days_of_month(2023, 2), 28);
+    }
+
+    #[test]
+    fn date_copy_trait() {
+        use super::Date;
+        let date1 = Date::from_ymd(2023, 6, 15);
+        let date2 = date1; // Copy
+        // Both should be usable
+        assert_eq!(date1.year, 2023);
+        assert_eq!(date2.year, 2023);
+    }
+
+    #[test]
+    fn date_clone_trait() {
+        use super::Date;
+        let date1 = Date::from_ymd(2023, 6, 15);
+        let date2 = date1.clone();
+        assert_eq!(date1.year, date2.year);
+        assert_eq!(date1.month, date2.month);
+        assert_eq!(date1.day, date2.day);
     }
 }
