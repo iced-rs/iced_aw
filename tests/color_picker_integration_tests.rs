@@ -122,8 +122,8 @@ fn color_picker_can_be_styled() {
     let color = Color::from_rgb(0.5, 0.5, 0.5);
     let button = create_button("Pick color");
 
-    let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
-        .style(|_theme: &Theme, _status: Status| style::color_picker::Style {
+    let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit).style(
+        |_theme: &Theme, _status: Status| style::color_picker::Style {
             background: iced::Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
             border_radius: 15.0,
             border_width: 1.0,
@@ -131,7 +131,8 @@ fn color_picker_can_be_styled() {
             bar_border_radius: 5.0,
             bar_border_width: 1.0,
             bar_border_color: Color::from_rgb(0.0, 0.0, 0.0),
-        });
+        },
+    );
 }
 
 #[test]
@@ -139,14 +140,9 @@ fn color_picker_can_use_custom_class() {
     let color = Color::from_rgb(0.5, 0.5, 0.5);
     let button = create_button("Pick color");
 
-    let _picker: ColorPicker<Message, Theme> = ColorPicker::new(
-        false,
-        color,
-        button,
-        Message::Cancel,
-        Message::Submit,
-    )
-    .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
+    let _picker: ColorPicker<Message, Theme> =
+        ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
+            .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
 }
 
 #[test]
@@ -184,7 +180,11 @@ fn color_picker_with_rgba_colors() {
     let semi_transparent_blue = Color::from_rgba(0.0, 0.0, 1.0, 0.75);
     let almost_transparent = Color::from_rgba(0.5, 0.5, 0.5, 0.1);
 
-    for color in [semi_transparent_red, semi_transparent_blue, almost_transparent] {
+    for color in [
+        semi_transparent_red,
+        semi_transparent_blue,
+        almost_transparent,
+    ] {
         let button = create_button("Pick");
         let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
     }
@@ -214,36 +214,33 @@ fn color_picker_chain_style_and_class() {
     let color = Color::from_rgb(0.5, 0.5, 0.5);
     let button = create_button("Pick color");
 
-    let _picker: ColorPicker<Message, Theme> = ColorPicker::new(
-        false,
-        color,
-        button,
-        Message::Cancel,
-        Message::Submit,
-    )
-    .style(|_theme: &Theme, _status: Status| style::color_picker::Style {
-        background: iced::Background::Color(Color::from_rgb(0.95, 0.95, 0.95)),
-        border_radius: 20.0,
-        border_width: 2.0,
-        border_color: Color::from_rgb(0.1, 0.1, 0.1),
-        bar_border_radius: 8.0,
-        bar_border_width: 1.5,
-        bar_border_color: Color::from_rgb(0.2, 0.2, 0.2),
-    })
-    .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
+    let _picker: ColorPicker<Message, Theme> =
+        ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
+            .style(
+                |_theme: &Theme, _status: Status| style::color_picker::Style {
+                    background: iced::Background::Color(Color::from_rgb(0.95, 0.95, 0.95)),
+                    border_radius: 20.0,
+                    border_width: 2.0,
+                    border_color: Color::from_rgb(0.1, 0.1, 0.1),
+                    bar_border_radius: 8.0,
+                    bar_border_width: 1.5,
+                    bar_border_color: Color::from_rgb(0.2, 0.2, 0.2),
+                },
+            )
+            .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
 }
 
 #[test]
 fn color_picker_extreme_color_values() {
     // Test edge cases for color values
     let colors = vec![
-        Color::from_rgb(0.0, 0.0, 0.0),     // Minimum
-        Color::from_rgb(1.0, 1.0, 1.0),     // Maximum
-        Color::from_rgb(0.5, 0.0, 1.0),     // Mixed
-        Color::from_rgb(1.0, 0.5, 0.0),     // Mixed
-        Color::from_rgb(0.0, 1.0, 0.5),     // Mixed
-        Color::from_rgba(0.0, 0.0, 0.0, 0.0),   // Fully transparent
-        Color::from_rgba(1.0, 1.0, 1.0, 1.0),   // Fully opaque
+        Color::from_rgb(0.0, 0.0, 0.0),       // Minimum
+        Color::from_rgb(1.0, 1.0, 1.0),       // Maximum
+        Color::from_rgb(0.5, 0.0, 1.0),       // Mixed
+        Color::from_rgb(1.0, 0.5, 0.0),       // Mixed
+        Color::from_rgb(0.0, 1.0, 0.5),       // Mixed
+        Color::from_rgba(0.0, 0.0, 0.0, 0.0), // Fully transparent
+        Color::from_rgba(1.0, 1.0, 1.0, 1.0), // Fully opaque
     ];
 
     for color in colors {
@@ -280,14 +277,16 @@ fn color_picker_create_and_style_multiple_times() {
         let border_radius = 10.0 + (i as f32) * 2.0;
 
         let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
-            .style(move |_theme: &Theme, _status: Status| style::color_picker::Style {
-                background: iced::Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
-                border_radius,
-                border_width: 1.0,
-                border_color: Color::from_rgb(0.0, 0.0, 0.0),
-                bar_border_radius: 5.0,
-                bar_border_width: 1.0,
-                bar_border_color: Color::from_rgb(0.0, 0.0, 0.0),
-            });
+            .style(
+                move |_theme: &Theme, _status: Status| style::color_picker::Style {
+                    background: iced::Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
+                    border_radius,
+                    border_width: 1.0,
+                    border_color: Color::from_rgb(0.0, 0.0, 0.0),
+                    bar_border_radius: 5.0,
+                    bar_border_width: 1.0,
+                    bar_border_color: Color::from_rgb(0.0, 0.0, 0.0),
+                },
+            );
     }
 }

@@ -83,20 +83,21 @@ fn badge_can_be_styled() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let _badge = Badge::<Message, Theme>::new(Text::new("Styled"))
-        .style(|_theme: &Theme, _status: Status| style::badge::Style {
+    let _badge = Badge::<Message, Theme>::new(Text::new("Styled")).style(
+        |_theme: &Theme, _status: Status| style::badge::Style {
             background: Background::Color(Color::from_rgb(0.8, 0.2, 0.2)),
             border_radius: Some(10.0),
             border_width: 2.0,
             border_color: Some(Color::from_rgb(0.0, 0.0, 0.0)),
             text_color: Color::from_rgb(1.0, 1.0, 1.0),
-        });
+        },
+    );
 }
 
 #[test]
 fn badge_can_use_custom_class() {
-    let _badge: Badge<Message, Theme> = Badge::new(Text::new("Test"))
-        .class(<Theme as iced_aw::style::badge::Catalog>::default());
+    let _badge: Badge<Message, Theme> =
+        Badge::new(Text::new("Test")).class(<Theme as iced_aw::style::badge::Catalog>::default());
 }
 
 #[test]
@@ -254,14 +255,15 @@ fn badge_style_with_transparency() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let _badge = Badge::<Message, Theme>::new(Text::new("Transparent"))
-        .style(|_theme: &Theme, _status: Status| style::badge::Style {
+    let _badge = Badge::<Message, Theme>::new(Text::new("Transparent")).style(
+        |_theme: &Theme, _status: Status| style::badge::Style {
             background: Background::Color(Color::from_rgba(1.0, 0.0, 0.0, 0.5)),
             border_radius: Some(8.0),
             border_width: 1.0,
             border_color: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.8)),
             text_color: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
-        });
+        },
+    );
 }
 
 #[test]
