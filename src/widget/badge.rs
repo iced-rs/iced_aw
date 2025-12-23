@@ -295,3 +295,136 @@ where
         Self::new(badge)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone)]
+    enum TestMessage {}
+
+    type TestBadge<'a> = Badge<'a, TestMessage, iced_widget::Theme, iced_widget::Renderer>;
+
+    #[test]
+    fn badge_new_has_default_values() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
+
+        assert_eq!(badge.padding, 7);
+        assert_eq!(badge.width, Length::Shrink);
+        assert_eq!(badge.height, Length::Shrink);
+        assert_eq!(badge.horizontal_alignment, Alignment::Center);
+        assert_eq!(badge.vertical_alignment, Alignment::Center);
+        assert!(badge.status.is_none());
+    }
+
+    #[test]
+    fn badge_padding_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).padding(15);
+        assert_eq!(badge.padding, 15);
+    }
+
+    #[test]
+    fn badge_width_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).width(200);
+        assert_eq!(badge.width, Length::Fixed(200.0));
+    }
+
+    #[test]
+    fn badge_width_fill_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).width(Length::Fill);
+        assert_eq!(badge.width, Length::Fill);
+    }
+
+    #[test]
+    fn badge_height_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).height(50);
+        assert_eq!(badge.height, Length::Fixed(50.0));
+    }
+
+    #[test]
+    fn badge_height_shrink_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).height(Length::Shrink);
+        assert_eq!(badge.height, Length::Shrink);
+    }
+
+    #[test]
+    fn badge_align_x_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).align_x(Alignment::Start);
+        assert_eq!(badge.horizontal_alignment, Alignment::Start);
+    }
+
+    #[test]
+    fn badge_align_y_sets_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).align_y(Alignment::End);
+        assert_eq!(badge.vertical_alignment, Alignment::End);
+    }
+
+    #[test]
+    fn badge_size_method_returns_correct_size() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"))
+            .width(100)
+            .height(50);
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&badge);
+        assert_eq!(size.width, Length::Fixed(100.0));
+        assert_eq!(size.height, Length::Fixed(50.0));
+    }
+
+    #[test]
+    fn badge_chaining_methods() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"))
+            .padding(10)
+            .width(150)
+            .height(40)
+            .align_x(Alignment::Start)
+            .align_y(Alignment::End);
+
+        assert_eq!(badge.padding, 10);
+        assert_eq!(badge.width, Length::Fixed(150.0));
+        assert_eq!(badge.height, Length::Fixed(40.0));
+        assert_eq!(badge.horizontal_alignment, Alignment::Start);
+        assert_eq!(badge.vertical_alignment, Alignment::End);
+    }
+
+    #[test]
+    fn badge_default_padding_is_7() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
+        assert_eq!(badge.padding, 7);
+    }
+
+    #[test]
+    fn badge_padding_can_be_zero() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).padding(0);
+        assert_eq!(badge.padding, 0);
+    }
+
+    #[test]
+    fn badge_padding_max_value() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test")).padding(u16::MAX);
+        assert_eq!(badge.padding, u16::MAX);
+    }
+
+    #[test]
+    fn badge_alignment_combinations() {
+        let alignments = [Alignment::Start, Alignment::Center, Alignment::End];
+
+        for h_align in alignments {
+            for v_align in alignments {
+                let badge = TestBadge::new(iced_widget::text::Text::new("Test"))
+                    .align_x(h_align)
+                    .align_y(v_align);
+
+                assert_eq!(badge.horizontal_alignment, h_align);
+                assert_eq!(badge.vertical_alignment, v_align);
+            }
+        }
+    }
+
+    #[test]
+    fn badge_length_fillportion() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"))
+            .width(Length::FillPortion(3));
+
+        assert_eq!(badge.width, Length::FillPortion(3));
+    }
+}
