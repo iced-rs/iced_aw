@@ -474,3 +474,185 @@ pub const YELLOW: Color = Color::from_rgb(1.0, 1.0, 0.0);
 
 /// Yellow Green <span style="color:yellowGreen">Color</span>.
 pub const YELLOW_GREEN: Color = Color::from_rgb(0.604, 0.804, 0.196);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn semantic_colors_are_defined() {
+        // Verify semantic colors point to the correct values
+        assert_eq!(PRIMARY, DODGER_BLUE);
+        assert_eq!(SECONDARY, DIM_GRAY);
+        assert_eq!(SUCCESS, LIME_GREEN);
+        assert_eq!(DANGER, RED);
+        assert_eq!(WARNING, GOLD);
+        assert_eq!(INFO, SKY_BLUE);
+        assert_eq!(LIGHT, GHOST_WHITE);
+    }
+
+    #[test]
+    fn dark_color_is_custom() {
+        // DARK is a custom color, not an alias
+        assert_eq!(DARK, Color::from_rgb(0.204, 0.227, 0.251));
+    }
+
+    #[test]
+    fn black_and_white_constants() {
+        assert_eq!(BLACK, Color::BLACK);
+        assert_eq!(WHITE, Color::WHITE);
+        assert_eq!(WHITE_SMOKE, Color::WHITE);
+    }
+
+    #[test]
+    fn gray_grey_aliases_match() {
+        // American/British spelling aliases should be equal
+        assert_eq!(GRAY, GREY);
+        assert_eq!(DARK_GRAY, DARK_GREY);
+        assert_eq!(DIM_GRAY, DIM_GREY);
+        assert_eq!(LIGHT_GRAY, LIGHT_GREY);
+        assert_eq!(SLATE_GRAY, SLATE_GREY);
+        assert_eq!(DARK_SLATE_GRAY, DARK_SLATE_GREY);
+        assert_eq!(LIGHT_SLATE_GRAY, LIGHT_SLATE_GREY);
+    }
+
+    #[test]
+    fn primary_colors_are_valid() {
+        // Test basic RGB colors
+        assert_eq!(RED, Color::from_rgb(1.0, 0.0, 0.0));
+        assert_eq!(GREEN, Color::from_rgb(0.0, 0.502, 0.0));
+        assert_eq!(BLUE, Color::from_rgb(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn cyan_magenta_yellow_are_valid() {
+        assert_eq!(CYAN, Color::from_rgb(0.0, 1.0, 1.0));
+        assert_eq!(MAGENTA, Color::from_rgb(1.0, 0.0, 1.0));
+        assert_eq!(YELLOW, Color::from_rgb(1.0, 1.0, 0.0));
+    }
+
+    #[test]
+    fn aqua_equals_cyan() {
+        assert_eq!(AQUA, CYAN);
+    }
+
+    #[test]
+    fn fuchsia_equals_magenta() {
+        assert_eq!(FUCHSIA, MAGENTA);
+    }
+
+    #[test]
+    fn color_values_are_in_valid_range() {
+        // Sample various colors to ensure RGB values are between 0.0 and 1.0
+        let sample_colors = [
+            ALICE_BLUE,
+            ANTIQUE_WHITE,
+            CORAL,
+            CRIMSON,
+            DARK_GOLDEN_ROD,
+            DEEP_PINK,
+            DODGER_BLUE,
+            FOREST_GREEN,
+            GOLD,
+            INDIAN_RED,
+            LAVENDER,
+            LIME_GREEN,
+            MEDIUM_PURPLE,
+            NAVY,
+            ORANGE,
+            PALE_GREEN,
+            PURPLE,
+            ROSY_BROWN,
+            SALMON,
+            SLATE_BLUE,
+            TOMATO,
+            TURQUOISE,
+            VIOLET,
+        ];
+
+        for color in sample_colors.iter() {
+            assert!(
+                color.r >= 0.0 && color.r <= 1.0,
+                "Red component out of range"
+            );
+            assert!(
+                color.g >= 0.0 && color.g <= 1.0,
+                "Green component out of range"
+            );
+            assert!(
+                color.b >= 0.0 && color.b <= 1.0,
+                "Blue component out of range"
+            );
+        }
+    }
+
+    #[test]
+    fn specific_colors_have_correct_values() {
+        // Test a few specific colors to ensure accuracy
+        assert_eq!(GOLD, Color::from_rgb(1.0, 0.843, 0.0));
+        assert_eq!(LIME_GREEN, Color::from_rgb(0.196, 0.804, 0.196));
+        assert_eq!(SKY_BLUE, Color::from_rgb(0.529, 0.808, 0.922));
+        assert_eq!(DODGER_BLUE, Color::from_rgb(0.118, 0.565, 1.0));
+        assert_eq!(GHOST_WHITE, Color::from_rgb(0.973, 0.973, 1.0));
+        assert_eq!(DIM_GRAY, Color::from_rgb(0.412, 0.412, 0.412));
+    }
+
+    #[test]
+    fn dark_colors_are_darker() {
+        // Verify dark variants have lower RGB values than their base colors
+        assert!(DARK_BLUE.r <= BLUE.r);
+        assert!(DARK_BLUE.g <= BLUE.g);
+        assert!(DARK_BLUE.b <= BLUE.b);
+
+        assert!(DARK_GREEN.r <= GREEN.r);
+        assert!(DARK_GREEN.g <= GREEN.g);
+        assert!(DARK_GREEN.b <= GREEN.b);
+
+        assert!(DARK_RED.r <= RED.r);
+        assert!(DARK_RED.g <= RED.g);
+        assert!(DARK_RED.b <= RED.b);
+    }
+
+    #[test]
+    fn light_colors_are_lighter() {
+        // Verify some light variants are generally lighter (higher average RGB brightness)
+        // Note: Not all CSS "light" colors are consistently lighter than their base
+        let light_blue_avg = (LIGHT_BLUE.r + LIGHT_BLUE.g + LIGHT_BLUE.b) / 3.0;
+        let blue_avg = (BLUE.r + BLUE.g + BLUE.b) / 3.0;
+        assert!(light_blue_avg > blue_avg);
+
+        let light_green_avg = (LIGHT_GREEN.r + LIGHT_GREEN.g + LIGHT_GREEN.b) / 3.0;
+        let green_avg = (GREEN.r + GREEN.g + GREEN.b) / 3.0;
+        assert!(light_green_avg > green_avg);
+
+        // Light Gray should be lighter than Gray in all components (grayscale)
+        assert!(LIGHT_GRAY.r >= GRAY.r);
+        assert!(LIGHT_GRAY.g >= GRAY.g);
+        assert!(LIGHT_GRAY.b >= GRAY.b);
+    }
+
+    #[test]
+    fn brown_shades_exist() {
+        // Test various brown colors
+        assert_eq!(BROWN, Color::from_rgb(0.647, 0.165, 0.165));
+        assert_eq!(SADDLE_BROWN, Color::from_rgb(0.545, 0.271, 0.075));
+        assert_eq!(SANDY_BROWN, Color::from_rgb(0.957, 0.643, 0.376));
+        assert_eq!(ROSY_BROWN, Color::from_rgb(0.737, 0.561, 0.561));
+    }
+
+    #[test]
+    fn purple_shades_exist() {
+        // Test various purple colors
+        assert_eq!(PURPLE, Color::from_rgb(0.502, 0.0, 0.502));
+        assert_eq!(REBECCA_PURPLE, Color::from_rgb(0.4, 0.2, 0.6));
+        assert_eq!(MEDIUM_PURPLE, Color::from_rgb(0.576, 0.439, 0.859));
+    }
+
+    #[test]
+    fn orange_shades_exist() {
+        // Test various orange colors
+        assert_eq!(ORANGE, Color::from_rgb(1.0, 0.647, 0.0));
+        assert_eq!(DARK_ORANGE, Color::from_rgb(1.0, 0.549, 0.0));
+        assert_eq!(ORANGE_RED, Color::from_rgb(1.0, 0.271, 0.0));
+    }
+}
