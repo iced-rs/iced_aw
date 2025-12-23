@@ -167,3 +167,182 @@ fn backing_only(theme: &Theme, color: Color) -> Style {
         ..Style::default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iced_core::{Background, Color, Theme};
+
+    #[test]
+    fn style_default() {
+        let style = Style::default();
+        assert_eq!(style.background, Background::Color(Color::WHITE));
+        assert_eq!(style.border_radius, 10.0);
+        assert_eq!(style.border_width, 1.0);
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, Color::BLACK);
+        assert_eq!(style.body_background, Background::Color(Color::TRANSPARENT));
+        assert_eq!(style.body_text_color, Color::BLACK);
+        assert_eq!(style.foot_background, Background::Color(Color::TRANSPARENT));
+        assert_eq!(style.foot_text_color, Color::BLACK);
+        assert_eq!(style.close_color, Color::BLACK);
+    }
+
+    #[test]
+    fn backing_with_text_creates_style() {
+        let theme = Theme::TokyoNight;
+        let color = Color::from_rgb(1.0, 0.0, 0.0);
+        let text = Color::WHITE;
+        let style = backing_with_text(&theme, color, text);
+
+        assert_eq!(style.border_color, color);
+        assert_eq!(style.head_background, Background::Color(color));
+        assert_eq!(style.head_text_color, text);
+        assert_eq!(style.close_color, text);
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.body_background, Background::Color(_)));
+        assert!(matches!(style.foot_background, Background::Color(_)));
+    }
+
+    #[test]
+    fn backing_only_creates_style() {
+        let theme = Theme::TokyoNight;
+        let color = Color::from_rgb(0.0, 1.0, 0.0);
+        let style = backing_only(&theme, color);
+
+        assert_eq!(style.border_color, color);
+        assert_eq!(style.head_background, Background::Color(color));
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.body_background, Background::Color(_)));
+        assert!(matches!(style.foot_background, Background::Color(_)));
+    }
+
+    #[test]
+    fn primary_theme() {
+        let theme = Theme::TokyoNight;
+        let style = primary(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, colors::WHITE);
+        assert_eq!(style.close_color, colors::WHITE);
+    }
+
+    #[test]
+    fn secondary_theme() {
+        let theme = Theme::TokyoNight;
+        let style = secondary(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, colors::WHITE);
+        assert_eq!(style.close_color, colors::WHITE);
+    }
+
+    #[test]
+    fn success_theme() {
+        let theme = Theme::TokyoNight;
+        let style = success(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, colors::WHITE);
+        assert_eq!(style.close_color, colors::WHITE);
+    }
+
+    #[test]
+    fn danger_theme() {
+        let theme = Theme::TokyoNight;
+        let style = danger(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, colors::WHITE);
+        assert_eq!(style.close_color, colors::WHITE);
+    }
+
+    #[test]
+    fn warning_theme() {
+        let theme = Theme::TokyoNight;
+        let style = warning(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.border_color, colors::WARNING);
+    }
+
+    #[test]
+    fn info_theme() {
+        let theme = Theme::TokyoNight;
+        let style = info(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.border_color, colors::INFO);
+    }
+
+    #[test]
+    fn light_theme() {
+        let theme = Theme::TokyoNight;
+        let style = light(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.border_color, colors::LIGHT);
+    }
+
+    #[test]
+    fn dark_theme() {
+        let theme = Theme::TokyoNight;
+        let style = dark(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.head_text_color, colors::WHITE);
+        assert_eq!(style.close_color, colors::WHITE);
+        assert_eq!(style.border_color, colors::DARK);
+    }
+
+    #[test]
+    fn white_theme() {
+        let theme = Theme::TokyoNight;
+        let style = white(&theme, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+        assert_eq!(style.border_color, colors::WHITE);
+    }
+
+    #[test]
+    fn catalog_default_class() {
+        let _class = <Theme as Catalog>::default();
+    }
+
+    #[test]
+    fn catalog_style() {
+        let theme = Theme::TokyoNight;
+        let class = <Theme as Catalog>::default();
+        let style = theme.style(&class, Status::Active);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+    }
+
+    #[test]
+    fn primary_theme_with_hovered_status() {
+        let theme = Theme::TokyoNight;
+        let style = primary(&theme, Status::Hovered);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+    }
+
+    #[test]
+    fn primary_theme_with_disabled_status() {
+        let theme = Theme::TokyoNight;
+        let style = primary(&theme, Status::Disabled);
+
+        assert!(matches!(style.background, Background::Color(_)));
+        assert!(matches!(style.head_background, Background::Color(_)));
+    }
+}
