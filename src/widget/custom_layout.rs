@@ -198,3 +198,138 @@ impl<'b, Message: 'b, Theme: 'b, Renderer: iced_core::Renderer + 'b>
         iced_core::Element::new(value)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iced_core::{Size, layout::Node};
+
+    #[derive(Clone)]
+    enum TestMessage {}
+
+    type TestCustomLayout<'a> =
+        CustomLayout<'a, TestMessage, iced_widget::Theme, iced_widget::Renderer>;
+
+    fn simple_layout_fn(
+        _elements: &mut Vec<
+            iced_core::Element<'_, TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+        >,
+        _trees: &mut Vec<Tree>,
+        _renderer: &iced_widget::Renderer,
+        limits: &Limits,
+    ) -> Node {
+        Node::new(limits.resolve(Length::Shrink, Length::Shrink, Size::ZERO))
+    }
+
+    #[test]
+    fn custom_layout_new_has_default_values() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn);
+
+        assert_eq!(layout.width, Length::Shrink);
+        assert_eq!(layout.height, Length::Shrink);
+        assert_eq!(layout.elements.len(), 0);
+    }
+
+    #[test]
+    fn custom_layout_width_sets_value() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn).width(200);
+        assert_eq!(layout.width, Length::Fixed(200.0));
+    }
+
+    #[test]
+    fn custom_layout_width_fill_sets_value() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn).width(Length::Fill);
+        assert_eq!(layout.width, Length::Fill);
+    }
+
+    #[test]
+    fn custom_layout_height_sets_value() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn).height(100);
+        assert_eq!(layout.height, Length::Fixed(100.0));
+    }
+
+    #[test]
+    fn custom_layout_height_shrink_sets_value() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn).height(Length::Shrink);
+        assert_eq!(layout.height, Length::Shrink);
+    }
+
+    #[test]
+    fn custom_layout_size_method_returns_correct_size() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn)
+            .width(150)
+            .height(75);
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&layout);
+        assert_eq!(size.width, Length::Fixed(150.0));
+        assert_eq!(size.height, Length::Fixed(75.0));
+    }
+
+    #[test]
+    fn custom_layout_chaining_methods() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn)
+            .width(200)
+            .height(100);
+
+        assert_eq!(layout.width, Length::Fixed(200.0));
+        assert_eq!(layout.height, Length::Fixed(100.0));
+    }
+
+    #[test]
+    fn custom_layout_with_elements() {
+        let elements = vec![
+            iced_widget::text::Text::new("Element 1").into(),
+            iced_widget::text::Text::new("Element 2").into(),
+        ];
+        let layout = TestCustomLayout::new(elements, simple_layout_fn);
+
+        assert_eq!(layout.elements.len(), 2);
+    }
+
+    #[test]
+    fn custom_layout_children_count_matches_elements() {
+        let elements = vec![
+            iced_widget::text::Text::new("Element 1").into(),
+            iced_widget::text::Text::new("Element 2").into(),
+            iced_widget::text::Text::new("Element 3").into(),
+        ];
+        let layout = TestCustomLayout::new(elements, simple_layout_fn);
+
+        let children =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&layout);
+        assert_eq!(children.len(), 3);
+    }
+
+    #[test]
+    fn custom_layout_empty_elements() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn);
+
+        let children =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&layout);
+        assert_eq!(children.len(), 0);
+    }
+
+    #[test]
+    fn custom_layout_length_fillportion() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn)
+            .width(Length::FillPortion(2))
+            .height(Length::FillPortion(3));
+
+        assert_eq!(layout.width, Length::FillPortion(2));
+        assert_eq!(layout.height, Length::FillPortion(3));
+    }
+
+    #[test]
+    fn custom_layout_size_hint_equals_size() {
+        let layout = TestCustomLayout::new(vec![], simple_layout_fn)
+            .width(100)
+            .height(50);
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&layout);
+        let size_hint =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size_hint(&layout);
+
+        assert_eq!(size.width, size_hint.width);
+        assert_eq!(size.height, size_hint.height);
+    }
+}
