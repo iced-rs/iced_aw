@@ -323,3 +323,203 @@ where
         Element::new(date_picker)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Datelike;
+
+    #[derive(Clone, Debug)]
+    enum TestMessage {
+        Cancel,
+        Submit(Date),
+    }
+
+    type TestDatePicker<'a> = DatePicker<'a, TestMessage, iced_widget::Theme>;
+
+    #[test]
+    fn state_new_creates_state_with_date() {
+        let date = Date::from_ymd(2024, 6, 15);
+        let state = State::new(date);
+
+        assert_eq!(state.overlay_state.date.year(), 2024);
+        assert_eq!(state.overlay_state.date.month(), 6);
+        assert_eq!(state.overlay_state.date.day(), 15);
+    }
+
+    #[test]
+    fn state_now_creates_state() {
+        let state = State::now();
+        // Just verify it was created successfully
+        assert!(state.overlay_state.date.year() > 2020);
+    }
+
+    #[test]
+    fn state_reset_updates_to_current_date() {
+        let old_date = Date::from_ymd(2020, 1, 1);
+        let mut state = State::new(old_date);
+
+        state.reset();
+
+        // After reset, the date should be current (greater than 2020)
+        assert!(state.overlay_state.date.year() >= 2024);
+    }
+
+    #[test]
+    fn date_picker_new_creates_instance() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 6, 15);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        assert!(!date_picker.show_picker);
+        assert_eq!(date_picker.date.year, 2024);
+        assert_eq!(date_picker.date.month, 6);
+        assert_eq!(date_picker.date.day, 15);
+        assert!(date_picker.font_size.is_none());
+    }
+
+    #[test]
+    fn date_picker_show_picker_true() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            true,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        assert!(date_picker.show_picker);
+    }
+
+    #[test]
+    fn date_picker_font_size_sets_value() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        )
+        .font_size(20.0);
+
+        assert_eq!(date_picker.font_size, Some(Pixels(20.0)));
+    }
+
+    #[test]
+    fn date_picker_font_size_from_integer() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        )
+        .font_size(16);
+
+        assert_eq!(date_picker.font_size, Some(Pixels(16.0)));
+    }
+
+    #[test]
+    fn date_picker_tag_returns_state_tag() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&date_picker);
+        assert_eq!(tag, Tag::of::<State>());
+    }
+
+    #[test]
+    fn date_picker_has_two_children() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&date_picker);
+        assert_eq!(children.len(), 2);
+    }
+
+    #[test]
+    fn date_picker_size_matches_underlay() {
+        let underlay = iced_widget::text::Text::new("Pick a date");
+        let date = Date::from_ymd(2024, 1, 1);
+
+        let date_picker = TestDatePicker::new(
+            false,
+            date,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let size = Widget::<TestMessage, iced_widget::Theme, Renderer>::size(&date_picker);
+        assert_eq!(size.width, Length::Shrink);
+        assert_eq!(size.height, Length::Shrink);
+    }
+
+    #[test]
+    fn date_picker_different_dates() {
+        let test_dates = [
+            (2024, 1, 1),
+            (2024, 12, 31),
+            (2025, 6, 15),
+            (2020, 2, 29), // Leap year
+        ];
+
+        for (year, month, day) in test_dates {
+            let date = Date::from_ymd(year, month, day);
+            let underlay = iced_widget::text::Text::new("Pick a date");
+
+            let date_picker = TestDatePicker::new(
+                false,
+                date,
+                underlay,
+                TestMessage::Cancel,
+                TestMessage::Submit,
+            );
+
+            assert_eq!(date_picker.date.year, year);
+            assert_eq!(date_picker.date.month, month);
+            assert_eq!(date_picker.date.day, day);
+        }
+    }
+
+    #[test]
+    fn date_from_ymd_creates_correct_date() {
+        let date = Date::from_ymd(2024, 7, 20);
+
+        assert_eq!(date.year, 2024);
+        assert_eq!(date.month, 7);
+        assert_eq!(date.day, 20);
+    }
+}
