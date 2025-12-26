@@ -4,11 +4,11 @@
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
 
+use iced::Settings;
 use iced::{Alignment, Color, Element, Length, Theme};
 use iced_aw::Badge;
-use iced_widget::text::Text;
-use iced::Settings;
 use iced_test::{Error, Simulator};
+use iced_widget::text::Text;
 
 #[derive(Clone)]
 #[allow(dead_code)]
@@ -19,9 +19,7 @@ enum Message {
 #[derive(Clone, Debug, PartialEq)]
 #[allow(dead_code)]
 #[derive(Default)]
-struct App {
- 
-}
+struct App {}
 
 impl App {
     fn new() -> (Self, iced::Task<Message>) {
@@ -63,7 +61,10 @@ fn badge_operate_test() -> Result<(), Error> {
     let mut ui = simulator(&app);
 
     // Now that Badge implements operate(), the built-in string selector works!
-    assert!(ui.find("Test Badge").is_ok(), "Text inside Badge should be found!");
+    assert!(
+        ui.find("Test Badge").is_ok(),
+        "Text inside Badge should be found!"
+    );
 
     Ok(())
 }
