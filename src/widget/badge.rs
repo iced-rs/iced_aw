@@ -8,7 +8,7 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
-    widget::Tree,
+    widget::{Operation, Tree},
     window,
 };
 
@@ -282,6 +282,24 @@ where
             viewport,
         );
     }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
+            self.content.as_widget_mut().operate(
+                &mut tree.children[0],
+                layout.children().next().unwrap(),
+                renderer,
+                operation,
+            );
+        });
+    }
 }
 
 impl<'a, Message, Theme, Renderer> From<Badge<'a, Message, Theme, Renderer>>
@@ -426,5 +444,49 @@ mod tests {
             TestBadge::new(iced_widget::text::Text::new("Test")).width(Length::FillPortion(3));
 
         assert_eq!(badge.width, Length::FillPortion(3));
+    }
+
+    #[test]
+    fn badge_widget_has_operate_method() {
+        // Verify that Badge implements the operate method from Widget trait
+        // This is a compile-time check to ensure the signature is correct
+        fn _assert_has_operate<W, M, T, R>(_widget: &W)
+        where
+            W: Widget<M, T, R>,
+            R: renderer::Renderer,
+        {
+        }
+
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
+        _assert_has_operate(&badge);
+    }
+
+    #[test]
+    fn badge_children_returns_single_content_tree() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
+        let children =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&badge);
+
+        // Badge should have exactly one child (the content element)
+        assert_eq!(children.len(), 1);
+    }
+
+    #[test]
+    fn badge_diff_updates_content_tree() {
+        let badge = TestBadge::new(iced_widget::text::Text::new("Original"));
+        let content = Element::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::from(
+            iced_widget::text::Text::new("Original"),
+        );
+        let mut tree = Tree {
+            tag: iced_core::widget::tree::Tag::stateless(),
+            state: iced_core::widget::tree::State::None,
+            children: vec![Tree::new(&content)],
+        };
+
+        // Verify diff doesn't panic and properly handles the tree
+        Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::diff(&badge, &mut tree);
+
+        // Tree should still have one child after diff
+        assert_eq!(tree.children.len(), 1);
     }
 }

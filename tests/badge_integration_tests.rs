@@ -4,19 +4,76 @@
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
 
-use iced::{Alignment, Color, Length, Theme};
+use iced::{Alignment, Color, Element, Length, Theme};
 use iced_aw::Badge;
 use iced_widget::text::Text;
+use iced::Settings;
+use iced_test::{Error, Simulator};
+
+#[derive(Clone)]
+#[allow(dead_code)]
+enum Message {
+    DoNothing,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 #[allow(dead_code)]
-enum Message {
-    Click,
+#[derive(Default)]
+struct App {
+ 
+}
+
+impl App {
+    fn new() -> (Self, iced::Task<Message>) {
+        (App::default(), iced::Task::none())
+    }
+
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::DoNothing => {
+                // Do nothing
+            }
+        }
+    }
+
+    fn view(&self) -> Element<'_, Message> {
+        Badge::new(Text::new("Test Badge")).into()
+    }
+}
+
+fn simulator(app: &App) -> Simulator<'_, Message> {
+    Simulator::with_settings(
+        Settings {
+            ..Settings::default()
+        },
+        app.view(),
+    )
+}
+
+#[test]
+fn badge_operate_test() -> Result<(), Error> {
+    let (mut app, _command) = App::new();
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create simulator again and find text inside Badge
+    let mut ui = simulator(&app);
+
+    // Now that Badge implements operate(), the built-in string selector works!
+    assert!(ui.find("Test Badge").is_ok(), "Text inside Badge should be found!");
+
+    Ok(())
 }
 
 #[test]
 fn badge_can_be_created_with_text() {
-    let _badge: Badge<Message, Theme> = Badge::new(Text::new("Badge"));
+    let (app, _command) = App::new();
+    let _ui = simulator(&app);
+
+    //let _badge: Badge<Message, Theme> = Badge::new(Text::new("Badge"));
 }
 
 #[test]
