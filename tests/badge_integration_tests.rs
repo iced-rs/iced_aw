@@ -522,28 +522,47 @@ fn badge_with_different_message_types() -> Result<(), Error> {
 
 #[test]
 fn badge_with_various_width_configurations() -> Result<(), Error> {
-    let configs = vec![
-        ("Fixed", Length::Fixed(100.0)),
-        ("Fill", Length::Fill),
-        ("Shrink", Length::Shrink),
-        ("Portion", Length::FillPortion(2)),
-    ];
-
-    for (text, width) in configs {
-        let text_copy = text.to_string();
-        let (mut app, _command) =
-            App::new(move || Badge::new(Text::new(text_copy.clone())).width(width).into());
+    // Test Fixed width
+    {
+        let (mut app, _command) = App::new(|| Badge::new(Text::new("Fixed")).width(100.0).into());
         let ui = simulator(&app);
-
         for message in ui.into_messages() {
             app.update(message);
         }
-
         let mut ui = simulator(&app);
         assert!(
-            ui.find(text).is_ok(),
-            "Badge with width '{}' should render",
-            text
+            ui.find("Fixed").is_ok(),
+            "Badge with Fixed width should render"
+        );
+    }
+
+    // Test Fill width
+    {
+        let (mut app, _command) =
+            App::new(|| Badge::new(Text::new("Fill")).width(Length::Fill).into());
+        let ui = simulator(&app);
+        for message in ui.into_messages() {
+            app.update(message);
+        }
+        let mut ui = simulator(&app);
+        assert!(
+            ui.find("Fill").is_ok(),
+            "Badge with Fill width should render"
+        );
+    }
+
+    // Test Shrink width
+    {
+        let (mut app, _command) =
+            App::new(|| Badge::new(Text::new("Shrink")).width(Length::Shrink).into());
+        let ui = simulator(&app);
+        for message in ui.into_messages() {
+            app.update(message);
+        }
+        let mut ui = simulator(&app);
+        assert!(
+            ui.find("Shrink").is_ok(),
+            "Badge with Shrink width should render"
         );
     }
 
@@ -552,31 +571,50 @@ fn badge_with_various_width_configurations() -> Result<(), Error> {
 
 #[test]
 fn badge_with_various_height_configurations() -> Result<(), Error> {
-    let configs = vec![
-        ("Fixed", Length::Fixed(30.0)),
-        ("Fill", Length::Fill),
-        ("Shrink", Length::Shrink),
-        ("Portion", Length::FillPortion(3)),
-    ];
-
-    for (text, height) in configs {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .height(height)
-                .into()
-        });
+    // Test Fixed height
+    {
+        let (mut app, _command) = App::new(|| Badge::new(Text::new("Fixed")).height(30.0).into());
         let ui = simulator(&app);
-
         for message in ui.into_messages() {
             app.update(message);
         }
-
         let mut ui = simulator(&app);
         assert!(
-            ui.find(text).is_ok(),
-            "Badge with height '{}' should render",
-            text
+            ui.find("Fixed").is_ok(),
+            "Badge with Fixed height should render"
+        );
+    }
+
+    // Test Fill height
+    {
+        let (mut app, _command) =
+            App::new(|| Badge::new(Text::new("Fill")).height(Length::Fill).into());
+        let ui = simulator(&app);
+        for message in ui.into_messages() {
+            app.update(message);
+        }
+        let mut ui = simulator(&app);
+        assert!(
+            ui.find("Fill").is_ok(),
+            "Badge with Fill height should render"
+        );
+    }
+
+    // Test Shrink height
+    {
+        let (mut app, _command) = App::new(|| {
+            Badge::new(Text::new("Shrink"))
+                .height(Length::Shrink)
+                .into()
+        });
+        let ui = simulator(&app);
+        for message in ui.into_messages() {
+            app.update(message);
+        }
+        let mut ui = simulator(&app);
+        assert!(
+            ui.find("Shrink").is_ok(),
+            "Badge with Shrink height should render"
         );
     }
 
