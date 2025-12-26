@@ -105,11 +105,7 @@ fn badge_can_be_created_with_different_text_content() -> Result<(), Error> {
 
 #[test]
 fn badge_can_set_padding() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Padded"))
-            .padding(10)
-            .into()
-    });
+    let (mut app, _command) = App::new(|| Badge::new(Text::new("Padded")).padding(10).into());
     let ui = simulator(&app);
 
     for message in ui.into_messages() {
@@ -130,11 +126,8 @@ fn badge_can_set_different_padding_values() -> Result<(), Error> {
     let padding_values = vec![0, 5, 10, 15, 20, 50, 100];
 
     for padding in padding_values {
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new("Test"))
-                .padding(padding)
-                .into()
-        });
+        let (mut app, _command) =
+            App::new(move || Badge::new(Text::new("Test")).padding(padding).into());
         let ui = simulator(&app);
 
         for message in ui.into_messages() {
@@ -162,11 +155,8 @@ fn badge_can_set_width() -> Result<(), Error> {
 
     for (text, width) in configs {
         let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .width(width)
-                .into()
-        });
+        let (mut app, _command) =
+            App::new(move || Badge::new(Text::new(text_copy.clone())).width(width).into());
         let ui = simulator(&app);
 
         for message in ui.into_messages() {
@@ -322,10 +312,7 @@ fn badge_can_be_styled() -> Result<(), Error> {
     }
 
     let mut ui = simulator(&app);
-    assert!(
-        ui.find("Styled").is_ok(),
-        "Styled badge should render"
-    );
+    assert!(ui.find("Styled").is_ok(), "Styled badge should render");
 
     Ok(())
 }
@@ -440,11 +427,7 @@ fn badge_converts_to_element() -> Result<(), Error> {
 #[test]
 fn badge_supports_multiple_instances() -> Result<(), Error> {
     // Test that we can create multiple badge instances
-    let instances = vec![
-        ("First", 5),
-        ("Second", 10),
-        ("Third", 15),
-    ];
+    let instances = vec![("First", 5), ("Second", 10), ("Third", 15)];
 
     for (text, padding) in instances {
         let text_copy = text.to_string();
@@ -548,11 +531,8 @@ fn badge_with_various_width_configurations() -> Result<(), Error> {
 
     for (text, width) in configs {
         let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .width(width)
-                .into()
-        });
+        let (mut app, _command) =
+            App::new(move || Badge::new(Text::new(text_copy.clone())).width(width).into());
         let ui = simulator(&app);
 
         for message in ui.into_messages() {
