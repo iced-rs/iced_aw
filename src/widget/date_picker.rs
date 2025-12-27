@@ -249,6 +249,21 @@ where
         )
     }
 
+    fn operate(
+        &mut self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn widget::Operation<()>,
+    ) {
+        self.underlay.as_widget_mut().operate(
+            &mut state.children[0],
+            layout,
+            renderer,
+            operation,
+        );
+    }
+
     fn draw(
         &self,
         state: &Tree,
