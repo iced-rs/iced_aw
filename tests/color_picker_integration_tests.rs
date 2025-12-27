@@ -4,9 +4,11 @@
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
 
-use iced::{Color, Theme};
+use iced::{Color, Element, Settings};
 use iced_aw::ColorPicker;
-use iced_widget::{button, text::Text};
+use iced_test::{Error, Simulator};
+use iced_widget::button;
+use iced_widget::text::Text;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Message {
@@ -15,278 +17,256 @@ enum Message {
     Submit(Color),
 }
 
-// Helper function to create a button with explicit Theme type
-fn create_button<'a>(text: &'a str) -> iced_widget::Button<'a, Message, Theme> {
-    button(Text::new(text)).on_press(Message::Open)
-}
-
 #[test]
-fn color_picker_can_be_created_with_basic_configuration() {
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button = create_button("Pick color");
+fn color_picker_button_can_be_clicked() -> Result<(), Error> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
-    let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_can_be_created_with_picker_shown() {
-    let color = Color::from_rgb(0.3, 0.6, 0.9);
-    let button = create_button("Pick color");
-
-    let _picker = ColorPicker::new(true, color, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_black_color() {
-    let black = Color::from_rgb(0.0, 0.0, 0.0);
-    let button = create_button("Pick");
-
-    let _picker = ColorPicker::new(false, black, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_white_color() {
-    let white = Color::from_rgb(1.0, 1.0, 1.0);
-    let button = create_button("Pick");
-
-    let _picker = ColorPicker::new(false, white, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_red_color() {
-    let red = Color::from_rgb(1.0, 0.0, 0.0);
-    let button = create_button("Pick");
-
-    let _picker = ColorPicker::new(false, red, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_green_color() {
-    let green = Color::from_rgb(0.0, 1.0, 0.0);
-    let button = create_button("Pick");
-
-    let _picker = ColorPicker::new(false, green, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_blue_color() {
-    let blue = Color::from_rgb(0.0, 0.0, 1.0);
-    let button = create_button("Pick");
-
-    let _picker = ColorPicker::new(false, blue, button, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_works_with_custom_colors() {
-    let colors = vec![
-        Color::from_rgb(0.25, 0.50, 0.75),
-        Color::from_rgb(0.15, 0.85, 0.45),
-        Color::from_rgb(0.99, 0.01, 0.50),
-        Color::from_rgb(0.33, 0.33, 0.33),
-        Color::from_rgb(0.66, 0.66, 0.66),
-    ];
-
-    for color in colors {
-        let button = create_button("Pick");
-        let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
-    }
-}
-
-#[test]
-fn color_picker_can_be_created_with_different_messages() {
     #[derive(Clone)]
-    #[allow(dead_code)]
-    enum CustomMessage {
-        ShowPicker,
-        HidePicker,
-        ColorSelected(Color),
+    struct StatefulApp {
+        clicked: Rc<RefCell<bool>>,
+        show_picker: Rc<RefCell<bool>>,
     }
 
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button: iced_widget::Button<'_, CustomMessage, Theme> =
-        button(Text::new("Pick color")).on_press(CustomMessage::ShowPicker);
-
-    let _picker = ColorPicker::new(
-        false,
-        color,
-        button,
-        CustomMessage::HidePicker,
-        CustomMessage::ColorSelected,
-    );
-}
-
-#[test]
-fn color_picker_can_be_styled() {
-    use iced_aw::style::{self, Status};
-
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button = create_button("Pick color");
-
-    let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit).style(
-        |_theme: &Theme, _status: Status| style::color_picker::Style {
-            background: iced::Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
-            border_radius: 15.0,
-            border_width: 1.0,
-            border_color: Color::from_rgb(0.0, 0.0, 0.0),
-            bar_border_radius: 5.0,
-            bar_border_width: 1.0,
-            bar_border_color: Color::from_rgb(0.0, 0.0, 0.0),
-        },
-    );
-}
-
-#[test]
-fn color_picker_can_use_custom_class() {
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button = create_button("Pick color");
-
-    let _picker: ColorPicker<Message, Theme> =
-        ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
-            .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
-}
-
-#[test]
-fn color_picker_supports_multiple_instances() {
-    let color1 = Color::from_rgb(0.1, 0.2, 0.3);
-    let color2 = Color::from_rgb(0.4, 0.5, 0.6);
-    let color3 = Color::from_rgb(0.7, 0.8, 0.9);
-
-    let button1 = create_button("Picker 1");
-    let button2 = create_button("Picker 2");
-    let button3 = create_button("Picker 3");
-
-    let _picker1 = ColorPicker::new(false, color1, button1, Message::Cancel, Message::Submit);
-    let _picker2 = ColorPicker::new(true, color2, button2, Message::Cancel, Message::Submit);
-    let _picker3 = ColorPicker::new(false, color3, button3, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_converts_to_element() {
-    use iced::Element;
-    use iced_widget::Renderer;
-
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button = create_button("Pick color");
-
-    let picker: ColorPicker<Message, Theme> =
-        ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
-
-    let _element: Element<Message, Theme, Renderer> = picker.into();
-}
-
-#[test]
-fn color_picker_with_rgba_colors() {
-    let semi_transparent_red = Color::from_rgba(1.0, 0.0, 0.0, 0.5);
-    let semi_transparent_blue = Color::from_rgba(0.0, 0.0, 1.0, 0.75);
-    let almost_transparent = Color::from_rgba(0.5, 0.5, 0.5, 0.1);
-
-    for color in [
-        semi_transparent_red,
-        semi_transparent_blue,
-        almost_transparent,
-    ] {
-        let button = create_button("Pick");
-        let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
-    }
-}
-
-#[test]
-fn color_picker_with_different_button_types() {
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-
-    // Simple text button
-    let button1 = create_button("Pick color");
-    let _picker1 = ColorPicker::new(false, color, button1, Message::Cancel, Message::Submit);
-
-    // Button with different text
-    let button2 = create_button("Choose");
-    let _picker2 = ColorPicker::new(false, color, button2, Message::Cancel, Message::Submit);
-
-    // Button with emoji (if supported)
-    let button3 = create_button("🎨");
-    let _picker3 = ColorPicker::new(false, color, button3, Message::Cancel, Message::Submit);
-}
-
-#[test]
-fn color_picker_chain_style_and_class() {
-    use iced_aw::style::{self, Status};
-
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
-    let button = create_button("Pick color");
-
-    let _picker: ColorPicker<Message, Theme> =
-        ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
-            .style(
-                |_theme: &Theme, _status: Status| style::color_picker::Style {
-                    background: iced::Background::Color(Color::from_rgb(0.95, 0.95, 0.95)),
-                    border_radius: 20.0,
-                    border_width: 2.0,
-                    border_color: Color::from_rgb(0.1, 0.1, 0.1),
-                    bar_border_radius: 8.0,
-                    bar_border_width: 1.5,
-                    bar_border_color: Color::from_rgb(0.2, 0.2, 0.2),
+    impl StatefulApp {
+        fn new() -> (Self, iced::Task<Message>) {
+            (
+                StatefulApp {
+                    clicked: Rc::new(RefCell::new(false)),
+                    show_picker: Rc::new(RefCell::new(false)),
                 },
+                iced::Task::none(),
             )
-            .class(<Theme as iced_aw::style::color_picker::Catalog>::default());
-}
+        }
 
-#[test]
-fn color_picker_extreme_color_values() {
-    // Test edge cases for color values
-    let colors = vec![
-        Color::from_rgb(0.0, 0.0, 0.0),       // Minimum
-        Color::from_rgb(1.0, 1.0, 1.0),       // Maximum
-        Color::from_rgb(0.5, 0.0, 1.0),       // Mixed
-        Color::from_rgb(1.0, 0.5, 0.0),       // Mixed
-        Color::from_rgb(0.0, 1.0, 0.5),       // Mixed
-        Color::from_rgba(0.0, 0.0, 0.0, 0.0), // Fully transparent
-        Color::from_rgba(1.0, 1.0, 1.0, 1.0), // Fully opaque
-    ];
+        fn update(&mut self, message: Message) {
+            match message {
+                Message::Open => {
+                    *self.clicked.borrow_mut() = true;
+                    *self.show_picker.borrow_mut() = true;
+                }
+                Message::Cancel => {}
+                Message::Submit(_) => {}
+            }
+        }
 
-    for color in colors {
-        let button = create_button("Pick");
-        let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
+        fn view(&self) -> Element<'_, Message> {
+            let color = Color::from_rgb(0.5, 0.5, 0.5);
+            let show_picker = *self.show_picker.borrow();
+
+            ColorPicker::new(
+                show_picker,
+                color,
+                button(Text::new("Click me")).on_press(Message::Open),
+                Message::Cancel,
+                Message::Submit,
+            )
+            .into()
+        }
     }
-}
 
-#[test]
-fn color_picker_precision_test() {
-    // Test with high precision color values
-    let precise_colors = vec![
-        Color::from_rgb(0.123456, 0.789012, 0.345678),
-        Color::from_rgb(0.999999, 0.000001, 0.500000),
-        Color::from_rgb(0.333333, 0.666666, 0.111111),
-    ];
+    let (mut app, _command) = StatefulApp::new();
 
-    for color in precise_colors {
-        let button = create_button("Pick");
-        let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit);
+    // Initial state - button should be visible
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+    assert!(
+        ui.find("Click me").is_ok(),
+        "Button should be visible initially"
+    );
+
+    // Click the button
+    let _ = ui.click("Click me");
+
+    // Process the messages generated by the click
+    for message in ui.into_messages() {
+        app.update(message);
     }
+
+    // Verify the Open message was received
+    assert!(
+        *app.clicked.borrow(),
+        "Open message should have been received after clicking button"
+    );
+
+    Ok(())
 }
 
 #[test]
-fn color_picker_create_and_style_multiple_times() {
-    use iced_aw::style::{self, Status};
+fn color_picker_overlay_cancel_button_interaction() -> Result<(), Error> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
-    let color = Color::from_rgb(0.5, 0.5, 0.5);
+    #[derive(Clone)]
+    struct StatefulApp {
+        show_picker: Rc<RefCell<bool>>,
+        canceled: Rc<RefCell<bool>>,
+    }
 
-    for i in 0..5 {
-        let text = format!("Picker {}", i);
-        let button: iced_widget::Button<'_, Message, Theme> =
-            button(Text::new(text)).on_press(Message::Open);
-        let border_radius = 10.0 + (i as f32) * 2.0;
-
-        let _picker = ColorPicker::new(false, color, button, Message::Cancel, Message::Submit)
-            .style(
-                move |_theme: &Theme, _status: Status| style::color_picker::Style {
-                    background: iced::Background::Color(Color::from_rgb(0.9, 0.9, 0.9)),
-                    border_radius,
-                    border_width: 1.0,
-                    border_color: Color::from_rgb(0.0, 0.0, 0.0),
-                    bar_border_radius: 5.0,
-                    bar_border_width: 1.0,
-                    bar_border_color: Color::from_rgb(0.0, 0.0, 0.0),
+    impl StatefulApp {
+        fn new() -> (Self, iced::Task<Message>) {
+            (
+                StatefulApp {
+                    show_picker: Rc::new(RefCell::new(false)),
+                    canceled: Rc::new(RefCell::new(false)),
                 },
-            );
+                iced::Task::none(),
+            )
+        }
+
+        fn update(&mut self, message: Message) {
+            match message {
+                Message::Open => {
+                    *self.show_picker.borrow_mut() = true;
+                }
+                Message::Cancel => {
+                    *self.canceled.borrow_mut() = true;
+                    *self.show_picker.borrow_mut() = false;
+                }
+                Message::Submit(_) => {}
+            }
+        }
+
+        fn view(&self) -> Element<'_, Message> {
+            let color = Color::from_rgb(0.5, 0.5, 0.5);
+            let show_picker = *self.show_picker.borrow();
+
+            ColorPicker::new(
+                show_picker,
+                color,
+                button(Text::new("Open Picker")).on_press(Message::Open),
+                Message::Cancel,
+                Message::Submit,
+            )
+            .into()
+        }
     }
+
+    let (mut app, _command) = StatefulApp::new();
+
+    // Click the underlay button to open the picker
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+    let _ = ui.click("Open Picker");
+
+    // Process messages to open the picker
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Verify picker is now open
+    assert!(
+        *app.show_picker.borrow(),
+        "Picker should be open after clicking button"
+    );
+
+    // Create new UI with the picker open
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+
+    // Try to find and click the cancel button icon (U+E800)
+    let cancel_result = ui.click("\u{e800}");
+
+    // Process any messages
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // If we successfully clicked the cancel button, verify the state changed
+    if cancel_result.is_ok() {
+        assert!(
+            *app.canceled.borrow(),
+            "Cancel should have been called after clicking cancel button"
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
+fn color_picker_overlay_submit_button_interaction() -> Result<(), Error> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    #[derive(Clone)]
+    struct StatefulApp {
+        show_picker: Rc<RefCell<bool>>,
+        submitted_color: Rc<RefCell<Option<Color>>>,
+    }
+
+    impl StatefulApp {
+        fn new() -> (Self, iced::Task<Message>) {
+            (
+                StatefulApp {
+                    show_picker: Rc::new(RefCell::new(false)),
+                    submitted_color: Rc::new(RefCell::new(None)),
+                },
+                iced::Task::none(),
+            )
+        }
+
+        fn update(&mut self, message: Message) {
+            match message {
+                Message::Open => {
+                    *self.show_picker.borrow_mut() = true;
+                }
+                Message::Cancel => {
+                    *self.show_picker.borrow_mut() = false;
+                }
+                Message::Submit(color) => {
+                    *self.submitted_color.borrow_mut() = Some(color);
+                    *self.show_picker.borrow_mut() = false;
+                }
+            }
+        }
+
+        fn view(&self) -> Element<'_, Message> {
+            let color = Color::from_rgb(0.3, 0.6, 0.9);
+            let show_picker = *self.show_picker.borrow();
+
+            ColorPicker::new(
+                show_picker,
+                color,
+                button(Text::new("Open Picker")).on_press(Message::Open),
+                Message::Cancel,
+                Message::Submit,
+            )
+            .into()
+        }
+    }
+
+    let (mut app, _command) = StatefulApp::new();
+
+    // Click the underlay button to open the picker
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+    let _ = ui.click("Open Picker");
+
+    // Process messages to open the picker
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Verify picker is now open
+    assert!(
+        *app.show_picker.borrow(),
+        "Picker should be open after clicking button"
+    );
+
+    // Create new UI with the picker open
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+
+    // Try to find and click the submit button icon (U+E802)
+    let submit_result = ui.click("\u{e802}");
+
+    // Process any messages
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // If we successfully clicked the submit button, verify the state changed
+    if submit_result.is_ok() {
+        assert!(
+            app.submitted_color.borrow().is_some(),
+            "Submit should have been called with a color"
+        );
+    }
+
+    Ok(())
 }

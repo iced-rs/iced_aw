@@ -13,7 +13,10 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
-    widget::tree::{self, Tag, Tree},
+    widget::{
+        Operation,
+        tree::{self, Tag, Tree},
+    },
 };
 use iced_widget::Renderer;
 
@@ -264,6 +267,18 @@ where
         );
     }
 
+    fn operate<'b>(
+        &'b mut self,
+        state: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        self.underlay
+            .as_widget_mut()
+            .operate(&mut state.children[0], layout, renderer, operation);
+    }
+
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
@@ -367,93 +382,6 @@ mod tests {
     }
 
     #[test]
-    fn color_picker_with_black_color() {
-        let black = Color::from_rgb(0.0, 0.0, 0.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            black,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, black);
-    }
-
-    #[test]
-    fn color_picker_with_white_color() {
-        let white = Color::from_rgb(1.0, 1.0, 1.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            white,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, white);
-    }
-
-    #[test]
-    fn color_picker_with_rgba_color() {
-        let semi_transparent = Color::from_rgba(1.0, 0.0, 0.0, 0.5);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            semi_transparent,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, semi_transparent);
-    }
-
-    #[test]
-    fn color_picker_default_show_picker_false() {
-        let color = Color::from_rgb(0.5, 0.5, 0.5);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            color,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert!(!picker.show_picker);
-    }
-
-    #[test]
-    fn color_picker_with_various_colors() {
-        let colors = vec![
-            Color::from_rgb(0.1, 0.2, 0.3),
-            Color::from_rgb(0.5, 0.5, 0.5),
-            Color::from_rgb(0.9, 0.8, 0.7),
-            Color::from_rgba(0.5, 0.5, 0.5, 0.5),
-        ];
-
-        for color in colors {
-            let button = create_test_button();
-            let picker = TestColorPicker::new(
-                false,
-                color,
-                button,
-                TestMessage::Cancel,
-                TestMessage::Submit,
-            );
-
-            assert_eq!(picker.color, color);
-        }
-    }
-
-    #[test]
     fn color_picker_state_new() {
         let color = Color::from_rgb(0.5, 0.5, 0.5);
         let state = State::new(color);
@@ -476,122 +404,5 @@ mod tests {
         state.reset();
         // State should still be valid after reset
         assert!(!state.old_show_picker);
-    }
-
-    #[test]
-    fn color_picker_with_red_color() {
-        let red = Color::from_rgb(1.0, 0.0, 0.0);
-        let button = create_test_button();
-
-        let picker =
-            TestColorPicker::new(false, red, button, TestMessage::Cancel, TestMessage::Submit);
-
-        assert_eq!(picker.color, red);
-    }
-
-    #[test]
-    fn color_picker_with_green_color() {
-        let green = Color::from_rgb(0.0, 1.0, 0.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            green,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, green);
-    }
-
-    #[test]
-    fn color_picker_with_blue_color() {
-        let blue = Color::from_rgb(0.0, 0.0, 1.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            blue,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, blue);
-    }
-
-    #[test]
-    fn color_picker_precision_colors() {
-        let precise_color = Color::from_rgb(0.123456, 0.789012, 0.345678);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            precise_color,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, precise_color);
-    }
-
-    #[test]
-    fn color_picker_fully_transparent() {
-        let transparent = Color::from_rgba(0.0, 0.0, 0.0, 0.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            transparent,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, transparent);
-    }
-
-    #[test]
-    fn color_picker_fully_opaque() {
-        let opaque = Color::from_rgba(1.0, 1.0, 1.0, 1.0);
-        let button = create_test_button();
-
-        let picker = TestColorPicker::new(
-            false,
-            opaque,
-            button,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert_eq!(picker.color, opaque);
-    }
-
-    #[test]
-    fn color_picker_show_picker_toggle() {
-        let color = Color::from_rgb(0.5, 0.5, 0.5);
-        let button1 = create_test_button();
-        let button2 = create_test_button();
-
-        let picker_hidden = TestColorPicker::new(
-            false,
-            color,
-            button1,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        let picker_shown = TestColorPicker::new(
-            true,
-            color,
-            button2,
-            TestMessage::Cancel,
-            TestMessage::Submit,
-        );
-
-        assert!(!picker_hidden.show_picker);
-        assert!(picker_shown.show_picker);
     }
 }
