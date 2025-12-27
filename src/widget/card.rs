@@ -8,20 +8,23 @@ pub use crate::style::{
     status::{Status, StyleFn},
 };
 use iced_core::{
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point,
-    Rectangle, Shadow, Shell, Size, Vector, Widget,
-    alignment::Vertical,
+    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
+    Shadow, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
-    text::LineHeight,
-    touch,
     widget::{Operation, Tree},
 };
-use iced_widget::text::Wrapping;
+use iced_widget::button;
 
 /// The default padding of a [`Card`].
 const DEFAULT_PADDING: Padding = Padding::new(10.0);
+
+/// The default size of the close button icon
+const DEFAULT_CLOSE_SIZE: f32 = 16.0;
+
+/// Extra space around the close button for click area
+const CLOSE_BUTTON_SPACING: f32 = 1.0;
 
 /// A card consisting of a head, body and optional foot.
 ///
@@ -73,10 +76,10 @@ where
     body: Element<'a, Message, Theme, Renderer>,
     /// The optional foot [`Element`] of the [`Card`].
     foot: Option<Element<'a, Message, Theme, Renderer>>,
+    /// The optional close button [`Element`] of the [`Card`].
+    close_button: Option<Element<'a, Message, Theme, Renderer>>,
     /// The style of the [`Card`].
     class: Theme::Class<'a>,
-    /// Used to display the mouse over action on the close button.
-    is_mouse_over_close: bool,
 }
 
 impl<'a, Message, Theme, Renderer> Card<'a, Message, Theme, Renderer>
@@ -107,8 +110,8 @@ where
             head: head.into(),
             body: body.into(),
             foot: None,
+            close_button: None,
             class: Theme::default(),
-            is_mouse_over_close: false,
         }
     }
 
@@ -155,9 +158,54 @@ where
     ///
     /// Setting this enables the drawing of a close icon on the [`Card`].
     #[must_use]
-    pub fn on_close(mut self, msg: Message) -> Self {
-        self.on_close = Some(msg);
+    pub fn on_close(mut self, msg: Message) -> Self
+    where
+        Message: Clone + 'a,
+        Renderer: iced_core::text::Renderer<Font = iced_core::Font> + 'a,
+        Theme: iced_widget::text::Catalog + iced_widget::button::Catalog + 'a,
+        <Theme as iced_widget::button::Catalog>::Class<'a>:
+            From<iced_widget::button::StyleFn<'a, Theme>>,
+    {
+        self.on_close = Some(msg.clone());
+        self.close_button = Some(self.create_close_button(msg));
         self
+    }
+
+    /// Creates a close button element.
+    fn create_close_button(&self, msg: Message) -> Element<'a, Message, Theme, Renderer>
+    where
+        Message: Clone + 'a,
+        Renderer: iced_core::text::Renderer<Font = iced_core::Font> + 'a,
+        Theme: iced_widget::text::Catalog + iced_widget::button::Catalog + 'a,
+        <Theme as iced_widget::button::Catalog>::Class<'a>:
+            From<iced_widget::button::StyleFn<'a, Theme>>,
+    {
+        let (content, font, shaping) = cancel();
+        let size = self.close_size.unwrap_or(DEFAULT_CLOSE_SIZE);
+
+        let text_widget = iced_widget::text(content)
+            .font(font)
+            .size(size)
+            .shaping(shaping);
+
+        button(text_widget)
+            .padding(0)
+            .style(|theme: &Theme, _status| {
+                let card_style = <Theme as Catalog>::style(
+                    theme,
+                    &<Theme as Catalog>::default(),
+                    crate::style::status::Status::Active,
+                );
+                iced_widget::button::Style {
+                    background: None,
+                    text_color: card_style.close_color,
+                    border: iced_core::Border::default(),
+                    shadow: iced_core::Shadow::default(),
+                    snap: false,
+                }
+            })
+            .on_press(msg)
+            .into()
     }
 
     /// Sets the padding of the [`Card`].
@@ -226,23 +274,33 @@ where
     Theme: Catalog,
 {
     fn children(&self) -> Vec<Tree> {
-        self.foot.as_ref().map_or_else(
-            || vec![Tree::new(&self.head), Tree::new(&self.body)],
-            |foot| {
-                vec![
-                    Tree::new(&self.head),
-                    Tree::new(&self.body),
-                    Tree::new(foot),
-                ]
-            },
-        )
+        let mut children = vec![Tree::new(&self.head), Tree::new(&self.body)];
+
+        if let Some(foot) = &self.foot {
+            children.push(Tree::new(foot));
+        }
+
+        if let Some(close_button) = &self.close_button {
+            children.push(Tree::new(close_button));
+        }
+
+        children
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if let Some(foot) = self.foot.as_ref() {
-            tree.diff_children(&[&self.head, &self.body, foot]);
-        } else {
-            tree.diff_children(&[&self.head, &self.body]);
+        match (&self.foot, &self.close_button) {
+            (Some(foot), Some(close_button)) => {
+                tree.diff_children(&[&self.head, &self.body, foot, close_button]);
+            }
+            (Some(foot), None) => {
+                tree.diff_children(&[&self.head, &self.body, foot]);
+            }
+            (None, Some(close_button)) => {
+                tree.diff_children(&[&self.head, &self.body, close_button]);
+            }
+            (None, None) => {
+                tree.diff_children(&[&self.head, &self.body]);
+            }
         }
     }
 
@@ -256,15 +314,18 @@ where
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
+        let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
+
         let head_node = head_node(
             renderer,
             &limits,
             &mut self.head,
             self.padding_head,
             self.width,
-            self.on_close.is_some(),
+            self.close_button.as_mut(),
             self.close_size,
             tree,
+            close_button_tree_index,
         );
 
         let limits = limits.shrink(Size::new(0.0, head_node.size().height));
@@ -333,26 +394,20 @@ where
             viewport,
         );
 
+        // Update close button if present
         if let Some(close_layout) = head_children.next() {
-            match event {
-                Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                | Event::Touch(touch::Event::FingerPressed { .. }) => {
-                    if let Some(on_close) = &self.on_close {
-                        if close_layout
-                            .bounds()
-                            .contains(cursor.position().unwrap_or_default())
-                        {
-                            shell.publish(on_close.clone());
-                            self.is_mouse_over_close = true;
-                            shell.capture_event();
-                            shell.request_redraw();
-                        } else if self.is_mouse_over_close {
-                            self.is_mouse_over_close = false;
-                            shell.request_redraw();
-                        }
-                    }
-                }
-                _ => {}
+            if let Some(close_button) = self.close_button.as_mut() {
+                let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
+                close_button.as_widget_mut().update(
+                    &mut state.children[close_button_tree_index],
+                    event,
+                    close_layout,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    shell,
+                    viewport,
+                );
             }
         }
 
@@ -484,20 +539,50 @@ where
         let body_layout = children.next().expect("Missing Body Layout");
         let foot_layout = children.next().expect("Missing Footer Layout");
 
-        self.head
-            .as_widget_mut()
-            .operate(&mut state.children[0], head_layout, renderer, operation);
-        self.body
-            .as_widget_mut()
-            .operate(&mut state.children[1], body_layout, renderer, operation);
-
-        if let Some(footer) = &mut self.foot {
-            footer.as_widget_mut().operate(
-                &mut state.children[2],
-                foot_layout,
+        // Operate on head and close button
+        let mut head_children = head_layout.children();
+        if let Some(head_content_layout) = head_children.next() {
+            self.head.as_widget_mut().operate(
+                &mut state.children[0],
+                head_content_layout,
                 renderer,
                 operation,
             );
+        }
+
+        // Operate on close button if present (second child of head_layout)
+        if let Some(close_layout) = head_children.next() {
+            if let Some(close_button) = self.close_button.as_mut() {
+                let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
+                close_button.as_widget_mut().operate(
+                    &mut state.children[close_button_tree_index],
+                    close_layout,
+                    renderer,
+                    operation,
+                );
+            }
+        }
+
+        // Operate on body (body_layout contains a child with the actual body content)
+        if let Some(body_content_layout) = body_layout.children().next() {
+            self.body.as_widget_mut().operate(
+                &mut state.children[1],
+                body_content_layout,
+                renderer,
+                operation,
+            );
+        }
+
+        // Operate on footer if present (foot_layout contains a child with the actual foot content)
+        if let Some(footer) = &mut self.foot {
+            if let Some(foot_content_layout) = foot_layout.children().next() {
+                footer.as_widget_mut().operate(
+                    &mut state.children[2],
+                    foot_content_layout,
+                    renderer,
+                    operation,
+                );
+            }
         }
     }
 
@@ -552,6 +637,7 @@ where
         let head_layout = children
             .next()
             .expect("Graphics: Layout should have a head layout");
+        let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
         draw_head(
             &state.children[0],
             renderer,
@@ -561,8 +647,8 @@ where
             viewport,
             theme,
             &style_sheet,
-            self.close_size,
-            self.is_mouse_over_close,
+            self.close_button.as_ref(),
+            state.children.get(close_button_tree_index),
         );
 
         // ----------- Body ----------------------
@@ -641,9 +727,10 @@ fn head_node<Message, Theme, Renderer>(
     head: &mut Element<'_, Message, Theme, Renderer>,
     padding: Padding,
     width: Length,
-    on_close: bool,
+    close_button: Option<&mut Element<'_, Message, Theme, Renderer>>,
     close_size: Option<f32>,
     tree: &mut Tree,
+    close_button_tree_index: usize,
 ) -> Node
 where
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
@@ -658,7 +745,7 @@ where
 
     let close_size = close_size.unwrap_or_else(|| renderer.default_size().0);
 
-    if on_close {
+    if close_button.is_some() {
         limits = limits.shrink(Size::new(close_size, 0.0));
     }
 
@@ -671,16 +758,26 @@ where
     let head_size = head.size();
     head = head.align(Alignment::Start, Alignment::Center, head_size);
 
-    let close = if on_close {
-        let node = Node::new(Size::new(close_size + 1.0, close_size + 1.0));
-        let node_size = node.size();
+    let close = if let Some(close_btn) = close_button {
+        let button_size = close_size + CLOSE_BUTTON_SPACING;
+        let button_limits = limits
+            .loose()
+            .width(Length::Fixed(button_size))
+            .height(Length::Fixed(button_size));
+        let mut close_node = close_btn.as_widget_mut().layout(
+            &mut tree.children[close_button_tree_index],
+            renderer,
+            &button_limits,
+        );
+        let node_size = close_node.size();
 
         size = Size::new(size.width + close_size, size.height);
 
-        Some(
-            node.move_to(Point::new(size.width - padding.right, padding.top))
-                .align(Alignment::End, Alignment::Center, node_size),
-        )
+        close_node = close_node
+            .move_to(Point::new(size.width - padding.right, padding.top))
+            .align(Alignment::End, Alignment::Center, node_size);
+
+        Some(close_node)
     } else {
         None
     };
@@ -773,8 +870,8 @@ fn draw_head<Message, Theme, Renderer>(
     viewport: &Rectangle,
     theme: &Theme,
     style: &Style,
-    close_size: Option<f32>,
-    is_mouse_over_close: bool,
+    close_button: Option<&Element<'_, Message, Theme, Renderer>>,
+    close_button_state: Option<&Tree>,
 ) where
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
@@ -837,29 +934,21 @@ fn draw_head<Message, Theme, Renderer>(
         viewport,
     );
 
+    // Draw close button if present
     if let Some(close_layout) = head_children.next() {
-        let close_bounds = close_layout.bounds();
-        let (content, font, shaping) = cancel();
-
-        renderer.fill_text(
-            iced_core::text::Text {
-                content,
-                bounds: Size::new(close_bounds.width, close_bounds.height),
-                size: Pixels(
-                    close_size.unwrap_or_else(|| renderer.default_size().0)
-                        + if is_mouse_over_close { 3.0 } else { 0.0 },
-                ),
-                font,
-                align_x: iced_widget::text::Alignment::Center,
-                align_y: Vertical::Center,
-                line_height: LineHeight::Relative(1.3),
-                shaping,
-                wrapping: Wrapping::default(),
-            },
-            Point::new(close_bounds.center_x(), close_bounds.center_y()),
-            style.close_color,
-            close_bounds,
-        );
+        if let Some((close_btn, close_state)) = close_button.zip(close_button_state) {
+            close_btn.as_widget().draw(
+                close_state,
+                renderer,
+                theme,
+                &renderer::Style {
+                    text_color: style.close_color,
+                },
+                close_layout,
+                cursor,
+                viewport,
+            );
+        }
     }
 }
 
@@ -1005,7 +1094,7 @@ mod tests {
         assert!(card.close_size.is_none());
         assert!(card.on_close.is_none());
         assert!(card.foot.is_none());
-        assert!(!card.is_mouse_over_close);
+        assert!(card.close_button.is_none());
     }
 
     #[test]
