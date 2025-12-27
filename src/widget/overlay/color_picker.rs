@@ -808,6 +808,49 @@ where
             .max(submit_mouse_interaction)
     }
 
+    fn operate(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn widget::Operation,
+    ) {
+        let mut children = layout.children();
+
+        // Skip block 1 (HSV color area)
+        let _block1_layout = children.next();
+
+        // Block 2 contains the buttons
+        if let Some(block2_layout) = children.next() {
+            let mut block2_children = block2_layout.children();
+
+            // Skip rgba_colors, hex_text
+            let _rgba_layout = block2_children.next();
+            let _hex_text_layout = block2_children.next();
+
+            // Operate on cancel button
+            if let Some(cancel_layout) = block2_children.next() {
+                Widget::operate(
+                    &mut self.cancel_button,
+                    &mut self.tree.children[0],
+                    cancel_layout,
+                    renderer,
+                    operation,
+                );
+            }
+
+            // Operate on submit button
+            if let Some(submit_layout) = block2_children.next() {
+                Widget::operate(
+                    &mut self.submit_button,
+                    &mut self.tree.children[1],
+                    submit_layout,
+                    renderer,
+                    operation,
+                );
+            }
+        }
+    }
+
     fn draw(
         &self,
         renderer: &mut Renderer,
