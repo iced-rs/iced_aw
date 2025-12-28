@@ -36,11 +36,17 @@ fn print_icon_values() {
     println!("\n=== Icon Unicode Values ===");
 
     if let Some(c) = cancel_str.chars().next() {
-        println!("cancel: \\u{{{:x}}} (char code: U+{:04X})", c as u32, c as u32);
+        println!(
+            "cancel: \\u{{{:x}}} (char code: U+{:04X})",
+            c as u32, c as u32
+        );
     }
 
     if let Some(c) = left_str.chars().next() {
-        println!("left_open: \\u{{{:x}}} (char code: U+{:04X})", c as u32, c as u32);
+        println!(
+            "left_open: \\u{{{:x}}} (char code: U+{:04X})",
+            c as u32, c as u32
+        );
     }
 
     if let Some(c) = ok_str.chars().next() {
@@ -48,7 +54,10 @@ fn print_icon_values() {
     }
 
     if let Some(c) = right_str.chars().next() {
-        println!("right_open: \\u{{{:x}}} (char code: U+{:04X})", c as u32, c as u32);
+        println!(
+            "right_open: \\u{{{:x}}} (char code: U+{:04X})",
+            c as u32, c as u32
+        );
     }
 
     println!("===========================\n");

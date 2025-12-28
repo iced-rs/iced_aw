@@ -256,12 +256,9 @@ where
         renderer: &Renderer,
         operation: &mut dyn widget::Operation<()>,
     ) {
-        self.underlay.as_widget_mut().operate(
-            &mut state.children[0],
-            layout,
-            renderer,
-            operation,
-        );
+        self.underlay
+            .as_widget_mut()
+            .operate(&mut state.children[0], layout, renderer, operation);
     }
 
     fn draw(
