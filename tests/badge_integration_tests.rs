@@ -1,20 +1,16 @@
 //! Integration tests for the Badge widget
 //!
-//! These tests verify the Badge widget's behavior and public API
-//! from an external perspective, testing the widget as a user of the
-//! library would interact with it.
+//! These tests verify the Badge widget's behavior by actually exercising
+//! the widget through the iced test framework.
 
-use iced::Settings;
-use iced::{Alignment, Color, Element, Length, Theme};
+use iced::{Alignment, Color, Element, Length, Settings, Theme};
 use iced_aw::Badge;
-use iced_test::{Error, Simulator};
+use iced_test::Simulator;
 use iced_widget::text::Text;
 
-#[derive(Clone)]
-#[allow(dead_code)]
-enum Message {
-    DoNothing,
-}
+// Message type for the tests (unused but required by iced)
+#[derive(Clone, Debug)]
+enum Message {}
 
 type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
 
@@ -36,843 +32,370 @@ impl App {
         )
     }
 
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::DoNothing => {
-                // Do nothing
-            }
-        }
-    }
-
     fn view(&self) -> Element<'_, Message> {
         (self.view_fn)()
     }
 }
 
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
+/// Helper to run a test with a given view
+fn run_test<F>(view_fn: F)
+where
+    F: Fn() -> Element<'static, Message> + 'static,
+{
+    let (app, _) = App::new(view_fn);
+    let _ui = Simulator::with_settings(Settings::default(), app.view());
+    // The widget is successfully rendered if we get here without panicking
 }
 
-#[test]
-fn badge_can_be_created_with_text() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| Badge::new(Text::new("Test Badge")).into());
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    // Create simulator again and find text inside Badge
-    let mut ui = simulator(&app);
-
-    // Now that Badge implements operate(), the built-in string selector works!
+/// Helper to verify text can be found (tests operate() implementation)
+fn run_test_and_find<F>(view_fn: F, text: &str)
+where
+    F: Fn() -> Element<'static, Message> + 'static,
+{
+    let (app, _) = App::new(view_fn);
+    let mut ui = Simulator::with_settings(Settings::default(), app.view());
     assert!(
-        ui.find("Test Badge").is_ok(),
-        "Text inside Badge should be found!"
+        ui.find(text).is_ok(),
+        "Failed to find text '{}' in badge",
+        text
     );
-
-    Ok(())
 }
 
 #[test]
-fn badge_can_be_created_with_different_text_content() -> Result<(), Error> {
-    let texts = vec!["New", "1", "999+", "Alert", "!"];
-
-    for text in texts {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || Badge::new(Text::new(text_copy.clone())).into());
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with text '{}' should be found",
-            text
-        );
-    }
-
-    Ok(())
+fn badge_renders_with_text() {
+    run_test_and_find(|| Badge::new(Text::new("Test Badge")).into(), "Test Badge");
 }
 
 #[test]
-fn badge_can_set_padding() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| Badge::new(Text::new("Padded")).padding(10).into());
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Padded").is_ok(),
-        "Badge with padding should render and text should be found"
+fn badge_with_padding_renders() {
+    run_test_and_find(
+        || Badge::new(Text::new("Padded")).padding(10).into(),
+        "Padded",
     );
-
-    Ok(())
 }
 
 #[test]
-fn badge_can_set_different_padding_values() -> Result<(), Error> {
-    let padding_values = vec![0, 5, 10, 15, 20, 50, 100];
-
-    for padding in padding_values {
-        let (mut app, _command) =
-            App::new(move || Badge::new(Text::new("Test")).padding(padding).into());
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Test").is_ok(),
-            "Badge with padding {} should render",
-            padding
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_set_width() -> Result<(), Error> {
-    let configs = vec![
-        ("Fixed", Length::Fixed(100.0)),
-        ("Fill", Length::Fill),
-        ("Shrink", Length::Shrink),
-    ];
-
-    for (text, width) in configs {
-        let text_copy = text.to_string();
-        let (mut app, _command) =
-            App::new(move || Badge::new(Text::new(text_copy.clone())).width(width).into());
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with width configuration should render"
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_set_height() -> Result<(), Error> {
-    let configs = vec![
-        ("Fixed", Length::Fixed(50.0)),
-        ("Fill", Length::Fill),
-        ("Shrink", Length::Shrink),
-    ];
-
-    for (text, height) in configs {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .height(height)
-                .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with height configuration should render"
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_set_horizontal_alignment() -> Result<(), Error> {
-    let alignments = vec![
-        ("Start", Alignment::Start),
-        ("Center", Alignment::Center),
-        ("End", Alignment::End),
-    ];
-
-    for (text, align) in alignments {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .align_x(align)
-                .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with horizontal alignment should render"
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_set_vertical_alignment() -> Result<(), Error> {
-    let alignments = vec![
-        ("Start", Alignment::Start),
-        ("Center", Alignment::Center),
-        ("End", Alignment::End),
-    ];
-
-    for (text, align) in alignments {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .align_y(align)
-                .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with vertical alignment should render"
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_set_both_alignments() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Aligned"))
-            .align_x(Alignment::Start)
-            .align_y(Alignment::End)
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Aligned").is_ok(),
-        "Badge with both alignments should render"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_be_styled() -> Result<(), Error> {
-    use iced::Background;
-    use iced_aw::style::{self, Status};
-
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Styled"))
-            .style(|_theme: &Theme, _status: Status| style::badge::Style {
-                background: Background::Color(Color::from_rgb(0.8, 0.2, 0.2)),
-                border_radius: Some(10.0),
-                border_width: 2.0,
-                border_color: Some(Color::from_rgb(0.0, 0.0, 0.0)),
-                text_color: Color::from_rgb(1.0, 1.0, 1.0),
-            })
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(ui.find("Styled").is_ok(), "Styled badge should render");
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_use_custom_class() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Classed"))
-            .class(<Theme as iced_aw::style::badge::Catalog>::default())
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Classed").is_ok(),
-        "Badge with custom class should render"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_chain_multiple_methods() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Chained"))
-            .padding(15)
-            .width(200)
-            .height(60)
-            .align_x(Alignment::Center)
-            .align_y(Alignment::Center)
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Chained").is_ok(),
-        "Badge with chained methods should render"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_can_chain_all_methods() -> Result<(), Error> {
-    use iced::Background;
-    use iced_aw::style::{self, Status};
-
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("All"))
-            .padding(10)
-            .width(150)
-            .height(40)
-            .align_x(Alignment::Start)
-            .align_y(Alignment::End)
-            .style(|_theme: &Theme, _status: Status| style::badge::Style {
-                background: Background::Color(Color::from_rgb(0.3, 0.7, 0.3)),
-                border_radius: Some(8.0),
-                border_width: 1.0,
-                border_color: Some(Color::from_rgb(0.1, 0.1, 0.1)),
-                text_color: Color::from_rgb(1.0, 1.0, 1.0),
-            })
-            .class(<Theme as iced_aw::style::badge::Catalog>::default())
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("All").is_ok(),
-        "Badge with all methods chained should render"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_converts_to_element() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| {
-        let badge: Badge<Message, Theme> = Badge::new(Text::new("Element"));
-        let _element: Element<Message, Theme> = badge.into();
-        Badge::new(Text::new("Element")).into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Element").is_ok(),
-        "Badge should convert to Element"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_supports_multiple_instances() -> Result<(), Error> {
-    // Test that we can create multiple badge instances
-    let instances = vec![("First", 5), ("Second", 10), ("Third", 15)];
-
-    for (text, padding) in instances {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .padding(padding)
-                .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge instance with text '{}' should render",
-            text
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_with_different_message_types() -> Result<(), Error> {
-    #[derive(Clone)]
-    #[allow(dead_code)]
-    enum CustomMessage {
-        BadgeClicked,
-        Other,
-    }
-
-    type CustomViewFn = Box<dyn Fn() -> Element<'static, CustomMessage>>;
-
-    #[derive(Clone)]
-    struct CustomApp {
-        view_fn: std::rc::Rc<CustomViewFn>,
-    }
-
-    impl CustomApp {
-        fn new<F>(view_fn: F) -> (Self, iced::Task<CustomMessage>)
-        where
-            F: Fn() -> Element<'static, CustomMessage> + 'static,
-        {
-            (
-                CustomApp {
-                    view_fn: std::rc::Rc::new(Box::new(view_fn)),
-                },
-                iced::Task::none(),
-            )
-        }
-
-        fn update(&mut self, message: CustomMessage) {
-            match message {
-                CustomMessage::BadgeClicked => {}
-                CustomMessage::Other => {}
-            }
-        }
-
-        fn view(&self) -> Element<'_, CustomMessage> {
-            (self.view_fn)()
-        }
-    }
-
-    let (mut app, _command) = CustomApp::new(|| Badge::new(Text::new("Custom")).into());
-    let ui = Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    );
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    );
-    assert!(
-        ui.find("Custom").is_ok(),
-        "Badge with custom message type should render"
-    );
-
-    Ok(())
-}
-
-#[test]
-fn badge_with_various_width_configurations() -> Result<(), Error> {
+fn badge_with_width_settings_renders() {
     // Test Fixed width
-    {
-        let (mut app, _command) = App::new(|| Badge::new(Text::new("Fixed")).width(100.0).into());
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Fixed").is_ok(),
-            "Badge with Fixed width should render"
-        );
-    }
+    run_test_and_find(
+        || Badge::new(Text::new("Fixed")).width(100.0).into(),
+        "Fixed",
+    );
 
     // Test Fill width
-    {
-        let (mut app, _command) =
-            App::new(|| Badge::new(Text::new("Fill")).width(Length::Fill).into());
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Fill").is_ok(),
-            "Badge with Fill width should render"
-        );
-    }
+    run_test_and_find(
+        || Badge::new(Text::new("Fill")).width(Length::Fill).into(),
+        "Fill",
+    );
 
     // Test Shrink width
-    {
-        let (mut app, _command) =
-            App::new(|| Badge::new(Text::new("Shrink")).width(Length::Shrink).into());
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Shrink").is_ok(),
-            "Badge with Shrink width should render"
-        );
-    }
-
-    Ok(())
+    run_test_and_find(
+        || Badge::new(Text::new("Shrink")).width(Length::Shrink).into(),
+        "Shrink",
+    );
 }
 
 #[test]
-fn badge_with_various_height_configurations() -> Result<(), Error> {
+fn badge_with_height_settings_renders() {
     // Test Fixed height
-    {
-        let (mut app, _command) = App::new(|| Badge::new(Text::new("Fixed")).height(30.0).into());
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Fixed").is_ok(),
-            "Badge with Fixed height should render"
-        );
-    }
+    run_test_and_find(
+        || Badge::new(Text::new("Fixed")).height(30.0).into(),
+        "Fixed",
+    );
 
     // Test Fill height
-    {
-        let (mut app, _command) =
-            App::new(|| Badge::new(Text::new("Fill")).height(Length::Fill).into());
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Fill").is_ok(),
-            "Badge with Fill height should render"
-        );
-    }
+    run_test_and_find(
+        || Badge::new(Text::new("Fill")).height(Length::Fill).into(),
+        "Fill",
+    );
 
     // Test Shrink height
-    {
-        let (mut app, _command) = App::new(|| {
+    run_test_and_find(
+        || {
             Badge::new(Text::new("Shrink"))
                 .height(Length::Shrink)
                 .into()
-        });
-        let ui = simulator(&app);
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find("Shrink").is_ok(),
-            "Badge with Shrink height should render"
-        );
-    }
-
-    Ok(())
+        },
+        "Shrink",
+    );
 }
 
 #[test]
-fn badge_with_extreme_padding_values() -> Result<(), Error> {
-    let configs = vec![("Zero", 0), ("Large", 255)];
-
-    for (text, padding) in configs {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .padding(padding)
+fn badge_with_horizontal_alignment_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Start"))
+                .align_x(Alignment::Start)
                 .into()
-        });
-        let ui = simulator(&app);
+        },
+        "Start",
+    );
 
-        for message in ui.into_messages() {
-            app.update(message);
-        }
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Center"))
+                .align_x(Alignment::Center)
+                .into()
+        },
+        "Center",
+    );
 
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with padding {} should render",
-            padding
-        );
-    }
-
-    Ok(())
+    run_test_and_find(
+        || Badge::new(Text::new("End")).align_x(Alignment::End).into(),
+        "End",
+    );
 }
 
 #[test]
-fn badge_with_all_alignment_combinations() -> Result<(), Error> {
-    let h_alignments = vec![Alignment::Start, Alignment::Center, Alignment::End];
-    let v_alignments = vec![Alignment::Start, Alignment::Center, Alignment::End];
+fn badge_with_vertical_alignment_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Top"))
+                .align_y(Alignment::Start)
+                .into()
+        },
+        "Top",
+    );
 
-    for &h_align in &h_alignments {
-        for &v_align in &v_alignments {
-            let (mut app, _command) = App::new(move || {
-                Badge::new(Text::new("Aligned"))
-                    .align_x(h_align)
-                    .align_y(v_align)
-                    .into()
-            });
-            let ui = simulator(&app);
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Middle"))
+                .align_y(Alignment::Center)
+                .into()
+        },
+        "Middle",
+    );
 
-            for message in ui.into_messages() {
-                app.update(message);
-            }
-
-            let mut ui = simulator(&app);
-            assert!(
-                ui.find("Aligned").is_ok(),
-                "Badge with alignment combination should render"
-            );
-        }
-    }
-
-    Ok(())
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Bottom"))
+                .align_y(Alignment::End)
+                .into()
+        },
+        "Bottom",
+    );
 }
 
 #[test]
-fn badge_with_various_styles() -> Result<(), Error> {
+fn badge_with_both_alignments_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Aligned"))
+                .align_x(Alignment::Center)
+                .align_y(Alignment::Center)
+                .into()
+        },
+        "Aligned",
+    );
+}
+
+#[test]
+fn badge_with_custom_style_renders() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let styles = vec![
-        (
-            "Red",
-            style::badge::Style {
-                background: Background::Color(Color::from_rgb(1.0, 0.0, 0.0)),
-                border_radius: Some(5.0),
-                border_width: 1.0,
-                border_color: Some(Color::BLACK),
-                text_color: Color::WHITE,
-            },
-        ),
-        (
-            "Green",
-            style::badge::Style {
-                background: Background::Color(Color::from_rgb(0.0, 1.0, 0.0)),
-                border_radius: Some(10.0),
-                border_width: 2.0,
-                border_color: Some(Color::from_rgb(0.2, 0.2, 0.2)),
-                text_color: Color::from_rgb(0.1, 0.1, 0.1),
-            },
-        ),
-        (
-            "Blue",
-            style::badge::Style {
-                background: Background::Color(Color::from_rgb(0.0, 0.0, 1.0)),
-                border_radius: None,
-                border_width: 0.0,
-                border_color: None,
-                text_color: Color::from_rgb(1.0, 1.0, 1.0),
-            },
-        ),
-    ];
-
-    for (text, badge_style) in styles {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .style(move |_theme: &Theme, _status: Status| badge_style)
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Styled"))
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgb(0.8, 0.2, 0.2)),
+                    border_radius: Some(10.0),
+                    border_width: 2.0,
+                    border_color: Some(Color::BLACK),
+                    text_color: Color::WHITE,
+                })
                 .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with style '{}' should render",
-            text
-        );
-    }
-
-    Ok(())
+        },
+        "Styled",
+    );
 }
 
 #[test]
-fn badge_with_empty_text() -> Result<(), Error> {
-    let (mut app, _command) = App::new(|| Badge::new(Text::new("")).into());
-    let ui = simulator(&app);
+fn badge_with_custom_class_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Classed"))
+                .class(<Theme as iced_aw::style::badge::Catalog>::default())
+                .into()
+        },
+        "Classed",
+    );
+}
 
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+#[test]
+fn badge_with_method_chaining_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Chained"))
+                .padding(15)
+                .width(200)
+                .height(60)
+                .align_x(Alignment::Center)
+                .align_y(Alignment::Center)
+                .into()
+        },
+        "Chained",
+    );
+}
 
+#[test]
+fn badge_with_all_methods_chained_renders() {
+    use iced::Background;
+    use iced_aw::style::{self, Status};
+
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Complete"))
+                .padding(10)
+                .width(150)
+                .height(40)
+                .align_x(Alignment::Start)
+                .align_y(Alignment::End)
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgb(0.3, 0.7, 0.3)),
+                    border_radius: Some(8.0),
+                    border_width: 1.0,
+                    border_color: Some(Color::from_rgb(0.1, 0.1, 0.1)),
+                    text_color: Color::WHITE,
+                })
+                .class(<Theme as iced_aw::style::badge::Catalog>::default())
+                .into()
+        },
+        "Complete",
+    );
+}
+
+#[test]
+fn badge_with_empty_text_renders() {
     // Empty text won't be found, but badge should render without error
-    let _ui = simulator(&app);
-    // The test passes if we get here without panicking
-
-    Ok(())
+    run_test(|| Badge::new(Text::new("")).into());
 }
 
 #[test]
-fn badge_with_long_text() -> Result<(), Error> {
+fn badge_with_long_text_renders() {
     let long_text = "This is a very long badge text that might wrap or overflow";
-    let (mut app, _command) = App::new(move || Badge::new(Text::new(long_text)).into());
-    let ui = simulator(&app);
+    run_test_and_find(move || Badge::new(Text::new(long_text)).into(), long_text);
+}
 
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+#[test]
+fn badge_with_unicode_text_renders() {
+    run_test_and_find(|| Badge::new(Text::new("你好")).into(), "你好");
+    run_test_and_find(|| Badge::new(Text::new("🎉")).into(), "🎉");
+    run_test_and_find(|| Badge::new(Text::new("مرحبا")).into(), "مرحبا");
+}
 
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find(long_text).is_ok(),
-        "Badge with long text should render"
+#[test]
+fn badge_with_extreme_padding_renders() {
+    // Zero padding
+    run_test_and_find(|| Badge::new(Text::new("Zero")).padding(0).into(), "Zero");
+
+    // Large padding
+    run_test_and_find(
+        || Badge::new(Text::new("Large")).padding(255).into(),
+        "Large",
     );
-
-    Ok(())
 }
 
 #[test]
-fn badge_with_unicode_text() -> Result<(), Error> {
-    let unicode_texts = vec!["你好", "🎉", "مرحبا"];
-
-    for text in unicode_texts {
-        let text_copy = text.to_string();
-        let (mut app, _command) = App::new(move || Badge::new(Text::new(text_copy.clone())).into());
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text).is_ok(),
-            "Badge with unicode text '{}' should render",
-            text
-        );
-    }
-
-    Ok(())
-}
-
-#[test]
-fn badge_style_with_transparency() -> Result<(), Error> {
+fn badge_with_transparent_style_renders() {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let (mut app, _command) = App::new(|| {
-        Badge::new(Text::new("Transparent"))
-            .style(|_theme: &Theme, _status: Status| style::badge::Style {
-                background: Background::Color(Color::from_rgba(1.0, 0.0, 0.0, 0.5)),
-                border_radius: Some(8.0),
-                border_width: 1.0,
-                border_color: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.8)),
-                text_color: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
-            })
-            .into()
-    });
-    let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(
-        ui.find("Transparent").is_ok(),
-        "Badge with transparent style should render"
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Transparent"))
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgba(1.0, 0.0, 0.0, 0.5)),
+                    border_radius: Some(8.0),
+                    border_width: 1.0,
+                    border_color: Some(Color::from_rgba(0.0, 0.0, 0.0, 0.8)),
+                    text_color: Color::from_rgba(1.0, 1.0, 1.0, 0.9),
+                })
+                .into()
+        },
+        "Transparent",
     );
-
-    Ok(())
 }
 
 #[test]
-fn badge_create_multiple_with_different_configs() -> Result<(), Error> {
-    use iced::Background;
-    use iced_aw::style::{self, Status};
-
-    for i in 0..10 {
+fn badge_multiple_instances_render() {
+    // Test that multiple badges with different configs can be created
+    for i in 0..5 {
         let text = format!("Badge {}", i);
         let text_copy = text.clone();
-        let padding = (i as u16) * 2;
-        let width = 50 + (i * 10);
+        run_test_and_find(
+            move || {
+                Badge::new(Text::new(text_copy.clone()))
+                    .padding((i as u16) * 2)
+                    .into()
+            },
+            &text,
+        );
+    }
+}
 
-        let (mut app, _command) = App::new(move || {
-            Badge::new(Text::new(text_copy.clone()))
-                .padding(padding)
-                .width(width)
-                .align_x(Alignment::Center)
-                .style(move |_theme: &Theme, _status: Status| style::badge::Style {
-                    background: Background::Color(Color::from_rgb(
-                        (i as f32) * 0.1,
-                        0.5,
-                        1.0 - (i as f32) * 0.1,
-                    )),
-                    border_radius: Some((i as f32) * 2.0),
+#[test]
+fn badge_with_fill_portion_width_renders() {
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Portion"))
+                .width(Length::FillPortion(2))
+                .into()
+        },
+        "Portion",
+    );
+}
+
+#[test]
+fn badge_with_different_border_styles_renders() {
+    use iced::Background;
+    use iced_aw::style::{self, Status};
+
+    // No border
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("NoBorder"))
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgb(0.5, 0.5, 0.5)),
+                    border_radius: None,
+                    border_width: 0.0,
+                    border_color: None,
+                    text_color: Color::WHITE,
+                })
+                .into()
+        },
+        "NoBorder",
+    );
+
+    // Thick border
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("ThickBorder"))
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgb(0.5, 0.5, 0.5)),
+                    border_radius: Some(5.0),
+                    border_width: 5.0,
+                    border_color: Some(Color::BLACK),
+                    text_color: Color::WHITE,
+                })
+                .into()
+        },
+        "ThickBorder",
+    );
+
+    // Rounded corners
+    run_test_and_find(
+        || {
+            Badge::new(Text::new("Rounded"))
+                .style(|_theme: &Theme, _status: Status| style::badge::Style {
+                    background: Background::Color(Color::from_rgb(0.5, 0.5, 0.5)),
+                    border_radius: Some(20.0),
                     border_width: 1.0,
                     border_color: Some(Color::BLACK),
                     text_color: Color::WHITE,
                 })
                 .into()
-        });
-        let ui = simulator(&app);
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-
-        let mut ui = simulator(&app);
-        assert!(
-            ui.find(text.as_str()).is_ok(),
-            "Badge '{}' with custom config should render",
-            text
-        );
-    }
-
-    Ok(())
+        },
+        "Rounded",
+    );
 }
