@@ -997,40 +997,39 @@ where
                             ),
                     );
 
-                let days = Container::<Message, Theme, Renderer>::new((0..7).fold(
-                    Column::new().width(Length::Shrink).height(Length::Shrink),
-                    |column, y| {
-                        column.push(
-                            (0..7).fold(
-                                Row::new()
-                                    .height(Length::Shrink)
-                                    .width(Length::Shrink)
-                                    .spacing(SPACING),
-                                |row, x| {
-                                    let (day, _) = crate::core::date::position_to_day(
-                                        x,
-                                        y,
-                                        self.state.date.year(),
-                                        self.state.date.month(),
-                                    );
-                                    row.push(
-                                        Container::new(
-                                            Row::new().push(
-                                                Text::new(format!("{day:02}")).size(font_size),
-                                            ),
-                                        )
-                                        .width(Length::Shrink)
+                let days =
+                    Container::<Message, Theme, Renderer>::new((0..7).fold(
+                        Column::new().width(Length::Shrink).height(Length::Shrink),
+                        |column, y| {
+                            column.push(
+                                (0..7).fold(
+                                    Row::new()
                                         .height(Length::Shrink)
-                                        .padding(DAY_CELL_PADDING),
-                                    )
-                                },
-                            ),
-                        )
-                    },
-                ))
-                .width(Length::Shrink)
-                .height(Length::Shrink)
-                .center_y(Length::Shrink);
+                                        .width(Length::Shrink)
+                                        .spacing(SPACING),
+                                    |row, x| {
+                                        let (day, _) = crate::core::date::position_to_day(
+                                            x,
+                                            y,
+                                            self.state.date.year(),
+                                            self.state.date.month(),
+                                        );
+                                        row.push(
+                                            Container::new(Row::new().push(
+                                                Text::new(format!("{day:02}")).size(font_size),
+                                            ))
+                                            .width(Length::Shrink)
+                                            .height(Length::Shrink)
+                                            .padding(DAY_CELL_PADDING),
+                                        )
+                                    },
+                                ),
+                            )
+                        },
+                    ))
+                    .width(Length::Shrink)
+                    .height(Length::Shrink)
+                    .center_y(Length::Shrink);
 
                 let col = Column::<Message, Theme, Renderer>::new()
                     .spacing(SPACING)
@@ -1039,7 +1038,9 @@ where
                     .push(days);
 
                 let mut element: Element<Message, Theme, Renderer> = Element::new(col);
-                element.as_widget_mut().operate(col_tree, col_layout, renderer, operation);
+                element
+                    .as_widget_mut()
+                    .operate(col_tree, col_layout, renderer, operation);
             }
         }
 
