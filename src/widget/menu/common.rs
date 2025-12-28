@@ -255,8 +255,8 @@ pub(super) fn schedule_close_on_click<
     items: &mut [Item<'a, Message, Theme, Renderer>],
     slice_layout: impl Iterator<Item = Layout<'b>>,
     cursor: mouse::Cursor,
-    menu_coic: Option<bool>,
-    menu_cobc: Option<bool>,
+    menu_close_on_item_click: Option<bool>,
+    menu_close_on_background_click: Option<bool>,
 ) {
     global_state.clear_task();
 
@@ -273,7 +273,10 @@ pub(super) fn schedule_close_on_click<
                     global_state.schedule(MenuBarTask::CloseOnClick);
                 }
             }
-            for cocfb in [menu_coic, Some(global_parameters.close_on_item_click)] {
+            for cocfb in [
+                menu_close_on_item_click,
+                Some(global_parameters.close_on_item_click),
+            ] {
                 if let (false, Some(coc)) = (coc_handled, cocfb) {
                     coc_handled = true;
                     if coc {
@@ -285,7 +288,10 @@ pub(super) fn schedule_close_on_click<
         }
     }
 
-    for cocfb in [menu_cobc, Some(global_parameters.close_on_background_click)] {
+    for cocfb in [
+        menu_close_on_background_click,
+        Some(global_parameters.close_on_background_click),
+    ] {
         if let (false, Some(coc)) = (coc_handled, cocfb) {
             coc_handled = true;
             if coc {
