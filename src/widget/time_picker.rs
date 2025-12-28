@@ -10,7 +10,10 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
-    widget::tree::{self, Tag, Tree},
+    widget::{
+        self,
+        tree::{self, Tag, Tree},
+    },
 };
 use iced_widget::{Renderer, button, container, text};
 
@@ -245,6 +248,18 @@ where
         )
     }
 
+    fn operate(
+        &mut self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn widget::Operation<()>,
+    ) {
+        self.underlay
+            .as_widget_mut()
+            .operate(&mut state.children[0], layout, renderer, operation);
+    }
+
     fn draw(
         &self,
         tree: &Tree,
@@ -312,5 +327,426 @@ where
 {
     fn from(time_picker: TimePicker<'a, Message, Theme>) -> Self {
         Element::new(time_picker)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{NaiveTime, Timelike};
+
+    #[derive(Clone, Debug)]
+    enum TestMessage {
+        Cancel,
+        #[allow(dead_code)]
+        Submit(Time),
+    }
+
+    type TestTimePicker<'a> = TimePicker<'a, TestMessage, iced_widget::Theme>;
+
+    #[test]
+    fn state_new_creates_state_with_time() {
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+        let state = State::new(time, true, false);
+
+        assert_eq!(state.overlay_state.time.hour(), 14);
+        assert_eq!(state.overlay_state.time.minute(), 30);
+        assert!(state.overlay_state.use_24h);
+        assert!(!state.overlay_state.show_seconds);
+    }
+
+    #[test]
+    fn state_new_with_seconds() {
+        let time = Time::Hms {
+            hour: 14,
+            minute: 30,
+            second: 45,
+            period: Period::H24,
+        };
+        let state = State::new(time, true, true);
+
+        assert_eq!(state.overlay_state.time.hour(), 14);
+        assert_eq!(state.overlay_state.time.minute(), 30);
+        assert_eq!(state.overlay_state.time.second(), 45);
+        assert!(state.overlay_state.show_seconds);
+    }
+
+    #[test]
+    fn state_new_with_12h_format() {
+        let time = Time::Hm {
+            hour: 2,
+            minute: 30,
+            period: Period::Pm,
+        };
+        let state = State::new(time, false, false);
+
+        assert_eq!(state.overlay_state.time.hour(), 14); // 2 PM = 14:00 in 24h
+        assert_eq!(state.overlay_state.time.minute(), 30);
+        assert!(!state.overlay_state.use_24h);
+    }
+
+    #[test]
+    fn state_now_creates_state() {
+        let state = State::now();
+        // Just verify it was created successfully and has valid time
+        assert!(state.overlay_state.time.hour() < 24);
+        assert!(state.overlay_state.time.minute() < 60);
+        assert!(state.overlay_state.time.second() < 60);
+    }
+
+    #[test]
+    fn state_reset_updates_to_current_time() {
+        let old_time = Time::Hm {
+            hour: 1,
+            minute: 1,
+            period: Period::H24,
+        };
+        let mut state = State::new(old_time, true, false);
+
+        state.reset();
+
+        // After reset, the time should be current
+        // We can't easily verify the exact time since it's based on Local::now()
+        // but we can verify the state is still valid
+        assert!(state.overlay_state.time.hour() < 24);
+        assert!(state.overlay_state.time.minute() < 60);
+    }
+
+    #[test]
+    fn time_picker_new_creates_instance() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        assert!(!time_picker.show_picker);
+        match time_picker.time {
+            Time::Hm { hour, minute, .. } => {
+                assert_eq!(hour, 14);
+                assert_eq!(minute, 30);
+            }
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
+        }
+        assert!(!time_picker.use_24h); // Default is 12h
+        assert!(!time_picker.show_seconds); // Default is no seconds
+    }
+
+    #[test]
+    fn time_picker_show_picker_true() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            true,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        assert!(time_picker.show_picker);
+    }
+
+    #[test]
+    fn time_picker_use_24h_sets_value() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        )
+        .use_24h();
+
+        assert!(time_picker.use_24h);
+    }
+
+    #[test]
+    fn time_picker_show_seconds_sets_value() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        )
+        .show_seconds();
+
+        assert!(time_picker.show_seconds);
+    }
+
+    #[test]
+    fn time_picker_chained_configuration() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            true,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        )
+        .use_24h()
+        .show_seconds();
+
+        assert!(time_picker.show_picker);
+        assert!(time_picker.use_24h);
+        assert!(time_picker.show_seconds);
+    }
+
+    #[test]
+    fn time_picker_tag_returns_state_tag() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&time_picker);
+        assert_eq!(tag, widget::tree::Tag::of::<State>());
+    }
+
+    #[test]
+    fn time_picker_has_two_children() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&time_picker);
+        assert_eq!(children.len(), 2);
+    }
+
+    #[test]
+    fn time_picker_size_matches_underlay() {
+        let underlay = iced_widget::text::Text::new("Pick a time");
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        let time_picker = TestTimePicker::new(
+            false,
+            time,
+            underlay,
+            TestMessage::Cancel,
+            TestMessage::Submit,
+        );
+
+        let size = Widget::<TestMessage, iced_widget::Theme, Renderer>::size(&time_picker);
+        assert_eq!(size.width, Length::Shrink);
+        assert_eq!(size.height, Length::Shrink);
+    }
+
+    #[test]
+    fn time_hm_creates_correct_time() {
+        let time = Time::Hm {
+            hour: 14,
+            minute: 30,
+            period: Period::H24,
+        };
+
+        match time {
+            Time::Hm { hour, minute, .. } => {
+                assert_eq!(hour, 14);
+                assert_eq!(minute, 30);
+            }
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
+        }
+    }
+
+    #[test]
+    fn time_hms_creates_correct_time() {
+        let time = Time::Hms {
+            hour: 14,
+            minute: 30,
+            second: 45,
+            period: Period::H24,
+        };
+
+        match time {
+            Time::Hms {
+                hour,
+                minute,
+                second,
+                ..
+            } => {
+                assert_eq!(hour, 14);
+                assert_eq!(minute, 30);
+                assert_eq!(second, 45);
+            }
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
+        }
+    }
+
+    #[test]
+    fn time_12h_am_conversion() {
+        let time = Time::Hm {
+            hour: 9,
+            minute: 30,
+            period: Period::Am,
+        };
+
+        let naive_time: NaiveTime = time.into();
+        assert_eq!(naive_time.hour(), 9); // 9 AM = 9:00
+    }
+
+    #[test]
+    fn time_12h_pm_conversion() {
+        let time = Time::Hm {
+            hour: 2,
+            minute: 30,
+            period: Period::Pm,
+        };
+
+        let naive_time: NaiveTime = time.into();
+        assert_eq!(naive_time.hour(), 14); // 2 PM = 14:00
+    }
+
+    #[test]
+    fn time_12h_noon_conversion() {
+        let time = Time::Hm {
+            hour: 12,
+            minute: 0,
+            period: Period::Pm,
+        };
+
+        let naive_time: NaiveTime = time.into();
+        assert_eq!(naive_time.hour(), 12); // 12 PM = noon = 12:00
+    }
+
+    #[test]
+    fn time_12h_midnight_conversion() {
+        let time = Time::Hm {
+            hour: 12,
+            minute: 0,
+            period: Period::Am,
+        };
+
+        let naive_time: NaiveTime = time.into();
+        assert_eq!(naive_time.hour(), 0); // 12 AM = midnight = 00:00
+    }
+
+    #[test]
+    fn time_now_hm_creates_current_time() {
+        let time = Time::now_hm(true);
+        match time {
+            Time::Hm { hour, minute, .. } => {
+                assert!(hour < 24);
+                assert!(minute < 60);
+            }
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
+        }
+    }
+
+    #[test]
+    fn time_now_hms_creates_current_time() {
+        let time = Time::now_hms(true);
+        match time {
+            Time::Hms {
+                hour,
+                minute,
+                second,
+                ..
+            } => {
+                assert!(hour < 24);
+                assert!(minute < 60);
+                assert!(second < 60);
+            }
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
+        }
+    }
+
+    #[test]
+    fn different_times_with_24h_format() {
+        let test_times = [
+            (0, 0, Period::H24),   // Midnight
+            (6, 30, Period::H24),  // Morning
+            (12, 0, Period::H24),  // Noon
+            (18, 45, Period::H24), // Evening
+            (23, 59, Period::H24), // End of day
+        ];
+
+        for (expected_hour, expected_minute, period) in test_times {
+            let time = Time::Hm {
+                hour: expected_hour,
+                minute: expected_minute,
+                period,
+            };
+            let underlay = iced_widget::text::Text::new("Pick a time");
+
+            let time_picker = TestTimePicker::new(
+                false,
+                time,
+                underlay,
+                TestMessage::Cancel,
+                TestMessage::Submit,
+            );
+
+            match time_picker.time {
+                Time::Hm { hour, minute, .. } => {
+                    assert_eq!(hour, expected_hour);
+                    assert_eq!(minute, expected_minute);
+                }
+                Time::Hms { .. } => panic!("Expected Time::Hm variant"),
+            }
+        }
     }
 }
