@@ -288,12 +288,10 @@ where
                 let next_parent_bounds = slice_layout
                     .children()
                     .nth(active_in_slice)
-                    .unwrap_or_else(|| panic!("Index {:?} (in slice space) is not within the slice layout \
-                        | slice_layout.children().count(): {:?} \
-                        | This should not happen, please report this issue
-                        ", 
-                        active_in_slice,
-                        slice_layout.children().count()))
+                    .expect(
+                        "Index (in slice space) is not within the slice layout. \
+                        This should not happen, please report this issue"
+                    )
                     .bounds();
 
                 rec(
@@ -760,7 +758,7 @@ where
         let mut overlays = vec![];
         let mut next = None;
 
-        let slice_layout = self.layout.children().next().unwrap();
+        let slice_layout = self.layout.children().next()?;
 
         for (i, ((item, item_tree), item_layout)) in itl_iter_slice_enum!(
             slice,
@@ -780,8 +778,10 @@ where
                 continue;
             };
 
-            if i == active {
-                next = Some((item_menu.as_mut().unwrap(), item_menu_tree));
+            if i == active
+                && let Some(menu) = item_menu.as_mut()
+            {
+                next = Some((menu, item_menu_tree));
             }
             if let Some(overlay) = item_widget.as_widget_mut().overlay(
                 item_widget_tree,
