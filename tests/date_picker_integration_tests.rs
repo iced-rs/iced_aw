@@ -3,6 +3,16 @@
 //! These tests verify the DatePicker widget's behavior and public API
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
+//! Unicode values for button contents:
+
+// Button cheat sheet
+//  cancel          → \u{e800}  // Used for close/cancel buttons
+//  down_open       → \u{e801}  // Down arrow (used in number_input, time_picker)
+//  left_open       → \u{e802}  // Left arrow (used in date_picker navigation)
+//  right_open      → \u{e803}  // Right arrow (used in date_picker navigation)
+//  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
+//  ok              → \u{e805}  // Checkmark/submit (used in pickers)
+
 
 use iced::{Element, Pixels, Settings, Theme};
 use iced_aw::{date_picker::Date, DatePicker};
