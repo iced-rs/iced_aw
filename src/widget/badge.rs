@@ -294,7 +294,10 @@ where
         operation.traverse(&mut |operation| {
             self.content.as_widget_mut().operate(
                 &mut tree.children[0],
-                layout.children().next().unwrap(),
+                layout
+                    .children()
+                    .next()
+                    .expect("Badge layout should have a content child"),
                 renderer,
                 operation,
             );
