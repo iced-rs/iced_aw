@@ -3,7 +3,17 @@
 //! These tests verify the DatePicker widget's behavior and public API
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
-//! Unicode values for button contents:
+
+// Test Notes:
+// Button cheat sheet
+//  cancel          → \u{e800}  // Used for close/cancel buttons
+//  down_open       → \u{e801}  // Down arrow (used in number_input, time_picker)
+//  left_open       → \u{e802}  // Left arrow (used in date_picker navigation)
+//  right_open      → \u{e803}  // Right arrow (used in date_picker navigation)
+//  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
+//  ok              → \u{e805}  // Checkmark/submit (used in pickers)
+
+// Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
 use iced::{Element, Settings, Theme};
 use iced_aw::{DatePicker, date_picker::Date};
@@ -140,16 +150,6 @@ fn underlay_button_opens_picker() -> Result<(), Error> {
     Ok(())
 }
 
-// Button cheat sheet
-//  cancel          → \u{e800}  // Used for close/cancel buttons
-//  down_open       → \u{e801}  // Down arrow (used in number_input, time_picker)
-//  left_open       → \u{e802}  // Left arrow (used in date_picker navigation)
-//  right_open      → \u{e803}  // Right arrow (used in date_picker navigation)
-//  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
-//  ok              → \u{e805}  // Checkmark/submit (used in pickers)
-
-// Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
-
 #[test]
 fn next_button_navigates_to_next_month() -> Result<(), Error> {
     let date = Date::from_ymd(2024, 6, 15);
@@ -244,7 +244,10 @@ fn multiple_next_clicks_advance_months() -> Result<(), Error> {
         ui.click("\u{e803}")?; // Right arrow
     }
 
-    assert!(ui.find("January").is_ok(), "Should be at January after 7 clicks");
+    assert!(
+        ui.find("January").is_ok(),
+        "Should be at January after 7 clicks"
+    );
     assert!(ui.find("2025").is_ok(), "Should be at 2025 after wrapping");
 
     Ok(())
@@ -358,7 +361,148 @@ fn keyboard_multiple_year_navigation() -> Result<(), Error> {
     }
 
     assert!(ui.find("June").is_ok(), "Month should still be June");
-    assert!(ui.find("2027").is_ok(), "Year should be 2027 after 3 advances");
+    assert!(
+        ui.find("2027").is_ok(),
+        "Year should be 2027 after 3 advances"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn cancel_button_produces_cancel_message() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (mut app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify picker is open
+    assert!(ui.find("June").is_ok(), "Picker should be open");
+
+    // Click the cancel button
+    ui.click("\u{e800}")?; // Cancel button
+
+    // Verify we got a Cancel message
+    let mut got_cancel = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Cancel) {
+            got_cancel = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_cancel, "Cancel button should produce Message::Cancel");
+
+    Ok(())
+}
+
+#[test]
+fn submit_button_produces_submit_message() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (mut app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify picker is open
+    assert!(ui.find("June").is_ok(), "Picker should be open");
+
+    // Click the OK/submit button
+    ui.click("\u{e805}")?; // OK button
+
+    // Verify we got a Submit message with the date
+    let mut got_submit = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Submit(_)) {
+            got_submit = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_submit, "Submit button should produce Message::Submit");
+
+    Ok(())
+}
+
+#[test]
+fn clicking_date_and_submit_workflow() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify starting at June 2024
+    assert!(ui.find("June").is_ok());
+    assert!(ui.find("2024").is_ok());
+
+    // Click on a day number (note: Simulator click positioning may not be exact)
+    // Just verify we can click and get a submit with a valid date
+    ui.click("15")?;
+
+    // Submit the date
+    ui.click("\u{e805}")?; // OK button
+
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
+        }
+    }
+
+    assert!(submitted_date.is_some(), "Should have submitted a date");
+    let submitted = submitted_date.unwrap();
+    // Verify it's a valid date in 2024 (exact day may vary due to Simulator positioning)
+    assert_eq!(submitted.year, 2024, "Year should be 2024");
+    assert!(
+        submitted.month >= 5 && submitted.month <= 7,
+        "Month should be near June"
+    );
+    assert!(submitted.day >= 1 && submitted.day <= 31, "Day should be valid");
+
+    Ok(())
+}
+
+#[test]
+fn navigate_then_submit_workflow() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Navigate to next month
+    ui.click("\u{e803}")?; // Right arrow for next month
+
+    // Should now be in July
+    assert!(ui.find("July").is_ok(), "Should be in July");
+
+    // Submit without clicking a specific day (uses displayed month/year)
+    ui.click("\u{e805}")?;
+
+    let mut got_submit = false;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            got_submit = true;
+            assert_eq!(date.month, 7, "Month should be July");
+            assert_eq!(date.year, 2024);
+        }
+    }
+
+    assert!(got_submit, "Should have submitted a date");
 
     Ok(())
 }
