@@ -314,7 +314,7 @@ where
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let limits = limits.max_width(self.max_width).max_height(self.max_height);
 
-        let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
+        let close_button_tree_index = 2 + usize::from(self.foot.is_some());
 
         let head_node = head_node(
             renderer,
@@ -395,20 +395,20 @@ where
         );
 
         // Update close button if present
-        if let Some(close_layout) = head_children.next() {
-            if let Some(close_button) = self.close_button.as_mut() {
-                let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
-                close_button.as_widget_mut().update(
-                    &mut state.children[close_button_tree_index],
-                    event,
-                    close_layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                );
-            }
+        if let Some((close_layout, close_button)) =
+            head_children.next().zip(self.close_button.as_mut())
+        {
+            let close_button_tree_index = 2 + usize::from(self.foot.is_some());
+            close_button.as_widget_mut().update(
+                &mut state.children[close_button_tree_index],
+                event,
+                close_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            );
         }
 
         let body_layout = children
@@ -551,16 +551,16 @@ where
         }
 
         // Operate on close button if present (second child of head_layout)
-        if let Some(close_layout) = head_children.next() {
-            if let Some(close_button) = self.close_button.as_mut() {
-                let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
-                close_button.as_widget_mut().operate(
-                    &mut state.children[close_button_tree_index],
-                    close_layout,
-                    renderer,
-                    operation,
-                );
-            }
+        if let Some((close_layout, close_button)) =
+            head_children.next().zip(self.close_button.as_mut())
+        {
+            let close_button_tree_index = 2 + usize::from(self.foot.is_some());
+            close_button.as_widget_mut().operate(
+                &mut state.children[close_button_tree_index],
+                close_layout,
+                renderer,
+                operation,
+            );
         }
 
         // Operate on body (body_layout contains a child with the actual body content)
@@ -574,15 +574,15 @@ where
         }
 
         // Operate on footer if present (foot_layout contains a child with the actual foot content)
-        if let Some(footer) = &mut self.foot {
-            if let Some(foot_content_layout) = foot_layout.children().next() {
-                footer.as_widget_mut().operate(
-                    &mut state.children[2],
-                    foot_content_layout,
-                    renderer,
-                    operation,
-                );
-            }
+        if let Some((footer, foot_content_layout)) =
+            self.foot.as_mut().zip(foot_layout.children().next())
+        {
+            footer.as_widget_mut().operate(
+                &mut state.children[2],
+                foot_content_layout,
+                renderer,
+                operation,
+            );
         }
     }
 
@@ -637,7 +637,7 @@ where
         let head_layout = children
             .next()
             .expect("Graphics: Layout should have a head layout");
-        let close_button_tree_index = 2 + if self.foot.is_some() { 1 } else { 0 };
+        let close_button_tree_index = 2 + usize::from(self.foot.is_some());
         draw_head(
             &state.children[0],
             renderer,
@@ -935,20 +935,21 @@ fn draw_head<Message, Theme, Renderer>(
     );
 
     // Draw close button if present
-    if let Some(close_layout) = head_children.next() {
-        if let Some((close_btn, close_state)) = close_button.zip(close_button_state) {
-            close_btn.as_widget().draw(
-                close_state,
-                renderer,
-                theme,
-                &renderer::Style {
-                    text_color: style.close_color,
-                },
-                close_layout,
-                cursor,
-                viewport,
-            );
-        }
+    if let Some((close_layout, (close_btn, close_state))) = head_children
+        .next()
+        .zip(close_button.zip(close_button_state))
+    {
+        close_btn.as_widget().draw(
+            close_state,
+            renderer,
+            theme,
+            &renderer::Style {
+                text_color: style.close_color,
+            },
+            close_layout,
+            cursor,
+            viewport,
+        );
     }
 }
 
