@@ -436,12 +436,10 @@ where
                                 let center = slice_layout
                                     .children()
                                     .nth(active_in_slice)
-                                    .unwrap_or_else(|| panic!(" Index {:?} (in slice space) is not within the slice layout \
-                                        | slice_layout.children().count(): {:?} \
-                                        | This should not happen, please report this issue
-                                        ",
-                                        active_in_slice,
-                                        slice_layout.children().count()))
+                                    .expect(
+                                        "Index (in slice space) is not within the slice layout. \
+                                        This should not happen, please report this issue",
+                                    )
                                     .bounds()
                                     .center();
                                 mouse::Cursor::Available(center)
@@ -705,16 +703,10 @@ where
             let active_bounds = slice_layout
                 .children()
                 .nth(active_in_slice)
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Index {:?} (in slice space) is not within the slice layout \
-                    | slice_layout.children().count(): {:?} \
-                    | This should not happen, please report this issue
-                    ",
-                        active_in_slice,
-                        slice_layout.children().count()
-                    )
-                })
+                .expect(
+                    "Index (in slice space) is not within the slice layout. \
+                    This should not happen, please report this issue",
+                )
                 .bounds();
 
             renderer.fill_quad(
