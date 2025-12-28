@@ -148,6 +148,8 @@ fn underlay_button_opens_picker() -> Result<(), Error> {
 //  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
 //  ok              → \u{e805}  // Checkmark/submit (used in pickers)
 
+// Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
+
 #[test]
 fn next_button_navigates_to_next_month() -> Result<(), Error> {
     let date = Date::from_ymd(2024, 6, 15);
@@ -218,6 +220,145 @@ fn navigation_wraps_year_boundaries() -> Result<(), Error> {
     ui.click("\u{e802}")?; // Left arrow
     assert!(ui.find("December").is_ok(), "Month should wrap to December");
     assert!(ui.find("2023").is_ok(), "Year should wrap to 2023");
+
+    Ok(())
+}
+
+#[test]
+fn multiple_next_clicks_advance_months() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify starting month
+    assert!(ui.find("June").is_ok(), "Should start at June");
+    assert!(ui.find("2024").is_ok(), "Should start at 2024");
+
+    // Click next 7 times to reach January of next year
+    for _ in 0..7 {
+        ui.click("\u{e803}")?; // Right arrow
+    }
+
+    assert!(ui.find("January").is_ok(), "Should be at January after 7 clicks");
+    assert!(ui.find("2025").is_ok(), "Should be at 2025 after wrapping");
+
+    Ok(())
+}
+
+#[test]
+fn multiple_previous_clicks_go_back_months() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify starting month
+    assert!(ui.find("June").is_ok(), "Should start at June");
+
+    // Click previous 6 times to reach December of previous year
+    for _ in 0..6 {
+        ui.click("\u{e802}")?; // Left arrow
+    }
+
+    assert!(
+        ui.find("December").is_ok(),
+        "Should be at December after 6 clicks back"
+    );
+    assert!(ui.find("2023").is_ok(), "Should be at 2023 after wrapping");
+
+    Ok(())
+}
+
+#[test]
+fn keyboard_next_year_navigation() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify starting state
+    assert!(ui.find("June").is_ok(), "Should start at June");
+    assert!(ui.find("2024").is_ok(), "Should start at 2024");
+
+    // Click on the year to give it focus
+    ui.click("2024")?;
+
+    // Use right arrow to advance year
+    ui.tap_key(iced::keyboard::Key::Named(
+        iced::keyboard::key::Named::ArrowRight,
+    ));
+
+    assert!(ui.find("June").is_ok(), "Month should still be June");
+    assert!(ui.find("2025").is_ok(), "Year should now be 2025");
+
+    Ok(())
+}
+
+#[test]
+fn keyboard_previous_year_navigation() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify starting state
+    assert!(ui.find("June").is_ok(), "Should start at June");
+    assert!(ui.find("2024").is_ok(), "Should start at 2024");
+
+    // Click on the year to give it focus
+    ui.click("2024")?;
+
+    // Use left arrow to go to previous year
+    ui.tap_key(iced::keyboard::Key::Named(
+        iced::keyboard::key::Named::ArrowLeft,
+    ));
+
+    assert!(ui.find("June").is_ok(), "Month should still be June");
+    assert!(ui.find("2023").is_ok(), "Year should now be 2023");
+
+    Ok(())
+}
+
+#[test]
+fn keyboard_multiple_year_navigation() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
+
+    let (app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on the year to give it focus
+    ui.click("2024")?;
+
+    // Advance 3 years
+    for _ in 0..3 {
+        ui.tap_key(iced::keyboard::Key::Named(
+            iced::keyboard::key::Named::ArrowRight,
+        ));
+    }
+
+    assert!(ui.find("June").is_ok(), "Month should still be June");
+    assert!(ui.find("2027").is_ok(), "Year should be 2027 after 3 advances");
 
     Ok(())
 }
