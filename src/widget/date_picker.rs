@@ -342,6 +342,7 @@ mod tests {
     use chrono::Datelike;
 
     #[derive(Clone, Debug)]
+    #[allow(dead_code)]
     enum TestMessage {
         Cancel,
         Submit(Date),
