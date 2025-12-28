@@ -468,7 +468,10 @@ fn clicking_date_and_submit_workflow() -> Result<(), Error> {
         submitted.month >= 5 && submitted.month <= 7,
         "Month should be near June"
     );
-    assert!(submitted.day >= 1 && submitted.day <= 31, "Day should be valid");
+    assert!(
+        submitted.day >= 1 && submitted.day <= 31,
+        "Day should be valid"
+    );
 
     Ok(())
 }
