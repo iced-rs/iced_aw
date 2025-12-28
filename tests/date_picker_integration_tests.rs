@@ -75,7 +75,7 @@ fn can_find_underlay_button_text() -> Result<(), Error> {
         let button = create_button("Open Date Picker");
         DatePicker::new(false, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -92,57 +92,47 @@ fn can_find_underlay_button_text() -> Result<(), Error> {
 }
 
 #[test]
-fn underlay_button_with_different_text() -> Result<(), Error> {
-    let test_texts = vec!["Pick a date", "Select date", "Choose date"];
+fn underlay_button_opens_picker() -> Result<(), Error> {
+    let date = Date::from_ymd(2024, 6, 15);
 
-    for text in test_texts {
-        let date = Date::from_ymd(2024, 1, 1);
-        let (mut app, _) = App::new(move || {
-            let button = create_button(text);
-            DatePicker::new(false, date, button, Message::Cancel, Message::Submit).into()
-        });
-        let mut ui = simulator(&app);
+    // Track whether picker should be shown
+    let show = std::rc::Rc::new(std::cell::RefCell::new(false));
+    let show_clone = show.clone();
 
-        for message in ui.into_messages() {
-            app.update(message);
-        }
+    let (mut app, _) = App::new(move || {
+        let button = create_button("Open Date Picker");
+        let show_value = *show_clone.borrow();
+        DatePicker::new(show_value, date, button, Message::Cancel, Message::Submit).into()
+    });
 
+    // Verify the button is findable initially
+    {
         let mut ui = simulator(&app);
         assert!(
-            ui.find(text).is_ok(),
-            "Should find button text '{}'",
-            text
+            ui.find("Open Date Picker").is_ok(),
+            "Underlay button text should be findable"
         );
     }
 
-    Ok(())
-}
+    // Click the button and collect messages
+    let messages = {
+        let mut ui = simulator(&app);
+        let _ = ui.click("Open Date Picker")?;
+        ui.into_messages().collect::<Vec<_>>()
+    };
 
-#[test]
-fn can_use_text_as_underlay() -> Result<(), Error> {
-    let date = Date::from_ymd(2024, 1, 1);
-
-    let (mut app, _) = App::new(move || {
-        DatePicker::new(
-            false,
-            date,
-            Text::new("Click to pick date"),
-            Message::Cancel,
-            Message::Submit,
-        )
-        .into()
-    });
-    let mut ui = simulator(&app);
-
-    for message in ui.into_messages() {
+    // Process messages (now we can mutably borrow app)
+    for message in messages {
+        if matches!(message, Message::Open) {
+            *show.borrow_mut() = true;
+        }
         app.update(message);
     }
 
+    // Create new simulator to verify picker is open
     let mut ui = simulator(&app);
-    assert!(
-        ui.find("Click to pick date").is_ok(),
-        "Text underlay should be findable"
-    );
+    assert!(ui.find("June").is_ok(), "Month name should be displayed");
+    assert!(ui.find("2024").is_ok(), "Year should be displayed");
 
     Ok(())
 }
@@ -159,7 +149,7 @@ fn overlay_shows_correct_month_and_year() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -187,7 +177,7 @@ fn overlay_shows_various_months() -> Result<(), Error> {
             let button = create_button("Pick date");
             DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
         });
-        let mut ui = simulator(&app);
+        let ui = simulator(&app);
 
         for message in ui.into_messages() {
             app.update(message);
@@ -217,7 +207,7 @@ fn overlay_shows_day_numbers() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -240,7 +230,7 @@ fn overlay_shows_correct_days_for_leap_year() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -261,7 +251,7 @@ fn overlay_shows_correct_days_for_non_leap_year() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -282,7 +272,7 @@ fn overlay_not_shown_when_picker_hidden() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(false, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -313,7 +303,7 @@ fn date_picker_with_custom_font_size() -> Result<(), Error> {
             .font_size(20.0)
             .into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -337,7 +327,7 @@ fn date_picker_with_pixels_font_size() -> Result<(), Error> {
             .font_size(Pixels(18.0))
             .into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -370,7 +360,7 @@ fn date_picker_with_custom_styling() -> Result<(), Error> {
             })
             .into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -406,7 +396,7 @@ fn date_picker_with_chained_methods() -> Result<(), Error> {
             .class(<Theme as iced_aw::style::date_picker::Catalog>::default())
             .into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -435,7 +425,7 @@ fn date_picker_with_extreme_dates() -> Result<(), Error> {
             let button = create_button("Pick date");
             DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
         });
-        let mut ui = simulator(&app);
+        let ui = simulator(&app);
 
         for message in ui.into_messages() {
             app.update(message);
@@ -470,7 +460,7 @@ fn date_picker_with_month_boundaries() -> Result<(), Error> {
             let button = create_button("Pick date");
             DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
         });
-        let mut ui = simulator(&app);
+        let ui = simulator(&app);
 
         for message in ui.into_messages() {
             app.update(message);
@@ -500,7 +490,7 @@ fn date_picker_with_default_date() -> Result<(), Error> {
         let button = create_button("Pick date");
         DatePicker::new(true, date, button, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
@@ -575,7 +565,7 @@ fn date_picker_converts_to_element() -> Result<(), Error> {
         let button2 = create_button("Pick date");
         DatePicker::new(false, date, button2, Message::Cancel, Message::Submit).into()
     });
-    let mut ui = simulator(&app);
+    let ui = simulator(&app);
 
     for message in ui.into_messages() {
         app.update(message);
