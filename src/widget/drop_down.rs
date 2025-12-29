@@ -8,7 +8,7 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
-    widget::{Operation, Tree},
+    widget::{self, Operation, Tree},
 };
 
 pub use crate::core::{alignment::Alignment, offset::Offset};
@@ -459,5 +459,443 @@ where
             &self.viewport,
             renderer,
         )
+    }
+
+    fn operate(
+        &mut self,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn widget::Operation,
+    ) {
+        // Operate on the overlay element to expose its children for testing
+        self.element
+            .as_widget_mut()
+            .operate(self.state, layout, renderer, operation);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iced_widget::text::Text;
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        Dismiss,
+        Select(usize),
+    }
+
+    type TestDropDown<'a> = DropDown<'a, TestMessage, iced_widget::Theme, iced_widget::Renderer>;
+
+    // ============================================================================
+    // Construction Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_new_creates_instance() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        assert!(!dropdown.expanded, "Should not be expanded by default");
+        assert!(
+            dropdown.on_dismiss.is_none(),
+            "Should have no dismiss message"
+        );
+        assert!(dropdown.width.is_none(), "Should have no custom width");
+        assert_eq!(
+            dropdown.height,
+            Length::Shrink,
+            "Default height should be Shrink"
+        );
+        assert_eq!(
+            dropdown.alignment,
+            Alignment::Bottom,
+            "Default alignment should be Bottom"
+        );
+    }
+
+    #[test]
+    fn drop_down_new_with_expanded_true() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, true);
+
+        assert!(dropdown.expanded, "Should be expanded");
+    }
+
+    #[test]
+    fn drop_down_new_with_expanded_false() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        assert!(!dropdown.expanded, "Should not be expanded");
+    }
+
+    // ============================================================================
+    // Builder Method Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_width_sets_value() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).width(Length::Fixed(200.0));
+
+        assert_eq!(dropdown.width, Some(Length::Fixed(200.0)));
+    }
+
+    #[test]
+    fn drop_down_width_fill() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).width(Length::Fill);
+
+        assert_eq!(dropdown.width, Some(Length::Fill));
+    }
+
+    #[test]
+    fn drop_down_height_sets_value() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).height(Length::Fixed(150.0));
+
+        assert_eq!(dropdown.height, Length::Fixed(150.0));
+    }
+
+    #[test]
+    fn drop_down_height_fill() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).height(Length::Fill);
+
+        assert_eq!(dropdown.height, Length::Fill);
+    }
+
+    #[test]
+    fn drop_down_alignment_sets_value() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).alignment(Alignment::Top);
+
+        assert_eq!(dropdown.alignment, Alignment::Top);
+    }
+
+    #[test]
+    fn drop_down_alignment_bottom_start() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown =
+            TestDropDown::new(underlay, overlay, false).alignment(Alignment::BottomStart);
+
+        assert_eq!(dropdown.alignment, Alignment::BottomStart);
+    }
+
+    #[test]
+    fn drop_down_alignment_top_end() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).alignment(Alignment::TopEnd);
+
+        assert_eq!(dropdown.alignment, Alignment::TopEnd);
+    }
+
+    #[test]
+    fn drop_down_offset_sets_value() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).offset(Offset::from(10.0));
+
+        assert_eq!(dropdown.offset.x, 10.0);
+        assert_eq!(dropdown.offset.y, 10.0);
+    }
+
+    #[test]
+    fn drop_down_offset_different_x_y() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+        let custom_offset = Offset { x: 5.0, y: 15.0 };
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).offset(custom_offset);
+
+        assert_eq!(dropdown.offset.x, 5.0);
+        assert_eq!(dropdown.offset.y, 15.0);
+    }
+
+    #[test]
+    fn drop_down_on_dismiss_sets_message() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).on_dismiss(TestMessage::Dismiss);
+
+        assert!(dropdown.on_dismiss.is_some());
+    }
+
+    #[test]
+    fn drop_down_without_on_dismiss_is_none() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        assert!(dropdown.on_dismiss.is_none());
+    }
+
+    // ============================================================================
+    // Method Chaining Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_chaining_methods() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, true)
+            .width(Length::Fixed(300.0))
+            .height(Length::Fixed(200.0))
+            .alignment(Alignment::Top)
+            .offset(Offset::from(15.0))
+            .on_dismiss(TestMessage::Dismiss);
+
+        assert!(dropdown.expanded);
+        assert_eq!(dropdown.width, Some(Length::Fixed(300.0)));
+        assert_eq!(dropdown.height, Length::Fixed(200.0));
+        assert_eq!(dropdown.alignment, Alignment::Top);
+        assert_eq!(dropdown.offset.x, 15.0);
+        assert_eq!(dropdown.offset.y, 15.0);
+        assert!(dropdown.on_dismiss.is_some());
+    }
+
+    #[test]
+    fn drop_down_partial_chaining() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false)
+            .width(Length::Fill)
+            .alignment(Alignment::BottomEnd);
+
+        assert_eq!(dropdown.width, Some(Length::Fill));
+        assert_eq!(dropdown.alignment, Alignment::BottomEnd);
+        assert_eq!(dropdown.height, Length::Shrink); // Default
+        assert!(dropdown.on_dismiss.is_none()); // Not set
+    }
+
+    // ============================================================================
+    // Widget Trait Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_has_two_children() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        let children =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&dropdown);
+        assert_eq!(
+            children.len(),
+            2,
+            "DropDown should have 2 children (underlay and overlay)"
+        );
+    }
+
+    #[test]
+    fn drop_down_size_matches_underlay() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        let size =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&dropdown);
+        // Text widget has Shrink for both dimensions by default
+        assert_eq!(size.width, Length::Shrink);
+        assert_eq!(size.height, Length::Shrink);
+    }
+
+    // ============================================================================
+    // Configuration Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_alignment_bottom() {
+        let dropdown =
+            TestDropDown::new(Text::new("Click me"), Text::new("Dropdown content"), false)
+                .alignment(Alignment::Bottom);
+
+        assert_eq!(dropdown.alignment, Alignment::Bottom);
+    }
+
+    #[test]
+    fn drop_down_alignment_start() {
+        let dropdown =
+            TestDropDown::new(Text::new("Click me"), Text::new("Dropdown content"), false)
+                .alignment(Alignment::Start);
+
+        assert_eq!(dropdown.alignment, Alignment::Start);
+    }
+
+    #[test]
+    fn drop_down_alignment_end() {
+        let dropdown =
+            TestDropDown::new(Text::new("Click me"), Text::new("Dropdown content"), false)
+                .alignment(Alignment::End);
+
+        assert_eq!(dropdown.alignment, Alignment::End);
+    }
+
+    #[test]
+    fn drop_down_different_widths() {
+        let widths = [
+            Length::Fill,
+            Length::Shrink,
+            Length::Fixed(100.0),
+            Length::Fixed(500.0),
+            Length::FillPortion(2),
+        ];
+
+        for width in widths {
+            let underlay = Text::new("Click me");
+            let overlay = Text::new("Dropdown content");
+
+            let dropdown = TestDropDown::new(underlay, overlay, false).width(width);
+
+            assert_eq!(dropdown.width, Some(width));
+        }
+    }
+
+    #[test]
+    fn drop_down_different_heights() {
+        let heights = [
+            Length::Fill,
+            Length::Shrink,
+            Length::Fixed(100.0),
+            Length::Fixed(500.0),
+            Length::FillPortion(2),
+        ];
+
+        for height in heights {
+            let underlay = Text::new("Click me");
+            let overlay = Text::new("Dropdown content");
+
+            let dropdown = TestDropDown::new(underlay, overlay, false).height(height);
+
+            assert_eq!(dropdown.height, height);
+        }
+    }
+
+    #[test]
+    fn drop_down_zero_offset() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown =
+            TestDropDown::new(underlay, overlay, false).offset(Offset { x: 0.0, y: 0.0 });
+
+        assert_eq!(dropdown.offset.x, 0.0);
+        assert_eq!(dropdown.offset.y, 0.0);
+    }
+
+    #[test]
+    fn drop_down_negative_offset() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown =
+            TestDropDown::new(underlay, overlay, false).offset(Offset { x: -5.0, y: -10.0 });
+
+        assert_eq!(dropdown.offset.x, -5.0);
+        assert_eq!(dropdown.offset.y, -10.0);
+    }
+
+    #[test]
+    fn drop_down_large_offset() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false).offset(Offset {
+            x: 1000.0,
+            y: 500.0,
+        });
+
+        assert_eq!(dropdown.offset.x, 1000.0);
+        assert_eq!(dropdown.offset.y, 500.0);
+    }
+
+    // ============================================================================
+    // Edge Case Tests
+    // ============================================================================
+
+    #[test]
+    fn drop_down_with_empty_text() {
+        let underlay = Text::new("");
+        let overlay = Text::new("");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        assert!(!dropdown.expanded);
+    }
+
+    #[test]
+    fn drop_down_multiple_instances() {
+        let dropdown1 = TestDropDown::new(Text::new("First"), Text::new("Overlay 1"), false);
+
+        let dropdown2 = TestDropDown::new(Text::new("Second"), Text::new("Overlay 2"), true);
+
+        assert!(!dropdown1.expanded);
+        assert!(dropdown2.expanded);
+    }
+
+    #[test]
+    fn drop_down_with_different_message_types() {
+        let dropdown1 =
+            TestDropDown::new(Text::new("Click me"), Text::new("Dropdown content"), false)
+                .on_dismiss(TestMessage::Dismiss);
+
+        let dropdown2 =
+            TestDropDown::new(Text::new("Click me"), Text::new("Dropdown content"), false)
+                .on_dismiss(TestMessage::Select(42));
+
+        assert!(dropdown1.on_dismiss.is_some());
+        assert!(dropdown2.on_dismiss.is_some());
+    }
+
+    #[test]
+    fn drop_down_converts_to_element() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+        let _element: Element<'_, TestMessage, iced_widget::Theme, iced_widget::Renderer> =
+            dropdown.into();
+        // Just verify it compiles and converts
+    }
+
+    #[test]
+    fn drop_down_default_offset_is_5() {
+        let underlay = Text::new("Click me");
+        let overlay = Text::new("Dropdown content");
+
+        let dropdown = TestDropDown::new(underlay, overlay, false);
+
+        // Default offset should be 5.0 (from Offset::from(5.0) in new())
+        assert_eq!(dropdown.offset.x, 5.0);
+        assert_eq!(dropdown.offset.y, 5.0);
     }
 }
