@@ -4,10 +4,22 @@
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
 
-use iced::{Color, Theme};
+// Test Notes:
+// Button cheat sheet
+//  cancel          → \u{e800}  // Used for close/cancel buttons
+//  down_open       → \u{e801}  // Down arrow (used in number_input, time_picker)
+//  left_open       → \u{e802}  // Left arrow (used in date_picker navigation)
+//  right_open      → \u{e803}  // Right arrow (used in date_picker navigation)
+//  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
+//  ok              → \u{e805}  // Checkmark/submit (used in pickers)
+
+// Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
+
+use iced::{Color, Element, Settings, Theme};
 use iced_aw::ContextMenu;
-use iced_widget::Button;
+use iced_test::{Error, Simulator};
 use iced_widget::text::Text;
+use iced_widget::{Button, button};
 
 #[derive(Clone, Debug, PartialEq)]
 #[allow(dead_code)]
@@ -15,6 +27,53 @@ enum Message {
     Action1,
     Action2,
     Other,
+}
+
+// Helper function to create a button with explicit Theme type
+fn create_button<'a>(text: &'a str, msg: Message) -> iced_widget::Button<'a, Message, Theme> {
+    button(Text::new(text)).on_press(msg)
+}
+
+type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
+
+#[derive(Clone)]
+struct App {
+    view_fn: std::rc::Rc<ViewFn>,
+}
+
+impl App {
+    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
+    where
+        F: Fn() -> Element<'static, Message> + 'static,
+    {
+        (
+            App {
+                view_fn: std::rc::Rc::new(Box::new(view_fn)),
+            },
+            iced::Task::none(),
+        )
+    }
+
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::Action1 | Message::Action2 | Message::Other => {
+                // No state changes in these tests
+            }
+        }
+    }
+
+    fn view(&self) -> Element<'_, Message> {
+        (self.view_fn)()
+    }
+}
+
+fn simulator(app: &App) -> Simulator<'_, Message> {
+    Simulator::with_settings(
+        Settings {
+            ..Settings::default()
+        },
+        app.view(),
+    )
 }
 
 #[test]
@@ -363,4 +422,546 @@ fn context_menu_with_opaque_background() {
                 background: Background::Color(Color::from_rgba(0.5, 0.5, 0.5, 1.0)),
             },
         );
+}
+
+// ============================================================================
+// Simulator-based Integration Tests
+// ============================================================================
+
+#[test]
+fn context_menu_can_find_underlay_text_when_closed() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Right click me");
+        let overlay = || Text::new("Menu Item").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify the rendered content
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Right click me").is_ok(),
+        "Underlay text should be findable when menu is closed"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_cannot_find_overlay_text_when_closed() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Right click me");
+        let overlay = || Text::new("Menu Item").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify the rendered content
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Menu Item").is_err(),
+        "Overlay text should not be findable when menu is closed"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_find_underlay_button() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = create_button("Click me", Message::Other);
+        let overlay = || Text::new("Menu Item").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify the rendered content
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Click me").is_ok(),
+        "Underlay button text should be findable"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_click_underlay_button() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = create_button("Action Button", Message::Other);
+        let overlay = || Text::new("Menu Item").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify the button is clickable
+    assert!(
+        ui.find("Action Button").is_ok(),
+        "Button should be findable"
+    );
+
+    ui.click("Action Button")?;
+
+    // Process messages to verify we got Message::Other
+    let mut got_message = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Other) {
+            got_message = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_message, "Clicking button should produce Message::Other");
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_find_overlay_text_when_open() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Right click me");
+        let overlay = || Text::new("Menu Item").into();
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify the rendered content
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Menu Item").is_ok(),
+        "Overlay text should be findable when menu is open"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_click_overlay_button() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Trigger");
+        let overlay = || {
+            Column::new()
+                .push(create_button("Menu Action", Message::Action1))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify button is visible
+    assert!(
+        ui.find("Menu Action").is_ok(),
+        "Overlay button should be visible when menu is open"
+    );
+
+    // Click the button
+    ui.click("Menu Action")?;
+
+    // Verify we got the correct message
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_action1,
+        "Clicking overlay button should produce Message::Action1"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_find_text_in_column_overlay_when_open() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Right click me");
+        let overlay = || {
+            Column::new()
+                .push(Text::new("Item 1"))
+                .push(Text::new("Item 2"))
+                .push(Text::new("Item 3"))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify all items are findable
+    let mut ui = simulator(&app);
+    assert!(ui.find("Item 1").is_ok(), "Item 1 should be findable");
+    assert!(ui.find("Item 2").is_ok(), "Item 2 should be findable");
+    assert!(ui.find("Item 3").is_ok(), "Item 3 should be findable");
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_click_first_button_in_column_overlay() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Menu");
+        let overlay = || {
+            Column::new()
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    assert!(ui.find("Action 1").is_ok(), "Should find Action 1 button");
+    assert!(ui.find("Action 2").is_ok(), "Should find Action 2 button");
+
+    ui.click("Action 1")?;
+
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action1, "Should receive Message::Action1");
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_can_click_second_button_in_column_overlay() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Menu");
+        let overlay = || {
+            Column::new()
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    ui.click("Action 2")?;
+
+    let mut got_action2 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action2) {
+            got_action2 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action2, "Should receive Message::Action2");
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_overlay_operates_on_nested_elements() -> Result<(), Error> {
+    use iced_widget::{Column, Container, Row};
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Complex underlay");
+        let overlay = || {
+            Container::new(
+                Column::new()
+                    .push(
+                        Row::new()
+                            .push(Text::new("Label 1"))
+                            .push(create_button("Button 1", Message::Action1)),
+                    )
+                    .push(
+                        Row::new()
+                            .push(Text::new("Label 2"))
+                            .push(create_button("Button 2", Message::Action2)),
+                    ),
+            )
+            .into()
+        };
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify the rendered content
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Complex underlay").is_ok(),
+        "Underlay should be findable through operate()"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_multiple_instances_are_independently_searchable() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        Column::new()
+            .push(ContextMenu::new(Text::new("Menu 1 Trigger"), || {
+                Text::new("Menu 1 Content").into()
+            }))
+            .push(ContextMenu::new(Text::new("Menu 2 Trigger"), || {
+                Text::new("Menu 2 Content").into()
+            }))
+            .push(ContextMenu::new(Text::new("Menu 3 Trigger"), || {
+                Text::new("Menu 3 Content").into()
+            }))
+            .into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify all underlays are findable
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("Menu 1 Trigger").is_ok(),
+        "First menu trigger should be findable"
+    );
+    assert!(
+        ui.find("Menu 2 Trigger").is_ok(),
+        "Second menu trigger should be findable"
+    );
+    assert!(
+        ui.find("Menu 3 Trigger").is_ok(),
+        "Third menu trigger should be findable"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_unicode_text_is_searchable() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("右键点击");
+        let overlay = || Text::new("菜单项").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify unicode text is findable
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("右键点击").is_ok(),
+        "Unicode underlay text should be findable"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_emoji_text_is_searchable() -> Result<(), Error> {
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("🖱️ Right click here");
+        let overlay = || Text::new("📋 Menu").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify emoji text is findable
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("🖱️ Right click here").is_ok(),
+        "Emoji text should be findable"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_long_text_is_searchable() -> Result<(), Error> {
+    let long_text = "This is a very long text that might be used as an underlay for a context menu widget to test the operate functionality";
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new(long_text);
+        let overlay = || Text::new("Menu").into();
+        ContextMenu::new(underlay, overlay).into()
+    });
+    let ui = simulator(&app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Create a new simulator to verify long text is findable
+    let mut ui = simulator(&app);
+    assert!(ui.find(long_text).is_ok(), "Long text should be findable");
+
+    Ok(())
+}
+
+// ============================================================================
+// Interaction Tests
+// ============================================================================
+
+#[test]
+fn context_menu_overlay_button_processes_message() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Trigger");
+        let overlay = || {
+            Column::new()
+                .push(create_button("Action", Message::Action1))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify button is visible when menu is open
+    assert!(
+        ui.find("Action").is_ok(),
+        "Menu button should be visible when menu is open"
+    );
+
+    // Click the menu button
+    ui.click("Action")?;
+
+    // Process messages - should get Message::Action1
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_action1,
+        "Should receive Message::Action1 from button click"
+    );
+
+    // Note: Menu closing behavior after button click is tested in the overlay unit tests
+    // The .open(true) parameter forces the menu to always be open, overriding internal state
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_with_multiple_buttons_in_overlay() -> Result<(), Error> {
+    use iced_widget::Column;
+
+    let (mut app, _) = App::new(move || {
+        let underlay = Text::new("Trigger");
+        let overlay = || {
+            Column::new()
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
+                .push(create_button("Other Action", Message::Other))
+                .into()
+        };
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Verify all buttons are findable
+    assert!(ui.find("Action 1").is_ok(), "Should find Action 1");
+    assert!(ui.find("Action 2").is_ok(), "Should find Action 2");
+    assert!(ui.find("Other Action").is_ok(), "Should find Other Action");
+
+    // Click Action 2
+    ui.click("Action 2")?;
+
+    let mut got_action2 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action2) {
+            got_action2 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action2, "Should receive Message::Action2");
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_forced_open_displays_overlay() -> Result<(), Error> {
+    let (app, _) = App::new(move || {
+        let underlay = Text::new("Trigger");
+        let overlay = || Text::new("Menu Content").into();
+        ContextMenu::new(underlay, overlay).open(true).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // When forced open with .open(true), overlay should be visible
+    assert!(
+        ui.find("Menu Content").is_ok(),
+        "Menu content should be visible when forced open"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn context_menu_forced_closed_hides_overlay() -> Result<(), Error> {
+    let (app, _) = App::new(move || {
+        let underlay = Text::new("Trigger");
+        let overlay = || Text::new("Menu Content").into();
+        ContextMenu::new(underlay, overlay).open(false).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // When forced closed with .open(false), overlay should not be visible
+    assert!(
+        ui.find("Menu Content").is_err(),
+        "Menu content should not be visible when forced closed"
+    );
+
+    Ok(())
 }
