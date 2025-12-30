@@ -61,7 +61,7 @@ impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Rende
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
-    Theme: 'a + Catalog + container::Catalog + scrollable::Catalog,
+    Theme: 'a + Catalog + container::Catalog + scrollable::Catalog + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
@@ -329,6 +329,25 @@ where
             );
         }
     }
+
+    fn operate(
+        &mut self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn iced_core::widget::Operation<()>,
+    ) {
+        Widget::<Message, Theme, Renderer>::operate(
+            &mut self.container,
+            &mut state.children[0],
+            layout
+                .children()
+                .next()
+                .expect("Scrollable Child Missing in Selection List"),
+            renderer,
+            operation,
+        );
+    }
 }
 
 impl<'a, T, Message, Theme, Renderer> From<SelectionList<'a, T, Message, Theme, Renderer>>
@@ -363,5 +382,139 @@ impl<P: Paragraph> State<P> {
                 .map(|_| paragraph::Plain::<P>::default())
                 .collect(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        Selected(usize, String),
+    }
+
+    type TestSelectionList<'a> = SelectionList<'a, String, TestMessage, iced_widget::Theme>;
+
+    #[test]
+    fn selection_list_new_creates_instance() {
+        let options = vec!["Option 1".to_string(), "Option 2".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+
+        assert_eq!(selection_list.options.len(), 2);
+        assert_eq!(selection_list.width, Length::Fill);
+        assert_eq!(selection_list.height, Length::Fill);
+    }
+
+    #[test]
+    fn selection_list_new_with_creates_instance() {
+        let options = vec!["Option 1".to_string(), "Option 2".to_string()];
+
+        let selection_list = TestSelectionList::new_with(
+            &options,
+            |index, value| TestMessage::Selected(index, value),
+            14.0,
+            10.0,
+            crate::style::selection_list::primary,
+            Some(0),
+            Font::default(),
+        );
+
+        assert_eq!(selection_list.options.len(), 2);
+        assert_eq!(selection_list.text_size, 14.0);
+    }
+
+    #[test]
+    fn selection_list_width_sets_value() {
+        let options = vec!["Option 1".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value))
+                .width(200);
+
+        assert_eq!(selection_list.width, Length::Fixed(200.0));
+    }
+
+    #[test]
+    fn selection_list_height_sets_value() {
+        let options = vec!["Option 1".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value))
+                .height(300);
+
+        assert_eq!(selection_list.height, Length::Fixed(300.0));
+    }
+
+    #[test]
+    fn selection_list_tag_returns_state_tag() {
+        let options = vec!["Option 1".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+
+        let tag =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::tag(&selection_list);
+        assert_eq!(
+            tag,
+            tree::Tag::of::<State<<iced_widget::Renderer as iced_core::text::Renderer>::Paragraph>>(
+            )
+        );
+    }
+
+    #[test]
+    fn selection_list_has_one_child() {
+        let options = vec!["Option 1".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+
+        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
+            &selection_list,
+        );
+        assert_eq!(children.len(), 1);
+    }
+
+    #[test]
+    fn selection_list_size_defaults() {
+        let options = vec!["Option 1".to_string()];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+
+        let size =
+            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&selection_list);
+        assert_eq!(size.width, Length::Fill);
+        assert_eq!(size.height, Length::Shrink);
+    }
+
+    #[test]
+    fn selection_list_multiple_options() {
+        let options = vec![
+            "Option 1".to_string(),
+            "Option 2".to_string(),
+            "Option 3".to_string(),
+        ];
+
+        let selection_list =
+            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+
+        assert_eq!(selection_list.options.len(), 3);
+        assert_eq!(selection_list.options[0], "Option 1");
+        assert_eq!(selection_list.options[1], "Option 2");
+        assert_eq!(selection_list.options[2], "Option 3");
+    }
+
+    #[test]
+    fn state_new_creates_empty_values() {
+        type TestState = State<<iced_widget::Renderer as iced_core::text::Renderer>::Paragraph>;
+
+        let options = vec!["A".to_string(), "B".to_string()];
+        let state = TestState::new(&options);
+
+        assert_eq!(state.values.len(), 2);
     }
 }
