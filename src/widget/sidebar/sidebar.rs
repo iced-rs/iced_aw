@@ -644,6 +644,152 @@ where
             );
         }
     }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        // Recreate the column element structure to expose tab labels for testing
+        fn layout_icon<Theme, Renderer>(
+            icon: &char,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'_, Theme, Renderer>
+        where
+            Renderer: iced_core::text::Renderer,
+            Renderer::Font: From<Font>,
+            Theme: iced_widget::text::Catalog,
+        {
+            Text::<Theme, Renderer>::new(icon.to_string())
+                .size(size)
+                .font(font.unwrap_or_default())
+                .align_x(alignment::Horizontal::Center)
+                .align_y(alignment::Vertical::Center)
+                .shaping(iced_core::text::Shaping::Advanced)
+                .width(Length::Shrink)
+        }
+
+        fn layout_text<Theme, Renderer>(
+            text: &str,
+            size: f32,
+            font: Option<Font>,
+        ) -> Text<'_, Theme, Renderer>
+        where
+            Renderer: iced_core::text::Renderer,
+            Renderer::Font: From<Font>,
+            Theme: iced_widget::text::Catalog,
+        {
+            Text::<Theme, Renderer>::new(text)
+                .size(size)
+                .font(font.unwrap_or_default())
+                .align_x(alignment::Horizontal::Center)
+                .align_y(alignment::Vertical::Center)
+                .shaping(text::Shaping::Advanced)
+                .width(Length::Shrink)
+        }
+
+        // Get the close icon content once before the fold
+        let close_icon_data = if self.on_close.is_some() {
+            let (close_content, close_font, _close_shaping) = iced_aw_font::advanced_text::cancel();
+            Some((close_content, close_font))
+        } else {
+            None
+        };
+
+        let column = self
+            .tab_labels
+            .iter()
+            .fold(
+                FlushColumn::<Message, Theme, Renderer>::new(),
+                |column, tab_label| {
+                    let label = match tab_label {
+                        TabLabel::Icon(icon) => Row::new()
+                            .align_y(Alignment::Center)
+                            .push(layout_icon(icon, self.icon_size + 1.0, self.font)),
+                        TabLabel::Text(text) => Row::new()
+                            .padding(5.0)
+                            .align_y(Alignment::Center)
+                            .push(layout_text(text, self.text_size + 1.0, self.text_font)),
+                        TabLabel::IconText(icon, text) => {
+                            let mut row = Row::new().align_y(Alignment::Center);
+                            match self.position {
+                                Position::Start => {
+                                    row = row
+                                        .push(layout_icon(icon, self.icon_size + 1.0, self.font))
+                                        .push(layout_text(
+                                            text,
+                                            self.text_size + 1.0,
+                                            self.text_font,
+                                        ));
+                                }
+                                Position::End => {
+                                    row = row
+                                        .push(layout_text(
+                                            text,
+                                            self.text_size + 1.0,
+                                            self.text_font,
+                                        ))
+                                        .push(layout_icon(icon, self.icon_size + 1.0, self.font));
+                                }
+                            }
+                            row
+                        }
+                    };
+                    let mut tab = Row::new();
+                    if let Some((ref close_content, close_font)) = close_icon_data {
+                        let close = Row::new()
+                            .width(Length::Fixed(self.close_size * 1.3 + 1.0))
+                            .height(Length::Fixed(self.close_size * 1.3 + 1.0))
+                            .align_y(Alignment::Center)
+                            .push(
+                                Text::<Theme, Renderer>::new(close_content.as_str())
+                                    .size(self.close_size + 1.0)
+                                    .font(close_font)
+                                    .align_x(alignment::Horizontal::Center)
+                                    .align_y(alignment::Vertical::Center)
+                                    .shaping(text::Shaping::Advanced)
+                                    .width(Length::Shrink),
+                            );
+                        match self.close_position {
+                            Position::Start => tab = tab.push(close).push(label),
+                            Position::End => tab = tab.push(label).push(close),
+                        }
+                    } else {
+                        tab = tab.push(label);
+                    }
+                    tab = tab
+                        .align_y(Alignment::Center)
+                        .padding(self.padding)
+                        .height(self.tab_height)
+                        .width(self.width);
+                    column.push(tab)
+                },
+            )
+            .width(self.width)
+            .height(self.height)
+            .spacing(self.spacing)
+            .align_x(self.align_tabs);
+
+        let mut element: Element<Message, Theme, Renderer> = Element::new(column);
+
+        // Get or create the tree for the column
+        let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
+            child_tree.diff(element.as_widget_mut());
+            child_tree
+        } else {
+            let child_tree = Tree::new(element.as_widget());
+            tree.children.insert(0, child_tree);
+            &mut tree.children[0]
+        };
+
+        // Recursively operate on the column element to expose all tab labels
+        element
+            .as_widget_mut()
+            .operate(tab_tree, layout, renderer, operation);
+    }
 }
 
 /// Draws a tab.
@@ -1496,14 +1642,40 @@ where
         operation: &mut dyn Operation<()>,
     ) {
         let active_tab = self.sidebar.get_active_tab_idx();
+        let mut children = layout.children();
+
+        // Get sidebar and tab content layouts based on position
+        let (sidebar_layout, tab_content_layout) = match self.sidebar_position {
+            SidebarPosition::Start => {
+                let sidebar_layout = children
+                    .next()
+                    .expect("Layout should have a sidebar layout at start position");
+                let tab_content_layout = children
+                    .next()
+                    .expect("Layout should have a tab content layout at start position");
+                (sidebar_layout, tab_content_layout)
+            }
+            SidebarPosition::End => {
+                let tab_content_layout = children
+                    .next()
+                    .expect("Layout should have a tab content layout at end position");
+                let sidebar_layout = children
+                    .next()
+                    .expect("Layout should have a sidebar layout at end position");
+                (sidebar_layout, tab_content_layout)
+            }
+        };
+
         operation.container(None, layout.bounds());
         operation.traverse(&mut |operation| {
+            // Operate on the sidebar to expose tab labels
+            self.sidebar
+                .operate(&mut tree.children[0], sidebar_layout, renderer, operation);
+
+            // Operate on the active tab content
             self.tabs[active_tab].as_widget_mut().operate(
                 &mut tree.children[1].children[active_tab],
-                layout
-                    .children()
-                    .nth(1)
-                    .expect("Sidebar is 0th child, contents are 1st node"),
+                tab_content_layout,
                 renderer,
                 operation,
             );
@@ -1522,5 +1694,277 @@ where
 {
     fn from(content: SidebarWithContent<'a, Message, TabId, Theme, Renderer>) -> Self {
         Element::new(content)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+    enum TestTabId {
+        One,
+        Two,
+        Three,
+    }
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        TabSelected(TestTabId),
+        TabClosed(TestTabId),
+    }
+
+    type TestSidebar<'a> = Sidebar<'a, TestMessage, TestTabId, iced_widget::Theme>;
+    type TestSidebarWithContent<'a> =
+        SidebarWithContent<'a, TestMessage, TestTabId, iced_widget::Theme>;
+
+    #[test]
+    fn sidebar_new_creates_instance() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected);
+
+        assert_eq!(sidebar.get_active_tab_idx(), 0);
+        assert_eq!(sidebar.size(), 0);
+        assert_eq!(sidebar.get_width(), Length::Shrink);
+        assert_eq!(sidebar.get_height(), Length::Fill);
+    }
+
+    #[test]
+    fn sidebar_push_adds_tabs() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .push(TestTabId::Two, TabLabel::Text("Tab Two".into()))
+            .push(TestTabId::Three, TabLabel::Text("Tab Three".into()));
+
+        assert_eq!(sidebar.size(), 3);
+    }
+
+    #[test]
+    fn sidebar_set_active_tab_sets_correct_index() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .push(TestTabId::Two, TabLabel::Text("Tab Two".into()))
+            .push(TestTabId::Three, TabLabel::Text("Tab Three".into()))
+            .set_active_tab(&TestTabId::Two);
+
+        assert_eq!(sidebar.get_active_tab_idx(), 1);
+        assert_eq!(sidebar.get_active_tab_id(), Some(&TestTabId::Two));
+    }
+
+    #[test]
+    fn sidebar_set_active_tab_defaults_to_zero_if_not_found() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .push(TestTabId::Two, TabLabel::Text("Tab Two".into()));
+
+        // Set to a tab that doesn't exist
+        let sidebar = sidebar.set_active_tab(&TestTabId::Three);
+
+        assert_eq!(sidebar.get_active_tab_idx(), 0);
+    }
+
+    #[test]
+    fn sidebar_with_icon_label() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Icon('A'))
+            .push(TestTabId::Two, TabLabel::Icon('B'));
+
+        assert_eq!(sidebar.size(), 2);
+    }
+
+    #[test]
+    fn sidebar_with_icon_text_label() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::IconText('A', "Tab One".into()))
+            .push(TestTabId::Two, TabLabel::IconText('B', "Tab Two".into()));
+
+        assert_eq!(sidebar.size(), 2);
+    }
+
+    #[test]
+    fn sidebar_with_close_callback() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .on_close(TestMessage::TabClosed);
+
+        assert_eq!(sidebar.size(), 1);
+    }
+
+    #[test]
+    fn sidebar_builder_methods() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .width(200)
+            .height(Length::Fill)
+            .tab_height(Length::Fixed(50.0))
+            .icon_size(20.0)
+            .text_size(14.0)
+            .close_size(16.0)
+            .padding(5.0)
+            .spacing(2.0)
+            .align_tabs(Alignment::Center)
+            .set_position(Position::End)
+            .set_close_position(Position::Start);
+
+        assert_eq!(sidebar.size(), 1);
+        assert_eq!(sidebar.get_width(), Length::Fixed(200.0));
+        assert_eq!(sidebar.get_height(), Length::Fill);
+    }
+
+    #[test]
+    fn sidebar_with_content_new_creates_instance() {
+        let sidebar = TestSidebarWithContent::new(TestMessage::TabSelected);
+
+        assert_eq!(sidebar.sidebar.get_active_tab_idx(), 0);
+        assert_eq!(sidebar.sidebar.size(), 0);
+    }
+
+    #[test]
+    fn sidebar_with_content_push_adds_tabs_and_content() {
+        use iced_widget::text::Text;
+
+        let sidebar = TestSidebarWithContent::new(TestMessage::TabSelected)
+            .push(
+                TestTabId::One,
+                TabLabel::Text("Tab One".into()),
+                Text::new("Content One"),
+            )
+            .push(
+                TestTabId::Two,
+                TabLabel::Text("Tab Two".into()),
+                Text::new("Content Two"),
+            );
+
+        assert_eq!(sidebar.sidebar.size(), 2);
+        assert_eq!(sidebar.tabs.len(), 2);
+        assert_eq!(sidebar.indices.len(), 2);
+    }
+
+    #[test]
+    fn sidebar_with_content_set_active_tab() {
+        use iced_widget::text::Text;
+
+        let sidebar = TestSidebarWithContent::new(TestMessage::TabSelected)
+            .push(
+                TestTabId::One,
+                TabLabel::Text("Tab One".into()),
+                Text::new("Content One"),
+            )
+            .push(
+                TestTabId::Two,
+                TabLabel::Text("Tab Two".into()),
+                Text::new("Content Two"),
+            )
+            .set_active_tab(&TestTabId::Two);
+
+        assert_eq!(sidebar.sidebar.get_active_tab_idx(), 1);
+    }
+
+    #[test]
+    fn sidebar_with_content_builder_methods() {
+        use iced_widget::text::Text;
+
+        let sidebar = TestSidebarWithContent::new(TestMessage::TabSelected)
+            .push(
+                TestTabId::One,
+                TabLabel::Text("Tab One".into()),
+                Text::new("Content One"),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .sidebar_width(Length::Fixed(150.0))
+            .sidebar_height(Length::Fill)
+            .sidebar_position(SidebarPosition::End)
+            .align_tabs(Alignment::End)
+            .tab_label_padding(10.0)
+            .tab_label_spacing(5.0)
+            .icon_size(18.0)
+            .text_size(12.0)
+            .close_size(14.0)
+            .tab_icon_position(Position::End)
+            .close_icon_position(Position::Start);
+
+        assert_eq!(sidebar.sidebar.size(), 1);
+    }
+
+    #[test]
+    fn tab_label_variants() {
+        // Verify all TabLabel variants can be created
+        let _icon_label = TabLabel::Icon('X');
+        let _text_label = TabLabel::Text(String::from("Test"));
+        let _icon_text_label = TabLabel::IconText('Y', String::from("Test"));
+    }
+
+    #[test]
+    fn sidebar_position_variants() {
+        // Verify SidebarPosition variants can be created
+        let _start = SidebarPosition::Start;
+        let _end = SidebarPosition::End;
+    }
+
+    #[test]
+    fn position_enum_variants() {
+        // Verify Position variants and default
+        let _start = Position::Start;
+        let _end = Position::End;
+        assert!(matches!(Position::default(), Position::Start));
+    }
+
+    #[test]
+    fn sidebar_get_active_tab_id_returns_none_when_empty() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected);
+
+        assert_eq!(sidebar.get_active_tab_id(), None);
+    }
+
+    #[test]
+    fn sidebar_get_active_tab_id_returns_correct_id() {
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .push(TestTabId::Two, TabLabel::Text("Tab Two".into()))
+            .set_active_tab(&TestTabId::Two);
+
+        assert_eq!(sidebar.get_active_tab_id(), Some(&TestTabId::Two));
+    }
+
+    #[test]
+    fn sidebar_widget_trait_implementation() {
+        // This test verifies that the Sidebar implements the Widget trait
+        // which includes the operate() method
+        let sidebar = TestSidebar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab One".into()))
+            .push(TestTabId::Two, TabLabel::Text("Tab Two".into()));
+
+        // Verify we can get the size
+        assert_eq!(sidebar.size(), 2);
+
+        // Verify widget trait methods are available by checking the type
+        let _element: Element<TestMessage, iced_widget::Theme, iced_widget::Renderer> =
+            sidebar.into();
+    }
+
+    #[test]
+    fn sidebar_with_content_widget_trait_implementation() {
+        // This test verifies that the SidebarWithContent implements the Widget trait
+        // which includes the operate() method
+        use iced_widget::text::Text;
+
+        let sidebar = TestSidebarWithContent::new(TestMessage::TabSelected)
+            .push(
+                TestTabId::One,
+                TabLabel::Text("Tab One".into()),
+                Text::new("Content One"),
+            )
+            .push(
+                TestTabId::Two,
+                TabLabel::Text("Tab Two".into()),
+                Text::new("Content Two"),
+            );
+
+        assert_eq!(sidebar.sidebar.size(), 2);
+
+        // Verify widget trait methods are available by checking the type
+        let _element: Element<TestMessage, iced_widget::Theme, iced_widget::Renderer> =
+            sidebar.into();
     }
 }
