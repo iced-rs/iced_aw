@@ -323,7 +323,8 @@ where
     Theme: 'a
         + crate::style::selection_list::Catalog
         + iced_widget::container::Catalog
-        + iced_widget::scrollable::Catalog,
+        + iced_widget::scrollable::Catalog
+        + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
     <Theme as crate::style::selection_list::Catalog>::Class<'a>:
@@ -355,7 +356,8 @@ where
     Theme: 'a
         + crate::style::selection_list::Catalog
         + iced_widget::container::Catalog
-        + iced_widget::scrollable::Catalog,
+        + iced_widget::scrollable::Catalog
+        + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
 {
