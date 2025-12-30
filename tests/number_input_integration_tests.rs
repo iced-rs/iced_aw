@@ -15,7 +15,9 @@
 
 // Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
-use iced::{Element, Settings};
+#[macro_use]
+mod common;
+
 use iced_aw::NumberInput;
 use iced_test::{Error, Simulator};
 
@@ -25,46 +27,29 @@ enum Message {
     Submit,
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
+// ============================================================================
+// Helper Functions
+// ============================================================================
 
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::Changed(_) | Message::Submit => {
-                // No state changes in these tests
-            }
-        }
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
+/// Helper to click the increment button (tries both icon variants)
+fn click_increment(ui: &mut Simulator<'_, Message>) -> Result<(), Error> {
+    if ui.find(" ▲ ").is_ok() {
+        ui.click(" ▲ ").map(|_| ())
+    } else {
+        ui.click(" + ").map(|_| ())
     }
 }
 
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
+/// Helper to click the decrement button (tries both icon variants)
+fn click_decrement(ui: &mut Simulator<'_, Message>) -> Result<(), Error> {
+    if ui.find(" ▼ ").is_ok() {
+        ui.click(" ▼ ").map(|_| ())
+    } else {
+        ui.click(" - ").map(|_| ())
+    }
 }
 
 // ============================================================================
@@ -72,7 +57,7 @@ fn simulator(app: &App) -> Simulator<'_, Message> {
 // ============================================================================
 
 #[test]
-fn can_find_number_input_value() -> Result<(), Error> {
+fn number_input_can_find_value() -> Result<(), Error> {
     let value = 42u32;
 
     let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
@@ -93,7 +78,7 @@ fn can_find_number_input_value() -> Result<(), Error> {
 }
 
 #[test]
-fn displays_correct_initial_value() -> Result<(), Error> {
+fn number_input_displays_correct_initial_value() -> Result<(), Error> {
     let value = 100u32;
 
     let (app, _) = App::new(move || NumberInput::new(&value, 0..=200, Message::Changed).into());
@@ -105,7 +90,7 @@ fn displays_correct_initial_value() -> Result<(), Error> {
 }
 
 #[test]
-fn can_find_increment_button() -> Result<(), Error> {
+fn number_input_can_find_increment_button() -> Result<(), Error> {
     let value = 50u32;
 
     let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
@@ -121,7 +106,7 @@ fn can_find_increment_button() -> Result<(), Error> {
 }
 
 #[test]
-fn can_find_decrement_button() -> Result<(), Error> {
+fn number_input_can_find_decrement_button() -> Result<(), Error> {
     let value = 50u32;
 
     let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
@@ -141,19 +126,15 @@ fn can_find_decrement_button() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn increment_button_click_produces_message() -> Result<(), Error> {
+fn number_input_increment_button_click_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
     let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
 
     let mut ui = simulator(&app);
 
-    // Find and click the increment button (with spaces)
-    if ui.find(" ▲ ").is_ok() {
-        ui.click(" ▲ ")?;
-    } else {
-        ui.click(" + ")?;
-    }
+    // Click the increment button
+    click_increment(&mut ui)?;
 
     // Verify we got a Changed message
     let mut got_changed = false;
@@ -173,19 +154,15 @@ fn increment_button_click_produces_message() -> Result<(), Error> {
 }
 
 #[test]
-fn decrement_button_click_produces_message() -> Result<(), Error> {
+fn number_input_decrement_button_click_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
     let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
 
     let mut ui = simulator(&app);
 
-    // Find and click the decrement button (with spaces)
-    if ui.find(" ▼ ").is_ok() {
-        ui.click(" ▼ ")?;
-    } else {
-        ui.click(" - ")?;
-    }
+    // Click the decrement button
+    click_decrement(&mut ui)?;
 
     // Verify we got a Changed message
     let mut got_changed = false;
@@ -209,7 +186,7 @@ fn decrement_button_click_produces_message() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn cannot_increment_past_max() -> Result<(), Error> {
+fn number_input_cannot_increment_past_max() -> Result<(), Error> {
     let value = 100u32;
 
     let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
@@ -221,11 +198,7 @@ fn cannot_increment_past_max() -> Result<(), Error> {
 
     // Try to click increment (value should remain at 100)
     // Note: The button may still be clickable but won't change the value
-    if ui.find(" ▲ ").is_ok() {
-        ui.click(" ▲ ")?;
-    } else if ui.find(" + ").is_ok() {
-        ui.click(" + ")?;
-    }
+    let _ = click_increment(&mut ui);
 
     // Value should still be 100
     assert!(
@@ -237,7 +210,7 @@ fn cannot_increment_past_max() -> Result<(), Error> {
 }
 
 #[test]
-fn cannot_decrement_past_min() -> Result<(), Error> {
+fn number_input_cannot_decrement_past_min() -> Result<(), Error> {
     let value = 0u32;
 
     let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
@@ -248,11 +221,7 @@ fn cannot_decrement_past_min() -> Result<(), Error> {
     assert!(ui.find("0").is_ok(), "Should be at min value");
 
     // Try to click decrement (value should remain at 0)
-    if ui.find(" ▼ ").is_ok() {
-        ui.click(" ▼ ")?;
-    } else if ui.find(" - ").is_ok() {
-        ui.click(" - ")?;
-    }
+    let _ = click_decrement(&mut ui);
 
     // Value should still be 0
     assert!(
@@ -268,7 +237,7 @@ fn cannot_decrement_past_min() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn on_submit_produces_message() -> Result<(), Error> {
+fn number_input_on_submit_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
     let (mut app, _) = App::new(move || {
@@ -306,7 +275,7 @@ fn on_submit_produces_message() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn works_with_i32() -> Result<(), Error> {
+fn number_input_works_with_i32() -> Result<(), Error> {
     let value = -10i32;
 
     let (app, _) = App::new(move || {
@@ -325,7 +294,7 @@ fn works_with_i32() -> Result<(), Error> {
 }
 
 #[test]
-fn works_with_f64() -> Result<(), Error> {
+fn number_input_works_with_f64() -> Result<(), Error> {
     let value = 2.5f64;
 
     // Create a simple widget element without using the full App infrastructure

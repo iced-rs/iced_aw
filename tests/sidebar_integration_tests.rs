@@ -10,9 +10,11 @@
 
 // Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
-use iced::{Element, Settings};
+#[macro_use]
+mod common;
+
 use iced_aw::sidebar::{Sidebar, SidebarPosition, SidebarWithContent, TabLabel};
-use iced_test::{Error, Simulator};
+use iced_test::Error;
 use iced_widget::text::Text;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -29,47 +31,8 @@ enum Message {
     TabClosed(TabId),
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::TabSelected(_) | Message::TabClosed(_) => {
-                // No state changes in these tests
-            }
-        }
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 // ============================================================================
 // Sidebar Tests

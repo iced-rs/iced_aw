@@ -15,12 +15,15 @@
 
 // Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
-use iced::{Element, Settings, Theme};
+#[macro_use]
+mod common;
+
+use iced::Theme;
 use iced_aw::{
     TimePicker,
     time_picker::{Period, Time},
 };
-use iced_test::{Error, Simulator};
+use iced_test::Error;
 use iced_widget::{button, text::Text};
 
 #[derive(Clone, Debug)]
@@ -35,54 +38,15 @@ fn create_button<'a>(text: &'a str) -> iced_widget::Button<'a, Message, Theme> {
     button(Text::new(text)).on_press(Message::Open)
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::Open | Message::Cancel | Message::Submit(_) => {
-                // No state changes in these tests
-            }
-        }
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 // ============================================================================
 // Underlay Button Tests
 // ============================================================================
 
 #[test]
-fn can_find_underlay_button_text() -> Result<(), Error> {
+fn time_picker_can_find_underlay_button_text() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -110,7 +74,7 @@ fn can_find_underlay_button_text() -> Result<(), Error> {
 }
 
 #[test]
-fn underlay_button_opens_picker() -> Result<(), Error> {
+fn time_picker_underlay_button_opens_picker() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -168,7 +132,7 @@ fn underlay_button_opens_picker() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn hour_up_arrow_increments_hour() -> Result<(), Error> {
+fn time_picker_hour_up_arrow_increments_hour() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -198,7 +162,7 @@ fn hour_up_arrow_increments_hour() -> Result<(), Error> {
 }
 
 #[test]
-fn hour_down_arrow_decrements_hour() -> Result<(), Error> {
+fn time_picker_hour_down_arrow_decrements_hour() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -228,7 +192,7 @@ fn hour_down_arrow_decrements_hour() -> Result<(), Error> {
 }
 
 #[test]
-fn minute_up_arrow_increments_minute() -> Result<(), Error> {
+fn time_picker_minute_up_arrow_increments_minute() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -261,7 +225,7 @@ fn minute_up_arrow_increments_minute() -> Result<(), Error> {
 }
 
 #[test]
-fn minute_down_arrow_decrements_minute() -> Result<(), Error> {
+fn time_picker_minute_down_arrow_decrements_minute() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -294,7 +258,7 @@ fn minute_down_arrow_decrements_minute() -> Result<(), Error> {
 }
 
 #[test]
-fn time_wraps_at_hour_boundaries() -> Result<(), Error> {
+fn time_picker_time_wraps_at_hour_boundaries() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 23,
         minute: 30,
@@ -321,7 +285,7 @@ fn time_wraps_at_hour_boundaries() -> Result<(), Error> {
 }
 
 #[test]
-fn time_wraps_at_minute_boundaries() -> Result<(), Error> {
+fn time_picker_time_wraps_at_minute_boundaries() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 59,
@@ -355,7 +319,7 @@ fn time_wraps_at_minute_boundaries() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn displays_12h_format_correctly() -> Result<(), Error> {
+fn time_picker_displays_12h_format_correctly() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 2,
         minute: 30,
@@ -378,7 +342,7 @@ fn displays_12h_format_correctly() -> Result<(), Error> {
 }
 
 #[test]
-fn displays_am_indicator_correctly() -> Result<(), Error> {
+fn time_picker_displays_am_indicator_correctly() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 9,
         minute: 15,
@@ -404,7 +368,7 @@ fn displays_am_indicator_correctly() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn displays_seconds_when_enabled() -> Result<(), Error> {
+fn time_picker_displays_seconds_when_enabled() -> Result<(), Error> {
     let time = Time::Hms {
         hour: 14,
         minute: 30,
@@ -430,7 +394,7 @@ fn displays_seconds_when_enabled() -> Result<(), Error> {
 }
 
 #[test]
-fn second_up_arrow_increments_second() -> Result<(), Error> {
+fn time_picker_second_up_arrow_increments_second() -> Result<(), Error> {
     let time = Time::Hms {
         hour: 14,
         minute: 30,
@@ -465,7 +429,7 @@ fn second_up_arrow_increments_second() -> Result<(), Error> {
 }
 
 #[test]
-fn second_down_arrow_decrements_second() -> Result<(), Error> {
+fn time_picker_second_down_arrow_decrements_second() -> Result<(), Error> {
     let time = Time::Hms {
         hour: 14,
         minute: 30,
@@ -504,7 +468,7 @@ fn second_down_arrow_decrements_second() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn cancel_button_produces_cancel_message() -> Result<(), Error> {
+fn time_picker_cancel_button_produces_cancel_message() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -541,7 +505,7 @@ fn cancel_button_produces_cancel_message() -> Result<(), Error> {
 }
 
 #[test]
-fn submit_button_produces_submit_message() -> Result<(), Error> {
+fn time_picker_submit_button_produces_submit_message() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -578,7 +542,7 @@ fn submit_button_produces_submit_message() -> Result<(), Error> {
 }
 
 #[test]
-fn submit_returns_correct_time() -> Result<(), Error> {
+fn time_picker_submit_returns_correct_time() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -631,7 +595,7 @@ fn submit_returns_correct_time() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn adjust_time_then_submit_workflow() -> Result<(), Error> {
+fn time_picker_adjust_time_then_submit_workflow() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -693,7 +657,7 @@ fn adjust_time_then_submit_workflow() -> Result<(), Error> {
 }
 
 #[test]
-fn keyboard_navigation_workflow() -> Result<(), Error> {
+fn time_picker_keyboard_navigation_workflow() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 14,
         minute: 30,
@@ -734,7 +698,7 @@ fn keyboard_navigation_workflow() -> Result<(), Error> {
 }
 
 #[test]
-fn complete_12h_format_workflow() -> Result<(), Error> {
+fn time_picker_complete_12h_format_workflow() -> Result<(), Error> {
     let time = Time::Hm {
         hour: 11,
         minute: 45,

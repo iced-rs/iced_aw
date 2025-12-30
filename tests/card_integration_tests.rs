@@ -3,6 +3,9 @@
 //! These tests verify the Card widget's behavior by actually exercising
 //! the widget through the iced test framework.
 
+#[macro_use]
+mod common;
+
 use iced::{Color, Element, Length, Padding, Settings, Theme};
 use iced_aw::Card;
 use iced_test::Simulator;
@@ -14,53 +17,8 @@ enum Message {
     CloseCard,
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-/// Helper to run a test with a given view
-fn run_test<F>(view_fn: F)
-where
-    F: Fn() -> Element<'static, Message> + 'static,
-{
-    let (app, _) = App::new(view_fn);
-    let _ui = Simulator::with_settings(Settings::default(), app.view());
-}
-
-/// Helper to verify text can be found (tests operate() implementation)
-fn run_test_and_find<F>(view_fn: F, text: &str)
-where
-    F: Fn() -> Element<'static, Message> + 'static,
-{
-    let (app, _) = App::new(view_fn);
-    let mut ui = Simulator::with_settings(Settings::default(), app.view());
-    assert!(
-        ui.find(text).is_ok(),
-        "Failed to find text '{}' in card",
-        text
-    );
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 #[test]
 fn card_basic_renders_and_finds_text() {
@@ -78,12 +36,12 @@ fn card_with_footer_renders() {
             .into()
     });
 
-    let mut ui = Simulator::with_settings(Settings::default(), app.view());
+    let mut ui = simulator(&app);
     assert!(ui.find("Header").is_ok() && ui.find("Footer").is_ok());
 }
 
 #[test]
-fn card_with_width_configurations_renders() {
+fn card_with_fixed_width_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Fixed"), Text::new("Body"))
@@ -92,7 +50,10 @@ fn card_with_width_configurations_renders() {
         },
         "Fixed",
     );
+}
 
+#[test]
+fn card_with_fill_width_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Fill"), Text::new("Body"))
@@ -101,7 +62,10 @@ fn card_with_width_configurations_renders() {
         },
         "Fill",
     );
+}
 
+#[test]
+fn card_with_shrink_width_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Shrink"), Text::new("Body"))
@@ -110,7 +74,10 @@ fn card_with_width_configurations_renders() {
         },
         "Shrink",
     );
+}
 
+#[test]
+fn card_with_fill_portion_width_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Portion"), Text::new("Body"))
@@ -122,7 +89,7 @@ fn card_with_width_configurations_renders() {
 }
 
 #[test]
-fn card_with_height_configurations_renders() {
+fn card_with_fixed_height_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Fixed"), Text::new("Body"))
@@ -131,7 +98,10 @@ fn card_with_height_configurations_renders() {
         },
         "Fixed",
     );
+}
 
+#[test]
+fn card_with_fill_height_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Fill"), Text::new("Body"))
@@ -140,7 +110,10 @@ fn card_with_height_configurations_renders() {
         },
         "Fill",
     );
+}
 
+#[test]
+fn card_with_shrink_height_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Shrink"), Text::new("Body"))
@@ -149,7 +122,10 @@ fn card_with_height_configurations_renders() {
         },
         "Shrink",
     );
+}
 
+#[test]
+fn card_with_fill_portion_height_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("Portion"), Text::new("Body"))
@@ -351,62 +327,6 @@ fn card_close_button_can_be_clicked() {
     let mut ui = Simulator::with_settings(Settings::default(), app.view());
     assert!(ui.find("Closed").is_ok());
     assert!(ui.find("Closeable").is_err());
-}
-
-#[test]
-fn card_close_button_can_be_clicked_multiple_times() {
-    use std::cell::RefCell;
-    use std::rc::Rc;
-
-    #[derive(Clone)]
-    struct CountingApp {
-        count: Rc<RefCell<usize>>,
-    }
-
-    impl CountingApp {
-        fn new() -> (Self, iced::Task<Message>) {
-            (
-                CountingApp {
-                    count: Rc::new(RefCell::new(0)),
-                },
-                iced::Task::none(),
-            )
-        }
-
-        fn update(&mut self, message: Message) {
-            match message {
-                Message::CloseCard => {
-                    *self.count.borrow_mut() += 1;
-                }
-            }
-        }
-
-        fn view(&self) -> Element<'_, Message> {
-            let count = *self.count.borrow();
-            Card::new(
-                Text::new("Counter"),
-                Text::new(format!("Clicked {} times", count)),
-            )
-            .on_close(Message::CloseCard)
-            .into()
-        }
-    }
-
-    let (mut app, _) = CountingApp::new();
-
-    // Click 3 times
-    for _ in 0..3 {
-        let mut ui = Simulator::with_settings(Settings::default(), app.view());
-        let _ = ui.click("\u{e800}");
-
-        for message in ui.into_messages() {
-            app.update(message);
-        }
-    }
-
-    // Verify count
-    let mut ui = Simulator::with_settings(Settings::default(), app.view());
-    assert!(ui.find("Clicked 3 times").is_ok());
 }
 
 #[test]

@@ -6,10 +6,12 @@
 
 // Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
-use iced::{Element, Settings};
+#[macro_use]
+mod common;
+
 use iced_aw::menu::Menu;
 use iced_aw::{menu_bar, menu_items};
-use iced_test::{Error, Simulator};
+use iced_test::Error;
 use iced_widget::{button, text::Text};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,51 +23,16 @@ enum Message {
     EditCopy,
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn update(&mut self, _message: Message) {
-        // No state changes needed for these tests
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 // ============================================================================
 // Basic MenuBar Tests
 // ============================================================================
 
 #[test]
-fn can_find_menu_bar_items() -> Result<(), Error> {
-    let (mut app, _) = App::new(|| {
+fn menu_bar_can_find_items() -> Result<(), Error> {
+    let (app, _) = App::new(|| {
         menu_bar!(
             (Text::new("File")),
             (Text::new("Edit")),
@@ -73,11 +40,6 @@ fn can_find_menu_bar_items() -> Result<(), Error> {
         )
         .into()
     });
-
-    let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
 
     let mut ui = simulator(&app);
     assert!(ui.find("File").is_ok(), "Should find File menu item");
@@ -88,23 +50,13 @@ fn can_find_menu_bar_items() -> Result<(), Error> {
 }
 
 #[test]
-fn menu_bar_with_single_item() -> Result<(), Error> {
-    let (mut app, _) = App::new(|| menu_bar!((Text::new("File"))).into());
-
-    let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(ui.find("File").is_ok(), "Should find File menu item");
-
-    Ok(())
+fn menu_bar_with_single_item() {
+    run_test_and_find(|| menu_bar!((Text::new("File"))).into(), "File");
 }
 
 #[test]
 fn menu_bar_with_multiple_items() -> Result<(), Error> {
-    let (mut app, _) = App::new(|| {
+    let (app, _) = App::new(|| {
         menu_bar!(
             (Text::new("File")),
             (Text::new("Edit")),
@@ -113,11 +65,6 @@ fn menu_bar_with_multiple_items() -> Result<(), Error> {
         )
         .into()
     });
-
-    let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
 
     let mut ui = simulator(&app);
     assert!(ui.find("File").is_ok(), "Should find File menu item");
@@ -133,30 +80,23 @@ fn menu_bar_with_multiple_items() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn menu_bar_with_submenu() -> Result<(), Error> {
-    let (mut app, _) = App::new(|| {
-        let file_menu = Menu::new(menu_items!(
-            (button(Text::new("New")).on_press(Message::FileNew)),
-            (button(Text::new("Open")).on_press(Message::FileOpen)),
-            (button(Text::new("Save")).on_press(Message::FileSave))
-        ));
+fn menu_bar_with_submenu() {
+    run_test_and_find(
+        || {
+            let file_menu = Menu::new(menu_items!(
+                (button(Text::new("New")).on_press(Message::FileNew)),
+                (button(Text::new("Open")).on_press(Message::FileOpen)),
+                (button(Text::new("Save")).on_press(Message::FileSave))
+            ));
 
-        menu_bar!((Text::new("File"), file_menu)).into()
-    });
-
-    let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
-
-    let mut ui = simulator(&app);
-    assert!(ui.find("File").is_ok(), "Should find File menu item");
-
-    Ok(())
+            menu_bar!((Text::new("File"), file_menu)).into()
+        },
+        "File",
+    );
 }
 
 #[test]
-fn clicking_menu_bar_item_shows_submenu() -> Result<(), Error> {
+fn menu_bar_clicking_item_shows_submenu() -> Result<(), Error> {
     let (app, _) = App::new(|| {
         let file_menu = Menu::new(menu_items!(
             (button(Text::new("New")).on_press(Message::FileNew)),
@@ -230,7 +170,7 @@ fn menu_bar_with_multiple_menus() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn keyboard_navigation_in_menu() -> Result<(), Error> {
+fn menu_bar_keyboard_navigation_in_menu() -> Result<(), Error> {
     let (app, _) = App::new(|| {
         let file_menu = Menu::new(menu_items!(
             (button(Text::new("New")).on_press(Message::FileNew)),
@@ -265,7 +205,7 @@ fn keyboard_navigation_in_menu() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn clicking_outside_closes_menu() -> Result<(), Error> {
+fn menu_bar_clicking_outside_closes_menu() -> Result<(), Error> {
     let (app, _) = App::new(|| {
         let file_menu = Menu::new(menu_items!(
             (button(Text::new("New")).on_press(Message::FileNew))
@@ -291,7 +231,7 @@ fn clicking_outside_closes_menu() -> Result<(), Error> {
 // ============================================================================
 
 #[test]
-fn menu_with_buttons_and_text() -> Result<(), Error> {
+fn menu_bar_with_buttons_and_text() -> Result<(), Error> {
     let (app, _) = App::new(|| {
         let file_menu = Menu::new(menu_items!(
             (button(Text::new("New")).on_press(Message::FileNew)),
