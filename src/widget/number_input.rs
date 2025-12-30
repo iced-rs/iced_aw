@@ -593,17 +593,70 @@ where
         operation: &mut dyn Operation<()>,
     ) {
         operation.container(None, layout.bounds());
-        operation.traverse(&mut |operation| {
-            self.content.operate(
-                &mut tree.children[0],
-                layout
-                    .children()
-                    .next()
-                    .expect("NumberInput inner child Textbox was not created."),
-                renderer,
-                operation,
-            );
-        });
+
+        let mut children = layout.children();
+
+        // Operate on the text input (first child)
+        if let Some(content_layout) = children.next() {
+            self.content
+                .operate(&mut tree.children[0], content_layout, renderer, operation);
+        }
+
+        // Operate on the modifier buttons (second child) to expose them for testing
+        // The buttons are rendered as text elements, so we need to recreate their structure
+        if let Some(modifier_layout) = children.next()
+            && !self.ignore_buttons
+        {
+            let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
+            let icon_size = txt_size * 2.5 / 4.0;
+
+            let btn_mod = |c| {
+                Container::<Message, Theme, Renderer>::new(
+                    Text::new(format!(" {c} ")).size(icon_size),
+                )
+                .center_y(Length::Shrink)
+                .center_x(Length::Shrink)
+            };
+
+            let default_padding = DEFAULT_PADDING;
+
+            // Recreate the modifier element structure to operate on it
+            let mut element = if self.padding.top < default_padding.top
+                || self.padding.bottom < default_padding.bottom
+                || self.padding.right < default_padding.right
+            {
+                Element::new(
+                    Row::<Message, Theme, Renderer>::new()
+                        .spacing(1)
+                        .width(Length::Shrink)
+                        .push(btn_mod('+'))
+                        .push(btn_mod('-')),
+                )
+            } else {
+                Element::new(
+                    Column::<Message, Theme, Renderer>::new()
+                        .spacing(1)
+                        .width(Length::Shrink)
+                        .push(btn_mod('▲'))
+                        .push(btn_mod('▼')),
+                )
+            };
+
+            // Get or create the tree for the modifier element
+            let modifier_tree = if let Some(child_tree) = tree.children.get_mut(1) {
+                child_tree.diff(element.as_widget_mut());
+                child_tree
+            } else {
+                let child_tree = Tree::new(element.as_widget());
+                tree.children.insert(1, child_tree);
+                &mut tree.children[1]
+            };
+
+            // Operate on the modifier element to expose button text
+            element
+                .as_widget_mut()
+                .operate(modifier_tree, modifier_layout, renderer, operation);
+        }
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
@@ -1170,4 +1223,233 @@ where
 
 fn sorted_range<T: PartialOrd>(a: T, b: T) -> std::ops::Range<T> {
     if a >= b { b..a } else { a..b }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iced_widget::Renderer;
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        Changed(u32),
+        Submit,
+    }
+
+    type TestNumberInput<'a> = NumberInput<'a, u32, TestMessage, iced_widget::Theme, Renderer>;
+
+    #[test]
+    fn number_input_new_creates_instance() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        assert_eq!(input.value, 10);
+        assert_eq!(input.step, 1);
+        assert!(matches!(input.min, Bound::Included(0)));
+        assert!(matches!(input.max, Bound::Included(100)));
+        assert!(!input.ignore_scroll_events);
+        assert!(!input.ignore_buttons);
+    }
+
+    #[test]
+    fn number_input_with_step() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).step(5);
+
+        assert_eq!(input.step, 5);
+    }
+
+    #[test]
+    fn number_input_ignore_buttons() {
+        let value = 10u32;
+        let input =
+            TestNumberInput::new(&value, 0..=100, TestMessage::Changed).ignore_buttons(true);
+
+        assert!(input.ignore_buttons);
+    }
+
+    #[test]
+    fn number_input_ignore_scroll() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).ignore_scroll(true);
+
+        assert!(input.ignore_scroll_events);
+    }
+
+    #[test]
+    fn number_input_bounds() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).bounds(10..=90);
+
+        assert!(matches!(input.min, Bound::Included(10)));
+        assert!(matches!(input.max, Bound::Included(90)));
+    }
+
+    #[test]
+    fn number_input_can_increase() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).step(10);
+
+        assert!(input.can_increase());
+    }
+
+    #[test]
+    fn number_input_cannot_increase_at_max() {
+        let value = 100u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        assert!(!input.can_increase());
+    }
+
+    #[test]
+    fn number_input_can_decrease() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).step(10);
+
+        assert!(input.can_decrease());
+    }
+
+    #[test]
+    fn number_input_cannot_decrease_at_min() {
+        let value = 0u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        assert!(!input.can_decrease());
+    }
+
+    #[test]
+    fn number_input_valid_value() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        assert!(input.valid(&50));
+        assert!(input.valid(&0));
+        assert!(input.valid(&100));
+        assert!(!input.valid(&150));
+    }
+
+    #[test]
+    fn number_input_min_max_values() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 10..=90, TestMessage::Changed);
+
+        assert_eq!(input.min(), 10);
+        assert_eq!(input.max(), 90);
+    }
+
+    #[test]
+    fn number_input_min_max_with_excluded_bounds() {
+        let value = 50u32;
+        let input = TestNumberInput::new(&value, 10..90, TestMessage::Changed).step(1);
+
+        // Range 10..90 means start is Included(10), end is Excluded(90)
+        assert_eq!(input.min(), 10); // Included bound
+        assert_eq!(input.max(), 89); // Excluded bound - step
+    }
+
+    #[test]
+    fn number_input_disabled_when_bounds_too_tight() {
+        let value = 50u32;
+        // When min == max (50..=50), the widget is disabled because there's no room to change
+        let input = TestNumberInput::new(&value, 50..=50, TestMessage::Changed);
+        assert!(input.disabled());
+
+        // When min < max, the widget is not disabled
+        let input = TestNumberInput::new(&value, 49..=50, TestMessage::Changed);
+        assert!(!input.disabled());
+    }
+
+    #[test]
+    fn number_input_tag_returns_modifier_state_tag() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&input);
+        assert_eq!(tag, Tag::of::<ModifierState>());
+    }
+
+    #[test]
+    fn number_input_has_one_child() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+
+        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
+        assert_eq!(children.len(), 1); // Only the content (TypedInput) is a child initially
+    }
+
+    #[test]
+    fn number_input_different_values() {
+        let test_values = [(0, 0..=100), (50, 0..=100), (100, 0..=100), (25, 10..=50)];
+
+        for (value, range) in test_values {
+            let input = TestNumberInput::new(&value, range, TestMessage::Changed);
+            assert_eq!(input.value, value);
+        }
+    }
+
+    #[test]
+    fn modifier_state_defaults() {
+        let state = ModifierState::default();
+
+        assert!(!state.decrease_pressed);
+        assert!(!state.increase_pressed);
+    }
+
+    #[test]
+    fn number_input_with_on_submit() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed)
+            .on_submit(TestMessage::Submit);
+
+        assert!(input.on_submit.is_some());
+    }
+
+    #[test]
+    fn number_input_padding() {
+        let value = 10u32;
+        let custom_padding = Padding::new(10.0);
+        let input =
+            TestNumberInput::new(&value, 0..=100, TestMessage::Changed).padding(custom_padding);
+
+        assert_eq!(input.padding, custom_padding);
+    }
+
+    #[test]
+    fn number_input_size() {
+        let value = 10u32;
+        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).set_size(20.0);
+
+        assert_eq!(input.size, Some(iced_core::Pixels(20.0)));
+    }
+
+    #[test]
+    fn number_input_width() {
+        let value = 10u32;
+        let _input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed).width(200);
+
+        // We can't easily verify the width was set since it's stored in the content widget
+        // This test just ensures the method doesn't panic
+    }
+
+    #[test]
+    fn sorted_range_ascending() {
+        let range = sorted_range(1, 10);
+        assert_eq!(range.start, 1);
+        assert_eq!(range.end, 10);
+    }
+
+    #[test]
+    fn sorted_range_descending() {
+        let range = sorted_range(10, 1);
+        assert_eq!(range.start, 1);
+        assert_eq!(range.end, 10);
+    }
+
+    #[test]
+    fn sorted_range_equal() {
+        let range = sorted_range(5, 5);
+        assert_eq!(range.start, 5);
+        assert_eq!(range.end, 5);
+    }
 }
