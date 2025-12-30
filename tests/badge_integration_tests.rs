@@ -3,63 +3,19 @@
 //! These tests verify the Badge widget's behavior by actually exercising
 //! the widget through the iced test framework.
 
-use iced::{Alignment, Color, Element, Length, Settings, Theme};
+#[macro_use]
+mod common;
+
+use iced::{Alignment, Color, Length, Theme};
 use iced_aw::Badge;
-use iced_test::Simulator;
 use iced_widget::text::Text;
 
 // Message type for the tests (unused but required by iced)
 #[derive(Clone, Debug)]
 enum Message {}
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-/// Helper to run a test with a given view
-fn run_test<F>(view_fn: F)
-where
-    F: Fn() -> Element<'static, Message> + 'static,
-{
-    let (app, _) = App::new(view_fn);
-    let _ui = Simulator::with_settings(Settings::default(), app.view());
-    // The widget is successfully rendered if we get here without panicking
-}
-
-/// Helper to verify text can be found (tests operate() implementation)
-fn run_test_and_find<F>(view_fn: F, text: &str)
-where
-    F: Fn() -> Element<'static, Message> + 'static,
-{
-    let (app, _) = App::new(view_fn);
-    let mut ui = Simulator::with_settings(Settings::default(), app.view());
-    assert!(
-        ui.find(text).is_ok(),
-        "Failed to find text '{}' in badge",
-        text
-    );
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 #[test]
 fn badge_renders_with_text() {

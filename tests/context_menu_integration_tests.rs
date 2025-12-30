@@ -15,9 +15,12 @@
 
 // Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
 
-use iced::{Color, Element, Settings, Theme};
+#[macro_use]
+mod common;
+
+use iced::{Color, Theme};
 use iced_aw::ContextMenu;
-use iced_test::{Error, Simulator};
+use iced_test::Error;
 use iced_widget::text::Text;
 use iced_widget::{Button, button};
 
@@ -34,47 +37,8 @@ fn create_button<'a>(text: &'a str, msg: Message) -> iced_widget::Button<'a, Mes
     button(Text::new(text)).on_press(msg)
 }
 
-type ViewFn = Box<dyn Fn() -> Element<'static, Message>>;
-
-#[derive(Clone)]
-struct App {
-    view_fn: std::rc::Rc<ViewFn>,
-}
-
-impl App {
-    fn new<F>(view_fn: F) -> (Self, iced::Task<Message>)
-    where
-        F: Fn() -> Element<'static, Message> + 'static,
-    {
-        (
-            App {
-                view_fn: std::rc::Rc::new(Box::new(view_fn)),
-            },
-            iced::Task::none(),
-        )
-    }
-
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::Action1 | Message::Action2 | Message::Other => {
-                // No state changes in these tests
-            }
-        }
-    }
-
-    fn view(&self) -> Element<'_, Message> {
-        (self.view_fn)()
-    }
-}
-
-fn simulator(app: &App) -> Simulator<'_, Message> {
-    Simulator::with_settings(
-        Settings {
-            ..Settings::default()
-        },
-        app.view(),
-    )
-}
+// Generate test helpers for this Message type
+test_helpers!(Message);
 
 #[test]
 fn context_menu_can_be_created_with_underlay_and_overlay() {
