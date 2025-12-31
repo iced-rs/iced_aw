@@ -8,7 +8,10 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
-    widget::tree::{self, Tree},
+    widget::{
+        Operation,
+        tree::{self, Tree},
+    },
 };
 
 use std::ops::RangeInclusive;
@@ -185,6 +188,17 @@ where
             self.on_change.as_ref(),
             &self.on_release,
         );
+    }
+
+    fn operate(
+        &mut self,
+        _tree: &mut Tree,
+        layout: Layout<'_>,
+        _renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        // Register the widget's bounds for testing
+        operation.container(None, layout.bounds());
     }
 
     fn draw(
@@ -374,5 +388,74 @@ impl State {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone, Debug)]
+    enum Message {
+        Changed(#[allow(dead_code)] u32),
+    }
+
+    #[test]
+    fn test_slide_bar_new() {
+        let slider = SlideBar::new(0..=100, 50, Message::Changed);
+        assert_eq!(slider.value, 50);
+        assert_eq!(*slider.range.start(), 0);
+        assert_eq!(*slider.range.end(), 100);
+    }
+
+    #[test]
+    fn test_slide_bar_value_clamped_to_range() {
+        // Value below range
+        let slider = SlideBar::new(10..=100, 5, Message::Changed);
+        assert_eq!(slider.value, 10);
+
+        // Value above range
+        let slider = SlideBar::new(0..=50, 100, Message::Changed);
+        assert_eq!(slider.value, 50);
+
+        // Value within range
+        let slider = SlideBar::new(0..=100, 50, Message::Changed);
+        assert_eq!(slider.value, 50);
+    }
+
+    #[test]
+    fn test_slide_bar_with_step() {
+        let slider = SlideBar::new(0u32..=100, 50, Message::Changed).step(10u32);
+        assert_eq!(slider.step, 10);
+    }
+
+    #[test]
+    fn test_slide_bar_with_on_release() {
+        let slider = SlideBar::new(0..=100, 50, Message::Changed).on_release(Message::Changed(0));
+        assert!(slider.on_release.is_some());
+    }
+
+    #[test]
+    fn test_slide_bar_with_width() {
+        let slider = SlideBar::new(0..=100, 50, Message::Changed).width(Length::Fixed(300.0));
+        assert_eq!(slider.width, Length::Fixed(300.0));
+    }
+
+    #[test]
+    fn test_slide_bar_with_height() {
+        let slider = SlideBar::new(0..=100, 50, Message::Changed).height(Some(Length::Fixed(50.0)));
+        assert_eq!(slider.height, Some(Length::Fixed(50.0)));
+    }
+
+    #[test]
+    fn test_state_new() {
+        let state = State::new();
+        assert!(!state.is_dragging);
+    }
+
+    #[test]
+    fn test_state_default() {
+        let state = State::default();
+        assert!(!state.is_dragging);
     }
 }
