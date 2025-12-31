@@ -97,28 +97,16 @@ fn selection_list_clicking_option_produces_selected_message() -> Result<(), Erro
     ui.click("Second")?;
 
     // Verify we got a Selected message
-    let mut got_selected = false;
-    let mut selected_index = None;
-    let mut selected_value = None;
-
-    for message in ui.into_messages() {
-        let Message::Selected(index, value) = &message;
-        got_selected = true;
-        selected_index = Some(*index);
-        selected_value = Some(value.clone());
-        app.update(message);
-    }
+    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Selected(_, _)));
 
     assert!(
-        got_selected,
+        !messages.is_empty(),
         "Clicking option should produce Selected message"
     );
-    assert_eq!(selected_index, Some(1), "Selected index should be 1");
-    assert_eq!(
-        selected_value,
-        Some("Second".to_string()),
-        "Selected value should be 'Second'"
-    );
+
+    let Message::Selected(index, value) = &messages[0];
+    assert_eq!(*index, 1, "Selected index should be 1");
+    assert_eq!(value, "Second", "Selected value should be 'Second'");
 
     Ok(())
 }
@@ -136,15 +124,16 @@ fn selection_list_clicking_first_option_produces_correct_message() -> Result<(),
     let mut ui = simulator(&app);
     ui.click("Alpha")?;
 
-    let mut selected_index = None;
-    for message in ui.into_messages() {
-        let Message::Selected(index, value) = &message;
-        selected_index = Some(*index);
-        assert_eq!(value, "Alpha");
-        app.update(message);
-    }
+    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Selected(_, _)));
 
-    assert_eq!(selected_index, Some(0), "First option should have index 0");
+    assert!(
+        !messages.is_empty(),
+        "Clicking should produce Selected message"
+    );
+
+    let Message::Selected(index, value) = &messages[0];
+    assert_eq!(*index, 0, "First option should have index 0");
+    assert_eq!(value, "Alpha");
 
     Ok(())
 }
@@ -162,15 +151,16 @@ fn selection_list_clicking_last_option_produces_correct_message() -> Result<(), 
     let mut ui = simulator(&app);
     ui.click("Blue")?;
 
-    let mut selected_index = None;
-    for message in ui.into_messages() {
-        let Message::Selected(index, value) = &message;
-        selected_index = Some(*index);
-        assert_eq!(value, "Blue");
-        app.update(message);
-    }
+    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Selected(_, _)));
 
-    assert_eq!(selected_index, Some(2), "Last option should have index 2");
+    assert!(
+        !messages.is_empty(),
+        "Clicking should produce Selected message"
+    );
+
+    let Message::Selected(index, value) = &messages[0];
+    assert_eq!(*index, 2, "Last option should have index 2");
+    assert_eq!(value, "Blue");
 
     Ok(())
 }
@@ -193,35 +183,27 @@ fn selection_list_clicking_different_options_produces_different_messages() -> Re
     let mut ui = simulator(&app);
     ui.click("Item A")?;
 
-    let mut first_selection = None;
-    for message in ui.into_messages() {
-        let Message::Selected(index, value) = &message;
-        first_selection = Some((*index, value.clone()));
-        app.update(message);
-    }
-
-    assert_eq!(
-        first_selection.as_ref().map(|(i, v)| (*i, v.as_str())),
-        Some((0, "Item A")),
-        "First click should select Item A"
+    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Selected(_, _)));
+    assert!(
+        !messages.is_empty(),
+        "First click should produce Selected message"
     );
+    let Message::Selected(index, value) = &messages[0];
+    assert_eq!(*index, 0, "First click should select Item A");
+    assert_eq!(value, "Item A");
 
     // Second click
     let mut ui = simulator(&app);
     ui.click("Item C")?;
 
-    let mut second_selection = None;
-    for message in ui.into_messages() {
-        let Message::Selected(index, value) = &message;
-        second_selection = Some((*index, value.clone()));
-        app.update(message);
-    }
-
-    assert_eq!(
-        second_selection.as_ref().map(|(i, v)| (*i, v.as_str())),
-        Some((2, "Item C")),
-        "Second click should select Item C"
+    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Selected(_, _)));
+    assert!(
+        !messages.is_empty(),
+        "Second click should produce Selected message"
     );
+    let Message::Selected(index, value) = &messages[0];
+    assert_eq!(*index, 2, "Second click should select Item C");
+    assert_eq!(value, "Item C");
 
     Ok(())
 }
@@ -248,16 +230,12 @@ fn selection_list_handles_options_with_numbers() -> Result<(), Error> {
 
     ui.click("Item 2")?;
 
-    let mut selected = false;
-    for message in ui.into_messages() {
-        if let Message::Selected(1, ref value) = message {
-            selected = true;
-            assert_eq!(value, "Item 2");
-        }
-        app.update(message);
-    }
-
-    assert!(selected, "Item 2 should be selectable");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Selected(1, value) if value == "Item 2"),
+        "Item 2 should be selectable",
+    );
 
     Ok(())
 }
@@ -307,16 +285,12 @@ fn selection_list_handles_single_option() -> Result<(), Error> {
     assert!(ui.find("Only Option").is_ok());
     ui.click("Only Option")?;
 
-    let mut selected = false;
-    for message in ui.into_messages() {
-        if let Message::Selected(0, ref value) = message {
-            selected = true;
-            assert_eq!(value, "Only Option");
-        }
-        app.update(message);
-    }
-
-    assert!(selected, "Single option should be selectable");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Selected(0, value) if value == "Only Option"),
+        "Single option should be selectable",
+    );
 
     Ok(())
 }
@@ -346,16 +320,12 @@ fn selection_list_handles_long_list_of_options() -> Result<(), Error> {
     // Click an option in the middle
     ui.click("Option 15")?;
 
-    let mut selected = false;
-    for message in ui.into_messages() {
-        if let Message::Selected(14, ref value) = message {
-            selected = true;
-            assert_eq!(value, "Option 15");
-        }
-        app.update(message);
-    }
-
-    assert!(selected, "Option 15 should be selectable");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Selected(14, value) if value == "Option 15"),
+        "Option 15 should be selectable",
+    );
 
     Ok(())
 }

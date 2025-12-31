@@ -51,7 +51,10 @@ fn date_picker_can_find_underlay_button_text() -> Result<(), Error> {
         DatePicker::new(false, date, button, Message::Cancel, Message::Submit).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -83,7 +86,12 @@ fn date_picker_underlay_button_opens_picker() -> Result<(), Error> {
     ui.click("Open Date Picker")?;
 
     // Process messages to verify we got Message::Open
-    show_picker = check_message_received(ui, &mut app, |m| matches!(m, Message::Open));
+    for message in ui.into_messages() {
+        if matches!(message, Message::Open) {
+            show_picker = true;
+        }
+        app.update(message);
+    }
 
     assert!(show_picker, "Clicking button should produce Message::Open");
 
@@ -343,12 +351,15 @@ fn date_picker_cancel_button_produces_cancel_message() -> Result<(), Error> {
     ui.click("\u{e800}")?; // Cancel button
 
     // Verify we got a Cancel message
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Cancel),
-        "Cancel button should produce Message::Cancel",
-    );
+    let mut got_cancel = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Cancel) {
+            got_cancel = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_cancel, "Cancel button should produce Message::Cancel");
 
     Ok(())
 }
@@ -371,12 +382,15 @@ fn date_picker_submit_button_produces_submit_message() -> Result<(), Error> {
     ui.click("\u{e805}")?; // OK button
 
     // Verify we got a Submit message with the date
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Submit(_)),
-        "Submit button should produce Message::Submit",
-    );
+    let mut got_submit = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Submit(_)) {
+            got_submit = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_submit, "Submit button should produce Message::Submit");
 
     Ok(())
 }
@@ -403,14 +417,13 @@ fn date_picker_clicking_date_and_submit_workflow() -> Result<(), Error> {
     // Submit the date
     ui.click("\u{e805}")?; // OK button
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     assert!(submitted_date.is_some(), "Should have submitted a date");
     let submitted = submitted_date.unwrap();
@@ -448,14 +461,17 @@ fn date_picker_navigate_then_submit_workflow() -> Result<(), Error> {
     // Submit without clicking a specific day (uses displayed month/year)
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-
-    assert!(!messages.is_empty(), "Should have submitted a date");
-
-    if let Message::Submit(date) = &messages[0] {
-        assert_eq!(date.month, 7, "Month should be July");
-        assert_eq!(date.year, 2024);
+    let mut got_submit = false;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            got_submit = true;
+            assert_eq!(date.month, 7, "Month should be July");
+            assert_eq!(date.year, 2024);
+        }
+        app.update(message);
     }
+
+    assert!(got_submit, "Should have submitted a date");
 
     Ok(())
 }
@@ -610,14 +626,13 @@ fn date_picker_mouse_click_day_cell_submits_valid_date() -> Result<(), Error> {
     // Submit to verify a valid date is selected
     ui.click("\u{e805}")?; // OK button
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     assert!(submitted_date.is_some(), "Should have submitted a date");
     let submitted = submitted_date.unwrap();
@@ -649,14 +664,13 @@ fn date_picker_mouse_submit_without_day_click_uses_displayed_date() -> Result<()
     // Submit without clicking a specific day (uses the initial date)
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.year, 2024);
@@ -688,14 +702,13 @@ fn date_picker_mouse_navigate_month_then_submit() -> Result<(), Error> {
     // Submit without clicking specific day (uses displayed month/year with original day)
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.month, 7, "Should be July");
@@ -730,14 +743,13 @@ fn date_picker_mouse_navigate_year_then_submit() -> Result<(), Error> {
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.year, 2025, "Should be 2025");
@@ -777,14 +789,13 @@ fn date_picker_mouse_navigate_both_month_and_year_then_submit() -> Result<(), Er
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.year, 2025);
@@ -871,14 +882,13 @@ fn date_picker_mouse_navigate_leap_year_february() -> Result<(), Error> {
     // Submit (February 2024 is valid with 29 days)
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.year, 2024);
@@ -918,14 +928,13 @@ fn date_picker_mouse_rapid_month_navigation_workflow() -> Result<(), Error> {
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.month, 8, "Should be August");
@@ -965,14 +974,13 @@ fn date_picker_mouse_navigate_multiple_months_forward_and_back() -> Result<(), E
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.month, 6, "Should be June");
@@ -1016,14 +1024,13 @@ fn date_picker_mouse_navigate_to_different_year_and_month() -> Result<(), Error>
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_date = messages.first().and_then(|m| {
-        if let Message::Submit(date) = m {
-            Some(*date)
-        } else {
-            None
+    let mut submitted_date: Option<Date> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(date) = message {
+            submitted_date = Some(date);
         }
-    });
+        app.update(message);
+    }
 
     let submitted = submitted_date.unwrap();
     assert_eq!(submitted.year, 2026);

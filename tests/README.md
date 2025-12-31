@@ -42,7 +42,7 @@ The `test_helpers!` macro generates the following for your Message type:
 - **`App`** - Test application wrapper with `new()`, `update()`, and `view()` methods
 - **`ViewFn`** - Type alias for view functions: `Box<dyn Fn() -> Element<'static, Message>>`
 
-### Functions
+### Basic Test Functions
 - **`simulator(app: &App) -> Simulator<'_, Message>`**
   Creates a simulator with default settings
 
@@ -56,6 +56,70 @@ The `test_helpers!` macro generates the following for your Message type:
   Verifies a widget renders and contains specific text
   ```rust
   run_test_and_find(|| MyWidget::new().into(), "Button Label");
+  ```
+
+### Mouse and Touch Input Helpers
+- **`simulate_mouse_click(ui, position, button)`**
+  Simulate a mouse click at a specific Point
+
+- **`simulate_mouse_click_at(ui, x, y, button)`**
+  Simulate a mouse click at coordinates
+
+- **`simulate_left_click_at(ui, x, y)`**
+  Simulate a left mouse click at coordinates
+  ```rust
+  simulate_left_click_at(&mut ui, 100.0, 100.0);
+  ```
+
+- **`simulate_right_click_at(ui, x, y)`**
+  Simulate a right mouse click at coordinates
+  ```rust
+  simulate_right_click_at(&mut ui, 10.0, 10.0);
+  ```
+
+- **`simulate_touch(ui, position)`**
+  Simulate a touch event at a specific Point
+
+- **`simulate_touch_at(ui, x, y)`**
+  Simulate a touch event at coordinates
+  ```rust
+  simulate_touch_at(&mut ui, 50.0, 50.0);
+  ```
+
+- **`outside_position() -> Point`**
+  Returns a position far outside typical widget bounds (1000.0, 1000.0)
+  ```rust
+  simulate_left_click_at(&mut ui, outside_position().x, outside_position().y);
+  ```
+
+### Message Verification Helpers
+- **`assert_message_received<F>(ui, app, predicate, error_msg)`**
+  Process messages and assert a specific message was received
+  ```rust
+  assert_message_received(ui, &mut app,
+      |msg| matches!(msg, Message::Clicked),
+      "Should receive Clicked message");
+  ```
+
+- **`check_message_received<F>(ui, app, predicate) -> bool`**
+  Process messages and return whether a specific message was received
+  ```rust
+  let got_message = check_message_received(ui, &mut app,
+      |msg| matches!(msg, Message::Expected));
+  ```
+
+- **`process_messages(ui, app)`**
+  Process all messages from simulator without checking
+  ```rust
+  process_messages(ui, &mut app);
+  ```
+
+- **`collect_messages<F>(ui, app, predicate) -> Vec<Message>`**
+  Process messages and return collected messages matching predicate
+  ```rust
+  let clicks = collect_messages(ui, &mut app,
+      |msg| matches!(msg, Message::Clicked));
+  assert_eq!(clicks.len(), 3);
   ```
 
 ## Advanced Usage

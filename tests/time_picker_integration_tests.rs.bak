@@ -58,7 +58,10 @@ fn time_picker_can_find_underlay_button_text() -> Result<(), Error> {
         TimePicker::new(false, time, button, Message::Cancel, Message::Submit).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -94,7 +97,12 @@ fn time_picker_underlay_button_opens_picker() -> Result<(), Error> {
     ui.click("Open Time Picker")?;
 
     // Process messages to verify we got Message::Open
-    show_picker = check_message_received(ui, &mut app, |m| matches!(m, Message::Open));
+    for message in ui.into_messages() {
+        if matches!(message, Message::Open) {
+            show_picker = true;
+        }
+        app.update(message);
+    }
 
     assert!(show_picker, "Clicking button should produce Message::Open");
 
@@ -483,12 +491,15 @@ fn time_picker_cancel_button_produces_cancel_message() -> Result<(), Error> {
     ui.click("\u{e800}")?; // Cancel button
 
     // Verify we got a Cancel message
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Cancel),
-        "Cancel button should produce Message::Cancel",
-    );
+    let mut got_cancel = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Cancel) {
+            got_cancel = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_cancel, "Cancel button should produce Message::Cancel");
 
     Ok(())
 }
@@ -517,12 +528,15 @@ fn time_picker_submit_button_produces_submit_message() -> Result<(), Error> {
     ui.click("\u{e805}")?; // OK button
 
     // Verify we got a Submit message with the time
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Submit(_)),
-        "Submit button should produce Message::Submit",
-    );
+    let mut got_submit = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Submit(_)) {
+            got_submit = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_submit, "Submit button should produce Message::Submit");
 
     Ok(())
 }
@@ -548,14 +562,13 @@ fn time_picker_submit_returns_correct_time() -> Result<(), Error> {
     ui.click("\u{e805}")?; // OK button
 
     // Verify the submitted time
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_time = messages.first().and_then(|m| {
-        if let Message::Submit(time) = m {
-            Some(*time)
-        } else {
-            None
+    let mut submitted_time: Option<Time> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(time) = message {
+            submitted_time = Some(time);
         }
-    });
+        app.update(message);
+    }
 
     assert!(submitted_time.is_some(), "Should have submitted a time");
     let submitted = submitted_time.unwrap();
@@ -616,14 +629,13 @@ fn time_picker_adjust_time_then_submit_workflow() -> Result<(), Error> {
     ui.click("\u{e805}")?;
 
     // Verify the submitted time
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_time = messages.first().and_then(|m| {
-        if let Message::Submit(time) = m {
-            Some(*time)
-        } else {
-            None
+    let mut submitted_time: Option<Time> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(time) = message {
+            submitted_time = Some(time);
         }
-    });
+        app.update(message);
+    }
 
     assert!(submitted_time.is_some(), "Should have submitted a time");
     let submitted = submitted_time.unwrap();
@@ -715,14 +727,13 @@ fn time_picker_complete_12h_format_workflow() -> Result<(), Error> {
     // Submit
     ui.click("\u{e805}")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::Submit(_)));
-    let submitted_time = messages.first().and_then(|m| {
-        if let Message::Submit(time) = m {
-            Some(*time)
-        } else {
-            None
+    let mut submitted_time: Option<Time> = None;
+    for message in ui.into_messages() {
+        if let Message::Submit(time) = message {
+            submitted_time = Some(time);
         }
-    });
+        app.update(message);
+    }
 
     assert!(submitted_time.is_some(), "Should have submitted a time");
     let submitted = submitted_time.unwrap();

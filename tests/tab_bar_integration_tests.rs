@@ -468,3 +468,383 @@ fn tab_bar_with_fill_tab_width() {
             .into()
     });
 }
+
+// ============================================================================
+// Mouse Input Tests
+// ============================================================================
+
+#[test]
+fn tab_bar_click_icon_tab_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::Icon('🏠'))
+            .push(TabId::Settings, TabLabel::Icon('⚙'))
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on the Settings icon tab
+    ui.click("⚙")?;
+
+    // Verify we got a TabSelected message
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Settings)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon tab should produce TabSelected message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_icon_text_tab_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .push(
+                TabId::Settings,
+                TabLabel::IconText('⚙', "Settings".to_string()),
+            )
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on the Settings icon-text tab by clicking on text
+    ui.click("Settings")?;
+
+    // Verify we got a TabSelected message
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Settings)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon-text tab should produce TabSelected message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_icon_text_tab_by_icon_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .push(
+                TabId::Settings,
+                TabLabel::IconText('⚙', "Settings".to_string()),
+            )
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on the Settings icon-text tab by clicking on icon
+    ui.click("⚙")?;
+
+    // Verify we got a TabSelected message
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Settings)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon in icon-text tab should produce TabSelected message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_active_tab_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::Text("Home".to_string()))
+            .push(TabId::Settings, TabLabel::Text("Settings".to_string()))
+            .set_active_tab(&TabId::Home)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on the currently active Home tab
+    ui.click("Home")?;
+
+    // Verify we got a TabSelected message even for the active tab
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking active tab should still produce TabSelected message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_close_button_on_icon_tab_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::Icon('🏠'))
+            .push(TabId::Settings, TabLabel::Icon('⚙'))
+            .on_close(Message::TabClosed)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on a close button
+    ui.click("\u{e800}")?;
+
+    // Verify we got a TabClosed message
+    let mut got_tab_closed = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabClosed(_)) {
+            got_tab_closed = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_closed,
+        "Clicking close button on icon tab should produce TabClosed message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_close_button_on_icon_text_tab_produces_message() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .push(
+                TabId::Settings,
+                TabLabel::IconText('⚙', "Settings".to_string()),
+            )
+            .on_close(Message::TabClosed)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click on a close button
+    ui.click("\u{e800}")?;
+
+    // Verify we got a TabClosed message
+    let mut got_tab_closed = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabClosed(_)) {
+            got_tab_closed = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_closed,
+        "Clicking close button on icon-text tab should produce TabClosed message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_click_mixed_tab_types() -> Result<(), Error> {
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::Text("Home".to_string()))
+            .push(TabId::Settings, TabLabel::Icon('⚙'))
+            .push(
+                TabId::Profile,
+                TabLabel::IconText('👤', "Profile".to_string()),
+            )
+            .into()
+    });
+
+    // Click on text tab
+    let mut ui = simulator(&app);
+    ui.click("Home")?;
+
+    let mut got_home = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_home = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_home, "Should receive Home tab selection");
+
+    // Click on icon tab
+    let mut ui = simulator(&app);
+    ui.click("⚙")?;
+
+    let mut got_settings = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Settings)) {
+            got_settings = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_settings, "Should receive Settings tab selection");
+
+    // Click on icon-text tab
+    let mut ui = simulator(&app);
+    ui.click("Profile")?;
+
+    let mut got_profile = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Profile)) {
+            got_profile = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_profile, "Should receive Profile tab selection");
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_icon_text_position_top_click() -> Result<(), Error> {
+    use iced_aw::tab_bar::Position;
+
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .set_position(Position::Top)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+    ui.click("Home")?;
+
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon-text tab with icon on top should produce message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_icon_text_position_right_click() -> Result<(), Error> {
+    use iced_aw::tab_bar::Position;
+
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .set_position(Position::Right)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+    ui.click("Home")?;
+
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon-text tab with icon on right should produce message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_icon_text_position_bottom_click() -> Result<(), Error> {
+    use iced_aw::tab_bar::Position;
+
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .set_position(Position::Bottom)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+    ui.click("Home")?;
+
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon-text tab with icon on bottom should produce message"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn tab_bar_icon_text_position_left_click() -> Result<(), Error> {
+    use iced_aw::tab_bar::Position;
+
+    let (mut app, _) = App::new(|| {
+        TabBar::new(Message::TabSelected)
+            .push(TabId::Home, TabLabel::IconText('🏠', "Home".to_string()))
+            .set_position(Position::Left)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+    ui.click("Home")?;
+
+    let mut got_tab_selected = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::TabSelected(TabId::Home)) {
+            got_tab_selected = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_tab_selected,
+        "Clicking icon-text tab with icon on left should produce message"
+    );
+
+    Ok(())
+}

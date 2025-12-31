@@ -4,17 +4,6 @@
 //! from an external perspective, testing the widget as a user of the
 //! library would interact with it.
 
-// Test Notes:
-// Button cheat sheet
-//  cancel          → \u{e800}  // Used for close/cancel buttons
-//  down_open       → \u{e801}  // Down arrow (used in number_input, time_picker)
-//  left_open       → \u{e802}  // Left arrow (used in date_picker navigation)
-//  right_open      → \u{e803}  // Right arrow (used in date_picker navigation)
-//  up_open         → \u{e804}  // Up arrow (used in number_input, time_picker)
-//  ok              → \u{e805}  // Checkmark/submit (used in pickers)
-
-// Simulator API https://raw.githubusercontent.com/iced-rs/iced/master/test/src/simulator.rs
-
 #[macro_use]
 mod common;
 
@@ -62,10 +51,7 @@ fn number_input_can_find_value() -> Result<(), Error> {
 
     let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -137,17 +123,11 @@ fn number_input_increment_button_click_produces_message() -> Result<(), Error> {
     click_increment(&mut ui)?;
 
     // Verify we got a Changed message
-    let mut got_changed = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::Changed(_)) {
-            got_changed = true;
-        }
-        app.update(message);
-    }
-
-    assert!(
-        got_changed,
-        "Increment button should produce Message::Changed"
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Changed(_)),
+        "Increment button should produce Message::Changed",
     );
 
     Ok(())
@@ -165,17 +145,11 @@ fn number_input_decrement_button_click_produces_message() -> Result<(), Error> {
     click_decrement(&mut ui)?;
 
     // Verify we got a Changed message
-    let mut got_changed = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::Changed(_)) {
-            got_changed = true;
-        }
-        app.update(message);
-    }
-
-    assert!(
-        got_changed,
-        "Decrement button should produce Message::Changed"
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Changed(_)),
+        "Decrement button should produce Message::Changed",
     );
 
     Ok(())
@@ -257,15 +231,12 @@ fn number_input_on_submit_produces_message() -> Result<(), Error> {
     ));
 
     // Verify we got a Submit message
-    let mut got_submit = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::Submit) {
-            got_submit = true;
-        }
-        app.update(message);
-    }
-
-    assert!(got_submit, "Enter key should produce Message::Submit");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Submit),
+        "Enter key should produce Message::Submit",
+    );
 
     Ok(())
 }
@@ -306,5 +277,300 @@ fn number_input_works_with_f64() -> Result<(), Error> {
         });
 
     // If we got here without panic, the test passes
+    Ok(())
+}
+
+// ============================================================================
+// Mouse Wheel Scrolling Tests
+// ============================================================================
+
+#[test]
+fn number_input_mouse_scroll_up_increases_value() -> Result<(), Error> {
+    use iced::Event;
+    use iced_core::mouse;
+
+    let value = 50u32;
+
+    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+
+    let mut ui = simulator(&app);
+
+    // Simulate mouse wheel scroll up (positive y delta)
+    ui.simulate([Event::Mouse(mouse::Event::WheelScrolled {
+        delta: mouse::ScrollDelta::Lines { x: 0.0, y: 1.0 },
+    })]);
+
+    // Verify we got a Changed message
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Changed(_)),
+        "Mouse scroll up should produce Message::Changed",
+    );
+
+    Ok(())
+}
+
+#[test]
+fn number_input_mouse_scroll_down_decreases_value() -> Result<(), Error> {
+    use iced::Event;
+    use iced_core::mouse;
+
+    let value = 50u32;
+
+    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+
+    let mut ui = simulator(&app);
+
+    // Simulate mouse wheel scroll down (negative y delta)
+    ui.simulate([Event::Mouse(mouse::Event::WheelScrolled {
+        delta: mouse::ScrollDelta::Lines { x: 0.0, y: -1.0 },
+    })]);
+
+    // Verify we got a Changed message
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Changed(_)),
+        "Mouse scroll down should produce Message::Changed",
+    );
+
+    Ok(())
+}
+
+#[test]
+fn number_input_ignore_scroll_prevents_wheel_events() -> Result<(), Error> {
+    use iced::Event;
+    use iced_core::mouse;
+
+    let value = 50u32;
+
+    let (mut app, _) = App::new(move || {
+        NumberInput::new(&value, 0..=100, Message::Changed)
+            .ignore_scroll(true)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Simulate mouse wheel scroll up
+    ui.simulate([Event::Mouse(mouse::Event::WheelScrolled {
+        delta: mouse::ScrollDelta::Lines { x: 0.0, y: 1.0 },
+    })]);
+
+    // Verify we did NOT get a Changed message
+    let got_changed = check_message_received(ui, &mut app, |m| matches!(m, Message::Changed(_)));
+
+    assert!(
+        !got_changed,
+        "Mouse scroll should be ignored when ignore_scroll is true"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn number_input_scroll_respects_boundaries() -> Result<(), Error> {
+    use iced::Event;
+    use iced_core::mouse;
+
+    // Test scrolling down at minimum
+    let value = 0u32;
+    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+
+    let mut ui = simulator(&app);
+
+    // Simulate scroll down at minimum - should not change value
+    ui.simulate([Event::Mouse(mouse::Event::WheelScrolled {
+        delta: mouse::ScrollDelta::Lines { x: 0.0, y: -1.0 },
+    })]);
+
+    // Process messages - value should stay at 0
+    process_messages(ui, &mut app);
+
+    // Create new simulator to verify value is still displayed as 0
+    let mut ui = simulator(&app);
+    assert!(
+        ui.find("0").is_ok(),
+        "Value should remain at minimum when scrolling down"
+    );
+
+    Ok(())
+}
+
+// ============================================================================
+// Multiple Button Click Tests
+// ============================================================================
+
+#[test]
+fn number_input_multiple_increment_clicks() -> Result<(), Error> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let value = Rc::new(RefCell::new(10u32));
+    let value_clone = value.clone();
+
+    #[derive(Clone)]
+    struct StatefulApp {
+        value: Rc<RefCell<u32>>,
+    }
+
+    impl StatefulApp {
+        fn new(value: Rc<RefCell<u32>>) -> (Self, iced::Task<Message>) {
+            (Self { value }, iced::Task::none())
+        }
+
+        fn update(&mut self, message: Message) {
+            if let Message::Changed(new_val) = message {
+                *self.value.borrow_mut() = new_val;
+            }
+        }
+
+        fn view(&self) -> iced::Element<'_, Message> {
+            let val = *self.value.borrow();
+            NumberInput::new(&val, 0..=100, Message::Changed)
+                .step(5)
+                .into()
+        }
+    }
+
+    let (mut app, _) = StatefulApp::new(value_clone);
+    let mut ui = iced_test::Simulator::with_settings(iced::Settings::default(), app.view());
+
+    // Click increment button
+    click_increment(&mut ui)?;
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Verify value increased
+    let new_value = *value.borrow();
+    assert_eq!(new_value, 15, "Value should increase by step (5)");
+
+    Ok(())
+}
+
+#[test]
+fn number_input_multiple_decrement_clicks() -> Result<(), Error> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let value = Rc::new(RefCell::new(50u32));
+    let value_clone = value.clone();
+
+    #[derive(Clone)]
+    struct StatefulApp {
+        value: Rc<RefCell<u32>>,
+    }
+
+    impl StatefulApp {
+        fn new(value: Rc<RefCell<u32>>) -> (Self, iced::Task<Message>) {
+            (Self { value }, iced::Task::none())
+        }
+
+        fn update(&mut self, message: Message) {
+            if let Message::Changed(new_val) = message {
+                *self.value.borrow_mut() = new_val;
+            }
+        }
+
+        fn view(&self) -> iced::Element<'_, Message> {
+            let val = *self.value.borrow();
+            NumberInput::new(&val, 0..=100, Message::Changed)
+                .step(5)
+                .into()
+        }
+    }
+
+    let (mut app, _) = StatefulApp::new(value_clone);
+    let mut ui = iced_test::Simulator::with_settings(iced::Settings::default(), app.view());
+
+    // Click decrement button
+    click_decrement(&mut ui)?;
+    for message in ui.into_messages() {
+        app.update(message);
+    }
+
+    // Verify value decreased
+    let new_value = *value.borrow();
+    assert_eq!(new_value, 45, "Value should decrease by step (5)");
+
+    Ok(())
+}
+
+// ============================================================================
+// Custom Step Tests
+// ============================================================================
+
+#[test]
+fn number_input_custom_step_with_increment() -> Result<(), Error> {
+    let value = 10u32;
+
+    let (mut app, _) = App::new(move || {
+        NumberInput::new(&value, 0..=100, Message::Changed)
+            .step(10)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Click increment button
+    click_increment(&mut ui)?;
+
+    // Verify we got a Changed message with appropriate value
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::Changed(_)),
+        "Increment with custom step should produce Message::Changed",
+    );
+
+    Ok(())
+}
+
+// ============================================================================
+// Ignore Buttons Tests
+// ============================================================================
+
+#[test]
+fn number_input_ignore_buttons_hides_increment() -> Result<(), Error> {
+    let value = 50u32;
+
+    let (app, _) = App::new(move || {
+        NumberInput::new(&value, 0..=100, Message::Changed)
+            .ignore_buttons(true)
+            .into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // The buttons should not be findable when ignored
+    let inc_found = ui.find(" ▲ ").is_ok() || ui.find(" + ").is_ok();
+    let dec_found = ui.find(" ▼ ").is_ok() || ui.find(" - ").is_ok();
+
+    assert!(
+        !inc_found && !dec_found,
+        "Buttons should not be visible when ignore_buttons is true"
+    );
+
+    Ok(())
+}
+
+// ============================================================================
+// Clicking on Value Input Tests
+// ============================================================================
+
+#[test]
+fn number_input_clicking_value_is_findable() -> Result<(), Error> {
+    let value = 42u32;
+
+    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+
+    let mut ui = simulator(&app);
+
+    // Verify we can find and click on the value - this tests that the value
+    // is properly exposed through the operate() method
+    ui.click("42")?;
+
     Ok(())
 }

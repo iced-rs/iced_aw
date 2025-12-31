@@ -400,7 +400,10 @@ fn context_menu_can_find_underlay_text_when_closed() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -420,7 +423,10 @@ fn context_menu_cannot_find_overlay_text_when_closed() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -440,7 +446,10 @@ fn context_menu_can_find_underlay_button() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -471,12 +480,15 @@ fn context_menu_can_click_underlay_button() -> Result<(), Error> {
     ui.click("Action Button")?;
 
     // Process messages to verify we got Message::Other
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Other),
-        "Clicking button should produce Message::Other",
-    );
+    let mut got_message = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Other) {
+            got_message = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_message, "Clicking button should produce Message::Other");
 
     Ok(())
 }
@@ -489,7 +501,10 @@ fn context_menu_can_find_overlay_text_when_open() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).open(true).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -527,11 +542,17 @@ fn context_menu_can_click_overlay_button() -> Result<(), Error> {
     ui.click("Menu Action")?;
 
     // Verify we got the correct message
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action1),
-        "Clicking overlay button should produce Message::Action1",
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_action1,
+        "Clicking overlay button should produce Message::Action1"
     );
 
     Ok(())
@@ -553,7 +574,10 @@ fn context_menu_can_find_text_in_column_overlay_when_open() -> Result<(), Error>
         ContextMenu::new(underlay, overlay).open(true).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify all items are findable
     let mut ui = simulator(&app);
@@ -586,12 +610,15 @@ fn context_menu_can_click_first_button_in_column_overlay() -> Result<(), Error> 
 
     ui.click("Action 1")?;
 
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action1),
-        "Should receive Message::Action1",
-    );
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action1, "Should receive Message::Action1");
 
     Ok(())
 }
@@ -615,12 +642,15 @@ fn context_menu_can_click_second_button_in_column_overlay() -> Result<(), Error>
 
     ui.click("Action 2")?;
 
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action2),
-        "Should receive Message::Action2",
-    );
+    let mut got_action2 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action2) {
+            got_action2 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action2, "Should receive Message::Action2");
 
     Ok(())
 }
@@ -650,7 +680,10 @@ fn context_menu_overlay_operates_on_nested_elements() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -680,7 +713,10 @@ fn context_menu_multiple_instances_are_independently_searchable() -> Result<(), 
             .into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify all underlays are findable
     let mut ui = simulator(&app);
@@ -708,7 +744,10 @@ fn context_menu_unicode_text_is_searchable() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify unicode text is findable
     let mut ui = simulator(&app);
@@ -728,7 +767,10 @@ fn context_menu_emoji_text_is_searchable() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify emoji text is findable
     let mut ui = simulator(&app);
@@ -750,7 +792,10 @@ fn context_menu_long_text_is_searchable() -> Result<(), Error> {
         ContextMenu::new(underlay, overlay).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify long text is findable
     let mut ui = simulator(&app);
@@ -789,11 +834,17 @@ fn context_menu_overlay_button_processes_message() -> Result<(), Error> {
     ui.click("Action")?;
 
     // Process messages - should get Message::Action1
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action1),
-        "Should receive Message::Action1 from button click",
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_action1,
+        "Should receive Message::Action1 from button click"
     );
 
     // Note: Menu closing behavior after button click is tested in the overlay unit tests
@@ -828,12 +879,15 @@ fn context_menu_with_multiple_buttons_in_overlay() -> Result<(), Error> {
     // Click Action 2
     ui.click("Action 2")?;
 
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action2),
-        "Should receive Message::Action2",
-    );
+    let mut got_action2 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action2) {
+            got_action2 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_action2, "Should receive Message::Action2");
 
     Ok(())
 }
@@ -1392,11 +1446,17 @@ fn context_menu_click_button_inside_menu_produces_message() -> Result<(), Error>
     ui.click("Action")?;
 
     // Verify we got the message
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Action1),
-        "Clicking button inside menu should produce message",
+    let mut got_action1 = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Action1) {
+            got_action1 = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_action1,
+        "Clicking button inside menu should produce message"
     );
 
     Ok(())
