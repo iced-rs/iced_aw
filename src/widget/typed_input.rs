@@ -486,3 +486,185 @@ where
         Element::new(typed_input)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iced_widget::Renderer;
+
+    #[derive(Clone, Debug)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        Changed(u32),
+        Submit(Result<u32, String>),
+        Paste(u32),
+    }
+
+    type TestTypedInput<'a> = TypedInput<'a, u32, TestMessage, iced_widget::Theme, Renderer>;
+
+    #[test]
+    fn typed_input_new_creates_instance() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value);
+
+        assert_eq!(input.value, 42);
+        assert_eq!(input.text, "42");
+        assert!(input.on_change.is_none());
+        assert!(input.on_submit.is_none());
+        assert!(input.on_paste.is_none());
+    }
+
+    #[test]
+    fn typed_input_text_getter() {
+        let value = 123u32;
+        let input = TestTypedInput::new("Enter a number", &value);
+
+        assert_eq!(input.text(), "123");
+    }
+
+    #[test]
+    fn typed_input_with_on_input() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value).on_input(TestMessage::Changed);
+
+        assert!(input.on_change.is_some());
+    }
+
+    #[test]
+    fn typed_input_with_on_submit() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value).on_submit(TestMessage::Submit);
+
+        assert!(input.on_submit.is_some());
+    }
+
+    #[test]
+    fn typed_input_with_on_paste() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value).on_paste(TestMessage::Paste);
+
+        assert!(input.on_paste.is_some());
+    }
+
+    #[test]
+    fn typed_input_on_input_maybe_some() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value)
+            .on_input_maybe(Some(TestMessage::Changed));
+
+        assert!(input.on_change.is_some());
+    }
+
+    #[test]
+    fn typed_input_on_input_maybe_none() {
+        let value = 42u32;
+        let input: TestTypedInput = TestTypedInput::new("Enter a number", &value)
+            .on_input_maybe(None::<fn(u32) -> TestMessage>);
+
+        assert!(input.on_change.is_none());
+    }
+
+    #[test]
+    fn typed_input_on_submit_maybe_some() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value)
+            .on_submit_maybe(Some(TestMessage::Submit));
+
+        assert!(input.on_submit.is_some());
+    }
+
+    #[test]
+    fn typed_input_on_submit_maybe_none() {
+        let value = 42u32;
+        let input: TestTypedInput = TestTypedInput::new("Enter a number", &value)
+            .on_submit_maybe(None::<fn(Result<u32, String>) -> TestMessage>);
+
+        assert!(input.on_submit.is_none());
+    }
+
+    #[test]
+    fn typed_input_on_paste_maybe_some() {
+        let value = 42u32;
+        let input =
+            TestTypedInput::new("Enter a number", &value).on_paste_maybe(Some(TestMessage::Paste));
+
+        assert!(input.on_paste.is_some());
+    }
+
+    #[test]
+    fn typed_input_on_paste_maybe_none() {
+        let value = 42u32;
+        let input: TestTypedInput = TestTypedInput::new("Enter a number", &value)
+            .on_paste_maybe(None::<fn(u32) -> TestMessage>);
+
+        assert!(input.on_paste.is_none());
+    }
+
+    #[test]
+    fn typed_input_secure_mode() {
+        let value = 1234u32;
+        let _input = TestTypedInput::new("Enter PIN", &value).secure(true);
+        // If it compiles and doesn't panic, the test passes
+    }
+
+    #[test]
+    fn typed_input_with_different_types() {
+        // Test with i32
+        {
+            #[derive(Clone, Debug)]
+            #[allow(dead_code)]
+            enum I32Message {
+                Changed(i32),
+            }
+            let value = -42i32;
+            let _input: TypedInput<'_, i32, I32Message, iced_widget::Theme, Renderer> =
+                TypedInput::new("Enter number", &value).on_input(I32Message::Changed);
+        }
+
+        // Test with f64
+        {
+            #[derive(Clone, Debug)]
+            #[allow(dead_code)]
+            enum F64Message {
+                Changed(f64),
+            }
+            let value = 2.5;
+            let _input: TypedInput<'_, f64, F64Message, iced_widget::Theme, Renderer> =
+                TypedInput::new("Enter number", &value).on_input(F64Message::Changed);
+        }
+
+        // Test with String
+        {
+            #[derive(Clone, Debug)]
+            #[allow(dead_code)]
+            enum StringMessage {
+                Changed(String),
+            }
+            let value = "hello".to_owned();
+            let _input: TypedInput<'_, String, StringMessage, iced_widget::Theme, Renderer> =
+                TypedInput::new("Enter text", &value).on_input(StringMessage::Changed);
+        }
+    }
+
+    #[test]
+    fn typed_input_tag_returns_text_input_tag() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value);
+
+        let tag = Widget::<TestMessage, iced_widget::Theme, Renderer>::tag(&input);
+        // The tag should be the same as the underlying TextInput's tag
+        let text_input_tag = <TextInput<_, _, _> as Widget<_, _, _>>::tag(&input.text_input);
+        assert_eq!(tag, text_input_tag);
+    }
+
+    #[test]
+    fn typed_input_children_delegates_to_text_input() {
+        let value = 42u32;
+        let input = TestTypedInput::new("Enter a number", &value);
+
+        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
+        let text_input_children =
+            <TextInput<_, _, _> as Widget<_, _, _>>::children(&input.text_input);
+        assert_eq!(children.len(), text_input_children.len());
+    }
+}
