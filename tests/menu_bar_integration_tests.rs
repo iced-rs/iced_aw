@@ -154,9 +154,7 @@ fn menu_bar_with_multiple_menus() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
     assert!(ui.find("File").is_ok(), "Should find File menu");
@@ -284,9 +282,7 @@ fn menu_bar_with_unicode_text() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
     assert!(ui.find("文件").is_ok(), "Should find Chinese File menu");
@@ -312,9 +308,7 @@ fn menu_bar_with_custom_spacing() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
     assert!(
@@ -334,9 +328,7 @@ fn menu_bar_with_custom_padding() -> Result<(), Error> {
     let (mut app, _) = App::new(|| menu_bar!((Text::new("File"))).padding(10.0).into());
 
     let ui = simulator(&app);
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
     assert!(

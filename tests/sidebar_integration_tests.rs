@@ -49,10 +49,7 @@ fn sidebar_can_find_tab_text_labels() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -93,17 +90,11 @@ fn sidebar_clicking_tab_produces_tab_selected_message() -> Result<(), Error> {
     ui.click("Settings")?;
 
     // Process messages to verify we got TabSelected message
-    let mut got_tab_selected = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::TabSelected(TabId::Settings)) {
-            got_tab_selected = true;
-        }
-        app.update(message);
-    }
-
-    assert!(
-        got_tab_selected,
-        "Clicking tab should produce TabSelected message"
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::TabSelected(TabId::Settings)),
+        "Clicking tab should produce TabSelected message",
     );
 
     Ok(())
@@ -123,10 +114,7 @@ fn sidebar_can_find_different_tab_label_types() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -160,10 +148,7 @@ fn sidebar_with_close_callback_displays_close_icon() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -205,17 +190,11 @@ fn sidebar_clicking_close_icon_produces_tab_closed_message() -> Result<(), Error
     ui.click("\u{e800}")?;
 
     // Process messages to verify we got TabClosed message
-    let mut got_tab_closed = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::TabClosed(_)) {
-            got_tab_closed = true;
-        }
-        app.update(message);
-    }
-
-    assert!(
-        got_tab_closed,
-        "Clicking close icon should produce TabClosed message"
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::TabClosed(_)),
+        "Clicking close icon should produce TabClosed message",
     );
 
     Ok(())
@@ -234,10 +213,7 @@ fn sidebar_with_close_exposes_elements_through_operate() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -279,10 +255,7 @@ fn sidebar_with_content_displays_tabs_and_content() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -333,17 +306,11 @@ fn sidebar_with_content_clicking_tab_shows_new_content() -> Result<(), Error> {
     ui.click("Settings")?;
 
     // Verify we got the TabSelected message
-    let mut got_settings_selected = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::TabSelected(TabId::Settings)) {
-            got_settings_selected = true;
-        }
-        app.update(message);
-    }
-
-    assert!(
-        got_settings_selected,
-        "Clicking Settings tab should produce TabSelected message"
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::TabSelected(TabId::Settings)),
+        "Clicking Settings tab should produce TabSelected message",
     );
 
     Ok(())
@@ -369,10 +336,7 @@ fn sidebar_with_content_start_position() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -406,10 +370,7 @@ fn sidebar_with_content_end_position() -> Result<(), Error> {
     });
 
     let ui = simulator(&app);
-
-    for message in ui.into_messages() {
-        app.update(message);
-    }
+    process_messages(ui, &mut app);
 
     let mut ui = simulator(&app);
 
@@ -451,29 +412,23 @@ fn sidebar_with_content_multiple_tab_clicks() -> Result<(), Error> {
     // Click Settings
     ui.click("Settings")?;
 
-    let mut got_settings = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::TabSelected(TabId::Settings)) {
-            got_settings = true;
-        }
-        app.update(message);
-    }
-
-    assert!(got_settings, "Should receive Settings tab selection");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::TabSelected(TabId::Settings)),
+        "Should receive Settings tab selection",
+    );
 
     // Create new UI and click Profile
     let mut ui = simulator(&app);
     ui.click("Profile")?;
 
-    let mut got_profile = false;
-    for message in ui.into_messages() {
-        if matches!(message, Message::TabSelected(TabId::Profile)) {
-            got_profile = true;
-        }
-        app.update(message);
-    }
-
-    assert!(got_profile, "Should receive Profile tab selection");
+    assert_message_received(
+        ui,
+        &mut app,
+        |m| matches!(m, Message::TabSelected(TabId::Profile)),
+        "Should receive Profile tab selection",
+    );
 
     Ok(())
 }

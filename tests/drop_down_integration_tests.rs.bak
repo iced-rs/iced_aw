@@ -39,7 +39,10 @@ fn drop_down_can_find_underlay_text() -> Result<(), Error> {
         DropDown::new(underlay, overlay, false).into()
     });
     let ui = simulator(&app);
-    process_messages(ui, &mut app);
+
+    for message in ui.into_messages() {
+        app.update(message);
+    }
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
@@ -68,12 +71,15 @@ fn drop_down_underlay_button_is_clickable() -> Result<(), Error> {
     ui.click("Expand Menu")?;
 
     // Verify we got Message::Expand
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Expand),
-        "Clicking button should produce Message::Expand",
-    );
+    let mut got_expand = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Expand) {
+            got_expand = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_expand, "Clicking button should produce Message::Expand");
 
     Ok(())
 }
@@ -144,14 +150,13 @@ fn drop_down_overlay_button_is_clickable() -> Result<(), Error> {
     ui.click("Select Option")?;
 
     // Verify we got the correct message
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected_option = messages.first().and_then(|m| {
-        if let Message::SelectOption(option) = m {
-            Some(*option)
-        } else {
-            None
+    let mut selected_option: Option<usize> = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(option) = message {
+            selected_option = Some(option);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(
         selected_option,
@@ -175,14 +180,13 @@ fn drop_down_first_button_can_be_clicked() -> Result<(), Error> {
 
     ui.click("First Choice")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected_option = messages.first().and_then(|m| {
-        if let Message::SelectOption(option) = m {
-            Some(*option)
-        } else {
-            None
+    let mut selected_option: Option<usize> = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(option) = message {
+            selected_option = Some(option);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected_option, Some(1), "Should select first option");
 
@@ -205,14 +209,13 @@ fn drop_down_second_button_can_be_clicked() -> Result<(), Error> {
 
     ui.click("Second Choice")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected_option = messages.first().and_then(|m| {
-        if let Message::SelectOption(option) = m {
-            Some(*option)
-        } else {
-            None
+    let mut selected_option: Option<usize> = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(option) = message {
+            selected_option = Some(option);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected_option, Some(2), "Should select second option");
 
@@ -248,14 +251,13 @@ fn drop_down_with_multiple_choices_first_option() -> Result<(), Error> {
     // Click Choice 1
     ui.click("Choice 1")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected = messages.first().and_then(|m| {
-        if let Message::SelectOption(opt) = m {
-            Some(*opt)
-        } else {
-            None
+    let mut selected = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(opt) = message {
+            selected = Some(opt);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected, Some(1), "Should select Choice 1");
 
@@ -280,14 +282,13 @@ fn drop_down_with_multiple_choices_second_option() -> Result<(), Error> {
     let mut ui = simulator(&app);
     ui.click("Choice 2")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected = messages.first().and_then(|m| {
-        if let Message::SelectOption(opt) = m {
-            Some(*opt)
-        } else {
-            None
+    let mut selected = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(opt) = message {
+            selected = Some(opt);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected, Some(2), "Should select Choice 2");
 
@@ -312,14 +313,13 @@ fn drop_down_with_multiple_choices_third_option() -> Result<(), Error> {
     let mut ui = simulator(&app);
     ui.click("Choice 3")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected = messages.first().and_then(|m| {
-        if let Message::SelectOption(opt) = m {
-            Some(*opt)
-        } else {
-            None
+    let mut selected = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(opt) = message {
+            selected = Some(opt);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected, Some(3), "Should select Choice 3");
 
@@ -360,14 +360,13 @@ fn drop_down_menu_with_text_and_buttons() -> Result<(), Error> {
     // Click Option B
     ui.click("Option B")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected = messages.first().and_then(|m| {
-        if let Message::SelectOption(opt) = m {
-            Some(*opt)
-        } else {
-            None
+    let mut selected = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(opt) = message {
+            selected = Some(opt);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected, Some(2), "Should select Option B");
 
@@ -407,14 +406,13 @@ fn drop_down_with_rows_of_choices() -> Result<(), Error> {
     // Click Blue (in second row)
     ui.click("Blue")?;
 
-    let messages = collect_messages(ui, &mut app, |m| matches!(m, Message::SelectOption(_)));
-    let selected = messages.first().and_then(|m| {
-        if let Message::SelectOption(opt) = m {
-            Some(*opt)
-        } else {
-            None
+    let mut selected = None;
+    for message in ui.into_messages() {
+        if let Message::SelectOption(opt) = message {
+            selected = Some(opt);
         }
-    });
+        app.update(message);
+    }
 
     assert_eq!(selected, Some(3), "Should select Blue");
 
@@ -443,12 +441,15 @@ fn drop_down_escape_key_triggers_dismiss() -> Result<(), Error> {
     ));
 
     // Verify we got Message::Dismiss
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Dismiss),
-        "Escape key should trigger dismiss message",
-    );
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Dismiss) {
+            got_dismiss = true;
+        }
+        app.update(message);
+    }
+
+    assert!(got_dismiss, "Escape key should trigger dismiss message");
 
     Ok(())
 }
@@ -474,11 +475,17 @@ fn drop_down_left_click_outside_triggers_dismiss() -> Result<(), Error> {
     simulate_left_click_at(&mut ui, pos.x, pos.y);
 
     // Verify we got Message::Dismiss
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Dismiss),
-        "Left click outside overlay should trigger dismiss message",
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Dismiss) {
+            got_dismiss = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_dismiss,
+        "Left click outside overlay should trigger dismiss message"
     );
 
     Ok(())
@@ -501,11 +508,17 @@ fn drop_down_right_click_outside_triggers_dismiss() -> Result<(), Error> {
     simulate_right_click_at(&mut ui, pos.x, pos.y);
 
     // Verify we got Message::Dismiss
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Dismiss),
-        "Right click outside overlay should trigger dismiss message",
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Dismiss) {
+            got_dismiss = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_dismiss,
+        "Right click outside overlay should trigger dismiss message"
     );
 
     Ok(())
@@ -530,7 +543,13 @@ fn drop_down_middle_click_outside_does_not_trigger_dismiss() -> Result<(), Error
     simulate_mouse_click_at(&mut ui, pos.x, pos.y, mouse::Button::Middle);
 
     // Verify we did NOT get Message::Dismiss (only left/right buttons trigger dismiss)
-    let got_dismiss = check_message_received(ui, &mut app, |m| matches!(m, Message::Dismiss));
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Dismiss) {
+            got_dismiss = true;
+        }
+        app.update(message);
+    }
 
     assert!(
         !got_dismiss,
@@ -586,11 +605,17 @@ fn drop_down_touch_outside_triggers_dismiss() -> Result<(), Error> {
     simulate_touch_at(&mut ui, pos.x, pos.y);
 
     // Verify we got Message::Dismiss
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Dismiss),
-        "Touch outside overlay should trigger dismiss message",
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Dismiss) {
+            got_dismiss = true;
+        }
+        app.update(message);
+    }
+
+    assert!(
+        got_dismiss,
+        "Touch outside overlay should trigger dismiss message"
     );
 
     Ok(())
@@ -647,11 +672,16 @@ fn drop_down_click_on_overlay_button_does_not_dismiss() -> Result<(), Error> {
     ui.click("Option 1")?;
 
     // Check the messages - should get SelectOption, NOT Dismiss
-    let all_messages = collect_messages(ui, &mut app, |_| true);
-    let got_select = all_messages
-        .iter()
-        .any(|m| matches!(m, Message::SelectOption(_)));
-    let got_dismiss = all_messages.iter().any(|m| matches!(m, Message::Dismiss));
+    let mut got_select = false;
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        match message {
+            Message::SelectOption(_) => got_select = true,
+            Message::Dismiss => got_dismiss = true,
+            _ => {}
+        }
+        app.update(message);
+    }
 
     assert!(got_select, "Should receive SelectOption message");
     assert!(
@@ -679,9 +709,16 @@ fn drop_down_click_on_underlay_does_not_dismiss() -> Result<(), Error> {
     ui.click("Toggle Menu")?;
 
     // Check the messages - should get Expand, NOT Dismiss
-    let all_messages = collect_messages(ui, &mut app, |_| true);
-    let got_expand = all_messages.iter().any(|m| matches!(m, Message::Expand));
-    let got_dismiss = all_messages.iter().any(|m| matches!(m, Message::Dismiss));
+    let mut got_expand = false;
+    let mut got_dismiss = false;
+    for message in ui.into_messages() {
+        match message {
+            Message::Expand => got_expand = true,
+            Message::Dismiss => got_dismiss = true,
+            _ => {}
+        }
+        app.update(message);
+    }
 
     assert!(got_expand, "Should receive Expand message");
     assert!(
@@ -807,12 +844,14 @@ fn drop_down_collapsed_button_triggers_expand() -> Result<(), Error> {
     assert!(ui.find("Options").is_err(), "Overlay should be hidden");
 
     ui.click("Show Menu")?;
-    assert_message_received(
-        ui,
-        &mut app,
-        |m| matches!(m, Message::Expand),
-        "Should have expanded",
-    );
+    let mut got_expand = false;
+    for message in ui.into_messages() {
+        if matches!(message, Message::Expand) {
+            got_expand = true;
+        }
+        app.update(message);
+    }
+    assert!(got_expand, "Should have expanded");
 
     Ok(())
 }
