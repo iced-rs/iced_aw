@@ -14,7 +14,7 @@ use iced_core::{
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
-    widget::Tree,
+    widget::{Operation, Tree},
     window,
 };
 use iced_widget::{
@@ -693,6 +693,122 @@ where
             );
         }
     }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<()>,
+    ) {
+        operation.container(None, layout.bounds());
+
+        // Reconstruct the internal structure for operation traversal
+        // This allows the simulator to find text in tab labels
+        let row =
+            self.tab_labels
+                .iter()
+                .fold(Row::<(), Theme, Renderer>::new(), |row, tab_label| {
+                    let label_content: Element<'_, (), Theme, Renderer> = match tab_label {
+                        TabLabel::Icon(icon) => Text::<Theme, Renderer>::new(icon.to_string())
+                            .size(self.icon_size)
+                            .font(self.font.unwrap_or_default())
+                            .into(),
+                        TabLabel::Text(text) => Text::<Theme, Renderer>::new(text.clone())
+                            .size(self.text_size)
+                            .font(self.text_font.unwrap_or_default())
+                            .into(),
+                        TabLabel::IconText(icon, text) => {
+                            let mut column = Column::<(), Theme, Renderer>::new();
+                            match self.position {
+                                Position::Top => {
+                                    column = column
+                                        .push(
+                                            Text::<Theme, Renderer>::new(icon.to_string())
+                                                .size(self.icon_size)
+                                                .font(self.font.unwrap_or_default()),
+                                        )
+                                        .push(
+                                            Text::<Theme, Renderer>::new(text.clone())
+                                                .size(self.text_size)
+                                                .font(self.text_font.unwrap_or_default()),
+                                        );
+                                }
+                                Position::Right => {
+                                    let inner_row = Row::<(), Theme, Renderer>::new()
+                                        .push(
+                                            Text::<Theme, Renderer>::new(text.clone())
+                                                .size(self.text_size)
+                                                .font(self.text_font.unwrap_or_default()),
+                                        )
+                                        .push(
+                                            Text::<Theme, Renderer>::new(icon.to_string())
+                                                .size(self.icon_size)
+                                                .font(self.font.unwrap_or_default()),
+                                        );
+                                    column = column.push(inner_row);
+                                }
+                                Position::Left => {
+                                    let inner_row = Row::<(), Theme, Renderer>::new()
+                                        .push(
+                                            Text::<Theme, Renderer>::new(icon.to_string())
+                                                .size(self.icon_size)
+                                                .font(self.font.unwrap_or_default()),
+                                        )
+                                        .push(
+                                            Text::<Theme, Renderer>::new(text.clone())
+                                                .size(self.text_size)
+                                                .font(self.text_font.unwrap_or_default()),
+                                        );
+                                    column = column.push(inner_row);
+                                }
+                                Position::Bottom => {
+                                    column = column
+                                        .push(
+                                            Text::<Theme, Renderer>::new(text.clone())
+                                                .size(self.text_size)
+                                                .font(self.text_font.unwrap_or_default()),
+                                        )
+                                        .push(
+                                            Text::<Theme, Renderer>::new(icon.to_string())
+                                                .size(self.icon_size)
+                                                .font(self.font.unwrap_or_default()),
+                                        );
+                                }
+                            }
+                            column.into()
+                        }
+                    };
+
+                    let mut label_row = Row::<(), Theme, Renderer>::new().push(label_content);
+
+                    // Add close button if present
+                    if self.on_close.is_some() {
+                        let (content, _font, _shaping) = cancel();
+                        label_row = label_row.push(
+                            Text::<Theme, Renderer>::new(content)
+                                .size(self.close_size)
+                                .font(ICED_AW_FONT),
+                        );
+                    }
+
+                    row.push(label_row)
+                });
+
+        let mut element: Element<(), Theme, Renderer> = Element::new(row);
+        let tab_tree = if let Some(child_tree) = tree.children.get_mut(0) {
+            child_tree.diff(element.as_widget_mut());
+            child_tree
+        } else {
+            let child_tree = Tree::new(element.as_widget());
+            tree.children.insert(0, child_tree);
+            &mut tree.children[0]
+        };
+
+        element
+            .as_widget_mut()
+            .operate(tab_tree, layout, renderer, operation);
+    }
 }
 
 /// Draws a tab.
@@ -916,5 +1032,168 @@ where
 {
     fn from(tab_bar: TabBar<'a, Message, TabId, Theme, Renderer>) -> Self {
         Element::new(tab_bar)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    enum TestTabId {
+        One,
+        Two,
+        Three,
+    }
+
+    #[derive(Clone)]
+    #[allow(dead_code)]
+    enum TestMessage {
+        TabSelected(TestTabId),
+        TabClosed(TestTabId),
+    }
+
+    type TestTabBar<'a> =
+        TabBar<'a, TestMessage, TestTabId, iced_widget::Theme, iced_widget::Renderer>;
+
+    #[test]
+    fn tab_bar_new_has_default_values() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected);
+
+        assert_eq!(tab_bar.active_tab, 0);
+        assert_eq!(tab_bar.tab_labels.len(), 0);
+        assert_eq!(tab_bar.tab_indices.len(), 0);
+        assert_eq!(tab_bar.width, Length::Fill);
+        assert_eq!(tab_bar.height, Length::Shrink);
+        assert!((tab_bar.icon_size - DEFAULT_ICON_SIZE).abs() < f32::EPSILON);
+        assert!((tab_bar.text_size - DEFAULT_TEXT_SIZE).abs() < f32::EPSILON);
+        assert!((tab_bar.close_size - DEFAULT_CLOSE_SIZE).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn tab_bar_push_adds_tab() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab 1".to_owned()));
+
+        assert_eq!(tab_bar.tab_labels.len(), 1);
+        assert_eq!(tab_bar.tab_indices.len(), 1);
+        assert_eq!(tab_bar.tab_indices[0], TestTabId::One);
+    }
+
+    #[test]
+    fn tab_bar_push_multiple_tabs() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab 1".to_owned()))
+            .push(TestTabId::Two, TabLabel::Text("Tab 2".to_owned()))
+            .push(TestTabId::Three, TabLabel::Text("Tab 3".to_owned()));
+
+        assert_eq!(tab_bar.tab_labels.len(), 3);
+        assert_eq!(tab_bar.tab_indices.len(), 3);
+    }
+
+    #[test]
+    fn tab_bar_set_active_tab_sets_correct_index() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab 1".to_owned()))
+            .push(TestTabId::Two, TabLabel::Text("Tab 2".to_owned()))
+            .push(TestTabId::Three, TabLabel::Text("Tab 3".to_owned()))
+            .set_active_tab(&TestTabId::Two);
+
+        assert_eq!(tab_bar.active_tab, 1);
+        assert_eq!(tab_bar.get_active_tab_id(), Some(&TestTabId::Two));
+    }
+
+    #[test]
+    fn tab_bar_get_active_tab_idx_returns_index() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab 1".to_owned()))
+            .push(TestTabId::Two, TabLabel::Text("Tab 2".to_owned()))
+            .set_active_tab(&TestTabId::Two);
+
+        assert_eq!(tab_bar.get_active_tab_idx(), 1);
+    }
+
+    #[test]
+    fn tab_bar_size_returns_number_of_tabs() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected)
+            .push(TestTabId::One, TabLabel::Text("Tab 1".to_owned()))
+            .push(TestTabId::Two, TabLabel::Text("Tab 2".to_owned()))
+            .push(TestTabId::Three, TabLabel::Text("Tab 3".to_owned()));
+
+        assert_eq!(tab_bar.size(), 3);
+    }
+
+    #[test]
+    fn tab_bar_width_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).width(200);
+        assert_eq!(tab_bar.width, Length::Fixed(200.0));
+    }
+
+    #[test]
+    fn tab_bar_height_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).height(50);
+        assert_eq!(tab_bar.height, Length::Fixed(50.0));
+    }
+
+    #[test]
+    fn tab_bar_icon_size_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).icon_size(24.0);
+        assert!((tab_bar.icon_size - 24.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn tab_bar_text_size_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).text_size(20.0);
+        assert!((tab_bar.text_size - 20.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn tab_bar_close_size_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).close_size(18.0);
+        assert!((tab_bar.close_size - 18.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn tab_bar_on_close_enables_close_button() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).on_close(TestMessage::TabClosed);
+
+        assert!(tab_bar.on_close.is_some());
+    }
+
+    #[test]
+    fn tab_bar_with_tab_labels_creates_tabs() {
+        let labels = vec![
+            (TestTabId::One, TabLabel::Text("Tab 1".to_owned())),
+            (TestTabId::Two, TabLabel::Text("Tab 2".to_owned())),
+        ];
+
+        let tab_bar = TestTabBar::with_tab_labels(labels, TestMessage::TabSelected);
+
+        assert_eq!(tab_bar.tab_labels.len(), 2);
+        assert_eq!(tab_bar.tab_indices.len(), 2);
+    }
+
+    #[test]
+    fn tab_bar_tab_width_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).tab_width(Length::Fixed(100.0));
+        assert_eq!(tab_bar.tab_width, Length::Fixed(100.0));
+    }
+
+    #[test]
+    fn tab_bar_max_height_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).max_height(200.0);
+        assert!((tab_bar.max_height - 200.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn tab_bar_padding_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).padding(10.0);
+        assert_eq!(tab_bar.padding, Padding::from(10.0));
+    }
+
+    #[test]
+    fn tab_bar_spacing_sets_value() {
+        let tab_bar = TestTabBar::new(TestMessage::TabSelected).spacing(5.0);
+        assert_eq!(tab_bar.spacing, Pixels::from(5.0));
     }
 }
