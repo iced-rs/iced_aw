@@ -72,6 +72,21 @@ fn number_input_displays_correct_initial_value() -> Result<(), Error> {
     let mut ui = simulator(&app);
     assert!(ui.find("100").is_ok(), "Initial value should be displayed");
 
+    // Snapshot testing: capture the rendered widget
+    let snapshot = ui.snapshot(&iced::Theme::Light)?;
+
+    // Verify the snapshot matches the expected hash
+    assert!(
+        snapshot.matches_hash("tests/snapshots/number_input_initial_value_100")?,
+        "Snapshot hash should match baseline"
+    );
+
+    // Verify the snapshot matches the expected image
+    assert!(
+        snapshot.matches_image("tests/snapshots/number_input_initial_value_100")?,
+        "Snapshot image should match baseline"
+    );
+
     Ok(())
 }
 
