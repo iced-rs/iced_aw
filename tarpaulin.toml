@@ -1,0 +1,6 @@
+[tarpaulin]
+out = ["Html", "Xml", "Markdown"]
+output-dir = "target/tarpaulin"
+exclude-files = ["examples/*", "tests/*"]
+skip-clean = true
+timeout = "5m"
