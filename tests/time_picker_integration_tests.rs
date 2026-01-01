@@ -77,6 +77,7 @@ fn time_picker_underlay_button_opens_picker() -> Result<(), Error> {
         minute: 30,
         period: Period::H24,
     };
+    #[allow(unused_assignments)]
     let mut show_picker = false;
 
     let (mut app, _) = App::new(move || {

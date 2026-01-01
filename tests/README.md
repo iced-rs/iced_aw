@@ -1,6 +1,6 @@
-# Integration Tests Guide
+# Code Integration Testing Guide
 
-This directory contains integration tests for `iced_aw` widgets using the `iced_test` simulator framework.
+Code integration testing is the practice of testing how different modules, components, or services work together. This directory contains integration tests for `iced_aw` widgets using the `iced_test` simulator framework.
 
 ## Quick Start
 
@@ -327,3 +327,11 @@ Common icon characters used in widgets (searchable with `ui.find()`):
 - `\u{e805}` - ok (checkmark/submit)
 
 Or search for their display forms: `" ▲ "`, `" ▼ "`, `" ✓ "`, etc.
+
+# Code Coverage
+
+It is suggested that integration testing prioritize critical paths and common failure points rather than exhaustive coverage.  Coverage configuration found at `tarpaulin.toml`.
+
+```bash
+cargo tarpaulin
+```

@@ -66,6 +66,7 @@ fn date_picker_can_find_underlay_button_text() -> Result<(), Error> {
 #[test]
 fn date_picker_underlay_button_opens_picker() -> Result<(), Error> {
     let date = Date::from_ymd(2024, 6, 15);
+    #[allow(unused_assignments)]
     let mut show_picker = false;
 
     let (mut app, _) = App::new(move || {
