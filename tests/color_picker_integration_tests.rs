@@ -26,14 +26,16 @@ test_helpers!(Message);
 // ============================================================================
 #[test]
 fn color_picker_snapshot_test() -> Result<(), iced_test::Error> {
-    let (app, _) = App::new(move || ColorPicker::new(
-                true, // Open
-                Color::from_rgb(0.5, 0.5, 0.5),
-                button(Text::new("Pick")).on_press(Message::Open),
-                Message::Cancel,
-                Message::Submit,
-            )
-            .into());
+    let (app, _) = App::new(move || {
+        ColorPicker::new(
+            true, // Open
+            Color::from_rgb(0.5, 0.5, 0.5),
+            button(Text::new("Pick")).on_press(Message::Open),
+            Message::Cancel,
+            Message::Submit,
+        )
+        .into()
+    });
 
     // Create simulator
     let mut ui = simulator(&app);

@@ -184,7 +184,10 @@ fn number_input_cannot_increment_past_max() -> Result<(), Error> {
     );
 
     // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/number_input_cannot_increment_past_max")?;
+    assert_snapshot_matches(
+        &mut ui,
+        "tests/snapshots/number_input_cannot_increment_past_max",
+    )?;
 
     Ok(())
 }
@@ -210,7 +213,10 @@ fn number_input_cannot_decrement_past_min() -> Result<(), Error> {
     );
 
     // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/number_input_cannot_decrement_past_min")?;
+    assert_snapshot_matches(
+        &mut ui,
+        "tests/snapshots/number_input_cannot_decrement_past_min",
+    )?;
 
     Ok(())
 }

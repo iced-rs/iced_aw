@@ -39,6 +39,13 @@ fn typed_input_displays_initial_value() -> Result<(), Error> {
     let (app, _) = App::new(move || TypedInput::new("Enter a number", &value).into());
 
     let mut ui = simulator(&app);
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(
+        &mut ui,
+        "tests/snapshots/typed_input_displays_initial_value",
+    )?;
+
     assert!(ui.find("123").is_ok(), "Initial value should be displayed");
 
     Ok(())

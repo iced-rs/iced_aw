@@ -28,32 +28,34 @@ fn card_snapshot_test() -> Result<(), iced_test::Error> {
     use iced::Background;
     use iced_aw::style::{self, Status};
 
-    let (app, _) = App::new(move || Card::new(Text::new("Complete"), Text::new("Content"))
-                .foot(Text::new("Actions"))
-                .width(500)
-                .height(400)
-                .max_width(800.0)
-                .max_height(600.0)
-                .padding_head(Padding::new(10.0))
-                .padding_body(Padding::new(20.0))
-                .padding_foot(Padding::new(10.0))
-                .on_close(Message::CloseCard)
-                .close_size(18.0)
-                .style(|_theme: &Theme, _status: Status| style::card::Style {
-                    background: Background::Color(Color::WHITE),
-                    border_radius: 12.0,
-                    border_width: 2.0,
-                    border_color: Color::from_rgb(0.7, 0.7, 0.7),
-                    head_background: Background::Color(Color::from_rgb(0.1, 0.3, 0.7)),
-                    head_text_color: Color::WHITE,
-                    body_background: Background::Color(Color::from_rgb(0.98, 0.98, 0.98)),
-                    body_text_color: Color::BLACK,
-                    foot_background: Background::Color(Color::from_rgb(0.85, 0.85, 0.85)),
-                    foot_text_color: Color::from_rgb(0.3, 0.3, 0.3),
-                    close_color: Color::from_rgb(0.9, 0.9, 0.9),
-                })
-                .class(<Theme as iced_aw::style::card::Catalog>::default())
-                .into());
+    let (app, _) = App::new(move || {
+        Card::new(Text::new("Complete"), Text::new("Content"))
+            .foot(Text::new("Actions"))
+            .width(500)
+            .height(400)
+            .max_width(800.0)
+            .max_height(600.0)
+            .padding_head(Padding::new(10.0))
+            .padding_body(Padding::new(20.0))
+            .padding_foot(Padding::new(10.0))
+            .on_close(Message::CloseCard)
+            .close_size(18.0)
+            .style(|_theme: &Theme, _status: Status| style::card::Style {
+                background: Background::Color(Color::WHITE),
+                border_radius: 12.0,
+                border_width: 2.0,
+                border_color: Color::from_rgb(0.7, 0.7, 0.7),
+                head_background: Background::Color(Color::from_rgb(0.1, 0.3, 0.7)),
+                head_text_color: Color::WHITE,
+                body_background: Background::Color(Color::from_rgb(0.98, 0.98, 0.98)),
+                body_text_color: Color::BLACK,
+                foot_background: Background::Color(Color::from_rgb(0.85, 0.85, 0.85)),
+                foot_text_color: Color::from_rgb(0.3, 0.3, 0.3),
+                close_color: Color::from_rgb(0.9, 0.9, 0.9),
+            })
+            .class(<Theme as iced_aw::style::card::Catalog>::default())
+            .into()
+    });
 
     // Create simulator
     let mut ui = simulator(&app);

@@ -829,7 +829,10 @@ fn context_menu_with_multiple_buttons_in_overlay() -> Result<(), Error> {
     ui.click("Action 2")?;
 
     // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/context_menu_with_multiple_buttons_in_overlay")?;
+    assert_snapshot_matches(
+        &mut ui,
+        "tests/snapshots/context_menu_with_multiple_buttons_in_overlay",
+    )?;
 
     assert_message_received(
         ui,
