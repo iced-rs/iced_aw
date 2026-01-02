@@ -8,7 +8,7 @@ pub use crate::style::{
 };
 
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Point, Shell, Size, keyboard,
+    Border, Clipboard, Color, Element, Event, Layout, Point, Rectangle, Shell, Size, keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
@@ -40,6 +40,8 @@ pub struct ContextMenuOverlay<
     class: &'a Theme::Class<'b>,
     /// The state shared between [`ContextMenu`](crate::widget::ContextMenu) and [`ContextMenuOverlay`].
     state: &'a mut context_menu::State,
+    /// The viewport of the overlay
+    viewport: Rectangle,
 }
 
 impl<'a, 'b, Message, Theme, Renderer> ContextMenuOverlay<'a, 'b, Message, Theme, Renderer>
@@ -56,6 +58,7 @@ where
         content: C,
         class: &'a <Theme as Catalog>::Class<'b>,
         state: &'a mut context_menu::State,
+        viewport: Rectangle,
     ) -> Self
     where
         C: Into<Element<'a, Message, Theme, Renderer>>,
@@ -66,6 +69,7 @@ where
             content: content.into(),
             class,
             state,
+            viewport,
         }
     }
 
@@ -139,7 +143,7 @@ where
             .next()
             .expect("widget: Layout should have a content layout.");
 
-        // Modal
+        // Draw content directly without a background quad
         self.content.as_widget().draw(
             self.tree,
             renderer,
@@ -147,7 +151,7 @@ where
             style,
             content_layout,
             cursor,
-            &bounds,
+            &self.viewport,
         );
     }
 
@@ -197,6 +201,23 @@ where
                 capture_event = true;
             }
 
+            Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                // Track hover state for manual highlighting
+                let old_bounds = self.state.hovered_bounds;
+                self.state.hovered_bounds = if cursor.is_over(layout_children.bounds()) {
+                    cursor.position().map(|_pos| {
+                        // Find which child is hovered - we'll refine this in draw
+                        layout_children.bounds()
+                    })
+                } else {
+                    None
+                };
+
+                if old_bounds != self.state.hovered_bounds {
+                    shell.request_redraw();
+                }
+            }
+
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
                 forward_event_to_children = false;
@@ -215,7 +236,7 @@ where
                 renderer,
                 clipboard,
                 shell,
-                &layout.bounds(),
+                &self.viewport,
             );
         }
         if capture_event {
@@ -246,8 +267,6 @@ where
         cursor: mouse::Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        let bounds = layout.bounds();
-
         self.content.as_widget().mouse_interaction(
             self.tree,
             layout
@@ -255,7 +274,7 @@ where
                 .next()
                 .expect("widget: Layout should have a content layout."),
             cursor,
-            &bounds,
+            &self.viewport,
             renderer,
         )
     }
@@ -291,8 +310,9 @@ mod tests {
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
+        let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position, position);
     }
@@ -310,15 +330,17 @@ mod tests {
         let mut state1 = create_test_state();
         let mut state2 = create_test_state();
         let mut state3 = create_test_state();
+        let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
         let overlay1 =
-            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, content1, class, &mut state1);
+            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, content1, class, &mut state1, viewport);
         let overlay2 = ContextMenuOverlay::new(
             Point::new(500.0, 300.0),
             &mut tree2,
             content2,
             class,
             &mut state2,
+            viewport,
         );
         let overlay3 = ContextMenuOverlay::new(
             Point::new(1000.0, 800.0),
@@ -326,6 +348,7 @@ mod tests {
             content3,
             class,
             &mut state3,
+            viewport,
         );
 
         assert_eq!(overlay1.position, Point::ORIGIN);
@@ -341,8 +364,9 @@ mod tests {
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
+        let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
         let _overlay_element = overlay.overlay();
 
         // If we get here without panic, the conversion worked
@@ -410,8 +434,9 @@ mod tests {
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(-50.0, -100.0);
+        let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position.x, -50.0);
         assert_eq!(overlay.position.y, -100.0);
@@ -425,8 +450,9 @@ mod tests {
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(123.456, 789.012);
+        let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position.x, 123.456);
         assert_eq!(overlay.position.y, 789.012);
