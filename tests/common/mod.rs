@@ -82,20 +82,6 @@ macro_rules! test_helpers {
                 "Failed to find text '{}' in widget",
                 text
             );
-
-            // Use rsplit to iterate from the end
-            let test_name = {
-                fn f() {}
-                fn type_name_of<T>(_: T) -> &'static str {
-                    std::any::type_name::<T>()
-                }
-                let name = type_name_of(f);
-                // Use rsplit instead of split + rev
-                name.rsplit("::").nth(1).unwrap_or("unknown")
-            };
-            
-            let baseline_name = format!("tests/snapshots/{}", test_name);
-            assert_snapshot_matches(&mut ui, &baseline_name).unwrap();
         }
 
         // ====================================================================

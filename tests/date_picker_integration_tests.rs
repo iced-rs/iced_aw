@@ -97,7 +97,10 @@ fn date_picker_underlay_button_opens_picker() -> Result<(), Error> {
     let mut ui = simulator(&app);
 
     // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/date_picker_underlay_button_opens_picker")?;
+    assert_snapshot_matches(
+        &mut ui,
+        "tests/snapshots/date_picker_underlay_button_opens_picker",
+    )?;
 
     assert!(
         ui.find("June").is_ok(),
