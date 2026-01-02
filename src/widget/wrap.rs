@@ -522,3 +522,485 @@ pub mod direction {
     #[derive(Debug)]
     pub struct Horizontal;
 }
+
+#[cfg(test)]
+#[allow(clippy::float_cmp)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone)]
+    enum TestMessage {}
+
+    type TestWrapHorizontal<'a> =
+        Wrap<'a, TestMessage, direction::Horizontal, iced_widget::Theme, iced_widget::Renderer>;
+    type TestWrapVertical<'a> =
+        Wrap<'a, TestMessage, direction::Vertical, iced_widget::Theme, iced_widget::Renderer>;
+
+    // ============================================================================
+    // Constructor Tests - Horizontal
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_new_creates_empty_wrap() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.elements.len(), 0);
+    }
+
+    #[test]
+    fn wrap_horizontal_new_has_default_values() {
+        let wrap = TestWrapHorizontal::new();
+
+        assert_eq!(wrap.elements.len(), 0);
+        assert_eq!(wrap.alignment, Alignment::Start);
+        assert_eq!(wrap.width, Length::Shrink);
+        assert_eq!(wrap.height, Length::Shrink);
+        assert_eq!(wrap.max_width, 4_294_967_295.0);
+        assert_eq!(wrap.max_height, 4_294_967_295.0);
+        assert_eq!(wrap.padding, Padding::ZERO);
+        assert_eq!(wrap.spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_minimal_length, 10.0);
+    }
+
+    #[test]
+    fn wrap_horizontal_with_elements_creates_wrap_with_elements() {
+        let elements: Vec<Element<TestMessage, iced_widget::Theme, iced_widget::Renderer>> =
+            vec![iced_widget::text::Text::new("Test").into()];
+        let wrap = TestWrapHorizontal::with_elements(elements);
+        assert_eq!(wrap.elements.len(), 1);
+    }
+
+    #[test]
+    fn wrap_horizontal_with_elements_empty_vec() {
+        let elements: Vec<Element<TestMessage, iced_widget::Theme, iced_widget::Renderer>> = vec![];
+        let wrap = TestWrapHorizontal::with_elements(elements);
+        assert_eq!(wrap.elements.len(), 0);
+    }
+
+    // ============================================================================
+    // Constructor Tests - Vertical
+    // ============================================================================
+
+    #[test]
+    fn wrap_vertical_new_creates_empty_wrap() {
+        let wrap = TestWrapVertical::new_vertical();
+        assert_eq!(wrap.elements.len(), 0);
+    }
+
+    #[test]
+    fn wrap_vertical_new_has_default_values() {
+        let wrap = TestWrapVertical::new_vertical();
+
+        assert_eq!(wrap.elements.len(), 0);
+        assert_eq!(wrap.alignment, Alignment::Start);
+        assert_eq!(wrap.width, Length::Shrink);
+        assert_eq!(wrap.height, Length::Shrink);
+        assert_eq!(wrap.max_width, 4_294_967_295.0);
+        assert_eq!(wrap.max_height, 4_294_967_295.0);
+        assert_eq!(wrap.padding, Padding::ZERO);
+        assert_eq!(wrap.spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_minimal_length, 10.0);
+    }
+
+    #[test]
+    fn wrap_vertical_with_elements_creates_wrap_with_elements() {
+        let elements: Vec<Element<TestMessage, iced_widget::Theme, iced_widget::Renderer>> =
+            vec![iced_widget::text::Text::new("Test").into()];
+        let wrap = TestWrapVertical::with_elements_vertical(elements);
+        assert_eq!(wrap.elements.len(), 1);
+    }
+
+    #[test]
+    fn wrap_vertical_with_elements_empty_vec() {
+        let elements: Vec<Element<TestMessage, iced_widget::Theme, iced_widget::Renderer>> = vec![];
+        let wrap = TestWrapVertical::with_elements_vertical(elements);
+        assert_eq!(wrap.elements.len(), 0);
+    }
+
+    // ============================================================================
+    // Push Method Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_push_adds_element() {
+        let wrap = TestWrapHorizontal::new().push(iced_widget::text::Text::new("Test"));
+        assert_eq!(wrap.elements.len(), 1);
+    }
+
+    #[test]
+    fn wrap_horizontal_push_multiple_elements() {
+        let wrap = TestWrapHorizontal::new()
+            .push(iced_widget::text::Text::new("First"))
+            .push(iced_widget::text::Text::new("Second"))
+            .push(iced_widget::text::Text::new("Third"));
+        assert_eq!(wrap.elements.len(), 3);
+    }
+
+    #[test]
+    fn wrap_vertical_push_adds_element() {
+        let wrap = TestWrapVertical::new_vertical().push(iced_widget::text::Text::new("Test"));
+        assert_eq!(wrap.elements.len(), 1);
+    }
+
+    #[test]
+    fn wrap_vertical_push_multiple_elements() {
+        let wrap = TestWrapVertical::new_vertical()
+            .push(iced_widget::text::Text::new("First"))
+            .push(iced_widget::text::Text::new("Second"))
+            .push(iced_widget::text::Text::new("Third"));
+        assert_eq!(wrap.elements.len(), 3);
+    }
+
+    // ============================================================================
+    // Spacing Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_spacing_sets_value() {
+        let wrap = TestWrapHorizontal::new().spacing(10.0);
+        assert_eq!(wrap.spacing, Pixels(10.0));
+    }
+
+    #[test]
+    fn wrap_horizontal_spacing_zero_sets_value() {
+        let wrap = TestWrapHorizontal::new().spacing(0.0);
+        assert_eq!(wrap.spacing, Pixels::ZERO);
+    }
+
+    #[test]
+    fn wrap_vertical_spacing_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().spacing(15.0);
+        assert_eq!(wrap.spacing, Pixels(15.0));
+    }
+
+    // ============================================================================
+    // Line Spacing Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_line_spacing_sets_value() {
+        let wrap = TestWrapHorizontal::new().line_spacing(20.0);
+        assert_eq!(wrap.line_spacing, Pixels(20.0));
+    }
+
+    #[test]
+    fn wrap_horizontal_line_spacing_zero_sets_value() {
+        let wrap = TestWrapHorizontal::new().line_spacing(0.0);
+        assert_eq!(wrap.line_spacing, Pixels::ZERO);
+    }
+
+    #[test]
+    fn wrap_vertical_line_spacing_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().line_spacing(25.0);
+        assert_eq!(wrap.line_spacing, Pixels(25.0));
+    }
+
+    // ============================================================================
+    // Line Minimal Length Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_line_minimal_length_sets_value() {
+        let wrap = TestWrapHorizontal::new().line_minimal_length(50.0);
+        assert_eq!(wrap.line_minimal_length, 50.0);
+    }
+
+    #[test]
+    fn wrap_horizontal_line_minimal_length_default_is_10() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.line_minimal_length, 10.0);
+    }
+
+    #[test]
+    fn wrap_vertical_line_minimal_length_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().line_minimal_length(100.0);
+        assert_eq!(wrap.line_minimal_length, 100.0);
+    }
+
+    // ============================================================================
+    // Padding Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_padding_sets_value() {
+        let wrap = TestWrapHorizontal::new().padding(10);
+        assert_eq!(wrap.padding, Padding::new(10.0));
+    }
+
+    #[test]
+    fn wrap_horizontal_padding_default_is_zero() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.padding, Padding::ZERO);
+    }
+
+    #[test]
+    fn wrap_horizontal_padding_with_padding_struct() {
+        let padding = Padding {
+            top: 5.0,
+            right: 10.0,
+            bottom: 15.0,
+            left: 20.0,
+        };
+        let wrap = TestWrapHorizontal::new().padding(padding);
+        assert_eq!(wrap.padding, padding);
+    }
+
+    #[test]
+    fn wrap_vertical_padding_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().padding(12);
+        assert_eq!(wrap.padding, Padding::new(12.0));
+    }
+
+    // ============================================================================
+    // Width Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_width_items_sets_value() {
+        let wrap = TestWrapHorizontal::new().width_items(Length::Fill);
+        assert_eq!(wrap.width, Length::Fill);
+    }
+
+    #[test]
+    fn wrap_horizontal_width_items_default_is_shrink() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.width, Length::Shrink);
+    }
+
+    #[test]
+    fn wrap_horizontal_width_items_fixed() {
+        let wrap = TestWrapHorizontal::new().width_items(Length::Fixed(200.0));
+        assert_eq!(wrap.width, Length::Fixed(200.0));
+    }
+
+    #[test]
+    fn wrap_vertical_width_items_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().width_items(Length::Fill);
+        assert_eq!(wrap.width, Length::Fill);
+    }
+
+    // ============================================================================
+    // Height Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_height_items_sets_value() {
+        let wrap = TestWrapHorizontal::new().height_items(Length::Fill);
+        assert_eq!(wrap.height, Length::Fill);
+    }
+
+    #[test]
+    fn wrap_horizontal_height_items_default_is_shrink() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.height, Length::Shrink);
+    }
+
+    #[test]
+    fn wrap_horizontal_height_items_fixed() {
+        let wrap = TestWrapHorizontal::new().height_items(Length::Fixed(150.0));
+        assert_eq!(wrap.height, Length::Fixed(150.0));
+    }
+
+    #[test]
+    fn wrap_vertical_height_items_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().height_items(Length::Fill);
+        assert_eq!(wrap.height, Length::Fill);
+    }
+
+    // ============================================================================
+    // Max Width Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_max_width_sets_value() {
+        let wrap = TestWrapHorizontal::new().max_width(500.0);
+        assert_eq!(wrap.max_width, 500.0);
+    }
+
+    #[test]
+    fn wrap_horizontal_max_width_default() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.max_width, 4_294_967_295.0);
+    }
+
+    #[test]
+    fn wrap_vertical_max_width_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().max_width(600.0);
+        assert_eq!(wrap.max_width, 600.0);
+    }
+
+    // ============================================================================
+    // Max Height Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_max_height_sets_value() {
+        let wrap = TestWrapHorizontal::new().max_height(400.0);
+        assert_eq!(wrap.max_height, 400.0);
+    }
+
+    #[test]
+    fn wrap_horizontal_max_height_default() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.max_height, 4_294_967_295.0);
+    }
+
+    #[test]
+    fn wrap_vertical_max_height_sets_value() {
+        let wrap = TestWrapVertical::new_vertical().max_height(300.0);
+        assert_eq!(wrap.max_height, 300.0);
+    }
+
+    // ============================================================================
+    // Alignment Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_align_items_start() {
+        let wrap = TestWrapHorizontal::new().align_items(Alignment::Start);
+        assert_eq!(wrap.alignment, Alignment::Start);
+    }
+
+    #[test]
+    fn wrap_horizontal_align_items_center() {
+        let wrap = TestWrapHorizontal::new().align_items(Alignment::Center);
+        assert_eq!(wrap.alignment, Alignment::Center);
+    }
+
+    #[test]
+    fn wrap_horizontal_align_items_end() {
+        let wrap = TestWrapHorizontal::new().align_items(Alignment::End);
+        assert_eq!(wrap.alignment, Alignment::End);
+    }
+
+    #[test]
+    fn wrap_horizontal_align_items_default_is_start() {
+        let wrap = TestWrapHorizontal::new();
+        assert_eq!(wrap.alignment, Alignment::Start);
+    }
+
+    #[test]
+    fn wrap_vertical_align_items_center() {
+        let wrap = TestWrapVertical::new_vertical().align_items(Alignment::Center);
+        assert_eq!(wrap.alignment, Alignment::Center);
+    }
+
+    // ============================================================================
+    // Method Chaining Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_chaining_all_methods() {
+        let wrap = TestWrapHorizontal::new()
+            .push(iced_widget::text::Text::new("Test"))
+            .spacing(5.0)
+            .line_spacing(10.0)
+            .line_minimal_length(20.0)
+            .padding(15)
+            .width_items(Length::Fill)
+            .height_items(Length::Shrink)
+            .max_width(800.0)
+            .max_height(600.0)
+            .align_items(Alignment::Center);
+
+        assert_eq!(wrap.elements.len(), 1);
+        assert_eq!(wrap.spacing, Pixels(5.0));
+        assert_eq!(wrap.line_spacing, Pixels(10.0));
+        assert_eq!(wrap.line_minimal_length, 20.0);
+        assert_eq!(wrap.padding, Padding::new(15.0));
+        assert_eq!(wrap.width, Length::Fill);
+        assert_eq!(wrap.height, Length::Shrink);
+        assert_eq!(wrap.max_width, 800.0);
+        assert_eq!(wrap.max_height, 600.0);
+        assert_eq!(wrap.alignment, Alignment::Center);
+    }
+
+    #[test]
+    fn wrap_vertical_chaining_all_methods() {
+        let wrap = TestWrapVertical::new_vertical()
+            .push(iced_widget::text::Text::new("Test"))
+            .spacing(8.0)
+            .line_spacing(12.0)
+            .line_minimal_length(25.0)
+            .padding(20)
+            .width_items(Length::Shrink)
+            .height_items(Length::Fill)
+            .max_width(700.0)
+            .max_height(500.0)
+            .align_items(Alignment::End);
+
+        assert_eq!(wrap.elements.len(), 1);
+        assert_eq!(wrap.spacing, Pixels(8.0));
+        assert_eq!(wrap.line_spacing, Pixels(12.0));
+        assert_eq!(wrap.line_minimal_length, 25.0);
+        assert_eq!(wrap.padding, Padding::new(20.0));
+        assert_eq!(wrap.width, Length::Shrink);
+        assert_eq!(wrap.height, Length::Fill);
+        assert_eq!(wrap.max_width, 700.0);
+        assert_eq!(wrap.max_height, 500.0);
+        assert_eq!(wrap.alignment, Alignment::End);
+    }
+
+    // ============================================================================
+    // Widget Size Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_size_method_returns_correct_size() {
+        let wrap = TestWrapHorizontal::new()
+            .width_items(Length::Fixed(100.0))
+            .height_items(Length::Fixed(50.0));
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&wrap);
+        assert_eq!(size.width, Length::Fixed(100.0));
+        assert_eq!(size.height, Length::Fixed(50.0));
+    }
+
+    #[test]
+    fn wrap_vertical_size_method_returns_correct_size() {
+        let wrap = TestWrapVertical::new_vertical()
+            .width_items(Length::Fill)
+            .height_items(Length::Shrink);
+
+        let size = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&wrap);
+        assert_eq!(size.width, Length::Fill);
+        assert_eq!(size.height, Length::Shrink);
+    }
+
+    // ============================================================================
+    // Default Trait Tests
+    // ============================================================================
+
+    #[test]
+    fn wrap_horizontal_default_creates_empty_wrap_with_defaults() {
+        let wrap: TestWrapHorizontal = Wrap::default();
+
+        assert_eq!(wrap.elements.len(), 0);
+        assert_eq!(wrap.alignment, Alignment::Start);
+        assert_eq!(wrap.width, Length::Shrink);
+        assert_eq!(wrap.height, Length::Shrink);
+        assert_eq!(wrap.max_width, 4_294_967_295.0);
+        assert_eq!(wrap.max_height, 4_294_967_295.0);
+        assert_eq!(wrap.padding, Padding::ZERO);
+        assert_eq!(wrap.spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_minimal_length, 10.0);
+    }
+
+    #[test]
+    fn wrap_vertical_default_creates_empty_wrap_with_defaults() {
+        let wrap: TestWrapVertical = Wrap::default();
+
+        assert_eq!(wrap.elements.len(), 0);
+        assert_eq!(wrap.alignment, Alignment::Start);
+        assert_eq!(wrap.width, Length::Shrink);
+        assert_eq!(wrap.height, Length::Shrink);
+        assert_eq!(wrap.max_width, 4_294_967_295.0);
+        assert_eq!(wrap.max_height, 4_294_967_295.0);
+        assert_eq!(wrap.padding, Padding::ZERO);
+        assert_eq!(wrap.spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_spacing, Pixels::ZERO);
+        assert_eq!(wrap.line_minimal_length, 10.0);
+    }
+}
