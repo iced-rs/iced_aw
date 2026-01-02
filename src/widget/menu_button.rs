@@ -100,22 +100,18 @@ where
         Size::new(self.width, Length::Shrink)
     }
 
-    fn layout(
-        &mut self,
-        tree: &mut Tree,
-        renderer: &Renderer,
-        limits: &Limits,
-    ) -> Node {
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
         let padding = iced_core::Padding::from(self.padding);
         let limits = limits.width(self.width).shrink(padding);
 
-        let mut content = self.content.as_widget_mut().layout(
-            &mut tree.children[0],
-            renderer,
-            &limits,
-        );
+        let mut content =
+            self.content
+                .as_widget_mut()
+                .layout(&mut tree.children[0], renderer, &limits);
 
-        let size = limits.resolve(self.width, Length::Shrink, content.size()).expand(padding);
+        let size = limits
+            .resolve(self.width, Length::Shrink, content.size())
+            .expand(padding);
         content.move_to_mut(Point::new(self.padding, self.padding));
 
         Node::with_children(size, vec![content])
@@ -164,7 +160,10 @@ where
         );
 
         // Draw content
-        let content_layout = layout.children().next().expect("MenuButton should have content layout");
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("MenuButton should have content layout");
         self.content.as_widget().draw(
             &tree.children[0],
             renderer,
@@ -236,7 +235,10 @@ where
         }
 
         // Forward events to content
-        let content_layout = layout.children().next().expect("MenuButton should have content layout");
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("MenuButton should have content layout");
         self.content.as_widget_mut().update(
             &mut tree.children[0],
             event,
@@ -273,7 +275,10 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation,
     ) {
-        let content_layout = layout.children().next().expect("MenuButton should have content layout");
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("MenuButton should have content layout");
         self.content.as_widget_mut().operate(
             &mut tree.children[0],
             content_layout,
@@ -290,7 +295,10 @@ where
         viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        let content_layout = layout.children().next().expect("MenuButton should have content layout");
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("MenuButton should have content layout");
         self.content.as_widget_mut().overlay(
             &mut tree.children[0],
             content_layout,
@@ -324,12 +332,11 @@ mod tests {
 
     #[test]
     fn menu_button_can_be_created() {
-        let _button: MenuButton<TestMessage> = MenuButton::new(
-            iced_widget::text::Text::new("Test")
-        )
-            .on_press(TestMessage::Pressed)
-            .width(Length::Fill)
-            .padding(10.0);
+        let _button: MenuButton<TestMessage> =
+            MenuButton::new(iced_widget::text::Text::new("Test"))
+                .on_press(TestMessage::Pressed)
+                .width(Length::Fill)
+                .padding(10.0);
     }
 
     #[test]
@@ -353,15 +360,15 @@ mod tests {
 
     #[test]
     fn menu_button_width_can_be_customized() {
-        let button: MenuButton<TestMessage> = MenuButton::new(iced_widget::text::Text::new("Test"))
-            .width(Length::Fixed(100.0));
+        let button: MenuButton<TestMessage> =
+            MenuButton::new(iced_widget::text::Text::new("Test")).width(Length::Fixed(100.0));
         assert_eq!(button.width, Length::Fixed(100.0));
     }
 
     #[test]
     fn menu_button_padding_can_be_customized() {
-        let button: MenuButton<TestMessage> = MenuButton::new(iced_widget::text::Text::new("Test"))
-            .padding(15.0);
+        let button: MenuButton<TestMessage> =
+            MenuButton::new(iced_widget::text::Text::new("Test")).padding(15.0);
         assert_eq!(button.padding, 15.0);
     }
 
@@ -373,16 +380,17 @@ mod tests {
 
     #[test]
     fn menu_button_with_on_press_has_message() {
-        let button: MenuButton<TestMessage> = MenuButton::new(iced_widget::text::Text::new("Test"))
-            .on_press(TestMessage::Pressed);
+        let button: MenuButton<TestMessage> =
+            MenuButton::new(iced_widget::text::Text::new("Test")).on_press(TestMessage::Pressed);
         assert!(button.on_press.is_some());
     }
 
     #[test]
     fn menu_button_methods_can_be_chained() {
-        let _button: MenuButton<TestMessage> = MenuButton::new(iced_widget::text::Text::new("Test"))
-            .on_press(TestMessage::Pressed)
-            .width(Length::Fixed(150.0))
-            .padding(12.0);
+        let _button: MenuButton<TestMessage> =
+            MenuButton::new(iced_widget::text::Text::new("Test"))
+                .on_press(TestMessage::Pressed)
+                .width(Length::Fixed(150.0))
+                .padding(12.0);
     }
 }
