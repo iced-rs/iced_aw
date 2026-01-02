@@ -122,6 +122,23 @@ The `test_helpers!` macro generates the following for your Message type:
   assert_eq!(clicks.len(), 3);
   ```
 
+### Snapshot Testing Helpers
+
+- **`assert_snapshot_matches(ui, baseline_name) -> Result<(), Error>`**
+  Verify a widget's visual rendering matches both hash and image baselines
+  ```rust
+  let mut ui = simulator(&app);
+  assert_snapshot_matches(&mut ui, "tests/snapshots/widget_state")?;
+  ```
+  On first run, baseline files are auto-generated. Subsequent runs validate against them.
+
+- **`assert_snapshot_hash_matches(ui, baseline_name) -> Result<(), Error>`**
+  Verify a widget's rendering matches hash baseline only (faster than full image comparison)
+  ```rust
+  let mut ui = simulator(&app);
+  assert_snapshot_hash_matches(&mut ui, "tests/snapshots/widget_state")?;
+  ```
+
 ## Advanced Usage
 
 ### Stateful Tests
