@@ -33,6 +33,7 @@ menu = []
 quad = []
 spinner = []
 context_menu = []
+menu_button = []
 slide_bar = []
 drop_down = []
 sidebar = []
@@ -54,6 +55,7 @@ full = [
   "selection_list",
   "quad",
   "context_menu",
+  "menu_button",
   "spinner",
   "drop_down",
   "menu",

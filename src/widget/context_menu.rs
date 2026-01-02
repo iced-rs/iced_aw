@@ -273,6 +273,7 @@ where
                 content,
                 &self.class,
                 s,
+                *viewport,
             )
             .overlay(),
         )
@@ -299,6 +300,8 @@ pub(crate) struct State {
     pub show: bool,
     /// Use for showing the overlay where the click was made.
     pub cursor_position: Point,
+    /// The bounds of hovered content for drawing highlight
+    pub hovered_bounds: Option<Rectangle>,
 }
 
 impl State {
@@ -307,6 +310,7 @@ impl State {
         Self {
             show: false,
             cursor_position: Point::ORIGIN,
+            hovered_bounds: None,
         }
     }
 }
