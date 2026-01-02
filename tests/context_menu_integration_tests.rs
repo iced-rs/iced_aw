@@ -828,6 +828,9 @@ fn context_menu_with_multiple_buttons_in_overlay() -> Result<(), Error> {
     // Click Action 2
     ui.click("Action 2")?;
 
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/context_menu_with_multiple_buttons_in_overlay")?;
+
     assert_message_received(
         ui,
         &mut app,
@@ -932,6 +935,7 @@ fn context_menu_right_click_toggles_menu_open() -> Result<(), Error> {
 
     // Create new simulator to check if menu opened
     let mut ui = iced_test::Simulator::with_settings(iced::Settings::default(), app.view());
+
     assert!(
         ui.find("Menu Content").is_ok(),
         "Menu should be visible after right-click"

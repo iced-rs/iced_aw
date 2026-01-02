@@ -53,6 +53,10 @@ fn sidebar_can_find_tab_text_labels() -> Result<(), Error> {
 
     // Create a new simulator to verify the rendered content
     let mut ui = simulator(&app);
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/sidebar_can_find_tab_text_labels")?;
+
     assert!(
         ui.find("Home").is_ok(),
         "Tab label 'Home' should be findable"

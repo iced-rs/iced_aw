@@ -149,7 +149,10 @@ fn slide_bar_value_in_middle() {
 fn slide_bar_maintains_state() -> Result<(), Error> {
     // Verify the widget maintains its value through the state
     let (app, _) = StatefulSlideBarApp::new(50);
-    let _ui = iced_test::Simulator::with_settings(iced::Settings::default(), app.view());
+    let mut ui = iced_test::Simulator::with_settings(iced::Settings::default(), app.view());
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/slide_bar_maintains_state")?;
 
     // The widget should render with the initial value
     assert_eq!(app.value, 50);

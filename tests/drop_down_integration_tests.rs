@@ -114,6 +114,9 @@ fn drop_down_expanded_shows_overlay() -> Result<(), Error> {
 
     let mut ui = simulator(&app);
 
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/drop_down_expanded_shows_overlay")?;
+    
     // Both underlay and overlay should be visible
     assert!(ui.find("Expanded").is_ok(), "Underlay should be visible");
     assert!(
@@ -352,6 +355,9 @@ fn drop_down_menu_with_text_and_buttons() -> Result<(), Error> {
     );
     assert!(ui.find("End of list").is_ok(), "Footer should be visible");
 
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/drop_down_menu_with_text_and_buttons")?;
+
     // Verify all options are visible
     assert!(ui.find("Option A").is_ok(), "Option A should be visible");
     assert!(ui.find("Option B").is_ok(), "Option B should be visible");
@@ -397,6 +403,9 @@ fn drop_down_with_rows_of_choices() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/drop_down_with_rows_of_choices")?;
 
     // Verify all colors are visible
     assert!(ui.find("Red").is_ok(), "Red should be visible");

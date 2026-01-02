@@ -183,6 +183,9 @@ fn number_input_cannot_increment_past_max() -> Result<(), Error> {
         "Value should remain at max after clicking increment"
     );
 
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/number_input_cannot_increment_past_max")?;
+
     Ok(())
 }
 
@@ -205,6 +208,9 @@ fn number_input_cannot_decrement_past_min() -> Result<(), Error> {
         ui.find("0").is_ok(),
         "Value should remain at min after clicking decrement"
     );
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/number_input_cannot_decrement_past_min")?;
 
     Ok(())
 }
