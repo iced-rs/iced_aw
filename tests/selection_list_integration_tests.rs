@@ -66,6 +66,9 @@ fn selection_list_can_find_all_options_in_list() -> Result<(), Error> {
 
     let mut ui = simulator(&app);
 
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/selection_list_can_find_all_options_in_list")?;
+
     // Verify all options are findable
     for option in &["Apple", "Banana", "Cherry", "Date", "Elderberry"] {
         assert!(ui.find(*option).is_ok(), "{} should be findable", option);

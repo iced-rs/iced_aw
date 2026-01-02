@@ -108,6 +108,10 @@ fn time_picker_underlay_button_opens_picker() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/time_picker_underlay_button_opens_picker")?;
+
     assert!(
         ui.find("14").is_ok(),
         "Hour should be displayed when picker is open"

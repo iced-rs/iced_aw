@@ -356,6 +356,10 @@ fn tab_bar_with_mixed_tab_types() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
+
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/tab_bar_with_mixed_tab_types")?;
+
     assert!(ui.find("Home").is_ok(), "Should find text tab");
     assert!(ui.find("⚙").is_ok(), "Should find icon tab");
     assert!(ui.find("Profile").is_ok(), "Should find icon-text tab text");
