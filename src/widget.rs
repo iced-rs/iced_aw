@@ -83,11 +83,6 @@ pub mod context_menu;
 #[cfg(feature = "context_menu")]
 pub use context_menu::ContextMenu;
 
-#[cfg(feature = "menu_button")]
-pub mod menu_button;
-#[cfg(feature = "menu_button")]
-pub use menu_button::MenuButton;
-
 #[cfg(feature = "slide_bar")]
 pub mod slide_bar;
 #[cfg(feature = "slide_bar")]

@@ -155,10 +155,6 @@ mod platform {
     pub use {crate::widget::context_menu, context_menu::ContextMenu};
 
     #[doc(no_inline)]
-    #[cfg(feature = "menu_button")]
-    pub use {crate::widget::menu_button, menu_button::MenuButton};
-
-    #[doc(no_inline)]
     #[cfg(feature = "drop_down")]
     pub use {crate::widget::drop_down, drop_down::DropDown};
 
