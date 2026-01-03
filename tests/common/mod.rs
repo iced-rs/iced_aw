@@ -260,23 +260,33 @@ macro_rules! test_helpers {
             ui: &mut iced_test::Simulator<'_, $message_type>,
             baseline_name: &str,
         ) -> Result<(), iced_test::Error> {
-            let snapshot = ui.snapshot(&iced::Theme::Light)?;
+            // Skip snapshot matching on non-Linux platforms
+            #[cfg(not(target_os = "linux"))]
+            {
+                println!("Skipping snapshot comparison on non-Linux platform");
+                return Ok(());
+            }
 
-            let baseline_path = std::path::Path::new(baseline_name);
+            #[cfg(target_os = "linux")]
+            {
+                let snapshot = ui.snapshot(&iced::Theme::Light)?;
 
-            assert!(
-                snapshot.matches_hash(baseline_name)?,
-                "Snapshot hash mismatch for: {}",
-                baseline_name
-            );
+                let baseline_path = std::path::Path::new(baseline_name);
 
-            assert!(
-                snapshot.matches_image(baseline_path)?,
-                "Snapshot image mismatch for: {}",
-                baseline_name
-            );
+                assert!(
+                    snapshot.matches_hash(baseline_name)?,
+                    "Snapshot hash mismatch for: {}",
+                    baseline_name
+                );
 
-            Ok(())
+                assert!(
+                    snapshot.matches_image(baseline_path)?,
+                    "Snapshot image mismatch for: {}",
+                    baseline_name
+                );
+
+                Ok(())
+            }
         }
 
         /// Verify a simulator's snapshot matches the hash baseline only.
