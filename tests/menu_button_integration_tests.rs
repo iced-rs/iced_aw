@@ -93,7 +93,10 @@ fn menu_button_renders_with_unicode_text() {
         || MenuButton::<Message>::new(Text::new("你好")).into(),
         "你好",
     );
-    run_test_and_find(|| MenuButton::<Message>::new(Text::new("🎉")).into(), "🎉");
+    run_test_and_find(
+        || MenuButton::<Message>::new(Text::new("🎉")).into(),
+        "🎉",
+    );
     run_test_and_find(
         || MenuButton::<Message>::new(Text::new("مرحبا")).into(),
         "مرحبا",
@@ -118,11 +121,7 @@ fn menu_button_with_custom_width_renders() {
 
     // Test Fill width
     run_test_and_find(
-        || {
-            MenuButton::new(Text::new("Fill"))
-                .width(Length::Fill)
-                .into()
-        },
+        || MenuButton::new(Text::new("Fill")).width(Length::Fill).into(),
         "Fill",
     );
 

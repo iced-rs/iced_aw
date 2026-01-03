@@ -312,8 +312,7 @@ mod tests {
         let position = Point::new(100.0, 100.0);
         let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay =
-            ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position, position);
     }
@@ -333,14 +332,8 @@ mod tests {
         let mut state3 = create_test_state();
         let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay1 = ContextMenuOverlay::new(
-            Point::ORIGIN,
-            &mut tree1,
-            content1,
-            class,
-            &mut state1,
-            viewport,
-        );
+        let overlay1 =
+            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, content1, class, &mut state1, viewport);
         let overlay2 = ContextMenuOverlay::new(
             Point::new(500.0, 300.0),
             &mut tree2,
@@ -373,8 +366,7 @@ mod tests {
         let position = Point::new(100.0, 100.0);
         let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay =
-            ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
         let _overlay_element = overlay.overlay();
 
         // If we get here without panic, the conversion worked
@@ -444,8 +436,7 @@ mod tests {
         let position = Point::new(-50.0, -100.0);
         let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay =
-            ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position.x, -50.0);
         assert_eq!(overlay.position.y, -100.0);
@@ -461,8 +452,7 @@ mod tests {
         let position = Point::new(123.456, 789.012);
         let viewport = Rectangle::new(Point::ORIGIN, iced_core::Size::new(800.0, 600.0));
 
-        let overlay =
-            ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state, viewport);
 
         assert_eq!(overlay.position.x, 123.456);
         assert_eq!(overlay.position.y, 789.012);
