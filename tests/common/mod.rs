@@ -262,7 +262,6 @@ macro_rules! test_helpers {
         ) -> Result<(), iced_test::Error> {
             let snapshot = ui.snapshot(&iced::Theme::Light)?;
 
-
             let baseline_path = std::path::Path::new(baseline_name);
 
             assert!(
