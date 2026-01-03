@@ -20,18 +20,18 @@ test_helpers!(Message);
 // ============================================================================
 // Snapshot Test
 // ============================================================================
-// #[test]
-// fn badge_snapshot_test() -> Result<(), iced_test::Error> {
-//     let (app, _) = App::new(move || Badge::new(Text::new("Lorem Ipsum Badge")).into());
+#[test]
+fn badge_snapshot_test() -> Result<(), iced_test::Error> {
+    let (app, _) = App::new(move || Badge::new(Text::new("Lorem Ipsum Badge")).into());
 
-//     // Create simulator
-//     let mut ui = simulator(&app);
+    // Create simulator
+    let mut ui = simulator(&app);
 
-//     // Snapshot testing: verify visual rendering matches baseline
-//     assert_snapshot_matches(&mut ui, "tests/snapshots/badge_snapshot_test")?;
+    // Snapshot testing: verify visual rendering matches baseline
+    assert_snapshot_matches(&mut ui, "tests/snapshots/badge_snapshot_test")?;
 
-//     Ok(())
-// }
+    Ok(())
+}
 
 #[test]
 fn badge_renders_with_text() {
