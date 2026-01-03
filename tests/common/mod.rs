@@ -260,33 +260,41 @@ macro_rules! test_helpers {
             ui: &mut iced_test::Simulator<'_, $message_type>,
             baseline_name: &str,
         ) -> Result<(), iced_test::Error> {
-            // Skip snapshot matching on non-Linux platforms
-            #[cfg(not(target_os = "linux"))]
+            // Skip snapshot matching on macOS and Windows in CI
+            #[cfg(any(target_os = "windows", target_os = "macos"))]
             {
-                println!("Skipping snapshot comparison on non-Linux platform");
-                return Ok(());
+                let is_ci = std::env::var("CI").is_ok() || std::env::var("GITHUB_ACTIONS").is_ok();
+
+                if is_ci {
+                    println!(
+                        "Skipping snapshot comparison on {} in CI environment",
+                        if cfg!(target_os = "windows") {
+                            "Windows"
+                        } else {
+                            "macOS"
+                        }
+                    );
+                    return Ok(());
+                }
             }
 
-            #[cfg(target_os = "linux")]
-            {
-                let snapshot = ui.snapshot(&iced::Theme::Light)?;
+            let snapshot = ui.snapshot(&iced::Theme::Light)?;
 
-                let baseline_path = std::path::Path::new(baseline_name);
+            let baseline_path = std::path::Path::new(baseline_name);
 
-                assert!(
-                    snapshot.matches_hash(baseline_name)?,
-                    "Snapshot hash mismatch for: {}",
-                    baseline_name
-                );
+            assert!(
+                snapshot.matches_hash(baseline_name)?,
+                "Snapshot hash mismatch for: {}",
+                baseline_name
+            );
 
-                assert!(
-                    snapshot.matches_image(baseline_path)?,
-                    "Snapshot image mismatch for: {}",
-                    baseline_name
-                );
+            assert!(
+                snapshot.matches_image(baseline_path)?,
+                "Snapshot image mismatch for: {}",
+                baseline_name
+            );
 
-                Ok(())
-            }
+            Ok(())
         }
 
         /// Verify a simulator's snapshot matches the hash baseline only.
