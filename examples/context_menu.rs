@@ -3,11 +3,11 @@
 // It was written by wiiznokes <wiiznokes2@gmail.com>
 
 use iced::{
-    Alignment, Background, Border, Element, Length, Theme,
-    widget::{Button, Container, Row, Text, column, container},
+    Alignment, Element,
+    widget::{Button, Container, Row, Text, column},
 };
 
-use iced_aw::{ContextMenu, MenuButton};
+use iced_aw::ContextMenu;
 
 fn main() -> iced::Result {
     iced::application(
@@ -59,34 +59,20 @@ impl ContextMenuExample {
         );
 
         ContextMenu::new(underlay, || {
-            Container::new(
-                column(vec![
-                    MenuButton::new("Choice 1")
-                        .on_press(Message::Choice1)
-                        .into(),
-                    MenuButton::new("Choice 2")
-                        .on_press(Message::Choice2)
-                        .into(),
-                    MenuButton::new("Choice 3")
-                        .on_press(Message::Choice3)
-                        .into(),
-                    MenuButton::new("Choice 4")
-                        .on_press(Message::Choice4)
-                        .into(),
-                ])
-                .spacing(2),
-            )
-            .padding(4)
-            .width(Length::Fixed(150.0))
-            .style(|theme: &Theme| container::Style {
-                background: Some(Background::Color(theme.palette().background)),
-                border: Border {
-                    color: theme.palette().text,
-                    width: 0.5,
-                    radius: 4.0.into(),
-                },
-                ..Default::default()
-            })
+            column(vec![
+                iced::widget::button("Choice 1")
+                    .on_press(Message::Choice1)
+                    .into(),
+                iced::widget::button("Choice 2")
+                    .on_press(Message::Choice2)
+                    .into(),
+                iced::widget::button("Choice 3")
+                    .on_press(Message::Choice3)
+                    .into(),
+                iced::widget::button("Choice 4")
+                    .on_press(Message::Choice4)
+                    .into(),
+            ])
             .into()
         })
         .into()

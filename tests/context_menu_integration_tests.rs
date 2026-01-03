@@ -19,7 +19,7 @@
 mod common;
 
 use iced::{Color, Theme};
-use iced_aw::{ContextMenu, MenuButton};
+use iced_aw::ContextMenu;
 use iced_test::Error;
 use iced_widget::text::Text;
 use iced_widget::{Button, button};
@@ -32,17 +32,9 @@ enum Message {
     Other,
 }
 
-// Helper function to create a button with explicit Theme type (for underlay)
+// Helper function to create a button with explicit Theme type
 fn create_button<'a>(text: &'a str, msg: Message) -> iced_widget::Button<'a, Message, Theme> {
     button(Text::new(text)).on_press(msg)
-}
-
-// Helper function to create a MenuButton for overlay/menu content
-fn create_menu_button<'a>(
-    text: &'a str,
-    msg: Message,
-) -> MenuButton<'a, Message, Theme, iced_widget::Renderer> {
-    MenuButton::new(text).on_press(msg)
 }
 
 // Generate test helpers for this Message type
@@ -73,7 +65,9 @@ fn context_menu_with_text_underlay() {
 fn context_menu_with_button_overlay() {
     let underlay = Text::new("Right click me");
     let _context_menu: ContextMenu<_, Message, Theme> = ContextMenu::new(underlay, || {
-        create_menu_button("Action", Message::Action1).into()
+        Button::new(Text::new("Action"))
+            .on_press(Message::Action1)
+            .into()
     });
 }
 
@@ -84,8 +78,8 @@ fn context_menu_with_multiple_overlay_items() {
     let underlay = Text::new("Right click me");
     let _context_menu: ContextMenu<_, Message, Theme> = ContextMenu::new(underlay, || {
         Column::new()
-            .push(create_menu_button("Action 1", Message::Action1))
-            .push(create_menu_button("Action 2", Message::Action2))
+            .push(Button::new(Text::new("Action 1")).on_press(Message::Action1))
+            .push(Button::new(Text::new("Action 2")).on_press(Message::Action2))
             .into()
     });
 }
@@ -159,7 +153,7 @@ fn context_menu_with_different_message_types() {
 
     let underlay = Text::new("Right click");
     let _context_menu: ContextMenu<_, CustomMessage, Theme> = ContextMenu::new(underlay, || {
-        MenuButton::new("Delete")
+        Button::new(Text::new("Delete"))
             .on_press(CustomMessage::Delete)
             .into()
     });
@@ -203,12 +197,12 @@ fn context_menu_with_complex_overlay() {
             .push(
                 Row::new()
                     .push(Text::new("Item 1"))
-                    .push(create_menu_button("Action 1", Message::Action1)),
+                    .push(Button::new(Text::new("Action 1")).on_press(Message::Action1)),
             )
             .push(
                 Row::new()
                     .push(Text::new("Item 2"))
-                    .push(create_menu_button("Action 2", Message::Action2)),
+                    .push(Button::new(Text::new("Action 2")).on_press(Message::Action2)),
             )
             .into()
     });
@@ -515,7 +509,7 @@ fn context_menu_can_click_overlay_button() -> Result<(), Error> {
         let underlay = Text::new("Trigger");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Menu Action", Message::Action1))
+                .push(create_button("Menu Action", Message::Action1))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
@@ -578,8 +572,8 @@ fn context_menu_can_click_first_button_in_column_overlay() -> Result<(), Error> 
         let underlay = Text::new("Menu");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Action 1", Message::Action1))
-                .push(create_menu_button("Action 2", Message::Action2))
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
@@ -610,8 +604,8 @@ fn context_menu_can_click_second_button_in_column_overlay() -> Result<(), Error>
         let underlay = Text::new("Menu");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Action 1", Message::Action1))
-                .push(create_menu_button("Action 2", Message::Action2))
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
@@ -643,12 +637,12 @@ fn context_menu_overlay_operates_on_nested_elements() -> Result<(), Error> {
                     .push(
                         Row::new()
                             .push(Text::new("Label 1"))
-                            .push(create_menu_button("Button 1", Message::Action1)),
+                            .push(create_button("Button 1", Message::Action1)),
                     )
                     .push(
                         Row::new()
                             .push(Text::new("Label 2"))
-                            .push(create_menu_button("Button 2", Message::Action2)),
+                            .push(create_button("Button 2", Message::Action2)),
                     ),
             )
             .into()
@@ -777,7 +771,7 @@ fn context_menu_overlay_button_processes_message() -> Result<(), Error> {
         let underlay = Text::new("Trigger");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Action", Message::Action1))
+                .push(create_button("Action", Message::Action1))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
@@ -816,9 +810,9 @@ fn context_menu_with_multiple_buttons_in_overlay() -> Result<(), Error> {
         let underlay = Text::new("Trigger");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Action 1", Message::Action1))
-                .push(create_menu_button("Action 2", Message::Action2))
-                .push(create_menu_button("Other Action", Message::Other))
+                .push(create_button("Action 1", Message::Action1))
+                .push(create_button("Action 2", Message::Action2))
+                .push(create_button("Other Action", Message::Other))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
@@ -1390,7 +1384,7 @@ fn context_menu_click_button_inside_menu_produces_message() -> Result<(), Error>
         let underlay = Text::new("Trigger");
         let overlay = || {
             Column::new()
-                .push(create_menu_button("Action", Message::Action1))
+                .push(create_button("Action", Message::Action1))
                 .into()
         };
         ContextMenu::new(underlay, overlay).open(true).into()
