@@ -262,15 +262,17 @@ macro_rules! test_helpers {
         ) -> Result<(), iced_test::Error> {
             let snapshot = ui.snapshot(&iced::Theme::Light)?;
 
-            // Hash test not passing on windows/mac builds
-            // assert!(
-            //     snapshot.matches_hash(baseline_name)?,
-            //     "Snapshot hash mismatch for: {}",
-            //     baseline_name
-            // );
+
+            let baseline_path = std::path::Path::new(baseline_name);
 
             assert!(
-                snapshot.matches_image(baseline_name)?,
+                snapshot.matches_hash(baseline_name)?,
+                "Snapshot hash mismatch for: {}",
+                baseline_name
+            );
+
+            assert!(
+                snapshot.matches_image(baseline_path)?,
                 "Snapshot image mismatch for: {}",
                 baseline_name
             );
