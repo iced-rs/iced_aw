@@ -62,6 +62,8 @@ where
     submit_button: Button<'a, Message, Theme, Renderer>,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`].
     on_submit: &'a dyn Fn(Color) -> Message,
+    /// Optional function that produces a message when the color changes during selection (real-time updates).
+    on_color_change: Option<&'a dyn Fn(Color) -> Message>,
     /// The position of the [`ColorPickerOverlay`].
     position: Point,
     /// The style of the [`ColorPickerOverlay`].
@@ -85,6 +87,7 @@ where
         state: &'a mut color_picker::State,
         on_cancel: Message,
         on_submit: &'a dyn Fn(Color) -> Message,
+        on_color_change: Option<&'a dyn Fn(Color) -> Message>,
         position: Point,
         class: &'a <Theme as style::color_picker::Catalog>::Class<'b>,
         tree: &'a mut Tree,
@@ -114,6 +117,7 @@ where
             .width(Length::Fill)
             .on_press(on_cancel), // Sending a fake message
             on_submit,
+            on_color_change,
             position,
             class,
             tree,
@@ -138,6 +142,7 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut hsv_color_children = layout.children();
 
@@ -238,6 +243,10 @@ where
         }
 
         if color_changed {
+            // Call on_color_change callback for real-time updates
+            if let Some(on_color_change) = self.on_color_change {
+                shell.publish(on_color_change(self.state.color));
+            }
             event::Status::Captured
         } else {
             event::Status::Ignored
@@ -251,6 +260,7 @@ where
         event: &Event,
         layout: Layout<'_>,
         cursor: Cursor,
+        shell: &mut Shell<Message>,
     ) -> event::Status {
         let mut rgba_color_children = layout.children();
         let mut color_changed = false;
@@ -407,6 +417,10 @@ where
         }
 
         if color_changed {
+            // Call on_color_change callback for real-time updates
+            if let Some(on_color_change) = self.on_color_change {
+                shell.publish(on_color_change(self.state.color));
+            }
             event::Status::Captured
         } else {
             event::Status::Ignored
@@ -414,7 +428,7 @@ where
     }
 
     /// The even handling for the keyboard input.
-    fn on_event_keyboard(&mut self, event: &Event) -> event::Status {
+    fn on_event_keyboard(&mut self, event: &Event, shell: &mut Shell<Message>) -> event::Status {
         if self.state.focus == Focus::None {
             return event::Status::Ignored;
         }
@@ -530,6 +544,13 @@ where
                     Focus::Alpha => status = rgba_bar_handle(key, &mut self.state.color.a),
                     _ => {}
                 }
+                
+                // If color changed via keyboard, call on_color_change callback
+                if status == event::Status::Captured {
+                    if let Some(on_color_change) = self.on_color_change {
+                        shell.publish(on_color_change(self.state.color));
+                    }
+                }
             }
 
             status
@@ -624,7 +645,7 @@ where
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
-        if event::Status::Captured == self.on_event_keyboard(event) {
+        if event::Status::Captured == self.on_event_keyboard(event, shell) {
             self.clear_cache();
             shell.capture_event();
             shell.request_redraw();
@@ -636,7 +657,7 @@ where
         let block1_layout = children
             .next()
             .expect("widget: Layout should have a 1. block layout");
-        let hsv_color_status = self.on_event_hsv_color(event, block1_layout, cursor);
+        let hsv_color_status = self.on_event_hsv_color(event, block1_layout, cursor, shell);
         // ----------- Block 1 end ------------------
 
         // ----------- Block 2 ----------------------
@@ -649,7 +670,7 @@ where
         let rgba_color_layout = block2_children
             .next()
             .expect("widget: Layout should have a RGBA color layout");
-        let rgba_color_status = self.on_event_rgba_color(event, rgba_color_layout, cursor);
+        let rgba_color_status = self.on_event_rgba_color(event, rgba_color_layout, cursor, shell);
 
         let mut fake_messages: Vec<Message> = Vec::new();
 
