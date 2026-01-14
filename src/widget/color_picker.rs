@@ -62,6 +62,8 @@ where
     on_cancel: Message,
     /// The function that produces a message when the submit button of the [`ColorPickerOverlay`] is pressed.
     on_submit: Box<dyn Fn(Color) -> Message>,
+    /// Optional function that produces a message when the color changes during selection (real-time updates).
+    on_color_change: Option<Box<dyn Fn(Color) -> Message>>,
     /// The style of the [`ColorPickerOverlay`].
     class: <Theme as style::color_picker::Catalog>::Class<'a>,
     /// The buttons of the overlay.
@@ -104,9 +106,20 @@ where
             underlay: underlay.into(),
             on_cancel,
             on_submit: Box::new(on_submit),
+            on_color_change: None,
             class: <Theme as style::color_picker::Catalog>::default(),
             overlay_state: ColorPickerOverlayButtons::default().into(),
         }
+    }
+
+    /// Sets a callback that will be called whenever the color changes during selection (real-time updates).
+    #[must_use]
+    pub fn on_color_change<F>(mut self, on_color_change: F) -> Self
+    where
+        F: 'static + Fn(Color) -> Message,
+    {
+        self.on_color_change = Some(Box::new(on_color_change));
+        self
     }
 
     /// Sets the style of the [`ColorPicker`].
@@ -307,6 +320,7 @@ where
                 picker_state,
                 self.on_cancel.clone(),
                 &self.on_submit,
+                self.on_color_change.as_deref(),
                 position,
                 &self.class,
                 &mut tree.children[1],
