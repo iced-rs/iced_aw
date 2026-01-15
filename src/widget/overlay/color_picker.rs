@@ -544,7 +544,7 @@ where
                     Focus::Alpha => status = rgba_bar_handle(key, &mut self.state.color.a),
                     _ => {}
                 }
-                
+
                 // If color changed via keyboard, call on_color_change callback
                 if status == event::Status::Captured {
                     if let Some(on_color_change) = self.on_color_change {
