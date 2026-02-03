@@ -52,7 +52,7 @@
 //!
 //! ```
 //!
-//! Alterwidgetly you can use the helper macros
+//! Alternatively you can use the helper macros
 //!
 //! ## Example 2
 //! ```ignore
