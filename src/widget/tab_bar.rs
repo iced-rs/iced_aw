@@ -859,7 +859,7 @@ fn draw_tab<Theme, Renderer>(
             renderer::Quad {
                 bounds,
                 border: Border {
-                    radius: (0.0).into(),
+                    radius: style.tab_border_radius,
                     width: style.tab_label_border_width,
                     color: style.tab_label_border_color,
                 },
