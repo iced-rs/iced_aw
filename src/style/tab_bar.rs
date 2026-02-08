@@ -21,6 +21,9 @@ pub struct Style {
     /// The border width of the tab bar.
     pub border_width: f32,
 
+    /// The border radius of a tab.
+    pub tab_border_radius: Radius,
+
     /// The background of the tab labels.
     pub tab_label_background: Background,
 
@@ -49,6 +52,7 @@ impl Default for Style {
             background: None,
             border_color: None,
             border_width: 0.0,
+            tab_border_radius: Radius::default(),
             tab_label_background: Background::Color([0.87, 0.87, 0.87].into()),
             tab_label_border_color: [0.7, 0.7, 0.7].into(),
             tab_label_border_width: 1.0,
