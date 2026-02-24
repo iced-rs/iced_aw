@@ -458,13 +458,13 @@ mod tests {
     fn date_display() {
         use super::Date;
         let date = Date::from_ymd(2023, 3, 5);
-        assert_eq!(format!("{}", date), "2023-03-05");
+        assert_eq!(format!("{date}"), "2023-03-05");
 
         let date = Date::from_ymd(2023, 12, 31);
-        assert_eq!(format!("{}", date), "2023-12-31");
+        assert_eq!(format!("{date}"), "2023-12-31");
 
         let date = Date::from_ymd(1999, 1, 1);
-        assert_eq!(format!("{}", date), "1999-01-01");
+        assert_eq!(format!("{date}"), "1999-01-01");
     }
 
     #[test]
@@ -480,7 +480,8 @@ mod tests {
     #[test]
     fn naive_date_to_date() {
         use super::Date;
-        let naive = NaiveDate::from_ymd_opt(2023, 6, 15).unwrap();
+        let naive =
+            NaiveDate::from_ymd_opt(2023, 6, 15).expect("naive_date_to_date should not be none");
         let date: Date = naive.into();
         assert_eq!(date.year, 2023);
         assert_eq!(date.month, 6);
@@ -490,79 +491,92 @@ mod tests {
     #[test]
     fn pred_week_test() {
         use super::pred_week;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).expect("pred_week_test should not be none");
         let result = pred_week(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 5, 8).unwrap();
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 5, 8).expect("pred_week_test should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn pred_week_crosses_month() {
         use super::pred_week;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 5).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 5)
+            .expect("pred_week_crosses_month should not be none");
         let result = pred_week(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 4, 28).unwrap();
+        let expected = NaiveDate::from_ymd_opt(2020, 4, 28)
+            .expect("pred_week_crosses_month should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_week_test() {
         use super::succ_week;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).expect("succ_week_test should not be none");
         let result = succ_week(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 5, 22).unwrap();
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 5, 22).expect("succ_week_test should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_week_crosses_month() {
         use super::succ_week;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 28).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 28)
+            .expect("succ_week_crosses_month should not be none");
         let result = succ_week(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 6, 4).unwrap();
+        let expected = NaiveDate::from_ymd_opt(2020, 6, 4)
+            .expect("succ_week_crosses_month should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn pred_day_test() {
         use super::pred_day;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).expect("pred_day_test should not be none");
         let result = pred_day(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 5, 14).unwrap();
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 5, 14).expect("pred_day_test should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn pred_day_crosses_month() {
         use super::pred_day;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 1).unwrap();
+        let date =
+            NaiveDate::from_ymd_opt(2020, 5, 1).expect("pred_day_crosses_month should not be none");
         let result = pred_day(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 4, 30).unwrap();
+        let expected = NaiveDate::from_ymd_opt(2020, 4, 30)
+            .expect("pred_day_crosses_month should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_day_test() {
         use super::succ_day;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 15).expect("succ_day_test should not be none");
         let result = succ_day(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 5, 16).unwrap();
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 5, 16).expect("succ_day_test should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_day_crosses_month() {
         use super::succ_day;
-        let date = NaiveDate::from_ymd_opt(2020, 5, 31).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 5, 31)
+            .expect("succ_day_crosses_month should not be none");
         let result = succ_day(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 6, 1).unwrap();
+        let expected =
+            NaiveDate::from_ymd_opt(2020, 6, 1).expect("succ_day_crosses_month should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn date_as_string_test() {
         use super::date_as_string;
-        let date = NaiveDate::from_ymd_opt(2023, 1, 15).unwrap();
+        let date =
+            NaiveDate::from_ymd_opt(2023, 1, 15).expect("date_as_string_test should not be none");
         let result = date_as_string(date);
         assert!(result.starts_with("2023"));
         assert!(result.contains("January") || result.contains("Jan"));
@@ -615,17 +629,21 @@ mod tests {
 
     #[test]
     fn pred_month_february_to_january() {
-        let date = NaiveDate::from_ymd_opt(2020, 2, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 2, 15)
+            .expect("pred_month_february_to_january should not be none");
         let result = pred_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 1, 15).unwrap();
+        let expected = NaiveDate::from_ymd_opt(2020, 1, 15)
+            .expect("pred_month_february_to_january should not be none");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn succ_month_november_to_december() {
-        let date = NaiveDate::from_ymd_opt(2020, 11, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2020, 11, 15)
+            .expect("succ_month_november_to_december should not be none");
         let result = succ_month(date);
-        let expected = NaiveDate::from_ymd_opt(2020, 12, 15).unwrap();
+        let expected = NaiveDate::from_ymd_opt(2020, 12, 15)
+            .expect("succ_month_november_to_december should not be none");
         assert_eq!(result, expected);
     }
 
@@ -656,7 +674,7 @@ mod tests {
     fn date_clone_trait() {
         use super::Date;
         let date1 = Date::from_ymd(2023, 6, 15);
-        let date2 = date1.clone();
+        let date2 = date1;
         assert_eq!(date1.year, date2.year);
         assert_eq!(date1.month, date2.month);
         assert_eq!(date1.day, date2.day);

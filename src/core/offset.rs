@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn offset_is_clone() {
         let offset1 = Offset::new(3.0, 4.0);
-        let offset2 = offset1.clone();
+        let offset2 = offset1;
         assert_eq!(offset1.x, offset2.x);
         assert_eq!(offset1.y, offset2.y);
     }

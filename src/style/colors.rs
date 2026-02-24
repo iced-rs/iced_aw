@@ -570,7 +570,7 @@ mod tests {
             VIOLET,
         ];
 
-        for color in sample_colors.iter() {
+        for color in &sample_colors {
             assert!(
                 color.r >= 0.0 && color.r <= 1.0,
                 "Red component out of range"
@@ -600,17 +600,19 @@ mod tests {
     #[test]
     fn dark_colors_are_darker() {
         // Verify dark variants have lower RGB values than their base colors
-        assert!(DARK_BLUE.r <= BLUE.r);
-        assert!(DARK_BLUE.g <= BLUE.g);
-        assert!(DARK_BLUE.b <= BLUE.b);
+        const {
+            assert!(DARK_BLUE.r <= BLUE.r);
+            assert!(DARK_BLUE.g <= BLUE.g);
+            assert!(DARK_BLUE.b <= BLUE.b);
 
-        assert!(DARK_GREEN.r <= GREEN.r);
-        assert!(DARK_GREEN.g <= GREEN.g);
-        assert!(DARK_GREEN.b <= GREEN.b);
+            assert!(DARK_GREEN.r <= GREEN.r);
+            assert!(DARK_GREEN.g <= GREEN.g);
+            assert!(DARK_GREEN.b <= GREEN.b);
 
-        assert!(DARK_RED.r <= RED.r);
-        assert!(DARK_RED.g <= RED.g);
-        assert!(DARK_RED.b <= RED.b);
+            assert!(DARK_RED.r <= RED.r);
+            assert!(DARK_RED.g <= RED.g);
+            assert!(DARK_RED.b <= RED.b);
+        }
     }
 
     #[test]
@@ -625,10 +627,12 @@ mod tests {
         let green_avg = (GREEN.r + GREEN.g + GREEN.b) / 3.0;
         assert!(light_green_avg > green_avg);
 
-        // Light Gray should be lighter than Gray in all components (grayscale)
-        assert!(LIGHT_GRAY.r >= GRAY.r);
-        assert!(LIGHT_GRAY.g >= GRAY.g);
-        assert!(LIGHT_GRAY.b >= GRAY.b);
+        const {
+            // Light Gray should be lighter than Gray in all components (grayscale)
+            assert!(LIGHT_GRAY.r >= GRAY.r);
+            assert!(LIGHT_GRAY.g >= GRAY.g);
+            assert!(LIGHT_GRAY.b >= GRAY.b);
+        }
     }
 
     #[test]

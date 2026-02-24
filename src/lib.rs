@@ -67,7 +67,8 @@
     clippy::missing_docs_in_private_items,
     clippy::unit_arg,
     clippy::trivially_copy_pass_by_ref,
-    clippy::let_unit_value
+    clippy::let_unit_value,
+    clippy::float_cmp
 )]
 
 pub mod widget;

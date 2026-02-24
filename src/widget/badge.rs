@@ -453,15 +453,16 @@ mod tests {
     fn badge_widget_has_operate_method() {
         // Verify that Badge implements the operate method from Widget trait
         // This is a compile-time check to ensure the signature is correct
-        fn _assert_has_operate<W, M, T, R>(_widget: &W)
+        fn assert_has_operate<W, M, T, R>(_widget: &W)
         where
             W: Widget<M, T, R>,
             R: renderer::Renderer,
         {
         }
 
+        // This is a compiler only test. not really a running test.
         let badge = TestBadge::new(iced_widget::text::Text::new("Test"));
-        _assert_has_operate(&badge);
+        assert_has_operate(&badge);
     }
 
     #[test]

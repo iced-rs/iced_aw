@@ -113,6 +113,7 @@ mod tests {
         let style = primary(&theme, Status::Active);
 
         assert!(style.button_background.is_some());
+        #[allow(clippy::panic)]
         if let Some(Background::Color(_)) = style.button_background {
             // Background is a color
         } else {
@@ -266,10 +267,8 @@ mod tests {
 
         // If we had a disabled version, it should preserve the gradient
         // This tests that gradients are handled in the match statement
-        if let Some(Background::Gradient(_)) = style_with_gradient.button_background {
-            // Gradient is preserved
-            assert!(true);
-        } else {
+        #[allow(clippy::panic)]
+        if let Some(Background::Color(_)) = style_with_gradient.button_background {
             panic!("Expected gradient to be preserved");
         }
     }

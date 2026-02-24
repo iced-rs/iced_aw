@@ -112,6 +112,7 @@ mod tests {
         let style = primary(&theme, Status::Active);
 
         // The primary theme should create a transparent background
+        #[allow(clippy::panic)]
         if let Background::Color(color) = style.background {
             assert_eq!(
                 color.a, 0.0,

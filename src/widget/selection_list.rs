@@ -399,10 +399,9 @@ mod tests {
 
     #[test]
     fn selection_list_new_creates_instance() {
-        let options = vec!["Option 1".to_string(), "Option 2".to_string()];
+        let options = vec!["Option 1".to_owned(), "Option 2".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
         assert_eq!(selection_list.options.len(), 2);
         assert_eq!(selection_list.width, Length::Fill);
@@ -411,11 +410,11 @@ mod tests {
 
     #[test]
     fn selection_list_new_with_creates_instance() {
-        let options = vec!["Option 1".to_string(), "Option 2".to_string()];
+        let options = vec!["Option 1".to_owned(), "Option 2".to_owned()];
 
         let selection_list = TestSelectionList::new_with(
             &options,
-            |index, value| TestMessage::Selected(index, value),
+            TestMessage::Selected,
             14.0,
             10.0,
             crate::style::selection_list::primary,
@@ -429,32 +428,27 @@ mod tests {
 
     #[test]
     fn selection_list_width_sets_value() {
-        let options = vec!["Option 1".to_string()];
+        let options = vec!["Option 1".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value))
-                .width(200);
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected).width(200);
 
         assert_eq!(selection_list.width, Length::Fixed(200.0));
     }
 
     #[test]
     fn selection_list_height_sets_value() {
-        let options = vec!["Option 1".to_string()];
+        let options = vec!["Option 1".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value))
-                .height(300);
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected).height(300);
 
         assert_eq!(selection_list.height, Length::Fixed(300.0));
     }
 
     #[test]
     fn selection_list_tag_returns_state_tag() {
-        let options = vec!["Option 1".to_string()];
+        let options = vec!["Option 1".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
         let tag =
             Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::tag(&selection_list);
@@ -467,10 +461,9 @@ mod tests {
 
     #[test]
     fn selection_list_has_one_child() {
-        let options = vec!["Option 1".to_string()];
+        let options = vec!["Option 1".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
         let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
             &selection_list,
@@ -480,10 +473,9 @@ mod tests {
 
     #[test]
     fn selection_list_size_defaults() {
-        let options = vec!["Option 1".to_string()];
+        let options = vec!["Option 1".to_owned()];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
         let size =
             Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::size(&selection_list);
@@ -494,13 +486,12 @@ mod tests {
     #[test]
     fn selection_list_multiple_options() {
         let options = vec![
-            "Option 1".to_string(),
-            "Option 2".to_string(),
-            "Option 3".to_string(),
+            "Option 1".to_owned(),
+            "Option 2".to_owned(),
+            "Option 3".to_owned(),
         ];
 
-        let selection_list =
-            TestSelectionList::new(&options, |index, value| TestMessage::Selected(index, value));
+        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
         assert_eq!(selection_list.options.len(), 3);
         assert_eq!(selection_list.options[0], "Option 1");
@@ -512,7 +503,7 @@ mod tests {
     fn state_new_creates_empty_values() {
         type TestState = State<<iced_widget::Renderer as iced_core::text::Renderer>::Paragraph>;
 
-        let options = vec!["A".to_string(), "B".to_string()];
+        let options = vec!["A".to_owned(), "B".to_owned()];
         let state = TestState::new(&options);
 
         assert_eq!(state.values.len(), 2);

@@ -63,19 +63,19 @@ mod tests {
     #[test]
     fn style_state_debug() {
         let state = StyleState::Active;
-        let debug_str = format!("{:?}", state);
+        let debug_str = format!("{state:?}");
         assert_eq!(debug_str, "Active");
 
         let state = StyleState::Selected;
-        let debug_str = format!("{:?}", state);
+        let debug_str = format!("{state:?}");
         assert_eq!(debug_str, "Selected");
 
         let state = StyleState::Hovered;
-        let debug_str = format!("{:?}", state);
+        let debug_str = format!("{state:?}");
         assert_eq!(debug_str, "Hovered");
 
         let state = StyleState::Focused;
-        let debug_str = format!("{:?}", state);
+        let debug_str = format!("{state:?}");
         assert_eq!(debug_str, "Focused");
     }
 

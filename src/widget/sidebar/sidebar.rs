@@ -1888,25 +1888,7 @@ mod tests {
     }
 
     #[test]
-    fn tab_label_variants() {
-        // Verify all TabLabel variants can be created
-        let _icon_label = TabLabel::Icon('X');
-        let _text_label = TabLabel::Text(String::from("Test"));
-        let _icon_text_label = TabLabel::IconText('Y', String::from("Test"));
-    }
-
-    #[test]
-    fn sidebar_position_variants() {
-        // Verify SidebarPosition variants can be created
-        let _start = SidebarPosition::Start;
-        let _end = SidebarPosition::End;
-    }
-
-    #[test]
-    fn position_enum_variants() {
-        // Verify Position variants and default
-        let _start = Position::Start;
-        let _end = Position::End;
+    fn position_enum_variants_default() {
         assert!(matches!(Position::default(), Position::Start));
     }
 

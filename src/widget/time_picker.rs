@@ -439,6 +439,7 @@ mod tests {
                 assert_eq!(hour, 14);
                 assert_eq!(minute, 30);
             }
+            #[allow(clippy::panic)]
             Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
         assert!(!time_picker.use_24h); // Default is 12h
@@ -608,6 +609,7 @@ mod tests {
                 assert_eq!(hour, 14);
                 assert_eq!(minute, 30);
             }
+            #[allow(clippy::panic)]
             Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
@@ -632,6 +634,7 @@ mod tests {
                 assert_eq!(minute, 30);
                 assert_eq!(second, 45);
             }
+            #[allow(clippy::panic)]
             Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
@@ -692,6 +695,7 @@ mod tests {
                 assert!(hour < 24);
                 assert!(minute < 60);
             }
+            #[allow(clippy::panic)]
             Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
@@ -710,6 +714,7 @@ mod tests {
                 assert!(minute < 60);
                 assert!(second < 60);
             }
+            #[allow(clippy::panic)]
             Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
@@ -745,6 +750,7 @@ mod tests {
                     assert_eq!(hour, expected_hour);
                     assert_eq!(minute, expected_minute);
                 }
+                #[allow(clippy::panic)]
                 Time::Hms { .. } => panic!("Expected Time::Hm variant"),
             }
         }

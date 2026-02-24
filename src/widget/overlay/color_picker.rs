@@ -83,6 +83,7 @@ where
     'b: 'a,
 {
     /// Creates a new [`ColorPickerOverlay`] on the given position.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         state: &'a mut color_picker::State,
         on_cancel: Message,
@@ -546,10 +547,10 @@ where
                 }
 
                 // If color changed via keyboard, call on_color_change callback
-                if status == event::Status::Captured {
-                    if let Some(on_color_change) = self.on_color_change {
-                        shell.publish(on_color_change(self.state.color));
-                    }
+                if status == event::Status::Captured
+                    && let Some(on_color_change) = self.on_color_change
+                {
+                    shell.publish(on_color_change(self.state.color));
                 }
             }
 

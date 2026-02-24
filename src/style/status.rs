@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn status_clone() {
         let status = Status::Active;
-        let cloned = status.clone();
+        let cloned = status;
         assert_eq!(status, cloned);
     }
 
@@ -99,11 +99,11 @@ mod tests {
     #[test]
     fn status_debug() {
         let status = Status::Active;
-        let debug_str = format!("{:?}", status);
+        let debug_str = format!("{status:?}");
         assert_eq!(debug_str, "Active");
 
         let status = Status::Hovered;
-        let debug_str = format!("{:?}", status);
+        let debug_str = format!("{status:?}");
         assert_eq!(debug_str, "Hovered");
     }
 

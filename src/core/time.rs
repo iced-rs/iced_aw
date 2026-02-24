@@ -302,7 +302,8 @@ mod tests {
                 assert_eq!(minute, 0);
                 assert_eq!(period, Period::Am);
             }
-            _ => panic!("Expected Time::Hm variant"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
 
@@ -319,7 +320,8 @@ mod tests {
                 assert_eq!(minute, 0);
                 assert_eq!(period, Period::Am);
             }
-            _ => panic!("Expected Time::Hm variant"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
 
@@ -336,7 +338,8 @@ mod tests {
                 assert_eq!(minute, 0);
                 assert_eq!(period, Period::Pm);
             }
-            _ => panic!("Expected Time::Hm variant"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
 
@@ -353,7 +356,8 @@ mod tests {
                 assert_eq!(minute, 0);
                 assert_eq!(period, Period::H24);
             }
-            _ => panic!("Expected Time::Hm variant"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm variant"),
         }
     }
 
@@ -372,7 +376,8 @@ mod tests {
                 assert_eq!(second, 0);
                 assert_eq!(period, Period::Am);
             }
-            _ => panic!("Expected Time::Hms variant"),
+            #[allow(clippy::panic)]
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
 
@@ -391,7 +396,8 @@ mod tests {
                 assert_eq!(second, 0);
                 assert_eq!(period, Period::Pm);
             }
-            _ => panic!("Expected Time::Hms variant"),
+            #[allow(clippy::panic)]
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
 
@@ -410,7 +416,8 @@ mod tests {
                 assert_eq!(second, 0);
                 assert_eq!(period, Period::H24);
             }
-            _ => panic!("Expected Time::Hms variant"),
+            #[allow(clippy::panic)]
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
 
@@ -421,7 +428,7 @@ mod tests {
             minute: 30,
             period: Period::H24,
         };
-        assert_eq!(format!("{}", time), "14:30");
+        assert_eq!(format!("{time}"), "14:30");
     }
 
     #[test]
@@ -431,7 +438,7 @@ mod tests {
             minute: 15,
             period: Period::Am,
         };
-        assert_eq!(format!("{}", time), "09:15 AM");
+        assert_eq!(format!("{time}"), "09:15 AM");
     }
 
     #[test]
@@ -441,7 +448,7 @@ mod tests {
             minute: 45,
             period: Period::Pm,
         };
-        assert_eq!(format!("{}", time), "03:45 PM");
+        assert_eq!(format!("{time}"), "03:45 PM");
     }
 
     #[test]
@@ -452,7 +459,7 @@ mod tests {
             second: 59,
             period: Period::H24,
         };
-        assert_eq!(format!("{}", time), "23:59:59");
+        assert_eq!(format!("{time}"), "23:59:59");
     }
 
     #[test]
@@ -463,7 +470,7 @@ mod tests {
             second: 45,
             period: Period::Am,
         };
-        assert_eq!(format!("{}", time), "06:30:45 AM");
+        assert_eq!(format!("{time}"), "06:30:45 AM");
     }
 
     #[test]
@@ -474,7 +481,7 @@ mod tests {
             second: 33,
             period: Period::Pm,
         };
-        assert_eq!(format!("{}", time), "11:22:33 PM");
+        assert_eq!(format!("{time}"), "11:22:33 PM");
     }
 
     #[test]
@@ -494,7 +501,8 @@ mod tests {
 
     #[test]
     fn naive_time_to_time() {
-        let naive = NaiveTime::from_hms_opt(14, 30, 45).unwrap();
+        let naive =
+            NaiveTime::from_hms_opt(14, 30, 45).expect("naive_time_to_time should not be none");
         let time: Time = naive.into();
         match time {
             Time::Hms {
@@ -508,13 +516,15 @@ mod tests {
                 assert_eq!(second, 45);
                 assert_eq!(period, Period::H24);
             }
-            _ => panic!("Expected Time::Hms variant"),
+            #[allow(clippy::panic)]
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
 
     #[test]
     fn naive_time_midnight_to_time() {
-        let naive = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
+        let naive = NaiveTime::from_hms_opt(0, 0, 0)
+            .expect("naive_time_midnight_to_time should not be none");
         let time: Time = naive.into();
         match time {
             Time::Hms {
@@ -528,7 +538,8 @@ mod tests {
                 assert_eq!(second, 0);
                 assert_eq!(period, Period::H24);
             }
-            _ => panic!("Expected Time::Hms variant"),
+            #[allow(clippy::panic)]
+            Time::Hm { .. } => panic!("Expected Time::Hms variant"),
         }
     }
 
@@ -540,7 +551,11 @@ mod tests {
             period: Period::Am,
         };
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms_opt(0, 0, 0).unwrap());
+        assert_eq!(
+            naive,
+            NaiveTime::from_hms_opt(0, 0, 0)
+                .expect("time_hm_midnight_am_to_naive Should not be none")
+        );
     }
 
     #[test]
@@ -551,7 +566,10 @@ mod tests {
             period: Period::Pm,
         };
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms_opt(12, 0, 0).unwrap());
+        assert_eq!(
+            naive,
+            NaiveTime::from_hms_opt(12, 0, 0).expect("time_hm_noon_pm_to_naive Should not be none")
+        );
     }
 
     #[test]
@@ -562,7 +580,10 @@ mod tests {
             period: Period::Am,
         };
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms_opt(1, 30, 0).unwrap());
+        assert_eq!(
+            naive,
+            NaiveTime::from_hms_opt(1, 30, 0).expect("time_hm_one_am_to_naive Should not be none")
+        );
     }
 
     #[test]
@@ -573,7 +594,11 @@ mod tests {
             period: Period::Pm,
         };
         let naive: NaiveTime = time.into();
-        assert_eq!(naive, NaiveTime::from_hms_opt(23, 45, 0).unwrap());
+        assert_eq!(
+            naive,
+            NaiveTime::from_hms_opt(23, 45, 0)
+                .expect("time_hm_eleven_pm_to_naive Should not be none")
+        );
     }
 
     #[test]
@@ -587,11 +612,13 @@ mod tests {
         // Both should be usable
         match time1 {
             Time::Hm { hour, .. } => assert_eq!(hour, 10),
-            _ => panic!("Expected Time::Hm"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm"),
         }
         match time2 {
             Time::Hm { hour, .. } => assert_eq!(hour, 10),
-            _ => panic!("Expected Time::Hm"),
+            #[allow(clippy::panic)]
+            Time::Hms { .. } => panic!("Expected Time::Hm"),
         }
     }
 
@@ -603,7 +630,7 @@ mod tests {
             second: 30,
             period: Period::H24,
         };
-        let time2 = time1.clone();
+        let time2 = time1;
         match (time1, time2) {
             (
                 Time::Hms {
@@ -624,6 +651,7 @@ mod tests {
                 assert_eq!(s1, s2);
                 assert_eq!(p1, p2);
             }
+            #[allow(clippy::panic)]
             _ => panic!("Expected Time::Hms for both"),
         }
     }
@@ -639,7 +667,7 @@ mod tests {
     #[test]
     fn period_clone_trait() {
         let p1 = Period::Pm;
-        let p2 = p1.clone();
+        let p2 = p1;
         assert_eq!(p1, p2);
     }
 

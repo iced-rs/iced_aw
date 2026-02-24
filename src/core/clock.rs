@@ -220,14 +220,14 @@ mod tests {
     fn period_display_am() {
         use super::Period;
         let period = Period::AM;
-        assert_eq!(format!("{}", period), "AM");
+        assert_eq!(format!("{period}"), "AM");
     }
 
     #[test]
     fn period_display_pm() {
         use super::Period;
         let period = Period::PM;
-        assert_eq!(format!("{}", period), "PM");
+        assert_eq!(format!("{period}"), "PM");
     }
 
     #[test]
@@ -356,6 +356,7 @@ mod tests {
     fn constants_are_defined() {
         use super::*;
         // Just verify the constants are accessible and have expected values
+
         assert_eq!(PERIOD_PERCENTAGE, 0.1);
         assert_eq!(HOUR_RADIUS_PERCENTAGE, 0.4);
         assert_eq!(MINUTE_RADIUS_PERCENTAGE, 0.65);
