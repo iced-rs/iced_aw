@@ -10,7 +10,7 @@ use iced::{
 };
 use iced_aw::ICED_AW_FONT_BYTES;
 use iced_aw::{NumberInput, Wrap};
-use rand::Rng;
+use rand::RngExt;
 
 fn main() -> iced::Result {
     iced::application(RandStrings::default, RandStrings::update, RandStrings::view)

@@ -322,7 +322,8 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if tree.children.is_empty() {
+        // we expect 2 elements to at least exist here if not lets try to reload them.
+        if tree.children.len() != 2 {
             tree.children = self.children();
         }
 
@@ -346,19 +347,21 @@ where
             .height(self.height)
             .shrink([0.0, tab_bar_node.size().height]);
 
-        let mut tab_content_node =
-            if let Some(element) = self.children.get_mut(self.tab_bar.get_active_tab_idx()) {
-                element.as_widget_mut().layout(
-                    &mut tree.children[1].children[self.tab_bar.get_active_tab_idx()],
-                    renderer,
-                    &tab_content_limits,
-                )
-            } else {
-                Row::<Message, Theme, Renderer>::new()
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .layout(tree, renderer, &tab_content_limits)
-            };
+        let mut tab_content_node = if let (Some(element), Some(child)) = (
+            self.children.get_mut(self.tab_bar.get_active_tab_idx()),
+            tree.children.get_mut(1),
+        ) {
+            element.as_widget_mut().layout(
+                &mut child.children[self.tab_bar.get_active_tab_idx()],
+                renderer,
+                &tab_content_limits,
+            )
+        } else {
+            Row::<Message, Theme, Renderer>::new()
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .layout(tree, renderer, &tab_content_limits)
+        };
 
         let tab_bar_bounds = tab_bar_node.bounds();
         tab_bar_node = tab_bar_node.move_to(Point::new(
