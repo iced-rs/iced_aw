@@ -364,18 +364,18 @@ where
                     - node.bounds().height / 2.0,
             ),
         };
-        //commenting these out for now as we have no way of knowing the actual screen size here.. maybe in a later iced update?
-        /*if new_position.x + node.bounds().width > max.width {
-            new_position.x -= max.width - node.bounds().width;
-        }*/
+
+        if new_position.x + node.bounds().width > self.viewport.width {
+            new_position.x -= node.bounds().width;
+        }
 
         if new_position.x < 0.0 {
             new_position.x = 0.0;
         }
 
-        /*if new_position.y + node.bounds().height > max.height {
-            new_position.y -= max.height - node.bounds().height;
-        }*/
+        if new_position.y + node.bounds().height > self.viewport.height {
+            new_position.y -= node.bounds().height;
+        }
         if new_position.y < 0.0 {
             new_position.y = 0.0;
         }
