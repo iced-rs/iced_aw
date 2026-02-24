@@ -1375,7 +1375,8 @@ where
     }
 
     fn diff(&self, tree: &mut Tree) {
-        if tree.children.is_empty() {
+        // should be 2 elements in the list always if not lets reload them.
+        if tree.children.len() != 2 {
             tree.children = self.children();
         }
 
@@ -1397,19 +1398,21 @@ where
             .width(self.width)
             .height(self.height)
             .shrink([sidebar_node.size().width, 0.0]);
-        let mut tab_content_node =
-            if let Some(element) = self.tabs.get_mut(self.sidebar.get_active_tab_idx()) {
-                element.as_widget_mut().layout(
-                    &mut tree.children[1].children[self.sidebar.get_active_tab_idx()],
-                    renderer,
-                    &tab_content_limits,
-                )
-            } else {
-                Row::<Message, Theme, Renderer>::new()
-                    .width(Length::Fill)
-                    .height(Length::Shrink)
-                    .layout(tree, renderer, &tab_content_limits)
-            };
+        let mut tab_content_node = if let (Some(element), Some(child)) = (
+            self.tabs.get_mut(self.sidebar.get_active_tab_idx()),
+            tree.children.get_mut(1),
+        ) {
+            element.as_widget_mut().layout(
+                &mut child.children[self.sidebar.get_active_tab_idx()],
+                renderer,
+                &tab_content_limits,
+            )
+        } else {
+            Row::<Message, Theme, Renderer>::new()
+                .width(Length::Fill)
+                .height(Length::Shrink)
+                .layout(tree, renderer, &tab_content_limits)
+        };
         let sidebar_bounds = sidebar_node.bounds();
         sidebar_node = sidebar_node.move_to(Point::new(
             sidebar_bounds.x

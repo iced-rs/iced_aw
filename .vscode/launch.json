@@ -131,6 +131,23 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug example 'tabs_noshow'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=tabs_noshow",
+        ],
+        "filter": {
+          "name": "tabs_noshow",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug example 'drop_down_test'",
       "cargo": {
         "args": [
