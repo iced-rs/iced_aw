@@ -148,6 +148,38 @@
     {
       "type": "lldb",
       "request": "launch",
+      "name": "Debug example 'dropdown_pos'",
+      "cargo": {
+        "args": [
+          "build",
+          "--example=dropdown_pos",
+        ],
+        "filter": {
+          "name": "dropdown_pos",
+          "kind": "example"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "(Windows) Launch example 'dropdown_pos'",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/target/debug/examples/dropdown_pos.exe",
+      "args": [
+        "--example",
+        "dropdown_pos"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [],
+      "preLaunchTask": "build_dropdown_pos",
+      "console": "integratedTerminal",
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
       "name": "Debug example 'drop_down_test'",
       "cargo": {
         "args": [

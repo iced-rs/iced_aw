@@ -1,0 +1,22 @@
+// .vscode/tasks.json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build_dropdown_pos",
+            "type": "cargo",
+            "command": "build",
+            "args": [
+                "--example",
+                "dropdown_pos"
+            ],
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
