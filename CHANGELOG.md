@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-02-26
+
+### Fixed
+- Context Menu Render location.
+- Panic when using Sidebar in Flexable layout
+- Panic when using Tabs in Flexable layout
+
+### Changes
+- Add tab border radius to tab bar style
+- Add real-time color change callback to ColorPicker
+
 ## [0.13.0] - 2025-12-08
 
 ### Changes
