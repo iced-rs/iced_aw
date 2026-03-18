@@ -3,7 +3,7 @@
 // It was written by wiiznokes <wiiznokes2@gmail.com>
 
 use iced::{
-    Alignment, Element,
+    Alignment, Element, Theme,
     widget::{Button, Container, Row, Text, column},
 };
 
@@ -74,6 +74,8 @@ impl ContextMenuExample {
                     .into(),
             ])
             .into()
+        }).style(|t: &Theme, _: iced_aw::style::Status| iced_aw::context_menu::Style {
+            background: iced::Background::Color(t.palette().primary)
         })
         .into()
     }

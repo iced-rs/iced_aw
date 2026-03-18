@@ -121,9 +121,14 @@ where
 
         // Background
 
+        let content_layout = layout
+            .children()
+            .next()
+            .expect("widget: Layout should have a content layout.");
+
         renderer.fill_quad(
             renderer::Quad {
-                bounds,
+                bounds: content_layout.bounds(),
                 border: Border {
                     radius: (0.0).into(),
                     width: 0.0,
@@ -133,11 +138,6 @@ where
             },
             style_sheet.background,
         );
-
-        let content_layout = layout
-            .children()
-            .next()
-            .expect("widget: Layout should have a content layout.");
 
         // Modal
         self.content.as_widget().draw(
