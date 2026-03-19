@@ -52,6 +52,7 @@ pub struct ContextMenu<
     underlay: Element<'a, Message, Theme, Renderer>,
     /// The content of [`ContextMenuOverlay`].
     overlay: Overlay,
+    overlay_instance: Option<Element<'a, Message, Theme, Renderer>>,
     /// The style of the [`ContextMenu`].
     class: Theme::Class<'a>,
     /// Force the menu to be shown (for testing purposes). If None, uses internal state.
@@ -77,6 +78,7 @@ where
         ContextMenu {
             underlay: underlay.into(),
             overlay,
+            overlay_instance: None,
             class: Theme::default(),
             force_open: None,
         }
@@ -157,11 +159,15 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new((self.overlay)())]
+        let overlay_tree = self.overlay_instance.as_ref().map(Tree::new).unwrap_or_else(Tree::empty);
+        vec![Tree::new(&self.underlay), overlay_tree]
     }
 
     fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &(self.overlay)()]);
+        tree.children[0].diff(&self.underlay);
+        if let Some(overlay) = self.overlay_instance.as_ref() {
+            tree.children[1].diff(overlay);
+        }
     }
 
     fn operate<'b>(
@@ -175,13 +181,14 @@ where
         let show = self.force_open.unwrap_or(s.show);
 
         if show {
-            let mut content = (self.overlay)();
-            content.as_widget_mut().diff(&mut state.children[1]);
+            let content = self.overlay_instance.get_or_insert_with(&self.overlay);
+            state.children[1].diff(&*content);
 
             content
                 .as_widget_mut()
                 .operate(&mut state.children[1], layout, renderer, operation);
         } else {
+            self.overlay_instance = None;
             self.underlay.as_widget_mut().operate(
                 &mut state.children[0],
                 layout,
@@ -209,6 +216,11 @@ where
                 let s: &mut State = state.state.downcast_mut();
                 s.cursor_position = cursor.position().unwrap_or_default();
                 s.show = !s.show;
+
+                if !s.show {
+                    self.overlay_instance = None;
+                }
+
                 shell.capture_event();
                 shell.request_redraw();
             }
@@ -255,6 +267,7 @@ where
         let show = self.force_open.unwrap_or(s.show);
 
         if !show {
+            self.overlay_instance = None;
             return self.underlay.as_widget_mut().overlay(
                 &mut tree.children[0],
                 layout,
@@ -265,8 +278,8 @@ where
         }
 
         let position = s.cursor_position;
-        let mut content = (self.overlay)();
-        content.as_widget_mut().diff(&mut tree.children[1]);
+        let content = self.overlay_instance.get_or_insert_with(&self.overlay);
+        tree.children[1].diff(&*content);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
