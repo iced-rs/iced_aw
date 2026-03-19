@@ -166,15 +166,14 @@ where
         let mut capture_event = false;
 
         match &event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key, .. }) => {
-                if *key == keyboard::Key::Named(keyboard::key::Named::Escape) {
-                    self.state.show = false;
-                    forward_event_to_children = false;
-                    shell.capture_event();
-                    shell.request_redraw();
-                }
+            Event::Keyboard(keyboard::Event::KeyPressed { key, .. })
+                if *key == keyboard::Key::Named(keyboard::key::Named::Escape) =>
+            {
+                self.state.show = false;
+                forward_event_to_children = false;
+                shell.capture_event();
+                shell.request_redraw();
             }
-
             Event::Mouse(mouse::Event::ButtonPressed(
                 mouse::Button::Left | mouse::Button::Right,
             ))

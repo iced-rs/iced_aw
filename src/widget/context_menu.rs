@@ -159,7 +159,10 @@ where
     }
 
     fn children(&self) -> Vec<Tree> {
-        let overlay_tree = self.overlay_instance.as_ref().map(Tree::new).unwrap_or_else(Tree::empty);
+        let overlay_tree = self
+            .overlay_instance
+            .as_ref()
+            .map_or_else(Tree::empty, Tree::new);
         vec![Tree::new(&self.underlay), overlay_tree]
     }
 

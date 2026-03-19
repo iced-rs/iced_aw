@@ -276,23 +276,23 @@ pub fn update<Message, T>(
             }
         }
         Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-        | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
-            if is_dragging {
-                if let Some(on_release) = on_release.clone() {
-                    shell.publish(on_release);
-                }
-                state.is_dragging = false;
-
-                shell.capture_event();
+        | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. })
+            if is_dragging =>
+        {
+            if let Some(on_release) = on_release.clone() {
+                shell.publish(on_release);
             }
+            state.is_dragging = false;
+
+            shell.capture_event();
         }
         Event::Mouse(mouse::Event::CursorMoved { .. })
-        | Event::Touch(touch::Event::FingerMoved { .. }) => {
-            if is_dragging {
-                let _ = cursor.position().map(change);
+        | Event::Touch(touch::Event::FingerMoved { .. })
+            if is_dragging =>
+        {
+            let _ = cursor.position().map(change);
 
-                shell.capture_event();
-            }
+            shell.capture_event();
         }
         _ => {}
     }

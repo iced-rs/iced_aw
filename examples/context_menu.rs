@@ -74,9 +74,12 @@ impl ContextMenuExample {
                     .into(),
             ])
             .into()
-        }).style(|t: &Theme, _: iced_aw::style::Status| iced_aw::context_menu::Style {
-            background: iced::Background::Color(t.palette().primary)
         })
+        .style(
+            |t: &Theme, _: iced_aw::style::Status| iced_aw::context_menu::Style {
+                background: iced::Background::Color(t.palette().primary),
+            },
+        )
         .into()
     }
 }

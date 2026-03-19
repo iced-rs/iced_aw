@@ -4,7 +4,6 @@ use iced::{
     widget::{button, column, container, row, scrollable, text},
 };
 use iced_aw::{DropDown, drop_down};
-use std::str::FromStr;
 
 fn main() -> iced::Result {
     iced::application(App::default, App::update, App::view).run()
@@ -18,12 +17,12 @@ enum DropDownItem {
     C,
 }
 
-impl ToString for DropDownItem {
-    fn to_string(&self) -> String {
+impl std::fmt::Display for DropDownItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            DropDownItem::A => String::from_str("A").unwrap(),
-            DropDownItem::B => String::from_str("B").unwrap(),
-            DropDownItem::C => String::from_str("C").unwrap(),
+            DropDownItem::A => write!(f, "A"),
+            DropDownItem::B => write!(f, "B"),
+            DropDownItem::C => write!(f, "C"),
         }
     }
 }

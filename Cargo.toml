@@ -64,7 +64,7 @@ full = [
 
 [dev-dependencies]
 iced_aw = { path = "./" }
-getrandom = { version = "0.4.1", features = ["wasm_js"] }
+getrandom = { version = "0.4.2", features = ["wasm_js"] }
 rand = "0.10.0"
 env_logger = "0.11.9"                                        # For wrap example
 iced_test = "0.14" # for UI testing
@@ -117,6 +117,10 @@ required-features = ["date_picker"]
 
 [[example]]
 name = "menu"
+required-features = ["menu"]
+
+[[example]]
+name = "menu_test"
 required-features = ["menu"]
 
 [[example]]

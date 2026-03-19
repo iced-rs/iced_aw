@@ -180,14 +180,13 @@ where
                     shell.request_redraw();
                 }
             }
-            Event::Mouse(mouse::Event::CursorMoved { position }) => {
+            Event::Mouse(mouse::Event::CursorMoved { position })
                 if month_layout.bounds().contains(*position)
                     || left_bounds.contains(*position)
-                    || right_bounds.contains(*position)
-                {
-                    self.state.day_mouse_over = None;
-                    shell.request_redraw();
-                }
+                    || right_bounds.contains(*position) =>
+            {
+                self.state.day_mouse_over = None;
+                shell.request_redraw();
             }
             _ => {}
         }
@@ -229,14 +228,13 @@ where
                     shell.request_redraw();
                 }
             }
-            Event::Mouse(mouse::Event::CursorMoved { position }) => {
+            Event::Mouse(mouse::Event::CursorMoved { position })
                 if year_layout.bounds().contains(*position)
                     || left_bounds.contains(*position)
-                    || right_bounds.contains(*position)
-                {
-                    self.state.day_mouse_over = None;
-                    shell.request_redraw();
-                }
+                    || right_bounds.contains(*position) =>
+            {
+                self.state.day_mouse_over = None;
+                shell.request_redraw();
             }
             _ => {}
         }

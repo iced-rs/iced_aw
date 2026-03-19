@@ -429,25 +429,25 @@ where
         // println!("cursor in bar_bounds: {:?}", cursor.is_over(bar_bounds));
 
         match event {
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-                if cursor.is_over(bar_bounds) {
-                    global_state.pressed = true;
-                    if global_state.open {
-                        schedule_close_on_click(
-                            global_state,
-                            &self.global_parameters,
-                            slice,
-                            &mut self.roots,
-                            slice_layout.children(),
-                            cursor,
-                            self.close_on_item_click,
-                            self.close_on_background_click,
-                        );
-                    } else {
-                        global_state.schedule(MenuBarTask::OpenOnClick);
-                    }
-                    shell.capture_event();
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+                if cursor.is_over(bar_bounds) =>
+            {
+                global_state.pressed = true;
+                if global_state.open {
+                    schedule_close_on_click(
+                        global_state,
+                        &self.global_parameters,
+                        slice,
+                        &mut self.roots,
+                        slice_layout.children(),
+                        cursor,
+                        self.close_on_item_click,
+                        self.close_on_background_click,
+                    );
+                } else {
+                    global_state.schedule(MenuBarTask::OpenOnClick);
                 }
+                shell.capture_event();
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
                 global_state.pressed = false;
@@ -469,41 +469,38 @@ where
                     }
                 }
             }
-            Event::Mouse(mouse::Event::CursorMoved { .. }) => {
-                if global_state.open {
-                    if cursor.is_over(bar_bounds) {
-                        try_open_menu(
-                            &mut self.roots,
-                            bar_menu_state,
-                            item_trees,
-                            slice_layout.children(),
-                            cursor,
-                            shell,
-                        );
-                        shell.capture_event();
-                    } else {
-                        bar.close(item_trees, shell);
-                    }
+            Event::Mouse(mouse::Event::CursorMoved { .. }) if global_state.open => {
+                if cursor.is_over(bar_bounds) {
+                    try_open_menu(
+                        &mut self.roots,
+                        bar_menu_state,
+                        item_trees,
+                        slice_layout.children(),
+                        cursor,
+                        shell,
+                    );
+                    shell.capture_event();
+                } else {
+                    bar.close(item_trees, shell);
                 }
             }
-            Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
-                if cursor.is_over(bar_bounds) && slice_layout.bounds().width > layout.bounds().width
-                // check if scrolling is on
-                {
-                    let scroll_speed = self.global_parameters.scroll_speed;
-                    let delta_x = match delta {
-                        mouse::ScrollDelta::Lines { x, .. } => x * scroll_speed.line,
-                        mouse::ScrollDelta::Pixels { x, .. } => x * scroll_speed.pixel,
-                    };
+            Event::Mouse(mouse::Event::WheelScrolled { delta })
+                if cursor.is_over(bar_bounds)
+                    && slice_layout.bounds().width > layout.bounds().width =>
+            {
+                let scroll_speed = self.global_parameters.scroll_speed;
+                let delta_x = match delta {
+                    mouse::ScrollDelta::Lines { x, .. } => x * scroll_speed.line,
+                    mouse::ScrollDelta::Pixels { x, .. } => x * scroll_speed.pixel,
+                };
 
-                    let min_offset = -(slice_layout.bounds().width - layout.bounds().width);
+                let min_offset = -(slice_layout.bounds().width - layout.bounds().width);
 
-                    bar_menu_state.scroll_offset =
-                        (bar_menu_state.scroll_offset + delta_x).clamp(min_offset, 0.0);
-                    shell.invalidate_layout();
-                    shell.request_redraw();
-                    shell.capture_event();
-                }
+                bar_menu_state.scroll_offset =
+                    (bar_menu_state.scroll_offset + delta_x).clamp(min_offset, 0.0);
+                shell.invalidate_layout();
+                shell.request_redraw();
+                shell.capture_event();
             }
             Event::Window(window::Event::Resized { .. }) => {
                 if slice_layout.bounds().width > layout.bounds().width {

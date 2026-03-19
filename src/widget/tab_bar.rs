@@ -538,37 +538,43 @@ where
     ) {
         match event {
             Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-            | Event::Touch(touch::Event::FingerPressed { .. }) => {
+            | Event::Touch(touch::Event::FingerPressed { .. })
                 if cursor
                     .position()
-                    .is_some_and(|pos| layout.bounds().contains(pos))
-                {
-                    let tabs_map: Vec<bool> = layout
-                        .children()
-                        .map(|layout| {
-                            cursor
-                                .position()
-                                .is_some_and(|pos| layout.bounds().contains(pos))
-                        })
-                        .collect();
+                    .is_some_and(|pos| layout.bounds().contains(pos)) =>
+            {
+                let tabs_map: Vec<bool> = layout
+                    .children()
+                    .map(|layout| {
+                        cursor
+                            .position()
+                            .is_some_and(|pos| layout.bounds().contains(pos))
+                    })
+                    .collect();
 
-                    if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
-                        shell.publish(
-                            self.on_close
-                                .as_ref()
-                                .filter(|_on_close| {
-                                    let tab_layout = layout.children().nth(new_selected).expect("widget: Layout should have a tab layout at the selected index");
-                                    let cross_layout = tab_layout.children().nth(1).expect("widget: Layout should have a close layout");
+                if let Some(new_selected) = tabs_map.iter().position(|b| *b) {
+                    shell.publish(
+                        self.on_close
+                            .as_ref()
+                            .filter(|_on_close| {
+                                let tab_layout = layout.children().nth(new_selected).expect(
+                                    "widget: Layout should have a tab layout at the selected index",
+                                );
+                                let cross_layout = tab_layout
+                                    .children()
+                                    .nth(1)
+                                    .expect("widget: Layout should have a close layout");
 
-                                    cursor.position().is_some_and(|pos| cross_layout.bounds().contains(pos))
-                                })
-                                .map_or_else(
-                                    || (self.on_select)(self.tab_indices[new_selected].clone()),
-                                    |on_close| (on_close)(self.tab_indices[new_selected].clone()),
-                                ),
-                        );
-                        shell.capture_event();
-                    }
+                                cursor
+                                    .position()
+                                    .is_some_and(|pos| cross_layout.bounds().contains(pos))
+                            })
+                            .map_or_else(
+                                || (self.on_select)(self.tab_indices[new_selected].clone()),
+                                |on_close| (on_close)(self.tab_indices[new_selected].clone()),
+                            ),
+                    );
+                    shell.capture_event();
                 }
             }
             _ => {}
