@@ -174,6 +174,7 @@ where
                     self.state.show = false;
                     forward_event_to_children = false;
                     shell.capture_event();
+                    shell.request_redraw();
                 }
             }
 
@@ -195,12 +196,14 @@ where
                 self.state.show = false;
 
                 capture_event = true;
+                shell.request_redraw();
             }
 
             Event::Window(window::Event::Resized { .. }) => {
                 self.state.show = false;
                 forward_event_to_children = false;
                 capture_event = true;
+                shell.request_redraw();
             }
 
             _ => {}
