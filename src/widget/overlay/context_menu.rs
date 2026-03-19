@@ -35,7 +35,7 @@ pub struct ContextMenuOverlay<
     /// The state of the [`ContextMenuOverlay`].
     tree: &'a mut Tree,
     /// The content of the [`ContextMenuOverlay`].
-    content: Element<'a, Message, Theme, Renderer>,
+    content: &'a mut Element<'b, Message, Theme, Renderer>,
     /// The style of the [`ContextMenuOverlay`].
     class: &'a Theme::Class<'b>,
     /// The state shared between [`ContextMenu`](crate::widget::ContextMenu) and [`ContextMenuOverlay`].
@@ -50,20 +50,17 @@ where
     'b: 'a,
 {
     /// Creates a new [`ContextMenuOverlay`].
-    pub(crate) fn new<C>(
+    pub(crate) fn new(
         position: Point,
         tree: &'a mut Tree,
-        content: C,
+        content: &'a mut Element<'b, Message, Theme, Renderer>,
         class: &'a <Theme as Catalog>::Class<'b>,
         state: &'a mut context_menu::State,
-    ) -> Self
-    where
-        C: Into<Element<'a, Message, Theme, Renderer>>,
-    {
+    ) -> Self {
         ContextMenuOverlay {
             position,
             tree,
-            content: content.into(),
+            content,
             class,
             state,
         }
@@ -287,12 +284,12 @@ mod tests {
     fn context_menu_overlay_new_creates_instance() {
         // Test basic creation of overlay
         let mut tree = create_test_tree();
-        let content = create_test_content();
+        let mut content = create_test_content();
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
 
         assert_eq!(overlay.position, position);
     }
@@ -303,27 +300,27 @@ mod tests {
         let mut tree1 = create_test_tree();
         let mut tree2 = create_test_tree();
         let mut tree3 = create_test_tree();
-        let content1 = create_test_content();
-        let content2 = create_test_content();
-        let content3 = create_test_content();
+        let mut content1 = create_test_content();
+        let mut content2 = create_test_content();
+        let mut content3 = create_test_content();
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state1 = create_test_state();
         let mut state2 = create_test_state();
         let mut state3 = create_test_state();
 
         let overlay1 =
-            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, content1, class, &mut state1);
+            ContextMenuOverlay::new(Point::ORIGIN, &mut tree1, &mut content1, class, &mut state1);
         let overlay2 = ContextMenuOverlay::new(
             Point::new(500.0, 300.0),
             &mut tree2,
-            content2,
+            &mut content2,
             class,
             &mut state2,
         );
         let overlay3 = ContextMenuOverlay::new(
             Point::new(1000.0, 800.0),
             &mut tree3,
-            content3,
+            &mut content3,
             class,
             &mut state3,
         );
@@ -337,12 +334,12 @@ mod tests {
     fn context_menu_overlay_converts_to_overlay_element() {
         // Test conversion to overlay::Element
         let mut tree = create_test_tree();
-        let content = create_test_content();
+        let mut content = create_test_content();
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(100.0, 100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
         let _overlay_element = overlay.overlay();
 
         // If we get here without panic, the conversion worked
@@ -406,12 +403,12 @@ mod tests {
         // Test that overlay can be positioned with negative coordinates
         // (Though layout() will adjust it, the initial position can be negative)
         let mut tree = create_test_tree();
-        let content = create_test_content();
+        let mut content = create_test_content();
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(-50.0, -100.0);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
 
         assert_eq!(overlay.position.x, -50.0);
         assert_eq!(overlay.position.y, -100.0);
@@ -421,12 +418,12 @@ mod tests {
     fn context_menu_overlay_position_accuracy() {
         // Test that position is stored with floating-point precision
         let mut tree = create_test_tree();
-        let content = create_test_content();
+        let mut content = create_test_content();
         let class = &<iced_widget::Theme as Catalog>::default();
         let mut state = create_test_state();
         let position = Point::new(123.456, 789.012);
 
-        let overlay = ContextMenuOverlay::new(position, &mut tree, content, class, &mut state);
+        let overlay = ContextMenuOverlay::new(position, &mut tree, &mut content, class, &mut state);
 
         assert_eq!(overlay.position.x, 123.456);
         assert_eq!(overlay.position.y, 789.012);
