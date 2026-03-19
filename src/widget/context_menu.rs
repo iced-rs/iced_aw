@@ -210,6 +210,7 @@ where
                 s.cursor_position = cursor.position().unwrap_or_default();
                 s.show = !s.show;
                 shell.capture_event();
+                shell.request_redraw();
             }
         }
 
