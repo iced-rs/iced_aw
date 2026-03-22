@@ -149,7 +149,7 @@ where
         Self {
             items,
             spacing: Pixels::ZERO,
-            max_width: f32::MAX,
+            max_width: f32::INFINITY,
             width: Length::Fill,
             height: Length::Shrink,
             axis: Axis::Horizontal,
@@ -248,7 +248,10 @@ where
     ) -> (Node, (Direction, Direction)) {
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::Menu::layout", "");
-        let limits = limits.max_width(self.max_width);
+
+        let limits = limits
+            .max_width(self.max_width)
+            .max_width(self.compute_max_available_width(parent_bounds, viewport));
 
         let items_node = flex::resolve(
             flex::Axis::Vertical,
@@ -366,6 +369,23 @@ where
             ),
             child_direction,
         )
+    }
+
+    fn compute_max_available_width(&self, parent_bounds: Rectangle, viewport: &Rectangle) -> f32 {
+        match self.axis {
+            Axis::Horizontal => {
+                let left = parent_bounds.x - (viewport.x + self.offset);
+                let right = viewport.x + viewport.width
+                    - (parent_bounds.x + parent_bounds.width + self.offset);
+                left.max(right)
+            }
+            Axis::Vertical => {
+                let left = parent_bounds.x + parent_bounds.width - viewport.x;
+                let right = viewport.x + viewport.width - parent_bounds.x;
+                left.max(right)
+            }
+        }
+        .max(0.0)
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }

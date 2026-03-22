@@ -129,6 +129,10 @@ fn menu_bar_clicking_item_shows_submenu() -> Result<(), Error> {
         ui.find("Save").is_ok(),
         "Should find Save menu item after clicking File"
     );
+    assert!(
+        ui.snapshot(&iced::Theme::Dark).is_ok(),
+        "Should not crash after drawing opened submenu"
+    );
 
     Ok(())
 }
