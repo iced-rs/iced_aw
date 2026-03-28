@@ -296,8 +296,8 @@ where
     Message: Clone + 'a,
     Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: crate::style::number_input::ExtendedCatalog,
-    F: 'static + Fn(T) -> Message + Copy,
-    T: 'static
+    F: 'a + Fn(T) -> Message + Copy,
+    T: 'a
         + num_traits::Num
         + num_traits::NumAssignOps
         + PartialOrd

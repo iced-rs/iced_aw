@@ -120,8 +120,7 @@ where
     /// - a function that produces a message when the [`NumberInput`] changes
     pub fn new<F>(value: &T, bounds: impl RangeBounds<T>, on_change: F) -> Self
     where
-        F: 'static + Fn(T) -> Message + Clone,
-        T: 'static,
+        F: 'a + Fn(T) -> Message + Clone,
     {
         let padding = DEFAULT_PADDING;
 
