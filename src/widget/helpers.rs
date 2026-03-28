@@ -128,7 +128,7 @@ macro_rules! menu {
 #[macro_export]
 macro_rules! menu_bar {
     ($($input:tt)+) => (
-        $crate::menu::MenuBar::new(menu_items!( $($input)+ ))
+        $crate::menu::MenuBar::new($crate::menu_items!( $($input)+ ))
     );
 }
 
