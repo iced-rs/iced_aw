@@ -180,25 +180,12 @@ where
         renderer: &Renderer,
         operation: &mut dyn Operation<()>,
     ) {
-        let s: &mut State = state.state.downcast_mut();
-        let show = self.force_open.unwrap_or(s.show);
-
-        if show {
-            let content = self.overlay_instance.get_or_insert_with(&self.overlay);
-            state.children[1].diff(&*content);
-
-            content
-                .as_widget_mut()
-                .operate(&mut state.children[1], layout, renderer, operation);
-        } else {
-            self.overlay_instance = None;
-            self.underlay.as_widget_mut().operate(
-                &mut state.children[0],
-                layout,
-                renderer,
-                operation,
-            );
-        }
+        // `iced_runtime::UserInterface::operate` already traverses the active overlay
+        // separately. Operating the overlay content here with the underlay layout can
+        // desynchronize the widget tree and trigger button/layout panics.
+        self.underlay
+            .as_widget_mut()
+            .operate(&mut state.children[0], layout, renderer, operation);
     }
 
     fn update(
