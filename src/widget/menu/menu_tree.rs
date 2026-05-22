@@ -443,10 +443,10 @@ where
                 )
             };
 
-            if cursor.is_over(parent_bounds) {
-                if let Some(pos) = cursor.position() {
-                    menu_state.last_cursor_on_parent = Some(pos);
-                }
+            if cursor.is_over(parent_bounds)
+                && let Some(pos) = cursor.position()
+            {
+                menu_state.last_cursor_on_parent = Some(pos);
             }
 
             let p1 = menu_state
