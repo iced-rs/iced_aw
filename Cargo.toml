@@ -4,6 +4,7 @@ version = "0.14.1"
 authors = [
   "Kaiden42 <gitlab@tinysn.com>",
   "Andrew Wheeler <genusistimelord@gmail.com>",
+  "Redhawk18 <redhawk@redhawkcodes.dev>",
 ]
 edition = "2024"
 description = "Additional widgets for the Iced GUI library"
@@ -16,7 +17,7 @@ categories = ["gui"]
 rust-version = "1.88"
 
 [features]
-default = ["full"]
+default = []
 
 badge = []
 card = []
