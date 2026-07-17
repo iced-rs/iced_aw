@@ -176,4 +176,4 @@ name = "custom_layout"
 required-features = ["labeled_frame"]
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
