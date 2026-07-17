@@ -395,14 +395,15 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value.clone() > self.min() + self.step.clone()
+        if self.value <= self.min() {
+            return;
+        }
+        if self.value.clone() - self.min() > self.step
             && self.valid(&(self.value.clone() - self.step.clone()))
         {
             self.value -= self.step.clone();
-        } else if self.value > self.min() {
-            self.value = self.min();
         } else {
-            return;
+            self.value = self.min();
         }
         if let Some(on_change) = &self.on_change {
             shell.publish(on_change(self.value.clone()));
@@ -411,14 +412,15 @@ where
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value < self.max() - self.step.clone()
+        if self.value >= self.max() {
+            return;
+        }
+        if self.max() - self.value.clone() > self.step
             && self.valid(&(self.value.clone() + self.step.clone()))
         {
             self.value += self.step.clone();
-        } else if self.value < self.max() {
-            self.value = self.max();
         } else {
-            return;
+            self.value = self.max();
         }
         if let Some(on_change) = &self.on_change {
             shell.publish(on_change(self.value.clone()));
@@ -460,16 +462,12 @@ where
 
     /// Checks if the value can be increased by the step
     fn can_increase(&self) -> bool {
-        (self.value < self.max() - self.step.clone()
-            && self.valid(&(self.value.clone() + self.step.clone())))
-            || self.value < self.max()
+        self.value < self.max()
     }
 
     /// Checks if the value can be decreased by the step
     fn can_decrease(&self) -> bool {
-        (self.value.clone() > self.min() + self.step.clone()
-            && self.valid(&(self.value.clone() - self.step.clone())))
-            || self.value > self.min()
+        self.value > self.min()
     }
 
     /// Checks if the [`NumberInput`] is disabled
@@ -1357,6 +1355,25 @@ mod tests {
         // When min < max, the widget is not disabled
         let input = TestNumberInput::new(&value, 49..=50, TestMessage::Changed);
         assert!(!input.disabled());
+    }
+
+    #[test]
+    fn number_input_does_not_overflow_when_max_is_type_min() {
+        // Regression test for #419: unsigned bounds whose max() is 0 must not
+        // panic with "attempt to subtract with overflow".
+        type U8Input<'a> = NumberInput<'a, u8, TestMessage, iced_widget::Theme, Renderer>;
+
+        let value = 0u8;
+
+        // Inclusive `0..=0`, as in the minimal reproduction.
+        let input: U8Input = NumberInput::new(&value, 0..=0u8, |_| TestMessage::Submit);
+        assert!(!input.can_increase());
+        assert!(!input.can_decrease());
+
+        // Exclusive `0..1`, as produced by `0..vector.len()` for a one-element vector.
+        let input: U8Input = NumberInput::new(&value, 0..1u8, |_| TestMessage::Submit);
+        assert!(!input.can_increase());
+        assert!(!input.can_decrease());
     }
 
     #[test]
