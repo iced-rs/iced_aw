@@ -63,7 +63,7 @@ impl Catalog for Theme {
 /// The primary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
     let base = styled(palette.primary.strong);
 
     match status {
@@ -79,7 +79,7 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
 /// The secondary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn secondary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
     let base = styled(palette.secondary.strong);
 
     match status {
@@ -95,7 +95,7 @@ pub fn secondary(theme: &Theme, status: Status) -> Style {
 /// The success theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn success(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
     let base = styled(palette.success.strong);
 
     match status {
@@ -111,7 +111,7 @@ pub fn success(theme: &Theme, status: Status) -> Style {
 /// The danger theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn danger(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
     let base = styled(palette.danger.strong);
 
     match status {
