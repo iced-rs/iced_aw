@@ -992,7 +992,6 @@ where
                     shell.invalidate_layout();
                 }
                 InternalMessage::OnPaste(value) => {
-                    println!("Test");
                     if self.value != value {
                         if !self.valid(&value) {
                             shell.invalidate_layout();
