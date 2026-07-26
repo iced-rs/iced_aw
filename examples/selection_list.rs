@@ -101,8 +101,6 @@ impl Example {
         //content = content.push(Space::with_height(Length::Fixed(400.0)));
 
         Container::new(content)
-            .width(Length::Fill)
-            .height(Length::Fill)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .into()

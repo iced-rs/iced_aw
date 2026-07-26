@@ -45,7 +45,7 @@ impl Catalog for Theme {
 /// The primary theme of a [`Badge`](crate::widget::selection_list::SelectionList).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
 
     let base = Style {
         text_color: palette.background.base.text,
