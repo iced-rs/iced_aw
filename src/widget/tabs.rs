@@ -18,8 +18,8 @@ use crate::{
 };
 
 use iced_core::{
-    Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Vector, Widget,
+    Element, Event, Font, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector,
+    Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -227,13 +227,6 @@ where
         self
     }
 
-    /// Sets the maximum height of the [`TabBar`] of the [`Tabs`].
-    #[must_use]
-    pub fn tab_bar_max_height(mut self, max_height: f32) -> Self {
-        self.tab_bar = self.tab_bar.max_height(max_height);
-        self
-    }
-
     /// Sets the width of the [`TabBar`] of the [`Tabs`].
     #[must_use]
     pub fn tab_bar_width(mut self, width: Length) -> Self {
@@ -305,30 +298,26 @@ where
     Theme: Catalog + text::Catalog,
     TabId: Eq + Clone,
 {
-    fn children(&self) -> Vec<Tree> {
-        let tabs = Tree {
-            tag: Tag::stateless(),
-            state: State::None,
-            children: self.children.iter().map(Tree::new).collect(),
-        };
-
-        let bar = Tree {
-            tag: self.tab_bar.tag(),
-            state: self.tab_bar.state(),
-            children: self.tab_bar.children(),
-        };
-
-        vec![bar, tabs]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         // we expect 2 elements to at least exist here if not lets try to reload them.
         if tree.children.len() != 2 {
-            tree.children = self.children();
+            let tabs = Tree {
+                tag: Tag::stateless(),
+                state: State::None,
+                children: self.children.iter().map(Tree::new).collect(),
+            };
+
+            let bar = Tree {
+                tag: self.tab_bar.tag(),
+                state: self.tab_bar.state(),
+                children: vec![],
+            };
+
+            tree.children = vec![bar, tabs]
         }
 
         if let Some(tabs) = tree.children.get_mut(1) {
-            tabs.diff_children(&self.children);
+            tabs.diff_children(&mut self.children);
         }
     }
 
@@ -402,7 +391,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -434,7 +422,6 @@ where
             tab_bar_layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -446,7 +433,6 @@ where
                 tab_content_layout,
                 cursor,
                 renderer,
-                clipboard,
                 shell,
                 viewport,
             );
