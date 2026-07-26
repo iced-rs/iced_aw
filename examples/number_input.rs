@@ -52,7 +52,6 @@ impl NumberInputDemo {
         let txt_minute = number_input(&self.value, -100..=100, Message::NumInpChanged)
             .style(number_input::number_input::primary)
             .on_submit(Message::NumInpSubmitted)
-            .on_paste(Message)
             .step(1);
 
         Container::new(
