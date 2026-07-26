@@ -69,8 +69,6 @@ impl DatePickerExample {
         Container::new(row)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
-            .width(Length::Fill)
-            .height(Length::Fill)
             .into()
     }
 }

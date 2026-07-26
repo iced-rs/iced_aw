@@ -6,8 +6,7 @@ use super::overlay::date_picker::{self, DatePickerOverlay, DatePickerOverlayButt
 
 use chrono::Local;
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector,
-    Widget,
+    Element, Event, Layout, Length, Pixels, Point, Rectangle, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer,
@@ -191,12 +190,8 @@ where
         widget::tree::State::new(State::new(self.date))
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.overlay_state]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay_state]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -216,7 +211,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -226,7 +220,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -470,7 +463,7 @@ mod tests {
         let underlay = iced_widget::text::Text::new("Pick a date");
         let date = Date::from_ymd(2024, 1, 1);
 
-        let date_picker = TestDatePicker::new(
+        let mut date_picker = TestDatePicker::new(
             false,
             date,
             underlay,
@@ -478,7 +471,16 @@ mod tests {
             TestMessage::Submit,
         );
 
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&date_picker);
+        let children = {
+            let mut tree = Tree::new(
+                &date_picker as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            date_picker.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 2);
     }
 
