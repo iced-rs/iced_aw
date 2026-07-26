@@ -3,8 +3,7 @@
 //! *This API requires the following crate features to be activated: `quad`*
 
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell,
-    Size, Widget,
+    Border, Color, Element, Event, Layout, Length, Point, Rectangle, Shadow, Shell, Size, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     renderer, touch,
@@ -172,7 +171,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {
