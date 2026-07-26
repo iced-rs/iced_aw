@@ -31,10 +31,8 @@ fn card_snapshot_test() -> Result<(), iced_test::Error> {
     let (app, _) = App::new(move || {
         Card::new(Text::new("Complete"), Text::new("Content"))
             .foot(Text::new("Actions"))
-            .width(500)
-            .height(400)
-            .max_width(800.0)
-            .max_height(600.0)
+            .width(Length::Fixed(500.0).max(800))
+            .height(Length::Fixed(400.0).max(600))
             .padding_head(Padding::new(10.0))
             .padding_body(Padding::new(20.0))
             .padding_foot(Padding::new(10.0))
@@ -187,8 +185,8 @@ fn card_with_max_dimensions_renders() {
     run_test_and_find(
         || {
             Card::new(Text::new("MaxDims"), Text::new("Body"))
-                .max_width(500.0)
-                .max_height(400.0)
+                .width(Length::Fit.max(500.0))
+                .height(Length::Fit.max(400.0))
                 .into()
         },
         "MaxDims",
@@ -258,10 +256,8 @@ fn card_with_all_methods_chained_renders() {
         || {
             Card::new(Text::new("Complete"), Text::new("Content"))
                 .foot(Text::new("Actions"))
-                .width(500)
-                .height(400)
-                .max_width(800.0)
-                .max_height(600.0)
+                .width(Length::Fixed(500.0).max(800))
+                .height(Length::Fixed(400.0).max(600))
                 .padding_head(Padding::new(10.0))
                 .padding_body(Padding::new(20.0))
                 .padding_foot(Padding::new(10.0))
