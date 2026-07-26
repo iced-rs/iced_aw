@@ -1,7 +1,7 @@
 //! A context menu for showing actions on right click.
 //!
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+    Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Button, Cursor},
     overlay, renderer,
@@ -158,18 +158,16 @@ where
         tree::State::new(State::new())
     }
 
-    fn children(&self) -> Vec<Tree> {
-        let overlay_tree = self
-            .overlay_instance
-            .as_ref()
-            .map_or_else(Tree::empty, Tree::new);
-        vec![Tree::new(&self.underlay), overlay_tree]
-    }
+    fn diff(&mut self, tree: &mut Tree) {
+        if tree.children.len() != 2 {
+            tree.children = vec![Tree::empty(), Tree::empty()];
+        }
 
-    fn diff(&self, tree: &mut Tree) {
-        tree.children[0].diff(&self.underlay);
-        if let Some(overlay) = self.overlay_instance.as_ref() {
-            tree.children[1].diff(overlay);
+        tree.children[0].diff(&mut self.underlay);
+
+        match self.overlay_instance.as_mut() {
+            Some(overlay) => tree.children[1].diff(overlay),
+            None => tree.children[1] = Tree::empty(),
         }
     }
 
@@ -195,7 +193,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -222,7 +219,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -269,7 +265,7 @@ where
 
         let position = s.cursor_position;
         let content = self.overlay_instance.get_or_insert_with(&self.overlay);
-        tree.children[1].diff(&*content);
+        tree.children[1].diff(&mut *content);
         Some(
             ContextMenuOverlay::new(
                 position + translation,
@@ -373,11 +369,19 @@ mod tests {
     #[test]
     fn context_menu_has_two_children() {
         let underlay = iced_widget::text::Text::new("Underlay");
-        let context_menu = TestContextMenu::new(underlay, create_overlay);
+        let mut context_menu = TestContextMenu::new(underlay, create_overlay);
 
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &context_menu,
-        );
+        let children = {
+            let mut tree = Tree::new(
+                &context_menu
+                    as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            context_menu.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 2);
     }
 
@@ -453,11 +457,18 @@ mod tests {
     fn widget_children_returns_two_elements() {
         // Test that children() returns underlay and overlay
         let underlay = iced_widget::text::Text::new("Underlay");
-        let context_menu = TestContextMenu::new(underlay, create_overlay);
+        let mut context_menu = TestContextMenu::new(underlay, create_overlay);
 
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &context_menu,
-        );
+        let children = {
+            let mut tree = Tree::new(
+                &context_menu
+                    as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            context_menu.diff(&mut tree);
+
+            tree.children
+        };
 
         // Should have 2 children: underlay and overlay
         assert_eq!(children.len(), 2);

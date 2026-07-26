@@ -8,7 +8,7 @@ pub use crate::style::{
 };
 
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Point, Shell, Size, keyboard,
+    Border, Color, Element, Event, Layout, Point, Shell, Size, keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer, touch,
@@ -154,7 +154,6 @@ where
         layout: Layout<'_>,
         cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) {
         let layout_children = layout
@@ -212,7 +211,6 @@ where
                 layout_children,
                 cursor,
                 renderer,
-                clipboard,
                 shell,
                 &layout.bounds(),
             );

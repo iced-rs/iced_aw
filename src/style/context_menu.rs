@@ -48,7 +48,7 @@ impl Catalog for Theme {
 /// The primary theme of a [`ContextMenu`](crate::widget::ContextMenu).
 #[must_use]
 pub fn primary(theme: &Theme, _status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
 
     Style {
         background: Background::Color(Color {
