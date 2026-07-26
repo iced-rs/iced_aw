@@ -2,8 +2,8 @@
 //!
 //! *This API requires the following crate features to be activated: `wrap`*
 use iced_core::{
-    Alignment, Clipboard, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell,
-    Size, Vector, Widget,
+    Alignment, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -165,12 +165,8 @@ where
     Self: WrapLayout<Renderer>,
     Renderer: renderer::Renderer,
 {
-    fn children(&self) -> Vec<Tree> {
-        self.elements.iter().map(Tree::new).collect()
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.elements);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.elements);
     }
 
     fn size(&self) -> Size<Length> {
@@ -188,7 +184,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -197,9 +192,9 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
             .for_each(|((child, state), layout)| {
-                child.as_widget_mut().update(
-                    state, event, layout, cursor, renderer, clipboard, shell, viewport,
-                );
+                child
+                    .as_widget_mut()
+                    .update(state, event, layout, cursor, renderer, shell, viewport);
             });
     }
 
@@ -352,10 +347,8 @@ where
         let line_minimal_length = self.line_minimal_length;
         let limits = limits
             .shrink(padding)
-            .width(self.width)
-            .height(self.height)
-            .max_width(self.max_width)
-            .max_height(self.max_height);
+            .width(self.width.max(self.max_width))
+            .height(self.height.max(self.max_height));
         let max_width = limits.max().width;
 
         let mut children = tree.children.iter_mut();
@@ -439,10 +432,8 @@ where
         let line_minimal_length = self.line_minimal_length;
         let limits = limits
             .shrink(padding)
-            .width(self.width)
-            .height(self.height)
-            .max_width(self.max_width)
-            .max_height(self.max_height);
+            .width(self.width.max(self.max_width))
+            .height(self.height.max(self.max_height));
         let max_height = limits.max().height;
 
         let mut children = tree.children.iter_mut();
