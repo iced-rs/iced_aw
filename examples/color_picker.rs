@@ -78,8 +78,6 @@ impl ColorPickerExample {
             .push(Text::new(format!("Color: {:?}", self.color)));
 
         Container::new(row)
-            .width(Length::Fill)
-            .height(Length::Fill)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .into()

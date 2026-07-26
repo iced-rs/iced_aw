@@ -9,7 +9,7 @@ use super::overlay::color_picker::{
 };
 
 use iced_core::{
-    Clipboard, Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
+    Color, Element, Event, Layout, Length, Point, Rectangle, Shell, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -197,16 +197,12 @@ where
         tree::State::new(State::new(self.color))
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         let color_picker_state = tree.state.downcast_mut::<State>();
 
         color_picker_state.synchronize(self.show_picker, self.color);
 
-        tree.diff_children(&[&self.underlay, &self.overlay_state]);
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay_state]);
     }
 
     fn size(&self) -> iced_core::Size<Length> {
@@ -226,7 +222,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -236,7 +231,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );

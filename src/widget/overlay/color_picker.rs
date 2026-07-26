@@ -13,8 +13,8 @@ use crate::{
 
 use crate::iced_aw_font::advanced_text::{cancel, ok};
 use iced_core::{
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+    Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
+    Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -582,10 +582,8 @@ where
 
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(PADDING)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .max_width(max_width)
-            .max_height(max_height);
+            .width(Length::Fill.max(max_width))
+            .height(Length::Fill.max(max_height));
 
         let divider = if bounds.width > bounds.height {
             Row::<(), Theme, Renderer>::new()
@@ -643,7 +641,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
         if event::Status::Captured == self.on_event_keyboard(event, shell) {
@@ -690,7 +687,6 @@ where
             cancel_button_layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             &layout.bounds(),
         );
@@ -704,8 +700,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            clipboard,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1052,7 +1047,8 @@ where
         child_tree.diff(element.as_widget_mut());
         child_tree
     } else {
-        let child_tree = Tree::new(element.as_widget());
+        let mut child_tree = Tree::new(element.as_widget());
+        element.as_widget_mut().diff(&mut child_tree);
         color_picker.tree.children.insert(2, child_tree);
         &mut color_picker.tree.children[2]
     };
@@ -1076,19 +1072,16 @@ where
     ));
     let hex_bounds = hex_text_layout.bounds();
 
-    // Buttons
-    let cancel_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
+    let button_max_width = ((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0);
 
+    let cancel_limits = block2_limits.width(Length::Fill.max(button_max_width));
     let mut cancel_button = color_picker.cancel_button.layout(
         &mut color_picker.tree.children[0],
         renderer,
         &cancel_limits,
     );
 
-    let submit_limits =
-        block2_limits.max_width(((rgba_bounds.width / 2.0) - BUTTON_SPACING.0).max(0.0));
-
+    let submit_limits = block2_limits.width(Length::Fill.max(button_max_width));
     let mut submit_button = color_picker.submit_button.layout(
         &mut color_picker.tree.children[1],
         renderer,
@@ -1488,6 +1481,8 @@ fn rgba_color(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::None,
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(
                 label_layout.bounds().center_x(),
@@ -1572,6 +1567,8 @@ fn rgba_color(
                 line_height: iced_widget::text::LineHeight::Relative(1.3),
                 shaping: iced_widget::text::Shaping::Basic,
                 wrapping: Wrapping::None,
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(
                 value_layout.bounds().center_x(),
@@ -1714,6 +1711,8 @@ fn hex_text(
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
             wrapping: Wrapping::default(),
+            ellipsis: text::Ellipsis::None,
+            hint_factor: renderer.hint_factor(),
         },
         Point::new(bounds.center_x(), bounds.center_y()),
         Color {
@@ -1830,15 +1829,8 @@ where
     Message: Clone,
     Theme: style::color_picker::Catalog + iced_widget::button::Catalog + iced_widget::text::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
