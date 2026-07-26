@@ -91,7 +91,7 @@ impl Catalog for Theme {
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let mut base = Style::default();
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
 
     base.text_color = palette.background.base.text;
 
