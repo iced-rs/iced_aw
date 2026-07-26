@@ -13,8 +13,7 @@
 use super::common::*;
 use super::flex;
 use iced_core::{
-    Clipboard, Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector,
-    alignment,
+    Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector, alignment,
     layout::{Layout, Limits, Node},
     mouse, renderer,
     time::Instant,
@@ -74,12 +73,12 @@ impl MenuState {
     pub(super) fn open_new_menu<'a, Message, Theme: Catalog, Renderer: renderer::Renderer>(
         &mut self,
         active_index: usize,
-        item: &Item<'a, Message, Theme, Renderer>,
+        item: &mut Item<'a, Message, Theme, Renderer>,
         item_tree: &mut Tree,
     ) {
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::MenuState::open_new_menu", "");
-        let Some(menu) = item.menu.as_ref() else {
+        let Some(menu) = item.menu.as_mut() else {
             #[cfg(feature = "debug_log")]
             debug!(target:"menu::MenuState::open_new_menu", "item.menu is None");
             return;
@@ -87,8 +86,8 @@ impl MenuState {
 
         self.active = Some(active_index);
 
-        // build the state tree for the new menu
-        let menu_tree = menu.tree();
+        let mut menu_tree = menu.tree();
+        menu.diff(&mut menu_tree);
 
         #[cfg(feature = "debug_log")]
         {
@@ -134,7 +133,6 @@ where
 {
     pub(super) items: Vec<Item<'a, Message, Theme, Renderer>>,
     pub(super) spacing: Pixels,
-    pub(super) max_width: f32,
     pub(super) width: Length,
     pub(super) height: Length,
     pub(super) axis: Axis,
@@ -153,7 +151,6 @@ where
         Self {
             items,
             spacing: Pixels::ZERO,
-            max_width: f32::INFINITY,
             width: Length::Fill,
             height: Length::Shrink,
             axis: Axis::Horizontal,
@@ -162,12 +159,6 @@ where
             close_on_item_click: None,
             close_on_background_click: None,
         }
-    }
-
-    /// Sets the maximum width of the [`Menu`].
-    pub fn max_width(mut self, max_width: f32) -> Self {
-        self.max_width = max_width;
-        self
     }
 
     /// Sets the width of the [`Menu`].
@@ -234,8 +225,8 @@ where
     }
 
     /// tree: Tree{menu_state, \[item_tree...]}
-    pub(super) fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.items, |tree, item| item.diff(tree), Item::tree);
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.items, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{ menu_state, \[item_tree...] }
@@ -253,9 +244,10 @@ where
         #[cfg(feature = "debug_log")]
         debug!(target:"menu::Menu::layout", "");
 
-        let limits = limits
-            .max_width(self.max_width)
-            .max_width(self.compute_max_available_width(parent_bounds, viewport));
+        let limits = limits.width(
+            self.width
+                .max(self.compute_max_available_width(parent_bounds, viewport)),
+        );
 
         let items_node = flex::resolve(
             flex::Axis::Vertical,
@@ -405,7 +397,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
         parent_bounds: Rectangle,
@@ -487,9 +478,7 @@ where
                         slice_layout.children()
                     )
                     .for_each(|((item, tree), layout)| {
-                        item.update(
-                            tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-                        );
+                        item.update(tree, event, layout, cursor, renderer, shell, viewport);
                     });
                 }
                 Op::RedrawUpdate => {
@@ -515,7 +504,7 @@ where
                     };
 
                     let mut temp_messages = vec![];
-                    let mut temp_shell = Shell::new(&mut temp_messages);
+                    let mut temp_shell = shell.local(&mut temp_messages);
 
                     let redraw_event =
                         Event::Window(window::Event::RedrawRequested(Instant::now()));
@@ -533,7 +522,6 @@ where
                             layout,
                             cursor,
                             renderer,
-                            clipboard,
                             &mut temp_shell,
                             viewport,
                         );
@@ -890,18 +878,19 @@ where
 
     /// tree: Tree{stateless, \[widget_tree, menu_tree]}
     #[allow(clippy::option_if_let_else)]
-    pub(super) fn diff(&self, tree: &mut Tree) {
-        if let Some(t0) = tree.children.get_mut(0) {
-            t0.diff(&self.item);
-            if let Some(m) = self.menu.as_ref() {
-                if let Some(t1) = tree.children.get_mut(1) {
-                    m.diff(t1);
-                } else {
-                    *tree = self.tree();
-                }
+    pub(super) fn diff(&mut self, tree: &mut Tree) {
+        if tree.children.is_empty() {
+            tree.children.push(Tree::empty());
+        }
+        self.item.as_widget_mut().diff(&mut tree.children[0]);
+
+        if let Some(m) = self.menu.as_mut() {
+            if tree.children.len() < 2 {
+                tree.children.push(Tree::empty());
             }
-        } else {
-            *tree = self.tree();
+            m.diff(&mut tree.children[1]);
+        } else if tree.children.len() > 1 {
+            tree.children.truncate(1);
         }
     }
 
@@ -914,7 +903,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -926,7 +914,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         )
