@@ -7,8 +7,8 @@
 //! alignments.
 
 use iced_core::{
-    Alignment, Clipboard, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
-    Vector, Widget, alignment,
+    Alignment, Element, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector,
+    Widget, alignment,
     event::Event,
     layout::{self, Node},
     mouse, overlay, renderer,
@@ -23,7 +23,6 @@ pub struct FlushRow<'a, Message, Theme = iced_core::Theme, Renderer = iced_widge
     padding: Padding,
     width: Length,
     height: Length,
-    max_height: f32,
     align: Alignment,
     clip: bool,
     children: Vec<Element<'a, Message, Theme, Renderer>>,
@@ -49,7 +48,7 @@ where
     /// Creates a [`FlushRow`] with the given elements.
     #[must_use]
     pub fn with_children(
-        children: impl IntoIterator<Item = Column<'a, Message, Theme, Renderer>>,
+        children: impl IntoIterator<Item = Element<'a, Message, Theme, Renderer>>,
     ) -> Self {
         let iterator = children.into_iter();
         Self::with_capacity(iterator.size_hint().0).extend(iterator)
@@ -73,7 +72,6 @@ where
             padding: Padding::ZERO,
             width: Length::Shrink,
             height: Length::Shrink,
-            max_height: f32::INFINITY,
             align: Alignment::Start,
             clip: false,
             children,
@@ -113,13 +111,6 @@ where
         self
     }
 
-    /// Sets the maximum width of the [`FlushRow`].
-    #[must_use]
-    pub fn max_height(mut self, max_height: impl Into<Pixels>) -> Self {
-        self.max_height = max_height.into().0;
-        self
-    }
-
     /// Sets the horizontal alignment of the contents of the [`FlushRow`] .
     #[must_use]
     pub fn align_y(mut self, align: impl Into<alignment::Vertical>) -> Self {
@@ -146,12 +137,13 @@ where
 
     /// Adds an element to the [`FlushRow`].
     #[must_use]
-    pub fn push(mut self, child: impl Into<Column<'a, Message, Theme, Renderer>>) -> Self {
+    pub fn push(mut self, child: impl Into<Element<'a, Message, Theme, Renderer>>) -> Self {
         let child = child.into();
-        let child_size = child.size_hint();
-        self.width = self.width.enclose(child_size.width);
-        self.height = self.height.enclose(child_size.height);
-        self.children.push(child.into());
+
+        if !child.as_widget().is_void() {
+            self.children.push(child);
+        }
+
         self
     }
 
@@ -159,7 +151,7 @@ where
     #[must_use]
     pub fn push_maybe(
         self,
-        child: Option<impl Into<Column<'a, Message, Theme, Renderer>>>,
+        child: Option<impl Into<Element<'a, Message, Theme, Renderer>>>,
     ) -> Self {
         if let Some(child) = child {
             self.push(child)
@@ -172,7 +164,7 @@ where
     #[must_use]
     pub fn extend(
         self,
-        children: impl IntoIterator<Item = Column<'a, Message, Theme, Renderer>>,
+        children: impl IntoIterator<Item = Element<'a, Message, Theme, Renderer>>,
     ) -> Self {
         children.into_iter().fold(self, Self::push)
     }
@@ -189,9 +181,9 @@ where
 }
 
 impl<'a, Message: 'a, Theme: 'a, Renderer: iced_core::Renderer + 'a>
-    FromIterator<Column<'a, Message, Theme, Renderer>> for FlushRow<'a, Message, Theme, Renderer>
+    FromIterator<Element<'a, Message, Theme, Renderer>> for FlushRow<'a, Message, Theme, Renderer>
 {
-    fn from_iter<T: IntoIterator<Item = Column<'a, Message, Theme, Renderer>>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item = Element<'a, Message, Theme, Renderer>>>(iter: T) -> Self {
         Self::with_children(iter)
     }
 }
@@ -201,12 +193,8 @@ impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer>
 where
     Renderer: iced_core::Renderer,
 {
-    fn children(&self) -> Vec<Tree> {
-        self.children.iter().map(Tree::new).collect()
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&self.children);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut self.children);
     }
 
     fn size(&self) -> Size<Length> {
@@ -222,7 +210,6 @@ where
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let limits = limits.max_height(self.max_height);
         let node = layout::flex::resolve(
             layout::flex::Axis::Horizontal,
             renderer,
@@ -330,7 +317,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -340,9 +326,9 @@ where
             .zip(&mut tree.children)
             .zip(layout.children())
         {
-            child.as_widget_mut().update(
-                state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            child
+                .as_widget_mut()
+                .update(state, event, layout, cursor, renderer, shell, viewport);
         }
     }
 

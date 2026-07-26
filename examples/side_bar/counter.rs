@@ -1,5 +1,5 @@
 use iced::{
-    Alignment, Element,
+    Alignment, Element, Length,
     widget::{Button, Column, Container, Row, Text},
 };
 use iced_aw::sidebar::TabLabel;
@@ -46,7 +46,7 @@ impl Tab for CounterTab {
         let content: Element<'_, CounterMessage> = Container::new(
             Column::new()
                 .align_x(Alignment::Center)
-                .max_width(600)
+                .width(Length::Fit.max(600))
                 .padding(20)
                 .spacing(16)
                 .push(Text::new(format!("Count: {}", self.value)).size(32))
