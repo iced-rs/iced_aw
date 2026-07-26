@@ -52,6 +52,7 @@ impl NumberInputDemo {
         let txt_minute = number_input(&self.value, -100..=100, Message::NumInpChanged)
             .style(number_input::number_input::primary)
             .on_submit(Message::NumInpSubmitted)
+            .on_paste(Message)
             .step(1);
 
         Container::new(
@@ -62,8 +63,6 @@ impl NumberInputDemo {
                 .push(txt_minute),
         )
         .padding(10)
-        .width(Length::Fill)
-        .height(Length::Fill)
         .center_x(Length::Fill)
         .center_y(Length::Fill)
         .into()
