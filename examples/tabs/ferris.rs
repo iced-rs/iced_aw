@@ -40,7 +40,7 @@ impl Tab for FerrisTab {
         let content: Element<'_, FerrisMessage> = Container::new(
             Column::new()
                 .align_x(Alignment::Center)
-                .max_width(600)
+                .width(Length::Fit.max(600))
                 .padding(20)
                 .spacing(16)
                 .push(Text::new(if self.ferris_width == 500.0 {

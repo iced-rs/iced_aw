@@ -3,7 +3,7 @@
 //! *This API requires the following crate features to be activated: `drop_down`*
 
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
+    Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     keyboard::{self, key::Named},
     layout::{Limits, Node},
     mouse::{self, Cursor},
@@ -125,12 +125,8 @@ where
         );
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.overlay]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay]);
     }
 
     fn operate<'b>(
@@ -152,7 +148,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -162,7 +157,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -290,13 +284,11 @@ where
     Renderer: renderer::Renderer,
 {
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
-        let limits = Limits::new(Size::ZERO, bounds)
-            .width(
-                *self
-                    .width
-                    .unwrap_or(&Length::Fixed(self.underlay_bounds.width)),
-            )
-            .height(*self.height);
+        let limits = Limits::new(Size::ZERO, bounds).width(
+            *self
+                .width
+                .unwrap_or(&Length::Fixed(self.underlay_bounds.width)),
+        );
 
         let previous_position = self.position;
         let max = limits.max();
@@ -310,15 +302,19 @@ where
         let max_height_symmetric = (ref_center_y.min(max.height - ref_center_y) * 2.0).max(0.0);
 
         let limits = match self.alignment {
-            Alignment::Top => limits.max_height(height_above),
-            Alignment::TopStart | Alignment::TopEnd => {
-                limits.max_height((height_above + self.underlay_bounds.height).max(0.0))
+            Alignment::Top => limits.height(self.height.max(height_above)),
+            Alignment::TopStart | Alignment::TopEnd => limits.height(
+                self.height
+                    .max((height_above + self.underlay_bounds.height).max(0.0)),
+            ),
+            Alignment::Bottom => limits.height(self.height.max(height_below)),
+            Alignment::BottomEnd | Alignment::BottomStart => limits.height(
+                self.height
+                    .max((height_below + self.underlay_bounds.height).max(0.0)),
+            ),
+            Alignment::Start | Alignment::End => {
+                limits.height(self.height.max(max_height_symmetric))
             }
-            Alignment::Bottom => limits.max_height(height_below),
-            Alignment::BottomEnd | Alignment::BottomStart => {
-                limits.max_height((height_below + self.underlay_bounds.height).max(0.0))
-            }
-            Alignment::Start | Alignment::End => limits.max_height(max_height_symmetric),
         };
 
         let node = self
@@ -403,7 +399,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
         self.underlay_bounds = Rectangle {
@@ -441,7 +436,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             &layout.bounds(),
         );
@@ -711,10 +705,18 @@ mod tests {
         let underlay = Text::new("Click me");
         let overlay = Text::new("Dropdown content");
 
-        let dropdown = TestDropDown::new(underlay, overlay, false);
+        let mut dropdown = TestDropDown::new(underlay, overlay, false);
 
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&dropdown);
+        let children = {
+            let mut tree = Tree::new(
+                &dropdown as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            dropdown.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(
             children.len(),
             2,

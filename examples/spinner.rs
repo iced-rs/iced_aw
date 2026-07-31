@@ -43,7 +43,8 @@ impl SpinnerExample {
                 .height(Length::Fill)
                 .center_x(Length::Fill)
                 .center_y(Length::Fill),
-            PickList::new(Theme::ALL, Some(&self.theme), Message::ThemeChanged),
+            PickList::new(Some(&self.theme), Theme::ALL, Theme::to_string)
+                .on_select(Message::ThemeChanged),
         ]
         .into()
     }

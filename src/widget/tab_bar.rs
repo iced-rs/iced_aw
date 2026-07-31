@@ -8,8 +8,8 @@
 pub mod tab_label;
 
 use iced_core::{
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Font, Layout, Length, Padding,
-    Pixels, Point, Rectangle, Shadow, Shell, Size, Widget,
+    Alignment, Background, Border, Color, Element, Event, Font, Layout, Length, Padding, Pixels,
+    Point, Rectangle, Shadow, Shell, Size, Widget,
     alignment::{self, Vertical},
     layout::{Limits, Node},
     mouse::{self, Cursor},
@@ -93,8 +93,6 @@ where
     tab_width: Length,
     /// The width of the [`TabBar`].
     height: Length,
-    /// The maximum height of the [`TabBar`].
-    max_height: f32,
     /// The icon size.
     icon_size: f32,
     /// The text size.
@@ -172,7 +170,6 @@ where
             width: Length::Fill,
             tab_width: Length::Fill,
             height: Length::Shrink,
-            max_height: u32::MAX as f32,
             icon_size: DEFAULT_ICON_SIZE,
             text_size: DEFAULT_TEXT_SIZE,
             close_size: DEFAULT_CLOSE_SIZE,
@@ -237,13 +234,6 @@ where
     #[must_use]
     pub fn icon_size(mut self, icon_size: f32) -> Self {
         self.icon_size = icon_size;
-        self
-    }
-
-    /// Sets the maximum height of the [`TabBar`].
-    #[must_use]
-    pub fn max_height(mut self, max_height: f32) -> Self {
-        self.max_height = max_height;
         self
     }
 
@@ -515,7 +505,8 @@ where
             child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
-            let child_tree = Tree::new(element.as_widget());
+            let mut child_tree = Tree::new(element.as_widget());
+            element.as_widget_mut().diff(&mut child_tree);
             tree.children.insert(0, child_tree);
             &mut tree.children[0]
         };
@@ -532,7 +523,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {
@@ -806,7 +796,8 @@ where
             child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
-            let child_tree = Tree::new(element.as_widget());
+            let mut child_tree = Tree::new(element.as_widget());
+            element.as_widget_mut().diff(&mut child_tree);
             tree.children.insert(0, child_tree);
             &mut tree.children[0]
         };
@@ -891,6 +882,8 @@ fn draw_tab<Theme, Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_core::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
                 style.icon_color,
@@ -912,6 +905,8 @@ fn draw_tab<Theme, Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_core::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(text_bounds.center_x(), text_bounds.center_y()),
                 style.text_color,
@@ -960,6 +955,8 @@ fn draw_tab<Theme, Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_core::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(icon_bounds.center_x(), icon_bounds.center_y()),
                 style.icon_color,
@@ -977,6 +974,8 @@ fn draw_tab<Theme, Renderer>(
                     line_height: LineHeight::Relative(1.3),
                     shaping: iced_core::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(text_bounds.center_x(), text_bounds.center_y()),
                 style.text_color,
@@ -1002,6 +1001,8 @@ fn draw_tab<Theme, Renderer>(
                 line_height: LineHeight::Relative(1.3),
                 shaping,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(cross_bounds.center_x(), cross_bounds.center_y()),
             style.text_color,
@@ -1183,12 +1184,6 @@ mod tests {
     fn tab_bar_tab_width_sets_value() {
         let tab_bar = TestTabBar::new(TestMessage::TabSelected).tab_width(Length::Fixed(100.0));
         assert_eq!(tab_bar.tab_width, Length::Fixed(100.0));
-    }
-
-    #[test]
-    fn tab_bar_max_height_sets_value() {
-        let tab_bar = TestTabBar::new(TestMessage::TabSelected).max_height(200.0);
-        assert!((tab_bar.max_height - 200.0).abs() < f32::EPSILON);
     }
 
     #[test]

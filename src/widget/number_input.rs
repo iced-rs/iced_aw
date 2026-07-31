@@ -2,8 +2,8 @@
 //!
 //! A [`NumberInput`] has some local [`State`].
 use iced_core::{
-    Alignment, Background, Border, Clipboard, Color, Element, Event, Layout, Length, Padding,
-    Point, Rectangle, Shadow, Shell, Size, Widget,
+    Alignment, Background, Border, Color, Element, Event, Layout, Length, Padding, Point,
+    Rectangle, Shadow, Shell, Size, Widget,
     alignment::Vertical,
     keyboard,
     layout::{Limits, Node},
@@ -395,16 +395,20 @@ where
 
     /// Decrease current value by step of the [`NumberInput`].
     fn decrease_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value <= self.min() {
+        let min = self.min();
+
+        if self.value <= min {
             return;
         }
-        if self.value.clone() - self.min() > self.step
-            && self.valid(&(self.value.clone() - self.step.clone()))
-        {
-            self.value -= self.step.clone();
+
+        let next = self.value.clone() - self.step.clone();
+
+        if next >= min && self.valid(&next) {
+            self.value = next;
         } else {
-            self.value = self.min();
+            self.value = min;
         }
+
         if let Some(on_change) = &self.on_change {
             shell.publish(on_change(self.value.clone()));
         }
@@ -412,16 +416,20 @@ where
 
     /// Increase current value by step of the [`NumberInput`].
     fn increase_value(&mut self, shell: &mut Shell<Message>) {
-        if self.value >= self.max() {
+        let max = self.max();
+
+        if self.value >= max {
             return;
         }
-        if self.max() - self.value.clone() > self.step
-            && self.valid(&(self.value.clone() + self.step.clone()))
-        {
-            self.value += self.step.clone();
+
+        let next = self.value.clone() + self.step.clone();
+
+        if next <= max && self.valid(&next) {
+            self.value = next;
         } else {
-            self.value = self.max();
+            self.value = max;
         }
+
         if let Some(on_change) = &self.on_change {
             shell.publish(on_change(self.value.clone()));
         }
@@ -497,22 +505,14 @@ where
         State::new(ModifierState::default())
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree {
-            tag: self.content.tag(),
-            state: self.content.state(),
-            children: self.content.children(),
-        }]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
+    fn diff(&mut self, tree: &mut Tree) {
         tree.diff_children_custom(
-            &[&self.content],
+            &mut [&mut self.content],
             |state, content| content.diff(state),
             |content| Tree {
                 tag: content.tag(),
                 state: content.state(),
-                children: content.children(),
+                children: vec![],
             },
         );
     }
@@ -564,7 +564,8 @@ where
             child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
-            let child_tree = Tree::new(element.as_widget());
+            let mut child_tree = Tree::new(element.as_widget());
+            element.as_widget_mut().diff(&mut child_tree);
             tree.children.insert(1, child_tree);
             &mut tree.children[1]
         };
@@ -644,7 +645,8 @@ where
                 child_tree.diff(element.as_widget_mut());
                 child_tree
             } else {
-                let child_tree = Tree::new(element.as_widget());
+                let mut child_tree = Tree::new(element.as_widget());
+                element.as_widget_mut().diff(&mut child_tree);
                 tree.children.insert(1, child_tree);
                 &mut tree.children[1]
             };
@@ -664,7 +666,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -705,17 +706,21 @@ where
 
         // We use a secondary shell to select handle the event of the underlying [`TypedInput`]
         let mut messages = Vec::new();
-        let mut sub_shell = Shell::new(&mut messages);
+        let mut sub_shell = shell.local(&mut messages);
 
-        // Function to forward the event to the underlying [`TypedInput`]
-        let mut forward_to_text = |widget: &mut Self, child, clipboard| {
+        // Function to forward the event to the underlying [`TypedInput`].
+        // This is also how clipboard copy/cut/paste actually happen: `TypedInput`
+        // delegates straight down to the real `iced_widget::text_input::TextInput`,
+        // which is the only widget in this chain that calls
+        // `shell.read_clipboard(...)` / `shell.write_clipboard(...)`. Neither
+        // `NumberInput` nor `TypedInput` need to touch the clipboard themselves.
+        let mut forward_to_text = |widget: &mut Self, child| {
             widget.content.update(
                 child,
                 &event.clone(),
                 content,
                 cursor,
                 renderer,
-                clipboard,
                 &mut sub_shell,
                 viewport,
             );
@@ -741,7 +746,7 @@ where
                 }
 
                 match key {
-                    keyboard::Event::ModifiersChanged(_) => forward_to_text(self, child, clipboard),
+                    keyboard::Event::ModifiersChanged(_) => forward_to_text(self, child),
                     keyboard::Event::KeyReleased { .. } => return,
                     keyboard::Event::KeyPressed {
                         key,
@@ -762,11 +767,11 @@ where
                         match key.as_ref() {
                             // Enter
                             keyboard::Key::Named(keyboard::key::Named::Enter) => {
-                                forward_to_text(self, child, clipboard);
+                                forward_to_text(self, child);
                             }
                             // Copy and selecting all
                             keyboard::Key::Character("c" | "a") if modifiers.command() => {
-                                forward_to_text(self, child, clipboard);
+                                forward_to_text(self, child);
                             }
                             // Cut
                             keyboard::Key::Character("x") if modifiers.command() => {
@@ -775,7 +780,7 @@ where
                                     let _ = value.drain(start..end);
                                     // We check that once this part is cut, it's still a number
                                     if check_value(&value) {
-                                        forward_to_text(self, child, clipboard);
+                                        forward_to_text(self, child);
                                     } else {
                                         return;
                                     }
@@ -784,31 +789,10 @@ where
                                 }
                             }
                             // Paste
-                            keyboard::Key::Character("v") if modifiers.command() => {
-                                // We need something to paste
-                                let Some(paste) =
-                                    clipboard.read(iced_core::clipboard::Kind::Standard)
-                                else {
-                                    return;
-                                };
-                                // We replace the selection or paste the text at the cursor
-                                match cursor.state(&Value::new(&value)) {
-                                    cursor::State::Index(idx) => {
-                                        value.insert_str(idx, &paste);
-                                    }
-                                    cursor::State::Selection { start, end } => {
-                                        value.replace_range(sorted_range(start, end), &paste);
-                                    }
-                                }
-
-                                shell.capture_event();
-
-                                // We check if it's now a valid number
-                                if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
-                                } else {
-                                    return;
-                                }
+                            keyboard::Key::Character("v")
+                                if modifiers.command() && !modifiers.alt() =>
+                            {
+                                forward_to_text(self, child);
                             }
                             // Backspace
                             keyboard::Key::Named(keyboard::key::Named::Backspace) => {
@@ -836,7 +820,7 @@ where
 
                                 // We check if it's now a valid number
                                 if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
+                                    forward_to_text(self, child);
                                 } else {
                                     return;
                                 }
@@ -868,7 +852,7 @@ where
 
                                 // We check if it's now a valid number
                                 if check_value(&value) {
-                                    forward_to_text(self, child, clipboard);
+                                    forward_to_text(self, child);
                                 } else {
                                     return;
                                 }
@@ -896,7 +880,7 @@ where
                                 | keyboard::key::Named::ArrowRight
                                 | keyboard::key::Named::Home
                                 | keyboard::key::Named::End,
-                            ) if !has_value => forward_to_text(self, child, clipboard),
+                            ) if !has_value => forward_to_text(self, child),
                             // Everything else
                             _ => match text {
                                 // If we are trying to input text
@@ -916,7 +900,7 @@ where
 
                                     // We check if it's now a valid number
                                     if check_value(&value) {
-                                        forward_to_text(self, child, clipboard);
+                                        forward_to_text(self, child);
                                     } else {
                                         return;
                                     }
@@ -970,15 +954,15 @@ where
                 shell.capture_event();
                 shell.request_redraw();
             }
-            // Any other event are just forwarded
-            _ => forward_to_text(self, child, clipboard),
+            // Any other event is just forwarded
+            _ => forward_to_text(self, child),
         }
 
         // We forward the shell of the [`TypedInput`] to the application
         shell.request_redraw_at(sub_shell.redraw_request());
 
-        if sub_shell.is_layout_invalid() {
-            shell.invalidate_layout();
+        if let Some(diff) = sub_shell.is_layout_invalid() {
+            shell.invalidate_layout_with(diff);
         }
         if sub_shell.are_widgets_invalid() {
             shell.invalidate_widgets();
@@ -1009,6 +993,10 @@ where
                 }
                 InternalMessage::OnPaste(value) => {
                     if self.value != value {
+                        if !self.valid(&value) {
+                            shell.invalidate_layout();
+                            continue;
+                        }
                         self.value = value.clone();
                         if let Some(on_paste) = &self.on_paste {
                             shell.publish(on_paste(value));
@@ -1151,6 +1139,8 @@ where
                 wrapping: Wrapping::default(),
                 align_x: Alignment::Center.into(),
                 align_y: Vertical::Center,
+                ellipsis: iced_core::text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(dec_bounds.center_x(), dec_bounds.center_y()),
             decrease_btn_style.icon_color,
@@ -1188,6 +1178,8 @@ where
                 wrapping: Wrapping::default(),
                 align_x: Alignment::Center.into(),
                 align_y: Vertical::Center,
+                ellipsis: iced_core::text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(inc_bounds.center_x(), inc_bounds.center_y()),
             increase_btn_style.icon_color,
@@ -1388,9 +1380,17 @@ mod tests {
     #[test]
     fn number_input_has_one_child() {
         let value = 10u32;
-        let input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
+        let mut input = TestNumberInput::new(&value, 0..=100, TestMessage::Changed);
 
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
+        let children = {
+            let mut tree = Tree::new(
+                &input as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            input.diff(&mut tree);
+
+            tree.children
+        };
         assert_eq!(children.len(), 1); // Only the content (TypedInput) is a child initially
     }
 

@@ -6,8 +6,8 @@
 #![allow(clippy::enum_glob_use)]
 
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget,
-    alignment, event,
+    Element, Event, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget, alignment,
+    event,
     layout::{Limits, Node},
     mouse, overlay, renderer,
     widget::{Operation, Tree, tree},
@@ -254,14 +254,9 @@ where
         tree::State::Some(Box::<MenuBarState>::default())
     }
 
-    /// \[Tree{stateless, \[widget_state, menu_state]}...]
-    fn children(&self) -> Vec<Tree> {
-        self.roots.iter().map(Item::tree).collect::<Vec<_>>()
-    }
-
     /// tree: Tree{bar, \[item_tree...]}
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children_custom(&self.roots, |tree, item| item.diff(tree), Item::tree);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children_custom(&mut self.roots, |tree, item| item.diff(tree), Item::tree);
     }
 
     /// tree: Tree{bar, \[item_tree...]}
@@ -310,14 +305,7 @@ where
         #[cfg(feature = "debug_log")]
         debug!("menu::MenuBar::layout | items_node_bounds: {items_node_bounds:?}");
 
-        let resolved_width = match self.width {
-            Length::Fill | Length::FillPortion(_) => items_node_bounds
-                .width
-                .min(limits.max().width)
-                .max(limits.min().width),
-            Length::Fixed(amount) => amount.min(limits.max().width).max(limits.min().width),
-            Length::Shrink => items_node_bounds.width,
-        };
+        let resolved_width = limits.resolve_width(self.width, items_node_bounds.width);
 
         let lower_bound_rel = self.padding.left - bar_menu_state.scroll_offset;
         let upper_bound_rel = lower_bound_rel + resolved_width - self.padding.x();
@@ -390,7 +378,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -418,9 +405,7 @@ where
             slice_layout.children()
         )
         .for_each(|((item, tree), layout)| {
-            item.update(
-                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            item.update(tree, event, layout, cursor, renderer, shell, viewport);
         });
 
         let bar_bounds = layout.bounds();
@@ -856,9 +841,18 @@ mod tests {
     fn menu_bar_children_returns_item_trees() {
         let items = vec![Item::new(Text::new("File")), Item::new(Text::new("Edit"))];
 
-        let menu_bar = TestMenuBar::new(items);
-        let children =
-            Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(&menu_bar);
+        let mut menu_bar = TestMenuBar::new(items);
+
+        let children = {
+            let mut tree = Tree::new(
+                &menu_bar as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            menu_bar.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 2);
     }
 

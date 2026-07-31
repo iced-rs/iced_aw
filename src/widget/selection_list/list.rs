@@ -3,8 +3,8 @@
 use crate::selection_list::Catalog;
 
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle,
-    Shell, Size, Widget,
+    Border, Color, Element, Event, Layout, Length, Padding, Pixels, Point, Rectangle, Shell, Size,
+    Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
@@ -76,7 +76,7 @@ where
         State::new(ListState::default())
     }
 
-    fn diff(&self, state: &mut Tree) {
+    fn diff(&mut self, state: &mut Tree) {
         let list_state = state.state.downcast_mut::<ListState>();
 
         if let Some(id) = self.selected {
@@ -128,7 +128,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         _viewport: &Rectangle,
     ) {
@@ -270,6 +269,8 @@ where
                     line_height: LineHeight::default(),
                     shaping: iced_widget::text::Shaping::Advanced,
                     wrapping: Wrapping::default(),
+                    ellipsis: iced_widget::text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(bounds.x, bounds.center_y()),
                 text_color,

@@ -13,8 +13,8 @@ use crate::{
 };
 use chrono::{Datelike, Local, NaiveDate};
 use iced_core::{
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
+    Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
+    Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -527,7 +527,8 @@ where
             child_tree.diff(element.as_widget_mut());
             child_tree
         } else {
-            let child_tree = Tree::new(element.as_widget());
+            let mut child_tree = Tree::new(element.as_widget());
+            element.as_widget_mut().diff(&mut child_tree);
             self.tree.children.insert(2, child_tree);
             &mut self.tree.children[2]
         };
@@ -540,15 +541,15 @@ where
         ));
 
         // Buttons
-        let cancel_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        let button_max_width = ((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0);
+
+        let cancel_limits = limits.width(Length::Fill.max(button_max_width));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
-        let submit_limits =
-            limits.max_width(((col.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        let submit_limits = limits.width(Length::Fill.max(button_max_width));
 
         let mut submit_button =
             self.submit_button
@@ -583,7 +584,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
         if event::Status::Captured == self.on_event_keyboard(event) {
@@ -629,7 +629,6 @@ where
             cancel_button_layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             &layout.bounds(),
         );
@@ -650,8 +649,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            clipboard,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1155,15 +1153,8 @@ where
         + iced_widget::button::Catalog
         + iced_widget::container::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -1347,6 +1338,8 @@ fn month_year(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(left_bounds.center_x(), left_bounds.center_y()),
             style
@@ -1368,6 +1361,8 @@ fn month_year(
                 wrapping: Wrapping::default(),
                 align_x: text::Alignment::Center,
                 align_y: Vertical::Center,
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
             style
@@ -1389,6 +1384,8 @@ fn month_year(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Advanced,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(right_bounds.center_x(), right_bounds.center_y()),
             style
@@ -1459,6 +1456,8 @@ fn day_labels(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(bounds.center_x(), bounds.center_y()),
             style
@@ -1557,6 +1556,8 @@ fn day_table(
                     line_height: text::LineHeight::Relative(1.3),
                     shaping: text::Shaping::Basic,
                     wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
                 },
                 Point::new(bounds.center_x(), bounds.center_y()),
                 if is_in_month == IsInMonth::Same {

@@ -139,8 +139,8 @@ pub fn white(theme: &Theme, _status: Status) -> Style {
 }
 
 fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
+    let foreground = theme.seed();
 
     Style {
         border_color: color,
@@ -155,8 +155,8 @@ fn backing_with_text(theme: &Theme, color: Color, text_color: Color) -> Style {
 }
 
 fn backing_only(theme: &Theme, color: Color) -> Style {
-    let palette = theme.extended_palette();
-    let foreground = theme.palette();
+    let palette = theme.palette();
+    let foreground = theme.seed();
 
     Style {
         border_color: color,

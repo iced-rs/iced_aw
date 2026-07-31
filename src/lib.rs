@@ -173,5 +173,5 @@ use iced_fonts::generate_icon_functions;
 /// Embedded font file. There a handfull of glyphs so no need to worry.
 pub const ICED_AW_FONT_BYTES: &[u8] = include_bytes!("../font.ttf");
 /// Font type to use in text widgets.
-pub const ICED_AW_FONT: Font = Font::with_name("iced_aw");
+pub const ICED_AW_FONT: Font = Font::new("iced_aw");
 generate_icon_functions!("font.ttf", iced_aw_font, ICED_AW_FONT);

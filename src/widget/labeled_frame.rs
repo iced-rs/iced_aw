@@ -28,7 +28,7 @@ impl Catalog for iced_widget::Theme {
 
     fn default<'a>() -> Self::Class<'a> {
         Box::new(|theme| Style {
-            color: iced_core::Background::Color(theme.extended_palette().secondary.weak.color),
+            color: iced_core::Background::Color(theme.palette().secondary.weak.color),
             radius: iced_core::border::Radius::default(),
         })
     }
@@ -211,15 +211,8 @@ where
         )
     }
 
-    fn children(&self) -> Vec<iced_core::widget::Tree> {
-        vec![
-            iced_core::widget::Tree::new(&self.title),
-            iced_core::widget::Tree::new(&self.content),
-        ]
-    }
-
-    fn diff(&self, tree: &mut iced_core::widget::Tree) {
-        tree.diff_children(&[&self.title, &self.content]);
+    fn diff(&mut self, tree: &mut iced_core::widget::Tree) {
+        tree.diff_children(&mut [&mut self.title, &mut self.content]);
     }
 
     fn draw(
@@ -385,7 +378,6 @@ where
         layout: iced_core::Layout<'_>,
         cursor: iced_core::mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn iced_core::Clipboard,
         shell: &mut iced_core::Shell<'_, Message>,
         viewport: &iced_core::Rectangle,
     ) {
@@ -394,9 +386,9 @@ where
             .zip(&mut state.children)
             .zip(layout.children())
         {
-            child.as_widget_mut().update(
-                state, event, layout, cursor, renderer, clipboard, shell, viewport,
-            );
+            child
+                .as_widget_mut()
+                .update(state, event, layout, cursor, renderer, shell, viewport);
         }
     }
 
@@ -441,10 +433,6 @@ where
             .collect::<Vec<_>>();
 
         (!children.is_empty()).then(|| iced_core::overlay::Group::with_children(children).overlay())
-    }
-
-    fn size_hint(&self) -> iced_core::Size<Length> {
-        self.size()
     }
 }
 

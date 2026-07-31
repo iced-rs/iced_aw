@@ -8,8 +8,8 @@ pub use crate::style::{
     status::{Status, StyleFn},
 };
 use iced_core::{
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Padding, Point, Rectangle,
-    Shadow, Shell, Size, Vector, Widget,
+    Alignment, Border, Color, Element, Event, Layout, Length, Padding, Point, Rectangle, Shadow,
+    Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -56,10 +56,6 @@ where
     width: Length,
     /// The height of the [`Card`].
     height: Length,
-    /// The maximum width of the [`Card`].
-    max_width: f32,
-    /// The maximum height of the [`Card`].
-    max_height: f32,
     /// The padding of the head of the [`Card`].
     padding_head: Padding,
     /// The padding of the body of the [`Card`].
@@ -98,10 +94,8 @@ where
         B: Into<Element<'a, Message, Theme, Renderer>>,
     {
         Card {
-            width: Length::Fill,
-            height: Length::Shrink,
-            max_width: u32::MAX as f32,
-            max_height: u32::MAX as f32,
+            width: Length::Fill.max(u32::MAX),
+            height: Length::Shrink.max(u32::MAX),
             padding_head: DEFAULT_PADDING,
             padding_body: DEFAULT_PADDING,
             padding_foot: DEFAULT_PADDING,
@@ -136,20 +130,6 @@ where
     #[must_use]
     pub fn height(mut self, height: impl Into<Length>) -> Self {
         self.height = height.into();
-        self
-    }
-
-    /// Sets the maximum height of the [`Card`].
-    #[must_use]
-    pub fn max_height(mut self, height: f32) -> Self {
-        self.max_height = height;
-        self
-    }
-
-    /// Sets the maximum width of the [`Card`].
-    #[must_use]
-    pub fn max_width(mut self, width: f32) -> Self {
-        self.max_width = width;
         self
     }
 
@@ -273,33 +253,19 @@ where
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        let mut children = vec![Tree::new(&self.head), Tree::new(&self.body)];
-
-        if let Some(foot) = &self.foot {
-            children.push(Tree::new(foot));
-        }
-
-        if let Some(close_button) = &self.close_button {
-            children.push(Tree::new(close_button));
-        }
-
-        children
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        match (&self.foot, &self.close_button) {
+    fn diff(&mut self, tree: &mut Tree) {
+        match (&mut self.foot, &mut self.close_button) {
             (Some(foot), Some(close_button)) => {
-                tree.diff_children(&[&self.head, &self.body, foot, close_button]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, foot, close_button]);
             }
             (Some(foot), None) => {
-                tree.diff_children(&[&self.head, &self.body, foot]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, foot]);
             }
             (None, Some(close_button)) => {
-                tree.diff_children(&[&self.head, &self.body, close_button]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body, close_button]);
             }
             (None, None) => {
-                tree.diff_children(&[&self.head, &self.body]);
+                tree.diff_children(&mut [&mut self.head, &mut self.body]);
             }
         }
     }
@@ -312,8 +278,6 @@ where
     }
 
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
-        let limits = limits.max_width(self.max_width).max_height(self.max_height);
-
         let close_button_tree_index = 2 + usize::from(self.foot.is_some());
 
         let head_node = head_node(
@@ -371,7 +335,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -389,7 +352,6 @@ where
                 .expect("widget: Layout should have a head content layout"),
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -405,7 +367,6 @@ where
                 close_layout,
                 cursor,
                 renderer,
-                clipboard,
                 shell,
                 viewport,
             );
@@ -424,7 +385,6 @@ where
                 .expect("widget: Layout should have a body content layout"),
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -443,7 +403,6 @@ where
                     .expect("widget: Layout should have a foot content layout"),
                 cursor,
                 renderer,
-                clipboard,
                 shell,
                 viewport,
             );
@@ -1085,10 +1044,8 @@ mod tests {
             iced_widget::text::Text::new("Body"),
         );
 
-        assert_eq!(card.width, Length::Fill);
-        assert_eq!(card.height, Length::Shrink);
-        assert_eq!(card.max_width, u32::MAX as f32);
-        assert_eq!(card.max_height, u32::MAX as f32);
+        assert_eq!(card.width, Length::Fill.max(u32::MAX));
+        assert_eq!(card.height, Length::Shrink.max(u32::MAX));
         assert_eq!(card.padding_head, DEFAULT_PADDING);
         assert_eq!(card.padding_body, DEFAULT_PADDING);
         assert_eq!(card.padding_foot, DEFAULT_PADDING);
@@ -1126,9 +1083,9 @@ mod tests {
             iced_widget::text::Text::new("Head"),
             iced_widget::text::Text::new("Body"),
         )
-        .max_width(500.0);
+        .width(Length::Fit.max(500.0));
 
-        assert_eq!(card.max_width, 500.0);
+        assert_eq!(card.width, Length::Fit.max(500.0));
     }
 
     #[test]
@@ -1137,9 +1094,9 @@ mod tests {
             iced_widget::text::Text::new("Head"),
             iced_widget::text::Text::new("Body"),
         )
-        .max_height(400.0);
+        .height(Length::Fit.max(400.0));
 
-        assert_eq!(card.max_height, 400.0);
+        assert_eq!(card.height, Length::Fit.max(400.0));
     }
 
     #[test]
@@ -1252,19 +1209,15 @@ mod tests {
             iced_widget::text::Text::new("Body"),
         )
         .foot(iced_widget::text::Text::new("Footer"))
-        .width(600)
-        .height(450)
-        .max_width(800.0)
-        .max_height(600.0)
+        .width(Length::Fixed(600.0).max(800))
+        .height(Length::Fixed(450.0).max(600))
         .padding(Padding::new(15.0))
         .on_close(TestMessage::Close)
         .close_size(20.0);
 
         assert!(card.foot.is_some());
-        assert_eq!(card.width, Length::Fixed(600.0));
-        assert_eq!(card.height, Length::Fixed(450.0));
-        assert_eq!(card.max_width, 800.0);
-        assert_eq!(card.max_height, 600.0);
+        assert_eq!(card.width, Length::Fixed(600.0).max(800.0));
+        assert_eq!(card.height, Length::Fixed(450.0).max(600.0));
         assert_eq!(card.padding_head, Padding::new(15.0));
         assert_eq!(card.padding_body, Padding::new(15.0));
         assert_eq!(card.padding_foot, Padding::new(15.0));
@@ -1340,8 +1293,8 @@ mod tests {
             iced_widget::text::Text::new("Body"),
         );
 
-        assert_eq!(card.max_width, u32::MAX as f32);
-        assert_eq!(card.max_height, u32::MAX as f32);
+        assert_eq!(card.width, Length::Fill.max(u32::MAX));
+        assert_eq!(card.height, Length::Shrink.max(u32::MAX));
     }
 
     #[test]

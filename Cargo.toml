@@ -14,7 +14,7 @@ repository = "https://github.com/iced-rs/iced_aw"
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
 categories = ["gui"]
-rust-version = "1.88"
+rust-version = "1.92"
 
 [features]
 default = []
@@ -34,7 +34,7 @@ menu = []
 quad = []
 spinner = []
 context_menu = []
-slide_bar = []
+slide_bar = ["num-traits"]
 drop_down = []
 sidebar = []
 labeled_frame = []
@@ -68,15 +68,15 @@ iced_aw = { path = "./" }
 getrandom = { version = "0.4.2", features = ["wasm_js"] }
 rand = "0.10.1"
 env_logger = "0.11.10"                                        # For wrap example
-iced_test = "0.14" # for UI testing
+iced_test = "0.15.0-dev" # for UI testing
 
 [dev-dependencies.iced]
-version = "0.14.0"
+version = "0.15.0-dev"
 features = ["debug", "tokio", "time-travel", "advanced"]
 
 [dependencies]
-iced_core = { version = "0.14.0" }
-iced_widget = { version = "0.14.2" }
+iced_core = { version = "0.15.0-dev" }
+iced_widget = { version = "0.15.0-dev" }
 
 chrono = { version = "0.4.44", optional = true, features = ["wasmbind"] }
 iced_fonts = { version = "0.3.0", features = [
@@ -86,6 +86,13 @@ num-format = { version = "0.4.4", optional = true }
 num-traits = { version = "0.2.19", optional = true }
 web-time = "1.1.0"
 log = {version = "0.4", optional=true}
+
+[patch.crates-io]
+iced = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
+iced_core = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
+iced_runtime = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
+iced_widget = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
+iced_test = { git = "https://github.com/iced-rs/iced.git", branch = "master" }
 
 [[example]]
 name = "badge"

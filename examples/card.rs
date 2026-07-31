@@ -39,14 +39,14 @@ impl CardExample {
     fn view(&self) -> Element<'_, self::Message> {
         let element: Element<'_, Message> = if self.card_open {
             card(
-                        Text::new("Head"),
-                        Column::new()
-                            .push(Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead."))
-                    )
-                    .foot(Text::new("Foot"))
-                    .style(style::card::primary)
-                    .on_close(Message::CloseCard)
-                    .into()
+                Text::new("Head"),
+                    Column::new()
+                        .push(Text::new("Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro. De carne lumbering animata corpora quaeritis. Summus brains sit, morbo vel maleficia? De apocalypsi gorger omero undead survivor dictum mauris. Hi mindless mortuis soulless creaturas, imo evil stalking monstra adventus resi dentevil vultus comedat cerebella viventium. Qui animated corpse, cricket bat max brucks terribilem incessu zomby. The voodoo sacerdos flesh eater, suscitat mortuos comedere carnem virus. Zonbi tattered for solum oculi eorum defunctis go lum cerebro. Nescio brains an Undead zombies. Sicut malus putrid voodoo horror. Nigh tofth eliv ingdead."))
+                )
+                .foot(Text::new("Foot"))
+                .style(style::card::primary)
+                .on_close(Message::CloseCard)
+                .into()
         } else {
             Button::new(Text::new("Open card"))
                 .on_press(Message::OpenCard)
@@ -55,12 +55,10 @@ impl CardExample {
 
         let content = Scrollable::new(element);
 
-        Container::new(Column::new().push(content).max_width(600))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .padding(10)
+        Container::new(Column::new().push(content).width(Length::Fit.max(600)))
             .center_x(Length::Fill)
             .center_y(Length::Fill)
+            .padding(10)
             .into()
     }
 }

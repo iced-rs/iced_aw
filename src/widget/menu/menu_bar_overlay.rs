@@ -7,7 +7,7 @@
 #![allow(clippy::similar_names)]
 
 use iced_core::{
-    Clipboard, Event, Layout, Point, Rectangle, Shell, Size, Vector,
+    Event, Layout, Point, Rectangle, Shell, Size, Vector,
     layout::{Limits, Node},
     mouse, overlay, renderer,
     time::Instant,
@@ -190,7 +190,6 @@ where
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
     ) {
         #[cfg(feature = "debug_log")]
@@ -253,7 +252,6 @@ where
             layout_iter: &mut impl Iterator<Item = Layout<'b>>,
             cursor: mouse::Cursor,
             renderer: &Renderer,
-            clipboard: &mut dyn Clipboard,
             shell: &mut Shell<'_, Message>,
             parent_bounds: Rectangle,
             viewport: &Rectangle,
@@ -303,7 +301,6 @@ where
                     layout_iter,
                     cursor,
                     renderer,
-                    clipboard,
                     shell,
                     next_parent_bounds,
                     viewport,
@@ -341,7 +338,6 @@ where
                 menu_layout,
                 cursor,
                 renderer,
-                clipboard,
                 shell,
                 viewport,
                 parent_bounds,
@@ -359,7 +355,6 @@ where
             &mut menu_layouts,
             cursor,
             renderer,
-            clipboard,
             shell,
             parent_bounds,
             &viewport,
@@ -383,7 +378,7 @@ where
             RecEvent::Event => {
                 let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
                 let mut fake_messages = vec![];
-                let mut fake_shell = Shell::new(&mut fake_messages);
+                let mut fake_shell = shell.local(&mut fake_messages);
 
                 let Self {
                     menu_bar,
@@ -416,7 +411,6 @@ where
                         layout,
                         cursor,
                         renderer,
-                        clipboard,
                         &mut fake_shell,
                         &viewport,
                     );

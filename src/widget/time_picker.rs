@@ -6,7 +6,7 @@ use super::overlay::time_picker::{self, TimePickerOverlay, TimePickerOverlayButt
 
 use chrono::Local;
 use iced_core::{
-    Clipboard, Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
+    Element, Event, Layout, Length, Point, Rectangle, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::{self, Cursor},
     overlay, renderer,
@@ -190,12 +190,8 @@ where
         tree::State::new(State::new(self.time, self.use_24h, self.show_seconds))
     }
 
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.underlay), Tree::new(&self.overlay_state)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.underlay, &self.overlay_state]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.underlay, &mut self.overlay_state]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -215,7 +211,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
@@ -225,7 +220,6 @@ where
             layout,
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -562,7 +556,7 @@ mod tests {
             period: Period::H24,
         };
 
-        let time_picker = TestTimePicker::new(
+        let mut time_picker = TestTimePicker::new(
             false,
             time,
             underlay,
@@ -570,7 +564,16 @@ mod tests {
             TestMessage::Submit,
         );
 
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&time_picker);
+        let children = {
+            let mut tree = Tree::new(
+                &time_picker as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            time_picker.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 2);
     }
 

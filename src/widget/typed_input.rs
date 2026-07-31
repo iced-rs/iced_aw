@@ -8,9 +8,9 @@ use iced_core::widget::{
     Operation, Tree, Widget,
     tree::{State, Tag},
 };
-use iced_core::{Clipboard, Shell, widget};
 use iced_core::{Element, Length, Padding, Pixels, Rectangle};
 use iced_core::{Event, Size};
+use iced_core::{Shell, widget};
 use iced_widget::text_input::{self, TextInput};
 
 use std::{fmt::Display, str::FromStr};
@@ -317,12 +317,8 @@ where
         <TextInput<_, _, _> as Widget<_, _, _>>::state(&self.text_input)
     }
 
-    fn children(&self) -> Vec<Tree> {
-        <TextInput<_, _, _> as Widget<_, _, _>>::children(&self.text_input)
-    }
-
-    fn diff(&self, state: &mut Tree) {
-        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&self.text_input, state);
+    fn diff(&mut self, state: &mut Tree) {
+        <TextInput<_, _, _> as Widget<_, _, _>>::diff(&mut self.text_input, state);
     }
 
     fn size(&self) -> Size<Length> {
@@ -402,27 +398,25 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
         let mut messages = Vec::new();
-        let mut sub_shell = Shell::new(&mut messages);
+        let mut sub_shell = shell.local(&mut messages);
         self.text_input.update(
             state,
             event,
             layout,
             cursor,
             renderer,
-            clipboard,
             &mut sub_shell,
             viewport,
         );
 
         shell.request_redraw_at(sub_shell.redraw_request());
 
-        if sub_shell.is_layout_invalid() {
-            shell.invalidate_layout();
+        if let Some(diff) = sub_shell.is_layout_invalid() {
+            shell.invalidate_layout_with(diff);
         }
         if sub_shell.are_widgets_invalid() {
             shell.invalidate_widgets();
@@ -660,11 +654,23 @@ mod tests {
     #[test]
     fn typed_input_children_delegates_to_text_input() {
         let value = 42u32;
-        let input = TestTypedInput::new("Enter a number", &value);
+        let mut input = TestTypedInput::new("Enter a number", &value);
 
-        let children = Widget::<TestMessage, iced_widget::Theme, Renderer>::children(&input);
-        let text_input_children =
-            <TextInput<_, _, _> as Widget<_, _, _>>::children(&input.text_input);
+        let children = {
+            let mut tree =
+                Tree::new(&input as &dyn Widget<TestMessage, iced_widget::Theme, Renderer>);
+            input.diff(&mut tree);
+            tree.children
+        };
+
+        let text_input_children = {
+            let mut tree = Tree::new(
+                &input.text_input as &dyn Widget<InternalMessage, iced_widget::Theme, Renderer>,
+            );
+            input.text_input.diff(&mut tree);
+            tree.children
+        };
+
         assert_eq!(children.len(), text_input_children.len());
     }
 }

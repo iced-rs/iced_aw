@@ -55,8 +55,6 @@ impl SlideBarExample {
             .align_x(iced::Alignment::Center);
 
         Container::new(content_all)
-            .width(Length::Fill)
-            .height(Length::Fill)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .into()

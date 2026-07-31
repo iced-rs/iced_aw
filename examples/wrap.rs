@@ -141,10 +141,11 @@ impl RandStrings {
         )
         .width(iced::Length::FillPortion(5));
         let align_picklist = PickList::new(
-            vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
             Some(Into::<WrapAlign>::into(self.align)),
-            Message::ChangeAlign,
-        );
+            vec![WrapAlign::Start, WrapAlign::Center, WrapAlign::End],
+            WrapAlign::to_string,
+        )
+        .on_select(Message::ChangeAlign);
         let spacing_input = Column::new()
             .push(Text::new("spacing"))
             .push(NumberInput::new(

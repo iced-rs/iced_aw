@@ -6,8 +6,7 @@ use crate::style::{
 };
 
 use iced_core::{
-    Border, Clipboard, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell,
-    Size, Widget,
+    Border, Element, Event, Font, Layout, Length, Padding, Pixels, Rectangle, Shell, Size, Widget,
     alignment::Vertical,
     layout::{Limits, Node},
     mouse::{self, Cursor},
@@ -180,19 +179,17 @@ where
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font> + 'a,
     Theme: Catalog + container::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![Tree::new(&self.container as &dyn Widget<_, _, _>)]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.container as &dyn Widget<_, _, _>]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.container as &mut dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
-        state.values = self
-            .options
-            .iter()
-            .map(|_| paragraph::Plain::<Renderer::Paragraph>::default())
-            .collect();
+        if state.values.len() != self.options.len() {
+            state.values = self
+                .options
+                .iter()
+                .map(|_| paragraph::Plain::<Renderer::Paragraph>::default())
+                .collect();
+        }
     }
 
     fn size(&self) -> Size<Length> {
@@ -231,6 +228,8 @@ where
                         align_y: Vertical::Top,
                         shaping: text::Shaping::Advanced,
                         wrapping: Wrapping::default(),
+                        ellipsis: text::Ellipsis::None,
+                        hint_factor: renderer.hint_factor(),
                     };
 
                     let _ = state.values[id].update(text);
@@ -241,7 +240,7 @@ where
             _ => limits.max().width as u32,
         };
 
-        let limits = limits.max_width(max_width as f32 + self.padding.x());
+        let limits = limits.width(self.width.max(max_width as f32 + self.padding.x()));
 
         let content = self
             .container
@@ -257,7 +256,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
@@ -270,7 +268,6 @@ where
                 .expect("Scrollable Child Missing in Selection List"),
             cursor,
             renderer,
-            clipboard,
             shell,
             viewport,
         );
@@ -463,11 +460,19 @@ mod tests {
     fn selection_list_has_one_child() {
         let options = vec!["Option 1".to_owned()];
 
-        let selection_list = TestSelectionList::new(&options, TestMessage::Selected);
+        let mut selection_list = TestSelectionList::new(&options, TestMessage::Selected);
 
-        let children = Widget::<TestMessage, iced_widget::Theme, iced_widget::Renderer>::children(
-            &selection_list,
-        );
+        let children = {
+            let mut tree = Tree::new(
+                &selection_list
+                    as &dyn Widget<TestMessage, iced_widget::Theme, iced_widget::Renderer>,
+            );
+
+            selection_list.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 1);
     }
 

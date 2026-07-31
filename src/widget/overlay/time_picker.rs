@@ -19,8 +19,8 @@ use crate::{
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
 use iced_core::{
-    Alignment, Border, Clipboard, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels,
-    Point, Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
+    Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
+    Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
     alignment::{Horizontal, Vertical},
     event, keyboard,
     layout::{Limits, Node},
@@ -499,10 +499,8 @@ where
     fn layout(&mut self, renderer: &Renderer, bounds: Size) -> Node {
         let limits = Limits::new(Size::ZERO, bounds)
             .shrink(PADDING)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .max_width(300.0)
-            .max_height(350.0);
+            .width(Length::Fill.max(300))
+            .height(Length::Fill.max(350));
 
         // Digital Clock
         let digital_clock_limits = limits;
@@ -538,15 +536,15 @@ where
         ));
 
         // Buttons
-        let cancel_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        let button_max_width = ((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0);
+
+        let cancel_limits = limits.width(Length::Fill.max(button_max_width));
 
         let mut cancel_button =
             self.cancel_button
                 .layout(&mut self.tree.children[0], renderer, &cancel_limits);
 
-        let submit_limits =
-            limits.max_width(((clock.bounds().width / 2.0) - BUTTON_SPACING.0).max(0.0));
+        let submit_limits = limits.width(Length::Fill.max(button_max_width));
 
         let mut submit_button =
             self.submit_button
@@ -594,7 +592,6 @@ where
         layout: Layout<'_>,
         cursor: Cursor,
         renderer: &Renderer,
-        clipboard: &mut dyn Clipboard,
         shell: &mut Shell<Message>,
     ) {
         let mut status = self.on_event_keyboard(event);
@@ -634,8 +631,7 @@ where
             cancel_button_layout,
             cursor,
             renderer,
-            clipboard,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -654,8 +650,7 @@ where
             submit_button_layout,
             cursor,
             renderer,
-            clipboard,
-            &mut Shell::new(&mut fake_messages),
+            &mut shell.local(&mut fake_messages),
             &layout.bounds(),
         );
 
@@ -1226,8 +1221,6 @@ where
     }
 
     let container = Container::new(digital_clock_row)
-        .width(Length::Fill)
-        .height(Length::Shrink)
         .center_x(Length::Fill)
         .center_y(Length::Shrink);
 
@@ -1236,7 +1229,8 @@ where
         child_tree.diff(element.as_widget_mut());
         child_tree
     } else {
-        let child_tree = Tree::new(element.as_widget());
+        let mut child_tree = Tree::new(element.as_widget());
+        element.as_widget_mut().diff(&mut child_tree);
         time_picker.tree.children.insert(2, child_tree);
         &mut time_picker.tree.children[2]
     };
@@ -1402,6 +1396,8 @@ fn draw_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 max_width: f32::INFINITY,
+                ellipsis: text::Ellipsis::None,
+                wrapping: text::Wrapping::None,
             };
             frame.fill_text(period_text);
 
@@ -1448,6 +1444,8 @@ fn draw_clock<Message, Theme>(
                     shaping: text::Shaping::Basic,
                     line_height: text::LineHeight::Relative(1.3),
                     max_width: f32::INFINITY,
+                    ellipsis: text::Ellipsis::None,
+                    wrapping: text::Wrapping::None,
                 };
 
                 frame.fill_text(text);
@@ -1484,6 +1482,8 @@ fn draw_clock<Message, Theme>(
                         shaping: text::Shaping::Basic,
                         line_height: text::LineHeight::Relative(1.3),
                         max_width: f32::INFINITY,
+                        ellipsis: text::Ellipsis::None,
+                        wrapping: text::Wrapping::None,
                     };
 
                     frame.fill_text(text);
@@ -1531,6 +1531,8 @@ fn draw_clock<Message, Theme>(
                             shaping: text::Shaping::Basic,
                             line_height: text::LineHeight::Relative(1.3),
                             max_width: f32::INFINITY,
+                            ellipsis: text::Ellipsis::None,
+                            wrapping: text::Wrapping::None,
                         };
 
                         frame.fill_text(text);
@@ -1641,6 +1643,8 @@ fn draw_digital_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(up_bounds.center_x(), up_bounds.center_y()),
             style
@@ -1662,6 +1666,8 @@ fn draw_digital_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
             style
@@ -1685,6 +1691,8 @@ fn draw_digital_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(down_bounds.center_x(), down_bounds.center_y()),
             style
@@ -1737,6 +1745,8 @@ fn draw_digital_clock<Message, Theme>(
             line_height: text::LineHeight::Relative(1.3),
             shaping: text::Shaping::Basic,
             wrapping: Wrapping::default(),
+            ellipsis: text::Ellipsis::None,
+            hint_factor: renderer.hint_factor(),
         },
         Point::new(
             hour_minute_separator.bounds().center_x(),
@@ -1776,6 +1786,8 @@ fn draw_digital_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(
                 minute_second_separator.bounds().center_x(),
@@ -1817,6 +1829,8 @@ fn draw_digital_clock<Message, Theme>(
                 line_height: text::LineHeight::Relative(1.3),
                 shaping: text::Shaping::Basic,
                 wrapping: Wrapping::default(),
+                ellipsis: text::Ellipsis::None,
+                hint_factor: renderer.hint_factor(),
             },
             Point::new(period.bounds().center_x(), period.bounds().center_y()),
             style[&StyleState::Active].text_color,
@@ -1922,15 +1936,8 @@ where
     Message: Clone,
     Theme: Catalog + button::Catalog,
 {
-    fn children(&self) -> Vec<Tree> {
-        vec![
-            Tree::new(&self.cancel_button),
-            Tree::new(&self.submit_button),
-        ]
-    }
-
-    fn diff(&self, tree: &mut Tree) {
-        tree.diff_children(&[&self.cancel_button, &self.submit_button]);
+    fn diff(&mut self, tree: &mut Tree) {
+        tree.diff_children(&mut [&mut self.cancel_button, &mut self.submit_button]);
     }
 
     fn size(&self) -> Size<Length> {
@@ -2305,10 +2312,18 @@ mod tests {
 
     #[test]
     fn overlay_buttons_has_two_children() {
-        let buttons: TimePickerOverlayButtons<(), iced_widget::Theme> =
+        let mut buttons: TimePickerOverlayButtons<(), iced_widget::Theme> =
             TimePickerOverlayButtons::default();
 
-        let children = Widget::<(), iced_widget::Theme, Renderer>::children(&buttons);
+        let children = {
+            let mut tree =
+                Tree::new(&buttons as &dyn Widget<(), iced_widget::Theme, iced_widget::Renderer>);
+
+            buttons.diff(&mut tree);
+
+            tree.children
+        };
+
         assert_eq!(children.len(), 2);
     }
 

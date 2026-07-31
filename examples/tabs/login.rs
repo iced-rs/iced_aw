@@ -51,7 +51,7 @@ impl Tab for LoginTab {
         let content: Element<'_, LoginMessage> = Container::new(
             Column::new()
                 .align_x(Alignment::Center)
-                .max_width(600)
+                .width(Length::Fit.max(600))
                 .padding(20)
                 .spacing(16)
                 .push(

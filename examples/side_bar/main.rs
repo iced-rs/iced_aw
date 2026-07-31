@@ -19,7 +19,7 @@ use settings::{SettingsMessage, SettingsTab, SidebarPosition, style_from_index};
 const HEADER_SIZE: u32 = 32;
 const TAB_PADDING: u16 = 16;
 const ICON_BYTES: &[u8] = include_bytes!("fonts/icons.ttf");
-const ICON: Font = Font::with_name("icons");
+const ICON: Font = Font::new("icons");
 use iced_aw::ICED_AW_FONT_BYTES;
 
 enum Icon {

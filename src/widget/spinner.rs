@@ -1,7 +1,6 @@
 //! A spinner to suggest something is loading.
 use iced_core::{
-    Border, Clipboard, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector,
-    Widget,
+    Border, Color, Element, Event, Layout, Length, Rectangle, Shell, Size, Vector, Widget,
     layout::{Limits, Node},
     mouse::Cursor,
     renderer,
@@ -169,7 +168,6 @@ where
         layout: Layout<'_>,
         _cursor: Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         _viewport: &Rectangle,
     ) {

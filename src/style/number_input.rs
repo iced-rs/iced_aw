@@ -71,7 +71,7 @@ impl ExtendedCatalog for Theme {
 /// The primary theme of a [`Badge`](crate::widget::badge::Badge).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
-    let palette = theme.extended_palette();
+    let palette = theme.palette();
     let base = Style {
         button_background: Some(palette.primary.strong.color.into()),
         icon_color: palette.primary.strong.text,
