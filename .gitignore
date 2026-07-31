@@ -1,5 +1,6 @@
 .devenv
 .direnv
+.secrets
 
 target/
 pkg/

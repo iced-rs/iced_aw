@@ -2,7 +2,7 @@ name: Cachix
 on:
   push:
     branches:
-      - ci/cachix
+      - main 
 jobs:
   build:
     name: Build devenv shell
