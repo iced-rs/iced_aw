@@ -68,22 +68,16 @@
             inherit inputs pkgs;
             modules = [
               {
-                languages.rust.enable = true;
-                languages.rust.mold.enable = true; # DO NOT USE WILD
-                languages.rust.channel = "stable";
-                languages.rust.targets = [
-                  "aarch64-linux-android"
-                  "armv7-linux-androideabi"
-                  "x86_64-linux-android"
-                  "i686-linux-android"
-                ];
                 # https://devenv.sh/reference/options/
+                languages.rust.enable = true;
+                languages.rust.wild.enable = true;
+                languages.rust.channel = "stable";
                 packages = [
                   pkgs.act
 
                   comet
                 ];
-                enterShell = "";
+                enterShell = "echo Welcome to Iced AW";
                 env = {
                   LD_LIBRARY_PATH = lib.makeLibraryPath (
                     with pkgs;
