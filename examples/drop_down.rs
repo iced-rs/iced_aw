@@ -7,10 +7,11 @@ use std::fmt::Display;
 use iced::{
     Element, Length,
     alignment::Vertical,
-    widget::{Button, Column, Row, Text, scrollable},
+    widget::{Button, Column, Row, Text, container, scrollable},
 };
 
 use iced_aw::{DropDown, drop_down};
+use iced_widget::button;
 
 fn main() -> iced::Result {
     iced::application(
@@ -46,6 +47,7 @@ enum Message {
     Select(Choice),
     Dismiss,
     Expand,
+    Rip,
 }
 
 #[derive(Default)]
@@ -63,6 +65,9 @@ impl DropDownExample {
             }
             Message::Dismiss => self.expanded = false,
             Message::Expand => self.expanded = !self.expanded,
+            Message::Rip => {
+                dbg!("Rip");
+            }
         }
     }
 
@@ -81,7 +86,7 @@ impl DropDownExample {
                 .align_y(Vertical::Center)
                 .into()
         }));
-        let overlay = scrollable(options.padding([0, 4]));
+        let overlay = scrollable(container(options.padding([0, 4])).style(container::bordered_box));
 
         let drop_down = DropDown::new(underlay, overlay, self.expanded)
             .width(Length::Fill)
@@ -94,6 +99,7 @@ impl DropDownExample {
             .height(Length::Fill)
             .align_x(iced::Alignment::Center)
             .push(drop_down)
+            .push(button("Shouldn't not be clicked from overlay").on_press(Message::Rip))
             .into()
     }
 }
