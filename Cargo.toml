@@ -72,7 +72,7 @@ iced_test = "0.15.0-dev" # for UI testing
 
 [dev-dependencies.iced]
 version = "0.15.0-dev"
-features = ["tokio", "advanced"]
+features = ["debug", "tokio", "time-travel", "advanced"]
 
 [dependencies]
 iced_core = { version = "0.15.0-dev" }

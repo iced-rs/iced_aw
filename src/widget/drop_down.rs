@@ -447,13 +447,19 @@ where
         cursor: Cursor,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.element.as_widget().mouse_interaction(
+        let interaction = self.element.as_widget().mouse_interaction(
             self.state,
             layout,
             cursor,
             &self.viewport,
             renderer,
-        )
+        );
+
+        if interaction == mouse::Interaction::None && cursor.is_over(layout.bounds()) {
+            mouse::Interaction::Idle
+        } else {
+            interaction
+        }
     }
 
     fn operate(

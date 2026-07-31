@@ -1,0 +1,24 @@
+name: Cachix
+on:
+  push:
+    branches:
+      - main 
+jobs:
+  build:
+    name: Build devenv shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+      - uses: cachix/cachix-action@v16
+        with:
+          name: iced-aw
+          # Pushes are skipped on forks/PRs where the token is unavailable.
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Build devenv shell
+        # --impure lets devenv read the project directory; the shell's
+        # dependencies are realized into the store for cachix-action to push.
+        run: nix develop --impure --accept-flake-config --command true
