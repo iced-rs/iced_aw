@@ -14,6 +14,7 @@ repository = "https://github.com/iced-rs/iced_aw"
 readme = "README.md"
 keywords = ["gui", "graphics", "interface", "widgets", "iced"]
 categories = ["gui"]
+rust-version = "1.92"
 
 [features]
 default = []
