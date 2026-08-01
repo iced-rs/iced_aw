@@ -287,45 +287,24 @@ where
 ///
 /// [`NumberInput`]: crate::NumberInput
 #[must_use]
-pub fn number_input<'a, T, Message, Theme, Renderer, F>(
+pub fn number_input<'a, T, Message, Theme, Renderer>(
+    placeholder: impl iced_widget::text::IntoFragment<'a>,
     value: &T,
-    bounds: impl RangeBounds<T>,
-    on_change: F,
 ) -> crate::NumberInput<'a, T, Message, Theme, Renderer>
 where
     Message: Clone + 'a,
     Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: crate::style::number_input::ExtendedCatalog,
-    F: 'a + Fn(T) -> Message + Copy,
     T: 'a
         + num_traits::Num
         + num_traits::NumAssignOps
         + PartialOrd
         + std::fmt::Display
         + std::str::FromStr
-        + Copy
+        + Clone
         + Bounded,
 {
-    crate::NumberInput::new(value, bounds, on_change)
-}
-
-#[cfg(feature = "typed_input")]
-/// Shortcut helper to create a [`TypedInput`] Widget.
-///
-/// [`TypedInput`]: crate::TypedInput
-#[must_use]
-pub fn typed_input<'a, T, Message, Theme, Renderer, F>(
-    value: &T,
-    on_change: F,
-) -> crate::TypedInput<'a, T, Message, Theme, Renderer>
-where
-    Message: Clone,
-    Renderer: iced_core::text::Renderer<Font = iced_core::Font>,
-    Theme: iced_widget::text_input::Catalog,
-    F: 'static + Fn(T) -> Message + Copy,
-    T: 'static + std::fmt::Display + std::str::FromStr + Clone,
-{
-    crate::TypedInput::new("", value).on_input(on_change)
+    crate::NumberInput::new(placeholder, value)
 }
 
 #[cfg(feature = "selection_list")]

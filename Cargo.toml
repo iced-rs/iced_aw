@@ -27,8 +27,7 @@ tab_bar = []
 tabs = ["tab_bar"]
 time_picker = ["chrono", "iced_widget/canvas"]
 wrap = []
-number_input = ["num-format", "num-traits", "typed_input"]
-typed_input = []
+number_input = ["num-format", "num-traits"]
 selection_list = []
 menu = []
 quad = []
@@ -161,10 +160,6 @@ required-features = ["tabs", "iced/image"]
 [[example]]
 name = "time_picker"
 required-features = ["time_picker"]
-
-[[example]]
-name = "typed_input"
-required-features = ["typed_input"]
 
 [[example]]
 name = "widget_id_return"

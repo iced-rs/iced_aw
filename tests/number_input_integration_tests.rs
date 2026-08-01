@@ -49,7 +49,12 @@ fn click_decrement(ui: &mut Simulator<'_, Message>) -> Result<(), Error> {
 fn number_input_can_find_value() -> Result<(), Error> {
     let value = 42u32;
 
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
     let ui = simulator(&app);
     process_messages(ui, &mut app);
 
@@ -67,7 +72,12 @@ fn number_input_can_find_value() -> Result<(), Error> {
 fn number_input_displays_correct_initial_value() -> Result<(), Error> {
     let value = 100u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=200, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=200)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
     assert!(ui.find("100").is_ok(), "Initial value should be displayed");
@@ -82,7 +92,12 @@ fn number_input_displays_correct_initial_value() -> Result<(), Error> {
 fn number_input_can_find_increment_button() -> Result<(), Error> {
     let value = 50u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
     // The up arrow button should be findable (with spaces around it: " ▲ " or " + ")
@@ -98,7 +113,12 @@ fn number_input_can_find_increment_button() -> Result<(), Error> {
 fn number_input_can_find_decrement_button() -> Result<(), Error> {
     let value = 50u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
     // The down arrow button should be findable (with spaces around it: " ▼ " or " - ")
@@ -118,7 +138,12 @@ fn number_input_can_find_decrement_button() -> Result<(), Error> {
 fn number_input_increment_button_click_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -140,7 +165,12 @@ fn number_input_increment_button_click_produces_message() -> Result<(), Error> {
 fn number_input_decrement_button_click_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -166,7 +196,12 @@ fn number_input_decrement_button_click_produces_message() -> Result<(), Error> {
 fn number_input_cannot_increment_past_max() -> Result<(), Error> {
     let value = 100u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -196,7 +231,12 @@ fn number_input_cannot_increment_past_max() -> Result<(), Error> {
 fn number_input_cannot_decrement_past_min() -> Result<(), Error> {
     let value = 0u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -230,7 +270,9 @@ fn number_input_on_submit_produces_message() -> Result<(), Error> {
     let value = 50u32;
 
     let (mut app, _) = App::new(move || {
-        NumberInput::new(&value, 0..=100, Message::Changed)
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
             .on_submit(Message::Submit)
             .into()
     });
@@ -266,7 +308,10 @@ fn number_input_works_with_i32() -> Result<(), Error> {
 
     let (app, _) = App::new(move || {
         // Use a closure that converts i32 to our Message type for testing
-        iced_aw::NumberInput::new(&value, -100..=100, |_v| Message::Submit).into()
+        iced_aw::NumberInput::new("", &value)
+            .bounds(-100..=100)
+            .on_input(|_v| Message::Submit)
+            .into()
     });
 
     let ui = simulator(&app);
@@ -286,10 +331,12 @@ fn number_input_works_with_f64() -> Result<(), Error> {
     // Create a simple widget element without using the full App infrastructure
     // This test just verifies the widget can be constructed with f64
     let _widget: iced_aw::NumberInput<'_, f64, (), iced::Theme, iced::Renderer> =
-        iced_aw::NumberInput::new(&value, 0.0..=10.0, |v| {
-            // Use a placeholder closure for testing
-            let _ = v;
-        });
+        iced_aw::NumberInput::new("", &value)
+            .bounds(0.0..=10.0)
+            .on_input(|v| {
+                // Use a placeholder closure for testing
+                let _ = v;
+            });
 
     // If we got here without panic, the test passes
     Ok(())
@@ -306,7 +353,12 @@ fn number_input_mouse_scroll_up_increases_value() -> Result<(), Error> {
 
     let value = 50u32;
 
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -333,7 +385,12 @@ fn number_input_mouse_scroll_down_decreases_value() -> Result<(), Error> {
 
     let value = 50u32;
 
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -354,44 +411,18 @@ fn number_input_mouse_scroll_down_decreases_value() -> Result<(), Error> {
 }
 
 #[test]
-fn number_input_ignore_scroll_prevents_wheel_events() -> Result<(), Error> {
-    use iced::Event;
-    use iced_core::mouse;
-
-    let value = 50u32;
-
-    let (mut app, _) = App::new(move || {
-        NumberInput::new(&value, 0..=100, Message::Changed)
-            .ignore_scroll(true)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-
-    // Simulate mouse wheel scroll up
-    ui.simulate([Event::Mouse(mouse::Event::WheelScrolled {
-        delta: mouse::ScrollDelta::Lines { x: 0.0, y: 1.0 },
-    })]);
-
-    // Verify we did NOT get a Changed message
-    let got_changed = check_message_received(ui, &mut app, |m| matches!(m, Message::Changed(_)));
-
-    assert!(
-        !got_changed,
-        "Mouse scroll should be ignored when ignore_scroll is true"
-    );
-
-    Ok(())
-}
-
-#[test]
 fn number_input_scroll_respects_boundaries() -> Result<(), Error> {
     use iced::Event;
     use iced_core::mouse;
 
     // Test scrolling down at minimum
     let value = 0u32;
-    let (mut app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (mut app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 
@@ -443,7 +474,9 @@ fn number_input_multiple_increment_clicks() -> Result<(), Error> {
 
         fn view(&self) -> iced::Element<'_, Message> {
             let val = *self.value.borrow();
-            NumberInput::new(&val, 0..=100, Message::Changed)
+            NumberInput::new("", &val)
+                .bounds(0..=100)
+                .on_input(Message::Changed)
                 .step(5)
                 .into()
         }
@@ -491,7 +524,9 @@ fn number_input_multiple_decrement_clicks() -> Result<(), Error> {
 
         fn view(&self) -> iced::Element<'_, Message> {
             let val = *self.value.borrow();
-            NumberInput::new(&val, 0..=100, Message::Changed)
+            NumberInput::new("", &val)
+                .bounds(0..=100)
+                .on_input(Message::Changed)
                 .step(5)
                 .into()
         }
@@ -522,7 +557,9 @@ fn number_input_custom_step_with_increment() -> Result<(), Error> {
     let value = 10u32;
 
     let (mut app, _) = App::new(move || {
-        NumberInput::new(&value, 0..=100, Message::Changed)
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
             .step(10)
             .into()
     });
@@ -552,7 +589,9 @@ fn number_input_ignore_buttons_hides_increment() -> Result<(), Error> {
     let value = 50u32;
 
     let (app, _) = App::new(move || {
-        NumberInput::new(&value, 0..=100, Message::Changed)
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
             .ignore_buttons(true)
             .into()
     });
@@ -579,7 +618,12 @@ fn number_input_ignore_buttons_hides_increment() -> Result<(), Error> {
 fn number_input_clicking_value_is_findable() -> Result<(), Error> {
     let value = 42u32;
 
-    let (app, _) = App::new(move || NumberInput::new(&value, 0..=100, Message::Changed).into());
+    let (app, _) = App::new(move || {
+        NumberInput::new("", &value)
+            .bounds(0..=100)
+            .on_input(Message::Changed)
+            .into()
+    });
 
     let mut ui = simulator(&app);
 

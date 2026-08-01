@@ -6,8 +6,7 @@ use iced::{
     Alignment, Element, Length,
     widget::{Container, Row, Text},
 };
-use iced_aw::ICED_AW_FONT_BYTES;
-use iced_aw::number_input;
+use iced_aw::{ICED_AW_FONT_BYTES, number_input, style};
 
 #[derive(Default, Debug)]
 pub struct NumberInputDemo {
@@ -17,6 +16,7 @@ pub struct NumberInputDemo {
 #[derive(Debug, Clone)]
 pub enum Message {
     NumInpChanged(i8),
+    NumPasted(i8),
     NumInpSubmitted,
 }
 
@@ -41,6 +41,9 @@ impl NumberInputDemo {
                 println!("Value changed to {val:?}");
                 self.value = val;
             }
+            Message::NumPasted(val) => {
+                println!("Value pasted {val:?}");
+            }
             Message::NumInpSubmitted => {
                 println!("Value submitted");
             }
@@ -49,10 +52,13 @@ impl NumberInputDemo {
 
     fn view(&self) -> Element<'_, Message> {
         let lb_minute = Text::new("Number Input:");
-        let txt_minute = number_input(&self.value, -100..=100, Message::NumInpChanged)
-            .style(number_input::number_input::primary)
+        let txt_minute = number_input("Type a number...", &self.value)
+            .bounds(-100..=100)
+            .step(1)
+            .on_input(Message::NumInpChanged)
+            .on_paste(Message::NumPasted)
             .on_submit(Message::NumInpSubmitted)
-            .step(1);
+            .style(style::number_input::primary);
 
         Container::new(
             Row::new()
