@@ -12,6 +12,7 @@
 
 use super::common::*;
 use super::flex;
+use iced_core::shell;
 use iced_core::{
     Element, Event, Length, Padding, Pixels, Point, Rectangle, Shell, Size, Vector, alignment,
     layout::{Layout, Limits, Node},
@@ -503,7 +504,7 @@ where
                         cursor
                     };
 
-                    let mut temp_messages = vec![];
+                    let mut temp_messages = shell::Bus::new();
                     let mut temp_shell = shell.local(&mut temp_messages);
 
                     let redraw_event =

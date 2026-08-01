@@ -19,7 +19,7 @@ use iced_core::{
     event, keyboard,
     layout::{Limits, Node},
     mouse::{self, Cursor},
-    overlay, renderer,
+    overlay, renderer, shell,
     text::Renderer as _,
     touch,
     widget::{self, tree::Tree},
@@ -670,7 +670,7 @@ where
             .expect("widget: Layout should have a RGBA color layout");
         let rgba_color_status = self.on_event_rgba_color(event, rgba_color_layout, cursor, shell);
 
-        let mut fake_messages: Vec<Message> = Vec::new();
+        let mut fake_messages = shell::Bus::new();
 
         // ----------- Text input ----------------------
         let _text_input_layout = block2_children

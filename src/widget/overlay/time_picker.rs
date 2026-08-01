@@ -18,6 +18,7 @@ use crate::{
     time_picker::{self, Time},
 };
 use chrono::{Duration, Local, NaiveTime, Timelike};
+use iced_core::shell;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
     Rectangle, Renderer as _, Shell, Size, Text, Vector, Widget,
@@ -623,7 +624,7 @@ where
             .next()
             .expect("widget: Layout should have a cancel button layout for a TimePicker");
 
-        let mut fake_messages: Vec<Message> = Vec::new();
+        let mut fake_messages = shell::Bus::new();
 
         self.cancel_button.update(
             &mut self.tree.children[0],
@@ -635,7 +636,7 @@ where
             &layout.bounds(),
         );
 
-        while let Some(message) = fake_messages.pop() {
+        for message in fake_messages.drain() {
             shell.publish(message);
             status = event::Status::Captured;
         }

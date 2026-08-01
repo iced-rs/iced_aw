@@ -9,7 +9,7 @@
 use iced_core::{
     Event, Layout, Point, Rectangle, Shell, Size, Vector,
     layout::{Limits, Node},
-    mouse, overlay, renderer,
+    mouse, overlay, renderer, shell,
     time::Instant,
     widget::{Operation, Tree},
     window,
@@ -377,7 +377,7 @@ where
         match re {
             RecEvent::Event => {
                 let redraw_event = Event::Window(window::Event::RedrawRequested(Instant::now()));
-                let mut fake_messages = vec![];
+                let mut fake_messages = shell::Bus::new();
                 let mut fake_shell = shell.local(&mut fake_messages);
 
                 let Self {
