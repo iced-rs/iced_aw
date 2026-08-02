@@ -5,7 +5,7 @@ use iced_widget::{button, container, text};
 #[derive(Default)]
 pub struct App;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Message {
     NoOp,
 }

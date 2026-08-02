@@ -20,11 +20,6 @@ pub mod number_input;
 #[cfg(feature = "number_input")]
 pub use number_input::NumberInput;
 
-#[cfg(feature = "typed_input")]
-pub mod typed_input;
-#[cfg(feature = "typed_input")]
-pub use typed_input::TypedInput;
-
 #[cfg(feature = "card")]
 pub mod card;
 #[cfg(feature = "card")]

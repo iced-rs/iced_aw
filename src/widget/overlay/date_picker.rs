@@ -12,6 +12,7 @@ use crate::{
     style::{Status, date_picker::Style, style_state::StyleState},
 };
 use chrono::{Datelike, Local, NaiveDate};
+use iced_core::shell;
 use iced_core::{
     Alignment, Border, Color, Element, Event, Layout, Length, Overlay, Padding, Pixels, Point,
     Rectangle, Renderer as _, Shadow, Shell, Size, Widget,
@@ -641,7 +642,7 @@ where
             self.state.day_mouse_over = None;
         }
 
-        let mut fake_messages: Vec<Message> = Vec::new();
+        let mut fake_messages = shell::Bus::new();
 
         self.submit_button.update(
             &mut self.tree.children[1],

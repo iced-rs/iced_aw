@@ -146,29 +146,21 @@ impl RandStrings {
             WrapAlign::to_string,
         )
         .on_select(Message::ChangeAlign);
-        let spacing_input = Column::new()
-            .push(Text::new("spacing"))
-            .push(NumberInput::new(
-                &self.spacing,
-                0.0..500.0,
-                Message::ChangeSpacing,
-            ));
-        let line_spacing_input =
-            Column::new()
-                .push(Text::new("line spacing"))
-                .push(NumberInput::new(
-                    &self.line_spacing,
-                    0.0..500.0,
-                    Message::ChangeLineSpacing,
-                ));
-        let line_minimal_length_input =
-            Column::new()
-                .push(Text::new("line minimal length"))
-                .push(NumberInput::new(
-                    &self.line_minimal_length,
-                    0.0..999.9,
-                    Message::ChangeMinimalLength,
-                ));
+        let spacing_input = Column::new().push(Text::new("spacing")).push(
+            NumberInput::new("", &self.spacing)
+                .bounds(0.0..500.0)
+                .on_input(Message::ChangeSpacing),
+        );
+        let line_spacing_input = Column::new().push(Text::new("line spacing")).push(
+            NumberInput::new("", &self.line_spacing)
+                .bounds(0.0..500.0)
+                .on_input(Message::ChangeLineSpacing),
+        );
+        let line_minimal_length_input = Column::new().push(Text::new("line minimal length")).push(
+            NumberInput::new("", &self.line_minimal_length)
+                .bounds(0.0..999.9)
+                .on_input(Message::ChangeMinimalLength),
+        );
         let ctrls = Column::new()
             .push(align_picklist)
             .push(spacing_input)
