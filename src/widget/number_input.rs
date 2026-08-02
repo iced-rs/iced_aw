@@ -432,7 +432,6 @@ where
         limits: &layout::Limits,
     ) -> layout::Node {
         let state = tree.state.downcast_mut::<State<Renderer>>();
-
         let value_text = self.value.to_string();
         if !state.is_intermediate
             && state.value != value_text
@@ -447,13 +446,13 @@ where
 
         let txt_size = self.size.unwrap_or_else(|| renderer.default_size());
         let icon_size = txt_size.0 * 2.5 / 4.0;
-
         let button_width = icon_size + 8.0;
 
-        let mut padding = self.padding;
+        const BUTTON_INSET: f32 = 2.0;
 
+        let mut padding = self.padding;
         if !self.ignore_buttons {
-            padding.right += button_width;
+            padding.right += button_width + BUTTON_INSET;
         }
 
         let content = state.input.layout(
@@ -477,17 +476,21 @@ where
         let modifiers = if self.ignore_buttons {
             layout::Node::new(Size::ZERO)
         } else {
-            let button_height = (content_size.height - 1.0) / 2.0;
+            let available_height = (content_size.height - BUTTON_INSET * 2.0 - 1.0).max(0.0);
+            let button_height = (available_height / 2.0).max(0.0);
 
             let inc_node = layout::Node::new(Size::new(button_width, button_height));
             let dec_node = layout::Node::new(Size::new(button_width, button_height))
-                .move_to(Point::new(0.0, button_height));
+                .move_to(Point::new(0.0, button_height + 1.0));
 
             layout::Node::with_children(
-                Size::new(button_width, content_size.height),
+                Size::new(button_width, available_height),
                 vec![inc_node, dec_node],
             )
-            .move_to(Point::new(content_size.width - button_width, 0.0))
+            .move_to(Point::new(
+                content_size.width - button_width - BUTTON_INSET,
+                BUTTON_INSET,
+            ))
         };
 
         layout::Node::with_children(content_size, vec![content, modifiers])
@@ -712,7 +715,7 @@ where
                 bounds,
                 border: input_style.border,
                 shadow: Shadow::default(),
-                snap: false,
+                ..renderer::Quad::default()
             },
             input_style.background,
         );
@@ -756,12 +759,17 @@ where
                 renderer::Quad {
                     bounds: inc_bounds,
                     border: Border {
-                        radius: (3.0).into(),
+                        radius: iced_core::border::Radius {
+                            top_left: 0.0,
+                            top_right: input_style.border.radius.top_right,
+                            bottom_right: 0.0,
+                            bottom_left: 0.0,
+                        },
                         width: 0.0,
                         color: Color::TRANSPARENT,
                     },
                     shadow: Shadow::default(),
-                    snap: false,
+                    ..renderer::Quad::default()
                 },
                 increase_btn_style
                     .button_background
@@ -797,12 +805,17 @@ where
                 renderer::Quad {
                     bounds: dec_bounds,
                     border: Border {
-                        radius: (3.0).into(),
+                        radius: iced_core::border::Radius {
+                            top_left: 0.0,
+                            top_right: 0.0,
+                            bottom_right: input_style.border.radius.bottom_right,
+                            bottom_left: 0.0,
+                        },
                         width: 0.0,
                         color: Color::TRANSPARENT,
                     },
                     shadow: Shadow::default(),
-                    snap: false,
+                    ..renderer::Quad::default()
                 },
                 decrease_btn_style
                     .button_background
