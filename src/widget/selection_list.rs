@@ -18,7 +18,7 @@ use iced_widget::{
     Container, Scrollable, container, scrollable,
     text::{self, LineHeight, Wrapping},
 };
-use std::{fmt::Display, hash::Hash, marker::PhantomData};
+use std::{borrow::Borrow, fmt::Display, hash::Hash, marker::PhantomData};
 
 pub use list::List;
 
@@ -28,19 +28,23 @@ pub use list::List;
 pub struct SelectionList<
     'a,
     T,
+    L,
     Message,
     Theme = iced_widget::Theme,
     Renderer = iced_widget::Renderer,
 > where
     T: Clone + ToString + Eq + Hash,
+    L: Borrow<[T]>,
     [T]: ToOwned<Owned = Vec<T>>,
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: Catalog + container::Catalog,
 {
-    /// Container for Rendering List.
-    container: Container<'a, Message, Theme, Renderer>,
     /// List of Elements to Render.
-    options: &'a [T],
+    options: L,
+    /// Function Pointer On Select to call on Mouse button press.
+    on_selected: Box<dyn Fn(usize, T) -> Message>,
+    /// Set the Selected ID manually.
+    selected: Option<usize>,
     /// Label Font
     font: Renderer::Font,
     /// The Containers Width
@@ -53,43 +57,36 @@ pub struct SelectionList<
     text_size: f32,
     /// Style for Looks
     class: <Theme as Catalog>::Class<'a>,
+    /// Marker to hold the lifetime and type parameters.
+    phantomdata: PhantomData<&'a T>,
 }
 
 #[allow(clippy::type_repetition_in_bounds)]
-impl<'a, T, Message, Theme, Renderer> SelectionList<'a, T, Message, Theme, Renderer>
+impl<'a, T, L, Message, Theme, Renderer> SelectionList<'a, T, L, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog + container::Catalog + scrollable::Catalog + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
+    L: Borrow<[T]>,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     /// Creates a new [`SelectionList`] with the given list of `options`,
     /// the current selected value, and the `message` to produce when an option is
     /// selected. This will default the `style`, `text_size` and `padding`. use `new_with`
     /// to set those.
-    pub fn new(options: &'a [T], on_selected: impl Fn(usize, T) -> Message + 'static) -> Self {
-        let container = Container::new(Scrollable::new(List {
-            options,
-            font: Font::default(),
-            text_size: 12.0,
-            padding: 5.0.into(),
-            class: <Theme as Catalog>::default(),
-            on_selected: Box::new(on_selected),
-            selected: None,
-            phantomdata: PhantomData,
-        }))
-        .padding(1);
-
+    pub fn new(options: L, on_selected: impl Fn(usize, T) -> Message + 'static) -> Self {
         Self {
             options,
+            on_selected: Box::new(on_selected),
+            selected: None,
             font: Font::default(),
             class: <Theme as Catalog>::default(),
-            container,
             width: Length::Fill,
             height: Length::Fill,
             padding: 5.0.into(),
             text_size: 12.0,
+            phantomdata: PhantomData,
         }
     }
 
@@ -97,11 +94,11 @@ where
     /// the current selected value, the message to produce when an option is
     /// selected, the `style`, `text_size`, `padding` and `font`.
     pub fn new_with(
-        options: &'a [T],
+        options: L,
         on_selected: impl Fn(usize, T) -> Message + 'static,
         text_size: f32,
         padding: impl Into<Padding>,
-        style: impl Fn(&Theme, Status) -> Style + 'a + Clone,
+        style: impl Fn(&Theme, Status) -> Style + 'a,
         selected: Option<usize>,
         font: Font,
     ) -> Self
@@ -109,34 +106,37 @@ where
         <Theme as Catalog>::Class<'a>: From<StyleFn<'a, Theme, Style>>,
     {
         let class: <Theme as Catalog>::Class<'a> =
-            (Box::new(style.clone()) as StyleFn<'a, Theme, Style>).into();
-        let class2: <Theme as Catalog>::Class<'a> =
             (Box::new(style) as StyleFn<'a, Theme, Style>).into();
 
         let padding = padding.into();
 
-        let container = Container::new(Scrollable::new(List {
-            options,
-            font,
-            text_size,
-            padding,
-            class: class2,
-            selected,
-            on_selected: Box::new(on_selected),
-            phantomdata: PhantomData,
-        }))
-        .padding(1);
-
         Self {
             options,
+            on_selected: Box::new(on_selected),
+            selected,
             font,
             class,
-            container,
             width: Length::Fill,
             height: Length::Fill,
             padding,
             text_size,
+            phantomdata: PhantomData,
         }
+    }
+
+    /// Builds the internal scrollable list container from the current options.
+    fn list_container(&self) -> Container<'_, Message, Theme, Renderer> {
+        Container::new(Scrollable::new(List {
+            options: self.options.borrow(),
+            font: self.font,
+            text_size: self.text_size,
+            padding: self.padding,
+            class: &self.class,
+            on_selected: self.on_selected.as_ref(),
+            selected: self.selected,
+            phantomdata: PhantomData,
+        }))
+        .padding(1)
     }
 
     /// Sets the width of the [`SelectionList`].
@@ -171,21 +171,22 @@ where
     }
 }
 
-impl<'a, T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for SelectionList<'a, T, Message, Theme, Renderer>
+impl<'a, T, L, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
+    for SelectionList<'a, T, L, Message, Theme, Renderer>
 where
     T: 'a + Clone + ToString + Eq + Hash + Display,
-    Message: 'static,
+    L: Borrow<[T]>,
+    Message: 'static + Clone,
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font> + 'a,
-    Theme: Catalog + container::Catalog,
+    Theme: Catalog + container::Catalog + scrollable::Catalog + iced_widget::text::Catalog + 'a,
 {
     fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(&mut [&mut self.container as &mut dyn Widget<_, _, _>]);
+        tree.diff_children(&mut [&mut self.list_container() as &mut dyn Widget<_, _, _>]);
         let state = tree.state.downcast_mut::<State<Renderer::Paragraph>>();
 
-        if state.values.len() != self.options.len() {
-            state.values = self
-                .options
+        let options = self.options.borrow();
+        if state.values.len() != options.len() {
+            state.values = options
                 .iter()
                 .map(|_| paragraph::Plain::<Renderer::Paragraph>::default())
                 .collect();
@@ -201,7 +202,7 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::<Renderer::Paragraph>::new(self.options))
+        tree::State::new(State::<Renderer::Paragraph>::new(self.options.borrow()))
     }
 
     fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
@@ -214,6 +215,7 @@ where
         let max_width = match self.width {
             Length::Shrink => self
                 .options
+                .borrow()
                 .iter()
                 .enumerate()
                 .map(|(id, val)| {
@@ -243,7 +245,7 @@ where
         let limits = limits.width(self.width.max(max_width as f32 + self.padding.x()));
 
         let content = self
-            .container
+            .list_container()
             .layout(&mut tree.children[0], renderer, &limits);
         let size = limits.resolve(self.width, self.height, content.size());
         Node::with_children(size, vec![content])
@@ -259,7 +261,7 @@ where
         shell: &mut Shell<Message>,
         viewport: &Rectangle,
     ) {
-        self.container.update(
+        self.list_container().update(
             &mut state.children[0],
             event,
             layout
@@ -281,8 +283,13 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.container
-            .mouse_interaction(&state.children[0], layout, cursor, viewport, renderer)
+        self.list_container().mouse_interaction(
+            &state.children[0],
+            layout,
+            cursor,
+            viewport,
+            renderer,
+        )
     }
 
     fn draw(
@@ -312,7 +319,7 @@ where
                 style_sheet.background,
             );
 
-            self.container.draw(
+            self.list_container().draw(
                 &state.children[0],
                 renderer,
                 theme,
@@ -335,7 +342,7 @@ where
         operation: &mut dyn iced_core::widget::Operation<()>,
     ) {
         Widget::<Message, Theme, Renderer>::operate(
-            &mut self.container,
+            &mut self.list_container(),
             &mut state.children[0],
             layout
                 .children()
@@ -347,15 +354,16 @@ where
     }
 }
 
-impl<'a, T, Message, Theme, Renderer> From<SelectionList<'a, T, Message, Theme, Renderer>>
+impl<'a, T, L, Message, Theme, Renderer> From<SelectionList<'a, T, L, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
-    T: Clone + ToString + Eq + Hash + Display,
-    Message: 'static,
+    T: 'a + Clone + ToString + Eq + Hash + Display,
+    L: 'a + Borrow<[T]>,
+    Message: 'static + Clone,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
-    Theme: 'a + Catalog + container::Catalog,
+    Theme: 'a + Catalog + container::Catalog + scrollable::Catalog + iced_widget::text::Catalog,
 {
-    fn from(selection_list: SelectionList<'a, T, Message, Theme, Renderer>) -> Self {
+    fn from(selection_list: SelectionList<'a, T, L, Message, Theme, Renderer>) -> Self {
         Element::new(selection_list)
     }
 }
@@ -392,7 +400,8 @@ mod tests {
         Selected(usize, String),
     }
 
-    type TestSelectionList<'a> = SelectionList<'a, String, TestMessage, iced_widget::Theme>;
+    type TestSelectionList<'a> =
+        SelectionList<'a, String, &'a [String], TestMessage, iced_widget::Theme>;
 
     #[test]
     fn selection_list_new_creates_instance() {
@@ -502,6 +511,27 @@ mod tests {
         assert_eq!(selection_list.options[0], "Option 1");
         assert_eq!(selection_list.options[1], "Option 2");
         assert_eq!(selection_list.options[2], "Option 3");
+    }
+
+    #[test]
+    fn selection_list_accepts_owned_vec() {
+        // Regression test for #411: `options` should accept a `Borrow<[T]>`,
+        // so an owned `Vec<T>` produced inline (e.g. inside a `view` method)
+        // works without needing a value that outlives the widget.
+        fn build_options() -> Vec<String> {
+            vec!["Option 1".to_owned(), "Option 2".to_owned()]
+        }
+
+        let selection_list: SelectionList<
+            '_,
+            String,
+            Vec<String>,
+            TestMessage,
+            iced_widget::Theme,
+        > = SelectionList::new(build_options(), TestMessage::Selected);
+
+        assert_eq!(selection_list.options.len(), 2);
+        assert_eq!(selection_list.options[0], "Option 1");
     }
 
     #[test]

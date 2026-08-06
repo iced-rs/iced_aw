@@ -333,15 +333,15 @@ where
 ///
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
-pub fn selection_list_with<'a, T, Message, Theme, Renderer>(
-    options: &'a [T],
+pub fn selection_list_with<'a, T, L, Message, Theme, Renderer>(
+    options: L,
     on_selected: impl Fn(usize, T) -> Message + 'static,
     text_size: f32,
     padding: impl Into<Padding>,
-    style: impl Fn(&Theme, Status) -> crate::style::selection_list::Style + 'a + Clone,
+    style: impl Fn(&Theme, Status) -> crate::style::selection_list::Style + 'a,
     selected: Option<usize>,
     font: iced_core::Font,
-) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
+) -> crate::SelectionList<'a, T, L, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
@@ -351,6 +351,7 @@ where
         + iced_widget::scrollable::Catalog
         + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
+    L: std::borrow::Borrow<[T]>,
     [T]: ToOwned<Owned = Vec<T>>,
     <Theme as crate::style::selection_list::Catalog>::Class<'a>:
         From<StyleFn<'a, Theme, crate::style::selection_list::Style>>,
@@ -371,10 +372,10 @@ where
 ///
 /// [`SelectionList`]: crate::SelectionList
 #[must_use]
-pub fn selection_list<'a, T, Message, Theme, Renderer>(
-    options: &'a [T],
+pub fn selection_list<'a, T, L, Message, Theme, Renderer>(
+    options: L,
     on_selected: impl Fn(usize, T) -> Message + 'static,
-) -> crate::SelectionList<'a, T, Message, Theme, Renderer>
+) -> crate::SelectionList<'a, T, L, Message, Theme, Renderer>
 where
     Message: 'a + Clone,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
@@ -384,6 +385,7 @@ where
         + iced_widget::scrollable::Catalog
         + iced_widget::text::Catalog,
     T: Clone + Display + Eq + Hash,
+    L: std::borrow::Borrow<[T]>,
     [T]: ToOwned<Owned = Vec<T>>,
 {
     crate::SelectionList::new(options, on_selected)
