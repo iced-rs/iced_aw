@@ -24,7 +24,7 @@ use std::{
 
 /// The Private [`List`] Handles the Actual list rendering.
 #[allow(missing_debug_implementations)]
-pub struct List<'a, T: 'a, Message, Theme, Renderer>
+pub struct List<'a, 'c, T: 'a, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     [T]: ToOwned<Owned = Vec<T>>,
@@ -37,9 +37,9 @@ where
     /// Label Font
     pub font: Renderer::Font,
     /// Style for Font colors and Box hover colors.
-    pub class: <Theme as Catalog>::Class<'a>,
+    pub class: &'a <Theme as Catalog>::Class<'c>,
     /// Function Pointer On Select to call on Mouse button press.
-    pub on_selected: Box<dyn Fn(usize, T) -> Message>,
+    pub on_selected: &'a dyn Fn(usize, T) -> Message,
     /// The padding Width
     pub padding: Padding,
     /// The Text Size
@@ -62,7 +62,7 @@ pub struct ListState {
 }
 
 impl<T, Message, Theme, Renderer> Widget<Message, Theme, Renderer>
-    for List<'_, T, Message, Theme, Renderer>
+    for List<'_, '_, T, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
     Renderer: renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
@@ -234,27 +234,23 @@ where
                         ..renderer::Quad::default()
                     },
                     if is_selected {
-                        <Theme as Catalog>::style(
-                            theme,
-                            &self.class,
-                            crate::style::Status::Selected,
-                        )
-                        .background
+                        <Theme as Catalog>::style(theme, self.class, crate::style::Status::Selected)
+                            .background
                     } else {
-                        <Theme as Catalog>::style(theme, &self.class, crate::style::Status::Hovered)
+                        <Theme as Catalog>::style(theme, self.class, crate::style::Status::Hovered)
                             .background
                     },
                 );
             }
 
             let text_color = if is_selected {
-                <Theme as Catalog>::style(theme, &self.class, crate::style::Status::Selected)
+                <Theme as Catalog>::style(theme, self.class, crate::style::Status::Selected)
                     .text_color
             } else if is_hovered {
-                <Theme as Catalog>::style(theme, &self.class, crate::style::Status::Hovered)
+                <Theme as Catalog>::style(theme, self.class, crate::style::Status::Hovered)
                     .text_color
             } else {
-                <Theme as Catalog>::style(theme, &self.class, crate::style::Status::Active)
+                <Theme as Catalog>::style(theme, self.class, crate::style::Status::Active)
                     .text_color
             };
 
@@ -315,15 +311,16 @@ where
     }
 }
 
-impl<'a, T, Message, Theme, Renderer> From<List<'a, T, Message, Theme, Renderer>>
+impl<'a, 'c, T, Message, Theme, Renderer> From<List<'a, 'c, T, Message, Theme, Renderer>>
     for Element<'a, Message, Theme, Renderer>
 where
     T: Clone + Display + Eq + Hash,
+    'c: 'a,
     Message: 'a,
     Renderer: 'a + renderer::Renderer + iced_core::text::Renderer<Font = iced_core::Font>,
     Theme: 'a + Catalog + iced_widget::text::Catalog,
 {
-    fn from(list: List<'a, T, Message, Theme, Renderer>) -> Self {
+    fn from(list: List<'a, 'c, T, Message, Theme, Renderer>) -> Self {
         Element::new(list)
     }
 }
