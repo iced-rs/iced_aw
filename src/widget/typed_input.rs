@@ -414,6 +414,10 @@ where
         );
 
         shell.request_redraw_at(sub_shell.redraw_request());
+        // Forward the inner text input's IME request up to the `NumberInput` (and on
+        // to the application). Without this it is dropped in `sub_shell`, so Android
+        // never shows the on-screen keyboard for a focused number input.
+        shell.request_input_method(sub_shell.input_method());
 
         if let Some(diff) = sub_shell.is_layout_invalid() {
             shell.invalidate_layout_with(diff);
