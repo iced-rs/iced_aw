@@ -960,6 +960,10 @@ where
 
         // We forward the shell of the [`TypedInput`] to the application
         shell.request_redraw_at(sub_shell.redraw_request());
+        // Forward the underlying text input's IME request so the platform learns
+        // a text field is focused. Without this the request is dropped in `sub_shell`
+        // and Android never shows the on-screen keyboard for a focused number input.
+        shell.request_input_method(sub_shell.input_method());
 
         if let Some(diff) = sub_shell.is_layout_invalid() {
             shell.invalidate_layout_with(diff);
