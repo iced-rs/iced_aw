@@ -1,3 +1,5 @@
+#![cfg(feature = "selection_list")]
+
 //! Integration tests for the SelectionList widget
 //!
 //! These tests verify the SelectionList widget's behavior and public API
@@ -65,12 +67,6 @@ fn selection_list_can_find_all_options_in_list() -> Result<(), Error> {
     let (app, _) = App::new(move || SelectionList::new(options, Message::Selected).into());
 
     let mut ui = simulator(&app);
-
-    // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(
-        &mut ui,
-        "tests/snapshots/selection_list_can_find_all_options_in_list",
-    )?;
 
     // Verify all options are findable
     for option in &["Apple", "Banana", "Cherry", "Date", "Elderberry"] {

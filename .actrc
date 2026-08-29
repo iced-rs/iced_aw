@@ -1,0 +1,8 @@
+# Medium image (has apt/sudo/curl); the micro default lacks them.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+# Reuse the locally cached image so the node toolcache path below stays valid.
+--pull=false
+# hecrj/setup-rust-action installs rustup into $HOME/.cargo/bin but calls `rustup`
+# in the same script step. On GitHub's runners rustup is already on PATH; under act
+# it isn't, so we prepend it here. The node path keeps act's own tooling working.
+--env PATH=/root/.cargo/bin:/opt/acttoolcache/node/24.19.0/x64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin

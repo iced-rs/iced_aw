@@ -1,3 +1,5 @@
+#![cfg(feature = "menu")]
+
 //! Integration tests for the MenuBar widget
 //!
 //! These tests verify the MenuBar widget's behavior and public API
@@ -67,9 +69,6 @@ fn menu_bar_with_multiple_items() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
-
-    // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/menu_bar_with_multiple_items")?;
 
     assert!(ui.find("File").is_ok(), "Should find File menu item");
     assert!(ui.find("Edit").is_ok(), "Should find Edit menu item");

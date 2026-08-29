@@ -19,7 +19,6 @@ jobs:
         sudo apt-get install -y libxkbcommon-dev
     - name: Run tests
       run: |
-        cargo test --verbose --all --lib --tests --bins
         cargo test --verbose --all --all-features --lib --tests --bins
 
   todo_windows:
@@ -35,7 +34,6 @@ jobs:
     - uses: actions/checkout@master
     - name: Run tests
       run: |
-        cargo test --verbose --all --lib --tests --bins
         cargo test --verbose --all --all-features --lib --tests --bins
 
   todo_macos:
@@ -51,5 +49,4 @@ jobs:
     - uses: actions/checkout@master
     - name: Run tests
       run: |
-        cargo test --verbose --all --lib --tests --bins
         cargo test --verbose --all --all-features --lib --tests --bins

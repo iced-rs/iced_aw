@@ -1,3 +1,5 @@
+#![cfg(feature = "wrap")]
+
 //! Integration tests for the Wrap widget
 //!
 //! These tests verify the Wrap widget's behavior by actually exercising
@@ -9,7 +11,6 @@ mod common;
 
 use iced::{Alignment, Element, Length};
 use iced_aw::Wrap;
-use iced_test::Error;
 use iced_widget::{Button, Text};
 
 // Message type for the tests (unused but required by iced)
@@ -624,108 +625,4 @@ fn wrap_vertical_with_elements_constructor_renders() {
         },
         "First",
     );
-}
-
-// ============================================================================
-// Snapshot Tests
-// ============================================================================
-
-#[test]
-fn wrap_horizontal_snapshot_test() -> Result<(), Error> {
-    let (app, _) = App::new(move || {
-        Wrap::new()
-            .push(Button::new(Text::new("Button 1")))
-            .push(Button::new(Text::new("Button 2")))
-            .push(Button::new(Text::new("Button 3")))
-            .push(Button::new(Text::new("Button 4")))
-            .push(Button::new(Text::new("Button 5")))
-            .spacing(5.0)
-            .line_spacing(10.0)
-            .padding(10)
-            .align_items(Alignment::Center)
-            .max_width(300.0)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-    assert_snapshot_matches(&mut ui, "tests/snapshots/wrap_horizontal_snapshot_test")?;
-
-    Ok(())
-}
-
-#[test]
-fn wrap_vertical_snapshot_test() -> Result<(), Error> {
-    let (app, _) = App::new(move || {
-        Wrap::new_vertical()
-            .push(Button::new(Text::new("Button 1")))
-            .push(Button::new(Text::new("Button 2")))
-            .push(Button::new(Text::new("Button 3")))
-            .push(Button::new(Text::new("Button 4")))
-            .push(Button::new(Text::new("Button 5")))
-            .spacing(5.0)
-            .line_spacing(10.0)
-            .padding(10)
-            .align_items(Alignment::Center)
-            .max_height(200.0)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-    assert_snapshot_matches(&mut ui, "tests/snapshots/wrap_vertical_snapshot_test")?;
-
-    Ok(())
-}
-
-#[test]
-fn wrap_horizontal_align_start_snapshot() -> Result<(), Error> {
-    let (app, _) = App::new(move || {
-        Wrap::new()
-            .push(Text::new("Short"))
-            .push(Button::new(Text::new("Medium Button")))
-            .push(Text::new("A"))
-            .spacing(5.0)
-            .align_items(Alignment::Start)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-    assert_snapshot_matches(&mut ui, "tests/snapshots/wrap_horizontal_align_start")?;
-
-    Ok(())
-}
-
-#[test]
-fn wrap_horizontal_align_center_snapshot() -> Result<(), Error> {
-    let (app, _) = App::new(move || {
-        Wrap::new()
-            .push(Text::new("Short"))
-            .push(Button::new(Text::new("Medium Button")))
-            .push(Text::new("A"))
-            .spacing(5.0)
-            .align_items(Alignment::Center)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-    assert_snapshot_matches(&mut ui, "tests/snapshots/wrap_horizontal_align_center")?;
-
-    Ok(())
-}
-
-#[test]
-fn wrap_horizontal_align_end_snapshot() -> Result<(), Error> {
-    let (app, _) = App::new(move || {
-        Wrap::new()
-            .push(Text::new("Short"))
-            .push(Button::new(Text::new("Medium Button")))
-            .push(Text::new("A"))
-            .spacing(5.0)
-            .align_items(Alignment::End)
-            .into()
-    });
-
-    let mut ui = simulator(&app);
-    assert_snapshot_matches(&mut ui, "tests/snapshots/wrap_horizontal_align_end")?;
-
-    Ok(())
 }

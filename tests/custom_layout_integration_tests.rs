@@ -1,3 +1,5 @@
+#![cfg(feature = "custom_layout")]
+
 //! Integration tests for the CustomLayout widget
 //!
 //! These tests verify the CustomLayout widget's behavior and functionality

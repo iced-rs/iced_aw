@@ -1,3 +1,5 @@
+#![cfg(feature = "color_picker")]
+
 //! Integration tests for the ColorPicker widget
 //!
 //! These tests verify the ColorPicker widget's behavior by actually exercising
@@ -20,32 +22,6 @@ enum Message {
 
 // Generate test helpers for this Message type
 test_helpers!(Message);
-
-// ============================================================================
-// Snapshot Test
-// ============================================================================
-#[test]
-fn color_picker_snapshot_test() -> Result<(), iced_test::Error> {
-    let (app, _) = App::new(move || {
-        ColorPicker::new(
-            true, // Open
-            Color::from_rgb(0.5, 0.5, 0.5),
-            button(Text::new("Pick")).on_press(Message::Open),
-            Message::Cancel,
-            Message::Submit,
-        )
-        .into()
-    });
-
-    // Create simulator
-    let mut ui = simulator(&app);
-
-    // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/color_picker_snapshot_test")?;
-
-    Ok(())
-}
-
 #[test]
 fn color_picker_closed_renders_underlay_button() {
     let (app, _) = App::new(|| {

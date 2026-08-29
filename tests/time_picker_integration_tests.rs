@@ -1,3 +1,5 @@
+#![cfg(feature = "time_picker")]
+
 //! Integration tests for the TimePicker widget
 //!
 //! These tests verify the TimePicker widget's behavior and public API
@@ -108,12 +110,6 @@ fn time_picker_underlay_button_opens_picker() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
-
-    // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(
-        &mut ui,
-        "tests/snapshots/time_picker_underlay_button_opens_picker",
-    )?;
 
     assert!(
         ui.find("14").is_ok(),

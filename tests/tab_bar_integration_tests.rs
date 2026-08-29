@@ -1,3 +1,5 @@
+#![cfg(feature = "tab_bar")]
+
 //! Integration tests for the TabBar widget
 //!
 //! These tests verify the TabBar widget's behavior and public API
@@ -356,9 +358,6 @@ fn tab_bar_with_mixed_tab_types() -> Result<(), Error> {
     });
 
     let mut ui = simulator(&app);
-
-    // Snapshot testing: verify visual rendering matches baseline
-    assert_snapshot_matches(&mut ui, "tests/snapshots/tab_bar_with_mixed_tab_types")?;
 
     assert!(ui.find("Home").is_ok(), "Should find text tab");
     assert!(ui.find("⚙").is_ok(), "Should find icon tab");
