@@ -45,7 +45,7 @@ impl BadgeExample {
     fn view(&self) -> Element<'_, Message> {
         let content = Column::new()
             .push(Text::new("Messages").size(32))
-            .width(Length::Fit.max(300))
+            .width(Length::Fixed(300.))
             .spacing(10);
 
         let content_messages =
