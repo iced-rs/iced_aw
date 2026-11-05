@@ -881,8 +881,18 @@ where
         let (submit_content, submit_font, _) = ok();
 
         for (btn_layout, icon_content, icon_font, focus_target) in [
-            (cancel_button_layout, cancel_content, cancel_font, Focus::Cancel),
-            (submit_button_layout, submit_content, submit_font, Focus::Submit),
+            (
+                cancel_button_layout,
+                cancel_content,
+                cancel_font,
+                Focus::Cancel,
+            ),
+            (
+                submit_button_layout,
+                submit_content,
+                submit_font,
+                Focus::Submit,
+            ),
         ] {
             let btn_bounds = btn_layout.bounds();
             let btn_hovered = cursor.is_over(btn_bounds);
@@ -913,7 +923,8 @@ where
             );
 
             // Draw button icon
-            let btn_font_size = btn_style.button_font_size
+            let btn_font_size = btn_style
+                .button_font_size
                 .map(Pixels)
                 .unwrap_or(self.font_size);
 
@@ -1337,9 +1348,7 @@ fn month_year(
 
         let bounds = layout.bounds();
         if (style_state == StyleState::Focused) && (bounds.width > 0.) && (bounds.height > 0.) {
-            let focused = style
-                .get(&style_state)
-                .expect("Style Sheet not found.");
+            let focused = style.get(&style_state).expect("Style Sheet not found.");
             renderer.fill_quad(
                 renderer::Quad {
                     bounds,
@@ -1383,7 +1392,11 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(left_bounds.center_x(), left_bounds.center_y()),
-            if left_arrow_hovered { hovered_text_color } else { base_text_color },
+            if left_arrow_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             left_bounds,
         );
 
@@ -1404,7 +1417,11 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
-            if center_hovered { hovered_text_color } else { base_text_color },
+            if center_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             center_bounds,
         );
 
@@ -1424,7 +1441,11 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(right_bounds.center_x(), right_bounds.center_y()),
-            if right_arrow_hovered { hovered_text_color } else { base_text_color },
+            if right_arrow_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             right_bounds,
         );
     };
