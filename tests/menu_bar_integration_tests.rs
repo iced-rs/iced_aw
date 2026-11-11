@@ -136,6 +136,42 @@ fn menu_bar_clicking_item_shows_submenu() -> Result<(), Error> {
     Ok(())
 }
 
+// Regression test for #447
+#[test]
+fn menu_bar_operate_with_closed_nested_submenu() -> Result<(), Error> {
+    let (app, _) = App::new(|| {
+        let recent_menu = Menu::new(menu_items!(
+            (button(Text::new("Recent 1")).on_press(Message::FileOpen))
+        ));
+
+        let file_menu = Menu::new(menu_items!(
+            (button(Text::new("New")).on_press(Message::FileNew)),
+            (Text::new("Open Recent"), recent_menu),
+            (button(Text::new("Save")).on_press(Message::FileSave))
+        ));
+
+        menu_bar!((Text::new("File"), file_menu)).into()
+    });
+
+    let mut ui = simulator(&app);
+
+    // Open the root menu, leaving the "Open Recent" submenu closed
+    ui.click("File")?;
+
+    // Finding a widget runs an operation over the open overlay,
+    // which must skip the closed submenu instead of panicking
+    assert!(
+        ui.find("Save").is_ok(),
+        "Should find Save menu item while a nested submenu is closed"
+    );
+    assert!(
+        ui.find("Recent 1").is_err(),
+        "Should not find items of the closed submenu"
+    );
+
+    Ok(())
+}
+
 // ============================================================================
 // Multiple Menus Tests
 // ============================================================================
