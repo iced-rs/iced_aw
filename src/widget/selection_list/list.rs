@@ -109,7 +109,6 @@ where
     }
 
     fn layout(&mut self, _tree: &mut Tree, _renderer: &Renderer, limits: &Limits) -> Node {
-        use std::f32;
         let limits = limits.height(Length::Fill).width(Length::Fill);
 
         #[allow(clippy::cast_precision_loss)]
@@ -202,8 +201,6 @@ where
         _cursor: Cursor,
         viewport: &Rectangle,
     ) {
-        use std::f32;
-
         let bounds = layout.bounds();
         let option_height = self.text_size + self.padding.y();
         let offset = viewport.y - bounds.y;
