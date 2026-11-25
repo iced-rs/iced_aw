@@ -621,6 +621,10 @@ where
 
         if cursor.is_over(cancel_button_layout.bounds()) {
             self.state.day_mouse_over = None;
+            // Request redraw so our custom button rendering updates on hover
+            if matches!(event, Event::Mouse(mouse::Event::CursorMoved { .. })) {
+                shell.request_redraw();
+            }
         }
 
         self.cancel_button.update(
@@ -639,6 +643,10 @@ where
 
         if cursor.is_over(submit_button_layout.bounds()) {
             self.state.day_mouse_over = None;
+            // Request redraw so our custom button rendering updates on hover
+            if matches!(event, Event::Mouse(mouse::Event::CursorMoved { .. })) {
+                shell.request_redraw();
+            }
         }
 
         let mut fake_messages: Vec<Message> = Vec::new();
@@ -773,7 +781,7 @@ where
         &self,
         renderer: &mut Renderer,
         theme: &Theme,
-        style: &renderer::Style,
+        _style: &renderer::Style,
         layout: Layout<'_>,
         cursor: Cursor,
     ) {
@@ -864,58 +872,103 @@ where
             .next()
             .expect("Graphics: Layout should have a cancel button layout for a DatePicker");
 
-        self.cancel_button.draw(
-            &self.tree.children[0],
-            renderer,
-            theme,
-            style,
-            cancel_button_layout,
-            cursor,
-            &bounds,
-        );
-
         let submit_button_layout = children
             .next()
             .expect("Graphics: Layout should have a submit button layout for a DatePicker");
 
-        self.submit_button.draw(
-            &self.tree.children[1],
-            renderer,
-            theme,
-            style,
-            submit_button_layout,
-            cursor,
-            &bounds,
-        );
+        // Draw custom button backgrounds and icons using the date picker style
+        let (cancel_content, cancel_font, _) = cancel();
+        let (submit_content, submit_font, _) = ok();
 
-        let border = Border {
-            radius: style_sheet[&StyleState::Focused].border_radius.into(),
-            width: style_sheet[&StyleState::Focused].border_width,
-            color: style_sheet[&StyleState::Focused].border_color,
-        };
+        for (btn_layout, icon_content, icon_font, focus_target) in [
+            (
+                cancel_button_layout,
+                cancel_content,
+                cancel_font,
+                Focus::Cancel,
+            ),
+            (
+                submit_button_layout,
+                submit_content,
+                submit_font,
+                Focus::Submit,
+            ),
+        ] {
+            let btn_bounds = btn_layout.bounds();
+            let btn_hovered = cursor.is_over(btn_bounds);
 
-        // Buttons are not focusable right now...
-        if self.state.focus == Focus::Cancel {
+            let btn_style_state = if self.state.focus == focus_target {
+                StyleState::Focused
+            } else if btn_hovered {
+                StyleState::Hovered
+            } else {
+                StyleState::Active
+            };
+
+            let btn_style = &style_sheet[&btn_style_state];
+
+            // Draw button background
             renderer.fill_quad(
                 renderer::Quad {
-                    bounds: cancel_button_layout.bounds(),
-                    border,
-                    ..renderer::Quad::default()
+                    bounds: btn_bounds,
+                    border: Border {
+                        radius: btn_style.button_border_radius.into(),
+                        width: btn_style.button_border_width,
+                        color: btn_style.button_border_color,
+                    },
+                    shadow: Shadow::default(),
+                    snap: false,
                 },
-                Color::TRANSPARENT,
+                btn_style.button_background,
             );
+
+            // Draw button icon
+            let btn_font_size = btn_style
+                .button_font_size
+                .map(Pixels)
+                .unwrap_or(self.font_size);
+
+            renderer.fill_text(
+                iced_core::Text {
+                    content: icon_content.clone(),
+                    bounds: Size::new(btn_bounds.width, btn_bounds.height),
+                    size: btn_font_size,
+                    font: icon_font,
+                    align_x: text::Alignment::Center,
+                    align_y: Vertical::Center,
+                    line_height: text::LineHeight::Relative(1.3),
+                    shaping: text::Shaping::Advanced,
+                    wrapping: Wrapping::default(),
+                    ellipsis: text::Ellipsis::None,
+                    hint_factor: renderer.hint_factor(),
+                },
+                Point::new(btn_bounds.center_x(), btn_bounds.center_y()),
+                btn_style.button_text_color,
+                btn_bounds,
+            );
+
+            // Draw focus ring
+            if self.state.focus == focus_target {
+                let focused_style = &style_sheet[&StyleState::Focused];
+                renderer.fill_quad(
+                    renderer::Quad {
+                        bounds: btn_bounds,
+                        border: Border {
+                            radius: focused_style.border_radius.into(),
+                            width: focused_style.border_width,
+                            color: focused_style.border_color,
+                        },
+                        ..renderer::Quad::default()
+                    },
+                    Color::TRANSPARENT,
+                );
+            }
         }
 
-        if self.state.focus == Focus::Submit {
-            renderer.fill_quad(
-                renderer::Quad {
-                    bounds: submit_button_layout.bounds(),
-                    border,
-                    ..renderer::Quad::default()
-                },
-                Color::TRANSPARENT,
-            );
-        }
+        // Note: we intentionally skip calling self.cancel_button.draw() and
+        // self.submit_button.draw() here because we render the button backgrounds
+        // and icons ourselves above using the date picker's style. The buttons
+        // still handle click events via update().
     }
 
     fn operate(
@@ -1295,36 +1348,33 @@ fn month_year(
 
         let bounds = layout.bounds();
         if (style_state == StyleState::Focused) && (bounds.width > 0.) && (bounds.height > 0.) {
+            let focused = style.get(&style_state).expect("Style Sheet not found.");
             renderer.fill_quad(
                 renderer::Quad {
                     bounds,
                     border: Border {
-                        radius: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_radius
-                            .into(),
-                        width: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_width,
-                        color: style
-                            .get(&style_state)
-                            .expect("Style Sheet not found.")
-                            .border_color,
+                        radius: focused.border_radius.into(),
+                        width: focused.border_width,
+                        color: focused.border_color,
                     },
                     shadow: Shadow::default(),
                     snap: false,
                 },
-                style
-                    .get(&style_state)
-                    .expect("Style Sheet not found.")
-                    .background,
+                Color::TRANSPARENT,
             );
         }
 
         let (left_content, left_font, _left_shaping) = left_open();
         let (right_content, right_font, _right_shaping) = right_open();
+
+        let base_text_color = style
+            .get(&style_state)
+            .expect("Style Sheet not found.")
+            .text_color;
+        let hovered_text_color = style
+            .get(&StyleState::Hovered)
+            .expect("Style Sheet not found.")
+            .text_color;
 
         // Left caret
         renderer.fill_text(
@@ -1342,14 +1392,16 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(left_bounds.center_x(), left_bounds.center_y()),
-            style
-                .get(&style_state)
-                .expect("Style Sheet not found.")
-                .text_color,
+            if left_arrow_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             left_bounds,
         );
 
-        // Text
+        // Text — use hovered color when either arrow or center is hovered
+        let center_hovered = center_bounds.contains(cursor);
         renderer.fill_text(
             iced_core::Text {
                 content: text.to_owned(),
@@ -1365,10 +1417,11 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(center_bounds.center_x(), center_bounds.center_y()),
-            style
-                .get(&style_state)
-                .expect("Style Sheet not found.")
-                .text_color,
+            if center_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             center_bounds,
         );
 
@@ -1388,10 +1441,11 @@ fn month_year(
                 hint_factor: renderer.hint_factor(),
             },
             Point::new(right_bounds.center_x(), right_bounds.center_y()),
-            style
-                .get(&style_state)
-                .expect("Style Sheet not found.")
-                .text_color,
+            if right_arrow_hovered {
+                hovered_text_color
+            } else {
+                base_text_color
+            },
             right_bounds,
         );
     };

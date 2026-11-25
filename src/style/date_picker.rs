@@ -29,6 +29,25 @@ pub struct Style {
     /// The background of the days in the calender of the
     /// [`DatePicker`](crate::widget::DatePicker).
     pub day_background: Background,
+
+    /// The background color for the OK and Cancel buttons.
+    pub button_background: Background,
+
+    /// The text/icon color for the OK and Cancel buttons.
+    pub button_text_color: Color,
+
+    /// The border radius for the OK and Cancel buttons.
+    pub button_border_radius: f32,
+
+    /// The border width for the OK and Cancel buttons.
+    pub button_border_width: f32,
+
+    /// The border color for the OK and Cancel buttons.
+    pub button_border_color: Color,
+
+    /// The font/icon size for the OK and Cancel buttons, or `None` to use the
+    /// picker's font size.
+    pub button_font_size: Option<f32>,
 }
 
 /// The Catalog of a [`DatePicker`](crate::widget::DatePicker).
@@ -55,7 +74,7 @@ impl Catalog for Theme {
     }
 }
 
-/// The primary theme of a [`Badge`](crate::widget::badge::Badge).
+/// The primary theme of a [`DatePicker`](crate::widget::DatePicker).
 #[must_use]
 pub fn primary(theme: &Theme, status: Status) -> Style {
     let palette = theme.palette();
@@ -72,6 +91,12 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
             ..foreground.text
         },
         day_background: palette.background.base.color.into(),
+        button_background: palette.primary.strong.color.into(),
+        button_text_color: palette.primary.strong.text,
+        button_border_radius: 15.0,
+        button_border_width: 0.0,
+        button_border_color: Color::TRANSPARENT,
+        button_font_size: None,
     };
 
     match status {
@@ -83,6 +108,8 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
         Status::Hovered => Style {
             day_background: palette.primary.weak.color.into(),
             text_color: palette.primary.weak.text,
+            button_background: palette.primary.weak.color.into(),
+            button_text_color: palette.primary.weak.text,
             ..base
         },
         Status::Focused => Style {

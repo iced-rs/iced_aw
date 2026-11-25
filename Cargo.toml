@@ -122,6 +122,9 @@ required-features = ["color_picker", "iced/smol"]
 name = "date_picker"
 required-features = ["date_picker"]
 
+#[[example]]
+#name = "emoji_picker"
+
 [[example]]
 name = "menu"
 required-features = ["menu"]
